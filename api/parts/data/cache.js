@@ -2,7 +2,8 @@
 
 const log = require('../../utils/log.js')('cache:' + process.pid),
     // common = require('../../utils/common.js'),
-    {CentralWorker, CentralMaster} = require('../jobs/ipc.js'),
+    { CentralWorker, CentralMaster } = require('../jobs/ipc.js'),
+    { Jsonable } = require('../../utils/models'),
     LRU = require('lru-cache'),
     config = require('../../config.js');
 
@@ -48,11 +49,16 @@ class DataStore {
      * @param  {int} size           max number of items to store
      * @param  {int} age            max life of an object in ms
      * @param  {Function} dispose   called whenever object is shifted from cache
+     * @param  {Class} Cls          class for data objects
      */
-    constructor(size, age, dispose) {
+    constructor(size, age, dispose, Cls) {
         this.size = size;
         this.age = age;
         this.lru = new LRU({max: size || Number.MAX_SAFE_INTEGER, maxAge: age || Number.MAX_SAFE_INTEGER, dispose: dispose, noDisposeOnSet: true, updateAgeOnGet: true});
+        if (Cls) {
+            this.Cls = Cls;
+            this.Clas = require('../../../' + Cls[0])[Cls[1]];
+        }
     }
 
     /**
@@ -82,10 +88,13 @@ class DataStore {
      */
     write(id, data) {
         if (data) {
+            if (this.Clas && !(data instanceof this.Clas)) {
+                data = new this.Clas(data);
+            }
             this.lru.set(id.toString(), data);
             return data;
         }
-        else if (this.read(id) !== undefined) {
+        else if (this.read(id) !== null) {
             this.lru.del(id.toString());
         }
     }
@@ -102,8 +111,13 @@ class DataStore {
         if (!existing) {
             return false;
         }
-        for (let k in set) {
-            dot(existing, k, set[k]);
+        if (this.Clas) {
+            existing.updateData(set);
+        }
+        else {
+            for (let k in set) {
+                dot(existing, k, set[k]);
+            }
         }
         return true;
     }
@@ -142,6 +156,7 @@ class CacheWorker {
     constructor(db, size = 100) {
         this.db = db;
         this.data = new DataStore(size);
+        this.started = false;
 
         this.ipc = new CentralWorker(CENTRAL, (m, reply) => {
             log.d('handling %s: %j', reply ? 'reply' : 'broadcast', m);
@@ -154,7 +169,7 @@ class CacheWorker {
             let store = this.data.read(g);
 
             if (o === OP.INIT) {
-                this.data.write(g, new DataStore(d.size, d.age));
+                this.data.write(g, new DataStore(d.size, d.age, undefined, d.Cls));
                 return;
             }
             else if (!store) {
@@ -163,7 +178,12 @@ class CacheWorker {
             }
 
             if (o === OP.PURGE) {
-                store.write(k, null);
+                if (k) {
+                    store.write(k, null);
+                }
+                else { // purgeAll
+                    store.iterate(id => store.write(id, null));
+                }
             }
             else if (o === OP.READ) {
                 store.write(k, d);
@@ -187,17 +207,40 @@ class CacheWorker {
     /**
      * Start listening to IPC messages
      */
-    start() {
-        log.d('starting worker');
-        this.ipc.attach();
-        this.ipc.request({o: OP.INIT}).then(ret => {
-            log.d('got init response: %j', ret);
-            Object.keys(ret).forEach(g => {
-                if (!this.data.read(g)) {
-                    this.data.write(g, new DataStore(ret[g].size, ret[g].age));
-                }
+    async start() {
+        if (this.started === true) {
+            return;
+        }
+
+        if (this.started === false) {
+            log.d('starting worker');
+            this.started = new Promise((resolve, reject) => {
+                let timeout = setTimeout(() => {
+                    reject(new Error('Failed to start CacheWorker on timeout'));
+                }, 10000);
+                this.ipc.attach();
+                this.ipc.request({o: OP.INIT}).then(ret => {
+                    log.d('got init response: %j', ret);
+                    Object.keys(ret).forEach(g => {
+                        if (!this.data.read(g)) {
+                            this.data.write(g, new DataStore(ret[g].size, ret[g].age, undefined, ret[g].Cls));
+                        }
+                        clearTimeout(timeout);
+                        this.started = true;
+                        resolve();
+                    });
+                });
             });
-        });
+        }
+
+        await this.started;
+    }
+
+    /**
+     * Stop worker
+     */
+    async stop() {
+        this.ipc.detach();
     }
 
     /**
@@ -212,6 +255,8 @@ class CacheWorker {
      * @return {Object}       data if succeeded, null otherwise, throws in case of an error
      */
     async write(group, id, data) {
+        await this.start();
+
         if (!group || !id || !data || typeof id !== 'string') {
             throw new Error('Where are my args?');
         }
@@ -219,7 +264,7 @@ class CacheWorker {
             throw new Error('No such cache group');
         }
         log.d(`writing ${group}:${id}`);
-        let rsp = await this.ipc.request({o: OP.WRITE, g: group, k: id, d: data});
+        let rsp = await this.ipc.request({o: OP.WRITE, g: group, k: id, d: data instanceof Jsonable ? data.json : data});
         if (rsp) {
             this.data.read(group).write(id, rsp);
         }
@@ -239,6 +284,8 @@ class CacheWorker {
      * @return {Object}        data if succeeded, null otherwise, throws in case of an error
      */
     async update(group, id, update) {
+        await this.start();
+
         if (!group || !id || !update || typeof id !== 'string') {
             throw new Error('Where are my args?!');
         }
@@ -266,6 +313,8 @@ class CacheWorker {
      * @return {Boolean}       true if removed
      */
     async remove(group, id) {
+        await this.start();
+
         if (!group || !id || typeof id !== 'string') {
             throw new Error('Where are my args?!');
         }
@@ -278,7 +327,7 @@ class CacheWorker {
         if (store) {
             store.remove(id);
         }
-        return this.has(group, id) === undefined;
+        return this.has(group, id) === null;
     }
 
     /**
@@ -289,6 +338,8 @@ class CacheWorker {
      * @return {Boolean}       true if removed
      */
     async purge(group, id) {
+        await this.start();
+
         if (!group || !id || typeof id !== 'string') {
             throw new Error('Where are my args?!');
         }
@@ -301,7 +352,27 @@ class CacheWorker {
         if (store) {
             store.remove(id);
         }
-        return this.has(group, id) === undefined;
+        return this.has(group, id) === null;
+    }
+
+    /**
+     * Remove from cache all records for a given group.
+     *
+     * @param  {String} group  group key
+     */
+    async purgeAll(group) {
+        await this.start();
+
+        if (!group) {
+            throw new Error('Where are my args?!');
+        }
+        else if (!this.data.read(group)) {
+            throw new Error('No such cache group');
+        }
+        log.d(`purging ${group}`);
+        await this.ipc.request({o: OP.PURGE, g: group});
+        let store = this.data.read(group);
+        store.iterate(id => store.write(id, null));
     }
 
     /**
@@ -314,6 +385,8 @@ class CacheWorker {
      * @return {Object}        data if any, null otherwise
      */
     async read(group, id) {
+        await this.start();
+
         if (!group || !id) {
             throw new Error('Where are my args?!');
         }
@@ -326,7 +399,8 @@ class CacheWorker {
             if (rsp) {
                 let store = this.data.read(group);
                 if (!store) {
-                    store = this.data.write(group, new DataStore(this.size));
+                    throw new Error(`No store for a group ${group}?!`);
+                    // store = this.data.write(group, new DataStore(this.size));
                 }
                 store.write(id, rsp);
             }
@@ -339,7 +413,7 @@ class CacheWorker {
      *
      * @param  {String} group  group key
      * @param  {String} id     data key
-     * @return {Object}        data if any, undefined otherwise
+     * @return {Object}        data if any, null otherwise
      */
     has(group, id) {
         if (!group) {
@@ -347,7 +421,7 @@ class CacheWorker {
         }
         let store = this.data.read(group);
         if (id) {
-            return store && store.read(id) || undefined;
+            return store && store.read(id) || null;
         }
         else {
             return store;
@@ -367,6 +441,7 @@ class CacheWorker {
             update: this.update.bind(this, group),
             remove: this.remove.bind(this, group),
             purge: this.purge.bind(this, group),
+            purgeAll: this.purgeAll.bind(this, group),
             has: this.has.bind(this, group),
             iterate: f => {
                 let g = this.data.read(group);
@@ -396,7 +471,7 @@ class CacheMaster {
      * @param  {Number} size max number of cache groups
      */
     constructor(db, size = 100) {
-        this.data = new DataStore(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+        this.data = new DataStore(size, Number.MAX_SAFE_INTEGER);
         this.operators = {};
         this.col = new StreamedCollection(db, CENTRAL, doc => {
             log.d('collection doc %j', doc);
@@ -406,7 +481,11 @@ class CacheMaster {
 
             let store = this.data.read(doc.g);
             if (!store) {
-                store = this.data.write(doc.g, new DataStore(size));
+                log.w(`No store for group ${doc.g}`);
+                return;
+            }
+            if (doc.o === OP.PURGE && !doc.k) { // purgeAll
+                store.iterate(id => store.write(id, null));
             }
             if (doc.o === OP.PURGE || doc.o === OP.REMOVE) {
                 store.write(doc.k, null);
@@ -433,18 +512,24 @@ class CacheMaster {
             if (o === OP.INIT) {
                 let ret = {};
                 this.data.iterate((group, store) => {
-                    ret[group] = {size: store.size, age: store.age};
+                    ret[group] = {size: store.size, age: store.age, Cls: store.Cls};
                 });
                 return ret;
             }
 
             let store = this.data.read(g);
             if (!store) {
+                log.w(`No store for group ${g}`);
                 throw new Error('No such store ' + g);
             }
 
             if (o === OP.PURGE) {
-                return this.purge(g, k, from);
+                if (k) {
+                    return this.purge(g, k, from);
+                }
+                else {
+                    return this.purgeAll(g, from);
+                }
             }
             else if (o === OP.READ) {
                 return this.read(g, k, from);
@@ -469,13 +554,13 @@ class CacheMaster {
      *
      * @return {Promise} with cursor open result
      */
-    start() {
+    async start() {
         log.d('starting master');
         this.ipc.attach();
-        return this.col.start().then(() => new Promise(res => setTimeout(() => {
+        await this.col.start().then(() => new Promise(res => setTimeout(() => {
             log.d('started master');
             res();
-        }, 10000)));
+        }, 100)));
     }
 
     /**
@@ -483,6 +568,7 @@ class CacheMaster {
      */
     stop() {
         this.col.stop();
+        this.ipc.detach();
     }
 
     /**
@@ -490,6 +576,7 @@ class CacheMaster {
      *
      * @param  {String} group            group key
      * @param  {Function} options.init   initializer - an "async () => [Object]" kind of function, preloads data to cache on startup
+     * @param  {string[]} options.Cls    class - an optional array of ["require path", "export name"] which resolves to a Jsonable subclass to construct instances
      * @param  {Function} options.read   reader - an "async (key) => Object" kind of function, returns data to cache if any for the key supplied
      * @param  {Function} options.write  writer - an "async (key, data) => Object" kind of function, persists the data cached if needed (must return the data persisted on success)
      * @param  {Function} options.update updater - an "async (key, update) => Object" kind of function, updates persisted data if needed
@@ -497,8 +584,8 @@ class CacheMaster {
      * @param  {int} age                 how long in ms to keep records in memory for the group
      * @param  {int} size                how much records to keep in memory for the group
      */
-    init(group, {init, read, write, update, remove}, size = null, age = null) {
-        this.operators[group] = {init, read, write, update, remove};
+    init(group, {init, Cls, read, write, update, remove}, size = null, age = null) {
+        this.operators[group] = {init, Cls, read, write, update, remove};
 
         if (!size && size !== 0) {
             size = config.api && config.api.cache && config.api.cache[group] && config.api.cache[group].size !== undefined ? config.api.cache[group].size : Number.MAX_SAFE_INTEGER;
@@ -510,14 +597,14 @@ class CacheMaster {
 
         this.data.write(group, new DataStore(size, age, k => {
             this.ipc.send(0, {o: OP.PURGE, g: group, k});
-        }));
+        }, Cls));
 
         this.ipc.send(0, {o: OP.INIT, g: group, d: {size, age}});
 
         init().then(arr => {
             (arr || []).forEach(([k, d]) => {
                 this.data.read(group).write(k, d);
-                this.ipc.send(0, {o: OP.READ, g: group, k, d});
+                this.ipc.send(0, {o: OP.READ, g: group, k, d: d && (d instanceof Jsonable) ? d.json : d});
             });
         }, log.e.bind(log, 'Error during initialization of cache group %s', group));
     }
@@ -543,12 +630,12 @@ class CacheMaster {
         if (group in this.operators) {
             return this.operators[group][data === null ? 'remove' : 'write'](id, data).then(rc => {
                 if (rc) {
-                    if (!data) {
+                    if (data === null) {
                         rc = null;
                     }
                     this.data.read(group)[data === null ? 'remove' : 'write'](id, rc);
                     return this.col.put(OP.WRITE, group, id, rc).then(() => {
-                        this.ipc.send(-from, {o: OP.WRITE, g: group, k: id, d: rc});
+                        this.ipc.send(-from, {o: OP.WRITE, g: group, k: id, d: rc && (rc instanceof Jsonable) ? rc.json : rc});
                         return data === null ? true : rc;
                     });
                 }
@@ -655,6 +742,27 @@ class CacheMaster {
     }
 
     /**
+     * Remove from cache all record for given group.
+     *
+     * @param  {String} group  group key
+     * @param  {int} from      originating pid if any
+     * @return {Boolean}       true if removed
+     */
+    async purgeAll(group, from = 0) {
+        if (!group) {
+            throw new Error('Where are my args?!');
+        }
+        log.d(`purging ${group}`);
+
+        let grp = this.data.read(group);
+        grp.iterate(k => grp.write(k, null));
+        this.ipc.send(-from, {o: OP.PURGE, g: group});
+        return this.col.put(OP.PURGE, group).then(() => {
+            return true;
+        });
+    }
+
+    /**
      * Read a record from cache:
      * - from local copy if exists;
      * - send a read request to master otherwise.
@@ -680,7 +788,7 @@ class CacheMaster {
         else if (group in this.operators) {
             return this.operators[group].read(id).then(x => {
                 if (x) {
-                    this.ipc.send(-from, {o: OP.READ, g: group, k: id, d: x});
+                    this.ipc.send(-from, {o: OP.READ, g: group, k: id, d: x instanceof Jsonable ? x.json : x});
                     store.write(id, x);
                     return x;
                 }
@@ -707,7 +815,7 @@ class CacheMaster {
         }
         let store = this.data.read(group);
         if (id) {
-            return store && store.read(id) || undefined;
+            return store && store.read(id) || null;
         }
         else {
             return store;
@@ -727,6 +835,7 @@ class CacheMaster {
             update: this.update.bind(this, group),
             remove: this.remove.bind(this, group),
             purge: this.purge.bind(this, group),
+            purgeAll: this.purgeAll.bind(this, group),
             has: this.has.bind(this, group),
             iterate: f => {
                 let g = this.data.read(group);
@@ -840,29 +949,33 @@ class StreamedCollection {
 
             this.stream.on('end', () => {
                 log.w('Stream ended');
-                this.stop();
+                this.close();
             });
 
             this.stream.on('close', () => {
                 log.d('Stream closed');
                 this.stream = undefined;
                 setImmediate(() => {
-                    this.start().catch(e => {
-                        log.e('Cannot start watcher', e);
-                    });
+                    if (!this.stopped) {
+                        this.start().catch(e => {
+                            log.e('Cannot start watcher', e);
+                        });
+                    }
                 });
             });
 
             this.stream.on('error', error => {
                 log.e('Stream error', error);
-                this.stop();
+                this.close();
             });
 
         }
         catch (e) {
             setTimeout(() => {
                 try {
-                    this.start();
+                    if (!this.stopped) {
+                        this.start();
+                    }
                 }
                 catch (ignored) {
                     // ignored
@@ -875,13 +988,21 @@ class StreamedCollection {
      * Close change stream
      */
     stop() {
+        this.stopped = true;
+        this.close();
+    }
+
+    /**
+     * Close change stream
+     */
+    close() {
         if (this.stream) {
             this.stream.close(e => {
                 this.stream = undefined;
                 if (e) {
-                    log.e('Error while stopping stream', e);
+                    log.e('Error while closing stream', e);
                 }
-                log.d('Stream stopped');
+                log.d('Stream closedd');
             });
         }
     }
@@ -915,5 +1036,17 @@ class StreamedCollection {
         }));
     }
 }
+/**
+ * Data class for tests
+ */
+class TestDataClass extends Jsonable {
+    /**
+     * @returns {boolean} true
+     */
+    get isClassInstance() {
+        return true;
+    }
+}
 
-module.exports = {CacheMaster, CacheWorker};
+
+module.exports = {CacheMaster, CacheWorker, TestDataClass};

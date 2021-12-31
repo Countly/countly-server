@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlyCommon,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -92,10 +92,15 @@
         IMMEDIATELY: 'immediately',
         DELAYED: 'delayed'
     });
-
     var IOSAuthConfigTypeEnum = Object.freeze({
         P8: 'p8',
         P12: 'p12'
+    });
+    var UserPropertyTypeEnum = Object.freeze({
+        EVENT: 'event',
+        USER: 'user',
+        CUSTOM: 'custom',
+        API: 'api'
     });
 
     var audienceSelectionOptions = {};
@@ -416,6 +421,47 @@
             }
             return JSON.stringify(JSON.parse(value), null, indentation);
         },
+        getEventPropertyOptions: function(propertyList) {
+            return this.getPropertyOptionsByCategory(propertyList, 'Event Properties', UserPropertyTypeEnum.EVENT);
+        },
+        getUserPropertyOptions: function(propertyList) {
+            return this.getPropertyOptionsByCategory(propertyList, 'User Properties', UserPropertyTypeEnum.USER);
+        },
+        getCustomPropertyOptions: function(propertyList) {
+            return this.getPropertyOptionsByCategory(propertyList, 'Custom Properties', UserPropertyTypeEnum.CUSTOM);
+        },
+        isUserPropertyCategory: function(item) {
+            return !item.id;
+        },
+        isUserPropertyOption: function(item) {
+            return Boolean(item.id);
+        },
+        getPropertyOptionsByCategory: function(propertyList, category, type) {
+            var result = [];
+            var shouldAddPropertyOption = false;
+            for (var index = 0; index < propertyList.length; index += 1) {
+                if (this.isUserPropertyCategory(propertyList[index]) && propertyList[index].name === category) {
+                    shouldAddPropertyOption = true;
+                }
+                if (this.isUserPropertyCategory(propertyList[index]) && propertyList[index].name !== category) {
+                    shouldAddPropertyOption = false;
+                }
+                if (this.isUserPropertyOption(propertyList[index]) && shouldAddPropertyOption) {
+                    result.push({label: propertyList[index].name, value: propertyList[index].id, type: type});
+                }
+            }
+            return result;
+        },
+        findUserPropertyLabelByValue: function(value, propertyList) {
+            var result = "";
+            result = propertyList.find(function(property) {
+                return property.id === value;
+            });
+            if (result) {
+                return result.name;
+            }
+            return result;
+        }
     };
 
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
@@ -482,7 +528,6 @@
                     }
                 }, {disableAutoCatch: true});
             });
-
         },
         update: function(dto) {
             return new Promise(function(resolve, reject) {
@@ -550,17 +595,30 @@
                     url: url
                 },
             }, {disableAutoCatch: true});
+        },
+        findAllUserProperties: function() {
+            return countlySegmentation.initialize("").then(function() {
+                return Promise.resolve(countlySegmentation.getFilters());
+            });
         }
     };
 
     countlyPushNotification.mapper = {
         incoming: {
+            addLabelToUserPropertiesDto: function(userPropertiesDto, userProperties) {
+                if (!userPropertiesDto) {
+                    return;
+                }
+                Object.keys(userPropertiesDto).forEach(function(key) {
+                    userPropertiesDto[key].l = countlyPushNotification.helper.findUserPropertyLabelByValue(userPropertiesDto[key].k, userProperties);
+                });
+            },
             getUserPropertyElement: function(index, userProperty) {
                 var newElement = document.createElement("span");
                 newElement.setAttribute("id", "id-" + index);
                 newElement.setAttribute("contentEditable", false);
                 newElement.setAttribute("class", "cly-vue-push-notification-message-editor-with-emoji-picker__user-property");
-                newElement.setAttribute("data-user-property-label", userProperty.k);
+                newElement.setAttribute("data-user-property-label", userProperty.l);
                 newElement.setAttribute("data-user-property-value", userProperty.k);
                 newElement.setAttribute("data-user-property-fallback", userProperty.f);
                 newElement.innerText = userProperty.k + "|" + userProperty.f;
@@ -584,8 +642,11 @@
             },
             buildMessageText: function(message, userPropertiesDto) {
                 var self = this;
-                if (!message || !userPropertiesDto) {
-                    return message || "";
+                if (!userPropertiesDto) {
+                    return message;
+                }
+                if (!message) {
+                    message = "";
                 }
                 var messageInHTMLString = message;
                 var buildMessageLength = 0;
@@ -801,9 +862,10 @@
                     userPropertyModel[userPropertyKey] = {
                         id: userPropertyKey,
                         value: userPropertyDto[userPropertyKey].k,
-                        label: "", //TODO-LA: find label value
+                        label: userPropertyDto[userPropertyKey].l || "",
                         fallback: userPropertyDto[userPropertyKey].f,
-                        isUppercase: userPropertyDto[userPropertyKey].c
+                        isUppercase: userPropertyDto[userPropertyKey].c,
+                        type: userPropertyDto[userPropertyKey].t || UserPropertyTypeEnum.USER
                     };
                 });
                 return userPropertyModel;
@@ -820,6 +882,8 @@
                 if (!localeItem) {
                     throw new Error('Unable to find locale item with key:', localeKey);
                 }
+                this.addLabelToUserPropertiesDto(localeItem.titlePers, dto.userProperties);
+                this.addLabelToUserPropertiesDto(localeItem.messagePers, dto.userProperties);
                 var result = {
                     title: this.buildMessageText(localeItem.title, localeItem.titlePers),
                     content: this.buildMessageText(localeItem.message, localeItem.messagePers),
@@ -1163,7 +1227,23 @@
                     return self.mapPlatformItem(platform);
                 });
             },
+            mapUserPropertyType: function(type) {
+                if (type === UserPropertyTypeEnum.USER) {
+                    return 'u';
+                }
+                if (type === UserPropertyTypeEnum.CUSTOM) {
+                    return 'c';
+                }
+                if (type === UserPropertyTypeEnum.EVENT) {
+                    return 'e';
+                }
+                if (type === UserPropertyTypeEnum.API) {
+                    return 'a';
+                }
+                throw new Error('Unknown user property type:' + type);
+            },
             mapUserProperties: function(localizedMessage, container) {
+                var self = this;
                 var userPropertyDto = {};
                 var indices = this.getUserPropertiesIndices(localizedMessage, container);
                 var userPropertyIds = this.getUserPropertiesIds(localizedMessage, container);
@@ -1171,7 +1251,8 @@
                     userPropertyDto[indices[index]] = {
                         f: localizedMessage.properties[container][userPropertyId].fallback,
                         c: localizedMessage.properties[container][userPropertyId].isUppercase,
-                        k: localizedMessage.properties[container][userPropertyId].value
+                        k: localizedMessage.properties[container][userPropertyId].value,
+                        t: self.mapUserPropertyType(localizedMessage.properties[container][userPropertyId].type),
                     };
                 });
                 return userPropertyDto;
@@ -1345,7 +1426,7 @@
             mapTransactionalTrigger: function(model) {
                 return [{kind: 'api', start: model.delivery.startDate}];
             },
-            mapFilters: function(model) {
+            mapFilters: function(model, options) {
                 var result = {};
                 if (model.user) {
                     result.user = model.user;
@@ -1353,7 +1434,10 @@
                 if (model.cohorts.length) {
                     result.cohorts = model.cohorts;
                 }
-                if (model.locations.length) {
+                if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
+                    result.geos = model.locations;
+                }
+                if (model.type === TypeEnum.ONE_TIME && model.locations.length) {
                     result.geos = model.locations;
                 }
                 if (model.drill) {
@@ -1429,7 +1513,7 @@
                     contentsDto.push(iosSettingsDto);
                 }
                 resultDto.contents = contentsDto;
-                var filtersDto = this.mapFilters(pushNotificationModel);
+                var filtersDto = this.mapFilters(pushNotificationModel, options);
                 if (filtersDto) {
                     resultDto.filter = filtersDto;
                 }
@@ -1559,6 +1643,7 @@
         DeliveryDateCalculationEnum: DeliveryDateCalculationEnum,
         TriggerNotMetEnum: TriggerNotMetEnum,
         IOSAuthConfigTypeEnum: IOSAuthConfigTypeEnum,
+        UserPropertyTypeEnum: UserPropertyTypeEnum,
         platformOptions: platformOptions,
         startDateOptions: startDateOptions,
         audienceSelectionOptions: audienceSelectionOptions,
@@ -1678,31 +1763,36 @@
             return countlyPushNotification.api.findAll(data);
         },
         fetchById: function(id) {
+            var self = this;
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.findById(id).then(function(response) {
-                    var model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
-                    var cohorts = [];
-                    if (model.type === TypeEnum.ONE_TIME) {
-                        cohorts = model.cohorts;
-                    }
-                    if (model.type === TypeEnum.AUTOMATIC) {
-                        cohorts = model.automatic.cohorts;
-                    }
-                    Promise.all(
-                        [countlyPushNotification.service.fetchCohorts(cohorts, false),
-                            countlyPushNotification.service.fetchLocations(model.locations, false)]
-                    ).then(function(responses) {
+                self.fetchUserProperties().then(function(userProperties) {
+                    countlyPushNotification.api.findById(id).then(function(response) {
+                        response.userProperties = userProperties;
+                        var model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
+                        var cohorts = [];
                         if (model.type === TypeEnum.ONE_TIME) {
-                            model.cohorts = responses[0];
+                            cohorts = model.cohorts;
                         }
                         if (model.type === TypeEnum.AUTOMATIC) {
-                            model.automatic.cohorts = responses[0];
+                            cohorts = model.automatic.cohorts;
                         }
-                        model.locations = responses[1];
-                        resolve(model);
+                        Promise.all(
+                            [countlyPushNotification.service.fetchCohorts(cohorts, false),
+                                countlyPushNotification.service.fetchLocations(model.locations, false)]
+                        ).then(function(responses) {
+                            if (model.type === TypeEnum.ONE_TIME) {
+                                model.cohorts = responses[0];
+                            }
+                            if (model.type === TypeEnum.AUTOMATIC) {
+                                model.automatic.cohorts = responses[0];
+                            }
+                            model.locations = responses[1];
+                            resolve(model);
+                        });
+                    }).catch(function(error) {
+                        //TODO:log error
+                        reject(error);
                     });
-                }).catch(function(error) {
-                    reject(error);
                 });
             });
         },
@@ -1724,14 +1814,20 @@
         fetchMediaMetadataWithDebounce: _.debounce(function(url, resolveCallback, rejectCallback) {
             this.fetchMediaMetadata(url).then(resolveCallback).catch(rejectCallback);
         }, DEBOUNCE_TIME_IN_MS),
-        prepare: function(pushNotificationModel) {
+        fetchUserProperties: function() {
+            return countlyPushNotification.api.findAllUserProperties().catch(function() {
+                //TODO:log error
+                return Promise.resolve([]);
+            });
+        },
+        prepare: function(pushNotificationModel, options) {
             return new Promise(function(resolve, reject) {
                 var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
                 var data = {
                     app: countlyCommon.ACTIVE_APP_ID,
                     platforms: platformsDto,
                 };
-                var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel);
+                var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel, options);
                 if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel) && filtersDto) {
                     data.filter = filtersDto;
                 }

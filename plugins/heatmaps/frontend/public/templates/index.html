@@ -1,0 +1,43 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('heatmaps.title')}} </h2>
+            <span 
+            class="el-icon-info" 
+            style="margin-left:10px"
+            v-tooltip.top-center="{content: i18n('heatmaps.plugin-description')}">
+            </span>
+        </template>
+    </cly-header>
+
+    <cly-main>
+        <cly-date-picker-g class="views-date-picker-container"></cly-date-picker-g>
+
+        <div class="bu-columns bu-is-gapless bu-my-5">
+            <h4 class="bu-pt-1">{{i18n('heatmaps.results-for')}}</h4>
+            <div class="bu-pl-1 bu-pr-1">
+                <el-select v-model="selectedPlatform" :arrow="false" :adaptiveLength="true">
+                    <el-option 
+                    :key="item.value" 
+                    :value="item.value" 
+                    :label="item.name"
+                    v-for="item in platforms">
+                    </el-option>
+                </el-select>
+            </div>
+        </div>
+
+        <div class="bu-my-4">
+            <cly-metric-cards>
+                <cly-metric-card :number="metrics.t">
+                    {{i18n('heatmaps.total-page-views')}}
+                </cly-metric-card>
+                <cly-metric-card :number="metrics.scr">
+                    {{i18n('heatmaps.avg-scroll-depth')}}
+                </cly-metric-card>
+            </cly-metric-cards>
+        </div>
+
+        <cly-dynamic-tabs v-model="currentTab" :tabs="tabs" :noHistory='true' skin="secondary"></cly-dynamic-tabs>
+    </cly-main>
+</div>

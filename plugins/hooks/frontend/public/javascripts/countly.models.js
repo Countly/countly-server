@@ -139,12 +139,16 @@
             return {
                 hookDetail: {},
                 testResult: [],
+                detailLogsInitialized: false,
             };
         };
 
         var getters = {
             hookDetail: function(state) {
                 return state.hookDetail;
+            },
+            getDetailLogsInitialized: function(state) {
+                return state.detailLogsInitialized;
             },
             testResult: function(state) {
                 return state.testResult;
@@ -154,6 +158,9 @@
         var mutations = {
             setDetail: function(state, detail) {
                 state.hookDetail = detail;
+            },
+            setDetailLogsInitialized: function(state, initialized) {
+                state.detailLogsInitialized = initialized;
             },
             setTestResult: function(state, result) {
                 state.testResult = result;
@@ -181,6 +188,7 @@
                         if (data.hooksList && data.hooksList.length === 1) {
                             data.hooksList[0].triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(data.hooksList[0]);
                             context.commit("setDetail", data.hooksList[0]);
+                            context.commit("setDetailLogsInitialized", true);
                         }
                     },
                 });
@@ -246,18 +254,25 @@
         var tableResource = countlyVue.vuex.Module("table", {
             state: function() {
                 return {
-                    all: []
+                    all: [],
+                    initialized: false,
                 };
             },
             getters: {
                 all: function(state) {
                     return state.all;
+                },
+                getInitialized: function(state) {
+                    return state.initialized;
                 }
             },
             mutations: {
                 setAll: function(state, val) {
                     state.all = val;
-                }
+                },
+                setInitialized: function(state, val) {
+                    state.initialized = val;
+                },
             },
             actions: {
                 updateStatus: function(context, status) {
@@ -274,6 +289,7 @@
                     });
                 },
                 fetchAll: function(context) {
+                    context.commit("setInitialized", false);
                     return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r + "/hook/list",
@@ -289,10 +305,7 @@
                                     return countlyGlobal.apps[appID] && countlyGlobal.apps[appID].name;
                                 });
                             }
-                            var nameDescColumn = '<div class="is-name-col">' + row.name + '</div>';
-                            if (row.description) {
-                                nameDescColumn += '<div class="is-desc-col">' + row.description + '</div>';
-                            }
+
 
                             var triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(row);
                             tableData.push({
@@ -300,7 +313,6 @@
                                 name: hookList[i].name || '',
                                 description: hookList[i].description || '-',
                                 apps: hookList[i].apps,
-                                nameDescColumn: nameDescColumn,
                                 appNameList: appNameList.join(', '),
                                 triggerCount: hookList[i].triggerCount || 0,
                                 lastTriggerTimestampString: hookList[i].lastTriggerTimestamp && moment(hookList[i].lastTriggerTimestamp).fromNow() || "-",
@@ -314,6 +326,7 @@
                                 triggerEffectColumn: triggerEffectDom || "",
                             });
                         }
+                        context.commit("setInitialized", true);
                         if (tableData && tableData.length > 0) {
                             context.commit("setAll", tableData);
                         }
@@ -326,6 +339,7 @@
             return {
                 hookDetail: [],
                 testResult: [],
+                detailLogsInitialized: false,
             };
         };
         return countlyVue.vuex.Module("countlyHooks", {

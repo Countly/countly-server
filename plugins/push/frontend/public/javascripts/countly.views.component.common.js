@@ -171,6 +171,7 @@
                         value: "",
                         fallback: "",
                         isUppercase: false,
+                        type: countlyPushNotification.service.UserPropertyTypeEnum.USER
                     };
                 }
             },
@@ -206,7 +207,14 @@
             }
         },
         data: function() {
-            return {};
+            return {
+                selectedPropertyCategory: "internal",
+                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum,
+                propertyCategoryOptions: [
+                    {label: "Internal Properties", value: "internal"},
+                    {label: "External Properties", value: "external"}
+                ]
+            };
         },
         computed: {
             getStyleObject: function() {
@@ -218,22 +226,41 @@
                 return result;
             },
         },
+        watch: {
+            userProperty: function(value) {
+                if (value.type === this.UserPropertyTypeEnum.API) {
+                    this.selectedPropertyCategory = "external";
+                    return;
+                }
+                this.selectedPropertyCategory = "internal";
+            }
+        },
         methods: {
-            findOptionLabelByValue: function(value) {
-                for (var property in this.options) {
-                    if (this.options[property].value === value) {
-                        return this.options[property].label;
+            findCategoryOptionByValue: function(value, categoryOptions) {
+                return categoryOptions.find(function(item) {
+                    return item.value === value;
+                });
+            },
+            findOptionByValue: function(value) {
+                for (var index in this.options) {
+                    var item = this.findCategoryOptionByValue(value, this.options[index].options);
+                    if (item) {
+                        return item;
                     }
                 }
-                return "";
+                throw new Error('Unable to find user property option by value:' + value);
             },
             onSelect: function(value) {
-                this.$emit('select', {id: this.id, container: this.container, value: value, label: this.findOptionLabelByValue(value)});
+                var optionItem = this.findOptionByValue(value);
+                this.$emit('select', {id: this.id, container: this.container, value: value, label: optionItem.label, type: optionItem.type});
             },
             onUppercase: function(value) {
-                this.$emit('check', {id: this.id, container: this.container, value: value});
+                this.$emit('uppercase', {id: this.id, container: this.container, value: value});
             },
             onFallback: function(value) {
+                this.$emit('fallback', {id: this.id, container: this.container, value: value});
+            },
+            onInput: function(value) {
                 this.$emit('input', {id: this.id, container: this.container, value: value});
             },
             onRemove: function() {
@@ -492,12 +519,13 @@
         data: function() {
             return {
                 search: "",
-                defaultLabelValue: "Select property",
-                defaultLabelPreview: "Select property|",
+                defaultLabelValue: "Add user property",
+                defaultLabelPreview: "Add user property|",
                 defaultLocalizationValidationErrors: [],
                 selectionRange: null,
                 mutationObserver: null,
                 userPropertyEvents: new Map(),
+                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum
             };
         },
         computed: {
@@ -581,6 +609,7 @@
                 newElement.setAttribute("class", "cly-vue-push-notification-message-editor-with-emoji-picker__user-property");
                 newElement.setAttribute("data-user-property-label", this.defaultLabelValue);
                 newElement.setAttribute("data-user-property-value", "");
+                newElement.setAttribute("data-user-property-type", this.UserPropertyTypeEnum.USER);
                 newElement.setAttribute("data-user-property-fallback", "");
                 newElement.innerText = this.defaultLabelPreview;
                 var onClickListener = this.getOnUserPropertyClickEventListener(id);
@@ -611,11 +640,12 @@
                 }
                 return labelValue;
             },
-            setUserPropertyValue: function(id, previewValue, value) {
+            setUserPropertyValue: function(id, previewValue, value, type) {
                 var element = this.$refs.element.querySelector("#id-" + id);
                 element.innerText = previewValue;
                 element.setAttribute("data-user-property-value", value);
                 element.setAttribute("data-user-property-label", this.getLabelValueFromPreview(previewValue));
+                element.setAttribute("data-user-property-type", type);
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.validate();
             },

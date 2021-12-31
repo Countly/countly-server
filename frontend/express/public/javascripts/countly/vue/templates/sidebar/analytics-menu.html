@@ -32,23 +32,27 @@
                                     <ul>
                                         <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]"
                                             class="bu-is-clickable">
-                                            <div :class="['cly-vue-sidebar__submenu-items',
+                                            <a :href="submenu.url">
+                                                <div :class="['cly-vue-sidebar__submenu-items has-ellipsis',
                                                      'bu-pl-5', 'bu-my-3',
                                                     {'cly-vue-sidebar__submenu-items--selected': (selectedMenuItem && (selectedMenuItem.name === submenu.name))}]"
-                                                @click="onMenuItemClick(submenu)">
-                                                <div class="has-ellipsis">{{i18nM(submenu.title)}}</div>
-                                            </div>
+                                                    @click="onMenuItemClick(submenu)">
+                                                    {{i18nM(submenu.title)}}
+                                                </div>
+                                            </a>
                                         </li>
                                     </ul>
                                 </el-collapse-item>
                             </el-collapse>
                         </div>
-                        <div v-else
-                            :class="['cly-vue-sidebar__menu-items',
+                        <a v-else :href="menu.url">
+                            <div
+                                :class="['cly-vue-sidebar__menu-items has-ellipsis bu-is-clickable',
                                 {'cly-vue-sidebar__menu-items--selected': (selectedMenuItem && (selectedMenuItem.name === menu.name))}]"
-                            @click="onMenuItemClick(menu)">
-                            <div class="has-ellipsis bu-is-clickable">{{i18nM(menu.title)}}</div>
-                        </div>
+                                @click="onMenuItemClick(menu)">
+                                {{i18nM(menu.title)}}
+                            </div>
+                        </a>
                     </li>
                 </ul>
             </div>

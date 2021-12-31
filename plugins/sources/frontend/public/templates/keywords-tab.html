@@ -46,7 +46,7 @@
         </cly-metric-cards> 
       </cly-section>   
       <cly-section>
-        <cly-datatable-n :rows="searchedTermsData" :resizable="true" v-loading="isLoading">
+        <cly-datatable-n :rows="searchedTermsData" :resizable="true" :force-loading="isLoading">
             <template v-slot="scope">
               <el-table-column sortable="custom" prop="_id" :label="i18n('keywords.title')"></el-table-column>
               <el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')">

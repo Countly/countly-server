@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
 
 (function() {
 
@@ -104,6 +104,9 @@
         },
         data: function() {
             return {
+                isFetchCohortsLoading: false,
+                isFetchEventsLoading: false,
+                isFetchLocationsLoading: false,
                 isLoading: false,
                 localizationOptions: [],
                 userPropertiesOptions: [],
@@ -126,6 +129,7 @@
                 TriggerNotMetEnum: countlyPushNotification.service.TriggerNotMetEnum,
                 MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
+                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum,
                 messageTypeFilterOptions: messageTypeFilterOptions,
                 startDateOptions: countlyPushNotification.service.startDateOptions,
                 targetingOptions: countlyPushNotification.service.targetingOptions,
@@ -145,6 +149,7 @@
                 isAddUserPropertyPopoverOpen: false,
                 isUsersTimezoneSet: false,
                 isEndDateSet: false,
+                isLocationSet: false,
                 multipleLocalizations: false,
                 urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
                 addUserPropertyPopoverPosition: {
@@ -230,17 +235,6 @@
             areCohortsAndLocationsRequired: function() {
                 return !this.pushNotificationUnderEdit.cohorts.length && !this.pushNotificationUnderEdit.locations.length;
             },
-            areEventsAndLocationsRequired: function() {
-                return !this.pushNotificationUnderEdit.automatic.events.length && !this.pushNotificationUnderEdit.locations.length;
-            },
-            areLocationsRequired: function() {
-                if (this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
-                    return this.areEventsAndLocationsRequired;
-                }
-                else {
-                    return this.areCohortsAndLocationsRequired;
-                }
-            },
             hasAllPlatformMediaOnly: function() {
                 return (!this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL &&
                 !this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaURL) ||
@@ -299,11 +293,14 @@
             },
             previewLocations: function() {
                 var self = this;
-                return this.locationOptions.filter(function(location) {
-                    return self.pushNotificationUnderEdit.locations.some(function(selectedLocationId) {
-                        return location._id === selectedLocationId;
-                    });
-                });
+                return this.locationOptions.reduce(function(allLocations, currentLocation) {
+                    if (self.pushNotificationUnderEdit.locations.some(function(selectedLocationId) {
+                        return currentLocation._id === selectedLocationId;
+                    })) {
+                        allLocations.push(currentLocation.name);
+                    }
+                    return allLocations;
+                }, []);
             }
         },
         methods: {
@@ -320,21 +317,20 @@
             formatDateTime: function(dateTime, format) {
                 return countlyPushNotification.helper.formatDateTime(dateTime, format);
             },
-            setUserPropertiesOptions: function(userPropertiesOptionsDto) {
-                this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
-                    if (userPropertyOptionDto.id) {
-                        allUserPropertyOptions.push({label: userPropertyOptionDto.name, value: userPropertyOptionDto.id});
-                    }
-                    return allUserPropertyOptions;
-                }, []);
-            },
-            fetchUserPropertiesOptionsIfEmpty: function() {
-                if (!this.userPropertiesOptions.length) {
-                    var self = this;
-                    countlySegmentation.initialize("").then(function() {
-                        self.setUserPropertiesOptions(countlySegmentation.getFilters());
-                    });
+            setUserPropertyOptions: function(propertyList) {
+                var allPropertyOptions = [];
+                if (this.type === this.TypeEnum.AUTOMATIC && this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
+                    allPropertyOptions.push({label: "Event Properties", name: "eventProperties", options: countlyPushNotification.helper.getEventPropertyOptions(propertyList)});
                 }
+                allPropertyOptions.push({label: "User Properties", name: "userProperties", options: countlyPushNotification.helper.getUserPropertyOptions(propertyList)});
+                allPropertyOptions.push({label: "Custom Properties", name: "customProperties", options: countlyPushNotification.helper.getCustomPropertyOptions(propertyList)});
+                this.userPropertiesOptions = allPropertyOptions;
+            },
+            fetchUserPropertyOptions: function() {
+                var self = this;
+                countlyPushNotification.service.fetchUserProperties().then(function(result) {
+                    self.setUserPropertyOptions(result);
+                });
             },
             isDeliveryNextStepFromInfoStep: function(nextStep, currentStep) {
                 return nextStep === 1 && currentStep === 0;
@@ -368,8 +364,14 @@
                     this.$refs.content.validate();
                 }
             },
+            fetchUserPropertyOptionsOnContentEnter: function(nextStep, currentStep) {
+                if (this.isContentNextStepFromAnyPreviousStep(nextStep, currentStep)) {
+                    this.fetchUserPropertyOptions();
+                }
+            },
             onStepClick: function(nextStep, currentStep) {
                 this.validateContentOnEnterIfNecessary(nextStep, currentStep);
+                this.fetchUserPropertyOptionsOnContentEnter(nextStep, currentStep);
                 if (this.shouldPrepare(nextStep, currentStep)) {
                     return this.prepare();
                 }
@@ -412,10 +414,12 @@
                 var self = this;
                 this.setIsLoading(true);
                 return new Promise(function(resolve) {
+                    var options = {};
+                    options.isLocationSet = self.isLocationSet;
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
                     self.addQueryFilterIfFound(preparePushNotificationModel);
-                    countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
+                    countlyPushNotification.service.prepare(preparePushNotificationModel, options).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
                         if (response._id) {
                             self.setId(response._id);
@@ -442,6 +446,7 @@
                 options.settings = this.settings;
                 options.isUsersTimezoneSet = this.isUsersTimezoneSet;
                 options.isEndDateSet = this.isEndDateSet;
+                options.isLocationSet = this.isLocationSet;
                 return options;
             },
             save: function(options) {
@@ -523,6 +528,7 @@
                 });
             },
             onSubmit: function(_, done) {
+                var self = this;
                 var promiseMethod = null;
                 if (this.userCommand === this.UserCommandEnum.EDIT_DRAFT) {
                     promiseMethod = this.saveFromDraft;
@@ -563,6 +569,7 @@
                 this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
                 this.isUsersTimezoneSet = false;
                 this.isEndDateSet = false;
+                this.isLocationSet = false;
                 this.isConfirmed = false;
                 this.multipleLocalizations = false;
                 this.expandedPlatformSettings = [];
@@ -576,7 +583,6 @@
                 this.$emit('onClose');
             },
             onOpen: function() {
-                this.fetchUserPropertiesOptionsIfEmpty();
                 if (this.id) {
                     this.fetchPushNotificationById();
                 }
@@ -718,8 +724,8 @@
             removeUserPropertyInHTML: function(id, container) {
                 this.$refs[container].removeUserProperty(id);
             },
-            setUserPropertyInHTML: function(id, container, previewValue, value) {
-                this.$refs[container].setUserPropertyValue(id, previewValue, value);
+            setUserPropertyInHTML: function(id, container, previewValue, value, type) {
+                this.$refs[container].setUserPropertyValue(id, previewValue, value, type);
             },
             setUserPropertyFallbackInHTML: function(id, container, previewValue, fallback) {
                 this.$refs[container].setUserPropertyFallbackValue(id, previewValue, fallback);
@@ -734,6 +740,7 @@
                     this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], propertyIndex, {
                         id: propertyIndex,
                         value: "",
+                        type: this.UserPropertyTypeEnum.USER,
                         label: "Select property|",
                         fallback: "",
                         isUppercase: false
@@ -755,11 +762,26 @@
                 var container = payload.container;
                 var value = payload.value;
                 var label = payload.label;
+                var type = payload.type;
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value = value;
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].label = label;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].type = type;
                 var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback;
                 var previewValue = label + "|" + currentFallbackValue;
-                this.setUserPropertyInHTML(id, container, previewValue, value);
+                this.setUserPropertyInHTML(id, container, previewValue, value, type);
+            },
+            onInputUserProperty: function(payload) {
+                var id = payload.id;
+                var container = payload.container;
+                var value = payload.value;
+                var label = payload.value;
+                var type = this.UserPropertyTypeEnum.API;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value = value;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].label = label;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].type = type;
+                var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback;
+                var previewValue = "{" + value + "}|" + currentFallbackValue;
+                this.setUserPropertyInHTML(id, container, previewValue, value, type);
             },
             onInputFallbackUserProperty: function(payload) {
                 var id = payload.id;
@@ -841,11 +863,14 @@
             },
             fetchCohorts: function() {
                 var self = this;
+                this.isFetchCohortsLoading = true;
                 countlyPushNotification.service.fetchCohorts()
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
                     }).catch(function() {
                         self.setCohortOptions([]);
+                    }).finally(function() {
+                        self.isFetchCohortsLoading = false;
                     });
             },
             setLocationOptions: function(locations) {
@@ -853,23 +878,29 @@
             },
             fetchLocations: function() {
                 var self = this;
+                this.isFetchLocationsLoading = true;
                 countlyPushNotification.service.fetchLocations()
                     .then(function(locations) {
                         self.setLocationOptions(locations);
                     }).catch(function() {
                         self.setLocationOptions([]);
+                    }).finally(function() {
+                        self.isFetchLocationsLoading = false;
                     });
             },
             setEventOptions: function(events) {
                 this.eventOptions = events;
             },
-            fetchAllEvents: function() {
+            fetchEvents: function() {
                 var self = this;
+                this.isFetchEventsLoading = true;
                 countlyPushNotification.service.fetchEvents()
                     .then(function(events) {
                         self.setEventOptions(events);
                     }).catch(function() {
                         self.setEventOptions([]);
+                    }).finally(function() {
+                        self.isFetchEventsLoading = false;
                     });
             },
             setTotalAppUsers: function(totalAppUsers) {
@@ -915,11 +946,6 @@
                         self.setIsLoading(false);
                     });
             },
-            getUserProperties: function() {
-                return countlySegmentation.getFilters().map(function(userFilter) {
-                    return {label: userFilter.name, value: userFilter.id};
-                });
-            },
             shouldDisplayPlatformSettings: function(platform) {
                 return this.pushNotificationUnderEdit.platforms.filter(function(selectedPlatform) {
                     return selectedPlatform === platform;
@@ -929,9 +955,8 @@
         mounted: function() {
             this.fetchCohorts();
             this.fetchLocations();
-            this.fetchAllEvents();
+            this.fetchEvents();
             this.fetchNumberOfUsers();
-            this.getUserProperties();
         },
         components: {
             "message-setting-element": countlyPushNotificationComponent.MessageSettingElement,

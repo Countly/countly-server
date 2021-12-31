@@ -1,14 +1,16 @@
-const { toDate, Jsonable } = require('./const');
+const { toDate, Validatable } = require('./const');
 
 /**
  * Message information (non-important stuff)
  */
-class Info extends Jsonable {
+class Info extends Validatable {
     /**
      * 
      * @param {object}      data                message info data
      * @param {string}      data.title          message title if any
      * @param {string}      data.appName        app name
+     * @param {boolean}     data.silent         silent message switch, UI-only
+     * @param {boolean}     data.scheduled      whether message was scheduled for future date, UI-only
      * @param {object}      data.locales        locales object ({en: .3, de: 0.01, fr: 0.5})
      * @param {Date}        data.created        date of creation
      * @param {string}      data.createdBy      user who created
@@ -31,13 +33,18 @@ class Info extends Jsonable {
         return {
             title: {type: 'String', required: false},
             appName: {type: 'String', required: false},
+            silent: {type: 'Boolean', required: false},
+            scheduled: {type: 'Boolean', required: false},
             locales: {type: 'Object', required: false},
             created: {type: 'Date', required: false},
             createdBy: {type: 'String', required: false},
+            createdByName: {type: 'String', required: false},
             updated: {type: 'Date', required: false},
             updatedBy: {type: 'String', required: false},
+            updatedByName: {type: 'String', required: false},
             approved: {type: 'Date', required: false},
             approvedBy: {type: 'String', required: false},
+            approvedByName: {type: 'String', required: false},
             started: {type: 'Date', required: false},
             startedLast: {type: 'Date', required: false},
             finished: {type: 'Date', required: false},
@@ -87,6 +94,52 @@ class Info extends Jsonable {
         }
         else {
             delete this._data.appName;
+        }
+    }
+
+    /**
+     * Getter for silent
+     * 
+     * @returns {string|undefined} message silent
+     */
+    get silent() {
+        return this._data.silent;
+    }
+
+    /**
+     * Setter for silent
+     * 
+     * @param {string|undefined} silent message silent
+     */
+    set silent(silent) {
+        if (silent !== null && silent !== undefined) {
+            this._data.silent = silent;
+        }
+        else {
+            delete this._data.silent;
+        }
+    }
+
+    /**
+     * Getter for scheduled
+     * 
+     * @returns {string|undefined} message scheduled
+     */
+    get scheduled() {
+        return this._data.scheduled;
+    }
+
+    /**
+     * Setter for scheduled
+     * 
+     * @param {string|undefined} scheduled message scheduled
+     */
+    set scheduled(scheduled) {
+        if (scheduled !== null && scheduled !== undefined) {
+            this._data.scheduled = scheduled;
+        }
+        else {
+            delete this._data.scheduled;
         }
     }
 
@@ -160,6 +213,29 @@ class Info extends Jsonable {
     }
 
     /**
+     * Getter for createdBy
+     * 
+     * @returns {string|undefined} user who created the message
+     */
+    get createdByName() {
+        return this._data.createdByName;
+    }
+
+    /**
+     * Setter for createdByName
+     * 
+     * @param {string|undefined} createdByName user who created the message
+     */
+    set createdByName(createdByName) {
+        if (createdByName !== null && createdByName !== undefined) {
+            this._data.createdByName = createdByName;
+        }
+        else {
+            delete this._data.createdByName;
+        }
+    }
+
+    /**
      * Getter for updated
      * 
      * @returns {Date|undefined} date of last modification
@@ -206,6 +282,29 @@ class Info extends Jsonable {
     }
 
     /**
+     * Getter for updatedByName
+     * 
+     * @returns {string|undefined} user who modified last
+     */
+    get updatedByName() {
+        return this._data.updatedByName;
+    }
+
+    /**
+     * Setter for updatedByName
+     * 
+     * @param {string|undefined} updatedByName user who modified last
+     */
+    set updatedByName(updatedByName) {
+        if (updatedByName !== null && updatedByName !== undefined) {
+            this._data.updatedByName = updatedByName;
+        }
+        else {
+            delete this._data.updatedByName;
+        }
+    }
+
+    /**
      * Getter for approved
      * 
      * @returns {Date|undefined} date of approval (push_approver plugin)
@@ -248,6 +347,29 @@ class Info extends Jsonable {
         }
         else {
             delete this._data.approvedBy;
+        }
+    }
+
+    /**
+     * Getter for approvedByName
+     * 
+     * @returns {string|undefined} user who approved (push_approver plugin)
+     */
+    get approvedByName() {
+        return this._data.approvedByName;
+    }
+
+    /**
+     * Setter for approvedByName
+     * 
+     * @param {string|undefined} approvedByName user who approved (push_approver plugin)
+     */
+    set approvedByName(approvedByName) {
+        if (approvedByName !== null && approvedByName !== undefined) {
+            this._data.approvedByName = approvedByName;
+        }
+        else {
+            delete this._data.approvedByName;
         }
     }
 

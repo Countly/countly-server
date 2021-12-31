@@ -827,6 +827,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     /**
+     * Stringify all object ested properties named `prop`
+     * 
+     * @param {object} obj object to fix
+     * @param {string} prop property name
+     */
+    function stringifyIds(obj, prop = '_id') {
+        for (let k in obj) {
+            if (k === prop && common.db.isoid(obj[k])) {
+                obj[k] = obj[k].toString();
+            }
+            else if (typeof obj[k] === 'object') {
+                stringifyIds(obj[k]);
+            }
+        }
+    }
+
+    /**
     * Render dashboard
     * @param {object} req - request object
     * @param {object} res - response object
@@ -861,6 +878,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             adminOfApps = sortBy(adminOfApps, member.appSortList || []);
             userOfApps = sortBy(userOfApps, member.appSortList || []);
 
+            stringifyIds(adminOfApps);
+            stringifyIds(userOfApps);
+            stringifyIds(countlyGlobalApps);
+            stringifyIds(countlyGlobalAdminApps);
+
             var defaultApp = userOfApps[0];
             var serverSideRendering = req.query.ssr;
             _.extend(req.config, configs);
@@ -886,6 +908,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 message: req.flash("message"),
                 ssr: serverSideRendering,
                 timezones: timezones,
+                countlyTypeName: COUNTLY_NAMED_TYPE,
                 usermenu: {
                     feedbackLink: COUNTLY_FEEDBACK_LINK,
                     documentationLink: COUNTLY_DOCUMENTATION_LINK,
@@ -1038,12 +1061,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                     userOfApps = user_of;
 
                                     for (let i = 0; i < user_of.length; i++) {
-                                        if (user_of[i].apn) {
-                                            user_of[i].apn.forEach(a => a._id = '' + a._id);
-                                        }
-                                        if (user_of[i].gcm) {
-                                            user_of[i].gcm.forEach(a => a._id = '' + a._id);
-                                        }
                                         countlyGlobalApps[user_of[i]._id] = user_of[i];
                                         countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
                                         countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
@@ -1075,12 +1092,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                     userOfApps = readableApps.concat(writableApps);
 
                                     for (let i = 0; i < userOfApps.length; i++) {
-                                        if (userOfApps[i].apn) {
-                                            userOfApps[i].apn.forEach(a => a._id = '' + a._id);
-                                        }
-                                        if (userOfApps[i].gcm) {
-                                            userOfApps[i].gcm.forEach(a => a._id = '' + a._id);
-                                        }
                                         countlyGlobalApps[userOfApps[i]._id] = userOfApps[i];
                                         countlyGlobalApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
                                         countlyGlobalApps[userOfApps[i]._id].type = countlyGlobalApps[userOfApps[i]._id].type || "mobile";

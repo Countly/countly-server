@@ -30,6 +30,10 @@
                 }
                 return rows;
             },
+            initialized: function() {
+                var result = this.$store.getters["countlyHooks/table/getInitialized"];
+                return result;
+            },
         },
         data: function() {
             var appsSelectorOption = [];
@@ -56,7 +60,6 @@
 
                     delete data.operation;
                     delete data.triggerEffectColumn;
-                    delete data.nameDescColumn;
                     delete data.triggerEffectDom;
                     delete data.error_logs;
                     this.$parent.$parent.openDrawer("home", data);
@@ -81,17 +84,14 @@
                 diff.forEach(function(item) {
                     status[item.key] = item.newValue;
                 });
-                this.$store.dispatch("countlyHooks/table/updateStatus", status);
-
-                scope.unpatch();
+                var self = this;
+                this.$store.dispatch("countlyHooks/table/updateStatus", status).then(function() {
+                    return self.$store.dispatch("countlyHooks/table/fetchAll");
+                });
             },
             refresh: function() {
-            // this.$store.dispatch("countlyHooks/table/fetchAll");
             },
-            onRowClick: function(params, target) {
-                if (target.id === 'el-table_1_column_1') {
-                    return;
-                }
+            onRowClick: function(params) {
                 app.navigate("/manage/hooks/" + params._id, true);
             },
         }
@@ -695,17 +695,30 @@
             for (var id in countlyGlobal.apps) {
                 appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
             }
+
             return {
                 title: "",
                 saveButtonLabel: "",
                 appsSelectorOption: appsSelectorOption,
+                testClaps: [],
+                newTest: false,
             };
         },
         computed: {
             testResult: function() {
                 var testResult = this.$store.getters["countlyHooks/testResult"];
+                if ((this.$data.newTest === true) && (testResult.length > 0)) {
+                    this.$data.newTest = false;
+                    this.$data.testClaps = [];
+                    for (var i = 0; i < testResult.length; i++) {
+                        if (testResult[i].logs) {
+                            this.$data.testClaps.push(i);
+                        }
+                    }
+
+                }
                 return testResult || [];
-            },
+            }
         },
         props: {
             controls: {
@@ -738,6 +751,7 @@
 
             testHook: function() {
                 var hookData = this.$refs.drawerData.editedObject;
+                this.$data.newTest = true;
                 this.$store.dispatch("countlyHooks/testHook", hookData);
             },
         }
@@ -774,6 +788,10 @@
                     item.timestamp_string = moment(item.timestamp).format();
                 });
                 return hookDetail.error_logs || [];
+            },
+            detailLogsInitialized: function() {
+                var result = this.$store.getters["countlyHooks/getDetailLogsInitialized"];
+                return result;
             },
         },
         data: function() {
@@ -815,7 +833,6 @@
                     var data = Object.assign({}, scope);
                     delete data.operation;
                     delete data.triggerEffectColumn;
-                    delete data.nameDescColumn;
                     delete data.triggerEffectDom;
                     delete data.error_logs;
                     this.openDrawer("detail", data);
@@ -902,7 +919,7 @@
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 60});
+            app.addMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 44});
 
             //check if configuration view exists
             if (app.configurationsView) {

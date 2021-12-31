@@ -21,6 +21,14 @@
                 var rows = this.$store.getters["countlyReports/table/all"];
                 return rows;
             },
+            initialized: function() {
+                var result = this.$store.getters["countlyReports/table/getInitialized"];
+                return result;
+            },
+            rawTableRows: function() {
+                var rows = this.$store.getters["countlyReports/table/all"];
+                return rows;
+            }
         },
         data: function() {
             return {
@@ -29,6 +37,8 @@
                 deleteElement: null,
                 showDeleteDialog: false,
                 deleteMessage: '',
+                canUpdate: countlyAuth.validateUpdate(FEATURE_NAME),
+                canDelete: countlyAuth.validateDelete(FEATURE_NAME),
             };
         },
         props: {
@@ -83,7 +93,7 @@
                 this.showDeleteDialog = false;
             },
             submitDeleteForm: function() {
-                this.$store.dispatch("countlyReports/deleteReport", this.deleteElement._id);
+                this.$store.dispatch("countlyReports/deleteReport", this.deleteElement);
                 this.showDeleteDialog = false;
             },
             updateStatus: function(scope) {
@@ -92,9 +102,10 @@
                 diff.forEach(function(item) {
                     status[item.key] = item.newValue;
                 });
-                this.$store.dispatch("countlyReports/table/updateStatus", status);
-                this.$store.dispatch("countlyReports/table/fetchAll");
-                scope.unpatch();
+                var self = this;
+                this.$store.dispatch("countlyReports/table/updateStatus", status).then(function() {
+                    return self.$store.dispatch("countlyReports/table/fetchAll");
+                });
             },
             refresh: function() {
             // this.$store.dispatch("countlyReports/table/fetchAll");
@@ -266,6 +277,7 @@
                 });
                 delete doc.metricsArray;
                 delete doc.hover;
+                delete doc.user;
                 this.$store.dispatch("countlyReports/saveReport", doc);
             },
             onClose: function($event) {
@@ -338,7 +350,7 @@
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+            app.addMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 43});
             if (app.configurationsView) {
                 app.configurationsView.registerLabel("reports", "reports.title");
                 app.configurationsView.registerLabel(

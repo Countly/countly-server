@@ -1340,6 +1340,15 @@ var pluginManager = function pluginManager() {
         }
         if (!countlyDb.oid) {
             /**
+             * Check if passed value is an ObjectId
+             * 
+             * @param {any} id value
+             * @returns {boolean} true if id is instance of ObjectId
+             */
+            countlyDb.isoid = function(id) {
+                return id && (id instanceof mongodb.ObjectId);
+            };
+            /**
              * Decode string to ObjectID if needed
              * 
              * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
@@ -1356,8 +1365,8 @@ var pluginManager = function pluginManager() {
              * @returns {ObjectID} with given timestamp
              */
             countlyDb.oidWithDate = (date = new Date()) => {
-                let seconds = typeof date === 'number' ? date : Math.floor(date.getTime() / 1000).toString(16),
-                    server = new countlyDb.ObjectId().toString().substr(8);
+                let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16),
+                    server = new mongodb.ObjectId().toString().substr(8);
                 return new mongodb.ObjectId(seconds + server);
             };
             /**
@@ -1368,7 +1377,7 @@ var pluginManager = function pluginManager() {
              * @returns {ObjectID} with given timestamp and zeroes in the rest of the bytes
              */
             countlyDb.oidBlankWithDate = (date = new Date()) => {
-                let seconds = typeof date === 'number' ? date : Math.floor(date.getTime() / 1000).toString(16);
+                let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16);
                 return new mongodb.ObjectId(seconds + '0000000000000000');
             };
         }

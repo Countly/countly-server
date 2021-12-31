@@ -97,10 +97,31 @@ const widgetProperties = {
     logo: {
         required: false,
         type: "String"
+    },
+    target_page: {
+        required: false,
+        type: "String"
+    },
+    target_pages: {
+        required: false,
+        type: "Array"
     }
 };
 
 const widgetPropertyPreprocessors = {
+    target_pages: function(targetPages) {
+        try {
+            return JSON.parse(targetPages);
+        }
+        catch (jsonParseError) {
+            if (Array.isArray(targetPages)) {
+                return targetPages;
+            }
+            else {
+                return ["/"];
+            }
+        }
+    },
     targeting: function(targeting) {
         try {
             return JSON.parse(targeting);
@@ -198,8 +219,14 @@ function uploadFile(myfile, id, callback) {
         return;
     }
 
+    var allowedExtensions = ["gif", "jpeg", "jpg", "png"];
     var ext = myfile.name.split(".");
     ext = ext[ext.length - 1];
+
+    if (allowedExtensions.indexOf(ext) === -1) {
+        callback("Invalid file extension. Must be .png, .jpg, .gif or .jpeg");
+        return;
+    }
 
     create_upload_dir(function() {
         fs.readFile(tmp_path, (err, data) => {
@@ -563,13 +590,15 @@ function uploadFile(myfile, id, callback) {
 
     plugins.register("/i/feedback/logo", function(ob) {
         var params = ob.params;
-        uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
-            if (good) {
-                common.returnMessage(params, 200, filename);
-            }
-            else {
-                common.returnMessage(params, 400, good);
-            }
+        validateCreate(params, FEATURE_NAME, function() {
+            uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
+                if (typeof good === 'boolean' && good) {
+                    common.returnMessage(params, 200, filename);
+                }
+                else {
+                    common.returnMessage(params, 400, good);
+                }
+            });
         });
         return true;
     });

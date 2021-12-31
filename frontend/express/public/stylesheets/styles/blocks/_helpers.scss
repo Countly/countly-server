@@ -23,7 +23,7 @@
     font-size: 12px;
     display: inline-block;
     text-transform: uppercase;
-    margin-bottom: 25px;
+    margin-bottom: 24px;
 
     &:visited {
         cursor: pointer;
@@ -84,5 +84,32 @@
 
     &__checkmark {
         color: map.get(c.$colors, "white");
+    }
+}
+
+.cly-vue-json-editor {
+    .el-dialog__header{
+        text-align: left;
+        padding: 8px 16px 0 !important;
+		color: map.get(c.$colors, "white");
+    }
+    .el-dialog__body {
+        padding: 0 !important;
+    }
+    &__textarea{
+        width:100%;
+        box-sizing: border-box;
+        outline: none;
+        border: none;
+        border-top: 1px solid #81868D;
+        border-bottom: 1px solid #81868D;
+        background-color: map.get(c.$colors, "cool-gray-10");
+    }
+}
+
+
+.cly-breadcrumbs {
+    & a:hover {
+        text-decoration: underline;
     }
 }

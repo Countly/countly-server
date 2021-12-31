@@ -31,7 +31,10 @@
             },
             groupData: function() {
                 return this.$store.getters["countlyCompareEvents/groupData"];
-            }
+            },
+            isTableLoading: function() {
+                return this.$store.getters["countlyCompareEvents/isTableLoading"];
+            },
         },
         methods: {
             handleCurrentChange: function(selection) {
@@ -62,8 +65,14 @@
         },
         methods: {
             compareEvents: function() {
+                var self = this;
+                this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
+                this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                 this.$store.dispatch('countlyCompareEvents/fetchSelectedEvents', this.value);
-                this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData');
+                this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData').then(function() {
+                    self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
+                    self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
+                });
             },
             refresh: function() {
                 var selectedEvents = this.$store.getters["countlyCompareEvents/selectedEvents"];
@@ -72,7 +81,13 @@
                 }
             },
             dateChanged: function() {
-                this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData', this.value);
+                var self = this;
+                this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
+                this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
+                this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData', this.value).then(function() {
+                    self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
+                    self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
+                });
             }
         },
         computed: {
@@ -98,24 +113,38 @@
                 },
                 set: function(selectedItem) {
                     var self = this;
+                    this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
+                    this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                     var selectedEvents = this.$store.getters["countlyCompareEvents/selectedEvents"];
                     if (selectedItem === "Sum") {
                         self.selectedMetric = "Sum";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "s");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
+                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents).then(function() {
+                            self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
+                            self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
+                        });
                     }
                     else if (selectedItem === "Duration") {
                         self.selectedMetric = "Duration";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "dur");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
+                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents).then(function() {
+                            self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
+                            self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
+                        });
                     }
                     else {
                         self.selectedMetric = "Count";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "c");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
+                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents).then(function() {
+                            self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
+                            self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
+                        });
                     }
                 }
             },
+            isChartLoading: function() {
+                return this.$store.getters["countlyCompareEvents/isChartLoading"];
+            }
         },
         data: function() {
             return {

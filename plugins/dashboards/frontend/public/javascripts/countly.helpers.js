@@ -95,11 +95,17 @@
         props: {
             placeholder: {
                 type: String
+            },
+            enabledTypes: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
             }
         },
         data: function() {
             return {
-                types: [
+                allTypes: [
                     {
                         value: "session",
                         label: this.i18n("dashboards.session")
@@ -124,8 +130,16 @@
                 if (this.placeholder) {
                     return this.placeholder;
                 }
-
                 return this.i18n("placeholder.dashbaords.select-data-type");
+            },
+            types: function() {
+                var self = this;
+                var result = this.allTypes.filter(function(item) {
+                    return self.enabledTypes.some(function(enabledItem) {
+                        return enabledItem === item.value;
+                    });
+                });
+                return result;
             }
         }
     });
@@ -249,7 +263,7 @@
                     {
                         value: "table",
                         label: this.i18n("dashboards.visualization.table")
-                    }
+                    },
                 ]
             };
         },

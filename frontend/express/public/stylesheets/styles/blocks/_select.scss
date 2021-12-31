@@ -5,6 +5,9 @@
 
 .cly-vue-select-x {
     &__pop {
+        .cly-vue-listbox {
+            background-color: transparent !important;
+        }
         .el-tabs {
             &__nav-wrap::after {
                 background-color: transparent;
@@ -108,12 +111,17 @@
 
     .el-checkbox__label {
         line-height: 20px;
-        font-weight: t.$font-weight-primary;
+        font-weight: t.$font-weight-text;
         color: #333c48;
+    }
+
+    .el-checkbox__input.is-checked + .el-checkbox__label {
+        color: #333C48;
     }
 
     .drag-handler {
         visibility: hidden;
+        margin-right: 8px;
     }
 
     &__header {

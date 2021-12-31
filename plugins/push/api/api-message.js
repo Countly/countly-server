@@ -1,5 +1,6 @@
-const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, MEDIA_MIME_ALL } = require('./send'),
+const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
     { DEFAULTS } = require('./send/data/const'),
+    plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message');
 
@@ -7,17 +8,54 @@ const { Message, Creds, State, Status, platforms, Audience, ValidationError, Tri
  * Validate data & construct message out of it, throw in case of error
  * 
  * @param {object} args plain object to construct Message from
- * @param {boolean} preparing true if we need to skip checking triggers/contents presense
+ * @param {boolean} draft true if we need to skip checking data for validity
  * @returns {PostMessageOptions} Message instance in case validation passed, array of error messages otherwise
  * @throws {ValidationError} in case of error
  */
-async function validate(args, preparing = false) {
-    let msg = Message.validate(args);
-    if (msg.result) {
-        msg = new Message(msg.obj);
+async function validate(args, draft = false) {
+    let msg;
+    if (draft) {
+        let data = common.validateArgs(args, {
+            _id: { required: false, type: 'ObjectID' },
+            app: { required: true, type: 'ObjectID' },
+            platforms: { required: true, type: 'String[]', in: () => require('./send/platforms').platforms },
+            state: { type: 'Number' },
+            status: { type: 'String', in: Object.values(Status) },
+            filter: {
+                type: Filter.scheme,
+            },
+            triggers: {
+                type: Trigger.scheme,
+                array: true,
+                'min-length': 1
+            },
+            contents: {
+                type: Content.scheme,
+                array: true,
+                nonempty: true,
+                'min-length': 1,
+            },
+            info: {
+                type: Info.scheme,
+            }
+        }, true);
+        if (data.result) {
+            msg = new Message(data.obj);
+        }
+        else {
+            throw new ValidationError(data.errors);
+        }
+        msg.state = State.Inactive;
+        msg.status = Status.Draft;
     }
     else {
-        throw new ValidationError(msg.errors);
+        msg = Message.validate(args);
+        if (msg.result) {
+            msg = new Message(msg.obj);
+        }
+        else {
+            throw new ValidationError(msg.errors);
+        }
     }
 
     let app = await common.db.collection('apps').findOne(msg.app);
@@ -25,13 +63,11 @@ async function validate(args, preparing = false) {
         msg.info.appName = app.name;
 
         if (!args.demo) {
-            msg.platforms = msg.platforms.filter(p => {
+            for (let p of msg.platforms) {
                 let id = common.dot(app, `plugins.push.${p}._id`);
-                return id && id !== 'demo';
-            });
-
-            if (!msg.platforms.length) {
-                throw new ValidationError('No push credentials for specified platforms');
+                if (!id || id === 'demo') {
+                    throw new ValidationError(`No push credentials for platform ${p}`);
+                }
             }
 
             let creds = await common.db.collection(Creds.collection).find({_id: {$in: msg.platforms.map(p => common.dot(app, `plugins.push.${p}._id`))}}).toArray();
@@ -72,38 +108,38 @@ async function validate(args, preparing = false) {
             throw new ValidationError('Message platforms cannot be changed');
         }
 
-        // info, state, status & result cannot be updated by API
-        msg.info = existing.info;
-        msg.state = existing.state;
-        msg.status = existing.status;
-        msg.result = existing.result;
-    }
-
-    if (!preparing) {
-        if (!msg.triggers.length) {
-            throw new ValidationError('Message must have at least one Trigger');
-        }
-        if (!msg.contents.length) {
-            throw new ValidationError('Message must have at least one Content');
-        }
-        if (!msg.contents[0].expiration) {
-            throw new ValidationError('Default Content must have expiration value');
-        }
+        // only 4 props of info can updated
+        msg.info = new Info(Object.assign(existing.info.json, {
+            title: msg.info.title,
+            silent: msg.info.silent,
+            scheduled: msg.info.scheduled,
+            locales: msg.info.locales,
+        }));
     }
 
     return msg;
 }
 
 module.exports.create = async params => {
-    let msg = await validate(params.qstring);
+    let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
     msg._id = common.db.ObjectID();
     msg.info.created = new Date();
     msg.info.createdBy = params.member._id;
+    msg.info.createdByName = params.member.full_name;
 
-    if (msg.triggerAutoOrApi()) {
+    if (params.qstring.status === Status.Draft || params.qstring.status === Status.Inactive) {
+        msg.status = params.qstring.status;
+        msg.state = State.Inactive;
+        await msg.save();
+    }
+    else if (msg.triggerAutoOrApi()) {
         msg.state = State.Streamable;
         msg.status = Status.Scheduled;
         await msg.save();
+        if (msg.triggerPlain()) {
+            await msg.schedule();
+        }
+        await plugins.getPluginsApis().push.cache.write(msg.id, msg.json);
     }
     else if (msg.triggerPlain()) {
         msg.state = State.Created;
@@ -119,7 +155,7 @@ module.exports.create = async params => {
 };
 
 module.exports.update = async params => {
-    let msg = await validate(params.qstring);
+    let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
 
     if (msg.is(State.Done)) {
         if (msg.triggerAutoOrApi()) {
@@ -133,15 +169,37 @@ module.exports.update = async params => {
             throw new ValidationError('Wrong trigger kind');
         }
     }
+    else {
+        if (msg.triggerPlain()) {
+            if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
+                msg.status = Status.Created;
+                msg.state = State.Inactive;
+                await msg.schedule();
+            }
+            else if (msg.is(State.Streamable) || msg.is(State.Created)) {
+                await msg.schedule();
+            }
+        }
+        if (msg.triggerAutoOrApi()) {
+            if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
+                msg.state = State.Streamable;
+                msg.status = Status.Scheduled;
+            }
+        }
+    }
 
     msg.info.updated = new Date();
     msg.info.updatedBy = params.member._id;
+    msg.info.updatedName = params.member.full_name;
 
     await msg.save();
 
-    // if (msg.triggerPlain()) {
-    //     await msg.schedule();
-    // }
+    if (msg.triggerAutoOrApi()) {
+        await plugins.getPluginsApis().push.cache.write(msg.id, msg.json);
+    }
+    if (msg.triggerPlain()) {
+        await msg.schedule();
+    }
 
     common.returnOutput(params, msg.json);
 };
@@ -151,7 +209,14 @@ module.exports.remove = async params => {
         _id: {type: 'ObjectID', required: true},
     }, true);
 
-    let msg = Message.findOne({_id: data._id, state: {$bitsAllClear: State.Deleted}});
+    if (!data.result) {
+        return common.returnOutput(params, {errors: data.errors});
+    }
+
+    let msg = await Message.findOne({_id: data.obj._id, state: {$bitsAllClear: State.Deleted}});
+    if (!msg) {
+        return common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
+    }
 
     if (msg.is(State.Streaming)) {
         // TODO: stop the sending via cache, clear the queue
@@ -162,6 +227,9 @@ module.exports.remove = async params => {
 
     let ok = await msg.updateAtomically({_id: msg._id, state: msg.state}, {$bit: {state: {or: State.Deleted}}});
     if (ok) {
+        if (msg.triggerAutoOrApi()) {
+            await plugins.getPluginsApis().push.cache.remove(msg.id);
+        }
         common.returnOutput(params, {});
     }
     else {
@@ -185,6 +253,10 @@ module.exports.toggle = async params => {
     let msg = await Message.findOne(data._id);
     if (msg) {
         let update;
+
+        if (!msg.triggerAuto()) {
+            throw new ValidationError(`The message doesn't have Cohort or Event trigger`);
+        }
 
         if (msg.is(State.Created) || msg.is(State.Done)) {
             update = {
@@ -214,6 +286,7 @@ module.exports.toggle = async params => {
 
         msg = await msg.updateAtomically({_id: msg._id, state: msg.state}, update);
         if (msg) {
+            await plugins.getPluginsApis().push.cache.write(msg.id, msg.json);
             common.returnOutput(params, msg.json);
         }
         else {
@@ -262,6 +335,13 @@ module.exports.estimate = async params => {
         return common.returnOutput(params, {errors: ['No such app']});
     }
 
+    for (let p of data.platforms) {
+        let id = common.dot(app, `plugins.push.${p}._id`);
+        if (!id || id === 'demo') {
+            throw new ValidationError(`No push credentials for platform ${p}`);
+        }
+    }
+
     let steps = await new Audience(log, new Message(data), app).steps({la: 1}),
         cnt = await common.db.collection(`app_users${data.app}`).aggregate(steps.concat([{$count: 'count'}])).toArray(),
         count = cnt[0] && cnt[0].count || 0,
@@ -270,7 +350,8 @@ module.exports.estimate = async params => {
             {$group: {_id: '$_id', count: {$sum: 1}}}
         ])).toArray(),
         locales = las.reduce((a, b) => {
-            a[b._id || 'default'] = b.count; return a;
+            a[b._id || 'default'] = b.count;
+            return a;
         }, {default: 0});
 
     common.returnOutput(params, {count, locales});
@@ -354,6 +435,7 @@ module.exports.all = async params => {
 
         let query = {
             app: data.app_id,
+            state: {$bitsAllClear: State.Deleted},
         };
 
         if (data.auto) {
@@ -387,10 +469,40 @@ module.exports.all = async params => {
             cursor.sort({[data.iSortCol_0]: data.sSortDir_0 === 'asc' ? -1 : 1});
         }
         else {
-            cursor.sort({'info.created': -1});
+            cursor.sort({'triggers.start': -1});
         }
 
         let items = await cursor.toArray();
+
+        // mongo sort doesn't work for selected array elements
+        if (!data.iSortCol_0 || data.iSortCol_0 === 'triggers.start') {
+            items.sort((a, b) => {
+                a = a.triggers.filter(t => {
+                    if (data.auto) {
+                        return [TriggerKind.Event, TriggerKind.Cohort].includes(t.kind);
+                    }
+                    else if (data.api) {
+                        return t.kind === TriggerKind.API;
+                    }
+                    else {
+                        return t.kind === TriggerKind.Plain;
+                    }
+                })[0];
+                b = b.triggers.filter(t => {
+                    if (data.auto) {
+                        return [TriggerKind.Event, TriggerKind.Cohort].includes(t.kind);
+                    }
+                    else if (data.api) {
+                        return t.kind === TriggerKind.API;
+                    }
+                    else {
+                        return t.kind === TriggerKind.Plain;
+                    }
+                })[0];
+
+                return new Date(b.start).getTime() - new Date(a.start).getTime();
+            });
+        }
 
         common.returnOutput(params, {
             sEcho: data.sEcho,

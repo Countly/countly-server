@@ -160,6 +160,7 @@
                     url: countlyCommon.API_PARTS.data.w + "/alert/save",
                     data: {
                         "alert_config": JSON.stringify(alertConfig),
+                        "app_id": alertConfig.selectedApps[0],
                     },
                     dataType: "json",
                     success: function() {
@@ -169,12 +170,13 @@
                 }).then(function() {
                 });
             },
-            deleteAlert: function(context, alertID) {
+            deleteAlert: function(context, options) {
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/alert/delete",
                     data: {
-                        "alertID": alertID,
+                        "alertID": options.alertID,
+                        "app_id": options.appid,
                     },
                     dataType: "json",
                     success: function() {
@@ -182,18 +184,21 @@
                     },
                 });
             },
-            deleteOnlineUsersAlert: function(context, alertConfig) {
+            deleteOnlineUsersAlert: function(context, options) {
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/delete",
                     data: {
-                        "app_id": countlyCommon.ACTIVE_APP_ID,
-                        "alertId": alertConfig._id,
+                        "app_id": options.appid,
+                        "alertId": options.alertID,
                     },
                     dataType: "json",
                     success: function() {
                         context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
                     },
+                    error: function(e) {
+                        CountlyHelpers.notify({message: e});
+                    }
                 });
             },
             saveOnlineUsersAlert: function(context, alertConfig) {
@@ -205,9 +210,16 @@
                         "alert": JSON.stringify(alertConfig),
                     },
                     dataType: "json",
-                    success: function() {
+                    success: function(data) {
+                        if (typeof data === "object" && data.result) {
+                            CountlyHelpers.alert(data.result, "red");
+                            return;
+                        }
                         CountlyHelpers.notify({message: jQuery.i18n.map['alerts.save-alert-success']});
                         context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
+                    },
+                    error: function(e) {
+                        CountlyHelpers.notify({message: e});
                     }
                 }).then(function() {
                 });
@@ -223,6 +235,7 @@
                         r: 0,
                         today: 0,
                     },
+                    initialized: false,
                 };
             },
             getters: {
@@ -231,6 +244,9 @@
                 },
                 count: function(state) {
                     return state.count;
+                },
+                getInitialized: function(state) {
+                    return state.initialized;
                 }
             },
             mutations: {
@@ -239,7 +255,10 @@
                 },
                 setCount: function(state, val) {
                     state.count = val;
-                }
+                },
+                setInitialized: function(state, val) {
+                    state.initialized = val;
+                },
             },
             actions: {
                 updateStatus: function(context, status) {
@@ -247,12 +266,12 @@
                         type: "post",
                         url: countlyCommon.API_PARTS.data.w + "/alert/status",
                         data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
                             "status": JSON.stringify(status),
                         },
                         dataType: "json",
                         success: function() {
-                            CountlyHelpers.notify({message: jQuery.i18n.map['alerts.update-status-success']});
-                            context.dispatch("countlyAlerts/table/fetchAll");
+                            // CountlyHelpers.notify({message: jQuery.i18n.map['alerts.update-status-success']});
                         }
                     });
                 },
@@ -261,21 +280,23 @@
                         type: "post",
                         url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/status",
                         data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
                             "status": JSON.stringify(status),
                         },
                         dataType: "json",
                         success: function() {
                             CountlyHelpers.notify({message: jQuery.i18n.map['alerts.update-status-success']});
-                            context.dispatch("countlyAlerts/table/fetchAll");
                         }
                     });
                 },
                 fetchAll: function(context) {
+                    context.commit("setInitialized", false);
                     return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r + "/alert/list",
                         dataType: "json",
                         data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
                             preventGlobalAbort: true,
                         },
                     }).then(function(data) {
@@ -311,6 +332,7 @@
 
 
                         if (countlyGlobal.plugins.indexOf("concurrent_users") < 0) {
+                            context.commit("setInitialized", true);
                             context.commit("setAll", tableData);
                             context.commit("setCount", count);
                             return;
@@ -327,6 +349,9 @@
                         }).then(function(list) {
                             for (var j = 0; j < list.length; j++) {
                                 var rowData = Object.assign({}, list[j]);
+                                if (list[j].enabled === true) {
+                                    count.r++;
+                                }
                                 rowData = Object.assign(rowData, {
                                     _id: list[j]._id,
                                     alertName: list[j].name,
@@ -340,10 +365,11 @@
                                     compareValue: list[j].users,
                                     compareValue2: list[j].minutes,
                                     alertValues: list[j].email,
+                                    createdByUser: "-",
                                 });
                                 tableData.push(rowData);
-
                             }
+                            context.commit("setInitialized", true);
                             context.commit("setAll", tableData);
                             context.commit("setCount", count);
                         });

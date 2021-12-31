@@ -21,36 +21,23 @@
 <script  type="text/x-template" id="reports-table">
 <div>
 <cly-empty-view 
-    v-if="tableRows.length === 0"
+    v-if="rawTableRows.length === 0 && initialized"
     :title="i18n('reports.empty-title')"
     :subTitle="i18n('reports.empty-subtitle')"
     :actionTitle="i18n('reports.empty-action-button-title')"
+    :hasAction="true"
     :actionFunc="createReport"
-> 
-</cly-empty-view>
-
-<cly-section v-if="tableRows.length > 0">
+/>
+<cly-section v-else>
     <cly-datatable-n
+        :force-loading="!initialized"
         class="cly-vue-reports-table"
         :tracked-fields="localTableTrackedFields"
         :rows="tableRows" :resizable="false" >
-
-        <template slot="empty">
-            <div class="bu-is-flex  bu-is-flex-direction-column bu-is-align-items-center bu-my-6 bu-py-5">
-                <div class="no-search-circle">
-                </div>
-                <div style="width: 400px;">
-                    <h4 class="color-cool-gray-100 bu-mt-4 bu-mb-2 bu-has-text-centered">No data found</h4>
-                    <div class="color-cool-gray-50 text-small bu-has-text-centered ">
-                        There is no data found for selected time period 
-                    </div>
-                </div>
-            </div>
-        </template>
         <template v-slot="scope">
             <el-table-column type="switch" fixed="left" width="100" sortable prop="enabled">
                 <template v-slot="rowScope">
-                    <el-switch :value="rowScope.row.enabled" class="switch-column"
+                    <el-switch :value="rowScope.row.enabled" class="switch-column" :disabled="!canUpdate"
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                     </el-switch>
                 </template>
@@ -94,10 +81,10 @@
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column type="options">
+            <el-table-column type="options"  v-if="canUpdate || canDelete">
                 <template v-slot="rowScope">
                     <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleReportEditCommand($event,rowScope)">
-                        <el-dropdown-item  icon="el-icon-document-copy" command="edit-comment">
+                        <el-dropdown-item v-if="canUpdate" icon="el-icon-document-copy" command="edit-comment">
                             Edit
                         </el-dropdown-item>
                         <el-dropdown-item  icon="el-icon-position" command="send-comment">
@@ -106,7 +93,7 @@
                         <el-dropdown-item  icon="el-icon-chat-dot-square" command="preview-comment">
                             Preview
                         </el-dropdown-item>
-                        <el-dropdown-item icon="el-icon-delete" command="delete-comment">
+                        <el-dropdown-item v-if="canDelete" icon="el-icon-delete" command="delete-comment">
                             Delete
                         </el-dropdown-item>
                     </cly-more-options>
@@ -154,7 +141,7 @@
             <el-input v-model="drawerScope.editedObject.title" :placeholder="i18n('reports.report-name')"></el-input>
         </cly-form-field>
 
-        <cly-form-field name="email" :label="i18n('reports.email-to-receive')" >
+        <cly-form-field name="email" :label="i18n('reports.email-to-receive')" rules="required">
             <cly-select-email v-model="drawerScope.editedObject.emails"></cly-select-email>
         </cly-form-field>
 
@@ -250,10 +237,8 @@
                 :key="idx"
                 v-for="(item, idx) in frequencyOptions"
             border>
-                {{item.label}}
-                <div class="text-small color-cool-gray-50">
-                    {{item.description}}
-                </div>
+                    <span class="text-medium">{{item.label}}</span>
+                    <span class="text-small color-cool-gray-50">{{item.description}}</span>
             </el-radio>
         </cly-form-field>
 

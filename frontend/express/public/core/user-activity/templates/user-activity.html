@@ -8,10 +8,10 @@
     <cly-main>
         <cly-qb-bar class="bu-mb-5" v-model="userActivityFilters" queryStore="user-activity" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}"></cly-qb-bar>
         <cly-section>
-            <cly-chart-bar :option="userActivityOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
+            <cly-chart-bar :option="userActivityOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="userActivityRows" :resizable="true" v-loading="isLoading">
+            <cly-datatable-n  :rows="userActivityRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="bucket" :label="i18n('user-activity.table-session-count')">
                         <template slot-scope="scope">
