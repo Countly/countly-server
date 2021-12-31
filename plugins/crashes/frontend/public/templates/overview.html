@@ -12,10 +12,10 @@
             </cly-header>
             <cly-main>
                 <cly-qb-bar class="bu-mb-5" v-model="crashgroupsFilter" :property-source-config="{drill: false}" queryStore="crashgroups" :additionalProperties="crashgroupsFilterProperties" :additionalRules="crashgroupsFilterRules" format="crashgroups"></cly-qb-bar>
-                <cly-datatable-n :data-source="remoteTableDataSource" @selection-change="handleSelectionChange" @row-click="handleRowClick">
+                <cly-datatable-n :data-source="remoteTableDataSource" @selection-change="handleSelectionChange" @row-click="handleRowClick" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey">
                     <template v-slot="scope">
                         <el-table-column type="selection" reserve-selection width="65" fixed="left"></el-table-column>
-                        <el-table-column :label="i18n('crashes.error')" min-width="415" fixed="left">
+                        <el-table-column :label="errorColumnLabel" min-width="415" fixed="left">
                             <template slot-scope="col">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
                                     <div v-html="col.row.name"></div>
@@ -25,15 +25,22 @@
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="os" :label="i18n('crashes.platform')" width="120" show-overflow-tooltip sortable></el-table-column>
-                        <el-table-column prop="reports" :label="i18n('crashes.reports')" width="150" sortable></el-table-column>
-                        <el-table-column prop="lastTs" :label="i18n('crashes.last_time')" :formatter="formatDate" width="180" sortable></el-table-column>
-                        <el-table-column prop="users" :label="i18n('crashes.affected-users')" width="170" sortable></el-table-column>
-                        <el-table-column prop="latest_version" :label="i18n('crashes.latest_app')" width="190" sortable></el-table-column>
+                        <template v-for="(col,idx) in scope.dynamicCols">
+                            <el-table-column v-if="col.value === 'os'" :key="idx" prop="os" :label="i18n('crashes.platform')" width="120" show-overflow-tooltip sortable></el-table-column>
+                            <el-table-column v-if="col.value === 'reports'" :key="idx" prop="reports" :label="i18n('crashes.reports')" width="150" sortable></el-table-column>
+                            <el-table-column v-if="col.value === 'lastTs'" :key="idx" prop="lastTs" :label="i18n('crashes.last_time')" :formatter="formatDate" width="180" sortable></el-table-column>
+                            <el-table-column v-if="col.value === 'users'" :key="idx" prop="users" :label="i18n('crashes.affected-users')" width="170" sortable></el-table-column>
+                            <el-table-column v-if="col.value === 'latest_version'" :key="idx" prop="latest_version" :label="i18n('crashes.latest_app')" width="190" sortable></el-table-column>
+                        </template>
                     </template>
                     <template v-slot:bottomline="scope">
-                        <div v-if="selectedCrashgroups.length > 0">
-                            Hello I am an action bar :)
+                        <div class="crashes-action-bar" v-if="selectedCrashgroups.length > 0">
+                            <el-button @click="setSelectedAs('unresolved')" icon="fas fa-circle crash-icon-color-orange"> {{i18n("crashes.action-unresolved")}}</el-button>
+                            <el-button @click="setSelectedAs('resolving')" icon="fas fa-circle crash-icon-color-blue"> {{i18n("crashes.action-resolving")}}</el-button>
+                            <el-button @click="setSelectedAs('resolved')" icon="fas fa-circle crash-icon-color-green"> {{i18n("crashes.action-resolved")}}</el-button>
+                            <el-button @click="setSelectedAs('show')" icon="fas fa-eye crash-icon-color-gray"> {{i18n("crashes.action-show")}}</el-button>
+                            <el-button @click="setSelectedAs('hide')" icon="fas fa-eye-slash crash-icon-color-gray"> {{i18n("crashes.action-hide")}}</el-button>
+                            <el-button @click="setSelectedAs('delete')" icon="el-icon-delete">{{i18n("crashes.action-delete")}}</el-button>
                         </div>
                     </template>
                 </cly-datatable-n>
