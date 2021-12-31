@@ -388,6 +388,30 @@
             return Promise.all(ajaxPromises);
         };
 
+        _overviewSubmodule.actions.setSelectedAsResolved = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "resolve");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsResolving = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "resolving");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsUnresolved = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "unresolve");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsShown = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "show");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsHidden = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "hide");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsDeleted = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "delete");
+        };
+
         var _crashgroupSubmodule = {
             state: function() {
                 return {
@@ -448,8 +472,17 @@
                     sessions: ("session" in state.crashgroup) ? state.crashgroup.session : {average: 0, max: 0, min: 0},
                 };
 
+                var tooltips = {
+                    ram: jQuery.i18n.prop("crashes.help-ram"),
+                    disk: jQuery.i18n.prop("crashes.help-disk"),
+                    battery: jQuery.i18n.prop("crashes.help-battery"),
+                    running: jQuery.i18n.prop("crashes.help-run"),
+                    sessions: jQuery.i18n.prop("crashes.help-session")
+                };
+
                 Object.keys(diagnostics).forEach(function(diagnosticKey) {
                     diagnostics[diagnosticKey].average = diagnostics[diagnosticKey].total / diagnostics[diagnosticKey].count;
+                    diagnostics[diagnosticKey].tooltip = tooltips[diagnosticKey];
                 });
 
                 ["average", "max", "min"].forEach(function(key) {
