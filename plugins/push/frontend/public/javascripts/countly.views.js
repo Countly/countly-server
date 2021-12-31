@@ -909,9 +909,9 @@
             setEnabledUsers: function(enabledUsers) {
                 this.enabledUsers = enabledUsers;
             },
-            fetchNumberOfUsers: function() {
+            fetchDashboard: function() {
                 var self = this;
-                countlyPushNotification.service.fetchAll()
+                countlyPushNotification.service.fetchDashboard(this.type)
                     .then(function(response) {
                         self.setTotalAppUsers(response.totalAppUsers);
                         self.setEnabledUsers(response.enabledUsers);
@@ -956,7 +956,7 @@
             this.fetchCohorts();
             this.fetchLocations();
             this.fetchEvents();
-            this.fetchNumberOfUsers();
+            this.fetchDashboard();
         },
         components: {
             "message-setting-element": countlyPushNotificationComponent.MessageSettingElement,
@@ -1013,8 +1013,11 @@
             selectedPushNotificationType: function() {
                 return this.$store.state.countlyPushNotification.main.selectedPushNotificationType;
             },
-            isLoading: function() {
-                return this.$store.getters['countlyPushNotification/main/isLoading'];
+            isDashboardLoading: function() {
+                return this.$store.state.countlyPushNotification.main.isDashboardLoading;
+            },
+            areRowsLoading: function() {
+                return this.$store.state.countlyPushNotification.main.areRowsLoading;
             },
             pushNotificationRows: function() {
                 return this.$store.state.countlyPushNotification.main.rows;
@@ -1028,10 +1031,10 @@
                 };
             },
             totalAppUsers: function() {
-                return this.$store.state.countlyPushNotification.main.totalAppUsers;
+                return this.$store.state.countlyPushNotification.main.dashboard.totalAppUsers;
             },
             enabledUsers: function() {
-                return this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.ALL];
+                return this.$store.state.countlyPushNotification.main.dashboard.enabledUsers[this.PlatformEnum.ALL];
             },
             enabledUsersPercentage: function() {
                 if (!this.totalAppUsers) {
@@ -1040,10 +1043,10 @@
                 return Math.ceil(this.enabledUsers / this.totalAppUsers);
             },
             xAxisPushNotificationPeriods: function() {
-                return this.$store.state.countlyPushNotification.main.periods[this.selectedPeriodFilter];
+                return this.$store.state.countlyPushNotification.main.dashboard.periods[this.selectedPeriodFilter];
             },
             yAxisPushNotificationSeries: function() {
-                return this.$store.state.countlyPushNotification.main.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
+                return this.$store.state.countlyPushNotification.main.dashboard.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
                     return {
                         data: pushNotificationSerie.data,
                         name: pushNotificationSerie.label
@@ -1057,12 +1060,12 @@
                     data: [
                         {
                             name: CV.i18n('push-notification.sent-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.totalSent[this.selectedPushNotificationType]),
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalSent[this.selectedPushNotificationType]),
                             tooltip: CV.i18n('push-notification.sent-serie-description')
                         },
                         {
                             name: CV.i18n('push-notification.actions-performed-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.totalActions[this.selectedPushNotificationType]),
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalActions[this.selectedPushNotificationType]),
                             tooltip: CV.i18n('push-notification.actions-performed-serie-description')
                         }
                     ]
@@ -1212,6 +1215,7 @@
             }
         },
         mounted: function() {
+            this.$store.dispatch('countlyPushNotification/main/fetchDashboard');
             this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
         }
     });
@@ -1236,7 +1240,8 @@
                 },
                 set: function(value) {
                     this.$store.dispatch('countlyPushNotification/main/onSetPushNotificationType', value);
-                    this.$store.dispatch('countlyPushNotification/main/fetchAll');
+                    this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
+                    this.$store.dispatch('countlyPushNotification/main/fetchDashboard');
                 }
             },
             isDrawerOpen: function() {
