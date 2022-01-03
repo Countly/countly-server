@@ -35,9 +35,9 @@
         :tracked-fields="localTableTrackedFields"
         :rows="tableRows" :resizable="false" >
         <template v-slot="scope">
-            <el-table-column type="switch" fixed="left" width="100" sortable prop="enabled">
+            <el-table-column type="switch" fixed="left" width="88" sortable prop="enabled">
                 <template v-slot="rowScope">
-                    <el-switch :value="rowScope.row.enabled" class="switch-column" :disabled="!canUpdate"
+                    <el-switch :value="rowScope.row.enabled" class="bu-ml-4  bu-mr-2" :disabled="!canUpdate"
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                     </el-switch>
                 </template>
@@ -60,9 +60,9 @@
                 
             </el-table-column>
 
-            <el-table-column  min-width="120" sortable="true" :label="i18n('reports.frequency')">
+            <el-table-column  min-width="130" sortable="true" :label="i18n('reports.frequency')">
                 <template slot-scope="scope" sortable="true">
-                    <span class="text-small  color-cool-gray-50">{{i18n("reports." + scope.row.frequency)}}</span>
+                    <span class="text-medium color-cool-gray-50">{{i18n("reports." + scope.row.frequency)}}</span>
                 </template>
             </el-table-column>
 <!-- 
@@ -216,6 +216,7 @@
             </div>
             <validation-provider name="events" rules="required" v-slot="v">
                 <cly-select-x
+                   :placeholder="i18n('reports.select-events')"
                    mode="multi-check"
                    v-model="drawerScope.editedObject.selectedEvents"
                    maxInputWidth="300"
