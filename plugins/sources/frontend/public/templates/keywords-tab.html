@@ -2,7 +2,7 @@
   <cly-header>
       <template v-slot:header-left>
           <h2>{{i18n('keywords.title')}}</h2>
-          <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="i18n('keywords.description')"></span>
+          <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
       </template>
   </cly-header>
   <cly-main name="searchTerms">

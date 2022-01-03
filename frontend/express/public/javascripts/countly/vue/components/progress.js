@@ -36,7 +36,7 @@
         data: function() {
             return {
                 barWidthUnit: "%",
-                defaultRemainingBarStackColor: "darkgrey"
+                defaultRemainingBarStackColor: "#ececec"
             };
         },
         props: {

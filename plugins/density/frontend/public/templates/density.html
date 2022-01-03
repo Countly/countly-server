@@ -3,7 +3,7 @@
         <template v-slot:header-left>
             <h2> {{i18n('density.title')}} 
             </h2>
-            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description">
+            <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
             </span>
         </template>
 		<template v-slot:header-right>
