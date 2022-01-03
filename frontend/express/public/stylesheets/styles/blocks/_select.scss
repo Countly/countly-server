@@ -66,6 +66,9 @@
     }
     &__header {
         padding: 16px;
+        input[type=text] {
+            background-color: #F6F6F6;
+        }
     }
     &__footer {
         border-top: 1px solid #ececec;
