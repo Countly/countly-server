@@ -191,7 +191,12 @@ class Audience {
         // Geos
         if (filter.geos.length && geo()) {
             let geos = await common.db.collection('geos').find({_id: {$in: filter.geos.map(common.db.ObjectID)}}).toArray();
-            steps.push({$match: {$or: geos.map(g => geo().conds(g))}});
+            if (geos.length) {
+                steps.push({$match: {$or: geos.map(g => geo().conds(g))}});
+            }
+            else {
+                steps.push({$match: {geo: 'no such geo'}});
+            }
         }
 
         // Cohorts
