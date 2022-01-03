@@ -64,7 +64,11 @@
                 }
             }
             */
-            if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][app_id] === "object") && (member.permission[accessType][app_id].all || member.permission[accessType][app_id].allowed[feature]))) {
+            var isPermissionObjectExistForAccessType = (typeof member.permission[accessType] === "object" && typeof member.permission[accessType][app_id] === "object");
+            var isFeatureAllowedInRelatedPermissionObject = isPermissionObjectExistForAccessType && (member.permission[accessType][app_id].all || member.permission[accessType][app_id].allowed[feature]);
+            var hasAdminAccess = member.permission._.a.indexOf(app_id) > -1;
+            // don't allow if user has not permission for feature and has no admin access for current app
+            if (!(isFeatureAllowedInRelatedPermissionObject) && !(hasAdminAccess)) {
                 return false;
             }
             else {
@@ -109,7 +113,11 @@
                 }
             }
             */
-            if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r[app_id] === "object") && (member.permission.r[app_id].all || member.permission.r[app_id].allowed[feature]))) {
+            var isPermissionObjectExistForRead = (typeof member.permission.r === "object" && typeof member.permission.r[app_id] === "object");
+            var isFeatureAllowedInReadPermissionObject = isPermissionObjectExistForRead && (member.permission.r[app_id].all || member.permission.r[app_id].allowed[feature]);
+            var hasAdminAccess = member.permission._.a.indexOf(app_id) > -1;
+            // don't allow if user has not permission for feature and has no admin access for current app
+            if (!(isFeatureAllowedInReadPermissionObject) && !(hasAdminAccess)) {
                 return false;
             }
             else {
