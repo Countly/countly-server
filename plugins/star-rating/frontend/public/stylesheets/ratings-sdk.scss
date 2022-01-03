@@ -16,7 +16,25 @@
     border-radius: 4px 0px 0px 4px;
     writing-mode: vertical-rl;
 }
-
+#countly-ratings-iframe{
+    width:400px;
+    height:100%;
+    border:none;
+    background:0 0;
+    background-color:transparent;
+    overflow:hidden;
+}
+.countly-ratings-wrapper{
+    z-index:999999999;
+    box-sizing:border-box;
+    height:100%;
+    background:0 0;
+    background-color:transparent;
+    position: absolute;
+    display:none;
+    width: 100%;
+    justify-content: center;
+}
 .countly-feedback-sticker.mright-m {
     padding: 15px 10px;
     top: 150px;
@@ -24,7 +42,6 @@
     border-radius: 4px 0px 0px 4px;
     writing-mode: vertical-rl;
 }
-
 .countly-feedback-sticker.mright-l {
     padding: 18px 12px;
     top: 150px;
