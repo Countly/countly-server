@@ -253,7 +253,9 @@
                         cap: "round",
                     },
                     smooth: false,
-
+                    itemStyle: {
+                        borderRadius: [2, 2, 0, 0],
+                    },
                     //Bar chart options
                     legendHoverLink: true,
                     showBackground: false,

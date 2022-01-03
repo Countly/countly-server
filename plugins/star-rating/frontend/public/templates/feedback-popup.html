@@ -4,8 +4,8 @@
     <title>
         Countly Feedback Popup
     </title>
-    <link href="./star-rating/stylesheets/ratings-popup.css" rel="stylesheet"/>
-    <link href="stylesheets/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
+    <link href="../../star-rating/stylesheets/ratings-iframe.css" rel="stylesheet"/>
+    <link href="../../stylesheets/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
     <% if (themeFiles && themeFiles.css) { %>
     <% for(var i=0, l=themeFiles.css.length; i < l; i++) {%>
     <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
@@ -16,7 +16,7 @@
 </head>
 <body class="ratings-popup">
 <div class="rating-loader-wrapper">
-    <img src="star-rating/images/star-rating/loader.svg" class="rating-loader"/>
+    <img src="../../star-rating/images/star-rating/loader.svg" class="rating-loader"/>
 </div>
 <div class="modal-content">
     <p id="question-area">
@@ -86,7 +86,7 @@
     </div>
     <div class="modal-footer">
         <a href="https://count.ly" target="_new">
-            <img id="powered-by-countly" src="star-rating/images/star-rating/powered-by-countly.svg">
+            <img id="powered-by-countly" src="../../star-rating/images/star-rating/powered-by-countly.svg">
             </img>
         </a>
     </div>
@@ -106,14 +106,14 @@
     </div>
     <div class="modal-footer">
         <a href="https://count.ly" target="_new">
-            <img id="powered-by-countly" src="star-rating/images/star-rating/powered-by-countly.svg">
+            <img id="powered-by-countly" src="../../star-rating/images/star-rating/powered-by-countly.svg">
             </img>
         </a>
     </div>
 </div>
-<script src="star-rating/javascripts/tippy.all.min.js">
+<script src="../../star-rating/javascripts/tippy.all.min.js">
 </script>
-<script src="javascripts/dom/jquery/jquery-1.8.3.min.js">
+<script src="../../javascripts/dom/jquery/jquery-1.8.3.min.js">
 </script>
 <script>
     (function() {
@@ -183,14 +183,13 @@
         var app_key = getParameterByName('app_key');
         var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
         var app_version = getParameterByName('app_version');
-        var url = window.location.origin + window.location.pathname;
-        // 9: length of "/feedback"
-        // remove /feedback from url and use remain as url
-        url = url.substr(0, url.length - 9);
-
+        var parentOrigin = getParameterByName('origin');
+        var url = window.location.origin;
         var d = new Date();
         var h = d.getHours();
         var dow = d.getDay();
+
+        $('.modal-content').hide();
         /*
           Get widget configurations for render
         */
@@ -209,6 +208,12 @@
                 $('#cf-email-text').html(response.popup_email_callout);
                 $('#cf-submit-button').html(response.popup_button_callout);
                 $('#thanks-area').html(response.popup_thanks_message);
+
+                if (response.logo) {
+                    $('#powered-by-countly').attr('src', url + '/star-rating/images/star-rating/' + response.logo);
+                    $('#powered-by-countly').parent().attr('href', 'void(0)');
+                    $('#powered-by-countly').css({'width':'100px'});
+                }
                 if (response.comment_enable === "false") {
                     $('#comment-section').hide();
                 }
@@ -360,6 +365,30 @@
             });
         }
 
+        function closeHandler(parent) {
+            if (window.parent && typeof window.parent.postMessage === "function") {
+                var d = JSON.stringify({"close": true});
+                window.parent.postMessage(d, parent);
+            }
+            else if (isFromWeb){
+                window.location.href += "&reset=true";
+                // This is used as a fallback for browsers where postMessage API doesn't work.
+                // Instead of sending a message to the parent window, one could reload this iframe,
+                // and listen to onload event of iframe in the parent window (sdk)
+                // In the onload function you can hide the iframe
+                // While the iframe is hidden, it undergoes the reload in background
+                // You need to handle the reload by passing reset in the url.
+                // You can then check for this reset value and if its true,
+                // set {shown: false} while fetching the survey bcz it was a reset and survey
+                // was already shown. Also in the reset you need to handle the css of the survey.
+                // Caveat -
+                // There is although one caveat, between initiating iframe reload and hiding
+                // it the onload there is a lag of few miniseconds. Which gives an impression
+                // that the window is unresponsive for a split second.
+                // Therefore, using postMessage for cross window communication.
+            }
+        }
+
         // event handler for countly feedback show comment area checkbox
         // show hide comment area
         $('body').on('change', '#countly-feedback-show-comment', showHideCommentArea);
@@ -372,6 +401,8 @@
         // event handler for countly feedback emotion img
         // rate for feedback
         $('body').on('click', '.rating-emotion', rate);
+        // event handler for popup closer
+        $('body').on('click', '#close-btn', closeHandler);
     })();
 </script>
 <% if (themeFiles && themeFiles.js) { %>
