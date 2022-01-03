@@ -10,6 +10,17 @@
     var FONT_FAMILY = "Inter";
     var CHART_HEADER_HEIGHT = 32;
 
+    var EchartRefMixin = {
+        data: function() {
+            return {
+                echartRef: null
+            };
+        },
+        mounted: function() {
+            this.echartRef = this.$parent.$refs.echarts;
+        }
+    };
+
     /*
         Use xAxis.axisLabel.showMinLabel to change visibility of minimum label
         Use xAxis.axisLabel.showMaxLabel to change visibility of maximum label
@@ -77,7 +88,6 @@
         },
         data: function() {
             return {
-                echartRef: {},
                 baseOptions: {
                     title: {
                         show: false
@@ -340,21 +350,27 @@
             isChartEmpty: function() {
                 var isEmpty = true;
                 var options = _merge({}, this.option);
-                for (var i = 0; i < options.series.length; i++) {
-                    for (var j = 0; j < options.series[i].data.length; j++) {
-                        if (typeof options.series[i].data[j] !== "object") {
-                            if (options.series[i].data[j] !== 0) {
-                                isEmpty = false;
-                            }
-                        }
-                        else {
-                            // time of days case
-                            if (options.series[i].data[j][2] !== 0) {
-                                isEmpty = false;
+
+                if (options.series) {
+                    for (var i = 0; i < options.series.length; i++) {
+                        if (options.series[i].data) {
+                            for (var j = 0; j < options.series[i].data.length; j++) {
+                                if (typeof options.series[i].data[j] !== "object") {
+                                    if (options.series[i].data[j] !== 0) {
+                                        isEmpty = false;
+                                    }
+                                }
+                                else {
+                                    // time of days case
+                                    if (options.series[i].data[j][2] !== 0) {
+                                        isEmpty = false;
+                                    }
+                                }
                             }
                         }
                     }
                 }
+
                 return isEmpty;
             },
             isLoading: function() {
@@ -581,11 +597,6 @@
 
     /*
     var ZoomDropdown = countlyBaseComponent.extend({
-        props: {
-            echartRef: {
-                type: Object
-            }
-        },
         data: function() {
             return {
                 zoomNumbers: [
@@ -751,11 +762,6 @@
     });
 
     var MagicSwitch = countlyBaseComponent.extend({
-        props: {
-            echartRef: {
-                type: Object
-            }
-        },
         data: function() {
             return {
                 selSwitchOption: ""
@@ -781,10 +787,8 @@
     });
 
     var ChartHeader = countlyBaseComponent.extend({
+        mixins: [EchartRefMixin],
         props: {
-            echartRef: {
-                type: Object
-            },
             showZoom: {
                 type: Boolean,
                 default: false
@@ -979,14 +983,9 @@
         }
     */
     var CustomLegend = countlyBaseComponent.extend({
+        mixins: [EchartRefMixin],
         props: {
             chartOptions: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            },
-            echartRef: {
                 type: Object,
                 default: function() {
                     return {};
@@ -1115,9 +1114,6 @@
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
-        mounted: function() {
-            this.echartRef = this.$refs.echarts;
-        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
@@ -1129,7 +1125,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1153,7 +1149,6 @@
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
-                            :echartRef="echartRef"\
                             v-if="legendOptions.show && !isChartEmpty"\
                             :chartOptions="chartOptions">\
                         </custom-legend>\
@@ -1183,9 +1178,6 @@
                 }
             };
         },
-        mounted: function() {
-            this.echartRef = this.$refs.echarts;
-        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
@@ -1198,7 +1190,7 @@
 
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart" :style="{height: \'100%\'}">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1226,7 +1218,6 @@
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
-                            :echartRef="echartRef"\
                             v-if="legendOptions.show && !isChartEmpty"\
                             :chartOptions="chartOptions">\
                         </custom-legend>\
@@ -1238,9 +1229,6 @@
             return {
                 forwardedSlots: ["chart-left", "chart-right"]
             };
-        },
-        mounted: function() {
-            this.echartRef = this.$refs.echarts;
         },
         components: {
             'chart-header': ChartHeader,
@@ -1254,7 +1242,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1278,7 +1266,6 @@
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
-                            :echartRef="echartRef"\
                             v-if="legendOptions.show && !isChartEmpty"\
                             :chartOptions="chartOptions">\
                         </custom-legend>\
@@ -1304,9 +1291,6 @@
             period: {
                 type: [Array, String]
             }
-        },
-        mounted: function() {
-            this.echartRef = this.$refs.echarts;
         },
         components: {
             'chart-header': ChartHeader,
@@ -1374,7 +1358,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1398,7 +1382,6 @@
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
-                            :echartRef="echartRef"\
                             v-if="legendOptions.show && !isChartEmpty"\
                             :chartOptions="chartOptions">\
                         </custom-legend>\
@@ -1410,9 +1393,6 @@
             return {
                 forwardedSlots: ["chart-left", "chart-right"]
             };
-        },
-        mounted: function() {
-            this.echartRef = this.$refs.echarts;
         },
         components: {
             'chart-header': ChartHeader,
@@ -1426,7 +1406,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1450,7 +1430,6 @@
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
-                            :echartRef="echartRef"\
                             v-if="legendOptions.show && !isChartEmpty"\
                             :chartOptions="chartOptions">\
                         </custom-legend>\
@@ -1462,9 +1441,6 @@
             return {
                 forwardedSlots: ["chart-left", "chart-right"]
             };
-        },
-        mounted: function() {
-            this.echartRef = this.$refs.echarts;
         },
         components: {
             'chart-header': ChartHeader,
@@ -1502,7 +1478,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1526,7 +1502,6 @@
                                 </div>\
                                 <custom-legend\
                                     :options="pieLegendOptions"\
-                                    :echartRef="echartRef"\
                                     v-if="pieLegendOptions.show && !isChartEmpty"\
                                     :chartOptions="chartOptions"\
                                     :class="classes">\
