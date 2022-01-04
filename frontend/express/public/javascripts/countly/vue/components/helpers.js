@@ -818,7 +818,7 @@
             size: {default: "full", type: String},
             visible: {default: true, type: Boolean},
             closable: {default: true, type: Boolean},
-            autoHide: {default: true, type: Boolean},
+            autoHide: {default: false, type: Boolean},
         },
         data: function() {
             return {
