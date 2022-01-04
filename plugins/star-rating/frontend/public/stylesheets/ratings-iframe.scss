@@ -97,3 +97,14 @@
   border-radius: 4px;
   resize: none;
 }
+
+.rating-loader-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.rating-loader-wrapper .rating-loader {
+  width: 50px;
+}

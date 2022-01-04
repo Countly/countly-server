@@ -1,7 +1,5 @@
 #alerts-view {
-    .cly-vue-drawer__steps-view {
-        min-width: 850px;
-    }
+
     .compare-value-block {
         .el-input__suffix {
             line-height: 32px;
@@ -23,7 +21,7 @@
     
         &__line {
             margin-top: 12px;
-            border-top: 2px solid  #ECECEC;
+            border-top: 1px solid  #ECECEC;
         }
     }
     .alert-data-type-block {

@@ -13,7 +13,7 @@
         </cly-header>
     
         <cly-main>
-            <div class="bu-mb-4 cly-vue-section__content white-bg">
+            <div class="bu-mb-4 cly-vue-section__content white-bg" v-if="!shouldHideCount">
                 <cly-metric-cards>
                     <cly-metric-card  :columnWidth=4 :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in countData">
                             {{i18n(item.label)}}
@@ -59,9 +59,10 @@
                 </div>
             </template> 
             <template v-slot="scope">
-                <el-table-column type="switch" fixed="left" width="100" sortable prop="enabled">
+                <el-table-column type="switch" fixed="left" width="88" sortable prop="enabled">
                     <template v-slot="rowScope">
                         <el-switch :value="rowScope.row.enabled" :disabled="!canUpdate"
+                            class="bu-ml-4  bu-mr-2"
                             @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                         </el-switch>
                     </template>
@@ -137,6 +138,7 @@
         @submit="onSubmit"
         @close="onClose"
         @copy="onCopy"
+        size="6"
         :title="title"
         :saveButtonLabel="saveButtonLabel"
         v-bind="$props.controls"  ref="drawerData">>

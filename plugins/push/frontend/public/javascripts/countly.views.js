@@ -350,7 +350,7 @@
                 this.userCommand === this.UserCommandEnum.EDIT ||
                 this.userCommand === this.UserCommandEnum.RESEND;
             },
-            shouldPrepare: function(nextStep, currentStep) {
+            shouldEstimate: function(nextStep, currentStep) {
                 return this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep);
             },
             shouldValidateContentOnEnter: function(nextStep, currentStep) {
@@ -372,8 +372,8 @@
             onStepClick: function(nextStep, currentStep) {
                 this.validateContentOnEnterIfNecessary(nextStep, currentStep);
                 this.fetchUserPropertyOptionsOnContentEnter(nextStep, currentStep);
-                if (this.shouldPrepare(nextStep, currentStep)) {
-                    return this.prepare();
+                if (this.shouldEstimate(nextStep, currentStep)) {
+                    return this.estimate();
                 }
                 if (this.shouldValidateContentBeforeExit(nextStep, currentStep)) {
                     return this.$refs.content.validate();
@@ -410,7 +410,7 @@
                     model.queryFilter = this.getQueryFilter();
                 }
             },
-            prepare: function() {
+            estimate: function() {
                 var self = this;
                 this.setIsLoading(true);
                 return new Promise(function(resolve) {
@@ -419,7 +419,7 @@
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
                     self.addQueryFilterIfFound(preparePushNotificationModel);
-                    countlyPushNotification.service.prepare(preparePushNotificationModel, options).then(function(response) {
+                    countlyPushNotification.service.estimate(preparePushNotificationModel, options).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
                         if (response._id) {
                             self.setId(response._id);
@@ -429,7 +429,6 @@
                     }).catch(function(error) {
                         self.setLocalizationOptions([]);
                         CountlyHelpers.notify({
-                            title: "Push notification error",
                             message: error.message,
                             type: "error"
                         });
@@ -515,13 +514,11 @@
                 promiseMethod().then(function() {
                     self.$refs.drawer.doClose();
                     CountlyHelpers.notify({
-                        title: "Push notification",
                         message: "Push notification message was successfully saved."
                     });
                     self.$emit('save');
                 }).catch(function(error) {
                     CountlyHelpers.notify({
-                        title: "Push notification error",
                         message: error.message,
                         type: "error"
                     });
@@ -551,13 +548,11 @@
                 promiseMethod().then(function() {
                     done();
                     CountlyHelpers.notify({
-                        title: "Push notification",
                         message: "Push notification message was successfully saved."
                     });
                     self.$emit('save');
                 }).catch(function(error) {
                     CountlyHelpers.notify({
-                        title: "Push notification error",
                         message: error.message,
                         type: "error"
                     });
@@ -909,9 +904,9 @@
             setEnabledUsers: function(enabledUsers) {
                 this.enabledUsers = enabledUsers;
             },
-            fetchNumberOfUsers: function() {
+            fetchDashboard: function() {
                 var self = this;
-                countlyPushNotification.service.fetchAll()
+                countlyPushNotification.service.fetchDashboard(this.type)
                     .then(function(response) {
                         self.setTotalAppUsers(response.totalAppUsers);
                         self.setEnabledUsers(response.enabledUsers);
@@ -956,7 +951,7 @@
             this.fetchCohorts();
             this.fetchLocations();
             this.fetchEvents();
-            this.fetchNumberOfUsers();
+            this.fetchDashboard();
         },
         components: {
             "message-setting-element": countlyPushNotificationComponent.MessageSettingElement,
@@ -1013,8 +1008,11 @@
             selectedPushNotificationType: function() {
                 return this.$store.state.countlyPushNotification.main.selectedPushNotificationType;
             },
-            isLoading: function() {
-                return this.$store.getters['countlyPushNotification/main/isLoading'];
+            isDashboardLoading: function() {
+                return this.$store.state.countlyPushNotification.main.isDashboardLoading;
+            },
+            areRowsLoading: function() {
+                return this.$store.state.countlyPushNotification.main.areRowsLoading;
             },
             pushNotificationRows: function() {
                 return this.$store.state.countlyPushNotification.main.rows;
@@ -1028,10 +1026,10 @@
                 };
             },
             totalAppUsers: function() {
-                return this.$store.state.countlyPushNotification.main.totalAppUsers;
+                return this.$store.state.countlyPushNotification.main.dashboard.totalAppUsers;
             },
             enabledUsers: function() {
-                return this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.ALL];
+                return this.$store.state.countlyPushNotification.main.dashboard.enabledUsers[this.PlatformEnum.ALL];
             },
             enabledUsersPercentage: function() {
                 if (!this.totalAppUsers) {
@@ -1040,10 +1038,10 @@
                 return Math.ceil(this.enabledUsers / this.totalAppUsers);
             },
             xAxisPushNotificationPeriods: function() {
-                return this.$store.state.countlyPushNotification.main.periods[this.selectedPeriodFilter];
+                return this.$store.state.countlyPushNotification.main.dashboard.periods[this.selectedPeriodFilter];
             },
             yAxisPushNotificationSeries: function() {
-                return this.$store.state.countlyPushNotification.main.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
+                return this.$store.state.countlyPushNotification.main.dashboard.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
                     return {
                         data: pushNotificationSerie.data,
                         name: pushNotificationSerie.label
@@ -1057,12 +1055,12 @@
                     data: [
                         {
                             name: CV.i18n('push-notification.sent-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.totalSent[this.selectedPushNotificationType]),
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalSent[this.selectedPushNotificationType]),
                             tooltip: CV.i18n('push-notification.sent-serie-description')
                         },
                         {
                             name: CV.i18n('push-notification.actions-performed-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.totalActions[this.selectedPushNotificationType]),
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalActions[this.selectedPushNotificationType]),
                             tooltip: CV.i18n('push-notification.actions-performed-serie-description')
                         }
                     ]
@@ -1212,6 +1210,7 @@
             }
         },
         mounted: function() {
+            this.$store.dispatch('countlyPushNotification/main/fetchDashboard');
             this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
         }
     });
@@ -1236,7 +1235,8 @@
                 },
                 set: function(value) {
                     this.$store.dispatch('countlyPushNotification/main/onSetPushNotificationType', value);
-                    this.$store.dispatch('countlyPushNotification/main/fetchAll');
+                    this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
+                    this.$store.dispatch('countlyPushNotification/main/fetchDashboard');
                 }
             },
             isDrawerOpen: function() {

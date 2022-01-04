@@ -110,7 +110,7 @@
             data: {
                 "app_id": appId,
                 "method": "views",
-                "action": "getTable",
+                "action": "getTableNames",
             },
             dataType: "json",
             success: function(res) {
