@@ -164,6 +164,11 @@
             margin: 0rem 1.5rem 0rem 1.5rem;
         }
     }
+    &:not(.is-bordered-box) {
+        .el-collapse-item__arrow {
+            margin: 0 16px 0 auto;
+        }
+    }
 }
 
 .el-switch {
