@@ -8,14 +8,14 @@
 		</div>
 	</div>
 	<cly-section>
-		<cly-metric-cards v-loading="isLoading">
-			<cly-metric-card formatting="long" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in items">
-				{{item.name}}
-				<cly-tooltip-icon v-if="item.info" icon="ion-help-circled" :tooltip="item.info"></cly-tooltip-icon>
-				<template v-slot:number>{{item.value}}</template>
-				<span v-if="item.trend=='d'" slot="description" class="cly-trend-down"><i class="bu-pr-1 fas fa-arrow-circle-down"></i>{{item.change}}</span>
-				<span v-else slot="description" class="cly-trend-up"><i class="bu-pr-1 fas fa-arrow-circle-up"></i>{{item.change}}</span>
-			</cly-metric-card>
-		</cly-metric-cards>
+		<!-- <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll"> -->
+			<cly-metric-cards :multiline="false" v-loading="isLoading">
+				<cly-metric-card formatting="long" :label="item.name" :box-type="5" color="#097EFF" :tooltip="item.info" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in items">
+					<template v-slot:number>{{item.value}}</template>
+					<span v-if="item.trend=='d'" slot="description" class="cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{item.change}}</span>
+					<span v-else slot="description" class="cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{item.change}}</span>
+				</cly-metric-card>
+			</cly-metric-cards>
+		<!-- </vue-scroll> -->
 	</cly-section>
 </div>

@@ -23,50 +23,46 @@
                 </el-select>
 			</div>
         </div>
-		<div class="metricCardsWrapper bu-pb-4">
-		<vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
-				<cly-metric-cards>
-					<cly-metric-card :is-percentage="true" :columnWidth=3 :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in platformItems">
-						{{item.name}}
-						<template v-slot:number>{{item.value}}</template>
-						<template v-slot:description>
-							<span class="text-medium">{{item.percentText}}</span>
-						</template>
-					</cly-metric-card>	
-					<div v-if="platformItems.length < 4" class="emptyCard">
+		<div class="technology-analytics-wrapper__items bu-pb-5">
+            <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
+                <cly-metric-cards :multiline="false">
+                    <cly-metric-card 
+                        :is-percentage="true" 
+                        :column-width=3 
+                        :color="item.color" 
+                        :number="item.percent"
+                        :key="idx" 
+						:label="item.name"
+                        v-for="(item, idx) in platformItems">
+                        <template v-slot:number>{{item.value}}</template>
+                        <template v-slot:description>
+                            <span class="text-medium">{{item.percentText}}</span>
+                        </template>
+                    </cly-metric-card>
+					<div v-if="platformItems.length < 4" class="technology-analytics-wrapper__empty-card">
 						<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 					</div>
-				</cly-metric-cards>	
-		</vue-scroll>
-		</div>
+                </cly-metric-cards>
+            </vue-scroll>
+        </div>
 		<h5 class="bu-pb-4"> {{i18n('platforms.version-distribution')}} </h5>
-		<div class="platformVersionsWrapper">
-			<vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
-				<div class="bu-columns bu-is-gapless">
-					<div class="bu-column bu-is-3 " :key="idx" v-for="(item, idx) in platformVersions">
-						<div class="emptyVersions bu-p-4" v-if="item.itemCn === 0">
-							<div>{{i18n('common.table.no-data')}}</div>
-						</div>
-						<div class="allPlatformVersions bu-pt-4 bu-pb-4 bu-pr-1 bu-pl-4" v-else>
-							<vue-scroll :ops="scrollOptions">
-								<div :key="idx2" v-for="(item2, idx2) in item.data"  class="bu-pr-2">
-									<div class="version-graph-block bu-p-3">
-										<div class="bu-columns version-graph-title">
-											<div class="bu-column bu-p-0">{{item2.name}}</div>
-											<div class="bu-column bu-p-0">{{item2.value}} | {{item2.percent}} % </div>
-										</div>
-										<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
-									</div>
-								</div>
-							</vue-scroll>
-						</div>
-					</div>
-					<div v-if="platformVersions.length < 4" class="emptyCard">
-						<div class="text-medium">{{i18n('common.table.no-data')}}</div>
-					</div>
-				</div>
-			</vue-scroll>
+		<div v-if="platformVersions.length < 4" class="technology-analytics-wrapper__versions-empty-card">
+			<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 		</div>
+        <div v-else class="technology-analytics-wrapper__versions">
+            <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
+					<cly-metric-cards :multiline="false">
+						<cly-metric-breakdown 
+							:name="item.name" 
+							:values="item.values" 
+							:key="idx"
+							:column-width="3"
+							:scroll-ops="breakdownScrollOps" 
+							v-for="(item, idx) in platformVersions">
+						</cly-metric-breakdown>
+					</cly-metric-cards>
+            </vue-scroll>
+        </div>
 		<cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs"></cly-dynamic-tabs>
     </cly-main>
 </div>

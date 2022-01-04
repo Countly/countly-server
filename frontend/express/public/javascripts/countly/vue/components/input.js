@@ -823,11 +823,11 @@
                                     '<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between"><div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\n' +
                                     '<div class="bu-is-flex bu-is-align-items-baseline number">' +
 										'<h2>{{item.number}}</h2>' +
-										'<div v-if="item.trend == \'u\'" class="trend-up">\n' +
-											'<i class="fas fa-arrow-up"></i><span>{{item.trendValue}}</span>\n' +
+										'<div v-if="item.trend == \'u\'" class="trend-up bu-ml-2">\n' +
+											'<i class="cly-trend-up-icon ion-android-arrow-up"></i><span>{{item.trendValue}}</span>\n' +
 										'</div>\n' +
-										'<div v-if="item.trend == \'d\'" class="trend-down">\n' +
-											'<i class="fas fa-arrow-down"></i><span>{{item.trendValue}}</span>\n' +
+										'<div v-if="item.trend == \'d\'" class="trend-down bu-ml-2">\n' +
+											'<i class="cly-trend-down-icon ion-android-arrow-down"></i><span>{{item.trendValue}}</span>\n' +
 										'</div>\n' +
 									'</div></div></div>\n' +
                                 '</div>\n' +
