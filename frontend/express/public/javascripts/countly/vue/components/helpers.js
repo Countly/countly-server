@@ -795,8 +795,8 @@
         template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
                             '<div class="bu-is-flex">\n' +
-                                '<img :src="image" class="alert-image bu-mr-4 bu-my-1 bu-ml-1">\n' +
-                                '<slot><span class="alert-text bu-my-3">{{text}}</span></slot>\n' +
+                                '<img :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
+                                '<slot><span class="alert-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="closable" style="margin-block:auto">\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-5" >\n' +
@@ -855,6 +855,12 @@
                 else if (this.color === "light-warning" || this.color === "dark-warning") {
                     return "images/icons/notification-toast-warning.svg";
                 }
+            },
+            innerText: function() {
+                if (this.text) {
+                    return this.text;
+                }
+                return "";
             }
         },
         methods: {
