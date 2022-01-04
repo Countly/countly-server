@@ -19,13 +19,13 @@
                 </slot>
             </div>
             <div class="cly-vue-formdialog__buttons is-multi-step bu-is-justify-content-flex-end bu-is-flex" v-if="isMultiStep">
-                <el-button @click="doClose" size="small" v-if="hasCancelButton && currentStepIndex === 0" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>
-                <el-button @click="prevStep" size="small" v-if="currentStepIndex > 0" :disabled="isSubmitPending">{{i18n('common.drawer.previous-step')}}</el-button>
+                <el-button @click="doClose" type="secondary" size="small" v-if="hasCancelButton && currentStepIndex === 0" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>
+                <el-button @click="prevStep" type="secondary" size="small" v-if="currentStepIndex > 0" :disabled="isSubmitPending">{{i18n('common.drawer.previous-step')}}</el-button>
                 <el-button @click="nextStep" size="small" type="success" v-if="!isLastStep" :class="{'is-disabled':!isCurrentStepValid}" :disabled="isSubmitPending">{{i18n('common.drawer.next-step')}}</el-button>
                 <el-button @click="submit" :loading="isSubmitPending" size="small" v-if="isLastStep" :class="{'is-disabled':!isSubmissionAllowed}" type="success" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
             </div>
             <div class="cly-vue-formdialog__buttons is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="!isMultiStep">
-                <el-button @click="doClose" size="small" v-if="hasCancelButton" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>
+                <el-button @click="doClose" type="secondary" size="small" v-if="hasCancelButton" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>
                 <el-button @click="submit" :loading="isSubmitPending" size="small" type="success" :class="{'is-disabled':!isSubmissionAllowed}" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
             </div>
         </div>

@@ -546,7 +546,7 @@
                         <slot v-bind="passedScope"></slot>\
                         <slot name="controls">\
                             <div v-if="hasMultiplePages">\
-                                <el-button-group class="bu-ml-2">\
+                                <el-button-group class="bu-p-4">\
                                     <el-button size="small" :disabled="!prevAvailable" @click="goToPrevPage" icon="el-icon-caret-left"></el-button>\
                                     <el-button size="small" :disabled="!nextAvailable" @click="goToNextPage" icon="el-icon-caret-right"></el-button>\
                                 </el-button-group>\
