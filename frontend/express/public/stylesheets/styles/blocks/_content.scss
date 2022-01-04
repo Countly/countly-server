@@ -51,8 +51,8 @@
 
 	&--has-default-skin {
 		.cly-vue-section__content {
-			border-top: 0px;
-			border-bottom: 0px;
+			border-top: v.$border-base;
+			border-bottom: v.$border-base;
 		}
 	}
 
