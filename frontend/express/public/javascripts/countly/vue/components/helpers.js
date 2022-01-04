@@ -237,7 +237,7 @@
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
                                 <div class="bu-is-flex bu-is-align-items-center">\
                                     <span class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
-                                    <cly-tooltip-icon v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :title="tooltip"></cly-tooltip-icon>\
+                                    <cly-tooltip-icon v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
                                 </div>\
                                 <div :class=numberClasses>\
                                     <h2><slot name="number">{{formattedNumber}}</slot></h2>\
