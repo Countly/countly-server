@@ -516,23 +516,35 @@
                 return countlyCrashes.generateBadges(crash);
             },
             setSelectedAs: function(state) {
+                var self = this;
+                var promise;
+
                 if (state === "resolved") {
-                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolved", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolved", this.$data.selectedCrashgroups);
                 }
                 else if (state === "resolving") {
-                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolving", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolving", this.$data.selectedCrashgroups);
                 }
                 else if (state === "unresolved") {
-                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsUnresolved", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsUnresolved", this.$data.selectedCrashgroups);
                 }
                 else if (state === "hide") {
-                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsHidden", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsHidden", this.$data.selectedCrashgroups);
                 }
                 else if (state === "show") {
-                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsShown", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsShown", this.$data.selectedCrashgroups);
                 }
                 else if (state === "delete") {
-                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsDeleted", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsDeleted", this.$data.selectedCrashgroups);
+                }
+
+                if (typeof promise !== "undefined") {
+                    promise.finally(function() {
+                        CountlyHelpers.notify({
+                            title: jQuery.i18n.map["configs.changed"],
+                            message: jQuery.i18n.map["configs.saved"]
+                        });
+                    });
                 }
             }
         },
@@ -632,7 +644,12 @@
             },
             badges: function() {
                 return countlyCrashes.generateBadges(this.$store.getters["countlyCrashes/crashgroup/crashgroup"]);
-            }
+            },
+            activeFilter: {
+                get: function() {
+                    return this.$store.getters["countlyCrashes/overview/activeFilter"];
+                }
+            },
         },
         methods: {
             refresh: function() {
@@ -839,6 +856,11 @@
                 if (typeof ajaxPromise !== "undefined") {
                     ajaxPromise.finally(function() {
                         self.beingMarked = false;
+
+                        CountlyHelpers.notify({
+                            title: jQuery.i18n.map["configs.changed"],
+                            message: jQuery.i18n.map["configs.saved"]
+                        });
                     });
                 }
             },
