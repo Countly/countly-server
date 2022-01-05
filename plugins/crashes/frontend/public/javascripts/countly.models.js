@@ -255,11 +255,11 @@
                 statistics.users = {
                     affected: {
                         total: state.rawData.users.affected,
-                        totalPercent: (state.rawData.users.affected / state.rawData.users.total) * 100,
+                        totalPercent: parseFloat(((state.rawData.users.affected / state.rawData.users.total) * 100).toFixed(2)),
                         fatal: state.rawData.users.fatal,
-                        fatalPercent: (state.rawData.users.fatal / state.rawData.users.total) * 100,
+                        fatalPercent: parseFloat(((state.rawData.users.fatal / state.rawData.users.total) * 100).toFixed(2)),
                         nonFatal: (state.rawData.users.affected - state.rawData.users.fatal),
-                        nonFatalPercent: ((state.rawData.users.affected - state.rawData.users.fatal) / state.rawData.users.total) * 100,
+                        nonFatalPercent: parseFloat((((state.rawData.users.affected - state.rawData.users.fatal) / state.rawData.users.total) * 100).toFixed(2)),
                     },
                     notAffected: {
                         total: state.rawData.users.affected,
@@ -278,9 +278,9 @@
                     new: state.rawData.crashes.news,
                     newPercent: (state.rawData.crashes.news / state.rawData.crashes.total) * 100,
                     resolved: state.rawData.crashes.resolved,
-                    resolvedPercent: (state.rawData.crashes.resolved / state.rawData.crashes.total) * 100,
+                    resolvedPercent: parseFloat(((state.rawData.crashes.resolved / state.rawData.crashes.total) * 100).toFixed(2)),
                     unresolved: (state.rawData.crashes.total - state.rawData.crashes.resolved),
-                    unresolvedPercent: ((state.rawData.crashes.total - state.rawData.crashes.resolved) / state.rawData.crashes.total) * 100,
+                    unresolvedPercent: parseFloat((((state.rawData.crashes.total - state.rawData.crashes.resolved) / state.rawData.crashes.total) * 100).toFixed(2)),
                     reoccured: state.rawData.crashes.renewed
                 };
 

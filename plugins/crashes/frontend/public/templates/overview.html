@@ -63,21 +63,22 @@
                     <div class="crashes-statistics-dashboard__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                         <cly-crashes-dashboard-tile v-if="Object.keys(statistics).length > 0">
                             <div class="crashes-tile__content--fill bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column">
-                                <cly-crashes-dashboard-tile isVertical showDonut :donutPercentage="statistics.users.affected.totalPercent">
-                                    <template v-slot:title>{{i18n("crashes.affected-users")}}</template>
-                                    <template v-slot:value>{{statistics.users.affected.totalPercent.toFixed(2)}} %</template>
-                                    <template v-slot:description>{{statistics.users.affected.total}} of {{statistics.users.total}} Total Users</template>
-                                </cly-crashes-dashboard-tile>
-                                <cly-crashes-dashboard-tile isVertical showDonut :donutPercentage="statistics.crashes.resolvedPercent" :tooltip="i18n('crashes.help-resolved')">
-                                    <template v-slot:title>{{i18n("crashes.resolution-status")}}</template>
-                                    <template v-slot:value>{{statistics.crashes.resolvedPercent.toFixed(2)}} %</template>
-                                    <template v-slot:description>{{statistics.crashes.resolved}} Resolved of {{statistics.crashes.total}} Total Crashes</template>
-                                </cly-crashes-dashboard-tile>
-                                <cly-crashes-dashboard-tile isVertical showDonut :donutPercentage="statistics.crashes.fatalPercent">
-                                    <template v-slot:title>{{i18n("crashes.fatality")}}</template>
-                                    <template v-slot:value>{{statistics.crashes.fatalPercent.toFixed(2)}} %</template>
-                                    <template v-slot:description>{{statistics.crashes.fatal}} Fatal of {{statistics.crashes.total}} Total Crashes</template>
-                                </cly-crashes-dashboard-tile>
+                                <cly-metric-card :is-percentage="true" color="#CDAD7A" :number="statistics.users.affected.totalPercent">
+                                    {{i18n('crashes.affected-users')}}
+                                    <template v-slot:description>
+                                        <span class="text-medium">{{statistics.users.affected.total}} of {{statistics.users.total}} Total Users</span>
+                                    </template>
+                                </cly-metric-card>
+                                <cly-metric-card :label="i18n('crashes.resolution-status')" :is-percentage="true" color="#F96300" :number="statistics.crashes.resolvedPercent" :tooltip="i18n('crashes.help-resolved')">
+                                    <template v-slot:description>
+                                        <span class="text-medium">{{statistics.crashes.resolved}} Resolved of {{statistics.crashes.total}} Total Crashes</span>
+                                    </template>
+                                </cly-metric-card>
+                                <cly-metric-card :label="i18n('crashes.fatality')" :is-percentage="true" color="#F62404" :number="parseFloat(statistics.crashes.fatalPercent.toFixed(2))">
+                                    <template v-slot:description>
+                                        <span class="text-medium">{{statistics.crashes.fatal}} Fatal of {{statistics.crashes.total}} Total Crashes</span>
+                                    </template>
+                                </cly-metric-card>
                             </div>
                         </cly-crashes-dashboard-tile>
                         <cly-crashes-dashboard-tile>
