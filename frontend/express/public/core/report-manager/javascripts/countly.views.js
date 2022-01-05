@@ -224,7 +224,7 @@
                 },
                 selectedOrigin: null,
                 selectedRunTimeType: null,
-                selectedState: null,
+                selectedState: "all",
                 lastRequestPayload: {}
             };
         },
