@@ -401,25 +401,6 @@
         props: ['value']
     }));
 
-    Vue.component("cly-blank", countlyBaseComponent.extend({
-        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center bu-is-flex-direction-column">\
-                        <h3 class="color-cool-gray-50">{{title}}</h3>\
-                        <div v-if="text"><p class="text-medium">{{text}}</p></div>\
-                    </div>',
-        props: {
-            title: {
-                type: String,
-                default: '',
-                required: false
-            },
-            text: {
-                type: String,
-                default: '',
-                required: false
-            }
-        }
-    }));
-
     Vue.component("cly-app-select", {
         template: '<el-select v-bind="$attrs" v-on="$listeners">\
                         <el-option\
@@ -928,12 +909,20 @@
         props: {
             image: {default: 'images/icons/empty-view-icon.svg', type: String},
             title: { default: countlyVue.i18n('common.emtpy-view-title'), type: String },
-            subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String }
+            subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String },
+            height: {default: 0, type: Number}
         },
         data: function() {
             return {};
         },
-        template: ' <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
+        computed: {
+            topStyle: function() {
+                if (this.height) {
+                    return {height: this.height + "px"};
+                }
+            }
+        },
+        template: ' <div :style="topStyle" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">\
                         <slot name="icon">\
                             <div class="bu-mt-6">\
                                 <img :src="image"/>\
@@ -941,7 +930,7 @@
                         </slot>\
                         <div class="bu-mt-2">\
                             <slot name="title">\
-                                <h4 class="color-cool-gray-100">{{title}}</h4>\
+                                <h4 class="color-cool-gray-100 bu-has-text-centered">{{title}}</h4>\
                             </slot>\
                             <slot name="subTitle">\
                                 <div class="bu-mt-1 bu-mb-6 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
@@ -950,11 +939,11 @@
                     </div>',
     });
 
-    Vue.component("cly-empty-chart", BaseEmptyViewForElements.extend({
-    }));
+    Vue.component("cly-empty-chart", BaseEmptyViewForElements);
 
-    Vue.component("cly-empty-datatable", BaseEmptyViewForElements.extend({
-    }));
+    Vue.component("cly-empty-datatable", BaseEmptyViewForElements);
+
+    Vue.component("cly-blank", BaseEmptyViewForElements);
 
     Vue.component("cly-breadcrumbs", countlyBaseComponent.extend({
         mixins: [
