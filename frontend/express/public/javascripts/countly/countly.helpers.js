@@ -311,6 +311,7 @@
             colorToUse = "light-informational";
             break;
         case "purple":
+        case "ok":
         default:
             colorToUse = "light-successful";
             break;
