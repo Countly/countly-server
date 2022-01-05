@@ -307,6 +307,7 @@
         case "yellow":
             colorToUse = "light-warning";
             break;
+        case "info":
         case "blue":
             colorToUse = "light-informational";
             break;

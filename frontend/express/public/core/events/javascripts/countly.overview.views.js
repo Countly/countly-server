@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCommon, countlyEventsOverview,CV,app*/
+/* global countlyVue, countlyCommon, countlyEventsOverview,CV, app, CountlyHelpers*/
 (function() {
     var EventsTable = countlyVue.views.BaseView.extend({
         mixins: [countlyVue.mixins.i18n],
@@ -81,9 +81,10 @@
                 var self = this;
                 var alreadyExists = false;
                 if (this.selectedEvents.length === 12) {
-                    this.$notify.error({
+                    CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
-                        message: CV.i18n("events.overview.max-c")
+                        message: CV.i18n("events.overview.max-c"),
+                        type: "error"
                     });
                     return;
                 }
@@ -95,9 +96,10 @@
                     return true;
                 });
                 if (alreadyExists) {
-                    this.$notify.error({
+                    CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
-                        message: CV.i18n("events.overview.have-already-one")
+                        message: CV.i18n("events.overview.have-already-one"),
+                        type: "error"
                     });
                 }
                 else {
