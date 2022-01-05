@@ -1184,7 +1184,11 @@
         },
         computed: {
             chartOptions: function() {
-                return _merge({}, this.baseOptions, this.option);
+                var ops = _merge({}, this.baseOptions, this.option);
+                delete ops.grid;
+                delete ops.xAxis;
+                delete ops.yAxis; //remove not needed to don;t get grey line at bottom
+                return ops;
             }
         },
 
