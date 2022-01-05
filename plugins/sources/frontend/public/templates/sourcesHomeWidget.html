@@ -1,10 +1,9 @@
 <div v-bind:class="[componentId]">
 	<cly-section>
-		<cly-metric-cards>
-			<cly-metric-card :is-percentage="true" :columnWidth=2.4 :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in sourceItems">
-				{{item.name}}
+		<cly-metric-cards :multiline="false">
+			<cly-metric-card :is-percentage="true" :box-type="5" :label="item.name" :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in sourceItems">
 				<template v-slot:number>{{item.value}}</template>
-			</cly-metric-card>	
+			</cly-metric-card>
 		</cly-metric-cards>
 	</cly-section>
 </div>

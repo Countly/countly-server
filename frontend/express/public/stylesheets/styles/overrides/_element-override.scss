@@ -164,6 +164,11 @@
             margin: 0rem 1.5rem 0rem 1.5rem;
         }
     }
+    &:not(.is-bordered-box) {
+        .el-collapse-item__arrow {
+            margin: 0 16px 0 auto;
+        }
+    }
 }
 
 .el-switch {
@@ -200,6 +205,20 @@
         color: #D23F00;
         &:hover {
             background-color: #F6F6F6;
+        }
+    }
+    &.is-light-blue {
+        box-shadow: none;
+        -webkit-box-shadow: none;
+        border: none;
+        font-weight: 500;
+        height: 32px;
+        &:not(.is-disabled) {
+            color: map.get(c.$colors, "blue-100");
+            background-color: map.get(c.$colors, "light-blue-100");
+            &:hover {
+                background-color: #CCE0F7;
+            }
         }
     }
 }

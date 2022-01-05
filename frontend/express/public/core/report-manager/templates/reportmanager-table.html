@@ -29,7 +29,7 @@
                 {{ scope.row.name || scope.row.meta || "" }}
             </template>
         </el-table-column>
-        <el-table-column width="120" :label="i18n('common.status')">
+        <el-table-column width="160" :label="i18n('common.status')">
             <template v-slot="scope">
                 <div v-if="scope.row.taskgroup && scope.row.subtasks && scope.row.hasStatusDifferences">
                     <cly-status-tag
@@ -69,12 +69,12 @@
                 {{scope.row.global === false ? 'Private' : 'Global'}}
             </template>
         </el-table-column>
-        <el-table-column width="140" prop="start" sortable="custom" :label="i18n('common.last-updated')">
+        <el-table-column width="160" prop="start" sortable="custom" :label="i18n('common.last-updated')">
             <template v-slot="scope">
                 {{ scope.row.startFormatted && scope.row.startFormatted.text }}
             </template>
         </el-table-column>
-        <el-table-column width="100" :label="i18n('events.table.dur')" v-if="!isManual">
+        <el-table-column width="160" :label="i18n('events.table.dur')" v-if="!isManual">
             <template v-slot="scope">
                 {{ scope.row.duration }}
             </template>

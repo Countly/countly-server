@@ -1343,13 +1343,20 @@
     .cly-vue-metric-card {
         min-width: 270px;
         background-color: #fff;
-        border-top: 1px solid #ececec;
-        border-bottom: 1px solid #ececec;
+        box-shadow: 0px 2px 0px #EAECEF;
+        // border-bottom: 1px solid #ececec;
         &__wrapper {
             min-height: 56px;
         }
         & + .cly-vue-metric-card .cly-vue-metric-card__wrapper {
-            border-left: 1px solid map.get(c.$colors, "warm-gray-30");
+            border-left: 1px solid c.$table-border-color;
+        }
+    }
+
+    .cly-vue-metric-cards[class*="bu-is-multiline"] {
+        .cly-vue-metric-card {
+            box-shadow: none;
+            border-top: none;
         }
     }
 
@@ -1395,7 +1402,14 @@
         }
     }
 
+    .cly-vue-section__content {
+        .cly-vue-metric-cards {
+            border-top: 0px;
+        }
+    }
+
     .cly-vue-metric-cards {
+        border-top: 1px solid #ececec;
         &.cly-vue-metric-cards--is-multiline {
             .cly-vue-metric-breakdown {
                 &__wrapper {
@@ -1412,15 +1426,17 @@
         &:not(.cly-vue-metric-cards--is-multiline) {
             .cly-vue-metric-breakdown {
                 min-width: 270px;
+                box-shadow: 0px 2px 0px #EAECEF;
+
+                .cly-vue-section__content {
+                    border-bottom: 0px;
+                    border-top: 0px;
+                }
                 & + .cly-vue-metric-breakdown .cly-vue-metric-breakdown__wrapper {
                     border-left: 1px solid map.get(c.$colors, "warm-gray-30");
                 }
             }
         }
-    }
-
-    .cly-vue-section:not(:last-child) {
-        margin-bottom: 0px;
     }
 
     .cly-vue-popover{

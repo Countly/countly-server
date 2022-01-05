@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store, countlyAuth */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store, countlyAuth, CountlyHelpers */
 
 (function(countlyVue, $) {
 
@@ -467,9 +467,10 @@
                 },
                 methods: {
                     handleClyError: function(payload) {
-                        this.$notify.error({
+                        CountlyHelpers.notify({
                             title: _i18n("common.error"),
-                            message: payload.message
+                            message: payload.message,
+                            type: "error"
                         });
                     },
                     handleClyRefresh: function() {
