@@ -349,7 +349,7 @@
                                     <table v-for="field in fields" :key="field.key">\
                                         <tr v-if="showThis(field.key)" class="cly-multi-select__field">{{field.label}}</tr>\
                                         <tr v-if="\'items\' in field && showThis(field.key)">\
-                                            <el-select class="cly-multi-select__field-dropdown" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                            <el-select class="cly-multi-select__field-dropdown" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
                                                 <el-option v-for="item in field.items" :key="item.value" :value="item.value" :label="item.label"></el-option>\
                                             </el-select>\
                                         </tr>\

@@ -310,7 +310,8 @@
             highlight: {
                 type: Boolean,
                 default: false
-            }
+            },
+            tooltip: {type: String, default: null}
         },
         computed: {
             groupingClasses: function() {
@@ -330,7 +331,10 @@
             }
         },
         template: "<div class='cly-vue-form-step__auto-group'>\
-                        <h4 :class=\"labelClasses\" v-if=\"label\">{{ label }}</h4>\
+                        <h4 class='bu-is-flex bu-is-align-items-baseline' :class=\"labelClasses\" v-if=\"label\">\
+                            {{ label }}\
+                            <cly-tooltip-icon v-if='tooltip' class='bu-is-flex-grow-1 bu-ml-2' :tooltip='tooltip'></cly-tooltip-icon>\
+                        </h4>\
                         <div :class='groupingClasses'>\
                             <slot></slot>\
                         </div>\
@@ -354,7 +358,8 @@
                 type: Boolean,
                 default: false,
                 required: false
-            }
+            },
+            tooltip: {type: String, default: null}
         },
         computed: {
             wrapperElement: function() {
@@ -372,8 +377,9 @@
         },
         mixins: [countlyVue.mixins.i18n],
         template: '<div class="cly-vue-form-field" :class="topClasses">\
-                        <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || label || optional">\
+                        <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || tooltip || label || optional">\
                             <div class="text-smallish font-weight-bold bu-mb-1">{{label}}</div>\
+                            <cly-tooltip-icon v-if="tooltip" class="bu-is-flex-grow-1 bu-ml-2" :tooltip="tooltip"></cly-tooltip-icon>\
                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
                         </div>\
                         <div v-if="subheading" class="color-cool-gray-50 text-small bu-mb-1">\
