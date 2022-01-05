@@ -259,3 +259,15 @@
         }
     }
 }
+
+.el-radio-group {
+    &.is-full {
+        display: flex;
+        .el-radio-button {
+            flex-grow: 1;
+            &__inner {
+                width: 100%;
+            }
+        }
+    }
+}
