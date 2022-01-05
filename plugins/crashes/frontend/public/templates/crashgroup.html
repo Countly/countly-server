@@ -189,6 +189,9 @@
         </cly-section>
         <cly-section :title="i18n('crashes.crash-occurences')">
             <cly-datatable-n :rows="crashes" ref="tableData" @row-click="handleRowClick">
+                <template v-slot:header-left="filterScope">
+                    <cly-multi-select v-model="userFilter" :fields="userFilterFields"></cly-multi-select>
+                </template>
                 <template v-slot="scope">
                     <el-table-column type="expand">
                         <template slot-scope="props">

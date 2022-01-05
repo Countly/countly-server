@@ -419,7 +419,11 @@
                         _id: undefined,
                         is_resolved: false,
                         is_new: false,
-                    }
+                    },
+                    userFilter: {
+                        platform: "all",
+                        version: "all",
+                    },
                 };
             },
             getters: {},
@@ -562,6 +566,18 @@
             };
         };
 
+        _crashgroupSubmodule.getters.appVersions = function(state) {
+            return "data" in state.crashgroup ? Object.keys(state.crashgroup.app_version).map(v => v.replaceAll(':', '.')) : [];
+        };
+
+        _crashgroupSubmodule.getters.platforms = function(state) {
+            return "data" in state.crashgroup ? Object.keys(state.crashgroup.os_version).map(v => state.crashgroup.os + ' ' + v.replaceAll(':', '.')) : [];
+        };
+
+        _crashgroupSubmodule.getters.userFilter = function(state) {
+            return state.userFilter;
+        };
+
         _crashgroupSubmodule.actions.initialize = function(context, groupId) {
             context.state.crashgroup._id = groupId;
             return context.dispatch("refresh");
@@ -588,6 +604,13 @@
                         if (crashgroupJson.data && crashgroupJson.data.length > 0) {
                             var userIds = {};
                             var ajaxPromises = [];
+
+                            if (context.state.userFilter['platform'] !== "all") {
+                                crashgroupJson.data = crashgroupJson.data.filter(data => data.os + ' ' + data.os_version === context.state.userFilter['platform']);
+                            }
+                            if (context.state.userFilter['version'] !== "all") {
+                                crashgroupJson.data = crashgroupJson.data.filter(data => data.app_version === context.state.userFilter['version']);
+                            }
 
                             crashgroupJson.data.forEach(function(crash, crashIndex) {
                                 if (crash.uid in userIds) {
@@ -789,6 +812,11 @@
 
         _crashgroupSubmodule.actions.deleteComment = function(context, commentId) {
             return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "delete_comment", {comment_id: commentId});
+        };
+
+        _crashgroupSubmodule.actions.setUserFilter = function(context, value) {
+            context.state.userFilter = value;
+            context.dispatch("refresh");
         };
 
         var _crashSubmodule = {

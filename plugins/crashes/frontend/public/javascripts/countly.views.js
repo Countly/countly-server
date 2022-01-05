@@ -645,10 +645,39 @@
             badges: function() {
                 return countlyCrashes.generateBadges(this.$store.getters["countlyCrashes/crashgroup/crashgroup"]);
             },
-            activeFilter: {
+            userFilter: {
+                set: function(newValue) {
+                    return this.$store.dispatch("countlyCrashes/crashgroup/setUserFilter", newValue);
+                },
                 get: function() {
-                    return this.$store.getters["countlyCrashes/overview/activeFilter"];
+                    return this.$store.getters["countlyCrashes/crashgroup/userFilter"];
                 }
+            },
+            userFilterFields: function() {
+                var platforms = [{value: "all", label: "All Platforms"}];
+                this.$store.getters["countlyCrashes/crashgroup/platforms"].forEach(function(platform) {
+                    platforms.push({value: platform, label: platform});
+                });
+
+                var appVersions = [{value: "all", label: "All Versions"}];
+                this.$store.getters["countlyCrashes/crashgroup/appVersions"].forEach(function(appVersion) {
+                    appVersions.push({value: appVersion, label: appVersion.replace(/:/g, ".")});
+                });
+
+                return [
+                    {
+                        label: "Platforms",
+                        key: "platform",
+                        options: platforms,
+                        default: "all"
+                    },
+                    {
+                        label: "Versions",
+                        key: "version",
+                        items: appVersions,
+                        default: "all"
+                    },
+                ];
             },
         },
         methods: {
