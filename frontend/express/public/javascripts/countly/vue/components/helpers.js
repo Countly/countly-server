@@ -228,6 +228,12 @@
                 if (this.boxType === 5) {
                     classes = "min-width: 20%";
                 }
+                else if (this.boxType === 4) {
+                    classes = "min-width: 25%";
+                }
+                else if (this.boxType === 3) {
+                    classes = "min-width: 33%";
+                }
                 return classes;
             }
         },
