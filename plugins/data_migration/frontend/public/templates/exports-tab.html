@@ -1,0 +1,46 @@
+<div>
+    <cly-datatable-n class="bu-mx-5" :rows="list">
+        <template v-slot="scope">
+            <el-table-column sortable="true" prop="app_names" :label="i18n('data-migration.applications')">
+                <template v-slot="rowScope">
+                    <span class="text-medium">
+                      {{ rowScope.row.app_names[0] }}
+                      <div 
+                        style="width: fit-content;"
+                        class="bu-has-text-weight-semibold text-small bu-mt-1"
+                        :class="'data-migration__blinker--' + rowScope.row.status">
+                        <span :class="[rowScope.row.status !== 'progress' && 'data-migration__no-blink', 'blinker']"></span> {{ rowScope.row.status }}
+                      </div>
+                    </span>
+                </template>
+            </el-table-column>
+            <el-table-column sortable="true" prop="status" :label="i18n('data-migration.table.status')">
+              <template v-slot="rowScope">
+                <div class="bu-py-6">
+                  <span class="text-medium">
+                    {{ rowScope.row.status === 'failed' ? rowScope.row.reason : rowScope.row.step }}
+                  </span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column sortable="true" prop="created" :label="i18n('data-migration.table.last-update')">
+              <template v-slot="rowScope">
+                  <span class="text-medium">
+                    {{ rowScope.row.time }}
+                  </span>
+              </template>
+            </el-table-column>
+            <el-table-column width="100">
+              <template v-slot="rowScope">
+                <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
+                  <el-dropdown-item command="download-log">{{i18n('data-migration.download-log')}}</el-dropdown-item>
+                  <el-dropdown-item command="download-export">{{i18n('data-migration.download-export')}}</el-dropdown-item>
+                  <el-dropdown-item v-if="hasCreateRight && !rowScope.row.only_export" command="resend">{{i18n('data-migration.resend-export')}}</el-dropdown-item>
+                  <el-dropdown-item v-if="hasDeleteRight && rowScope.row.status !== 'progress'" command="delete-export">{{i18n('data-migration.delete-export')}}</el-dropdown-item>
+                  <el-dropdown-item v-if="hasUpdateRight && rowScope.row.status === 'progress'" command="stop-export">{{i18n('data-migration.stop-export')}}</el-dropdown-item>
+                </cly-more-options>
+              </template>
+            </el-table-column>
+        </template>
+    </cly-datatable-n>
+  </div>

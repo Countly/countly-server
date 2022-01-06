@@ -1,0 +1,128 @@
+<div class="data-migration__drawer">
+    <cly-drawer
+        toggle-transition="stdt-fade"
+        ref="exportDrawer"
+        @close="onClose"
+        @submit="onSubmit"
+        @open="onOpen"
+        :hasCancelButton="true"
+        :saveButtonLabel="exportDrawerSaveButtonLabel"
+        :title="$props.settings.title"
+        name="export-drawer"
+        v-bind="$props.controls"
+    >
+        <template  v-slot:default="drawerScope">
+            <cly-form-step id="default">
+                <div class="cly-vue-drawer-step__section">
+                  <div class="text-medium text-heading bu-mb-2">
+                    {{ i18n('data-migration.applications') }}
+                  </div>
+                  <validation-provider name="apps" rules="required">
+                    <el-select
+                        class="data-migration-drawer__full-input"
+                        v-model="drawerScope.editedObject.apps"
+                        multiple
+                        :placeholder="'Select Applications'">
+                        <el-option 
+                          v-for="(app, index) in apps"
+                          :key="index"
+                          :value="app.value"
+                          :label="app.label">
+                        </el-option>
+                    </el-select>
+                  </validation-provider>
+                </div>
+                <div class="cly-vue-drawer-step__section">
+                  <div class="text-medium text-heading text-heading">
+                    <span class="bu-mb-2">
+                      {{ i18n('data-migration.export-other-path') }}
+                    </span>
+                    <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+                  </div>
+                  <validation-provider name="target_path" rules="required" v-slot="v">
+                    <el-input
+                      :placeholder="i18n('data-migration.enter-your-export-folder')"
+                      v-model="drawerScope.editedObject.target_path">
+                    </el-input>
+                  </validation-provider>
+                </div>
+                <div class="cly-vue-drawer-step__section">
+                    <div class="text-medium text-heading bu-mb-2">
+                      <span>
+                        {{ i18n('data-migration.export-type') }}
+                      </span>
+                      <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+                    </div>
+                    <div class="bu-is-flex bu-is-flex-direction-column">
+                      <el-radio-group v-model="drawerScope.editedObject.only_export">
+                        <el-radio class="data-migration-drawer__export-radio-item bu-is-flex" :label="0" border>
+                          <div class="data-migration-drawer__radio-label">
+                            <span>
+                              {{ i18n('data-migration.export-type-transfer-label') }}
+                            </span>
+                          </div>
+                        </el-radio>
+                        <el-radio class="data-migration-drawer__export-radio-item bu-is-flex bu-mt-1" :label="1" border>
+                          <div class="data-migration-drawer__radio-label">
+                            <span>
+                              {{ i18n('data-migration.export-type-download-label') }}
+                            </span>
+                          </div>
+                        </el-radio>
+                      </el-radio-group>
+                    </div>
+                </div>
+                <div v-if="drawerScope.editedObject.only_export === 0" class="cly-vue-drawer-step__section">
+                  <div class="text-medium text-heading text-heading">
+                    <span class="bu-mb-2">
+                      {{ i18n('data-migration.server-address') }}
+                    </span>
+                    <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+                    <span class="text-small data-migration__description">
+                      {{ i18n('data-migration.server-address-description') }}
+                    </span>
+                  </div>
+                  <validation-provider name="server_address" rules="required" v-slot="v">
+                    <el-input
+                      :placeholder="i18n('data-migration.enter-your-server-address')"
+                      v-model="drawerScope.editedObject.server_address">
+                    </el-input>
+                  </validation-provider>
+                </div>
+                <div v-if="drawerScope.editedObject.only_export === 0" class="cly-vue-drawer-step__section">
+                  <div class="text-medium text-heading text-heading">
+                    <span class="bu-mb-2">
+                      {{ i18n('data-migration.server-token') }}
+                    </span>
+                    <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+                    <span class="text-small data-migration__description">
+                      {{ i18n('data-migration.server-token-description') }}
+                    </span>
+                  </div>
+                  <validation-provider name="server_token" rules="required" v-slot="v">
+                    <el-input
+                      :placeholder="i18n('data-migration.enter-your-server-token')"
+                      v-model="drawerScope.editedObject.server_token">
+                    </el-input>
+                  </validation-provider>
+                </div>
+                <div class="cly-vue-drawer-step__section">
+                  <validation-provider name="aditional_files" v-slot="v">
+                    <el-checkbox v-model="drawerScope.editedObject.aditional_files">
+                      <span>
+                        {{ i18n('data-migration.export-additional-files') }}
+                      </span>
+                    </el-checkbox>
+                  </validation-provider>
+                  <validation-provider v-if="drawerScope.editedObject.only_export === 0" class="bu-mt-2" name="redirect_traffic" v-slot="v">
+                    <el-checkbox v-model="drawerScope.editedObject.redirect_traffic">
+                      <span>
+                        {{ i18n('data-migration.redirect-traffic') }}
+                      </span>
+                    </el-checkbox>
+                  </validation-provider>
+                </div>
+            </cly-form-step>
+        </template>
+    </cly-drawer>
+  </div>
