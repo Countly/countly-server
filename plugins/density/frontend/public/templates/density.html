@@ -26,7 +26,7 @@
 		</div>
 		<div class="technology-density-wrapper__items bu-pb-5">
             <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
-                <cly-metric-cards :multiline="false">
+                <cly-metric-cards :multiline="false" :is-synced-scroll="true">
                     <cly-metric-card 
                         :is-percentage="true" 
                         :column-width=3 
@@ -52,7 +52,7 @@
 		</div>
         <div v-else class="technology-density-wrapper__versions">
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
-					<cly-metric-cards :multiline="false">
+					<cly-metric-cards :multiline="false" :is-synced-scroll="true">
 						<cly-metric-breakdown 
 							:name="item.name" 
 							:values="item.values" 

@@ -1341,7 +1341,7 @@
     }
 
     .cly-vue-metric-card {
-        min-width: 270px;
+        // min-width: 270px;
         background-color: #fff;
         box-shadow: 0px 2px 0px #EAECEF;
         // border-bottom: 1px solid #ececec;
@@ -1408,6 +1408,16 @@
         }
     }
 
+    .cly-vue-metric-cards[class*="is-synced"] {
+        .cly-vue-metric-card {
+            min-width: 270px;
+        }
+        
+        .cly-vue-metric-breakdown {
+            min-width: 270px;
+        }
+    }
+
     .cly-vue-metric-cards {
         border-top: 1px solid #ececec;
         &.cly-vue-metric-cards--is-multiline {
@@ -1425,7 +1435,7 @@
         }
         &:not(.cly-vue-metric-cards--is-multiline) {
             .cly-vue-metric-breakdown {
-                min-width: 270px;
+                // min-width: 270px;
                 box-shadow: 0px 2px 0px #EAECEF;
 
                 .cly-vue-section__content {

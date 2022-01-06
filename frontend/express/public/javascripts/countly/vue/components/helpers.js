@@ -156,12 +156,20 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            isSyncedScroll: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         computed: {
             topClasses: function() {
                 if (this.multiline) {
                     return ["cly-vue-metric-cards--is-multiline", "bu-is-multiline"];
+                }
+                if (this.isSyncedScroll) {
+                    return "is-synced";
                 }
             }
         }
@@ -221,18 +229,19 @@
                 if (this.isVertical || this.columnWidth === -1) {
                     return "";
                 }
+
                 return "bu-is-" + this.columnWidth;
             },
             metricStyles: function() {
                 var classes = "";
-                if (this.boxType === 5) {
-                    classes = "min-width: 20%";
+                if (this.boxType === 3) {
+                    classes = "min-width: 33%";
                 }
                 else if (this.boxType === 4) {
                     classes = "min-width: 25%";
                 }
-                else if (this.boxType === 3) {
-                    classes = "min-width: 33%";
+                else if (this.boxType === 5) {
+                    classes = "min-width: 20%";
                 }
                 return classes;
             }
@@ -278,6 +287,11 @@
                 type: Object,
                 default: null,
                 required: false
+            },
+            isSyncedScroll: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         computed: {
@@ -285,7 +299,12 @@
                 if (this.isVertical || this.columnWidth === -1) {
                     return "";
                 }
-                return "bu-is-" + this.columnWidth;
+                else if (this.isSyncedScroll) {
+                    return "is-synced bu-is-" + this.columnWidth;
+                }
+                else {
+                    return "bu-is-" + this.columnWidth;
+                }
             },
             effectiveScrollOps: function() {
                 if (this.scrollOps) {

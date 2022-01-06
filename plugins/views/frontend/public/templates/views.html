@@ -19,10 +19,8 @@
 			<template v-slot:close><el-button type="text">Adjust Limit</el-button></template>
 		</cly-notification>
 		<cly-section >
-			<cly-metric-cards>
-                <cly-metric-card :number="item.percent" :color="item.color" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
-                    {{item.name}}
-					<cly-tooltip-icon :tooltip="item.description" icon="ion ion-help-circled" style="margin-left:4px" placement="top"> </cly-tooltip-icon>
+			<cly-metric-cards :multiline="false">
+                <cly-metric-card :number="item.percent" :label="item.name" :tooltip="item.description" :color="item.color" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
 					<template v-slot:number>{{item.value}}</template>
                 </cly-metric-card>
             </cly-metric-cards>
