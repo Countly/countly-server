@@ -29,18 +29,10 @@
       </div>
     </div>
     <cly-section>
-      <cly-metric-cards class="ratings-wrapper__cards bu-has-background-white">
-        <cly-metric-card :number="count">
-          <span class="ratings-section-title">
-            {{ i18n('feedback.total-ratings') }}
-          </span>
-          <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+      <cly-metric-cards :multiline="false">
+        <cly-metric-card :number="count" :label="i18n('feedback.total-ratings')" :tooltip="i18n('feedback.total-ratings')">
         </cly-metric-card>
-        <cly-metric-card :number="avg">
-          <span class="ratings-section-title">
-            {{ i18n('feedback.average-ratings-score') }}
-          </span>
-          <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+        <cly-metric-card :number="avg" :label="i18n('feedback.average-ratings-score')" :tooltip="i18n('feedback.average-ratings-score')">
         </cly-metric-card>
       </cly-metric-cards>
     </cly-section>
