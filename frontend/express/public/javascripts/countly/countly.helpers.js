@@ -299,10 +299,10 @@
 
         switch (msg.type) {
         case "error":
-            colorToUse = "dark-destructive";
+            colorToUse = "light-destructive";
             break;
         case "warning":
-            colorToUse = "dark-warning";
+            colorToUse = "light-warning";
             break;
         case "yellow":
             colorToUse = "light-warning";
