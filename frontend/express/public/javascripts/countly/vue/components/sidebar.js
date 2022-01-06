@@ -526,6 +526,7 @@
                         {
                             name: "last-queries",
                             icon: "ion-wrench",
+                            noSelect: true,
                         }
                     ];
 

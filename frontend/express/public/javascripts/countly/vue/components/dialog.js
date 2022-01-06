@@ -19,7 +19,7 @@
                 }, {});
             }
         },
-        template: '<el-dialog destroyOnClose class="cly-vue-dialog" v-on="$listeners" v-bind="$attrs" :title="title">\
+        template: '<el-dialog destroyOnClose class="cly-vue-dialog" v-on="$listeners" v-bind="$attrs" :title="title" :apped-to-body="true">\
                         <template v-slot:title><h3 class="color-cool-gray-100">{{title}}</h3></template>\
                         <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
                             <slot :name="name"/>\
