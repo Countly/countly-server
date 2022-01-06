@@ -522,6 +522,10 @@
                             name: "management",
                             icon: "ion-wrench",
                             tooltip: "Management"
+                        },
+                        {
+                            name: "last-queries",
+                            icon: "ion-wrench",
                         }
                     ];
 

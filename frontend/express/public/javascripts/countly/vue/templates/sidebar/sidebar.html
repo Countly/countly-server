@@ -4,6 +4,13 @@
             <li v-for="item in mainMenuOptions" v-tooltip.right="{content: item.tooltip, container: false}" :key="item.name" @click="onClick(item)" class="cly-vue-sidebar__menu-option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
                 <div v-if="item.name === 'app'" class="cly-vue-sidebar__menu-option-app"></div>
                 <div v-if="item.name === 'divider'" class="cly-vue-sidebar__menu-option-divider"></div>
+                <div v-if="item.name === 'last-queries'">
+                    <cly-report-manager-dialog>
+                            <template v-slot:trigger="scope">
+                                <i :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]" @click="scope.showDialog"></i>
+                            </template>
+                    </cly-report-manager-dialog>  
+                </div>
                 <i v-else :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
             </li>
         </ul>
