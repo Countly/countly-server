@@ -22,12 +22,15 @@
         },
         watch: {
             initialEditedObject: function() {
-                this.editedObject = this.copyOfEdited();
-                this.reset();
-                this.$emit("copy", this.editedObject);
+                this.reload();
             }
         },
         methods: {
+            reload: function() {
+                this.editedObject = this.copyOfEdited();
+                this.reset();
+                this.$emit("copy", this.editedObject);
+            },
             copyOfEdited: function() {
                 var copied = JSON.parse(JSON.stringify(this.initialEditedObject));
                 if (this.beforeCopyFn) {
