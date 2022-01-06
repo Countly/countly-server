@@ -368,6 +368,11 @@
                                 }
                             }
                         }
+                        else if (options.series[i].nodes) { //flow sankey diagramm
+                            if (options.series[i].nodes.length > 0) {
+                                isEmpty = false;
+                            }
+                        }
                     }
                 }
 
@@ -1193,7 +1198,7 @@
         },
 
         template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div :style="echartStyle" class="cly-vue-chart__echart" :style="{height: \'100%\'}">\
+                        <div class="cly-vue-chart__echart" :style="{height: \'100%\'}">\
                             <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
