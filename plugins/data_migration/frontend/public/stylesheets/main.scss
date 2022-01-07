@@ -9,50 +9,6 @@
         cursor: pointer;
     }
 
-    &__blinker {
-        &--progress {
-            width: fit-content;
-            text-transform: capitalize;
-            background-color: #d8e6f5;
-            color: #0166D6;
-            height: 19px;
-            padding: 1px 6px 0px 6px;
-            border-radius: 4px;
-
-            span {
-                background-color: #0166D6;
-            }
-        }
-
-        &--finished {
-            width: fit-content;
-            text-transform: capitalize;
-            background-color: #EBFAEE;
-            color: #12AF51;
-            height: 19px;
-            padding: 1px 6px 0px 6px;
-            border-radius: 4px;
-        }
-
-        &--failed {
-            width: fit-content;
-            text-transform: capitalize;
-            background-color: #FBECE5;
-            color: #D23F00;
-            height: 19px;
-            padding: 1px 6px 0px 6px;
-            border-radius: 4px;
-
-            span {
-                background-color: #D23F00;
-            }
-        }
-    }
-
-    &__no-blink {
-        animation: none;
-    }
-
     &__description {
         display: block;
         color: #81868D;

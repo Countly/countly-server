@@ -5,6 +5,9 @@
     var ImportsTab = countlyVue.views.create({
         template: CV.T("/data_migration/templates/imports-tab.html"),
         props: {},
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         data: function() {
             return {
                 list: [],
@@ -73,6 +76,9 @@
     var ExportsTab = countlyVue.views.create({
         template: CV.T("/data_migration/templates/exports-tab.html"),
         props: {},
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         data: function() {
             return {
                 list: [],
@@ -322,7 +328,8 @@
         },
         mixins: [
             countlyVue.mixins.hasDrawers("import"),
-            countlyVue.mixins.hasDrawers("export")
+            countlyVue.mixins.hasDrawers("export"),
+            countlyVue.mixins.auth(FEATURE_NAME)
         ],
         data: function() {
             return {

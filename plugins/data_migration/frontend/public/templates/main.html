@@ -5,13 +5,16 @@
           &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </template>
         <template v-slot:header-right>
-            <el-dropdown v-if="hasCreateRight" split-button type="success" @command="handleCommand">
-                <i class="el-icon-circle-plus"></i> {{ i18n('data-migration.import-export-button-title') }}
-                <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item command="export">{{ i18n('data-migration.export-data') }}</el-dropdown-item>
-                    <el-dropdown-item command="import">{{ i18n('data-migration.import-data') }}</el-dropdown-item>
-                </el-dropdown-menu>
-            </el-dropdown>
+            <cly-more-options v-if="canUserCreate" @command="handleCommand">
+                <template v-slot:trigger>
+                    <el-button type="success">
+                        <i class="el-icon-circle-plus"></i>
+                        {{ i18n('data-migration.import-export-button-title') }} 
+                    </el-button>
+                </template>
+                <el-dropdown-item command="export">{{ i18n('data-migration.export-data') }}</el-dropdown-item>
+                <el-dropdown-item command="import">{{ i18n('data-migration.import-data') }}</el-dropdown-item>
+            </cly-more-options>
         </template>
         <template v-slot:header-tabs>
             <cly-dynamic-tabs
