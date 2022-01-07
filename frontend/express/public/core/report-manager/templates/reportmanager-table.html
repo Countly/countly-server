@@ -32,13 +32,14 @@
         <el-table-column width="160" :label="i18n('common.status')">
             <template v-slot="scope">
                 <div v-if="scope.row.taskgroup && scope.row.subtasks && scope.row.hasStatusDifferences">
-                    <cly-status-tag
-                        :key="subtask._id"
-                        :color="getColor(subtask.status)"
-                        v-for="subtask in scope.row.subtasks"
-                        v-tooltip="subtask.errormsg"
-                        :text="availableStates[subtask.status] || subtask.status">
-                    </cly-status-tag>
+                    <div v-for="subtask in scope.row.subtasks">
+                        <cly-status-tag
+                            :key="subtask._id"
+                            :color="getColor(subtask.status)"
+                            v-tooltip="subtask.errormsg"
+                            :text="availableStates[subtask.status] || subtask.status">
+                        </cly-status-tag>
+                    </div>
                 </div>
                 <div v-else>
                     <cly-status-tag

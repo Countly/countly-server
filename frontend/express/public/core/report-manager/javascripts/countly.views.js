@@ -202,7 +202,7 @@
                 tableStore: tableStore,
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "reportsTable"),
                 availableOrigins: {
-                    "all": CV.i18n("common.all"),
+                    "all": CV.i18n("report-manager.all-origins"),
                     "funnels": CV.i18n("sidebar.funnels") || "Funnels",
                     "drill": CV.i18n("drill.drill") || "Drill",
                     "flows": CV.i18n("flows.flows") || "Flows",
@@ -211,12 +211,12 @@
                     "dbviewer": CV.i18n("dbviewer.title") || "DBViewer"
                 },
                 availableRunTimeTypes: {
-                    "all": CV.i18n("common.all"),
+                    "all": CV.i18n("report-manager.all-types"),
                     "auto-refresh": CV.i18n("taskmanager.auto"),
                     "none-auto-refresh": CV.i18n("taskmanager.manual")
                 },
                 availableStates: {
-                    "all": CV.i18n("common.all"),
+                    "all": CV.i18n("report-manager.all-statuses"),
                     "running": CV.i18n("common.running"),
                     "rerunning": CV.i18n("taskmanager.rerunning"),
                     "completed": CV.i18n("common.completed"),
