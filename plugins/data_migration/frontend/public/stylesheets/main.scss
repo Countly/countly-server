@@ -11,6 +11,7 @@
 
     &__blinker {
         &--progress {
+            width: fit-content;
             text-transform: capitalize;
             background-color: #d8e6f5;
             color: #0166D6;
@@ -24,6 +25,7 @@
         }
 
         &--finished {
+            width: fit-content;
             text-transform: capitalize;
             background-color: #EBFAEE;
             color: #12AF51;
@@ -33,6 +35,7 @@
         }
 
         &--failed {
+            width: fit-content;
             text-transform: capitalize;
             background-color: #FBECE5;
             color: #D23F00;

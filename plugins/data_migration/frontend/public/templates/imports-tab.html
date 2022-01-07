@@ -6,7 +6,6 @@
                   <span class="text-medium">
                     {{ rowScope.row.app_list }}
                     <div 
-                      style="width: fit-content;"
                       class="bu-has-text-weight-semibold text-small bu-mt-1"
                       :class="'data-migration__blinker--' + rowScope.row.status_text">
                       <span :class="[rowScope.row.status_text !== 'progress' && 'data-migration__no-blink', 'blinker']"></span> {{ rowScope.row.status_text }}
