@@ -6,7 +6,8 @@
 		:title="title"
         ref="drawerData"
 		:saveButtonLabel="saveButtonLabel"
-		v-bind="$props.controls">
+        toggle-transition="stdt-fade"
+ 		v-bind="$props.controls">
         <template v-slot:default="drawerScope" >
             <cly-form-step id="step1" :name="i18n('hooks.step1')">
                 <cly-form-field name="hooksName" :label="i18n('hooks.name')" rules="required">
@@ -16,9 +17,16 @@
                     </el-input>
                 </cly-form-field>
 
-                <cly-form-field name="description" :label="i18n('hooks.description')">
-                    <div class="cly-vue-hook-drawer__help-text">
-                        {{i18n('hooks.optional')}}
+                <cly-form-field name="description">
+                    <div class="bu-level ">
+                        <div class="bu-level-left">
+                            <div class="text-smallish font-weight-bold bu-mb-1">{{i18n('hooks.description')}}</div>
+                        </div>
+                        <div class="bu-level-right">
+                            <div class="cly-vue-hook-drawer__help-text">
+                                {{i18n('hooks.optional')}}
+                            </div>
+                        </div>
                     </div>
                     <el-input
                         v-model="drawerScope.editedObject.description"
@@ -27,6 +35,9 @@
                 </cly-form-field>
 
                 <cly-form-field name="application" :label="i18n('hooks.source-application')" rules="required">
+                    <div class="cly-vue-hook-drawer__help-text bu-mb-2">
+                        {{i18n('hooks.app-desc')}}
+                    </div>
                     <cly-select-x
                         :placeholder="i18n('hooks.select-application')"
                         mode="single-list"
@@ -35,7 +46,9 @@
                         :key="index"
                         class="cly-vue-hook-drawer__is-full-line"
                         :options="appsSelectorOption">
+                        
                     </cly-select-x>
+                </div>
                 </cly-form-field>
 
                 <pre v-if="0">
@@ -75,7 +88,7 @@
                     :key="index" 
                     v-model="drawerScope.editedObject.effects[index]"/>
                 </div>
-                <el-button @click="addEffect" class="1">{{i18n('hooks.add-effect')}}</el-button>
+                <el-button type="text" class="bg-light-blue-100 color-blue-100" @click="addEffect">{{i18n('hooks.add-effect')}}</el-button>
 
                 <div>
                     <div class="cly-vue-hook-drawer-action-card">

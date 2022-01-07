@@ -5,42 +5,52 @@
 }
 
 .cly-vue-hook-drawer {
-     &__help-text {
+    &__help-text {
         font-family: Inter;
         font-style: normal;
         font-weight: normal;
         font-size: 12px;
         line-height: 16px;
         color: #81868D;
-      }
+    }
       
-      &__is-hidden {
+    &__is-hidden {
         visibility: hidden;
-      }
-      &__is-full-line {
-          width: 100%;
-      }
+    }
+    &__is-full-line {
+        width: 100%;
+    }
 
-      &__no-margin {
-          margin-bottom: 0px !important;
-      }
-      &__small-icon {
+    &__no-margin {
+        margin-bottom: 0px !important;
+    }
+    &__small-icon {
         margin-left: 5px;
         font-size: 15px;
     }
-      &__small-icon-right {
+    &__small-icon-right {
         margin-right: 2px;
         font-size: 15px;
-      }
-      &__check_icon {
+    }
+    &__check_icon {
         width: 18px;
         border-radius: 18px;
         text-align: center;
         margin-left: 18px;
         margin-right: 9px;
-      }
+    }
+ 
 }
-
+.hook-filter-block {
+    background: #F8FAFD;
+    border-radius: 6px;
+}
+.hook-segmentation-block{
+    background: #F8FAFD;
+}
+.hook-api-url-block input {
+    color:#333C48 !important;
+}
 .cly-vue-drawer-hook_description {
     font-size: 13px;
     line-height: 16px;
@@ -67,7 +77,7 @@
 }
 
 .cly-vue-hook-drawer-action-card {
-    background: #FCFCFC;
+    background: #CFD6E4;
     border: 1px solid #E2E4E8;
     box-sizing: border-box;
     border-radius: 6px;
@@ -108,10 +118,6 @@
         line-height: 16px;
         color: #A7AEB8;
         margin-top: 6px;
-        text-decoration: none !important;
-    }
-    .is-desc-col:hover {
-        text-decoration: none !important;
     }
     .is-trigger-col-tag {
         background: #FCF5E5;
