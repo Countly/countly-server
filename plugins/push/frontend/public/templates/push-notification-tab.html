@@ -2,16 +2,12 @@
     <div v-bind:class="[componentId]">
         <cly-main>
             <cly-section>
-                <cly-metric-cards>
-                    <cly-metric-card :number="totalAppUsers">
-                        {{i18n('push-notification.total-app-users')}}
+                <cly-metric-cards :multiline="false">
+                    <cly-metric-card :number="totalAppUsers" :label="i18n('push-notification.total-app-users')">
                     </cly-metric-card>
-                    <cly-metric-card :number="enabledUsers">
-                        {{i18n('push-notification.enabled-users')}}                     
+                    <cly-metric-card :number="enabledUsers" :label="i18n('push-notification.enabled-users')">
                     </cly-metric-card>
-                    <cly-metric-card :is-percentage="true" :number="enabledUsersPercentage">
-                        {{i18n('push-notification.enabled-users-percentage')}}
-                        <cly-tooltip-icon :tooltip="i18n('push-notification.enabled-users-percentage-description')" icon="ion ion-help-circled" class="bu-ml-2"> </cly-tooltip-icon>                     
+                    <cly-metric-card :is-percentage="true" :number="enabledUsersPercentage" :label="i18n('push-notification.enabled-users-percentage')" :tooltip="i18n('push-notification.enabled-users-percentage-description')">
                     </cly-metric-card>
                 </cly-metric-cards>
             </cly-section>

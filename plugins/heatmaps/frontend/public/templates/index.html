@@ -28,9 +28,8 @@
         </div>
 
         <div class="bu-my-4">
-            <cly-metric-cards>
-                <cly-metric-card :number="metrics.t">
-                    {{i18n('heatmaps.total-page-views')}}
+            <cly-metric-cards :multiline="false">
+                <cly-metric-card :number="metrics.t" :label="i18n('heatmaps.total-page-views')">
                 </cly-metric-card>
                 <cly-metric-card :number="metrics.scr">
                     {{i18n('heatmaps.avg-scroll-depth')}}
