@@ -337,6 +337,10 @@
             disableRunningCount: {
                 type: Boolean,
                 default: false
+            },
+            disableAutoNavigationToTask: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
