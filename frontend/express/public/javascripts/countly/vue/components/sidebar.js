@@ -525,8 +525,9 @@
                         },
                         {
                             name: "last-queries",
-                            icon: "ion-wrench",
+                            icon: "fas fa-file-contract",
                             noSelect: true,
+                            tooltip: "Report Manager"
                         }
                     ];
 
