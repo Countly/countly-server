@@ -222,8 +222,8 @@
                     "completed": CV.i18n("common.completed"),
                     "errored": CV.i18n("common.errored")
                 },
-                selectedOrigin: null,
-                selectedRunTimeType: null,
+                selectedOrigin: "all",
+                selectedRunTimeType: "all",
                 selectedState: "all",
                 lastRequestPayload: {}
             };
@@ -282,10 +282,8 @@
                         }, [CV.i18n("common.no-dont-do-that"), CV.i18n("taskmanager.yes-rerun-report")], {title: CV.i18n("taskmanager.confirm-rerun-title"), image: "rerunning-task"});
                     }
                     else if (command === "view-task") {
-                        if (this.disableAutoNavigationToTask) {
-                            self.$emit("view-task", row);
-                        }
-                        else {
+                        self.$emit("view-task", row);
+                        if (!this.disableAutoNavigationToTask) {
                             window.location = row.view + id;
                         }
                     }
