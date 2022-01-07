@@ -143,7 +143,7 @@
         data: function() {
             var self = this;
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("reportsTable", {
-                columns: ["start"],
+                columns: ['report_name', '_placeholder0', 'status', 'type', "_placeholder1", "_placeholder2", "_placeholder3", 'end', 'start'],
                 onRequest: function() {
                     var queryObject = Object.assign({}, self.query);
                     if (self.isManual) {
