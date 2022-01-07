@@ -127,7 +127,7 @@
                     q.type = this.selectedOrigin;
                 }
                 if (this.selectedRunTimeType && this.selectedRunTimeType !== "all") {
-                    q.autoRefresh = this.selectedRunTimeType;
+                    q.autoRefresh = this.selectedRunTimeType === "auto-refresh";
                 }
                 if (this.selectedState && this.selectedState !== "all") {
                     q.status = this.selectedState;
