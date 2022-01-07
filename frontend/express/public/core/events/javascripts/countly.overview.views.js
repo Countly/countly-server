@@ -328,7 +328,7 @@
                     }
                 }
                 else {
-                    this.vm.$root.$emit("cly-error", {message: errored});//show error
+                    this.$root.$emit("cly-error", {message: errored});//show error
                 }
 
             },

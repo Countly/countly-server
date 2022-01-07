@@ -831,7 +831,7 @@
         mixins: [countlyVue.mixins.i18n],
         props: {
             id: {default: "", type: [String, Number], required: false},
-            text: { default: "", type: String },
+            text: { default: "" },
             color: { default: "light-warning", type: String},
             size: {default: "full", type: String},
             visible: {default: true, type: Boolean},

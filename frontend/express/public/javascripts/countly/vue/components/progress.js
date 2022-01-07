@@ -4,7 +4,7 @@
 
     Vue.component("cly-progress-donut", countlyBaseComponent.extend({
         props: {
-            percentage: {type: Number, default: 42},
+            percentage: {default: 42},
             color: {type: [String, Function, Array], default: '#00C3CA'},
             mode: {
                 type: String,
@@ -42,14 +42,15 @@
         props: {
             entities: {
                 required: false,
-                validator: function(value) {
-                    return Array.isArray(value) && value.every(function(entityItem) {
-                        return typeof entityItem.percentage === 'number' && typeof entityItem.color === 'string';
-                    });
-                }
+                // vck: Validator throws false errors when entities are not ready, so disabling it
+                // validator: function(value) {
+                //     return Array.isArray(value) && value.every(function(entityItem) {
+                //         return typeof entityItem.percentage === 'number' && typeof entityItem.color === 'string';
+                //     });
+                // }
             },
             height: {type: Number, required: false},
-            percentage: {type: Number, required: false},
+            percentage: {required: false}, // vck: type constraint removed due to a similar reason explained above
             color: {type: String, required: false},
             backgroundColor: {type: String, required: false},
             tooltip: {type: String, required: false, default: null}
