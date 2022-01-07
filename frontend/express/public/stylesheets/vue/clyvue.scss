@@ -959,7 +959,8 @@
 				border-right: 1px solid #ececec;
                 background-color: #ffffff;
                 overflow: auto;
-                padding: 33px;
+                padding: 20px;
+                box-sizing: border-box;
                 cursor: pointer;
 
                 &.selected {

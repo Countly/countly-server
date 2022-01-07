@@ -1840,6 +1840,18 @@
                     return "-";
                 }
                 return this.countriesData[this.country].value;
+            },
+            inDetailWrapperStyle: function() {
+                var style = {
+                    'overflow': 'hidden',
+                    'height': '100%'
+                };
+
+                if (this.inDetail) {
+                    style.height = 'calc(100% - 185px)';
+                }
+
+                return style;
             }
         },
         methods: {
