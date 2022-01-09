@@ -22,19 +22,20 @@
                 </el-select>
             </div>
         </div>
-
-        <cly-metric-cards v-if="metrics && metrics.t">
-            <cly-metric-card>
-                {{i18n('heatmaps.total-page-views')}}
-                <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5px" v-tooltip.top-center="i18n('heatmaps.total-page-views-tooltip')"></span>
-                <template v-slot:number>{{metrics.t}}</template>
-            </cly-metric-card>
-            <cly-metric-card>
-                {{i18n('heatmaps.avg-scroll-depth')}}
-                <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5px" v-tooltip.top-center="i18n('heatmaps.avg-scroll-depth-tooltip')"></span>
-                <template v-slot:number>{{Number.parseFloat(metrics.scr).toFixed(2) + "%"}}</template>
-            </cly-metric-card>
-        </cly-metric-cards>
+        <cly-section>
+            <cly-metric-cards v-if="metrics && metrics.t">
+                <cly-metric-card>
+                    {{i18n('heatmaps.total-page-views')}}
+                    <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5px" v-tooltip.top-center="i18n('heatmaps.total-page-views-tooltip')"></span>
+                    <template v-slot:number>{{metrics.t}}</template>
+                </cly-metric-card>
+                <cly-metric-card>
+                    {{i18n('heatmaps.avg-scroll-depth')}}
+                    <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5px" v-tooltip.top-center="i18n('heatmaps.avg-scroll-depth-tooltip')"></span>
+                    <template v-slot:number>{{Number.parseFloat(metrics.scr).toFixed(2) + "%"}}</template>
+                </cly-metric-card>
+            </cly-metric-cards>
+        </cly-section>
 
         <cly-dynamic-tabs class="bu-mt-5" v-model="currentTab" :tabs="tabs" :noHistory='true' skin="secondary"></cly-dynamic-tabs>
     </cly-main>
