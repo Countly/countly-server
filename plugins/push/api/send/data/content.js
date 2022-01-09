@@ -1,7 +1,7 @@
 'use strict';
 
 const { PushError } = require('./error'),
-    { S, Validatable } = require('./const');
+    { S, Validatable, PERS_TYPES } = require('./const');
 
 /**
  * Message `contents` array consists of Content objects, it's to be defined the following way (each line below is an element of `contents` array):
@@ -110,6 +110,11 @@ class Content extends Validatable {
                 else if (kk === 'f') {
                     if (typeof opt[kk] !== 'string' || !opt[kk]) {
                         return 'Personalisation fallback must be a non empty string';
+                    }
+                }
+                else if (kk === 't') {
+                    if (typeof opt[kk] !== 'string' || PERS_TYPES.indexOf(opt[kk]) === -1) {
+                        return 'Personalisation type must be a non empty string equal to one of "e, u, c, a"';
                     }
                 }
                 else {

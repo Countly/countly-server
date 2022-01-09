@@ -65,6 +65,12 @@
                     :options="getMatching(tab.options)"
                     @change="handleValueChange"
                     v-model="innerValue">
+                    <template v-slot:option-prefix="scope">
+                        <slot name="option-prefix" v-bind="scope"></slot>
+                    </template>
+                    <template v-slot:option-suffix="scope">
+                        <slot name="option-suffix" v-bind="scope"></slot>
+                    </template>
                 </cly-listbox>
                 <cly-checklistbox
                     v-show="showList"

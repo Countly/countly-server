@@ -28,6 +28,7 @@ async function find_pushes(ids) {
 
 describe('PUSH INTEGRATION TESTS', () => {
     let cohort,
+        d1, d2,
         m1, m2, m3, m4;
 
     it('should reset the app', async() => {
@@ -240,6 +241,175 @@ describe('PUSH INTEGRATION TESTS', () => {
             .expect(res => {
                 should.equal(res.body.count, 3);
                 should.deepEqual(res.body.locales, {default: 0, ru: 1, en: 2});
+            });
+    });
+    it('should create, update, delete & send a draft', async() => {
+        let now = Date.now();
+
+        // it shouldn't allow draft creation without app or platforms
+        await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                demo: true,
+                app: aid,
+                status: 'draft',
+                filter: {
+                    user: JSON.stringify({la: {$in: ['ru']}})
+                },
+                triggers: [
+                    {kind: 'plain', start: new Date(now + 3600000)}
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 400);
+                should.deepEqual(res.body.errors, ['Missing platforms argument']);
+            });
+
+        // ... or with malformed inner fields
+        await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                demo: true,
+                app: aid,
+                platforms,
+                status: 'draft',
+                filter: {
+                    user: 2
+                },
+                triggers: [
+                    {kind: 'plain', start: new Date(now + 3600000)}
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 400);
+                should.ok(res.body.errors);
+            });
+
+        // create a draft without a few fields
+        await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                demo: true,
+                app: aid,
+                platforms,
+                status: 'draft',
+                filter: {
+                    user: JSON.stringify({la: {$in: ['ru']}})
+                },
+                triggers: [
+                    {kind: 'plain', start: new Date(now + 3600000)}
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.ok(res.body._id);
+                should.equal(res.body.app, aid);
+                should.deepEqual(res.body.platforms, platforms);
+                should.ok(res.body.filter);
+                should.equal(res.body.filter.user, JSON.stringify({la: {$in: ['ru']}}));
+                should.ok(res.body.triggers);
+                should.equal(res.body.triggers.length, 1);
+                should.ok(res.body.contents);
+                should.equal(res.body.contents.length, 0);
+                should.ok(res.body.info);
+                should.ok(res.body.info.appName);
+                d1 = res.body;
+                console.log('d1 %j', res.body);
+            });
+
+        // modify it
+        await supertest.post(`/i/push/message/update?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                demo: true,
+                _id: d1._id,
+                status: 'draft',
+                app: aid,
+                platforms,
+                filter: {
+                    user: JSON.stringify({la: {$in: ['en']}})
+                },
+                contents: [
+                    {message: 'message', expiration: 120000},
+                ],
+                triggers: [
+                    {kind: 'plain', start: new Date(now + 3600000)}
+                ],
+                info: Object.assign(d1.info, {title: 'test message'})
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.equal(res.body._id, d1._id);
+                should.equal(res.body.app, aid);
+                should.deepEqual(res.body.platforms, platforms);
+                should.ok(res.body.filter);
+                should.equal(res.body.filter.user, JSON.stringify({la: {$in: ['en']}}));
+                should.ok(res.body.triggers);
+                should.equal(res.body.triggers.length, 1);
+                should.ok(res.body.contents);
+                should.equal(res.body.contents.length, 1);
+                should.ok(res.body.info);
+                should.ok(res.body.info.appName);
+                should.equal(res.body.info.title, 'test message');
+                d1 = res.body;
+                console.log('d1 %j', res.body);
+            });
+
+
+        // delete it
+        await supertest.get(`/i/push/message/remove?api_key=${api_key}&app_id=${aid}&_id=${d1._id}`)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+            });
+
+        // create another draft
+        await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                demo: true,
+                status: 'draft',
+                app: aid,
+                platforms,
+                filter: {
+                    user: JSON.stringify({la: {$in: ['en']}})
+                },
+                contents: [
+                    {message: 'message', expiration: 120000},
+                ],
+                triggers: [
+                    {kind: 'plain', start: new Date(now + 3400000)}
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.ok(res.body._id);
+                should.equal(res.body.app, aid);
+                should.deepEqual(res.body.platforms, platforms);
+                should.ok(res.body.filter);
+                should.equal(res.body.filter.user, JSON.stringify({la: {$in: ['en']}}));
+                should.ok(res.body.triggers);
+                should.equal(res.body.triggers.length, 1);
+                should.ok(res.body.contents);
+                should.equal(res.body.contents.length, 1);
+                d2 = res.body;
+                console.log('d2 %j', res.body);
+            });
+
+        // schedule d2
+        d2.demo = true;
+        d2.status = 'created';
+        d2.filter.user = JSON.stringify({la: {$in: ['es']}});
+        delete d2.result;
+        delete d2.info;
+        await supertest.post(`/i/push/message/update?api_key=${api_key}&app_id=${aid}&id=${d2._id}`)
+            .send(d2)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.equal(res.body._id, d2._id);
+                should.equal(res.body.status, 'created');
+                should.equal(res.body.filter.user, JSON.stringify({la: {$in: ['es']}}));
             });
     });
     it('should create a few simple messages', async() => {
@@ -474,13 +644,14 @@ describe('PUSH INTEGRATION TESTS', () => {
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 3);
-                should.equal(res.body.iTotalDisplayRecords, 3);
+                should.equal(res.body.iTotalRecords, 4);
+                should.equal(res.body.iTotalDisplayRecords, 4);
                 should.ok(res.body.aaData);
-                should.equal(res.body.aaData.length, 3);
+                should.equal(res.body.aaData.length, 4);
                 should.equal(res.body.aaData.filter(m => m._id === m1._id).length, 1);
                 should.equal(res.body.aaData.filter(m => m._id === m2._id).length, 1);
                 should.equal(res.body.aaData.filter(m => m._id === m4._id).length, 1);
+                should.equal(res.body.aaData.filter(m => m._id === d2._id).length, 1);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&auto=true`)
             .expect('Content-Type', /json/)
@@ -505,28 +676,30 @@ describe('PUSH INTEGRATION TESTS', () => {
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 3);
-                should.equal(res.body.iTotalDisplayRecords, 3);
+                should.equal(res.body.iTotalRecords, 4);
+                should.equal(res.body.iTotalDisplayRecords, 4);
                 should.ok(res.body.aaData);
-                should.equal(res.body.aaData.length, 2);
+                should.equal(res.body.aaData.length, 3);
                 should.equal(res.body.aaData[0]._id, m2._id);
                 should.equal(res.body.aaData[1]._id, m1._id);
+                should.equal(res.body.aaData[2]._id, d2._id);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&sSearch=message`)
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 3);
-                should.equal(res.body.iTotalDisplayRecords, 1);
+                should.equal(res.body.iTotalRecords, 4);
+                should.equal(res.body.iTotalDisplayRecords, 2);
                 should.ok(res.body.aaData);
-                should.equal(res.body.aaData.length, 1);
+                should.equal(res.body.aaData.length, 2);
                 should.equal(res.body.aaData[0]._id, m1._id);
+                should.equal(res.body.aaData[1]._id, d2._id);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&sSearch=${encodeURIComponent('заголо')}`)
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 3);
+                should.equal(res.body.iTotalRecords, 4);
                 should.equal(res.body.iTotalDisplayRecords, 1);
                 should.ok(res.body.aaData);
                 should.equal(res.body.aaData.length, 1);
@@ -536,7 +709,7 @@ describe('PUSH INTEGRATION TESTS', () => {
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 3);
+                should.equal(res.body.iTotalRecords, 4);
                 should.equal(res.body.iTotalDisplayRecords, 2);
                 should.ok(res.body.aaData);
                 should.equal(res.body.aaData.length, 2);

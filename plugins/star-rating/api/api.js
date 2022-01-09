@@ -14,6 +14,7 @@ var ejs = require("ejs"),
     reportUtils = require('../../reports/api/utils.js');
 
 var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
+var surveysEnabled = plugins.getPlugins().indexOf('surveys') > -1;
 
 if (cohortsEnabled) {
     var cohorts = require('../../cohorts/api/parts/cohorts');
@@ -95,6 +96,14 @@ const widgetProperties = {
         type: "Boolean"
     },
     logo: {
+        required: false,
+        type: "String"
+    },
+    appearance: {
+        required: false,
+        type: "Object"
+    },
+    showPolicy: {
         required: false,
         type: "String"
     },
@@ -260,28 +269,69 @@ function uploadFile(myfile, id, callback) {
 }
 
 (function() {
-
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
 
-    // Api call to get all ratings widgets
+    /*
+    * we have two different /o/sdk handler endpoint in surveys and ratings
+    * this one is non-dominant
+    * if surveys enabled, this will ignore requests, if not, this will handle
+    */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
-
-        if (params.qstring.method !== "feedback" || (params.qstring.method === "feedback" && params.qstring.type !== "rating")) {
+        // do not respond if this isn't feedback fetch request 
+        // or surveys plugin enabled
+        if (params.qstring.method !== "feedback" || surveysEnabled) {
             return false;
         }
 
-        return new Promise(function(resolve/*, reject*/) {
+        return new Promise(function(resolve) {
+            var widgets = [];
+            plugins.dispatch("/feedback/widgets", { params: params, widgets: widgets }, function() {
+                common.returnMessage(params, 200, widgets);
+                return resolve(true);
+            });
+        });
+    });
+
+    /*
+    * internal event that fetch ratings widget
+    * and push them to passed widgets array.
+    */
+    plugins.register("/feedback/widgets", function(ob) {
+        return new Promise(function(resolve, reject) {
+            var params = ob.params;
             params.qstring.app_id = params.app_id;
             params.app_user = params.app_user || {};
-            var user = JSON.parse(JSON.stringify(params.app_user));
 
-            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating" }, { _id: 1, cohortID: 1 }).toArray(function(err, widgets) {
+            var user = JSON.parse(JSON.stringify(params.app_user));
+            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, cohortID: 1, type: 1, appearance: 1, showPolicy: 1, trigger_position: 1, hide_sticker: 1, trigger_bg_color: 1, trigger_font_color: 1, trigger_button_text: 1, trigger_size: 1}).toArray(function(err, widgets) {
                 if (err) {
                     log.e(err);
+                    reject(err);
                 }
+
+                widgets = widgets.map((widget) => {
+                    widget.appearance = {};
+                    widget.appearance.position = widget.trigger_position;
+                    widget.appearance.bg_color = widget.trigger_bg_color;
+                    widget.appearance.text_color = widget.trigger_font_color;
+                    widget.appearance.text = widget.trigger_button_text;
+                    widget.appearance.size = widget.trigger_size;
+                    if (widget.hide_sticker) {
+                        widget.appearance.hideS = true;
+                    }
+                    // remove this props from response
+                    delete widget.hide_sticker;
+                    delete widget.trigger_position;
+                    delete widget.trigger_bg_color;
+                    delete widget.trigger_font_color;
+                    delete widget.trigger_button_text;
+                    delete widget.trigger_size;
+                    return widget;
+                });
+
                 if (widgets && widgets.length > 0) {
                     //filter out based on cohorts
                     if (cohortsEnabled) {
@@ -301,13 +351,10 @@ function uploadFile(myfile, id, callback) {
                             }
                         });
                     }
-                    common.returnMessage(params, 200, widgets);
-                    return resolve(true);
+                    // concat with tricky way
+                    ob.widgets.push.apply(ob.widgets, widgets);
                 }
-                else {
-                    common.returnMessage(params, 200, []);
-                    return resolve(true);
-                }
+                resolve();
             });
         });
     });
@@ -337,6 +384,9 @@ function uploadFile(myfile, id, callback) {
         widget.timesShown = 0;
         widget.ratingsCount = 0;
         widget.ratingsSum = 0;
+        widget.showPolicy = "afterPageLoad";
+        widget.appearance = {};
+
         //widget.created_by = common.db.ObjectID(obParams.member._id);
 
         validateCreate(obParams, FEATURE_NAME, function(params) {

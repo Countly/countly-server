@@ -153,6 +153,15 @@
                     };
                 }
                 return false;
+            },
+            vueScrollStyle: function() {
+                if (this.searchable) {
+                    return {
+                        'height': 'calc(100% - 58px)'
+                    };
+                }
+
+                return false;
             }
         }
     });
@@ -197,6 +206,7 @@
             }
         },
         template: '<div\
+                    style="height: 100%"\
                     class="cly-vue-listbox"\
                     tabindex="0"\
                     :class="topClasses"\
@@ -216,6 +226,7 @@
                         </form>\
                     </div>\
                     <vue-scroll\
+                        :style="vueScrollStyle"\
                         v-if="searchedOptions.length > 0"\
                         :ops="scrollCfg"\>\
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
@@ -354,6 +365,7 @@
             }
         },
         template: '<div\
+                    style="height: 100%"\
                     class="cly-vue-listbox"\
                     tabindex="0"\
                     :class="topClasses"\
@@ -362,6 +374,7 @@
                     @focus="handleHover"\
                     @blur="handleBlur">\
                     <vue-scroll\
+                        :style="vueScrollStyle"\
                         v-if="options.length > 0"\
                         :ops="scrollCfg"\>\
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
@@ -789,6 +802,9 @@
                 if (this.radioDirection === "horizontal") {
                     classes = "radio-wrapper radio-wrapper-horizontal bu-columns bu-m-0";
                 }
+                else {
+                    classes = "radio-wrapper bu-is-flex bu-is-flex-direction-column";
+                }
                 return classes;
             },
             buttonClasses: function() {
@@ -806,6 +822,9 @@
                 if (this.radioDirection === "horizontal") {
                     classes = "width: " + 100 / itemCn + "%;";
                 }
+
+                classes += "height: 100%;";
+
                 return classes;
             }
         },
@@ -816,20 +835,26 @@
                 }
             }
         },
-        template: '<div class="cly-vue-radio-block" v-bind:class="topClasses">\n' +
-                             '<div :class="wrapperClasses">\n' +
-                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i"  :class="buttonClasses" :styles="buttonStyles" >\n' +
-                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex"><div class="bu-is-flex"><div class="box"></div></div>\n' +
-                                    '<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between"><div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\n' +
-                                    '<div class="bu-is-flex bu-is-align-items-baseline number">' +
-										'<h2>{{item.number}}</h2>' +
-										'<div v-if="item.trend == \'u\'" class="trend-up">\n' +
-											'<i class="fas fa-arrow-up"></i><span>{{item.trendValue}}</span>\n' +
-										'</div>\n' +
-										'<div v-if="item.trend == \'d\'" class="trend-down">\n' +
-											'<i class="fas fa-arrow-down"></i><span>{{item.trendValue}}</span>\n' +
-										'</div>\n' +
-									'</div></div></div>\n' +
+        template: '<div class="cly-vue-radio-block" v-bind:class="topClasses" style="height: 100%; overflow: auto; border-right: 1px solid #ececec">\n' +
+                             '<div :class="wrapperClasses" style="height: 100%">\n' +
+                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i"  :class="buttonClasses" :style="buttonStyles" >\n' +
+                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex bu-is-justify-content-center bu-is-align-items-center" style="height: 100%;">\
+                                        <div class="bu-is-flex">\
+                                            <div class="box"></div>\
+                                            <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
+                                                <div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\
+                                                <div class="bu-is-flex bu-is-align-items-baseline number">\
+                                                    <h2>{{item.number}}</h2>\
+                                                    <div v-if="item.trend == \'u\'" class="trend-up bu-ml-2">\
+                                                        <i class="cly-trend-up-icon ion-android-arrow-up"></i><span>{{item.trendValue}}</span>\
+                                                    </div>\
+                                                    <div v-if="item.trend == \'d\'" class="trend-down bu-ml-2">\
+                                                        <i class="cly-trend-down-icon ion-android-arrow-down"></i><span>{{item.trendValue}}</span>\
+                                                    </div>\
+                                                </div>\
+                                            </div>\
+                                        </div>\n' +
+                                    '</div>\n' +
                                 '</div>\n' +
                             '</div>\n' +
                         '</div>'

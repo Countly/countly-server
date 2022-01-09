@@ -352,6 +352,22 @@
             }
             return false;
         },
+        hasNoAndroidCredentialsError: function(error) {
+            if (error.responseJSON) {
+                return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
+                    return message === 'No push credentials for platform a';
+                });
+            }
+            return false;
+        },
+        hasNoIosCredentialsError: function(error) {
+            if (error.responseJSON) {
+                return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
+                    return message === 'No push credentials for platform i';
+                });
+            }
+            return false;
+        },
         isNoUsersFoundError: function(error) {
             return error.message === 'No users were found from selected configuration';
         },
@@ -518,11 +534,7 @@
                         }
                         resolve();
                     },
-                    error: function(error) {
-                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
-                            reject(new Error('No push notification credentials were found'));
-                            return;
-                        }
+                    error: function() {
                         reject(new Error('Unknown error occurred.Please try again later.'));
                         //TODO:log error
                     }
@@ -547,13 +559,9 @@
                         }
                         resolve();
                     },
-                    error: function(error) {
-                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
-                            reject(new Error('No push notification credentials were found'));
-                            return;
-                        }
-                        reject(new Error('Unknown error occurred.Please try again later.'));
+                    error: function() {
                         //TODO:log error
+                        reject(new Error('Unknown error occurred.Please try again later.'));
                     }
                 }, {disableAutoCatch: true});
             });
@@ -571,18 +579,26 @@
                             return;
                         }
                         if (response.error) {
-                            reject(new Error('Unknown error occurred'));
+                            reject(new Error('Unknown error occurred.Please try again later.'));
                             return;
                         }
                         resolve(response);
                     },
                     error: function(error) {
+                        //TODO:log error
+                        if (countlyPushNotification.helper.hasNoAndroidCredentialsError(error)) {
+                            reject(new Error('No push notification credentials were found for Android'));
+                            return;
+                        }
+                        if (countlyPushNotification.helper.hasNoIosCredentialsError(error)) {
+                            reject(new Error('No push notification credentials were found for IOS'));
+                            return;
+                        }
                         if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
                             reject(new Error('No push notification credentials were found'));
                             return;
                         }
-                        reject(new Error('Unknown error occurred'));
-                        //TODO:log error
+                        reject(new Error('Unknown error occurred. Please try again later.'));
                     }
                 }, {disableAutoCatch: true});
             });
@@ -734,19 +750,19 @@
                 dto.aaData.forEach(function(pushNotificationDtoItem, index) {
                     rowsModel[index] = {
                         _id: pushNotificationDtoItem._id,
-                        name: pushNotificationDtoItem.info.title || '-',
+                        name: pushNotificationDtoItem.info && pushNotificationDtoItem.info.title || '-',
                         status: self.mapStatus(pushNotificationDtoItem),
                         createdDateTime: {
-                            date: moment(pushNotificationDtoItem.info.created).format("MMMM Do YYYY"),
-                            time: moment(pushNotificationDtoItem.info.created).format("h:mm:ss a")
+                            date: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("MMMM Do YYYY"),
+                            time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("h:mm:ss a")
                         },
                         sentDateTime: {
-                            date: moment(pushNotificationDtoItem.info.started).format("MMMM Do YYYY"),
-                            time: moment(pushNotificationDtoItem.info.started).format("h:mm:ss a")
+                            date: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.started).format("MMMM Do YYYY"),
+                            time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.started).format("h:mm:ss a")
                         },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
-                        createdBy: pushNotificationDtoItem.info.createdBy || '',
+                        createdBy: pushNotificationDtoItem.info && pushNotificationDtoItem.info.createdByName || '',
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                         content: self.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
                     };
@@ -930,9 +946,8 @@
                 result[TypeEnum.TRANSACTIONAL] = dto.sent_tx.total;
                 return result;
             },
-            mapMainDtoToModel: function(allPushNotificationsDto, dashboardDto, type) {
+            mapDashboard: function(dashboardDto, type) {
                 return {
-                    rows: this.mapRows(allPushNotificationsDto),
                     series: this.mapSeries(dashboardDto, type),
                     periods: this.mapPeriods(dashboardDto, type),
                     totalAppUsers: parseInt(dashboardDto.users),
@@ -942,7 +957,7 @@
                 };
             },
             mapDtoToBaseModel: function(dto) {
-                var localizations = this.mapLocalizations(dto.info.locales);
+                var localizations = this.mapLocalizations(dto.info && dto.info.locales || []);
                 return {
                     _id: dto._id || null,
                     status: this.mapStatus(dto),
@@ -950,18 +965,18 @@
                         date: moment(dto.created).valueOf(),
                         time: moment(dto.created).format("H:mm")
                     },
-                    name: dto.info.title || "-",
+                    name: dto.info && dto.info.title || "-",
                     sent: dto.result.sent,
                     actioned: dto.result.actioned,
                     failed: dto.result.errors,
                     processed: dto.result.processed,
                     total: dto.result.total,
-                    createdBy: dto.info.createdBy,
+                    createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
                     localizations: localizations,
                     message: this.mapMessageLocalizationsList(localizations, dto),
                     settings: this.mapSettings(dto),
-                    messageType: dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
+                    messageType: dto.info && dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
                     errors: this.mapErrors(dto),
                     locations: dto.filter && dto.filter.geos || [],
                     cohorts: dto.filter && dto.filter.cohorts || [],
@@ -1431,13 +1446,13 @@
                 if (model.user) {
                     result.user = model.user;
                 }
-                if (model.cohorts.length) {
+                if (model.type === TypeEnum.ONE_TIME && model[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED && model.cohorts.length) {
                     result.cohorts = model.cohorts;
                 }
-                if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
+                if (model.type === TypeEnum.ONE_TIME && model[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED && model.locations.length) {
                     result.geos = model.locations;
                 }
-                if (model.type === TypeEnum.ONE_TIME && model.locations.length) {
+                if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
                     result.geos = model.locations;
                 }
                 if (model.drill) {
@@ -1745,22 +1760,19 @@
             });
         },
         fetchAll: function(type) {
-            var self = this;
-            return new Promise(function(resolve, reject) {
-                Promise.all([self.fetchByType(type), self.fetchDashboard(type)])
-                    .then(function(responses) {
-                        resolve(countlyPushNotification.mapper.incoming.mapMainDtoToModel(responses[0], responses[1], type));
-                    }).catch(function(error) {
-                        reject(error);
-                    });
-            });
-        },
-        fetchByType: function(type) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
             };
             Object.assign(data, this.getTypeUrlParameter(type));
-            return countlyPushNotification.api.findAll(data);
+            return new Promise(function(resolve, reject) {
+                countlyPushNotification.api.findAll(data)
+                    .then(function(response) {
+                        resolve(countlyPushNotification.mapper.incoming.mapRows(response));
+                    })
+                    .catch(function(error) {
+                        reject(error);
+                    });
+            });
         },
         fetchById: function(id) {
             var self = this;
@@ -1796,11 +1808,18 @@
                 });
             });
         },
-        fetchDashboard: function() {
+        fetchDashboard: function(type) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
             };
-            return countlyPushNotification.api.getDashboard(data);
+            return new Promise(function(resolve, reject) {
+                countlyPushNotification.api.getDashboard(data)
+                    .then(function(response) {
+                        resolve(countlyPushNotification.mapper.incoming.mapDashboard(response, type));
+                    }).catch(function(error) {
+                        reject(error);
+                    });
+            });
         },
         fetchMediaMetadata: function(url) {
             return new Promise(function(resolve, reject) {
@@ -1820,7 +1839,7 @@
                 return Promise.resolve([]);
             });
         },
-        prepare: function(pushNotificationModel, options) {
+        estimate: function(pushNotificationModel, options) {
             return new Promise(function(resolve, reject) {
                 var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
                 var data = {
@@ -1837,6 +1856,7 @@
                     var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
                     resolve({localizations: localizations, total: response.count, _id: response._id});
                 }).catch(function(error) {
+                    //TODO:log error
                     reject(error);
                 });
             });
@@ -2007,21 +2027,24 @@
         totalSent[TypeEnum.TRANSACTIONAL] = 0;
 
         return {
-            selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
-            series: {
-                monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
-                weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
-            },
             rows: [],
-            periods: {monthly: [], weekly: []},
-            totalAppUsers: 0,
-            enabledUsers: enabledUsers,
-            totalActions: totalActions,
-            totalSent: totalSent,
+            dashboard: {
+                series: {
+                    monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
+                    weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
+                    daily: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
+                },
+                periods: {monthly: [], weekly: []},
+                totalAppUsers: 0,
+                enabledUsers: enabledUsers,
+                totalActions: totalActions,
+                totalSent: totalSent,
+            },
+            selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
             statusFilter: countlyPushNotification.service.StatusEnum.ALL,
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
-            totalPushMessagesSent: 0,
-            totalUserActionsPerformed: 0,
+            isDashboardLoading: false,
+            areRowsLoading: false,
             userCommand: {
                 type: null,
                 pushNotificationId: null
@@ -2032,13 +2055,27 @@
 
     var mainActions = {
         fetchAll: function(context, useLoader) {
-            context.dispatch('onFetchInit', {useLoader: useLoader});
+            if (useLoader) {
+                context.dispatch('onSetAreRowsLoading', true);
+            }
             countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType)
                 .then(function(response) {
-                    context.commit('setPushNotifications', response);
-                    context.dispatch('onFetchSuccess', {useLoader: useLoader});
-                }).catch(function(error) {
-                    context.dispatch('onFetchError', {error: error, useLoader: useLoader});
+                    context.commit('setRows', response);
+                }).catch(function() {
+                    //TODO: log error
+                }).finally(function() {
+                    context.dispatch('onSetAreRowsLoading', false);
+                });
+        },
+        fetchDashboard: function(context) {
+            context.dispatch('onSetIsDashboardLoading', true);
+            countlyPushNotification.service.fetchDashboard(context.state.selectedPushNotificationType)
+                .then(function(response) {
+                    context.commit('setDashboard', response);
+                }).catch(function() {
+                    //TODO: log error
+                }).finally(function() {
+                    context.dispatch('onSetIsDashboardLoading', false);
                 });
         },
         onDelete: function(context, id) {
@@ -2048,14 +2085,9 @@
                     context.dispatch('fetchAll');
                     context.dispatch('onFetchSuccess', {useLoader: true});
                 }).catch(function(error) {
+                    //TODO: log error
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                 });
-        },
-        onUserCommand: function(context, payload) {
-            context.commit('setUserCommand', payload);
-        },
-        onSetIsDrawerOpen: function(context, value) {
-            context.commit('setIsDrawerOpen', value);
         },
         onApprove: function(context, id) {
             context.dispatch('onFetchInit', {useLoader: true});
@@ -2076,9 +2108,21 @@
                 //TODO: log error
             });
         },
+        onUserCommand: function(context, payload) {
+            context.commit('setUserCommand', payload);
+        },
+        onSetIsDrawerOpen: function(context, value) {
+            context.commit('setIsDrawerOpen', value);
+        },
+        onSetAreRowsLoading: function(context, value) {
+            context.commit('setAreRowsLoading', value);
+        },
+        onSetIsDashboardLoading: function(context, value) {
+            context.commit('setIsDashboardLoading', value);
+        },
         onSetPushNotificationType: function(context, value) {
-            context.commit('setPushNotificationType', value);
             context.commit('resetPushNotifications');
+            context.commit('setPushNotificationType', value);
         },
         onSetPlatformFilter: function(context, value) {
             context.commit('setPlatformFilter', value);
@@ -2093,12 +2137,19 @@
             state.selectedPushNotificationType = value;
         },
         resetPushNotifications: function(state) {
-            state.series = countlyPushNotification.helper.getInitialSeriesStateByType(state.selectedPushNotificationType);
-            state.rows = [];
-            state.periods = countlyPushNotification.helper.getInitialPeriodsStateByType(state.selectedPushNotificationType);
+            Object.assign(state, getMainInitialState());
         },
-        setPushNotifications: function(state, value) {
-            Object.assign(state, value);
+        setDashboard: function(state, value) {
+            state.dashboard = value;
+        },
+        setIsDashboardLoading: function(state, value) {
+            state.isDashboardLoading = value;
+        },
+        setAreRowsLoading: function(state, value) {
+            state.areRowsLoading = value;
+        },
+        setRows: function(state, value) {
+            state.rows = value;
         },
         setUserCommand: function(state, value) {
             state.userCommand = value;

@@ -291,7 +291,8 @@
                 CountlyHelpers.notify({
                     title: title,
                     message: message,
-                    info: info
+                    info: info,
+                    type: "info"
                 });
             }
         });
@@ -302,14 +303,16 @@
             CountlyHelpers.notify({
                 title: CV.i18n("assistant.taskmanager.longTaskTooLong.title"),
                 message: CV.i18n("assistant.taskmanager.longTaskTooLong.message"),
-                info: CV.i18n("assistant.taskmanager.longTaskTooLong.info")
+                info: CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
+                type: "info"
             });
         },
         duplicate: function() {
             CountlyHelpers.notify({
                 title: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.title"),
                 message: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.message"),
-                info: CV.i18n("assistant.taskmanager.longTaskTooLong.info")
+                info: CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
+                type: "info"
             });
         },
         completed: function(id, fetchedTask) {

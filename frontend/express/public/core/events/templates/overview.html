@@ -16,25 +16,25 @@
 			<el-button disabled icon="el-icon-date">{{i18n('events.overview.last-30days')}}</el-button>
 		  </div>
 		  <cly-section>
-			<cly-metric-cards v-if="eventsOverview.length>0">
-			  <cly-metric-card formatting="long" :number=eventsOverview[0].value color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
-				{{eventsOverview[0].name}}
-				<cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
-				<span v-if="eventsOverview[0].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-down"></i>{{eventsOverview[0].change}}</span>
-				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-up"></i>{{eventsOverview[0].change}}</span>
+			<cly-metric-cards :multiline="false" v-if="eventsOverview.length>0">
+			  <cly-metric-card formatting="long" :number=eventsOverview[0].value :tooltip="eventsOverview[0].name" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+					<span class="has-ellipsis" v-tooltip="eventsOverview[0].name">{{eventsOverview[0].name}}</span>
+				<!-- <cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon> -->
+				<span v-if="eventsOverview[0].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[0].change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{eventsOverview[0].change}}</span>
 			  </cly-metric-card>
-			  <cly-metric-card :number=eventsOverview[1].value color="#097EFF" :label=eventsOverview[1].name numberClasses="bu-is-flex bu-is-align-items-center">
-				{{eventsOverview[1].name}}
-				<cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
+			  <cly-metric-card :number=eventsOverview[1].value color="#097EFF" :tooltip="eventsOverview[1].name" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis" v-tooltip="eventsOverview[1].name">{{eventsOverview[1].name}}</span>
+				<!-- <cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon> -->
 				<div slot="number">{{eventsOverview[1].value}}</div>
-				<span v-if="eventsOverview[1].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-down"></i>{{eventsOverview[1].change}}</span>
-				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-up"></i>{{eventsOverview[1].change}}</span>
+				<span v-if="eventsOverview[1].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[1].change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{eventsOverview[1].change}}</span>
 			  </cly-metric-card>
-			  <cly-metric-card :number=eventsOverview[2].value color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
-				{{eventsOverview[2].name}}
-				<cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
-				<span v-if="eventsOverview[2].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-down"></i>{{eventsOverview[2].change}}</span>
-				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-up"></i>{{eventsOverview[2].change}}</span>
+			  <cly-metric-card :number=eventsOverview[2].value color="#097EFF" :tooltip="eventsOverview[2].name" numberClasses="bu-is-flex bu-is-align-items-center">
+				<span class="has-ellipsis" v-tooltip="eventsOverview[2].name">{{eventsOverview[2].name}}</span>
+				<!-- <cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon> -->
+				<span v-if="eventsOverview[2].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{eventsOverview[2].change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{eventsOverview[2].change}}</span>
 			  </cly-metric-card>
 			</cly-metric-cards>
 		  </cly-section>
@@ -114,7 +114,7 @@
 </script>
   <script type="text/x-template" id="overview-tables-events">
 	<div>
-		<cly-datatable-n :default-sort="{prop: 'count', order: 'descending'}" :rows="eventsTableRows" v-loading="isTableLoading"  :rows="eventsTableRows" class="is-clickable">
+		<cly-datatable-n :default-sort="{prop: 'count', order: 'descending'}" :rows="eventsTableRows" v-loading="isTableLoading" class="is-clickable">
 		  <template v-slot:header-left="selectScope">
 		  </template>
 		  <template v-slot="scope">

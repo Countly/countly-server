@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCommon, countlyEventsOverview,CV,app*/
+/* global countlyVue, countlyCommon, countlyEventsOverview,CV, app, CountlyHelpers*/
 (function() {
     var EventsTable = countlyVue.views.BaseView.extend({
         mixins: [countlyVue.mixins.i18n],
@@ -81,9 +81,10 @@
                 var self = this;
                 var alreadyExists = false;
                 if (this.selectedEvents.length === 12) {
-                    this.$notify.error({
+                    CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
-                        message: CV.i18n("events.overview.max-c")
+                        message: CV.i18n("events.overview.max-c"),
+                        type: "error"
                     });
                     return;
                 }
@@ -95,9 +96,10 @@
                     return true;
                 });
                 if (alreadyExists) {
-                    this.$notify.error({
+                    CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
-                        message: CV.i18n("events.overview.have-already-one")
+                        message: CV.i18n("events.overview.have-already-one"),
+                        type: "error"
                     });
                 }
                 else {
@@ -140,8 +142,8 @@
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
                             <slot name="countValue"></slot>\
-                            <span v-if="trend === \'u\'" class="cly-events-breakdown-horizontal-tile__trend cly-trend-up bu-pl-2"><i class="cly-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-up"></i>{{change}}</span>\
-                            <span v-else class="cly-events-breakdown-horizontal-tile__trend cly-trend-down bu-pl-2"><i class="cly-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-down"></i>{{change}}</span>\
+                            <span v-if="trend === \'u\'" class="cly-events-breakdown-horizontal-tile__trend cly-trend-up bu-pl-2"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{change}}</span>\
+                            <span v-else class="cly-events-breakdown-horizontal-tile__trend cly-trend-down bu-pl-2"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{change}}</span>\
                             </div>\
                         </div>\
                         <slot name="totalPercentage">\
@@ -275,7 +277,24 @@
                 items: [],
                 linkTo: {"label": CV.i18n('events.go-to-events'), "href": "#/analytics/events/overview"},
                 isLoading: false,
-                isLoadedOnce: false
+                isLoadedOnce: false,
+                scrollCards: {
+                    vuescroll: {
+                        sizeStrategy: 'number'
+                    },
+                    scrollPanel: {
+                        initialScrollX: false,
+                    },
+                    rail: {
+                        gutterOfSide: "0px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: false
+                    }
+                },
             };
         },
         mounted: function() {
@@ -309,7 +328,7 @@
                     }
                 }
                 else {
-                    this.vm.$root.$emit("cly-error", {message: errored});//show error
+                    this.$root.$emit("cly-error", {message: errored});//show error
                 }
 
             },
@@ -329,7 +348,17 @@
             calculateAllData: function() {
                 var data = this.$store.getters["countlyEventsOverview/topEvents"];
                 data = data.splice(0, 5);
+                data.sort(function(a, b) {
+                    return parseFloat(b.value) - parseFloat(a.value);
+                });
                 this.items = data;
+            },
+            handleCardsScroll: function() {
+                if (this.$refs && this.$refs.bottomSlider) {
+                    var pos1 = this.$refs.topSlider.getPosition();
+                    pos1 = pos1.scrollLeft;
+                    this.$refs.bottomSlider.scrollTo({x: pos1}, 0);
+                }
             }
         }
     });

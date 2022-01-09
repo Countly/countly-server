@@ -471,7 +471,6 @@
             methods: {
                 onDashboardMenuItemClick: function(dashboard) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: dashboard});
-                    app.navigate('#/custom/' + dashboard._id, true);
                 },
                 identifySelectedDashboard: function(dashboards) {
                     var currLink = Backbone.history.fragment;

@@ -504,6 +504,12 @@
                         },
                         'Ankara': {
                             'value': 30
+                        },
+                        'Antalya': {
+                            'value': 200
+                        },
+                        'Izmir': {
+                            'value': 150
                         }
                     }
                 }

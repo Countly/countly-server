@@ -380,9 +380,13 @@
                         "percent": percent,
                         "percentText": percent + " % " + CV.i18n('common.of-total'),
                         "info": "some description",
-                        "color": "#CDAD7A"
+                        "color": "#CDAD7A",
+                        "value_": values[k].t
                     });
                 }
+                blocks.sort(function(a, b) {
+                    return parseFloat(b.value_) - parseFloat(a.value_);
+                });
                 this.sourceItems = blocks;
             }
         }

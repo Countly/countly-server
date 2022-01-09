@@ -3,21 +3,6 @@ var AppBrowserView = countlyVue.views.create({
     template: CV.T("/browser/templates/browser.html"),
     data: function() {
         return {
-            scrollOptions: {
-                vuescroll: {},
-                scrollPanel: {
-                    initialScrollX: false,
-                },
-                rail: {
-                    gutterOfSide: "0px"
-                },
-                bar: {
-                    background: "#A7AEB8",
-                    size: "6px",
-                    specifyBorderRadius: "3px",
-                    keepShow: true
-                }
-            },
             scrollCards: {
                 vuescroll: {},
                 scrollPanel: {
@@ -31,6 +16,22 @@ var AppBrowserView = countlyVue.views.create({
                     size: "6px",
                     specifyBorderRadius: "3px",
                     keepShow: false
+                }
+            },
+            breakdownScrollOps: {
+                vuescroll: {},
+                scrollPanel: {
+                    initialScrollX: false,
+                },
+                rail: {
+                    gutterOfSide: "1px",
+                    gutterOfEnds: "15px"
+                },
+                bar: {
+                    background: "#A7AEB8",
+                    size: "6px",
+                    specifyBorderRadius: "3px",
+                    keepShow: true
                 }
             },
             description: CV.i18n('browser.page-desc'),
@@ -198,7 +199,7 @@ var AppBrowserView = countlyVue.views.create({
                     var percent = Math.round((data[k][property] || 0) * 1000 / (browsers[z][property] || 1)) / 10;
                     display.push({
                         "name": data[k].browser_version,
-                        "value": countlyCommon.getShortNumber(data[k][property] || 0),
+                        "description": countlyCommon.getShortNumber(data[k][property] || 0),
                         "percent": percent,
                         "bar": [{
                             percentage: percent,
@@ -207,7 +208,7 @@ var AppBrowserView = countlyVue.views.create({
                         ]
                     });
                 }
-                returnData.push({"data": display, "label": browsers[z].label, itemCn: display.length});
+                returnData.push({"values": display, "label": browsers[z].label, itemCn: display.length});
             }
             return returnData;
         },

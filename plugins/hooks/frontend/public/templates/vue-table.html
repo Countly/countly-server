@@ -23,9 +23,10 @@
         </template>
 
         <template v-slot="scope">
-            <el-table-column fixed="left" width="100" label="">
+            <el-table-column fixed="left" width="88" label="">
                 <template v-slot="rowScope">
                     <el-switch :value="rowScope.row.enabled"
+                        class="bu-ml-4  bu-mr-2" 
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                     </el-switch>
                 </template>

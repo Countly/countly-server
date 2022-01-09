@@ -127,7 +127,7 @@
                     q.type = this.selectedOrigin;
                 }
                 if (this.selectedRunTimeType && this.selectedRunTimeType !== "all") {
-                    q.autoRefresh = this.selectedRunTimeType;
+                    q.autoRefresh = this.selectedRunTimeType === "auto-refresh";
                 }
                 if (this.selectedState && this.selectedState !== "all") {
                     q.status = this.selectedState;
@@ -143,7 +143,7 @@
         data: function() {
             var self = this;
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("reportsTable", {
-                columns: ["start"],
+                columns: ['report_name', '_placeholder0', 'status', 'type', "_placeholder1", "_placeholder2", "_placeholder3", 'end', 'start'],
                 onRequest: function() {
                     var queryObject = Object.assign({}, self.query);
                     if (self.isManual) {
@@ -202,7 +202,7 @@
                 tableStore: tableStore,
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "reportsTable"),
                 availableOrigins: {
-                    "all": CV.i18n("common.all"),
+                    "all": CV.i18n("report-manager.all-origins"),
                     "funnels": CV.i18n("sidebar.funnels") || "Funnels",
                     "drill": CV.i18n("drill.drill") || "Drill",
                     "flows": CV.i18n("flows.flows") || "Flows",
@@ -211,20 +211,20 @@
                     "dbviewer": CV.i18n("dbviewer.title") || "DBViewer"
                 },
                 availableRunTimeTypes: {
-                    "all": CV.i18n("common.all"),
+                    "all": CV.i18n("report-manager.all-types"),
                     "auto-refresh": CV.i18n("taskmanager.auto"),
                     "none-auto-refresh": CV.i18n("taskmanager.manual")
                 },
                 availableStates: {
-                    "all": CV.i18n("common.all"),
+                    "all": CV.i18n("report-manager.all-statuses"),
                     "running": CV.i18n("common.running"),
                     "rerunning": CV.i18n("taskmanager.rerunning"),
                     "completed": CV.i18n("common.completed"),
                     "errored": CV.i18n("common.errored")
                 },
-                selectedOrigin: null,
-                selectedRunTimeType: null,
-                selectedState: null,
+                selectedOrigin: "all",
+                selectedRunTimeType: "all",
+                selectedState: "all",
                 lastRequestPayload: {}
             };
         },
@@ -282,10 +282,8 @@
                         }, [CV.i18n("common.no-dont-do-that"), CV.i18n("taskmanager.yes-rerun-report")], {title: CV.i18n("taskmanager.confirm-rerun-title"), image: "rerunning-task"});
                     }
                     else if (command === "view-task") {
-                        if (this.disableAutoNavigationToTask) {
-                            self.$emit("view-task", row);
-                        }
-                        else {
+                        self.$emit("view-task", row);
+                        if (!this.disableAutoNavigationToTask) {
                             window.location = row.view + id;
                         }
                     }
@@ -337,6 +335,10 @@
             disableRunningCount: {
                 type: Boolean,
                 default: false
+            },
+            disableAutoNavigationToTask: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {

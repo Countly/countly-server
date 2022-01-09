@@ -5,8 +5,8 @@
 .cly-events-breakdown-horizontal-tile {
     &__wrapper {
         border-right: 1px solid #ECECEC; 
-        border-top: 1px solid #ECECEC; 
-        border-bottom: 1px solid #ECECEC;
+        border-top: 1px solid c.$table-border-color;
+        box-shadow: 0px 2px 0px #EAECEF;
         padding: 24px 24px 0px 24px;
     }
     &__titleoverview {
@@ -73,6 +73,11 @@
         padding-right: 3px;
     }
 }
+
+.cly-vue-chart__echart{
+    padding: 20px 12px 20px 24px;
+}
+
 .cly-vue-events-overview-monitor-events {
     &__charts{
     .cly-vue-chart__echart{

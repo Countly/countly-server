@@ -5,12 +5,14 @@
     <div class="cly-vue-sidebar__main-menu">
         <ul>
             <li v-for="item in menu" :key="item.name" class="bu-px-3 bu-my-3 bu-is-clickable">
-                <div
-                    :class="['cly-vue-sidebar__menu-items',
-                    {'cly-vue-sidebar__menu-items--selected': (selectedMenuItem && (selectedMenuItem.name === item.name))}]"
-                    @click="onMenuItemClick(item)">
-                    <div class="has-ellipsis">{{i18nM(item.title)}}</div>
-                </div>
+                <a :href="item.url">
+                    <div
+                        :class="['cly-vue-sidebar__menu-items has-ellipsis',
+                            {'cly-vue-sidebar__menu-items--selected': (selectedMenuItem && (selectedMenuItem.name === item.name))}]"
+                        @click="onMenuItemClick(item)">
+                        {{i18nM(item.title)}}
+                    </div>
+                </a>
             </li>
         </ul>
     </div>

@@ -218,7 +218,7 @@ $bg-color: #24292e;
 
     &__main-menu {
         overflow: auto;
-        height: calc(100% - 82px);
+        height: calc(100% - 130px);
     }
 
     &__app-image {
@@ -236,6 +236,13 @@ $bg-color: #24292e;
         padding: 14px 0px;
         box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.18815);
         color: map.get(c.$colors, "cool-gray-100");
+    }
+
+    &__language-popper{
+        font-family: t.$font-family;
+        padding: 0px;
+        min-width: 130px;
+        box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.18815);
     }
 
     &__user-details {
@@ -334,5 +341,18 @@ $bg-color: #24292e;
         border: 1px solid map.get(c.$colors, "warm-gray-30");;
         margin-top: 5px;
         position: relative;
+    }
+
+    &__version {
+        position: absolute;
+        bottom: 0;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 224px;
+        margin-left: 48px;
+        font-size: 10px;
+        background-color: #24292e;
     }
 }

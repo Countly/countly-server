@@ -1,0 +1,14 @@
+<el-popover
+    placement="right"
+    width="130"
+    :visible-arrow="false"
+    popper-class="cly-vue-sidebar__language-popper">
+    <template v-slot:default>
+        <cly-listbox style="width: 130px;" v-model="selLang" :options="allLanguages" :bordered="false">
+        </cly-listbox>
+    </template>
+
+    <template v-slot:reference>
+        <div class="text-medium color-cool-gray-40 font-weight-bold">{{selLang.toUpperCase()}}</div>
+    </template>
+</el-popover>

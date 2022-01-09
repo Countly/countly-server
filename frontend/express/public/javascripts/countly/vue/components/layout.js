@@ -84,6 +84,10 @@
                 type: Boolean,
                 default: false
             },
+            hideConfig: {
+                type: Boolean,
+                default: false
+            },
             skin: {
                 type: String,
                 default: "default",
@@ -106,7 +110,7 @@
                 return classes;
             },
             isConfigSlotUsed: function() {
-                return !!this.$slots.config;
+                return !!this.$slots.config && !this.hideConfig;
             },
         },
         template: '<div class="cly-vue-section" :class="topClasses">\

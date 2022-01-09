@@ -96,7 +96,7 @@
                         <el-select :borderless="true" :adaptiveLength="true" v-if="totalPages <= 200" v-model="controlParams.page" size="mini">
                             <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>
                         </el-select>
-                        <el-input v-else type="number" :min="1" :max="totalPages" v-model="controlParams.page" size="mini"></el-input>
+                        <el-input v-else type="number" :min="1" style="width: 160px" class="bu-mr-1" :max="totalPages" v-model="controlParams.page" size="mini"></el-input>
                     </div>
                 </div>
                 <div class="bu-level-item text-smallish">

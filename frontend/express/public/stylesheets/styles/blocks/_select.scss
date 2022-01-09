@@ -5,12 +5,19 @@
 
 .cly-vue-select-x {
     &__pop {
+        .cly-vue-listbox {
+            background-color: transparent !important;
+        }
         .el-tabs {
+            &__active-bar{
+                background-color: #0166d6;
+            }
             &__nav-wrap::after {
                 background-color: transparent;
             }
             &__nav-scroll {
-                padding: 0 14px;
+                // padding: 0 14px;
+                margin: 0 14px;
             }
             &__header {
                 margin: 0 0 1px 0;
@@ -59,6 +66,9 @@
     }
     &__header {
         padding: 16px;
+        input[type=text] {
+            background-color: #F6F6F6;
+        }
     }
     &__footer {
         border-top: 1px solid #ececec;
