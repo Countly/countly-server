@@ -1,33 +1,37 @@
 <div v-bind:class="[componentId]">
-    <cly-section class="bu-mt-2">
+    <cly-section>
         <cly-datatable-n
                 :data-source="remoteTableDataSource"
                 :export-query="getExportQuery"
                 :persist-key="heatmapsScrollsPersistKey">
             <template v-slot="scope">
-                <el-table-column min-width="300" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.table.pages')" fixed="left">
+                <el-table-column min-width="400" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.table.pages')" fixed="left">
                     <template slot-scope="scope">
                         {{scope.row.view}}
                     </template>
                 </el-table-column>
-                <el-table-column min-width="400" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.avg-scroll-depth')" fixed="left">
+                <el-table-column min-width="355" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.avg-scroll-depth')">
                     <template v-slot:default="rowScope">
                         <div class="bu-is-flex bu-is-align-items-center">
-                            <div class="text-medium">
-                                <span style="width: 60px; display: inline-block;text-align: right;">{{rowScope.row.scr}}&nbsp;px </span>
-                                <span class="color-cool-gray-50">|</span> &nbsp;</div>
-                            <div class="bu-mr-2">{{rowScope.row.scrCalc}}</div>
-                            <cly-progress-bar
-                                :height="8"
-                                class="bu-mr-6"
-                                :percentage="rowScope.row.scrCalcInt || 0"
-                                color="#017AFF"
-                                background-color="#ECECEC">
-                            </cly-progress-bar>
+                            <div class="text-medium" style="width: 80px;text-align: right;">
+                                <span style="display: inline-block;">{{rowScope.row.scr}}&nbsp;px </span>
+                            </div>
+                            <div class="bu-mr-2" style="width: 75px;">
+                                <span class="color-cool-gray-50">&nbsp;|</span> &nbsp;{{rowScope.row.scrCalc}}
+                            </div>
+                            <div style="width: 200px;">
+                                <cly-progress-bar
+                                    :height="8"
+                                    class="bu-mr-6"
+                                    :percentage="rowScope.row.scrCalcInt || 0"
+                                    color="#017AFF"
+                                    background-color="#ECECEC">
+                                </cly-progress-bar>
+                            </div>
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column min-width="150"  v-if="showActionMapColumn"  prop="actionLink" :label="i18n('heatmaps.table.heatmap')">
+                <el-table-column min-width="150"  v-if="showActionMapColumn"  prop="actionLink">
                     <template slot-scope="scope">
                         <cly-more-options v-if="scope.row.useDropdown" icon="el-icon-right" :text="i18n('heatmaps.view-heatmap')">
                             <el-dropdown-item :key="idx" v-for="(item, idx) in domains">
@@ -38,9 +42,9 @@
                             <el-button 
                             size="small" 
                             @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" 
-                            icon="el-icon-right" 
                             type="default">
                                 {{i18n('heatmaps.view-heatmap')}}
+                                <i class="el-icon-arrow-right el-icon-right"></i>
                             </el-button>
                         </div>
                     </template>
