@@ -1,0 +1,44 @@
+<div>
+  <cly-datatable-n class="bu-mx-5" :rows="list">
+      <template v-slot="scope">
+          <el-table-column sortable="true" prop="app_names" :label="i18n('data-migration.applications')">
+              <template v-slot="rowScope">
+                <span class="text-medium">
+                  <div>
+                    {{ rowScope.row.app_names[0] }}
+                  </div>
+                  <cly-status-tag 
+                    class="bu-mt-1"
+                    :text="rowScope.row.status.substr(0, 1).toUpperCase() + rowScope.row.status.substr(1, rowScope.row.status.length - 1)"
+                    :color="rowScope.row.status === 'finished' ? 'green' : rowScope.row.status === 'progress' ? 'blue' : 'red'">
+                  </cly-status-tag>
+                </span>
+              </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="step" :label="i18n('data-migration.table.step')">
+            <template v-slot="rowScope">
+              <div class="bu-py-6">
+                <span class="text-medium">
+                  {{ rowScope.row.status_text }}
+                </span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="created" :label="i18n('data-migration.table.last-update')">
+            <template v-slot="rowScope">
+                <span class="text-medium">
+                  {{ rowScope.row.last_update }}
+                </span>
+            </template>
+          </el-table-column>
+          <el-table-column width="100">
+            <template v-slot="rowScope">
+              <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
+                <el-dropdown-item command="download-log">{{i18n('data-migration.download-log')}}</el-dropdown-item>
+                <el-dropdown-item v-if="canUserDelete && rowScope.row.status !== 'progress'" command="delete-export">{{i18n('data-migration.delete-export')}}</el-dropdown-item>
+              </cly-more-options>
+            </template>
+          </el-table-column>
+      </template>
+  </cly-datatable-n>   
+</div>
