@@ -133,10 +133,16 @@
                     q.status = this.selectedState;
                 }
                 return q;
+            },
+            remoteOpId: function() {
+                return this.$store.state.countlyTaskManager.opId;
             }
         },
         watch: {
             "query": function() {
+                this.refresh(true);
+            },
+            remoteOpId: function() {
                 this.refresh(true);
             }
         },
