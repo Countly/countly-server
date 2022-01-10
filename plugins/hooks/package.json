@@ -19,6 +19,8 @@
     "plugins",
     "template"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "vm2": "^3.9.5"
+  },
   "private": true
 }
