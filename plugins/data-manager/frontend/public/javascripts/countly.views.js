@@ -439,6 +439,7 @@
                             else {
                                 defaultUnexpectedFilter = false;
                             }
+                            e.status = 'unplanned';
                         }
                         return defaultUnexpectedFilter && isCategoryFilter && isStatusFilter && isVisiblityFilter;
                     })
@@ -836,7 +837,7 @@
                     this.$store.dispatch('countlyDataManager/loadTransformations');
                     this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                     this.$store.dispatch('countlyDataManager/loadValidations');
-
+                    this.$store.dispatch('countlyDataManager/loadInternalEvents');
                 }
             },
             handleCreateCommand: function(event, tab) {

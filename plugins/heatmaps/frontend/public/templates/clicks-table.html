@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]">
-    <cly-section class="bu-mt-2">
+    <cly-section>
         <cly-datatable-n
                 :data-source="remoteTableDataSource"
                 :export-query="getExportQuery"
@@ -21,9 +21,9 @@
                             <el-button 
                             size="small" 
                             @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" 
-                            icon="el-icon-right" 
                             type="default">
                                 {{i18n('heatmaps.view-heatmap')}}
+                                <i class="el-icon-arrow-right el-icon-right"></i>
                             </el-button>
                         </div>
                     </template>

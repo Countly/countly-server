@@ -135,6 +135,7 @@
             },
             metrics: function() {
                 var metrics = this.$store.getters["countlyHeatmaps/metrics"];
+                metrics.t = countlyCommon.getShortNumber(metrics.t);
                 return metrics;
             },
             platforms: function() {
