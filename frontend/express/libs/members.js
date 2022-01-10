@@ -466,9 +466,9 @@ membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
                 if (req.body.lang && req.body.lang !== member.lang) {
                     update.lang = req.body.lang;
                 }
-                
+
                 membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
-                
+
                 if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
                     req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
                 }
