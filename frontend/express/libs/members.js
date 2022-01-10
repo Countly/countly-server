@@ -395,9 +395,9 @@ membersUtility.login = function(req, res, callback) {
                 if (req.body.lang && req.body.lang !== member.lang) {
                     update.lang = req.body.lang;
                 }
-                if (Object.keys(update).length) {
-                    membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
-                }
+
+                membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+
                 if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
                     req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
                 }
@@ -461,12 +461,14 @@ membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
 
             req.session.regenerate(function() {
                 // will have a new session here
-                if (req.body.lang && req.body.lang !== member.lang) {
-                    var update = {last_login: Math.round(new Date().getTime() / 1000)};
-                    update.lang = req.body.lang;
+                var update = {last_login: Math.round(new Date().getTime() / 1000)};
 
-                    membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+                if (req.body.lang && req.body.lang !== member.lang) {
+                    update.lang = req.body.lang;
                 }
+                
+                membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+                
                 if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
                     req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
                 }
