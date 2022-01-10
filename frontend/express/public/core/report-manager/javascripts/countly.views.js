@@ -388,8 +388,8 @@
                         },
                         self = this;
 
-                    if (this.fixedOrigin) {
-                        q.type = this.fixedOrigin;
+                    if (this.origin) {
+                        q.type = this.origin;
                     }
                     this.fetchingCount = true;
                     CV.$.ajax({
