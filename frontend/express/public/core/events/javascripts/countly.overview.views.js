@@ -226,6 +226,7 @@
                     return this.$store.getters["countlyEventsOverview/selectedDatePeriod"];
                 },
                 set: function(value) {
+                    this.$store.dispatch("countlyEventsOverview/setMonitorEventsLoading", true);
                     countlyCommon.setPeriod(value);
                     this.$store.dispatch('countlyEventsOverview/fetchSelectedDatePeriod', value);
                     this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
