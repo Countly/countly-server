@@ -1558,11 +1558,26 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
                         }
+
+                        var tasks = params.qstring.task_id;
+
+                        try {
+                            tasks = JSON.parse(tasks);
+                        }
+                        catch {
+                            // ignore
+                        }
+
+                        var isMulti = Array.isArray(tasks);
+
                         taskmanager.checkResult({
                             db: common.db,
-                            id: params.qstring.task_id
+                            id: tasks
                         }, (err, res) => {
-                            if (res) {
+                            if (isMulti && res) {
+                                common.returnMessage(params, 200, res);
+                            }
+                            else if (res) {
                                 common.returnMessage(params, 200, res.status);
                             }
                             else {

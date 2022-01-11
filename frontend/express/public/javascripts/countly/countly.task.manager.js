@@ -257,11 +257,14 @@
     };
 
     countlyTaskManager.check = function(id, callback) {
+        var isMulti = Array.isArray(id),
+            tasks = isMulti ? JSON.stringify(id) : id;
+
         $.ajax({
-            type: "GET",
+            type: isMulti ? "POST" : "GET",
             url: countlyCommon.API_PARTS.data.r + '/tasks/check',
             data: {
-                task_id: id,
+                task_id: tasks,
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
             dataType: "json",
@@ -367,8 +370,7 @@
             return {
                 monitored: persistent,
                 unread: unreadPersistent,
-                opId: 0,
-                curTask: 0
+                opId: 0
             };
         },
         getters: {
@@ -397,12 +399,6 @@
         mutations: {
             incrementOpId: function(state) {
                 state.opId += 1;
-            },
-            incrementCurTask: function(state) {
-                state.curTask += 1;
-            },
-            resetCurTask: function(state) {
-                state.curTask = 0;
             },
             reloadPersistent: function(state) {
                 state.monitored = store.get("countly_task_monitor") || {};
@@ -462,63 +458,57 @@
                     context.commit("reloadPersistent");
 
                     var monitored = context.state.monitored,
-                        appId = payload.appId || countlyCommon.ACTIVE_APP_ID,
-                        curTask = context.state.curTask;
+                        appId = payload.appId || countlyCommon.ACTIVE_APP_ID;
 
-                    if (monitored[appId] && monitored[appId][curTask]) {
-                        var id = monitored[appId][curTask];
-                        countlyTaskManager.check(id, function(checkedTask) {
-                            if (checkedTask === false || checkedTask.result === "completed" || checkedTask.result === "errored") {
+                    countlyTaskManager.check(monitored[appId], function(checkedTasks) {
+                        //get it from storage again, in case it has changed
+                        context.commit("reloadPersistent");
+                        monitored = context.state.monitored;
+                        checkedTasks.result.forEach(function(checkedTask) {
+                            var id = checkedTask._id;
 
-                                //get it from storage again, in case it has changed
-                                context.commit("reloadPersistent");
-                                monitored = context.state.monitored;
+                            if (checkedTask.result === "deleted") {
+                                context.commit("unregisterTask", {
+                                    appId: appId,
+                                    taskId: id
+                                });
+                            }
+                            if (checkedTask.result === "completed" || checkedTask.result === "errored") {
                                 context.commit("unregisterTask", {
                                     appId: appId,
                                     taskId: id
                                 });
 
                                 //notify task completed
-                                if (checkedTask && checkedTask.result) {
-                                    countlyTaskManager.fetchTaskInfo(id, function(fetchedTask) {
-                                        if (!fetchedTask) {
-                                            return;
+                                countlyTaskManager.fetchTaskInfo(id, function(fetchedTask) {
+                                    if (!fetchedTask) {
+                                        return;
+                                    }
+                                    if (fetchedTask.type === "tableExport") {
+                                        if (fetchedTask.report_name) {
+                                            fetchedTask.name = "<span style='overflow-wrap: break-word;'>" + fetchedTask.report_name + "</span>";
                                         }
-                                        if (fetchedTask.type === "tableExport") {
-                                            if (fetchedTask.report_name) {
-                                                fetchedTask.name = "<span style='overflow-wrap: break-word;'>" + fetchedTask.report_name + "</span>";
-                                            }
+                                    }
+                                    if (fetchedTask.manually_create === false) {
+                                        context.commit("reloadPersistent");
+                                        context.commit("setUnread", {
+                                            task: fetchedTask
+                                        });
+                                    }
+                                    if (fetchedTask.view) {
+                                        if (checkedTask.result === "completed") {
+                                            notifiers.completed(id, fetchedTask);
                                         }
-                                        if (fetchedTask.manually_create === false) {
-                                            context.commit("reloadPersistent");
-                                            context.commit("setUnread", {
-                                                task: fetchedTask
-                                            });
+                                        else if (checkedTask.result === "errored") {
+                                            notifiers.errored(id, fetchedTask);
                                         }
-                                        if (fetchedTask.view) {
-                                            if (checkedTask.result === "completed") {
-                                                notifiers.completed(id, fetchedTask);
-                                            }
-                                            else if (checkedTask.result === "errored") {
-                                                notifiers.errored(id, fetchedTask);
-                                            }
-                                        }
-                                        context.commit("incrementOpId");
-                                    });
-                                }
+                                    }
+                                });
                             }
-                            else {
-                                context.commit("incrementCurTask");
-                            }
-                            if (context.state.curTask >= monitored[appId].length) {
-                                context.commit("resetCurTask");
-                            }
-                            resolve();
                         });
-                    }
-                    else {
+                        context.commit("incrementOpId");
                         resolve();
-                    }
+                    });
                 });
             },
             monitor: function(context, payload) {
@@ -567,7 +557,6 @@
         _resultData = [];
         _resultObj = {};
         _data = {};
-        vuexStore.commit("countlyTaskManager/resetCurTask");
     };
 
     $(document).ready(function() {
