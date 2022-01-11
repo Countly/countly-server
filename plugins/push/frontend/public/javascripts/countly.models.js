@@ -7,6 +7,7 @@
     var MB_TO_BYTES_RATIO = 1000000;
     var DAY_TO_MS_RATIO = 86400 * 1000;
     var HOUR_TO_MS_RATIO = 3600000;
+    var ERROR_MESSAGE_REGEX = /^([ia])([0-9]+)(\+(.+))?$/;
 
     var DEFAULT_LOCALIZATION_VALUE = 'default';
     var DEFAULT_LOCALIZATION_LABEL = 'Default';
@@ -243,6 +244,8 @@
                         mediaMime: "",
                     }
                 },
+                error: null,
+                errors: [],
                 status: "",
                 queryFilter: null,
                 messageType: MessageTypeEnum.CONTENT,
@@ -461,6 +464,9 @@
                 return result.name;
             }
             return result;
+        },
+        isInternationalizationFound: function(value) {
+            return value !== CV.i18n(value);
         }
     };
 
@@ -759,9 +765,42 @@
                 }
                 return TargetingEnum.ALL;
             },
+            mapErrorWithoutCode: function(errorsDto, errorKey) {
+                return {
+                    code: CV.i18n('push-notification.error-code.' + errorKey),
+                    codePostfix: '',
+                    affectedUsers: errorsDto[errorKey],
+                    description: CV.i18n('push-notification.error-code.' + errorKey + '.desc', '<a target="blank" href="https://support.count.ly/hc/en-us/articles/360037270012-Push-notifications#troubleshooting">Troubleshooting</a>'),
+                };
+            },
+            mapErrorWithCode: function(errorsDto, errorKey) {
+                var errorCodeParts = errorKey.match(ERROR_MESSAGE_REGEX);
+                var platformError = errorCodeParts[1];
+                var numberError = errorCodeParts[2];
+                var postfixError = errorCodeParts[4];
+                var result = {
+                    code: CV.i18n('push-notification.error-code.' + platformError + numberError),
+                    codePostfix: postfixError,
+                    affectedUsers: errorsDto[errorKey],
+                    description: CV.i18n('push-notification.error-code.' + errorKey + '.desc')
+                };
+                if (!countlyPushNotification.helper.isInternationalizationFound(result.description) && countlyPushNotification.helper.isInternationalizationFound('push-notification.error-code.' + platformError + numberError + '.desc')) {
+                    result.description = CV.i18n('push-notification.error-code.' + platformError + numberError + '.desc');
+                }
+                return result;
+            },
             mapErrors: function(dto) {
-                //TODO-LA: map push notification message errors;
-                return {codes: dto.result.errorCodes, messages: dto.result.error};
+                var self = this;
+                if (!dto.errors) {
+                    return [];
+                }
+                return Object.keys(dto.errors).map(function(errorKey) {
+                    var errorCodeParts = errorKey.match(ERROR_MESSAGE_REGEX);
+                    if (errorCodeParts && errorCodeParts.length) {
+                        return self.mapErrorWithCode(dto.errors, errorKey);
+                    }
+                    return self.mapErrorWithoutCode(dto.errors, errorKey);
+                });
             },
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
@@ -961,6 +1000,7 @@
                     message: this.mapMessageLocalizationsList(localizations, dto),
                     settings: this.mapSettings(dto),
                     messageType: dto.info && dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
+                    error: dto.error,
                     errors: this.mapErrors(dto),
                     locations: dto.filter && dto.filter.geos || [],
                     cohorts: dto.filter && dto.filter.cohorts || [],
