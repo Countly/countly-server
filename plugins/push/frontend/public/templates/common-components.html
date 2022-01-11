@@ -416,32 +416,26 @@
 
 <script type="text/x-template" id="details-errors-tab">
     <el-card class="box-card cly-vue-push-notification-details-summary-card">
-        <div>
-            <el-table
-               empty-text="No errors were found"
-                :data="errors"
-                border
-                style="width: 100%">
-                    <el-table-column
-                        label="Error Code"
-                        width="350">
-                        <template v-slot="scope">
-                         {{scope.row.code}} {{scope.row.codePostfix? '('+scope.row.codePostfix+')' : ''}}
-                        </template>
-                    </el-table-column>
-                    <el-table-column
-                        label="Affected Users"
-                        prop="affectedUsers"
-                        width="180">
-                    </el-table-column>
-                    <el-table-column
-                        label="Description">
-                        <template v-slot="scope">
-                            <span v-html="scope.row.description"> </span>
-                        </template>
-                    </el-table-column>
-            </el-table>
-        </div>
+        <cly-datatable-n :rows="errors" :hasDynamicCols="false">
+            <template v-slot="scope">
+                <el-table-column type="expand">
+                    <template slot-scope="rowScope">
+                        <div>
+                            <div> Error Description </div>
+                            <div>
+                                <span v-html="rowScope.row.description"> </span>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="code" label="Error Code">
+                    <template slot-scope="rowScope">
+                        {{rowScope.row.code}} {{rowScope.row.codePostfix? '('+rowScope.row.codePostfix+')' : ''}}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="affectedUsers" label="Affected Users"></el-table-column>
+            </template>
+        </cly-datatable-n>
     </el-card>
 </script>
 
