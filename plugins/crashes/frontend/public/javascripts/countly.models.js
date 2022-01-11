@@ -609,14 +609,14 @@
                             var userIds = {};
                             var ajaxPromises = [];
 
-                            if (context.state.userFilter['platform'] !== "all") {
-                                crashgroupJson.data = crashgroupJson.data.filter(function (data) {
-                                    return data.os + ' ' + data.os_version === context.state.userFilter['platform'];
+                            if (context.state.userFilter.platform !== "all") {
+                                crashgroupJson.data = crashgroupJson.data.filter(function(data) {
+                                    return data.os + ' ' + data.os_version === context.state.userFilter.platform;
                                 });
                             }
-                            if (context.state.userFilter['version'] !== "all") {
-                                crashgroupJson.data = crashgroupJson.data.filter(function (data) {
-                                    return data.app_version === context.state.userFilter['version'];
+                            if (context.state.userFilter.version !== "all") {
+                                crashgroupJson.data = crashgroupJson.data.filter(function(data) {
+                                    return data.app_version === context.state.userFilter.version;
                                 });
                             }
 
