@@ -567,11 +567,15 @@
         };
 
         _crashgroupSubmodule.getters.appVersions = function(state) {
-            return "data" in state.crashgroup ? Object.keys(state.crashgroup.app_version).map(v => v.replaceAll(':', '.')) : [];
+            return "data" in state.crashgroup ? Object.keys(state.crashgroup.app_version).map(function(version) {
+                return version.replaceAll(':', '.');
+            }) : [];
         };
 
         _crashgroupSubmodule.getters.platforms = function(state) {
-            return "data" in state.crashgroup ? Object.keys(state.crashgroup.os_version).map(v => state.crashgroup.os + ' ' + v.replaceAll(':', '.')) : [];
+            return "data" in state.crashgroup ? Object.keys(state.crashgroup.os_version).map(function(version) {
+                return state.crashgroup.os + ' ' + version.replaceAll(':', '.');
+            }) : [];
         };
 
         _crashgroupSubmodule.getters.userFilter = function(state) {
@@ -606,10 +610,14 @@
                             var ajaxPromises = [];
 
                             if (context.state.userFilter['platform'] !== "all") {
-                                crashgroupJson.data = crashgroupJson.data.filter(data => data.os + ' ' + data.os_version === context.state.userFilter['platform']);
+                                crashgroupJson.data = crashgroupJson.data.filter(function (data) {
+                                    return data.os + ' ' + data.os_version === context.state.userFilter['platform'];
+                                });
                             }
                             if (context.state.userFilter['version'] !== "all") {
-                                crashgroupJson.data = crashgroupJson.data.filter(data => data.app_version === context.state.userFilter['version']);
+                                crashgroupJson.data = crashgroupJson.data.filter(function (data) {
+                                    return data.app_version === context.state.userFilter['version'];
+                                });
                             }
 
                             crashgroupJson.data.forEach(function(crash, crashIndex) {

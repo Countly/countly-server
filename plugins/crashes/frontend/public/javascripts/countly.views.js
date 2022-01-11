@@ -516,7 +516,6 @@
                 return countlyCrashes.generateBadges(crash);
             },
             setSelectedAs: function(state) {
-                var self = this;
                 var promise;
 
                 if (state === "resolved") {
