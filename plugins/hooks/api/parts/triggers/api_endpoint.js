@@ -1,6 +1,7 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
+const log = common.log('hooks:api_endpoint_trigger');
 /**
  * API endpoint  trigger
  */
@@ -57,8 +58,9 @@ class APIEndPointTrigger {
             rule: rule,
         };
         try {
-            data.params._originaInput = JSON.parse(JSON.stringify(params)); 
-        } catch(e) {
+            data.params._originaInput = JSON.parse(JSON.stringify(params));
+        }
+        catch (e) {
             log.e("parsing original hooks input error", e);
         }
         this.pipeline(data);

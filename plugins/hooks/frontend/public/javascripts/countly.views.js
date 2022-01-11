@@ -34,7 +34,7 @@
                 var result = this.$store.getters["countlyHooks/table/getInitialized"];
                 return result;
             },
-            
+
         },
         data: function() {
             var appsSelectorOption = [];
