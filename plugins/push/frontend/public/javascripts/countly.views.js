@@ -1907,7 +1907,38 @@
     });
 
     var PushNotificationWidgetDrawer = countlyVue.views.create({
-        template: CV.T('/push/templates/push-notification-widget-drawer.html')
+        template: CV.T('/push/templates/push-notification-widget-drawer.html'),
+        props: {
+            scope: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        data: function() {
+            return {
+                pushNotifications: [],
+                appCount: 'single',
+            };
+        },
+        methods: {
+            fetchAll: function() {
+                var self = this;
+                countlyPushNotification.service.fetchAll()
+                    .then(function(pushNotifications) {
+                        self.pushNotifications = pushNotifications;
+                    }).catch(function() {
+                        self.pushNotifications = [];
+                    });
+            },
+            onAppCount: function(value) {
+                this.appCount = value;
+            }
+        },
+        mounted: function() {
+            this.fetchAll();
+        }
     });
 
     var PushNotificationWidgetComponent = countlyVue.views.create({
@@ -1923,12 +1954,11 @@
         data: function() {
             return {};
         },
-        computes: {
-
+        computed: {
+            dashboardData: function() {
+                return this.data ? this.data : {};
+            },
         },
-        components: {
-
-        }
     });
 
     /**
@@ -1994,7 +2024,7 @@
                         widget_type: "push",
                         isPluginWidget: true,
                         apps: [],
-                        data_type: "",
+                        data_type: "push",
                         metrics: [],
                         pushNotification: null,
                     };
