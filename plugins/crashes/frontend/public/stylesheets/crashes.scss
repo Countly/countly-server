@@ -132,6 +132,7 @@
 	.crashgroup-mobile-diagnostics {
 		&__tiles-container {
  			height: 170px;
+			box-shadow: 0px 2px 0px #EAECEF;
 		}
 
 		&__tile-content {
@@ -261,11 +262,30 @@
 
 	.crashes-crashgroup-header {
 		&__name {
-			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
 			max-width: 50vw;
 		}
 	}
 
+	.crashes-action-bar {
+		margin-top: 16px;
+		float: right;
+	}
+
+	.crash-icon-color-orange {
+		color: #E49700;
+	}
+
+	.crash-icon-color-blue {
+		color: #4D94E2;
+	}
+
+	.crash-icon-color-green {
+		color: #12AF51;
+	}
+
+	.crash-icon-color-gray {
+		color: #A7AEB8;
+	}
 }

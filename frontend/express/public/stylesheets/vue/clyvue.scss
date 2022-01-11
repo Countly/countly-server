@@ -126,6 +126,10 @@
     }
 }  
 
+.cly-vue-notification__alert-box + .cly-vue-notification__alert-box {
+    margin-top: 16px;
+}
+    
 .cly-vue-status-tag {
     padding-right: 16.33px;
     border-radius: 4px;

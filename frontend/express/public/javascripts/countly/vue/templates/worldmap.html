@@ -129,6 +129,7 @@
                     v-bind="circleMarkerConfig"
                     :radius="getMarkerRadius(item.value)"
                     :lat-lng="nameToLatLng[name]"
+                    :fill-color="item.color || '#3388ff'"
                     :key="unique(name)"
                     @click="onMarkerClick(name)"
                     v-for="(item, name) in activeMarkers">

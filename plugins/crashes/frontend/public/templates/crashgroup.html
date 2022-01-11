@@ -46,7 +46,7 @@
     </cly-header>
     <cly-main>
         <cly-section class="crashgroup-common-metrics" v-if="!!commonMetrics">
-            <div class="crashgroup-common-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile"">
+            <div class="crashgroup-common-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                 <cly-crashes-dashboard-tile columnWidth="is-one-fifth">
                     <template v-slot:title>Platform</template>
                     <template v-slot:value>{{commonMetrics.platform}}</template>
@@ -123,8 +123,8 @@
                                     <el-button size="small" type="primary" @click="stopEditingComment">{{i18n("crashes.cancel")}}</el-button>
                                     <el-button size="small" type="primary" @click="saveComment">{{i18n("common.save")}}</el-button>
                                 </div>
-                                <div v-else-if="!!commentInput">
-                                    <el-button size="small" type="primary" @click="saveComment">{{i18n("crashes.add_comment")}}</el-button>
+                                <div v-else-if="!!commentInput  || comments.length === 0">
+                                    <el-button class="icon-button green" size="small" type="primary" @click="saveComment">{{i18n("crashes.add_comment")}}</el-button>
                                 </div>
                             </div>
                         </div>
@@ -136,7 +136,7 @@
             <div class="crashgroup-mobile-diagnostics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                 <cly-crashes-dashboard-tile columnWidth="is-one-fifth" v-for="diagnosticKey in diagnosticsOrder">
                     <div class="crashgroup-mobile-diagnostics__tile-content bu-column bu-columns bu-py-0 bu-my-0 bu-mx-1 bu-is-flex-direction-column bu-is-justify-content-space-between">
-                        <div class="text-medium text-uppercase">{{diagnosticKey}}</div>
+                        <div class="text-medium text-uppercase">{{diagnosticKey}} <cly-tooltip-icon icon="ion-help-circled" :tooltip="mobileDiagnostics[diagnosticKey].tooltip"></cly-tooltip-icon></div>
                         <div>
                             <div class="bu-is-flex bu-is-align-items-baseline">
                                 <h2>{{mobileDiagnostics[diagnosticKey].average.toFixed(2) + ("unit" in mobileDiagnostics[diagnosticKey] ? "" : " %")}}</h2>
@@ -189,6 +189,9 @@
         </cly-section>
         <cly-section :title="i18n('crashes.crash-occurences')">
             <cly-datatable-n :rows="crashes" ref="tableData" @row-click="handleRowClick">
+                <template v-slot:header-left="filterScope">
+                    <cly-multi-select v-model="userFilter" :fields="userFilterFields"></cly-multi-select>
+                </template>
                 <template v-slot="scope">
                     <el-table-column type="expand">
                         <template slot-scope="props">
