@@ -56,6 +56,11 @@ class APIEndPointTrigger {
             params: qstring,
             rule: rule,
         };
+        try {
+            data.params._originaInput = JSON.parse(JSON.stringify(params)); 
+        } catch(e) {
+            log.e("parsing original hooks input error", e);
+        }
         this.pipeline(data);
         return data;
     }

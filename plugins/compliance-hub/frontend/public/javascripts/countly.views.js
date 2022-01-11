@@ -1,4 +1,4 @@
-/*global CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, $ */
+/*global $, CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager */
 (function() {
     var UserView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/user.html"),

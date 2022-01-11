@@ -3,14 +3,15 @@
         :force-loading="!initialized"
         class="cly-vue-hook-table is-clickable"
         :tracked-fields="localTableTrackedFields"
-        :rows="tableRows" :resizable="false" >
+        :rows="tableRows" :resizable="false"
+        :available-dynamic-cols="tableDynamicCols" >
         <template v-slot:header-left="scope">
             <div class="bu-mr-2">
-                <el-button-group>
-                  <el-button type="primary" @click="filterStatus='all'" size="small" class="hooks-button-group">{{i18n('hooks.status-all')}}</el-button>
-                  <el-button type="primary" @click="filterStatus='enabled'" size="small" class="hooks-button-group">{{i18n('hooks.status-enabled')}}</el-button>
-                  <el-button type="primary" @click="filterStatus='disabled'" size="small" class="hooks-button-group">{{i18n('hooks.status-disabled')}}</el-button>
-                </el-button-group>
+                <el-radio-group :plain="true" v-model="filterStatus">
+                    <el-radio-button label="all">{{i18n('hooks.status-all')}}</el-radio-button>
+                    <el-radio-button label="enabled">{{i18n('hooks.status-enabled')}}</el-radio-button>
+                    <el-radio-button label="disabled">{{i18n('hooks.status-disabled')}}</el-radio-button> 
+                </el-radio-group>
             </div>
             <div>
                 <cly-select-x
@@ -32,7 +33,7 @@
                 </template>
             </el-table-column>
            
-            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  min-width="100" :class="is-clickable">
+            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  width="400" :class="is-clickable">
                 <template slot-scope="scope">
                     <div>
                         <div class="is-name-col bu-is-clickable" @click="onRowClick(scope.row)" >{{scope.row.name}}</div>
@@ -47,15 +48,19 @@
             </template>
                 
             </el-table-column>
+            <template v-for="(col,idx) in scope.dynamicCols">
+                <el-table-column 
+                    v-if="col.value === 'triggerCount'"  
+                    sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" min-width="150">
+                </el-table-column>
+                <el-table-column
+                    v-if="col.value === 'lastTriggerTimestampString'"  
+                    sortable="true" align="center" prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" min-width="150" >
+                </el-table-column>
+            </template>
 
-            <el-table-column sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" min-width="150" >
-                
-            </el-table-column>
 
-            <el-table-column sortable="true" align="center" prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" min-width="150" >
-            </el-table-column>
-
-            <el-table-column :label="i18n('hooks.create-by')" width="100" sortable="true">
+            <el-table-column :label="i18n('hooks.create-by')" width="150" sortable="true">
                 <template slot-scope="scope">
                     <div class="is-last-col">
                         <div class="flex-grow">
