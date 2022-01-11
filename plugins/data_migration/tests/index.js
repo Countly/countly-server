@@ -286,7 +286,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly('data-migration.enter-your-server-token');
+                    (ob.result).should.be.exactly('data-migration.token_missing');
                     done();
                 });
         });
@@ -315,7 +315,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly('data-migration.enter-your-server-address');
+                    (ob.result).should.be.exactly('data-migration.address_missing');
                     done();
                 });
         });
