@@ -2,9 +2,11 @@
     position: absolute;
     right: 24px;
     bottom: 24px;
+    z-index: 600000;
 
     &__item {
         margin-top: 12px;
         min-width: 288px;
+        max-width: 400px;
     }
 }

@@ -1,4 +1,4 @@
-/*global app, countlyAuth, countlyVue, CV, $, countlyDataManager, countlyCommon, moment, countlyPlugins, countlyGlobal */
+/*global app, countlyAuth, countlyVue, CV, $, countlyDataManager, countlyCommon, moment, countlyPlugins, countlyGlobal, CountlyHelpers */
 
 (function() {
 
@@ -439,6 +439,7 @@
                             else {
                                 defaultUnexpectedFilter = false;
                             }
+                            e.status = 'unplanned';
                         }
                         return defaultUnexpectedFilter && isCategoryFilter && isStatusFilter && isVisiblityFilter;
                     })
@@ -608,18 +609,19 @@
                     this.$store.dispatch('countlyDataManager/saveCategories', newCatgories);
                 }
                 if (editedCategories.length) {
-                    var self = this;
+                    // var self = this;
                     this.$store
                         .dispatch('countlyDataManager/editCategories', editedCategories)
                         .then(function(res) {
                             if (res === 'Error') {
-                                self.$notify.error({
+                                CountlyHelpers.notify({
                                     title: CV.i18n("common.error"),
-                                    message: 'Categories Update Failed'
+                                    message: 'Categories Update Failed',
+                                    type: "error"
                                 });
                             }
                             else {
-                                self.$notify.success({
+                                CountlyHelpers.notify({
                                     title: CV.i18n("common.success"),
                                     message: 'Categories updated!'
                                 });
@@ -835,7 +837,7 @@
                     this.$store.dispatch('countlyDataManager/loadTransformations');
                     this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                     this.$store.dispatch('countlyDataManager/loadValidations');
-
+                    this.$store.dispatch('countlyDataManager/loadInternalEvents');
                 }
             },
             handleCreateCommand: function(event, tab) {

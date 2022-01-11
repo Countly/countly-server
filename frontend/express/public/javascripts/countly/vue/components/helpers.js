@@ -156,12 +156,20 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            isSyncedScroll: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         computed: {
             topClasses: function() {
                 if (this.multiline) {
                     return ["cly-vue-metric-cards--is-multiline", "bu-is-multiline"];
+                }
+                if (this.isSyncedScroll) {
+                    return "is-synced";
                 }
             }
         }
@@ -180,7 +188,9 @@
             columnWidth: {type: [Number, String], default: -1},
             isVertical: {type: Boolean, default: false},
             color: {type: [String, Function, Array], default: ''},
-            numberClasses: {type: String, default: 'bu-is-flex bu-is-align-items-baseline'}
+            numberClasses: {type: String, default: 'bu-is-flex bu-is-align-items-baseline'},
+            boxType: {type: Number, default: -1},
+            tooltip: {type: String, default: ''}
         },
         computed: {
             formattedNumber: function() {
@@ -219,14 +229,31 @@
                 if (this.isVertical || this.columnWidth === -1) {
                     return "";
                 }
+
                 return "bu-is-" + this.columnWidth;
+            },
+            metricStyles: function() {
+                var classes = "";
+                if (this.boxType === 3) {
+                    classes = "min-width: 33%";
+                }
+                else if (this.boxType === 4) {
+                    classes = "min-width: 25%";
+                }
+                else if (this.boxType === 5) {
+                    classes = "min-width: 20%";
+                }
+                return classes;
             }
         },
-        template: '<div class="cly-vue-metric-card bu-column bu-is-flex" :class="topClasses">\
-                        <div class="cly-vue-metric-card__wrapper bu-p-5 bu-is-flex bu-is-justify-content-space-between">\
-                            <cly-progress-donut class="bu-pr-5 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
-                            <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
-                                <span class="text-medium"><slot>{{label}}</slot></span>\
+        template: '<div class="cly-vue-metric-card bu-column bu-is-flex" :class="topClasses" :style="metricStyles">\
+                        <div class="cly-vue-metric-card__wrapper bu-p-5 bu-is-flex bu-is-justify-content-space-between has-ellipsis">\
+                            <cly-progress-donut class="bu-pr-4 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
+                            <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
+                                <div class="bu-is-flex bu-is-align-items-center">\
+                                    <span class="text-medium has-ellipsis" v-tooltip="label"><slot>{{label}}</slot></span>\
+                                    <cly-tooltip-icon v-if="tooltip.length > 0" class="bu-is-flex-grow-1 bu-ml-1" :tooltip="tooltip"></cly-tooltip-icon>\
+                                </div>\
                                 <div :class=numberClasses>\
                                     <h2><slot name="number">{{formattedNumber}}</slot></h2>\
                                     <div class="bu-pl-3 bu-is-flex-grow-1"><slot name="description"><span class="text-medium">{{description}}</span></slot></div>\
@@ -260,6 +287,11 @@
                 type: Object,
                 default: null,
                 required: false
+            },
+            isSyncedScroll: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         computed: {
@@ -267,7 +299,12 @@
                 if (this.isVertical || this.columnWidth === -1) {
                     return "";
                 }
-                return "bu-is-" + this.columnWidth;
+                else if (this.isSyncedScroll) {
+                    return "is-synced bu-is-" + this.columnWidth;
+                }
+                else {
+                    return "bu-is-" + this.columnWidth;
+                }
             },
             effectiveScrollOps: function() {
                 if (this.scrollOps) {
@@ -387,25 +424,6 @@
     Vue.component("cly-value", countlyBaseComponent.extend({
         template: '<span></span>',
         props: ['value']
-    }));
-
-    Vue.component("cly-blank", countlyBaseComponent.extend({
-        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center bu-is-flex-direction-column">\
-                        <h3 class="color-cool-gray-50">{{title}}</h3>\
-                        <div v-if="text"><p class="text-medium">{{text}}</p></div>\
-                    </div>',
-        props: {
-            title: {
-                type: String,
-                default: '',
-                required: false
-            },
-            text: {
-                type: String,
-                default: '',
-                required: false
-            }
-        }
     }));
 
     Vue.component("cly-app-select", {
@@ -546,7 +564,7 @@
                         <slot v-bind="passedScope"></slot>\
                         <slot name="controls">\
                             <div v-if="hasMultiplePages">\
-                                <el-button-group class="bu-ml-2">\
+                                <el-button-group class="bu-p-4">\
                                     <el-button size="small" :disabled="!prevAvailable" @click="goToPrevPage" icon="el-icon-caret-left"></el-button>\
                                     <el-button size="small" :disabled="!nextAvailable" @click="goToNextPage" icon="el-icon-caret-right"></el-button>\
                                 </el-button-group>\
@@ -795,8 +813,8 @@
         template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
                             '<div class="bu-is-flex">\n' +
-                                '<img :src="image" class="alert-image bu-mr-4 bu-my-1 bu-ml-1">\n' +
-                                '<slot><span class="alert-text bu-my-3">{{text}}</span></slot>\n' +
+                                '<img :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
+                                '<slot><span class="alert-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="closable" style="margin-block:auto">\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-5" >\n' +
@@ -813,12 +831,12 @@
         mixins: [countlyVue.mixins.i18n],
         props: {
             id: {default: "", type: [String, Number], required: false},
-            text: { default: "", type: String },
+            text: { default: "" },
             color: { default: "light-warning", type: String},
             size: {default: "full", type: String},
             visible: {default: true, type: Boolean},
             closable: {default: true, type: Boolean},
-            autoHide: {default: true, type: Boolean},
+            autoHide: {default: false, type: Boolean},
         },
         data: function() {
             return {
@@ -855,6 +873,12 @@
                 else if (this.color === "light-warning" || this.color === "dark-warning") {
                     return "images/icons/notification-toast-warning.svg";
                 }
+            },
+            innerText: function() {
+                if (this.text) {
+                    return this.text;
+                }
+                return "";
             }
         },
         methods: {
@@ -916,12 +940,20 @@
         props: {
             image: {default: 'images/icons/empty-view-icon.svg', type: String},
             title: { default: countlyVue.i18n('common.emtpy-view-title'), type: String },
-            subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String }
+            subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String },
+            height: {default: 0, type: Number}
         },
         data: function() {
             return {};
         },
-        template: ' <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
+        computed: {
+            topStyle: function() {
+                if (this.height) {
+                    return {height: this.height + "px"};
+                }
+            }
+        },
+        template: ' <div :style="topStyle" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">\
                         <slot name="icon">\
                             <div class="bu-mt-6">\
                                 <img :src="image"/>\
@@ -929,7 +961,7 @@
                         </slot>\
                         <div class="bu-mt-2">\
                             <slot name="title">\
-                                <h4 class="color-cool-gray-100">{{title}}</h4>\
+                                <h4 class="color-cool-gray-100 bu-has-text-centered">{{title}}</h4>\
                             </slot>\
                             <slot name="subTitle">\
                                 <div class="bu-mt-1 bu-mb-6 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
@@ -938,11 +970,11 @@
                     </div>',
     });
 
-    Vue.component("cly-empty-chart", BaseEmptyViewForElements.extend({
-    }));
+    Vue.component("cly-empty-chart", BaseEmptyViewForElements);
 
-    Vue.component("cly-empty-datatable", BaseEmptyViewForElements.extend({
-    }));
+    Vue.component("cly-empty-datatable", BaseEmptyViewForElements);
+
+    Vue.component("cly-blank", BaseEmptyViewForElements);
 
     Vue.component("cly-breadcrumbs", countlyBaseComponent.extend({
         mixins: [

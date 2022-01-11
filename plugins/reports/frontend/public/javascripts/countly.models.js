@@ -349,6 +349,7 @@
             title: '',
             report_type: 'core',
             apps: [],
+            emails: [],
             metrics: {},
             metricsArray: [],
             frequency: null,

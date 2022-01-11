@@ -3,22 +3,6 @@ var AppPlatformView = countlyVue.views.create({
     template: CV.T("/core/platform/templates/platform.html"),
     data: function() {
         return {
-            scrollOptions: {
-                vuescroll: {},
-                scrollPanel: {
-                    initialScrollX: false,
-                },
-                rail: {
-                    gutterOfSide: "1px",
-                    gutterOfEnds: "15px"
-                },
-                bar: {
-                    background: "#A7AEB8",
-                    size: "6px",
-                    specifyBorderRadius: "3px",
-                    keepShow: true
-                }
-            },
             scrollCards: {
                 vuescroll: {},
                 scrollPanel: {
@@ -32,6 +16,22 @@ var AppPlatformView = countlyVue.views.create({
                     size: "6px",
                     specifyBorderRadius: "3px",
                     keepShow: false
+                }
+            },
+            breakdownScrollOps: {
+                vuescroll: {},
+                scrollPanel: {
+                    initialScrollX: false,
+                },
+                rail: {
+                    gutterOfSide: "1px",
+                    gutterOfEnds: "15px"
+                },
+                bar: {
+                    background: "#A7AEB8",
+                    size: "6px",
+                    specifyBorderRadius: "3px",
+                    keepShow: true
                 }
             },
             description: CV.i18n('platforms.description'),
@@ -206,7 +206,7 @@ var AppPlatformView = countlyVue.views.create({
                     var percent = Math.round((data[k][property] || 0) * 1000 / (platforms[z][property] || 1)) / 10;
                     display.push({
                         "name": data[k].os_versions,
-                        "value": countlyCommon.getShortNumber(data[k][property] || 0),
+                        "description": countlyCommon.getShortNumber(data[k][property] || 0),
                         "percent": percent,
                         "bar": [{
                             percentage: percent,
@@ -215,7 +215,7 @@ var AppPlatformView = countlyVue.views.create({
                         ]
                     });
                 }
-                returnData.push({"data": display, "label": platforms[z].label, itemCn: display.length});
+                returnData.push({"values": display, "label": platforms[z].label, itemCn: display.length});
             }
             return returnData;
         },

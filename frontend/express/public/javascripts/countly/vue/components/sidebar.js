@@ -522,6 +522,12 @@
                             name: "management",
                             icon: "ion-wrench",
                             tooltip: "Management"
+                        },
+                        {
+                            name: "last-queries",
+                            icon: "fas fa-file-contract",
+                            noSelect: true,
+                            tooltip: "Report Manager"
                         }
                     ];
 

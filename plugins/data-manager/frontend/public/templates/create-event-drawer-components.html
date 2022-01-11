@@ -6,37 +6,42 @@
                 <div @click="removeSegment" class="bu-is-clickable text-small bu-level-item bu-level-right color-red-100">Delete Segmentation</div>
             </div>
 
-            <div class="text-medium text-heading bu-mt-4">Event Key</div>
-            <el-input
-            v-model="segment.name" 
-		    placeholder="Enter Segmentation Key">
-		    </el-input>
+            <cly-form-field label="Segmentation Key">
+                <el-input
+                v-model="segment.name" 
+		        placeholder="Enter Segmentation Key">
+		        </el-input>
+            </cly-form-field>
 
-            <div class="text-medium text-heading bu-mt-4">Segmentation Type</div>
-            <el-select v-model="segment.type" placeholder="Select Segmentation Type">
-                <el-option
-                  v-for="item in dataTypes"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
-                </el-option>
-            </el-select>
+            <cly-form-field label="Segmentation Type">
+                <el-select v-model="segment.type" placeholder="Select Segmentation Type">
+                    <el-option
+                      v-for="item in dataTypes"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                </el-select>
+            </cly-form-field>  
 
 
             <div class="bu-my-4">
                 <el-checkbox v-model="segment.required" size="medium">
-                    <span class="color-cool-gray-100">Segmentation Required?</span>
+                    <span class="text-small color-cool-gray-100">Segmentation Required?</span>
                 </el-checkbox>
             </div>
 
-            <div v-if="segment.required" class="text-medium text-heading bu-mt-4">Segmentation Description</div>
-            <el-input
-            v-if="segment.required"
-            type="textarea"
-            :rows="2"
-            v-model="segment.description" 
-		    placeholder="Enter Segmentation description">
-		    </el-input>
+            <div v-if="segment.required" class="text-medium text-heading bu-mt-2">
+                <cly-form-field label="Segmentation Description">
+                    <el-input
+                    v-if="segment.required"
+                    type="textarea"
+                    :rows="2"
+                    v-model="segment.description" 
+		            placeholder="Enter Segmentation description">
+		            </el-input>
+                </cly-form-field>
+            </div>
 
         </div>
 	</div>

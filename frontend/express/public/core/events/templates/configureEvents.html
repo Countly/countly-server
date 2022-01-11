@@ -6,13 +6,13 @@
   v-bind="$props.controls" id="configure-events">
   <template v-slot:default="drawerScope">
     <cly-form-step id="first-step">
-      <div class="cly-events-overview-drawer__subheading bu-mt-5 bu-pb-2">{{i18n('events.overview.add.item')}}</div>
+      <div class="cly-events-overview-drawer__subheading bu-mt-3 bu-pb-2">{{i18n('events.overview.add.item')}}</div>
       <div class="bu-mb-4 bu-mt-2 bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center">
-        <el-select class="cly-events-overview-drawer__dropdown" v-model="selectedOverviewEvents" placeholder="Select event">
+        <el-select class="cly-events-overview-drawer__dropdown bu-mr-1" v-model="selectedOverviewEvents" placeholder="Select event">
           <el-option v-for="item in configureEventsList" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
-        <el-select class="cly-events-overview-drawer__dropdown" v-model="selectProperty" placeholder="Select Property">
+        <el-select class="cly-events-overview-drawer__dropdown bu-ml-1" v-model="selectProperty" placeholder="Select Property">
           <el-option v-for="item in eventProperties" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
@@ -30,7 +30,7 @@
             <div class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center cly-events-overview-drawer__event-records" >
               <div class="text-medium cly-events-overview-drawer__basis bu-is-flex-grow-2">{{ item.eventName }}</div>
               <div class="text-medium cly-events-overview-drawer__basis bu-has-text-centered bu-is-flex-grow-2">{{ item.propertyName }}</div>
-              <div @click="onDelete(idx)" class="cly-events-overview-drawer__basis cly-icon-button--gray bu-has-text-right bu-is-flex-grow-1"><i class="ion-ios-close-empty bu-is-clickable"></i></div>
+              <div @click="onDelete(idx)" class="cly-events-overview-drawer__basis cly-icon-button--gray bu-has-text-right bu-is-flex-grow-1"><i class="ion-ios-close-empty bu-is-clickable cly-events-overview-drawer__close-icon"></i></div>
             </div>
           </div>
         </draggable>

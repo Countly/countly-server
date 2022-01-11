@@ -1,4 +1,4 @@
-/*global CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager */
+/*global CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, $ */
 (function() {
     var UserView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/user.html"),
@@ -473,6 +473,9 @@
         };
         renderedView.params = params;
         this.renderWhenReady(renderedView);
+    });
+    $(document).ready(function() {
+        app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 20});
     });
 
 })();

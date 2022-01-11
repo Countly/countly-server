@@ -4,9 +4,10 @@
 
 .cly-events-breakdown-horizontal-tile {
     &__wrapper {
+        border-bottom: 1px solid #ECECEC; 
         border-right: 1px solid #ECECEC; 
-        border-top: 1px solid #ECECEC; 
-        border-bottom: 1px solid #ECECEC;
+        border-top: 1px solid c.$table-border-color;
+        box-shadow: 0px 2px 0px #EAECEF;
         padding: 24px 24px 0px 24px;
     }
     &__titleoverview {
@@ -29,7 +30,7 @@
         padding: 0px 0px 16px 0px;
     }
     &__item-title {
-        padding: 4px 0px 8px 0px;
+        padding: 12px 0px 8px 0px;
     }
     &__value {
     font-weight: 500;
@@ -73,6 +74,11 @@
         padding-right: 3px;
     }
 }
+
+.cly-vue-chart__echart{
+    padding: 20px 12px 20px 24px;
+}
+
 .cly-vue-events-overview-monitor-events {
     &__charts{
     .cly-vue-chart__echart{
@@ -140,6 +146,10 @@
 &__dropdown {
     min-width: 230px;
 }
+&__close-icon {
+    line-height: 1;
+    font-size: 24px;
+}
 }
 
 .cly-monitor-events-breakdown-horizontal-tile {
@@ -202,6 +212,9 @@
     }
     &__arrow {
         padding-right: 3px;
+    }
+     &__overview-name {
+        width: 50%;
     }
 }
 

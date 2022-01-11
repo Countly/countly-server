@@ -22,5 +22,8 @@
     "email"
   ],
   "dependencies": {},
+  "cly_dependencies": {
+    "star-rating": true
+  },
   "private": true
 }

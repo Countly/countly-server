@@ -7,6 +7,7 @@ const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');
 var cp = require('child_process'); //call process
+const { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 var NginxConfFile = "";
 try {
     NginxConfFile = require('nginx-conf').NginxConfFile;
@@ -126,11 +127,11 @@ function trim_ending_slashes(address) {
 
         if (params.qstring) {
             if (!params.qstring.exportid) {
-                common.returnMessage(params, 404, 'Missing parameter "exportid"');
+                common.returnMessage(params, 404, 'data-migration.exportid_not_provided');
                 return;
             }
             if (!params.qstring.token) {
-                common.returnMessage(params, 404, 'Missing parameter "token"');
+                common.returnMessage(params, 404, 'data-migration.token_missing');
                 return;
             }
 
@@ -162,11 +163,11 @@ function trim_ending_slashes(address) {
                             }
                         }
                         else {
-                            common.returnMessage(ob.params, 404, "Status missing");
+                            common.returnMessage(ob.params, 404, "data-migration.status-missing");
                         }
                     }
                     else {
-                        common.returnMessage(ob.params, 404, "Export not found");
+                        common.returnMessage(ob.params, 404, "data-migration.export_not_found");
                     }
                 }
             });
@@ -183,7 +184,7 @@ function trim_ending_slashes(address) {
         var params = ob.params;
         //if we have import key or validated as user
 
-        var validate = ob.validateUserForGlobalAdmin;
+
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -193,7 +194,7 @@ function trim_ending_slashes(address) {
             }
         }
 
-        validate(params, function() {
+        validateCreate(params, FEATURE_NAME, function() {
             if (params.qstring.test_con) {
                 common.returnMessage(params, 200, "valid");
                 return;
@@ -211,11 +212,11 @@ function trim_ending_slashes(address) {
                 }
 
                 if (fs.existsSync(__dirname + "/../import/" + foldername + ".tar.gz") || fs.existsSync(__dirname + "/../import/" + foldername)) {
-                    common.returnMessage(params, 404, 'There is ongoing import process on target server with same apps. Clear out data on target server to start new import process.');
+                    common.returnMessage(params, 404, 'data-migration.import-process-exist');
                     return;
                 }
                 logpath = path.resolve(__dirname, '../../../log/dm-import_' + foldername + '.log');
-                common.returnMessage(params, 200, "Importing process started.");
+                common.returnMessage(params, 200, "data-migration.import-started");
 
                 data_migrator = new migration_helper();
 
@@ -229,22 +230,22 @@ function trim_ending_slashes(address) {
                     foldername = fname[0];
 
                     if (foldername.length === 0) {
-                        common.returnMessage(params, 404, "Couldn't find file on server");
+                        common.returnMessage(params, 404, "data-migration.could-not-find-file");
                     }
                     else {
                         logpath = path.resolve(__dirname, '../../../log/dm-import_' + foldername + '.log');
-                        common.returnMessage(params, 200, "Importing process started.");
+                        common.returnMessage(params, 200, "data-migration.import-started");
                         data_migrator = new migration_helper();
                         data_migrator.importExistingData(params.qstring.existing_file, params, logpath, log, foldername);
                     }
                 }
                 else {
-                    common.returnMessage(params, 404, "Couldn't find file on server");
+                    common.returnMessage(params, 404, "data-migration.could-not-find-file");
                 }
 
             }
             else {
-                common.returnMessage(params, 404, "Import file missing");
+                common.returnMessage(params, 404, "data-migration.import-file-missing");
             }
         });
         return true;
@@ -252,7 +253,7 @@ function trim_ending_slashes(address) {
 
     plugins.register("/i/datamigration/delete_all", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
+
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -261,7 +262,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateDelete(params, FEATURE_NAME, function() {
             delete_all_exports()
                 .then(function() {
                     if (fs.existsSync(path.resolve(__dirname, './../import'))) {
@@ -283,7 +284,7 @@ function trim_ending_slashes(address) {
 
     plugins.register("/i/datamigration/delete_export", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
+
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -292,7 +293,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateDelete(params, FEATURE_NAME, function() {
             if (params.qstring.exportid) {
                 common.db.collection("data_migrations").findOne({_id: params.qstring.exportid}, function(err, res) {
                     if (err) {
@@ -309,7 +310,7 @@ function trim_ending_slashes(address) {
                                     }
                                     catch (err1) {
                                         log.e(err1);
-                                        common.returnMessage(ob.params, 401, "Unable to delete log file"); return;
+                                        common.returnMessage(ob.params, 401, "data-migration.unable-to-delete-log-file"); return;
                                     }
                                 }
                                 common.db.collection("data_migrations").remove({_id: params.qstring.exportid}, function(err1) {
@@ -327,13 +328,13 @@ function trim_ending_slashes(address) {
                             });
                         }
                         else {
-                            common.returnMessage(ob.params, 404, "Invalid export ID");
+                            common.returnMessage(ob.params, 404, "data-migration.invalid-exportid");
                         }
                     }
                 });
             }
             else {
-                common.returnMessage(ob.params, 404, 'Missing parameter "exportid"');
+                common.returnMessage(ob.params, 404, 'data-migration.exportid_not_provided');
             }
         });
         return true;
@@ -342,7 +343,7 @@ function trim_ending_slashes(address) {
 
     plugins.register("/i/datamigration/delete_import", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
+
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -351,7 +352,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateDelete(params, FEATURE_NAME, function() {
             if (params.qstring.exportid && params.qstring.exportid !== '') {
                 var data_migrator = new migration_helper(common.db);
                 data_migrator.clean_up_data('import', params.qstring.exportid, true).then(function() {
@@ -387,7 +388,7 @@ function trim_ending_slashes(address) {
 
     plugins.register("/i/datamigration/stop_export", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
+
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -396,7 +397,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateUpdate(params, FEATURE_NAME, function() {
             if (params.qstring.exportid) {
                 common.db.collection("data_migrations").findOne({_id: params.qstring.exportid}, function(err, res) {
                     if (err) {
@@ -405,10 +406,10 @@ function trim_ending_slashes(address) {
                     else {
                         if (res) {
                             if (res.status === 'finished') {
-                                common.returnMessage(ob.params, 404, 'Export already finished');
+                                common.returnMessage(ob.params, 404, 'data-migration.export-already-finished');
                             }
                             else if (res.status === 'failed') {
-                                common.returnMessage(ob.params, 404, 'Export already failed');
+                                common.returnMessage(ob.params, 404, 'data-migration.export-already-failed');
                             }
                             else {
                                 common.db.collection("data_migrations").update({_id: params.qstring.exportid}, {$set: {stopped: true}}, {upsert: true}, function(err1) {
@@ -418,23 +419,23 @@ function trim_ending_slashes(address) {
                                 });
 
                                 if (res.step === 'packing' || res.step === 'exporting') {
-                                    common.returnMessage(ob.params, 200, "Export process stopped");
+                                    common.returnMessage(ob.params, 200, "data-migration.export-already-stopped");
                                 }
                                 else {
-                                    common.returnMessage(ob.params, 404, "Data has already been sent");
+                                    common.returnMessage(ob.params, 404, "data-migration.export-already-sent");
                                 }
                             }
                             return true;
 
                         }
                         else {
-                            common.returnMessage(ob.params, 404, "Invalid export ID");
+                            common.returnMessage(ob.params, 404, "data-migration.data-migration.exportid_not_provided");
                         }
                     }
                 });
             }
             else {
-                common.returnMessage(ob.params, 404, 'Missing parameter "exportid"');
+                common.returnMessage(ob.params, 404, 'data-migration.data-migration.exportid_not_provided');
             }
         });
         return true;
@@ -443,7 +444,7 @@ function trim_ending_slashes(address) {
     //gets list of exports
     plugins.register("/o/datamigration/getmyexports", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
+        //var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -452,7 +453,7 @@ function trim_ending_slashes(address) {
                 log.e('/o/datamigration/getmyexports Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             common.db.collection("data_migrations").find().sort({ts: -1}).toArray(function(err, res) {
                 if (err) {
                     common.returnMessage(ob.params, 404, err.message);
@@ -460,7 +461,7 @@ function trim_ending_slashes(address) {
                 else {
                     if (res) {
                         if (res.length === 0) {
-                            common.returnMessage(params, 200, "You don't have any exports");
+                            common.returnMessage(params, 200, "data-migration.no-exports");
                             return true;
                         }
                         for (var i = 0; i < res.length; i++) {
@@ -490,7 +491,7 @@ function trim_ending_slashes(address) {
                         common.returnMessage(ob.params, 200, res);
                     }
                     else {
-                        common.returnMessage(params, 200, "You don't have any exports");
+                        common.returnMessage(params, 200, "data-migration.no-exports");
                     }
                 }
             });
@@ -501,7 +502,7 @@ function trim_ending_slashes(address) {
 
     plugins.register("/o/datamigration/getmyimports", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
+
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -510,7 +511,7 @@ function trim_ending_slashes(address) {
                 log.e('/o/datamigration/getmyimports Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             var ret_arr = {};
             var have_any = false;
             var myfiles = "";
@@ -573,7 +574,7 @@ function trim_ending_slashes(address) {
                 common.returnMessage(ob.params, 200, ret_arr);
             }
             else {
-                common.returnMessage(ob.params, 200, "You don't have any imports");
+                common.returnMessage(ob.params, 200, "data-migration.no-imports");
             }
         });
         return true;
@@ -583,7 +584,7 @@ function trim_ending_slashes(address) {
     //@params.ttl = time to live in minutes
     plugins.register("/o/datamigration/createimporttoken", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
+
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -593,7 +594,7 @@ function trim_ending_slashes(address) {
             }
         }
 
-        validate(params, function() {
+        validateCreate(params, FEATURE_NAME, function() {
             var ttl, multi;
             //passed in minutes
             if (params.qstring.ttl) {
@@ -619,7 +620,7 @@ function trim_ending_slashes(address) {
                 callback: function(err, token) {
                     if (err) {
                         log.e(err);
-                        common.returnMessage(params, 404, 'Unable to create token. Data base error:' + err);
+                        common.returnMessage(params, 404, 'data-migration.unable-to-create-token');
                     }
                     else {
                         common.returnMessage(params, 200, token);
@@ -635,7 +636,7 @@ function trim_ending_slashes(address) {
     //@params.exportid  - Export ID
     plugins.register("/o/datamigration/getstatus", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
+
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -644,7 +645,7 @@ function trim_ending_slashes(address) {
                 log.e('/o/datamigration/getstatus Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             if (typeof params.qstring.exportid !== "undefined") {
                 common.db.collection("data_migrations").findOne({_id: params.qstring.exportid}, function(err, res) {
                     if (err) {
@@ -655,13 +656,13 @@ function trim_ending_slashes(address) {
                             common.returnMessage(params, 200, res);
                         }
                         else {
-                            common.returnMessage(params, 404, 'Invalid export ID');
+                            common.returnMessage(params, 404, 'data-migration.invalid-exportid');
                         }
                     }
                 });
             }
             else {
-                common.returnOutput(ob.params, 'exportid missing');
+                common.returnOutput(ob.params, 'data-migration.exportid-missing');
             }
         });
 
@@ -672,7 +673,6 @@ function trim_ending_slashes(address) {
     //Get configuration. Default export path for.
     plugins.register("/o/datamigration/get_config", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -681,7 +681,7 @@ function trim_ending_slashes(address) {
                 log.e('/o/datamigration/getstatus Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             var fileSizeLimit = 0;
 
             cp.exec("nginx -t", (error, stdout, stderr) => {
@@ -745,7 +745,6 @@ function trim_ending_slashes(address) {
     plugins.register("/i/datamigration/export", function(ob) {
         var params = ob.params;
 
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -754,7 +753,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateCreate(params, FEATURE_NAME, function() {
             var dir = __dirname + '/../export';
             if (!fs.existsSync(dir)) {
                 try {
@@ -770,19 +769,19 @@ function trim_ending_slashes(address) {
                 apps = params.qstring.apps.split(',');
             }
             else {
-                common.returnMessage(params, 404, 'Please provide at least one app id to export data');
+                common.returnMessage(params, 404, 'data-migration.no_app_ids');
                 return true;
             }
 
             if (!params.qstring.only_export || parseInt(params.qstring.only_export) !== 1) {
                 params.qstring.only_export = false;
                 if (!params.qstring.server_token || params.qstring.server_token === '') {
-                    common.returnMessage(params, 404, 'Missing parameter "server_token"');
+                    common.returnMessage(params, 404, 'data-migration.token_missing');
                     return true;
                 }
 
                 if (!params.qstring.server_address || params.qstring.server_address === '') {
-                    common.returnMessage(params, 404, 'Missing parameter "server_address"');
+                    common.returnMessage(params, 404, 'data-migration.address_missing');
                     return true;
                 }
                 else {
@@ -833,7 +832,6 @@ function trim_ending_slashes(address) {
     plugins.register("/o/datamigration/validateconnection", function(ob) {
         var params = ob.params;
 
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -842,14 +840,15 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+
+        validateRead(params, FEATURE_NAME, function() {
             if (!params.qstring.server_token || params.qstring.server_token === '') {
-                common.returnMessage(params, 404, 'Missing parameter "server_token"');
+                common.returnMessage(params, 404, 'data-migration.token_missing');
                 return true;
             }
 
             if (!params.qstring.server_address || params.qstring.server_address === '') {
-                common.returnMessage(params, 404, 'Missing parameter "server_address"');
+                common.returnMessage(params, 404, 'data-migration.address_missing');
                 return true;
             }
             /**
@@ -879,15 +878,15 @@ function trim_ending_slashes(address) {
 
                     if (res.statusCode >= 400 && res.statusCode < 500) {
                         if (msg === "Invalid path") {
-                            msg = "Invalid path. You have reached countly server, but it seems like data migration plugin is not enabled on it.";
+                            msg = "data-migration.invalid-server-path";
                         }
                         common.returnMessage(params, 404, msg);
                     }
                     else if (res.statusCode === 200 && msg === "valid") {
-                        common.returnMessage(params, 200, 'Connection is valid');
+                        common.returnMessage(params, 200, 'data-migration.connection-is-valid');
                     }
                     else {
-                        msg = "Target server address is not valid";
+                        msg = "data-migration.target-server-not-valid";
                         common.returnMessage(params, 404, msg);
                     }
                 }
@@ -909,7 +908,6 @@ function trim_ending_slashes(address) {
     plugins.register("/i/datamigration/sendexport", function(ob) {
         var params = ob.params;
 
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -918,16 +916,15 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
-
+        validateCreate(params, FEATURE_NAME, function() {
             if (params.qstring.exportid) {
                 if (!params.qstring.server_token || params.qstring.server_token === '') {
-                    common.returnMessage(params, 404, 'Missing parameter "server_token"');
+                    common.returnMessage(params, 404, 'data-migration.token_missing');
                     return true;
                 }
 
                 if (!params.qstring.server_address || params.qstring.server_address === '') {
-                    common.returnMessage(params, 404, 'Missing parameter "server_address"');
+                    common.returnMessage(params, 404, 'data-migration.address_missing');
                     return true;
                 }
 
@@ -951,7 +948,7 @@ function trim_ending_slashes(address) {
 
             }
             else {
-                common.returnMessage(params, 404, 'Invalid export ID');
+                common.returnMessage(params, 404, 'data-migration.invalid-exportid');
             }
 
         });

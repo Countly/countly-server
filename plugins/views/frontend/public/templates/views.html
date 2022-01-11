@@ -2,7 +2,7 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('views.title')}}</h2>
-            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description"></span>
+            <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
         </template>
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
@@ -15,12 +15,12 @@
     </cly-header>
     <cly-main>
 		<cly-date-picker-g class="views-date-picker-container"></cly-date-picker-g>
-		<cly-in-page-notification :text="totalViewCountWarning" v-if="showViewCountWarning"></cly-in-page-notification>
+		<cly-notification :text="totalViewCountWarning" v-if="showViewCountWarning" color="light-destructive" class="bu-mb-5">
+			<template v-slot:close><el-button type="text">Adjust Limit</el-button></template>
+		</cly-notification>
 		<cly-section >
-			<cly-metric-cards>
-                <cly-metric-card :number="item.percent" :color="item.color" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
-                    {{item.name}}
-					<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="item.description"></span>
+			<cly-metric-cards :multiline="false">
+                <cly-metric-card :number="item.percent" :label="item.name" :tooltip="item.description" :color="item.color" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
 					<template v-slot:number>{{item.value}}</template>
                 </cly-metric-card>
             </cly-metric-cards>

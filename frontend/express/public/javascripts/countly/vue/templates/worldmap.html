@@ -1,15 +1,16 @@
 <div class="cly-vue-worldmap">
-    <div class="bu-columns bu-is-gapless">
+    <div class="bu-columns bu-is-gapless" style="height: 100%;">
         <div v-if="showNavigation" class="bu-column bu-is-3 cly-vue-worldmap__list">
             <div class="cly-vue-worldmap__back-button bu-p-4" @click="goToMain" v-if="inDetail">
                 <span class="text-medium"><- Back to World Map</span>
             </div>
 
-            <div class="geo-chart-left-side-wrapper bg-white" v-if="!inDetail">
+            <div class="geo-chart-left-side-wrapper bg-white" v-if="!inDetail" :style="inDetailWrapperStyle">
                 <div class="cly-vue-worldmap__list-title bu-p-2">
                     <span class="bu-pl-2 text-uppercase text-small font-weight-bold">{{countriesTitle}}</span>
                 </div>
                 <cly-listbox
+                    style="height: calc(100% - 38px);"
                     v-if="locations.length > 0"
                     skin="jumbo"
                     height="auto"
@@ -62,7 +63,7 @@
                 </div>
             </div>
 
-            <div class="geo-chart-left-side-wrapper bg-white" v-if="currentViewType === 'regions'">
+            <div class="geo-chart-left-side-wrapper bg-white" v-if="currentViewType === 'regions'" :style="inDetailWrapperStyle">
                 <cly-listbox
                     v-if="locations.length > 0"
                     skin="jumbo"
@@ -80,9 +81,9 @@
                     <cly-empty-chart></cly-empty-chart>
                 </div>
             </div>
-            <div class="geo-chart-left-side-wrapper bg-white" v-else-if="currentViewType === 'cities'">
+            <div class="geo-chart-left-side-wrapper bg-white" v-else-if="currentViewType === 'cities'" :style="inDetailWrapperStyle">
                 <cly-listbox
-                    v-if="locations.length < 1"
+                    v-if="locations.length > 0"
                     skin="jumbo"
                     height="auto"
                     :searchable="true"
@@ -99,14 +100,14 @@
                 </div>
             </div>
         </div>
-        <div class="bu-column cly-vue-worldmap__map-container" :class="{'bu-is-9': showNavigation}">
+        <div class="bu-column cly-vue-worldmap__map-container" :class="{'bu-is-9': showNavigation}" style="height: 100%;">
             <div class="cly-vue-worldmap__detail-switch bu-m-3" v-show="inDetail && showDetailModeSelect">
                 <el-radio-group v-model="detailMode" size="small">
                     <el-radio-button label="regions">Regions</el-radio-button>
                     <el-radio-button label="cities">Cities</el-radio-button>
                 </el-radio-group>
             </div>
-            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :options="{attributionControl:false, zoomControl: false}" :max-bounds="maxBounds" style="height: 70vh; width: 100%">
+            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :options="{attributionControl:false, zoomControl: false}" :max-bounds="maxBounds" style="height: 100%; width: 100%">
                 <l-tile-layer pane="tilePane" v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
 
                 <l-geo-json
@@ -128,6 +129,7 @@
                     v-bind="circleMarkerConfig"
                     :radius="getMarkerRadius(item.value)"
                     :lat-lng="nameToLatLng[name]"
+                    :fill-color="item.color || '#3388ff'"
                     :key="unique(name)"
                     @click="onMarkerClick(name)"
                     v-for="(item, name) in activeMarkers">

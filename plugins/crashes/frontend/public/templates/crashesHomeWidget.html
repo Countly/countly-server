@@ -1,14 +1,13 @@
 <div v-bind:class="[componentId]">
 	<cly-section>
-		<cly-metric-cards>
-				<cly-metric-card formatting="long" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in crashesItems">
-					{{item.name}}
-					<cly-tooltip-icon v-if="item.info" icon="ion-help-circled" :tooltip="item.info"></cly-tooltip-icon>
+		<cly-metric-cards :multiline="false">
+				<cly-metric-card :box-type="5" :label="item.name" :tooltip="item.info" formatting="long" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in crashesItems">
+					<!-- <cly-tooltip-icon v-if="item.info" icon="ion-help-circled" :tooltip="item.info"></cly-tooltip-icon> -->
 					<template v-slot:number>{{item.value}}</template>
-					<span v-if="item.trend=='d' && item.reverse" slot="description" class="cly-trend-up"><i class="bu-pr-1 fas fa-arrow-circle-down"></i>{{item.change}}</span>
-					<span v-else-if="item.trend=='d'" slot="description" class="cly-trend-down"><i class="bu-pr-1 fas fa-arrow-circle-down"></i>{{item.change}}</span>
-					<span v-else-if="item.trend=='u' && item.reverse" slot="description" class="cly-trend-down"><i class="bu-pr-1 fas fa-arrow-circle-up"></i>{{item.change}}</span>
-					<span v-else slot="description" class="cly-trend-up"><i class="bu-pr-1 fas fa-arrow-circle-up"></i>{{item.change}}</span>
+					<span v-if="item.trend=='d' && item.reverse" slot="description" class="cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-down"></i>{{item.change}}</span>
+					<span v-else-if="item.trend=='d'" slot="description" class="cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{item.change}}</span>
+					<span v-else-if="item.trend=='u' && item.reverse" slot="description" class="cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-up"></i>{{item.change}}</span>
+					<span v-else slot="description" class="cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{item.change}}</span>
 				</cly-metric-card>
 		</cly-metric-cards>
 	</cly-section>

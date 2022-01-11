@@ -3,7 +3,7 @@
 (function(countlyVue) {
 
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
-    window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
+    window.VTooltip.VTooltip.options.defaultBoundariesElement = 'body';
     window.VTooltip.VTooltip.options.popover.defaultTrigger = 'hover';
     window.VTooltip.VTooltip.options.popover.defaultOffset = 14;
     window.VTooltip.VTooltip.options.popover.defaultBoundariesElement = 'window';

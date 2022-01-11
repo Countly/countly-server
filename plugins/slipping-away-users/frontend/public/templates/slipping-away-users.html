@@ -2,7 +2,7 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('slipping-away-users.title')}} </h2>
-            <cly-tooltip-icon :tooltip="i18n('slipping-away-users.description')" icon="ion ion-help-circled" style="margin-left:10px"> </cly-tooltip-icon>
+            <cly-tooltip-icon :tooltip="i18n('slipping-away-users.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
         </template>
     </cly-header>
     <cly-main>
@@ -22,11 +22,11 @@
                     </el-table-column>
                     <el-table-column sortable="custom" width="290" prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
                         <template slot-scope="scope">
-                            <div class="bu-level-left">
+                            <div class="bu-level-left" style="padding: 7px 28px 7px 8px;">
                                 <div class="bu-level-item slipping-away-users-table__data-item">
                                     <span>{{scope.row.percentage}} %</span>
                                 </div>
-                                <cly-progress-bar :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
+                                <cly-progress-bar :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" style="margin-left: -4px;"> </cly-progress-bar>
                             </div>
                         </template>
                     </el-table-column>
