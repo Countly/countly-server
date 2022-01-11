@@ -380,7 +380,7 @@ function trim_ending_slashes(address) {
                 });
             }
             else {
-                common.returnMessage(ob.params, 404, 'Missing parameter "exportid"');
+                common.returnMessage(ob.params, 404, 'data-migration.exportid-missing');
             }
         });
         return true;
