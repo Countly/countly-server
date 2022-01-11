@@ -32,7 +32,7 @@
     <cly-date-picker-g class="cly-vue-apps-all-date-picker"></cly-date-picker-g>
     </div>
     <cly-section>
-    <div class="cly-vue-compare-apps__graph-section">
+    <div>
       <div class="cly-vue-compare-apps__graph-section__dropdown">
       <span class="text-big bu-pr-2" >{{i18n('compare.results.by')}}</span>
       <el-select :arrow="false" :adaptiveLength="true" v-model="selectedGraph">
@@ -40,7 +40,7 @@
         </el-option>
       </el-select>
       </div>
-      <cly-chart-time :option="lineChartData" :legend="lineLegend" v-loading="isChartLoading"></cly-chart-time>
+      <cly-chart-time :option="lineChartData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading"></cly-chart-time>
     </div>
     </cly-section>
     <cly-section>

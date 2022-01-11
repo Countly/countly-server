@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]">
-    <cly-datatable-n  ref="compareApps" v-loading="isTableLoading" :rows="appsTableRows" @select="handleCurrentChange" :keyFn="function(row) {return row.id}" @select-all="handleAllChange">
+    <cly-datatable-n  ref="compareApps" :force-loading="isTableLoading" :rows="appsTableRows" @select="handleCurrentChange" :keyFn="function(row) {return row.id}" @select-all="handleAllChange">
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">
