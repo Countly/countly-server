@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
 
 (function() {
 
@@ -1906,6 +1906,31 @@
         template: '<push-notification-drawer v-if="shouldDisplay" :queryFilter="queryFilter" :wrappedUserProperties="wrappedUserProperties" :controls="controls" :type="type"></push-notification-drawer>',
     });
 
+    var PushNotificationWidgetDrawer = countlyVue.views.create({
+        template: CV.T('/push/templates/push-notification-widget-drawer.html')
+    });
+
+    var PushNotificationWidgetComponent = countlyVue.views.create({
+        template: CV.T('/push/templates/push-notification-widget.html'),
+        props: {
+            data: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        data: function() {
+            return {};
+        },
+        computes: {
+
+        },
+        components: {
+
+        }
+    });
+
     /**
      * 
      * @returns {Object} container data with create new message event handler
@@ -1953,6 +1978,45 @@
         countlyVue.container.registerData("/users/external/drawers", getDrawerContainerData());
     }
 
+    /**
+     * addWidgetToCustomDashboard - adds push notification widget to custom dashboard
+     */
+    function addWidgetToCustomDashboard() {
+        countlyVue.container.registerData('/custom/dashboards/widget', {
+            type: 'push',
+            label: CV.i18n('push-notification.title'),
+            priority: 6,
+            drawer: {
+                component: PushNotificationWidgetDrawer,
+                getEmpty: function() {
+                    return {
+                        title: "",
+                        widget_type: "push",
+                        isPluginWidget: true,
+                        apps: [],
+                        data_type: "",
+                        metrics: [],
+                        pushNotification: null,
+                    };
+                },
+                beforeLoadFn: function() {},
+                beforeSaveFn: function() {}
+            },
+            grid: {
+                component: PushNotificationWidgetComponent,
+                dimensions: function() {
+                    return {
+                        minWidth: 6,
+                        minHeight: 4,
+                        width: 7,
+                        height: 4
+                    };
+                }
+            }
+
+        });
+    }
+
     addDrawerToDrillMainView();
     addDrawerToUserProfilesMainView();
 
@@ -1961,6 +2025,7 @@
     $(document).ready(function() {
         if (countlyAuth.validateRead(featureName)) {
             app.addMenuForType("mobile", "reach", {code: "push", url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+            addWidgetToCustomDashboard();
         }
 
         if (app.configurationsView) {
@@ -1968,30 +2033,5 @@
             app.configurationsView.registerLabel("push.proxyhost", "push.proxyhost");
             app.configurationsView.registerLabel("push.proxyport", "push.proxyport");
         }
-
-        var notes = countlyGlobal.member.notes;
-        if (notes && notes.push && notes.push.gcm && notes.push.gcm !== true) {
-            CountlyHelpers.notify({
-                type: 'error',
-                title: jQuery.i18n.map['push.note.gcm.t'],
-                message: jQuery.i18n.prop('push.note.gcm.m', notes.push.gcm.apps.map(function(a) {
-                    return a.name;
-                }).join(', ')),
-                sticky: true,
-                onClick: function() {
-                    return $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/i/users/ack",
-                        data: {
-                            path: 'push.gcm'
-                        },
-                        success: function() {
-                            notes.push.gcm = true;
-                        }
-                    });
-                }
-            });
-        }
-
     });
 }());

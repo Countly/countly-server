@@ -1,0 +1,16 @@
+<div>
+    <clyd-sourceapps v-model="scope.editedObject.apps" :multiple="true"></clyd-sourceapps>
+    <clyd-datatype v-model="scope.editedObject.data_type" :enabledTypes="['push']"></clyd-datatype>
+    <cly-form-field name="selectedPushNotification" :label="i18n('push-notification.select-push-notification')">
+        <el-select v-model="scope.editedObject.pushNotifications">
+            <el-option
+                v-for="item in pushNotifications"
+                :key="item._id"
+                :label="item.name"
+                :value="item.name">
+            </el-option>
+        </el-select>
+    </cly-form-field>
+    <clyd-metric v-model="scope.editedObject.metrics" :data-type="scope.editedObject.data_type"></clyd-metric>
+    <clyd-title v-model="scope.editedObject.title"></clyd-title>
+</div>
