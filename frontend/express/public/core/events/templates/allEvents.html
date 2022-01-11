@@ -20,13 +20,9 @@
 		  </cly-listbox>
 		</div>
 		<div class="bu-column bu-is-9">
-			<div class="bu-mr-5" v-for="item in limitAlerts" :key="item" :value="item">
-				<el-alert v-if="item.show"
-				type="warning"
-				class="bu-mb-2"
-				show-icon>
-				<span class="cly-vue-events-all__alerts" slot="title" v-html="item.message"></span>
-			  </el-alert>
+			<div class="bu-mr-5 cly-vue-events-alerts" v-for="item in limitAlerts" :key="item" :value="item">
+		    <cly-notification v-if="item.show" size="inline" class="bu-mb-5 cly-vue-events-all__alerts" :text="item.message" color="light-warning">
+			</cly-notification>
 			</div>
 		  <div class="cly-vue-events-all" v-if="!groupData.isGroup">
 			{{selectedEventName}}<span v-if="category!=''" class="cly-vue-events-group bu-ml-4">{{category}}</span>
@@ -57,9 +53,9 @@
 			  {{segmentDescription}}
 		  </div>
 		  <cly-section class="bu-mt-5 bu-mr-5">
-			<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData" :legend="lineLegend" v-loading="isChartLoading">	
+			<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading">	
 			</cly-chart-bar>
-			<cly-chart-time v-else  :option="chartData" :legend="lineLegend" v-loading="isChartLoading"></cly-chart-time>
+			<cly-chart-time v-else  :option="chartData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading"></cly-chart-time>
 		  </cly-section>
 		  <cly-section class="bu-mt-5 bu-mr-5">
 			<detail-tables></detail-tables>
