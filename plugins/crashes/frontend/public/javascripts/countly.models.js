@@ -255,11 +255,11 @@
                 statistics.users = {
                     affected: {
                         total: state.rawData.users.affected,
-                        totalPercent: (state.rawData.users.affected / state.rawData.users.total) * 100,
+                        totalPercent: parseFloat(((state.rawData.users.affected / state.rawData.users.total) * 100).toFixed(2)),
                         fatal: state.rawData.users.fatal,
-                        fatalPercent: (state.rawData.users.fatal / state.rawData.users.total) * 100,
+                        fatalPercent: parseFloat(((state.rawData.users.fatal / state.rawData.users.total) * 100).toFixed(2)),
                         nonFatal: (state.rawData.users.affected - state.rawData.users.fatal),
-                        nonFatalPercent: ((state.rawData.users.affected - state.rawData.users.fatal) / state.rawData.users.total) * 100,
+                        nonFatalPercent: parseFloat((((state.rawData.users.affected - state.rawData.users.fatal) / state.rawData.users.total) * 100).toFixed(2)),
                     },
                     notAffected: {
                         total: state.rawData.users.affected,
@@ -278,9 +278,9 @@
                     new: state.rawData.crashes.news,
                     newPercent: (state.rawData.crashes.news / state.rawData.crashes.total) * 100,
                     resolved: state.rawData.crashes.resolved,
-                    resolvedPercent: (state.rawData.crashes.resolved / state.rawData.crashes.total) * 100,
+                    resolvedPercent: parseFloat(((state.rawData.crashes.resolved / state.rawData.crashes.total) * 100).toFixed(2)),
                     unresolved: (state.rawData.crashes.total - state.rawData.crashes.resolved),
-                    unresolvedPercent: ((state.rawData.crashes.total - state.rawData.crashes.resolved) / state.rawData.crashes.total) * 100,
+                    unresolvedPercent: parseFloat((((state.rawData.crashes.total - state.rawData.crashes.resolved) / state.rawData.crashes.total) * 100).toFixed(2)),
                     reoccured: state.rawData.crashes.renewed
                 };
 
@@ -388,6 +388,30 @@
             return Promise.all(ajaxPromises);
         };
 
+        _overviewSubmodule.actions.setSelectedAsResolved = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "resolve");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsResolving = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "resolving");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsUnresolved = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "unresolve");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsShown = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "show");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsHidden = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "hide");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsDeleted = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "delete");
+        };
+
         var _crashgroupSubmodule = {
             state: function() {
                 return {
@@ -395,7 +419,11 @@
                         _id: undefined,
                         is_resolved: false,
                         is_new: false,
-                    }
+                    },
+                    userFilter: {
+                        platform: "all",
+                        version: "all",
+                    },
                 };
             },
             getters: {},
@@ -448,8 +476,17 @@
                     sessions: ("session" in state.crashgroup) ? state.crashgroup.session : {average: 0, max: 0, min: 0},
                 };
 
+                var tooltips = {
+                    ram: jQuery.i18n.prop("crashes.help-ram"),
+                    disk: jQuery.i18n.prop("crashes.help-disk"),
+                    battery: jQuery.i18n.prop("crashes.help-battery"),
+                    running: jQuery.i18n.prop("crashes.help-run"),
+                    sessions: jQuery.i18n.prop("crashes.help-session")
+                };
+
                 Object.keys(diagnostics).forEach(function(diagnosticKey) {
                     diagnostics[diagnosticKey].average = diagnostics[diagnosticKey].total / diagnostics[diagnosticKey].count;
+                    diagnostics[diagnosticKey].tooltip = tooltips[diagnosticKey];
                 });
 
                 ["average", "max", "min"].forEach(function(key) {
@@ -529,6 +566,18 @@
             };
         };
 
+        _crashgroupSubmodule.getters.appVersions = function(state) {
+            return "data" in state.crashgroup ? Object.keys(state.crashgroup.app_version).map(v => v.replaceAll(':', '.')) : [];
+        };
+
+        _crashgroupSubmodule.getters.platforms = function(state) {
+            return "data" in state.crashgroup ? Object.keys(state.crashgroup.os_version).map(v => state.crashgroup.os + ' ' + v.replaceAll(':', '.')) : [];
+        };
+
+        _crashgroupSubmodule.getters.userFilter = function(state) {
+            return state.userFilter;
+        };
+
         _crashgroupSubmodule.actions.initialize = function(context, groupId) {
             context.state.crashgroup._id = groupId;
             return context.dispatch("refresh");
@@ -555,6 +604,13 @@
                         if (crashgroupJson.data && crashgroupJson.data.length > 0) {
                             var userIds = {};
                             var ajaxPromises = [];
+
+                            if (context.state.userFilter['platform'] !== "all") {
+                                crashgroupJson.data = crashgroupJson.data.filter(data => data.os + ' ' + data.os_version === context.state.userFilter['platform']);
+                            }
+                            if (context.state.userFilter['version'] !== "all") {
+                                crashgroupJson.data = crashgroupJson.data.filter(data => data.app_version === context.state.userFilter['version']);
+                            }
 
                             crashgroupJson.data.forEach(function(crash, crashIndex) {
                                 if (crash.uid in userIds) {
@@ -756,6 +812,11 @@
 
         _crashgroupSubmodule.actions.deleteComment = function(context, commentId) {
             return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "delete_comment", {comment_id: commentId});
+        };
+
+        _crashgroupSubmodule.actions.setUserFilter = function(context, value) {
+            context.state.userFilter = value;
+            context.dispatch("refresh");
         };
 
         var _crashSubmodule = {
