@@ -160,14 +160,11 @@
         computed: {
             appCount: {
                 get: function() {
-                    if (!this.count) {
-                        return (this.apps.length > 1) ? "multiple" : "single";
-                    }
-
                     return this.count;
                 },
                 set: function(v) {
                     this.count = v;
+                    this.$emit('app-count', v);
                 }
             }
         }
