@@ -50,7 +50,7 @@
     "external-ip": "2.3.1",
     "formidable": "1.2.2",
     "fs-extra": "^10.0.0",
-    "geoip-lite": "1.4.2",
+    "geoip-lite": "1.4.3",
     "grunt": "1.4.1",
     "grunt-cli": "1.4.3",
     "grunt-contrib-concat": "2.0.0",
