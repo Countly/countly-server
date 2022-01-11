@@ -304,61 +304,64 @@
     var notifiers = {
         dispatched: function() {
             CountlyHelpers.notify({
-                title: CV.i18n("assistant.taskmanager.longTaskTooLong.title"),
-                message: CV.i18n("assistant.taskmanager.longTaskTooLong.message"),
+                message: CV.i18n("assistant.taskmanager.longTaskTooLong.title") + " " + CV.i18n("assistant.taskmanager.longTaskTooLong.message"),
                 info: CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
                 type: "info"
             });
         },
         duplicate: function() {
             CountlyHelpers.notify({
-                title: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.title"),
-                message: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.message"),
+                message: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.title") + " " + CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.message"),
                 info: CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
                 type: "info"
             });
         },
-        completed: function(id, fetchedTask) {
+        completed: function(fetchedTasks) {
+            if (!fetchedTasks || !fetchedTasks.length) {
+                return;
+            }
             var assistantAvailable = typeof countlyAssistant !== "undefined";
             if (!assistantAvailable) {
                 CountlyHelpers.notify({
-                    title: CV.i18n("assistant.taskmanager.completed.title", "", fetchedTask.name || ""),
-                    message: CV.i18n("assistant.taskmanager.completed.message"),
-                    info: CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
-                    sticky: true,
-                    onClick: function() {
-                        app.navigate(fetchedTask.view + id, true);
-                    }
+                    title: CV.i18n("assistant.taskmanager.completed.title"),
+                    message: CV.i18n("assistant.taskmanager.completed.message", fetchedTasks.length),
+                    sticky: true
+                    // onClick: function() {
+                    //     app.navigate(fetchedTask.view + id, true);
+                    // }
                 });
             }
             else {
                 countlyTaskManager.makeTaskNotification(
-                    CV.i18n("assistant.taskmanager.completed.title", "", fetchedTask.name || ""),
-                    CV.i18n("assistant.taskmanager.completed.message"),
+                    CV.i18n("assistant.taskmanager.completed.title"),
+                    CV.i18n("assistant.taskmanager.completed.message", fetchedTasks.length),
                     CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
-                    [fetchedTask.view + id, fetchedTask.name || ""], 3, "assistant.taskmanager.completed", 1);
+                    "", 3, "assistant.taskmanager.completed", 1);
             }
         },
-        errored: function(id, fetchedTask) {
+        errored: function(fetchedTasks) {
+            if (!fetchedTasks || !fetchedTasks.length) {
+                return;
+            }
             var assistantAvailable = typeof countlyAssistant !== "undefined";
             if (!assistantAvailable) {
                 CountlyHelpers.notify({
-                    title: CV.i18n("assistant.taskmanager.errored.title", fetchedTask.name || ""),
-                    message: CV.i18n("assistant.taskmanager.errored.message"),
+                    title: CV.i18n("assistant.taskmanager.errored.title"),
+                    message: CV.i18n("assistant.taskmanager.errored.message", fetchedTasks.length),
                     info: CV.i18n("assistant.taskmanager.errored.info"),
                     type: "error",
-                    sticky: true,
-                    onClick: function() {
-                        app.navigate("#/manage/tasks", true);
-                    }
+                    sticky: true
+                    // onClick: function() {
+                    //     app.navigate("#/manage/tasks", true);
+                    // }
                 });
             }
             else {
                 countlyTaskManager.makeTaskNotification(
-                    CV.i18n("assistant.taskmanager.errored.title", fetchedTask.name || ""),
-                    CV.i18n("assistant.taskmanager.errored.message"),
+                    CV.i18n("assistant.taskmanager.errored.title"),
+                    CV.i18n("assistant.taskmanager.errored.message", fetchedTasks.length),
                     CV.i18n("assistant.taskmanager.errored.info"),
-                    [fetchedTask.name || ""], 4, "assistant.taskmanager.errored", 1);
+                    "", 4, "assistant.taskmanager.errored", 1);
             }
         }
     };
@@ -432,7 +435,7 @@
             setUnread: function(state, payload) {
                 var unread = state.unread,
                     task = payload.task,
-                    appId = task.app_id;
+                    appId = task.app_id || payload.appId;
 
                 if (!unread[appId]) {
                     Vue.set(unread, appId, {});
@@ -455,15 +458,24 @@
             tick: function(context, payload) {
                 payload = payload || {};
                 return new Promise(function(resolve) {
+
                     context.commit("reloadPersistent");
 
                     var monitored = context.state.monitored,
                         appId = payload.appId || countlyCommon.ACTIVE_APP_ID;
 
+                    if (!monitored[appId] || !monitored[appId].length) {
+                        resolve();
+                        return;
+                    }
+
                     countlyTaskManager.check(monitored[appId], function(checkedTasks) {
                         //get it from storage again, in case it has changed
                         context.commit("reloadPersistent");
                         monitored = context.state.monitored;
+                        var completedQueue = [],
+                            erroredQueue = [];
+
                         checkedTasks.result.forEach(function(checkedTask) {
                             var id = checkedTask._id;
 
@@ -480,32 +492,32 @@
                                 });
 
                                 //notify task completed
-                                countlyTaskManager.fetchTaskInfo(id, function(fetchedTask) {
-                                    if (!fetchedTask) {
-                                        return;
+                                if (checkedTask.type === "tableExport" && checkedTask.report_name) {
+                                    checkedTask.name = "<span style='overflow-wrap: break-word;'>" + checkedTask.report_name + "</span>";
+                                }
+                                else {
+                                    checkedTask.name = checkedTask.report_name;
+                                }
+
+                                if (checkedTask.manually_create === false) {
+                                    context.commit("reloadPersistent");
+                                    context.commit("setUnread", {
+                                        task: checkedTask,
+                                        appId: appId
+                                    });
+                                }
+                                if (checkedTask.view) {
+                                    if (checkedTask.result === "completed") {
+                                        completedQueue.push(checkedTask);
                                     }
-                                    if (fetchedTask.type === "tableExport") {
-                                        if (fetchedTask.report_name) {
-                                            fetchedTask.name = "<span style='overflow-wrap: break-word;'>" + fetchedTask.report_name + "</span>";
-                                        }
+                                    else if (checkedTask.result === "errored") {
+                                        erroredQueue.push(checkedTask);
                                     }
-                                    if (fetchedTask.manually_create === false) {
-                                        context.commit("reloadPersistent");
-                                        context.commit("setUnread", {
-                                            task: fetchedTask
-                                        });
-                                    }
-                                    if (fetchedTask.view) {
-                                        if (checkedTask.result === "completed") {
-                                            notifiers.completed(id, fetchedTask);
-                                        }
-                                        else if (checkedTask.result === "errored") {
-                                            notifiers.errored(id, fetchedTask);
-                                        }
-                                    }
-                                });
+                                }
                             }
                         });
+                        notifiers.completed(completedQueue);
+                        notifiers.errored(erroredQueue);
                         context.commit("incrementOpId");
                         resolve();
                     });
