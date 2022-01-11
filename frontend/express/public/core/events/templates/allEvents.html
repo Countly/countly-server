@@ -37,14 +37,14 @@
 			{{eventDescription}}
 		  </div>
 		  <div class="bu-is-flex cly-vue-events-all--padding">
-			<div v-if="hasSegments">
-			  <span class="cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.segmentation')}}</span>
+			<div class="bu-is-align-items-center bu-is-flex" v-if="hasSegments">
+			  <span class="bu-is-flex cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.segmentation')}}</span>
 			  <el-select v-model="selectedSegment" class="cly-vue-events-all--margin">
 				<el-option v-for="item in availableSegments" :key="item.value" :value="item.value" :label="item.label">
 				</el-option>
 			  </el-select>
 			</div>
-			<div>
+			<div class="bu-is-align-items-center bu-is-flex">
 			  <span class="cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.period')}}</span>
 			  <cly-date-picker class="cly-vue-events-all-date-picker" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker>
 			</div>
