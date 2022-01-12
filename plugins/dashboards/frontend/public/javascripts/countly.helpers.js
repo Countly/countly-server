@@ -134,12 +134,14 @@
             },
             types: function() {
                 var self = this;
-                var result = this.allTypes.filter(function(item) {
+                if (this.enabledTypes && !this.enabledTypes.length) {
+                    return this.allTypes;
+                }
+                return this.allTypes.filter(function(item) {
                     return self.enabledTypes.some(function(enabledItem) {
                         return enabledItem === item.value;
                     });
                 });
-                return result;
             }
         }
     });
