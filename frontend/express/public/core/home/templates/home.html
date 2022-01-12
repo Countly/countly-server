@@ -23,7 +23,7 @@
                 v-model="selectedDynamicComponents"
 				showSelectedCount >
                 <template v-slot:trigger>
-                    <el-button size="small" icon="ion-navicon-round"> {{i18n('common.customize')}} </el-button>
+                    <el-button size="small"><img src="images/icons/menu.svg" alt="" class="bu-mr-2"> {{i18n('common.customize')}} </el-button>
                 </template>
             </cly-select-x>
 			<cly-more-options size="small" class="bu-ml-2" @command="selected">

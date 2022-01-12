@@ -315,7 +315,7 @@ var TechnologyHomeWidget = countlyVue.views.create({
 
             var dd = [
                 {
-                    "title": CV.i18n('common.bar.top-platform'),
+                    "title": CV.i18n('common.bar.top-platform_'),
                     "description": CV.i18n('common.bar.top-platform.description'),
                     "data": tops.os || []
                 },
