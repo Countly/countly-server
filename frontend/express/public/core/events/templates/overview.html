@@ -90,9 +90,9 @@
             </cly-empty-view>
 				</div>
 			</div>
-			  <div v-else class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
+			  <div v-else class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline" v-loading = "isMonitorEventsLoading"
+>
 				<monitor-events-breakdown-horizontal-tile
-          v-loading = "isMonitorEventsLoading"
 				  :trend="item.trend"
 				  :change="item.change"
 				  :key="idx"
