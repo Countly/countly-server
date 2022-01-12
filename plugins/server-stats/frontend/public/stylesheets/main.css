@@ -1,35 +1,32 @@
-#data-points-table .dataTables_wrapper { margin-top: -16px; }
-.widget-dp > .widget-content {
-    border-bottom: none;
-    padding-top: 30px
+.data-points-tooltip {
+	padding:2px;
+	line-height: 16px;
 }
-#dp-punch-card text {
-    cursor: default;
+.data-points-tooltip  table{
+	width: 100%;
+	
+}
+.data-points-tooltip .text-big {
+	line-height: 16px;
+}
+.data-points-tooltip  table tr td {
+	border-left: 1px solid #ececec;
+	text-align:left;
+	padding: 2px 8px;
+}
+.data-points-tooltip  table tr td:first-child {
+	border: none;
+	padding-left:2px;
+}
+.data-points-tooltip  table tr td:last-child {
+	padding-right: 2px
+}
+.data-points-tooltip  .data-points-tooltip-bottom-table tr td {
+	border: none;
+	padding:2px;
 }
 
-#dp-punch-card .dot-label text {
-    font-size: 12px;
-}
-
-#dp-punch-card .dp-punch-card-xlabel,
-#dp-punch-card .dp-punch-card-ylabel{
-    font-size : 14px;
-    font-family: Ubuntu,Helvetica,sans-serif;
-    color: #777;
-}
-#dp-punch-card .row {
-    background: #777;
-}
-#dp-punch-card .dp-punch-card-react-hover{
-    -webkit-box-shadow: 0px 0px 24px 0px rgba(0,0,0,0.75);
-    -moz-box-shadow: 0px 0px 24px 0px rgba(0,0,0,0.75);
-    box-shadow: 0px 0px 24px 0px rgba(0,0,0,0.75);
-}
-#dp-punch-card .dp-punch-card-chart-title{
-    text-transform: uppercase;
-    font-size: 14px;
-    color: #444
-}
-.widget-dp > .graph-description{
-    line-height: 17px;
+.data-points-tooltip  .data-points-tooltip-bottom-table tr td:first-child {
+	width: 1px;
+    white-space: nowrap;
 }
