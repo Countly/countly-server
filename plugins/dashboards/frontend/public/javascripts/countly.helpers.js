@@ -147,24 +147,24 @@
     var AppCountComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/app-count.html'),
         props: {
-            apps: {
-                type: Array,
-                default: []
+            value: {
+                type: String,
+                default: 'single',
+                required: true,
             }
         },
         data: function() {
             return {
-                count: null
+                count: this.value
             };
         },
         computed: {
             appCount: {
                 get: function() {
-                    return this.count;
+                    return this.value;
                 },
                 set: function(v) {
-                    this.count = v;
-                    this.$emit('app-count', v);
+                    this.$emit("input", v);
                 }
             }
         }
