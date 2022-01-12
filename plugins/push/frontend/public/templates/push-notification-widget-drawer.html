@@ -2,16 +2,6 @@
     <clyd-appcount :apps="scope.editedObject.apps" @app-count="onAppCount"></clyd-appcount>
     <clyd-sourceapps v-model="scope.editedObject.apps" :multiple="appCount === 'multiple'"></clyd-sourceapps>
     <clyd-datatype v-model="scope.editedObject.data_type" :enabledTypes="['push']"></clyd-datatype>
-    <cly-form-field name="selectedPushNotification" :label="i18n('push-notification.push-notification')">
-        <el-select v-model="scope.editedObject.pushNotifications">
-            <el-option
-                v-for="item in pushNotifications"
-                :key="item._id"
-                :label="item.name"
-                :value="item._id">
-            </el-option>
-        </el-select>
-    </cly-form-field>
     <clyd-metric v-model="scope.editedObject.metrics" :data-type="scope.editedObject.data_type"></clyd-metric>
     <clyd-title v-model="scope.editedObject.title"></clyd-title>
 </div>

@@ -1918,26 +1918,13 @@
         },
         data: function() {
             return {
-                pushNotifications: [],
                 appCount: 'single',
             };
         },
         methods: {
-            fetchAll: function() {
-                var self = this;
-                countlyPushNotification.service.fetchAll()
-                    .then(function(pushNotifications) {
-                        self.pushNotifications = pushNotifications;
-                    }).catch(function() {
-                        self.pushNotifications = [];
-                    });
-            },
             onAppCount: function(value) {
                 this.appCount = value;
             }
-        },
-        mounted: function() {
-            this.fetchAll();
         }
     });
 
@@ -2026,7 +2013,6 @@
                         apps: [],
                         data_type: "push",
                         metrics: [],
-                        pushNotification: null,
                     };
                 },
                 beforeLoadFn: function() {},
