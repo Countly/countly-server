@@ -1943,9 +1943,49 @@
         },
         computed: {
             dashboardData: function() {
-                return this.data ? this.data : {};
+                return this.data.data || {};
             },
-        },
+            selectedMetric: function() {
+                return this.data.metrics[0];
+            },
+            selectedBucket: function() {
+                return this.data.bucket;
+            },
+            xAxisPeriods: function() {
+                var keys = Object.keys(this.dashboardData);
+                if (keys.length) {
+                    return Object.keys(this.dashboardData[keys[0]]);
+                }
+                return [];
+            },
+            yAxisSeries: function() {
+                var self = this;
+                return Object.keys(this.dashboardData).sort(function(a, b) {
+                    return a < b;
+                }).map(function(appKey) {
+                    return {
+                        data: Object.keys(self.dashboardData[appKey]).map(function(periodKey) {
+                            return self.dashboardData[appKey][periodKey][self.selectedMetric];
+                        }),
+                        name: countlyGlobal.apps[appKey].label
+                    };
+                });
+            },
+            barchartOptions: function() {
+                return {
+                    xAxis: {
+                        data: this.xAxisPeriods
+                    },
+                    series: this.yAxisSeries
+                };
+            },
+            legend: function() {
+                return {
+                    show: false,
+                    type: "primary",
+                };
+            },
+        }
     });
 
     /**
