@@ -261,7 +261,8 @@
                 var message = '';
                 if (type === 'token') {
                     message = 'data-migration.tokken-coppied-in-clipboard';
-                } else {
+                }
+                else {
                     message = 'data-migration.address-coppied-in-clipboard';
                 }
                 this.$message({
