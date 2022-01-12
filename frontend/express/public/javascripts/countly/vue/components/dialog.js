@@ -83,7 +83,7 @@
                             <slot :name="name"/>\
                         </template>\
 						<template v-slot:footer><div class="cly-vue-formdialog__buttons is-single-step bu-is-justify-content-flex-end bu-is-flex">\
-							<el-button size="small" @click="cancelClicked"  type="default" >{{cancelLabel}}</el-button>\
+							<el-button size="small" @click="cancelClicked"  type="secondary" >{{cancelLabel}}</el-button>\
 							<el-button size="small" @click="confirmClicked" type="success" v-if="confirmStyle==\'success\'" >{{saveLabel}}</el-button>\
 							<el-button size="small" @click="confirmClicked" type="danger" v-else >{{saveLabel}}</el-button>\
 						</div></template>\
