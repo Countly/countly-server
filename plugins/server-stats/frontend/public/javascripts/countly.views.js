@@ -127,8 +127,8 @@ var DataPointsView = countlyVue.views.create({
             if (!info.dayCount || info.dayCount > 1) {
                 this.useBasicGraph = false;
                 graphObject.tooltip.formatter = function(params) {
-                    var dd = params.data;
-                    dd = params.data[3];
+                    var dd = params.data || [];
+                    dd = dd[3] || {};
                     dd.avg = 0;
                     if (dd.cn > 0) {
                         dd.avg = Math.round(dd.sum / dd.cn);
@@ -191,14 +191,9 @@ var DataPointsView = countlyVue.views.create({
             }
             else {
                 this.useBasicGraph = true;
-
-                var buckets = [];
-
-
                 var seriesArr = [];
                 var seriesInfo = {};
                 for (var z = 0; z < info.data.length; z++) {
-                    buckets.push(info.data[z][0]);
                     seriesArr.push(info.data[z][2]);
                     seriesInfo[z + ""] = info.data[z][3];
                 }
