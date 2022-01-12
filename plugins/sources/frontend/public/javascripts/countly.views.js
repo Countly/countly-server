@@ -102,11 +102,34 @@
                 }
 
                 // set charts center label
-                self.pieSourcesTotalSessions.series[0].label.formatter = function() {
-                    return CV.i18n('common.table.total-sessions') + "\n" + countlyCommon.getShortNumber(sumOfTotalSession || 0);
+                self.pieSourcesTotalSessions.series[0].label = {
+                    formatter: "{a|" + CV.i18n('common.table.total-sessions') + "}\n" + countlyCommon.getShortNumber(sumOfTotalSession || 0),
+                    textAlign: "center",
+                    fontWeight: 500,
+                    fontSize: 16,
+                    lineHeight: 24,
+                    rich: {
+                        a: {
+                            fontWeight: 400,
+                            fontSize: 14,
+                            lineHeight: 20
+                        }
+                    }
                 };
-                self.pieSourcesNewUsers.series[0].label.formatter = function() {
-                    return CV.i18n('common.table.new-users') + "\n " + countlyCommon.getShortNumber(sumOfNewUsers || 0);
+
+                self.pieSourcesNewUsers.series[0].label = {
+                    formatter: "{a|" + CV.i18n('common.table.new-users') + "}\n" + countlyCommon.getShortNumber(sumOfNewUsers || 0),
+                    textAlign: "center",
+                    fontWeight: 500,
+                    fontSize: 16,
+                    lineHeight: 24,
+                    rich: {
+                        a: {
+                            fontWeight: 400,
+                            fontSize: 14,
+                            lineHeight: 20
+                        }
+                    }
                 };
 
                 return {
