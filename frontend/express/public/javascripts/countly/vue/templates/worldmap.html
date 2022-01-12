@@ -107,7 +107,7 @@
                     <el-radio-button label="cities">Cities</el-radio-button>
                 </el-radio-group>
             </div>
-            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :options="{attributionControl:false, zoomControl: false}" :max-bounds="maxBounds" style="height: 100%; width: 100%">
+            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :max-zoom="maxZoom" :options="mapOptions" :max-bounds="maxBounds" style="height: 100%; width: 100%">
                 <l-tile-layer pane="tilePane" v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
 
                 <l-geo-json
@@ -133,7 +133,7 @@
                     :key="unique(name)"
                     @click="onMarkerClick(name)"
                     v-for="(item, name) in activeMarkers">
-                    <l-tooltip :options="markerTooltipOptions">
+                    <l-tooltip :options="markerTooltipOptions" v-if="showTooltip">
                         <div class="bu-p-3 bu-is-flex bu-is-flex-direction-column">
                             <span class="text-medium">{{getMarkerTooltipTitle(name)}}</span>
                             <h4>{{item.value}}</h4>

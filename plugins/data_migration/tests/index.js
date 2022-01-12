@@ -221,7 +221,7 @@ function check_if_empty_list_test() {
                     return done(err);
                 }
                 var ob = JSON.parse(res.text);
-                (ob.result).should.be.exactly("You don't have any exports");
+                (ob.result).should.be.exactly("data-migration.no-exports");
                 done();
             });
     });
@@ -242,7 +242,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("You don't have any exports");
+                    (ob.result).should.be.exactly("data-migration.no-exports");
                     done();
                 });
         });
@@ -270,7 +270,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("Please provide at least one app id to export data");
+                    (ob.result).should.be.exactly("data-migration.no_app_ids");
                     done();
                 });
         });
@@ -286,7 +286,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly('Missing parameter "server_token"');
+                    (ob.result).should.be.exactly('data-migration.token_missing');
                     done();
                 });
         });
@@ -301,7 +301,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("You don't have any exports");
+                    (ob.result).should.be.exactly("data-migration.no-exports");
                     done();
                 });
         });
@@ -315,7 +315,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly('Missing parameter "server_address"');
+                    (ob.result).should.be.exactly('data-migration.address_missing');
                     done();
                 });
         });
@@ -329,7 +329,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("You don't have any exports");
+                    (ob.result).should.be.exactly("data-migration.no-exports");
                     done();
                 });
         });
@@ -342,7 +342,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("You don't have any apps with given ids:1246");
+                    (ob.result).should.be.exactly("data-migration.some_bad_ids");
                     done();
                 });
         });
@@ -356,7 +356,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("You don't have any exports");
+                    (ob.result).should.be.exactly("data-migration.no-exports");
                     done();
                 });
         });
@@ -370,7 +370,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("You don't have any apps with given ids:507f1f77bcf86cd799439011");
+                    (ob.result).should.be.exactly("data-migration.some_bad_ids");
                     done();
                 });
         });
@@ -384,7 +384,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("You don't have any exports");
+                    (ob.result).should.be.exactly("data-migration.no-exports");
                     done();
                 });
         });
@@ -471,7 +471,7 @@ describe("Testing data migration plugin", function() {
                     }
 
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("You have already exported data.");
+                    (ob.result).should.be.exactly("data-migration.you-have-already-exported-data");
                     done();
                 });
         });
@@ -495,7 +495,7 @@ describe("Testing data migration plugin", function() {
                     }
 
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("Already running exporting process");
+                    (ob.result).should.be.exactly("data-migration.already-running-exporting-process");
                     done();
                 });
         });
@@ -649,7 +649,7 @@ describe("Testing data migration plugin", function() {
                     }
 
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("Import file missing");
+                    (ob.result).should.be.exactly("data-migration.import-file-missing");
                     done();
                 });
         });
@@ -703,7 +703,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("Import file missing");
+                    (ob.result).should.be.exactly("data-migration.import-file-missing");
                     done();
                 });
         });
@@ -772,7 +772,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("Importing process started.");
+                    (ob.result).should.be.exactly("data-migration.import-started");
                     done();
                 });
         });
@@ -844,15 +844,13 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    if (ob.result && ob.result == 'Missing parameter "exportid"') {
+                    if (ob.result && ob.result == 'data-migration.exportid-missing') {
                         done();
                     }
                     else {
                         done('invalid response. No token provided.' + res.text);
                     }
-
                 });
-
         });
         it("delete import request ", function(done) {
             request
@@ -881,7 +879,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    if (ob.result && ob.result == "You don't have any imports") {
+                    if (ob.result && ob.result == "data-migration.no-imports") {
                         done();
                     }
                     else {
@@ -930,7 +928,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("Couldn't find file on server");
+                    (ob.result).should.be.exactly("data-migration.could-not-find-file");
                     done();
                 });
         });
@@ -948,7 +946,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("Importing process started.");
+                    (ob.result).should.be.exactly("data-migration.import-started");
                     done();
                 });
         });
@@ -1242,7 +1240,7 @@ describe("Testing data migration plugin", function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("You don't have any exports");
+                    (ob.result).should.be.exactly("data-migration.no-exports");
                     done();
                 });
         });
