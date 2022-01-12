@@ -5,7 +5,7 @@
               <template v-slot="rowScope">
                   <span class="text-medium">
                     <div>
-                      {{ rowScope.row.app_names[0] }}
+                      {{ rowScope.row.app_names.join(",") }}
                     </div>
                     <cly-status-tag 
                       class="bu-mt-1"

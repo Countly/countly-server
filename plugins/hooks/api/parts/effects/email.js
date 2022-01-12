@@ -21,7 +21,7 @@ class EmailEffect {
      * @return {object} - return processed options object.
      */
     async run(options) {
-        const {effect, params, rule} = options;
+        const {effect, params, rule, effectStep} = options;
         let emailAddress = effect.configuration.address;
         let emailTemplate = effect.configuration.emailTemplate;
 
@@ -40,7 +40,7 @@ class EmailEffect {
                 mail.sendMail(msg, (e) => {
                     if (e) {
                         logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
-                        utils.addErrorRecord(rule._id, e);
+                        utils.addErrorRecord(rule._id, e, params, effectStep);
                         log.e("[hooks email effect]", e);
                     }
                     resolve();
