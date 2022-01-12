@@ -794,7 +794,7 @@
             },
             classes: function() {
                 var classes = [];
-                if (this.dataSource && this.externalStatus === 'silent-pending') {
+                if (!this.forceLoading && this.dataSource && this.externalStatus === 'silent-pending') {
                     classes.push("silent-loading");
                 }
 
