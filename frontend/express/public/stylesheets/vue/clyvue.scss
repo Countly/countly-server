@@ -1770,6 +1770,12 @@
     //dialog
 
     .cly-vue-dialog {
+        &.is-auto-centered .el-dialog {
+            margin-top: 0!important;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
         .el-dialog__header {
             padding: 16px;
         }

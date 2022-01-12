@@ -155,6 +155,41 @@
                                 cap: "round"
                             }
                         },
+                        formatter: function(params) {
+                            var template = "";
+                            if (params.seriesType === 'pie') {
+                                template += '<div class="bu-is-flex">\
+                                                        <div class="chart-tooltip__bar bu-mr-2" style="background-color: ' + params.color + ';"></div>\
+                                                        <div>\
+                                                            <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
+                                                            <div class="text-small"> ' + params.data.name + '</div>\
+                                                            <div class="text-big">' + countlyCommon.getShortNumber(params.data.value) + '</div>\
+                                                        </div>\
+                                                  </div>';
+
+                                return template;
+                            }
+                            else {
+                                template = "<div class='chart-tooltip'>";
+                                if (params.length > 0) {
+                                    template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + params[0].axisValueLabel + "</span></br>";
+                                }
+
+                                for (var i = 0; i < params.length; i++) {
+                                    template += '<div class="chart-tooltip__body">\
+                                                        <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
+                                                    <div class="chart-tooltip__series">\
+                                                            <span class="text-small">' + params[i].seriesName + '</span>\
+                                                        <div class="chart-tooltip__value">\
+                                                            <span class="text-big">' + countlyCommon.getShortNumber(params[i].value) + '</span>\
+                                                        </div>\
+                                                    </div>\
+                                                </div>';
+                                }
+                                template += "</div>";
+                                return template;
+                            }
+                        },
                         showContent: true,
                         alwaysShowContent: false,
                         enterable: true,
@@ -180,7 +215,7 @@
                         },
                         axisLabel: {
                             show: true,
-                            color: "#A7AEB8",
+                            color: "#81868D",
                             showMinLabel: true,
                             showMaxLabel: true,
                             fontSize: 14
@@ -201,7 +236,7 @@
                         },
                         axisLabel: {
                             show: true,
-                            color: "#A7AEB8",
+                            color: "#81868D",
                             fontSize: 12
                         },
                         splitLine: {
@@ -516,6 +551,10 @@
             showZoom: {
                 type: Boolean,
                 default: false
+            },
+            showDownload: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
@@ -529,7 +568,13 @@
                         show: false
                     },
                     tooltip: {
-                        trigger: 'item'
+                        trigger: 'item',
+                        position: function(point, params, dom, rect, size) {
+                            size.contentSize[1].height = 54 ;
+                            if (size.contentSize[0] + 30 >= size.viewSize[0]) {
+                                return [point[0] + 20, point[1] + 20];
+                            }
+                        }
                     },
                     xAxis: {
                         show: false
@@ -753,23 +798,31 @@
                         <div v-if="zoomStatus === \'triggered\'" class="bu-mr-3 color-cool-gray-50 text-smallish">\
                             Select an area in the chart to zoom\
                         </div>\
-                        <el-button @click="onZoomTrigger" v-if="zoomStatus === \'reset\'"\
+                        <el-button class="chart-zoom-button" @click="onZoomTrigger" v-if="zoomStatus === \'reset\'"\
                             size="small"\
                             icon="cly-icon-btn cly-icon-zoom">\
                         </el-button>\
-                        <el-button @click="onZoomCancel" v-if="zoomStatus === \'triggered\'" size="small">\
+                        <el-button class="chart-zoom-button" @click="onZoomCancel" v-if="zoomStatus === \'triggered\'" size="small">\
                             Cancel Zoom\
                         </el-button>\
-                        <el-button @click="onZoomReset" v-if="zoomStatus === \'done\'" size="small">\
+                        <el-button class="chart-zoom-button" @click="onZoomReset" v-if="zoomStatus === \'done\'" size="small">\
                             Reset Zoom\
                         </el-button>\
                     </div>'
     });
 
     var MagicSwitch = countlyBaseComponent.extend({
+        props: {
+            chartType: {
+                type: String
+            }
+        },
+        mixins: [
+            countlyVue.mixins.i18n
+        ],
         data: function() {
             return {
-                selSwitchOption: ""
+                selSwitchOption: this.chartType
             };
         },
         computed: {
@@ -783,10 +836,11 @@
                 }
             }
         },
-        template: '<div style="width: 100px;">\
-                        <el-select v-model="selSwitch">\
-                            <el-option value="line" label="Line"></el-option>\
-                            <el-option value="bar" label="Bar"></el-option>\
+        template: '<div class="chart-type-toggle-wrapper">\
+                        <el-select v-model="selSwitch" class="chart-type-toggle-wrapper__select">\
+                            <div class="chart-type-toggle-wrapper__title"><span class="text-smaller font-weight-bold bu-is-uppercase">{{i18n("common.chart-type")}}</span></div>\
+                            <el-option value="line" label="Line"><i class="ion-ios-pulse-strong bu-mr-2"></i><span class="chart-type-toggle-wrapper__type">Line Chart</span></el-option>\
+                            <el-option value="bar" label="Bar"><i class="ion-stats-bars bu-mr-3"></i><span class="chart-type-toggle-wrapper__type">Bar</span></el-option>\
                         </el-select>\
                     </div>'
     });
@@ -805,6 +859,10 @@
             showDownload: {
                 type: Boolean,
                 default: false
+            },
+            chartType: {
+                type: String,
+                default: 'line'
             }
         },
         data: function() {
@@ -858,10 +916,11 @@
                         <div class="bu-level-right">\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
                             <div class="bu-level-item" v-if="showDownload && !isZoom">\
-                                <el-button @click="downloadImage" size="small" icon="el-icon-download"></el-button>\
+                                <el-button @click="downloadImage" size="small" class="chart-download-button"><img src="images/icons/download-icon.svg">\
+                                </el-button>\
                             </div>\
                             <div class="bu-level-item" v-if="showToggle && !isZoom">\
-                                <chart-toggle v-on="$listeners"></chart-toggle>\
+                                <chart-toggle :chart-type="chartType" v-on="$listeners"></chart-toggle>\
                             </div>\
                             <zoom-interactive ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
                         </div>\
@@ -967,8 +1026,8 @@
                                             {\'cly-vue-chart-legend__p-trend--trend-up\': item.trend === \'up\'}, \
                                             {\'cly-vue-chart-legend__p-trend--trend-down\': item.trend === \'down\'}]"\
                                 >\
-                                    <i class="fas fa-arrow-circle-up" v-if="item.trend === \'up\'"></i>\
-                                    <i class="fas fa-arrow-circle-down" v-if="item.trend === \'down\'"></i>\
+                                    <i class="cly-trend-up-icon ion-android-arrow-up" v-if="item.trend === \'up\'"></i>\
+                                    <i class="cly-trend-down-icon ion-android-arrow-down" v-if="item.trend === \'down\'"></i>\
                                     <span v-if="item.percentage">{{item.percentage}}</span>\
                                 </div>\
                             </div>\
@@ -1051,7 +1110,7 @@
                 }
                 else {
                     obj.status = "off";
-                    obj.displayColor = "#a7aeb8";
+                    obj.displayColor = "transparent";
                 }
 
                 this.$set(this.legendData, index, obj);
@@ -1251,7 +1310,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header :chart-type="\'line\'" ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1415,7 +1474,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header :chart-type="\'bar\'" ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1513,7 +1572,7 @@
                                     :options="pieLegendOptions"\
                                     v-if="pieLegendOptions.show && !isChartEmpty"\
                                     :chartOptions="chartOptions"\
-                                    :class="classes">\
+                                    :class="classes" class="shadow-container">\
                                 </custom-legend>\
                             </div>\
                         </div>\

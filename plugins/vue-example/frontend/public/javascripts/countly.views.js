@@ -289,9 +289,23 @@
                                 { value: 135, name: "Video Ads" },
                                 { value: 1548, name: "Search Engines is a long name" }
                             ],
+                            // label: {
+                            //     formatter: function() {
+                            //         return "New users \n 12k";
+                            //     }
+                            // },
                             label: {
-                                formatter: function() {
-                                    return "New users \n 12k";
+                                formatter: "{a|" + "New Users" + "}\n" + "12K",
+                                fontWeight: 500,
+                                fontSize: 16,
+                                fontFamily: "Inter",
+                                lineHeight: 24,
+                                rich: {
+                                    a: {
+                                        fontWeight: "normal",
+                                        fontSize: 14,
+                                        lineHeight: 16
+                                    }
                                 }
                             },
                         }
@@ -307,8 +321,17 @@
                                 { value: 234, name: "Ad Networks" },
                             ],
                             label: {
-                                formatter: function() {
-                                    return "Total users \n 12k";
+                                formatter: "{a|" + "Total Users" + "}\n" + "12K",
+                                fontWeight: 500,
+                                fontSize: 16,
+                                fontFamily: "Inter",
+                                lineHeight: 24,
+                                rich: {
+                                    a: {
+                                        fontWeight: "normal",
+                                        fontSize: 14,
+                                        lineHeight: 16
+                                    }
                                 }
                             },
                         }

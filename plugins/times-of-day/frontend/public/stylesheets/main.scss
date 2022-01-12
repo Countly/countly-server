@@ -25,4 +25,11 @@
         color: map.get(colors.$colors, "cool-gray-100");
         font-weight: typography.$font-weight-primary
     }
+
+    &__scatter-chart-bar {
+        width: 12px;
+        height: 6px;
+        border-radius: 3px;
+        margin-top: 5px;
+    }
 }
