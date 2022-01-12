@@ -112,9 +112,9 @@
             "CustomCodeEffect": jQuery.i18n.map["hooks.CustomCodeEffect"],
         };
         var effectList = "";
-        var arrow = '<div class="is-effect-col-arrow"><svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.25 8.25L6.75 12.75L5.685 11.685L8.3775 9H0V0H1.5V7.5H8.3775L5.685 4.815L6.75 3.75L11.25 8.25Z" fill="#CDAD7A"/></svg></div>';
+        var arrow = '<div class="is-effect-col-arrow"><svg width="11.25" height="12.75" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.25 8.25L6.75 12.75L5.685 11.685L8.3775 9H0V0H1.5V7.5H8.3775L5.685 4.815L6.75 3.75L11.25 8.25Z" fill="#CDAD7A"/></svg></div>';
         row.effects.forEach(function(effect) {
-            effectList += "<div class='is-effect-col'>" + arrow + '<div class="is-trigger-col-tag">' + effectNames[effect.type] + '</div> </div>';
+            effectList += "<div class='is-effect-col'>" + arrow + '<div class="is-trigger-col-tag">' + effectNames[effect.type].toUpperCase() + '</div> </div>';
             if (effect.type === "EmailEffect") {
                 effectList += '<div class="is-trigger-effect-desc">' + effect.configuration.address + '</div>';
             }
@@ -126,7 +126,7 @@
             }
         });
 
-        var triggerEffectDom = '<div class="is-trigger-col-tag">' + triggerText + '</div>';
+        var triggerEffectDom = '<div class="is-trigger-col-tag">' + triggerText.toUpperCase() + '</div>';
         triggerEffectDom += triggerDesc;
         triggerEffectDom += '<div style="margin:5px 0 0 2px;">';
         triggerEffectDom += effectList;
@@ -311,7 +311,7 @@
                             tableData.push({
                                 _id: hookList[i]._id,
                                 name: hookList[i].name || '',
-                                description: hookList[i].description || '-',
+                                description: hookList[i].description || '',
                                 apps: hookList[i].apps,
                                 appNameList: appNameList.join(', '),
                                 triggerCount: hookList[i].triggerCount || 0,

@@ -5,42 +5,60 @@
 }
 
 .cly-vue-hook-drawer {
-     &__help-text {
+    &__help-text {
         font-family: Inter;
         font-style: normal;
         font-weight: normal;
         font-size: 12px;
         line-height: 16px;
         color: #81868D;
-      }
+    }
       
-      &__is-hidden {
+    &__is-hidden {
         visibility: hidden;
-      }
-      &__is-full-line {
-          width: 100%;
-      }
+    }
+    &__is-full-line {
+        width: 100%;
+    }
 
-      &__no-margin {
-          margin-bottom: 0px !important;
-      }
-      &__small-icon {
+    &__no-margin {
+        margin-bottom: 0px !important;
+    }
+    &__small-icon {
         margin-left: 5px;
         font-size: 15px;
     }
-      &__small-icon-right {
+    &__small-icon-right {
         margin-right: 2px;
         font-size: 15px;
-      }
-      &__check_icon {
+    }
+    &__check_icon {
         width: 18px;
         border-radius: 18px;
         text-align: center;
         margin-left: 18px;
         margin-right: 9px;
-      }
+    }
+ 
 }
 
+.hook-detail-card {
+    background: #FFFFFF;
+    border: 1px solid #ECECEC;
+    box-sizing: border-box;
+    box-shadow: 0px 1px 0px #ECECEC;
+    border-radius: 4px;
+}
+.hook-filter-block {
+    background: #F8FAFD;
+    border-radius: 6px;
+}
+.hook-segmentation-block{
+    background: #F8FAFD;
+}
+.hook-api-url-block input {
+    color:#333C48 !important;
+}
 .cly-vue-drawer-hook_description {
     font-size: 13px;
     line-height: 16px;
@@ -65,9 +83,12 @@
     box-shadow: 0px 1px 0px #ececec;
     border-radius: 4px;
 }
-
+.hook-test-card-list {
+    border-top: none !important;
+    border-bottom: none !important;
+}
 .cly-vue-hook-drawer-action-card {
-    background: #FCFCFC;
+    background: #F8FAFD;
     border: 1px solid #E2E4E8;
     box-sizing: border-box;
     border-radius: 6px;
@@ -94,24 +115,21 @@
 }
 
 .cly-vue-hook-table {
-    .el-table_1_column_5  .cell {
-        float: right;
-    }
     .is-name-col {
         font-size: 14px;
         line-height: 20px;
-        color: #333C48;
+        color: #32659D;
         word-break: break-word;
+    }
+    .is-name-col:hover {
+        color: #333C48;
+        text-decoration: underline;
     }
     .is-desc-col {
         font-size: 12px;
         line-height: 16px;
         color: #A7AEB8;
         margin-top: 6px;
-        text-decoration: none !important;
-    }
-    .is-desc-col:hover {
-        text-decoration: none !important;
     }
     .is-trigger-col-tag {
         background: #FCF5E5;
@@ -161,18 +179,6 @@
         .flex-grow {
             flex-grow: 1;
         }
-        .is-option-button {
-            display: none;
-            .el-select {
-                -webkit-box-shadow: unset;
-                box-shadow: unset;
-                border-radius: unset;
-            }
-            
-        }
-    }
-    tr:hover .is-option-button {
-        display: block;
     }
 }
 
