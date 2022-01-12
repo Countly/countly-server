@@ -2048,7 +2048,7 @@
                 getEmpty: function() {
                     return {
                         title: "",
-                        widget_type: "push",
+                        widget_type: "push", //TODO: update widget type when server supports push as a plugin widget
                         isPluginWidget: true,
                         apps: [],
                         data_type: "push",
