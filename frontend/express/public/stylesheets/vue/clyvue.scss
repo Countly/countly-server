@@ -1615,14 +1615,24 @@
             .cly-vue-drawer__steps-container,
             .cly-vue-drawer__footer {
                 max-width: 700px;
-                margin: 0 auto;
+                width: 700px;
+                // margin: 0 auto;
+                padding: 0 calc(50% - 350px);
                 > div {
                     margin: 1rem !important;
                 }
             }
 
             .cly-vue-drawer__footer {
-                width: 100%;
+                border: none;
+                // width: 100%;
+                &:after {
+                    content: "";
+                    width: 685px;
+                    position: absolute;
+                    bottom: 63px;
+                    border-top: 1px solid #ECECEC;
+                }
             }
         }
 
