@@ -33,7 +33,7 @@
                 </template>
             </el-table-column>
            
-            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  width="400" :class="is-clickable">
+            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  min-width="280" :class="is-clickable">
                 <template slot-scope="scope">
                     <div>
                         <div class="is-name-col bu-is-clickable" @click="onRowClick(scope.row)" >{{scope.row.name}}</div>
@@ -42,7 +42,7 @@
                 </template>
             </el-table-column> 
 
-            <el-table-column  :label="(i18n('hooks.trigger') + ' -> '+ i18n('hooks.effects'))" sortable="true" width="400" >
+            <el-table-column  :label="(i18n('hooks.trigger') + ' -> '+ i18n('hooks.effects'))" sortable="true" min-width="280" >
             <template slot-scope="scope" sortable="true">
                 <div v-html="scope.row.triggerEffectColumn"></div>
             </template>
@@ -51,19 +51,19 @@
             <template v-for="(col,idx) in scope.dynamicCols">
                 <el-table-column 
                     v-if="col.value === 'triggerCount'"  
-                    sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" min-width="150">
+                    sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" width="170">
                 </el-table-column>
                 <el-table-column
                     v-if="col.value === 'lastTriggerTimestampString'"  
-                    sortable="true" align="center" prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" min-width="150" >
+                    sortable="true"  prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" width="180" >
                 </el-table-column>
             </template>
 
 
-            <el-table-column :label="i18n('hooks.create-by')" width="150" sortable="true">
+            <el-table-column :label="i18n('hooks.create-by')" width="210" sortable="true">
                 <template slot-scope="scope">
                     <div class="is-last-col">
-                        <div class="flex-grow">
+                        <div >
                             <div class="is-created-by-col">
                                 {{scope.row.createdByUser}}
                              </div>

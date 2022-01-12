@@ -83,7 +83,10 @@
     box-shadow: 0px 1px 0px #ececec;
     border-radius: 4px;
 }
-
+.hook-test-card-list {
+    border-top: none !important;
+    border-bottom: none !important;
+}
 .cly-vue-hook-drawer-action-card {
     background: #F8FAFD;
     border: 1px solid #E2E4E8;
@@ -112,14 +115,15 @@
 }
 
 .cly-vue-hook-table {
-    .el-table_1_column_5  .cell {
-        float: right;
-    }
     .is-name-col {
         font-size: 14px;
         line-height: 20px;
-        color: #333C48;
+        color: #32659D;
         word-break: break-word;
+    }
+    .is-name-col:hover {
+        color: #333C48;
+        text-decoration: underline;
     }
     .is-desc-col {
         font-size: 12px;
@@ -175,18 +179,6 @@
         .flex-grow {
             flex-grow: 1;
         }
-        .is-option-button {
-            display: none;
-            .el-select {
-                -webkit-box-shadow: unset;
-                box-shadow: unset;
-                border-radius: unset;
-            }
-            
-        }
-    }
-    tr:hover .is-option-button {
-        display: block;
     }
 }
 
