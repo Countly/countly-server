@@ -308,8 +308,8 @@
         },
         mounted: function() {
             if (reportsView._createDashboard) {
-                this.reportTypeChange('dashboards'); 
-            } 
+                this.reportTypeChange('dashboards');
+            }
         }
     });
 
@@ -336,7 +336,7 @@
                 var defaultData = countlyReporting.defaultDrawerConfigValue();
                 var data = Object.assign({}, defaultData);
                 data.report_type = "dashboards";
-                data.dashboards=reportsView._createDashboard;
+                data.dashboards = reportsView._createDashboard;
                 this.openDrawer("home", data);
                 reportsView._createDashboard = null;
             }
