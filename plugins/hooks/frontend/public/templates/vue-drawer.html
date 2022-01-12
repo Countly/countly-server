@@ -17,17 +17,7 @@
                     </el-input>
                 </cly-form-field>
 
-                <cly-form-field name="description">
-                    <div class="bu-level ">
-                        <div class="bu-level-left">
-                            <div class="text-smallish font-weight-bold bu-mb-1">{{i18n('hooks.description')}}</div>
-                        </div>
-                        <div class="bu-level-right">
-                            <div class="cly-vue-hook-drawer__help-text">
-                                {{i18n('hooks.optional')}}
-                            </div>
-                        </div>
-                    </div>
+                <cly-form-field name="description" :label="i18n('hooks.description')" optional>
                     <el-input
                         v-model="drawerScope.editedObject.description"
                         :placeholder="i18n('hooks.description-placeholder')">
