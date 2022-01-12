@@ -23,16 +23,7 @@
                 var self = this;
                 countlyDataMigration.loadImportList()
                     .then(function(res) {
-                        if (typeof res.result === "object") {
-                            self.list = Object.values(res.result);
-                            var importIds = Object.keys(res.result);
-                            for (var i = 0; i < importIds.length; i++) {
-                                self.list[i]._id = importIds[i];
-                            }
-                        }
-                        else if (typeof res.result === "string") {
-                            self.list = [];
-                        }
+                        self.list = Object.values(res.result);
                     });
             },
             handleCommand: function(command, scope, row) {
@@ -48,7 +39,7 @@
                         type: 'warning'
                     })
                         .then(function() {
-                            countlyDataMigration.deleteImport(row._id, function(res) {
+                            countlyDataMigration.deleteImport(row.key, function(res) {
                                 if (res.result === 'success') {
                                     self.loadImports();
                                     self.$message({
@@ -262,6 +253,21 @@
                 else {
                     this.importDrawerSaveButtonLabel = CV.i18n('data-migration.import-title');
                 }
+            },
+            copy: function(type) {
+                var text = document.querySelector('#data-migration-server-' + type + '-input');
+                text.select();
+                document.execCommand("copy");
+                var message = '';
+                if (type === 'token') {
+                    message = 'data-migration.tokken-coppied-in-clipboard';
+                } else {
+                    message = 'data-migration.address-coppied-in-clipboard';
+                }
+                this.$message({
+                    type: 'info',
+                    message: CV.i18n(message)
+                });
             }
         }
     });

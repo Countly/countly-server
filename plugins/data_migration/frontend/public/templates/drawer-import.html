@@ -37,7 +37,7 @@
                 <div v-if="drawerScope.editedObject.from_server === 0 && !tokenGenerated" class="cly-vue-drawer-step__section">
                   <div class="text-medium text-heading">
                     <span class="ratings-section-title bu-mb-2">
-                     {{ i18n('data-migration.select-file') }}
+                    {{ i18n('data-migration.select-file') }}
                     </span>
                     <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
                   </div>
@@ -84,8 +84,9 @@
                       </div>
                       <div class="data-migration-drawer__value">
                         {{ serverDomain }}
-                        <span class="bu-has-text-weight-medium data-migration__link-text">
-                          {{ i18n('data-migration.click-to-copy') }}
+                        <input type="text" style="position:absolute;top:-1000px" id="data-migration-server-domain-input" v-model="serverDomain">
+                        <span @click="copy('domain')" class="bu-has-text-weight-medium data-migration__link-text">
+                          {{ i18n('data-migration.copy-url') }}
                         </span>
                       </div>
                     </div>
@@ -94,9 +95,10 @@
                         {{ i18n('data-migration.server-token') }}
                       </div>
                       <div class="data-migration-drawer__value">
+                        <input type="text" style="position:absolute;top:-1000px" id="data-migration-server-token-input" v-model="serverToken">
                         {{ serverToken }}
-                        <span class="bu-has-text-weight-medium data-migration__link-text">
-                          {{ i18n('data-migration.click-to-copy') }}
+                        <span @click="copy('token')" class="bu-has-text-weight-medium data-migration__link-text">
+                          {{ i18n('data-migration.copy-token') }}
                         </span>
                       </div>
                     </div>
@@ -105,4 +107,4 @@
             </cly-form-step>
         </template>
     </cly-drawer>
-  </div>
+</div>
