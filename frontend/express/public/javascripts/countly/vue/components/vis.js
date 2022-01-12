@@ -1621,6 +1621,24 @@
                 default: false,
                 required: false
             },
+            options: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            minZoom: {
+                type: Number,
+                default: 0
+            },
+            maxZoom: {
+                type: Number,
+                default: null
+            },
+            showTooltip: {
+                type: Boolean,
+                default: true
+            }
         },
         beforeCreate: function() {
             this.geojsonHome = [];
@@ -1651,7 +1669,6 @@
                 loadingCities: false,
                 enableTooltip: true,
                 maxBounds: null,
-                minZoom: 0,
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 boundingBoxes: {},
@@ -1673,6 +1690,10 @@
                     fillColor: "#017AFF",
                     fillOpacity: 0.6,
                     color: "transparent",
+                },
+                defaultMapOptions: {
+                    attributionControl: false,
+                    zoomControl: false
                 }
             };
         },
@@ -1852,6 +1873,16 @@
                 }
 
                 return style;
+            },
+            mapOptions: function() {
+                var options = this.options;
+                var opt = this.defaultMapOptions;
+
+                for (var key in options) {
+                    opt[key] = options[key];
+                }
+
+                return opt;
             }
         },
         methods: {

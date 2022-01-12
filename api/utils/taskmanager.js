@@ -460,10 +460,41 @@ taskmanager.editTask = function(options, callback) {
 */
 taskmanager.checkResult = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").findOne({_id: options.id}, {
-        _id: 0,
-        status: 1
-    }, callback);
+    if (Array.isArray(options.id)) {
+        options.db.collection("long_tasks").find({_id: {$in: options.id}}, {
+            _id: 1,
+            status: 1,
+            report_name: 1,
+            type: 1,
+            manually_create: 1,
+            view: 1
+        }).toArray(function(err, res) {
+            if (err) {
+                callback(err);
+            }
+            else {
+                var statuses = {};
+                options.id.forEach(function(id) {
+                    statuses[id] = {_id: id, status: "deleted"}; // if it is present in res, will be overwritten.
+                });
+                res.forEach(function(item) {
+                    statuses[item._id] = item;
+                });
+                callback(null, Object.keys(statuses).map(function(_id) {
+                    var item = statuses[_id];
+                    item.result = item.status;
+                    delete item.status;
+                    return item;
+                }));
+            }
+        });
+    }
+    else {
+        options.db.collection("long_tasks").findOne({_id: options.id}, {
+            _id: 0,
+            status: 1
+        }, callback);
+    }
 };
 
 /**
