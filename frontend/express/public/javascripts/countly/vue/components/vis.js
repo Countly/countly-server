@@ -1276,9 +1276,9 @@
 											:autoresize="autoresize"\
 											@datazoom="onZoomFinished">\
 										</echarts>\
-                                        <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                            <cly-empty-chart></cly-empty-chart>\
-                                        </div>\
+                                       <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
+                                        <cly-empty-chart></cly-empty-chart>\
+                                    </div>\
 								</div>\
 							</vue-scroll>\
 							</div>\
