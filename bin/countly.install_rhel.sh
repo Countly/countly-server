@@ -43,7 +43,7 @@ if grep -q -i "release 8" /etc/redhat-release ; then
     fi
 
     #Install raven-release for ipa-gothic-fonts required by puppeteer
-    yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-1.el8.noarch.rpm
+    yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm
 elif grep -q -i "release 7" /etc/redhat-release ; then
     yum -y install policycoreutils-python
     #install nginx
