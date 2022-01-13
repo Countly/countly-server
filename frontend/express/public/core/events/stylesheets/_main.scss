@@ -214,8 +214,11 @@
     &__arrow {
         padding-right: 3px;
     }
-     &__overview-name {
-        width: 50%;
+    &__overview-name {
+        z-index: 1;
+    }
+    &__width-50 {
+        width:50%
     }
 }
 
