@@ -1566,7 +1566,7 @@ class Loader extends Store {
         if (sent > 0) {
             try {
                 log.d('Recording %d data points', sent);
-                require('../../../server-stats/api/parts/stats.js').updateDataPoints(common1.writeBatcher, this.app._id, 0, sent);
+                require('../../../server-stats/api/parts/stats.js').updateDataPoints(common1.writeBatcher, this.app._id, 0, {"p": sent});
             }
             catch (e) {
                 log.d('Error during dp recording', e);

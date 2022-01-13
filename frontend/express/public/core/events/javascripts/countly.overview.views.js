@@ -134,7 +134,9 @@
         },
         template: '<div class="cly-events-breakdown-horizontal-tile bu-column bu-is-4">\
     <div class="cly-events-breakdown-horizontal-tile__wrapper">\
-    <slot name="title"></slot>\
+    <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
+        <slot name="title"></slot>\
+    </div>\
         <div class="cly-events-breakdown-horizontal-tile__values-list bu-columns bu-is-gapless bu-is-multiline bu-is-mobile">\
             <div class="bu-column bu-is-12">\
                 <div class="cly-events-breakdown-horizontal-tile__item">\
@@ -168,7 +170,9 @@
         },
         template: '<div class="cly-monitor-events-breakdown-horizontal-tile bu-column bu-is-6">\
     <div class="cly-monitor-events-breakdown-horizontal-tile__wrapper">\
-    <slot name="title"></slot>\
+    <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between has-ellipsis">\
+        <slot name="title"></slot>\
+    </div>\
         <div class="cly-monitor-events-breakdown-horizontal-tile__values-list bu-columns bu-is-gapless bu-is-multiline bu-is-mobile">\
             <div class="bu-column bu-is-4">\
                 <div class="cly-monitor-events-breakdown-horizontal-tile__item">\
