@@ -47,16 +47,16 @@
                     })
                         .then(function() {
                             countlyUserManagement.deleteUser(index, function() {
-                                self.$message({
-                                    message: CV.i18n('management-users.deleted-message'),
+                                CountlyHelpers.notify({
+                                    message: CV.i18n('management-users.removed-message'),
                                     type: 'success'
                                 });
                             });
                         })
                         .catch(function() {
-                            self.$message({
+                            CountlyHelpers.notify({
                                 type: 'info',
-                                message: CV.i18n('management-users.delete-canceled')
+                                message: CV.i18n('management-users.remove-canceled')
                             });
                         });
                     break;
@@ -296,7 +296,7 @@
                 }
 
                 if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin) {
-                    this.$message({
+                    CountlyHelpers.notify({
                         message: CV.i18n('management-users.at-least-one-app-required'),
                         type: 'error'
                     });
@@ -322,7 +322,7 @@
                                 var checkUploadProcess = setInterval(function() {
                                     if (self.uploadCompleted) {
                                         // show success message
-                                        self.$message({
+                                        CountlyHelpers.notify({
                                             message: CV.i18n('management-users.updated-message'),
                                             type: 'success'
                                         });
@@ -337,7 +337,7 @@
                             }
                             else {
                                 // show success message
-                                self.$message({
+                                CountlyHelpers.notify({
                                     message: CV.i18n('management-users.updated-message'),
                                     type: 'success'
                                 });
@@ -345,7 +345,7 @@
                             }
                         }
                         else {
-                            self.$message({
+                            CountlyHelpers.notify({
                                 message: res.result,
                                 type: 'error'
                             });
@@ -368,7 +368,7 @@
                                 self.$refs.userDrawerDropzone.processQueue();
                                 var checkUploadProcess = setInterval(function() {
                                     if (self.uploadCompleted) {
-                                        self.$message({
+                                        CountlyHelpers.notify({
                                             message: CV.i18n('management-users.created-message'),
                                             type: 'success'
                                         });
@@ -382,7 +382,7 @@
                                 };
                             }
                             else {
-                                self.$message({
+                                CountlyHelpers.notify({
                                     message: CV.i18n('management-users.created-message'),
                                     type: 'success'
                                 });
@@ -390,7 +390,7 @@
                             }
                         }
                         else {
-                            self.$message({
+                            CountlyHelpers.notify({
                                 message: res.result,
                                 type: 'error'
                             });
@@ -444,7 +444,7 @@
                 // initialize default permission sets for create mode
                 else {
                     if (this.features.length === 0) {
-                        this.$message({
+                        CountlyHelpers.notify({
                             message: 'Somethings went wrong when fetching feature list.',
                             type: 'error'
                         });
