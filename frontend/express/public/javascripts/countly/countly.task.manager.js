@@ -455,6 +455,34 @@
             }
         },
         actions: {
+            clearOrphanUnreads: function(context, payload) {
+                payload = payload || {};
+                return new Promise(function(resolve) {
+                    context.commit("reloadPersistent");
+
+                    var unread = context.state.unread,
+                        appId = payload.appId || countlyCommon.ACTIVE_APP_ID;
+
+                    if (!unread[appId] || !Object.keys(unread[appId]).length) {
+                        resolve();
+                        return;
+                    }
+
+                    countlyTaskManager.check(Object.keys(unread[appId]), function(checkedTasks) {
+                        checkedTasks.result.forEach(function(checkedTask) {
+                            var id = checkedTask._id;
+
+                            if (checkedTask.result === "deleted") {
+                                context.commit("setRead", {
+                                    appId: appId,
+                                    taskId: id
+                                });
+                            }
+                        });
+                        resolve();
+                    });
+                });
+            },
             tick: function(context, payload) {
                 payload = payload || {};
                 return new Promise(function(resolve) {
@@ -566,12 +594,14 @@
     };
 
     countlyTaskManager.reset = function() {
+        vuexStore.dispatch("countlyTaskManager/clearOrphanUnreads");
         _resultData = [];
         _resultObj = {};
         _data = {};
     };
 
     $(document).ready(function() {
+        vuexStore.dispatch("countlyTaskManager/clearOrphanUnreads");
         countlyTaskManager.tick();
         var initial = true;
         //listen for UI app change

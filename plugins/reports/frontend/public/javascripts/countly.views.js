@@ -1,5 +1,5 @@
 /*global
- 
+    countlyCommon,
     CountlyHelpers,
     countlyGlobal,
     countlyAuth,
@@ -81,7 +81,7 @@
                     });
                     break;
                 case "preview-comment":
-                    var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id});
+                    var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
                     window.open(url, "_blank");
                     break;
                 default:
@@ -228,7 +228,6 @@
             }
         },
         methods: {
-
             reportTypeChange: function(type) {
                 if (type === 'dashboards') {
                     this.showApps = false;
@@ -306,6 +305,11 @@
                 this.title = jQuery.i18n.map["reports.create_new_report_title"];
                 this.saveButtonLabel = jQuery.i18n.map["reports.Create_New_Report"];
             },
+        },
+        mounted: function() {
+            if (reportsView._createDashboard) {
+                this.reportTypeChange('dashboards');
+            }
         }
     });
 
@@ -326,7 +330,16 @@
             createReport: function() {
                 this.openDrawer("home", countlyReporting.defaultDrawerConfigValue());
             },
-
+        },
+        mounted: function() {
+            if (reportsView._createDashboard) {
+                var defaultData = countlyReporting.defaultDrawerConfigValue();
+                var data = Object.assign({}, defaultData);
+                data.report_type = "dashboards";
+                data.dashboards = reportsView._createDashboard;
+                this.openDrawer("home", data);
+                reportsView._createDashboard = null;
+            }
         },
     });
 
@@ -338,12 +351,16 @@
         }],
         templates: [
             "/reports/templates/vue-main.html",
-        ]
+        ],
     });
     reportsView.featureName = FEATURE_NAME;
 
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         app.route('/manage/reports', 'reports', function() {
+            this.renderWhenReady(reportsView);
+        });
+        app.route('/manage/reports/create/dashboard/:dashboardID', 'reports', function(dashboardID) {
+            reportsView._createDashboard = dashboardID;
             this.renderWhenReady(reportsView);
         });
     }

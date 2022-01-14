@@ -26,8 +26,17 @@ var LanguageView = countlyVue.views.create({
                         name: CV.i18n('common.table.new-users'),
                         data: self.data.pie.newUsers,
                         label: {
-                            formatter: function() {
-                                return CV.i18n('common.table.new-users') + " " + countlyCommon.getShortNumber(self.data.totals.newUsers || 0);
+                            formatter: "{a|" + CV.i18n('common.table.new-users') + "}\n" + countlyCommon.getShortNumber(self.data.totals.newUsers || 0),
+                            fontWeight: 500,
+                            fontSize: 16,
+                            fontFamily: "Inter",
+                            lineHeight: 24,
+                            rich: {
+                                a: {
+                                    fontWeight: "normal",
+                                    fontSize: 14,
+                                    lineHeight: 16
+                                }
                             }
                         }
                     }
@@ -42,8 +51,17 @@ var LanguageView = countlyVue.views.create({
                         name: CV.i18n('common.table.total-sessions'),
                         data: self.data.pie.totalSessions,
                         label: {
-                            formatter: function() {
-                                return CV.i18n('common.table.total-sessions') + " " + countlyCommon.getShortNumber(self.data.totals.totalSessions);
+                            formatter: "{a|" + CV.i18n('common.table.total-sessions') + "}\n" + countlyCommon.getShortNumber(self.data.totals.totalSessions || 0),
+                            fontWeight: 500,
+                            fontSize: 16,
+                            fontFamily: "Inter",
+                            lineHeight: 24,
+                            rich: {
+                                a: {
+                                    fontWeight: "normal",
+                                    fontSize: 14,
+                                    lineHeight: 16
+                                }
                             }
                         }
                     }

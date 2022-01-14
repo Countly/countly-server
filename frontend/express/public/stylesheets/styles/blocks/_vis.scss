@@ -38,14 +38,14 @@
             margin-left: 36px;
         }
 
-        &--deselected {
-            .cly-vue-chart-legend__p-title,
-            .cly-vue-chart-legend__p-number,
-            .cly-vue-chart-legend__p-trend--trend-up,
-            .cly-vue-chart-legend__p-trend--trend-down {
-                color: #a7aeb8;
-            }
-        }
+        // &--deselected {
+        //     .cly-vue-chart-legend__p-title,
+        //     .cly-vue-chart-legend__p-number,
+        //     .cly-vue-chart-legend__p-trend--trend-up,
+        //     .cly-vue-chart-legend__p-trend--trend-down {
+        //         color: #a7aeb8;
+        //     }
+        // }
     }
 
     &__s-series {
@@ -232,5 +232,84 @@
                 height: 0;
             }
         }
+    }
+}
+
+.chart-type-toggle-wrapper {
+    &__select {
+        width: 126px;
+    }
+
+    &__title {
+        margin-top: 16px;
+        margin-left: 16px;
+        letter-spacing: 0.5px;
+    }
+
+    &__type {
+        font-family: Inter;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 13px;
+        line-height: 13px;
+    }
+}
+
+.chart-zoom-button {
+    margin-right: 12px;
+}
+
+.chart-download-button {
+    width: 42px;
+    height: 32px;
+}
+
+.shadow-container {
+    position: relative;
+  }
+
+.shadow-container:after {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 100%;
+    margin: 0 auto;
+    height: 70px;
+    border: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, #FFFFFF 100%);
+  }
+
+.chart-tooltip {
+    margin-bottom: -24px;
+
+    &__bar {
+        width: 12px;
+        height: 6px;
+        border-radius: 3px;
+        margin-top: 5px;
+    }
+
+    &__header {
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    &__body {
+        background-color: #FFFFFF; 
+        display: flex; 
+        margin-bottom: 24px; 
+        margin-top: 16px
+    }
+
+    &__series {
+        margin-left: 10px; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: space-between;
+    }
+
+    &__value {
+        margin-top: 2px; 
     }
 }

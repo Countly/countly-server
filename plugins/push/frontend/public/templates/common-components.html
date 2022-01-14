@@ -416,31 +416,32 @@
 
 <script type="text/x-template" id="details-errors-tab">
     <el-card class="box-card cly-vue-push-notification-details-summary-card">
-        <div v-if="hasErrors()">
+        <div>
             <el-table
+                empty-text="There are no errors found"
                 :data="errors"
                 border
-                style="width: 100%">
+                style="width:100%">
                     <el-table-column
-                        prop="name"
-                        label="Name"
-                        width="180">
+                        label="Error Code"
+                        min-width="30">
+                        <template v-slot="scope">
+                         <span style="white-space:normal">{{scope.row.code}} {{scope.row.codePostfix? '('+scope.row.codePostfix+')' : ''}}</span>
+                        </template>
                     </el-table-column>
                     <el-table-column
-                        prop="code"
-                        label="Code"
-                        width="180">
+                        label="Affected Users"
+                        prop="affectedUsers"
+                        min-width="25">
                     </el-table-column>
                     <el-table-column
-                        prop="description"
-                        label="Description">
+                        label="Description"
+                        min-width="45">
+                        <template v-slot="scope">
+                            <span style="white-space:normal;" v-html="scope.row.description"> </span>
+                        </template>
                     </el-table-column>
             </el-table>
-        </div>
-        <div v-else class="bu-container">
-            <span class="cly-vue-push-notification-details-no-errors-text">
-                {{i18n('push-notification-details.no-errors-found')}}
-            </span>
         </div>
     </el-card>
 </script>

@@ -2,11 +2,11 @@
 <div v-bind:class="[componentId]">
    <cly-header v-if="hookDetail">
       <cly-back-link slot="header-top" :title="i18n('hooks.back-to-hooks')" link="/manage/hooks"></cly-back-link>
-      <template v-slot:header-left>
+      <template v-slot:header-left class="bu-pt-2">
         <div>
-          <h3 class="cly-vue-surveys-detail-header">{{hookDetail.name}}</h3>
+          <h3>{{hookDetail.name}}</h3>
           <div class="bu-mt-4">
-            <i class="bu-is-size-7 el-icon-time"></i> <span class="bu-is-size-7	color-cool-gray-50">Created at {{hookDetail.created_at_string}} by {{hookDetail.createdByUser}}</span>
+            <i class="text-medium el-icon-time"></i> <span class="text-medium	color-cool-gray-50">Created at {{hookDetail.created_at_string}} by {{hookDetail.createdByUser}}</span>
          
           </div>
         </div>
@@ -27,25 +27,25 @@
       </template>
     </cly-header>
     <cly-main>
-      <cly-section>
-        <div class="bu-mx-5 white-bg bu-p-5 ">
-          <div class="text-medium color-cool-gray-100">HOOK DETAILS</div>
+      <div class="hook-detail-card">
+        <div class="bu-mx-5 white-bg bu-my-4  bu-pt-1  bu-pb-4 ">
+          <div class="text-medium color-cool-gray-100 text-heading">{{i18n('hooks.detail-title')}}</div>
           <div class="bu-mt-5">
             <div class="bu-columns">
-              <div  class="bu-column bu-is-2 text-medium bu-has-text-weight-medium">Trigger Count</div>
-              <div class="bu-column">{{hookDetail.triggerCount}}</div>
+              <div  class="bu-column bu-pb-1 bu-is-2 text-medium bu-has-text-weight-medium">{{i18n('hooks.trigger-count')}}</div>
+              <div class="bu-column bu-pb-1 ">{{hookDetail.triggerCount}}</div>
             </div>
             <div class="bu-columns">
-              <div  class="bu-column bu-is-2 text-medium bu-has-text-weight-medium">Last Trigger Time</div>
-              <div class="bu-column">{{hookDetail.lastTriggerTimestampString}}</div>
+              <div  class="bu-column bu-pb-1 bu-is-2 text-medium bu-has-text-weight-medium">{{i18n('hooks.trigger-time')}}</div>
+              <div class="bu-column bu-pb-1 ">{{hookDetail.lastTriggerTimestampString}}</div>
             </div>
             <div class="bu-columns cly-vue-hook-table">
-              <div  class="bu-column bu-is-2 text-medium bu-has-text-weight-medium">Trigger and Effects</div>
-              <div class="bu-column" v-html="hookDetail.triggerEffectDom"></div>
+              <div  class="bu-column bu-pb-1  bu-is-2 text-medium bu-has-text-weight-medium">{{i18n('hooks.trigger-and-effect')}}</div>
+              <div class="bu-column bu-pb-1 " v-html="hookDetail.triggerEffectDom"></div>
             </div>
           </div>
         </div>
-      </cly-section>
+      </div>
 
       <div class="text-medium bu-my-4 bu-has-text-weight-medium color-cool-gray-100"> Last 10 Failed Triggers</div>
       <cly-section>

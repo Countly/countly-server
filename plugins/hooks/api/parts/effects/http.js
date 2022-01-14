@@ -21,7 +21,7 @@ class HTTPEffect {
      */
     async run(options) {
         const logs = [];
-        const {effect, params, rule} = options;
+        const {effect, params, rule, effectStep} = options;
         const {method, url, requestData} = effect.configuration;
         try {
             const parsedURL = utils.parseStringTemplate(url, params);
@@ -38,7 +38,7 @@ class HTTPEffect {
                     log.d("[http get effect]", e, body);
                     if (e) {
                         logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
-                        utils.addErrorRecord(rule._id, e);
+                        utils.addErrorRecord(rule._id, e, params, effectStep);
                     }
                 });
                 break;
@@ -52,7 +52,7 @@ class HTTPEffect {
                     log.e('http efffect parse post data err:', e);
                     logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
 
-                    utils.addErrorRecord(rule._id, e);
+                    utils.addErrorRecord(rule._id, e, params, effectStep);
                 }
                 await request({
                     method: 'POST',
@@ -64,7 +64,7 @@ class HTTPEffect {
                     log.e("[httpeffects]", e, body, rule);
                     if (e) {
                         logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
-                        utils.addErrorRecord(rule._id, e);
+                        utils.addErrorRecord(rule._id, e, params, effectStep);
                     }
 
                 });
@@ -74,7 +74,7 @@ class HTTPEffect {
         }
         catch (e) {
             logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
-            utils.addErrorRecord(rule._id, e);
+            utils.addErrorRecord(rule._id, e, params, effectStep);
         }
         return {...options, logs};
     }

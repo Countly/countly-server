@@ -5,12 +5,12 @@
               <template v-slot="rowScope">
                 <span class="text-medium">
                   <div>
-                    {{ rowScope.row.app_names[0] }}
+                    {{ rowScope.row.app_list }}
                   </div>
                   <cly-status-tag 
                     class="bu-mt-1"
-                    :text="rowScope.row.status.substr(0, 1).toUpperCase() + rowScope.row.status.substr(1, rowScope.row.status.length - 1)"
-                    :color="rowScope.row.status === 'finished' ? 'green' : rowScope.row.status === 'progress' ? 'blue' : 'red'">
+                    :text="rowScope.row.status_text.substr(0, 1).toUpperCase() + rowScope.row.status_text.substr(1, rowScope.row.status_text.length - 1)"
+                    :color="rowScope.row.status_text === 'finished' ? 'green' : rowScope.row.status_text === 'progress' ? 'blue' : 'red'">
                   </cly-status-tag>
                 </span>
               </template>

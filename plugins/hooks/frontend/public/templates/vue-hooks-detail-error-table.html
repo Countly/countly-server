@@ -11,14 +11,28 @@
                     <div v-html="scope.row.a"></div>
                 </template>
             </el-table-column>  -->
-            <el-table-column  label="Error Logs" sortable="true"  >
+            <el-table-column  label="Effect Step" width="200" sortable="true"  >
+                <template slot-scope="scope" sortable="true">
+                    <div class="bu-is-flex bu-flex-wrap">
+                        <pre class='code-pre-line'>{{scope.row.effectStep}} </pre>
+                    </div>
+                </template>
+            </el-table-column> 
+            <el-table-column  label="Step input data" width="200" sortable="true"  >
+                <template slot-scope="scope" sortable="true">
+                    <div class="bu-is-flex bu-flex-wrap">
+                        <pre class='code-pre-line'>{{scope.row.params}} </pre>
+                    </div>
+                </template>
+            </el-table-column> 
+            <el-table-column  label="Error Logs" width="600" sortable="true"  >
                 <template slot-scope="scope" sortable="true">
                     <div class="bu-is-flex bu-flex-wrap">
                         <pre class='code-pre-line'>{{scope.row.e}} </pre>
                     </div>
                 </template>
             </el-table-column> 
-            <el-table-column  label="Time Stamp" sortable="true" width="400" >
+            <el-table-column  label="Time Stamp" width="110" sortable="true" width="400" >
                 <template slot-scope="scope" sortable="true">
                     <div>{{scope.row.timestamp_string}}</div>
                 </template>

@@ -35,7 +35,7 @@
         :tracked-fields="localTableTrackedFields"
         :rows="tableRows" :resizable="false" >
         <template v-slot="scope">
-            <el-table-column type="switch" fixed="left" width="88" sortable prop="enabled">
+            <el-table-column type="switch" fixed="left" width="88" prop="enabled">
                 <template v-slot="rowScope">
                     <el-switch :value="rowScope.row.enabled" class="bu-ml-4  bu-mr-2" :disabled="!canUpdate"
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">

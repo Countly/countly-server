@@ -941,7 +941,15 @@
             image: {default: 'images/icons/empty-view-icon.svg', type: String},
             title: { default: countlyVue.i18n('common.emtpy-view-title'), type: String },
             subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String },
-            height: {default: 0, type: Number}
+            height: {default: 0, type: Number},
+            classes: {
+                type: Object,
+                default: function() {
+                    return {
+                        'bu-py-6': true
+                    };
+                }
+            }
         },
         data: function() {
             return {};
@@ -953,9 +961,9 @@
                 }
             }
         },
-        template: ' <div :style="topStyle" class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">\
+        template: ' <div :style="topStyle" :class="[\'bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center\', classes]" style="height: 100%;">\
                         <slot name="icon">\
-                            <div class="bu-mt-6">\
+                            <div>\
                                 <img :src="image"/>\
                             </div>\
                         </slot>\
@@ -964,7 +972,7 @@
                                 <h4 class="color-cool-gray-100 bu-has-text-centered">{{title}}</h4>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="bu-mt-1 bu-mb-6 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
+                                <div class="bu-mt-1 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
                             </slot>\
                         </div>\
                     </div>',

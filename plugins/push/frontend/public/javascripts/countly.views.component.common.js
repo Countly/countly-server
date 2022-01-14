@@ -924,11 +924,6 @@
             errors: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.errors;
             },
-        },
-        methods: {
-            hasErrors: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.failed > 0;
-            }
         }
     });
 

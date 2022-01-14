@@ -34,6 +34,7 @@
                 var result = this.$store.getters["countlyHooks/table/getInitialized"];
                 return result;
             },
+
         },
         data: function() {
             var appsSelectorOption = [];
@@ -49,6 +50,16 @@
                 deleteElement: null,
                 showDeleteDialog: false,
                 deleteMessage: '',
+                tableDynamicCols: [{
+                    value: "triggerCount",
+                    label: CV.i18n('hooks.trigger-count'),
+                    default: true
+                },
+                {
+                    value: "lastTriggerTimestampString",
+                    label: CV.i18n('hooks.trigger-last-time'),
+                    default: true
+                }]
             };
         },
         methods: {
@@ -787,6 +798,7 @@
                 hookDetail.error_logs && hookDetail.error_logs.forEach(function(item) {
                     item.timestamp_string = moment(item.timestamp).format();
                 });
+                hookDetail.error_logs = hookDetail.error_logs && hookDetail.error_logs.reverse();
                 return hookDetail.error_logs || [];
             },
             detailLogsInitialized: function() {
@@ -823,7 +835,7 @@
             hookDetail: function() {
                 var hookDetail = this.$store.getters["countlyHooks/hookDetail"];
                 hookDetail.created_at_string = moment(hookDetail.created_at).fromNow();
-                hookDetail.lastTriggerTimestampString = moment(hookDetail.lastTriggerTimestamp).fromNow();
+                hookDetail.lastTriggerTimestampString = hookDetail.lastTriggerTimestamp && moment(hookDetail.lastTriggerTimestamp).fromNow() || "-";
                 return hookDetail;
             }
         },

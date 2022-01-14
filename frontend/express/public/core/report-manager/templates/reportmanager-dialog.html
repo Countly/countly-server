@@ -9,6 +9,7 @@
     <cly-dialog
         title="Recent reports"
         width="1120px"
+        autoCentered
         :visible.sync="isDialogVisible">
         <cly-report-manager-table @view-task="onViewTask" :disableAutoNavigationToTask="disableAutoNavigationToTask" report-type="auto" :fixed-origin="origin" compact></cly-report-manager-table>
     </cly-dialog>
