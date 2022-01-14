@@ -1,6 +1,6 @@
 <div v-bind:class="[componentId]">
 	<cly-section>
-		<cly-metric-cards :multiline="false">
+		<cly-metric-cards :multiline="false" v-loading="isLoading" style="min-height:100px;">
 				<cly-metric-card :box-type="5" :label="item.name" :tooltip="item.info" formatting="long" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in crashesItems">
 					<!-- <cly-tooltip-icon v-if="item.info" icon="ion-help-circled" :tooltip="item.info"></cly-tooltip-icon> -->
 					<template v-slot:number>{{item.value}}</template>
