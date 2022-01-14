@@ -1,6 +1,6 @@
 <div v-bind:class="[componentId]">
 	<cly-section class="keywords-dashboard-widget">
-        <cly-metric-cards :multiline="true">
+        <cly-metric-cards :multiline="true" v-loading="isLoading" style="min-height:100px;">
             <cly-metric-card :label="searchTermsTop3[0].label">
                 <!-- {{ searchTermsTop3[0].label }} -->
               <template v-slot:number>{{ searchTermsTop3[0].value }}</template>
