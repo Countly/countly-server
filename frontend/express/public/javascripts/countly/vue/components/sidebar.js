@@ -480,7 +480,8 @@
             data: function() {
                 return {
                     selectedMenuOptionLocal: null,
-                    versionInfo: countlyGlobal.countlyTypeName
+                    versionInfo: countlyGlobal.countlyTypeName,
+                    showMainMenu: true
                 };
             },
             computed: {
@@ -620,7 +621,15 @@
                 onClick: function(option) {
                     if (!option.noSelect) {
                         this.selectedMenuOptionLocal = option.name;
+                        this.showMainMenu = true;
                     }
+
+                    if (option.name === "toggle") {
+                        this.onToggleClick();
+                    }
+                },
+                onToggleClick: function() {
+                    this.showMainMenu = !this.showMainMenu;
                 }
             }
         });
