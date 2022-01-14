@@ -45,6 +45,7 @@
             self.token = token && token.result;
             if (self.token) {
                 newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, currentMap: currentMap, app_key: countlyCommon.ACTIVE_APP_KEY, url: window.location.protocol + "//" + window.location.host});
+                newWindow.location.href = url;
             }
         });
     };
