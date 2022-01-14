@@ -177,6 +177,16 @@
                     },
                     getAllApps: function(state) {
                         return state.allApps;
+                    },
+                    confirmDialogs: function(state) {
+                        return state.dialogs.filter(function(item) {
+                            return item.intent === "confirm";
+                        });
+                    },
+                    messageDialogs: function(state) {
+                        return state.dialogs.filter(function(item) {
+                            return item.intent === "message";
+                        });
                     }
                 },
                 mutations: {
@@ -438,7 +448,7 @@
     var DialogsView = {
         template: '<div>\
                         <cly-confirm-dialog\
-                            v-for="dialog in dialogs"\
+                            v-for="dialog in confirmDialogs"\
                             @confirm="onCloseDialog(dialog, true)"\
                             @cancel="onCloseDialog(dialog, false)"\
                             @close="onCloseDialog(dialog, false)"\
@@ -452,16 +462,35 @@
                                     <div v-html="dialog.message"></div>\
                                 </template>\
                         </cly-confirm-dialog>\
+                        <cly-message-dialog\
+                            v-for="dialog in messageDialogs"\
+                            @confirm="onCloseDialog(dialog, true)"\
+                            @close="onCloseDialog(dialog, false)"\
+                            visible\
+                            :show-close="false"\
+                            :key="dialog.id"\
+                            :dialogType="dialog.type"\
+                            :confirmButtonLabel="dialog.confirmLabel"\
+                            :title="dialog.title">\
+                                <template slot-scope="scope">\
+                                    <div v-html="dialog.message"></div>\
+                                </template>\
+                        </cly-message-dialog>\
                 </div>',
         store: _vuex.getGlobalStore(),
         computed: {
-            dialogs: function() {
-                return this.$store.state.countlyCommon.dialogs;
+            messageDialogs: function() {
+                return this.$store.getters['countlyCommon/messageDialogs'];
+            },
+            confirmDialogs: function() {
+                return this.$store.getters['countlyCommon/confirmDialogs'];
             }
         },
         methods: {
             onCloseDialog: function(dialog, status) {
-                dialog.callback(status);
+                if (dialog.callback) {
+                    dialog.callback(status);
+                }
                 this.$store.dispatch('countlyCommon/onRemoveDialog', dialog.id);
             }
         }
