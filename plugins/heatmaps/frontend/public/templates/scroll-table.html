@@ -1,9 +1,10 @@
 <div v-bind:class="[componentId]">
     <cly-section>
         <cly-datatable-n
-                :data-source="remoteTableDataSource"
-                :export-query="getExportQuery"
-                :persist-key="heatmapsScrollsPersistKey">
+            :force-loading="isLoading"
+            :data-source="remoteTableDataSource"
+            :export-query="getExportQuery"
+            :persist-key="heatmapsScrollsPersistKey">
             <template v-slot="scope">
                 <el-table-column min-width="400" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.table.pages')" fixed="left">
                     <template slot-scope="scope">
@@ -31,11 +32,11 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column min-width="150"  v-if="showActionMapColumn"  prop="actionLink">
+                <el-table-column min-width="175"  v-if="showActionMapColumn"  prop="actionLink">
                     <template slot-scope="scope">
                         <cly-more-options v-if="scope.row.useDropdown" icon="el-icon-right" :text="i18n('heatmaps.view-heatmap')">
                             <el-dropdown-item :key="idx" v-for="(item, idx) in domains">
-                                <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value)" class="bu-ml-1 ">{{item.label}}</div>
+                                <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value, 'scroll')" class="bu-ml-1 ">{{item.label}}</div>
                             </el-dropdown-item>
                         </cly-more-options>
                         <div v-else>
