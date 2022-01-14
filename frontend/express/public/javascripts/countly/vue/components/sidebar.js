@@ -545,7 +545,7 @@
                 otherMenuOptions: function() {
                     var menuOptions = [
                         {
-                            name: "clipboard",
+                            name: "help-center",
                             icon: "ion-clipboard",
                             noSelect: true,
                             tooltip: "Help Center"
