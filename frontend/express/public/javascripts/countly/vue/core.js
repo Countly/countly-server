@@ -404,8 +404,7 @@
         });
     };
 
-    var NotificationToastsView = VueCompositionAPI.defineComponent({
-        name: "NotificationToasts",
+    var NotificationToastsView = {
         template: '<div class="notification-toasts"> \
                         <cly-notification v-for="(toast) in notificationToasts" :key="toast.id" :id="toast.id" :text="toast.text" :autoHide="toast.autoHide" :color="toast.color" :closable="true" @close="onClose" class="notification-toasts__item"></cly-notification>\
                     </div>',
@@ -420,12 +419,9 @@
                 this.$store.dispatch('countlyCommon/onRemoveNotificationToast', id);
             }
         }
-    });
+    };
 
-    var GenericPopupsView = {
-        components: {
-            NotificationToasts: NotificationToastsView
-        },
+    var DialogsView = {
         template: '<div>\
                         <cly-confirm-dialog\
                             v-for="dialog in dialogs"\
@@ -442,13 +438,9 @@
                                     <div v-html="dialog.message"></div>\
                                 </template>\
                         </cly-confirm-dialog>\
-                        <NotificationToasts></NotificationToasts>\
                 </div>',
         store: _vuex.getGlobalStore(),
         computed: {
-            notificationToasts: function() {
-                return this.$store.state.countlyCommon.notificationToasts;
-            },
             dialogs: function() {
                 return this.$store.state.countlyCommon.dialogs;
             }
@@ -459,6 +451,17 @@
                 this.$store.dispatch('countlyCommon/onRemoveDialog', dialog.id);
             }
         }
+    };
+
+    var GenericPopupsView = {
+        components: {
+            NotificationToasts: NotificationToastsView,
+            Dialogs: DialogsView
+        },
+        template: '<div>\
+                        <NotificationToasts></NotificationToasts>\
+                        <Dialogs></Dialogs>\
+                    </div>'
     };
 
     var countlyVueWrapperView = countlyView.extend({
