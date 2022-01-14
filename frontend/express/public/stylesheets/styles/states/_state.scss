@@ -118,12 +118,14 @@
 
 .cly-trend-up {
     font-size: t.$text-md-size;
+    font-weight: t.$font-weight-primary;
     color: map.get(c.$colors, "green-80");
     margin-left: -4px;
 }
 
 .cly-trend-down {
     font-size: t.$text-md-size;
+    font-weight: t.$font-weight-primary;
     color: map.get(c.$colors, "red-100");
     margin-left: -4px;
 }
