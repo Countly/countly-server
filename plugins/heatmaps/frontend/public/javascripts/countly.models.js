@@ -8,7 +8,8 @@
                 domains: [],
                 platforms: [],
                 selectedSegment: null,
-                selectedSegmentValue: null
+                selectedSegmentValue: null,
+                isLoading: false
             };
         }
     };
@@ -47,6 +48,7 @@
     };
 
     var onRequest = function(context) {
+        context.rootState.countlyHeatmaps.isLoading = true;
         var data = {
             app_id: countlyCommon.ACTIVE_APP_ID,
             visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
@@ -103,6 +105,7 @@
                 }
                 rows[k].actionLink = url + link;
             }
+            context.rootState.countlyHeatmaps.isLoading = false;
             return rows;
         }
     });
@@ -150,6 +153,7 @@
                 }
                 rows[k].actionLink = url + link;
             }
+            context.rootState.countlyHeatmaps.isLoading = false;
             return rows;
         }
     });
@@ -161,7 +165,8 @@
                 domains: [],
                 platforms: [],
                 selectedSegment: null,
-                selectedSegmentValue: null
+                selectedSegmentValue: null,
+                isLoading: false
             };
         };
 
@@ -180,6 +185,9 @@
             },
             selectedSegment: function(state) {
                 return state.selectedSegment;
+            },
+            isLoading: function(state) {
+                return state.isLoading;
             }
         };
 
