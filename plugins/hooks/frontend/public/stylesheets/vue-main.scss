@@ -36,7 +36,7 @@
         width: 18px;
         border-radius: 18px;
         text-align: center;
-        margin-left: 18px;
+        margin-left: 9px;
         margin-right: 9px;
     }
  
@@ -73,8 +73,8 @@
     background: #F6F6F6;
     border-radius: 4px;
 }
-.hoosk-test-result-row {
-    padding: 0px 26px;
+.hooks-test-result-row {
+    padding: 0px 2px;
     margin: 4px 0px;
     background-color: #fff;
     border: 1px solid;
@@ -82,10 +82,15 @@
     box-sizing: border-box;
     box-shadow: 0px 1px 0px #ececec;
     border-radius: 4px;
+    .el-collapse-item__content {
+        margin: 0 12px !important;
+    }
 }
 .hook-test-card-list {
-    border-top: none !important;
-    border-bottom: none !important;
+    border: none !important;
+}
+.hook-test-collapse-item .el-collapse-item__header {
+    border: none !important;
 }
 .cly-vue-hook-drawer-action-card {
     background: #F8FAFD;

@@ -9,7 +9,6 @@
         </template>
     </cly-header>
 	<cly-main>
-		
 		<cly-section>
 			<cly-date-picker-g class="bu-m-5"></cly-date-picker-g>
 			<cly-chart-bar v-if="useBasicGraph" :legend="{show:false}" :option="dataPointsGraph" :height="520" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
@@ -25,8 +24,16 @@
 					</template>
 				</el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="sessions" :label="i18n('sidebar.analytics.sessions')">
+					<template v-slot:header slot-scope="header">
+						{{i18n('sidebar.analytics.sessions')}}
+						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.sessions-description')"></span>
+					</template>
 				</el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="events" :label="i18n('sidebar.events')">
+					<template v-slot:header slot-scope="header">
+						{{i18n('sidebar.events')}}
+						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.events-description')"></span>
+					</template>
 				</el-table-column>
 				<el-table-column min-width="150" v-if="showPushColumn" :formatter="numberFormatter" sortable="custom" prop="push" :label="i18n('push.plugin-title')"></el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.data-points')"></el-table-column>
