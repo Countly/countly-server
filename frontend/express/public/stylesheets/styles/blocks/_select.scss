@@ -166,6 +166,13 @@
         width: 100%;
     }
 
+    &__item-label {
+        max-width: 350px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     &--disabled {
         .cly-vue-listbox__item {
             background-color: map.get(c.$colors, "warm-gray-20");
