@@ -131,12 +131,26 @@
         }
     };
 
+    var optionalComponent = function(componentId) {
+        if (componentId in Vue.options.components) {
+            return componentId;
+        }
+        return null;
+    };
+
+    var basicComponentUtilsMixin = {
+        methods: {
+            optionalComponent: optionalComponent
+        }
+    };
+
     var _mixins = {
         'autoRefresh': autoRefreshMixin,
         'refreshOnParentActive': refreshOnParentActiveMixin,
         'i18n': i18nMixin,
         'commonFormatters': commonFormattersMixin,
-        'auth': authMixin
+        'auth': authMixin,
+        'basicComponentUtils': basicComponentUtilsMixin
     };
 
     var _globalVuexStore = new Vuex.Store({
@@ -558,6 +572,9 @@
     var _uniqueComponentId = 0;
 
     var countlyBaseComponent = Vue.extend({
+        mixins: [
+            basicComponentUtilsMixin
+        ],
         computed: {
             componentId: function() {
                 return "cly-cmp-" + _uniqueComponentId;
@@ -687,7 +704,8 @@
         views: _views,
         components: _components,
         vuex: _vuex,
-        T: templateUtil.stage
+        T: templateUtil.stage,
+        optionalComponent: optionalComponent
     };
 
     for (var key in rootElements) {
