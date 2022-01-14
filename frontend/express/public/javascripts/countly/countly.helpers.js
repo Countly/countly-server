@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars, countlyTaskManager*/
+/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars, countlyTaskManager, countlyVue*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -313,6 +313,7 @@
             break;
         case "purple":
         case "ok":
+        case "success":
         default:
             colorToUse = "light-successful";
             break;
@@ -626,41 +627,41 @@
             return;
         }
 
-        var dialog = $("#cly-confirm").clone();
-        dialog.removeAttr("id");
-        if (moreData && moreData.image) {
-            dialog.find(".image").html('<div style="background-image:url(\'images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
-        }
-        else {
-            dialog.find(".image").css("display", "none");
-        }
+        if (window.countlyVue && window.countlyVue.vuex) {
 
-        if (moreData && moreData.title) {
-            dialog.find(".title").text(moreData.title);
+            var cancelLabel = countlyVue.i18n('common.cancel'),
+                confirmLabel = countlyVue.i18n('common.continue'),
+                convertedType = "danger"; // Default type is "danger"
+
+            if (buttonText && buttonText.length === 2) {
+                cancelLabel = buttonText[0];
+                confirmLabel = buttonText[1];
+            }
+
+            if (type === "popStyleGreen") {
+                convertedType = "success";
+            }
+            // Default type is "danger"
+            // else if (type === "red") {
+            //     convertedType = "danger";
+            // }
+
+            var payload = {
+                intent: 'confirm',
+                message: countlyCommon.encodeSomeHtml(msg),
+                type: convertedType,
+                confirmLabel: confirmLabel,
+                cancelLabel: cancelLabel,
+                title: moreData && moreData.title,
+                image: moreData && moreData.image,
+                callback: callback
+            };
+
+            var currentStore = window.countlyVue.vuex.getGlobalStore();
+            if (currentStore) {
+                currentStore.dispatch('countlyCommon/onAddDialog', payload);
+            }
         }
-        else {
-            dialog.find(".title").css("display", "none");
-        }
-
-        dialog.find(".message").html(countlyCommon.encodeSomeHtml(msg));
-        if (buttonText && buttonText.length === 2) {
-            dialog.find("#dialog-cancel").text(buttonText[0]);
-            dialog.find("#dialog-continue").text(buttonText[1]);
-            //because in some places they are overwritten by localizing after few seconds
-            $(dialog.find("#dialog-cancel")).removeAttr("data-localize");
-            $(dialog.find("#dialog-continue")).removeAttr("data-localize");
-        }
-
-        dialog.addClass(type);
-        revealDialog(dialog);
-
-        dialog.find("#dialog-cancel").on('click', function() {
-            callback(false);
-        });
-
-        dialog.find("#dialog-continue").on('click', function() {
-            callback(true);
-        });
     };
 
     /**

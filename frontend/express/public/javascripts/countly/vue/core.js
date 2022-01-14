@@ -149,6 +149,7 @@
                     activeApp: null,
                     allApps: countlyGlobal.apps,
                     notificationToasts: [],
+                    dialogs: []
                 },
                 getters: {
                     period: function(state) {
@@ -205,6 +206,15 @@
                             return item.id !== id;
                         });
                     },
+                    addDialog: function(state, payload) {
+                        payload.id = countlyCommon.generateId();
+                        state.dialogs.unshift(payload);
+                    },
+                    removeDialog: function(state, id) {
+                        state.dialogs = state.dialogs.filter(function(item) {
+                            return item.id !== id;
+                        });
+                    }
                 },
                 actions: {
                     updatePeriod: function(context, obj) {
@@ -239,6 +249,12 @@
                     },
                     onRemoveNotificationToast: function(context, payload) {
                         context.commit('removeNotificationToast', payload);
+                    },
+                    onAddDialog: function(context, payload) {
+                        context.commit('addDialog', payload);
+                    },
+                    onRemoveDialog: function(context, payload) {
+                        context.commit('removeDialog', payload);
                     }
                 },
             },
@@ -406,6 +422,45 @@
         }
     });
 
+    var GenericPopupsView = {
+        components: {
+            NotificationToasts: NotificationToastsView
+        },
+        template: '<div>\
+                        <cly-confirm-dialog\
+                            v-for="dialog in dialogs"\
+                            @confirm="onCloseDialog(dialog, true)"\
+                            @cancel="onCloseDialog(dialog, false)"\
+                            @close="onCloseDialog(dialog, false)"\
+                            visible\
+                            :key="dialog.id"\
+                            :dialogType="dialog.type"\
+                            :saveButtonLabel="dialog.confirmLabel"\
+                            :cancelButtonLabel="dialog.cancelLabel"\
+                            :title="dialog.title">\
+                                <template slot-scope="scope">\
+                                    <div v-html="dialog.message"></div>\
+                                </template>\
+                        </cly-confirm-dialog>\
+                        <NotificationToasts></NotificationToasts>\
+                </div>',
+        store: _vuex.getGlobalStore(),
+        computed: {
+            notificationToasts: function() {
+                return this.$store.state.countlyCommon.notificationToasts;
+            },
+            dialogs: function() {
+                return this.$store.state.countlyCommon.dialogs;
+            }
+        },
+        methods: {
+            onCloseDialog: function(dialog, status) {
+                dialog.callback(status);
+                this.$store.dispatch('countlyCommon/onRemoveDialog', dialog.id);
+            }
+        }
+    };
+
     var countlyVueWrapperView = countlyView.extend({
         constructor: function(opts) {
             this.component = opts.component;
@@ -455,11 +510,11 @@
                 components: {
                     DummyCompAPI: DummyCompAPI,
                     MainView: self.component,
-                    NotificationToasts: NotificationToastsView
+                    GenericPopups: GenericPopupsView
                 },
                 template: '<div>\
-                                <MainView> </MainView>\
-                                <NotificationToasts> </NotificationToasts> \
+                                <MainView></MainView>\
+                                <GenericPopups></GenericPopups>\
                                 <DummyCompAPI></DummyCompAPI>\
                             </div>',
                 beforeCreate: function() {

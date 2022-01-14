@@ -60,12 +60,10 @@
                 return this.$attrs.cancelButtonLabel || this.cancelButtonLabel;
             },
             confirmStyle: function() {
-                if (this.$attrs.dialogType && (this.$attrs.dialogType === "success" || this.$attrs.dialogType === "danger")) {
-                    return this.$attrs.dialogType;
-                }
-                else {
+                if (this.dialogType === "success" || this.dialogType === "danger") {
                     return this.dialogType;
                 }
+                return "success";
             }
         },
         methods: {
@@ -74,8 +72,7 @@
             },
             cancelClicked: function() {
                 this.$emit("cancel");
-            },
-
+            }
         },
         template: '<el-dialog destroyOnClose class="cly-confirm-dialog" v-on="$listeners" v-bind="$attrs" :title="title">\
                         <template v-slot:title><h3 class="color-cool-gray-100">{{title}}</h3></template>\
