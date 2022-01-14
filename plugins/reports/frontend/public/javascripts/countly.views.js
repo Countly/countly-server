@@ -1,5 +1,5 @@
 /*global
- 
+    countlyCommon,
     CountlyHelpers,
     countlyGlobal,
     countlyAuth,
@@ -81,7 +81,7 @@
                     });
                     break;
                 case "preview-comment":
-                    var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id});
+                    var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
                     window.open(url, "_blank");
                     break;
                 default:

@@ -85,6 +85,7 @@
                 args: JSON.stringify({
                     "_id": id
                 }),
+                "app_id": countlyCommon.ACTIVE_APP_ID,
             }
         });
     };
@@ -225,6 +226,7 @@
                         data: {
                             preventGlobalAbort: true,
                             args: JSON.stringify(status),
+                            "app_id": countlyCommon.ACTIVE_APP_ID,
                         },
                         dataType: "json",
                         success: function() {
@@ -300,7 +302,7 @@
                                     var dashboardId = data[i].dashboards;
                                     var dashboard = {};
                                     var dashboardsList = context.rootGetters["countlyDashboards/all"];
-                                    for (var idx = 0; i < dashboardsList.length; idx++) {
+                                    for (var idx = 0; idx < dashboardsList.length; idx++) {
                                         if (dashboardId === dashboardsList[idx]._id) {
                                             dashboard = dashboardsList[idx];
                                         }
