@@ -14,6 +14,15 @@
                 <el-table-column min-width="175"  v-if="showActionMapColumn"  prop="actionLink" :label="i18n('heatmaps.table.heatmap')">
                     <template slot-scope="scope">
                         <cly-more-options v-if="scope.row.useDropdown" icon="el-icon-right" :text="i18n('heatmaps.view-heatmap')">
+                            <template slot="trigger">
+                                <el-button 
+                                size="small" 
+                                @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" 
+                                type="default">
+                                    {{i18n('heatmaps.view-heatmap')}}
+                                    <i class="el-icon-arrow-right el-icon-right"></i>
+                                </el-button>
+                            </template>
                             <el-dropdown-item :key="idx" v-for="(item, idx) in domains">
                                 <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value,'click')" class="bu-ml-1 ">{{item.label}}</div>
                             </el-dropdown-item>
