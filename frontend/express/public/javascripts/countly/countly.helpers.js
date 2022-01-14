@@ -322,14 +322,14 @@
     };
 
     CountlyHelpers.goTo = function(options) {
-        app.backlinkRoute = options.from;
+        app.backlinkUrl = options.from;
         window.location.hash = options.url;
     };
 
-    CountlyHelpers.getBacklinkRoute = function() {
-        var route = app.backlinkRoute;
-        app.backlinkRoute = null;
-        return route;
+    CountlyHelpers.getBacklinkUrl = function() {
+        var url = app.backlinkUrl;
+        app.backlinkUrl = null;
+        return url;
     };
     /**
     * Create new model
