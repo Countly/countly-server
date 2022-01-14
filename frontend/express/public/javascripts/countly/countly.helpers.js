@@ -313,6 +313,7 @@
             break;
         case "purple":
         case "ok":
+        case "success":
         default:
             colorToUse = "light-successful";
             break;
