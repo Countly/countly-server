@@ -198,6 +198,9 @@
             'controlParams.selectedDynamicCols': function() {
                 this.$refs.elTable.store.updateColumns(); // TODO: Hacky, check for memory leaks.
             },
+            'controlParams.searchQuery': function(newVal) {
+                this.$emit('search-query-changed', newVal);
+            },
             lastPage: function() {
                 this.checkPageBoundaries();
             },
