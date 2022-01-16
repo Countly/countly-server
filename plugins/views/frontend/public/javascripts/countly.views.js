@@ -564,13 +564,15 @@
         template: CV.T("/views/templates/viewsHomeWidget.html"),
         data: function() {
             return {
-                dataBlocks: []
+                dataBlocks: [],
+                isLoading: true
             };
         },
         mounted: function() {
             var self = this;
             self.$store.dispatch('countlyViews/fetchTotals').then(function() {
                 self.dataBlocks = self.calculateAllData();
+                self.isLoading = false;
             });
         },
         beforeCreate: function() {
@@ -582,10 +584,14 @@
             this.module = null;
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 self.$store.dispatch('countlyViews/fetchTotals').then(function() {
                     self.dataBlocks = self.calculateAllData();
+                    self.isLoading = false;
                 });
             },
             calculateAllData: function() {
