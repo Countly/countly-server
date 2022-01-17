@@ -166,15 +166,17 @@
                 countlyPopulator.getTemplate(self.selectedTemplate, function(template) {
                     countlyPopulator.generateUsers(self.maxTime * 4, template);
                 });
-
                 this.progressBar = setInterval(function() {
                     if (parseInt(self.percentage) < 100) {
-                        self.percentage += parseInt(100 / self.maxTime);
+                        self.percentage += parseFloat(100 / self.maxTime);
+                        if (self.percentage > 100) {
+                            self.percentage = 100;
+                        }
                     }
                     else {
+                        self.percentage = 100;
                         countlyPopulator.stopGenerating();
                         window.clearInterval(self.progressBar);
-                        self.percentage = 100;
                         self.generateDataModal = { showDialog: false };
                         self.finishedGenerateModal = {showDialog: true};
                         self.description = CV.i18n('populator.warning3');

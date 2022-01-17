@@ -685,6 +685,17 @@
             margin: 16px;
         }
 
+        &__cancel-button{
+            padding: 8px 12px;
+            border: none;
+            font-weight: 500;
+        }
+
+        &__confirm-button {
+            margin-left: 8px;
+            border: none;
+        }
+        
         &__day-names-wrapper {
             margin: 0 14px 9px 14px;
         }
@@ -996,6 +1007,7 @@
 				}
 				.trend-up{
 					font-size: 14px;
+                    font-weight: 500;
 					position: relative;
 					top: -4px;
 					color: #12AF51;
@@ -1009,6 +1021,7 @@
 				}
 				.trend-down{
 					font-size: 14px;
+                    font-weight: 500;
 					color: #D23F00;
 					position: relative;
 					top: -4px;
@@ -1893,7 +1906,9 @@
     }
 	
 	//confirm dialog
-	.cly-confirm-dialog {
+    .cly-vue-confirm-dialog,
+    .cly-vue-message-dialog
+    {
 		.el-dialog {
 			width: 400px;
 			&__header {

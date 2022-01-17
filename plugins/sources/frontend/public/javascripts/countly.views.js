@@ -303,20 +303,26 @@
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
-                ]
+                ],
+                isLoading: true
             };
         },
         mounted: function() {
             var self = this;
             $.when(countlySources.initializeKeywords()).then(function() {
                 self.searchTermsTop3 = self.calculateAllData();
+                self.isLoading = false;
             });
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 $.when(countlySources.initializeKeywords()).then(function() {
                     self.searchTermsTop3 = self.calculateAllData();
+                    self.isLoading = false;
                 });
             },
             calculateAllData: function() {
@@ -352,20 +358,27 @@
         template: CV.T("/sources/templates/sourcesHomeWidget.html"),
         data: function() {
             return {
-                sourceItems: []
+                sourceItems: [],
+                isLoading: true
             };
         },
         mounted: function() {
             var self = this;
+
             $.when(countlySources.initialize(true)).then(function() {
                 self.calculateAllData();
+                self.isLoading = false;
             });
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 $.when(countlySources.initialize(true)).then(function() {
                     self.calculateAllData();
+                    self.isLoading = false;
                 });
             },
             calculateAllData: function() {

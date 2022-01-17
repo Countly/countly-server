@@ -6,7 +6,16 @@
 
     Vue.component("cly-header", countlyBaseComponent.extend({
         props: {
-            title: String
+            title: String,
+            backlink: {
+                type: Object,
+                default: function() {
+                    return null;
+                },
+                validator: function(value) {
+                    return value && value.url && value.title;
+                }
+            }
         },
         computed: {
             slotHeaderTop: function() {
@@ -44,12 +53,19 @@
                             </div>\
                         </div>\
                         <div :class="[midLevelClasses]">\
-                            <div class="bu-level-left">\
-                                <slot name="header-left">\
+                            <div class="bu-level-left"> \
+                                <template v-if="backlink"> \
                                     <div class="bu-level-item">\
-                                        <h2>{{title}}</h2>\
-                                    </div>\
-                                </slot>\
+                                        <cly-back-link :title="backlink.title" :link="backlink.url"></cly-back-link> \
+                                    </div> \
+                                </template> \
+                                <template v-else> \
+                                    <slot name="header-left">\
+                                        <div class="bu-level-item">\
+                                            <h2>{{title}}</h2>\
+                                        </div>\
+                                    </slot>\
+                                </template> \
                             </div>\
                             <div class="bu-level-right">\
                                 <slot name="header-right"></slot>\

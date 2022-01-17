@@ -5,17 +5,16 @@
 $bg-color: #24292e;
 
 #cly-vue-sidebar {
-    position: fixed;
     left: 0;
-    width: 272px;
-    background-color:#191C20;
     height: 100%;
-    z-index: 2000; //100000;
+    z-index: 2000;
     user-select: none;
     color: map.get(c.$colors, "warm-gray-40");
 }
 
 .cly-vue-sidebar {
+    height: 100%;
+
     .tooltip  {
         display: block !important;
         z-index: 10000;
@@ -32,13 +31,23 @@ $bg-color: #24292e;
         margin-left: 0px;
       }
       
-    width: 100%;
-    height: 100%;
     .cly-vue-listbox__item-label {
         width: 350px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    &__slide-transition-enter-active {
+        transition: all .3s ease;
+    }
+
+    &__slide-transition-leave-active {
+        transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+    }
+
+    &__slide-transition-enter, &__slide-transition-leave-to {
+        transform: translateX(-224px);
     }
 
     ul {
@@ -84,6 +93,8 @@ $bg-color: #24292e;
         height: 100%;
         overflow: auto;
         color: map.get(c.$colors, "cool-gray-40");
+        z-index: 2005;
+        background-color: #191c20;
 
         ul:first-child li:first-child {
             margin-top: 28px;
@@ -120,6 +131,20 @@ $bg-color: #24292e;
         background-color: $bg-color;
         border-top-left-radius: 50%;
         border-bottom-left-radius: 50%;
+
+        &--no-bg {
+            background-color: transparent;
+        }
+
+        &--rotate-right {
+            transform: rotate(180deg);
+            transition: transform .7s ease-in-out;
+        }
+
+        &--rotate-left {
+            transform: rotate(0deg);
+            transition: transform .7s ease-in-out;
+        }
     }
 
     &__menu {
@@ -129,6 +154,7 @@ $bg-color: #24292e;
         box-sizing: border-box;
         height: 100%;
         overflow: hidden;
+        z-index: 2004;
     }
 
     &__menu-items,
@@ -351,7 +377,6 @@ $bg-color: #24292e;
         align-items: center;
         justify-content: center;
         width: 224px;
-        margin-left: 48px;
         font-size: 10px;
         background-color: #24292e;
     }

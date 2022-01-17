@@ -429,6 +429,9 @@
                         :disabled="dropdownsDisabled"
                         :hide-all-options-tab="allOptionsTabHidden"
                         :options="selectXOptions[0].options">
+                        <template v-slot:option-prefix="option">
+                            <div style="border: 2px solid #F96300; width: 15px; text-align: center">{{option.image}}</div>
+                        </template>
                     </cly-select-x>
                 </div>
                 <div class="example-cell">

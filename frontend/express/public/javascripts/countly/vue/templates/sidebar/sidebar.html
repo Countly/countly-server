@@ -15,16 +15,34 @@
             </li>
         </ul>
         <ul class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">
-            <li v-for="item in otherMenuOptions" :key="item.name" @click="onClick(item)" v-tooltip.right="{content: item.tooltip, container: false}" :class="[{'cly-vue-sidebar__menu-option-toggle': item.name === 'toggle'}, 'cly-vue-sidebar__menu-option bu-is-flex bu-is-justify-content-center bu-is-align-items-center']">
+            <li v-for="item in otherMenuOptions"
+                :key="item.name"
+                @click="onClick(item)"
+                :class="[{
+                    'cly-vue-sidebar__menu-option-toggle': item.name === 'toggle',
+                    'cly-vue-sidebar__menu-option-toggle--no-bg': item.name === 'toggle' && !showMainMenu,
+                    },
+                    'cly-vue-sidebar__menu-option bu-is-flex bu-is-justify-content-center bu-is-align-items-center']"
+                v-tooltip.right="{content: item.tooltip, container: false}">
                 <users-menu v-if="item.name === 'user'" :item="item"></users-menu>
                 <language-menu v-else-if="item.name === 'language'" :item="item"></language-menu>
+                <i v-else-if="item.name === 'toggle'"
+                    :class="[item.icon, {
+                        'cly-vue-sidebar__menu-option-toggle--rotate-left': showMainMenu,
+                        'cly-vue-sidebar__menu-option-toggle--rotate-right': !showMainMenu
+                    }]"></i>
+                <a v-else-if="item.name === 'help-center'" href="https://support.count.ly/" target="_blank"><i :class="[item.icon]"></i></a>
                 <i v-else :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
             </li>
         </ul>
     </div>
 
-    <analytics-menu v-show="selectedMenuOption === 'analytics'"></analytics-menu>
-    <management-menu v-show="selectedMenuOption === 'management'"></management-menu>
-    <component v-for="item in components" :is="item.component" v-show="selectedMenuOption === item.name" :key="item.name"></component>
-    <div class="cly-vue-sidebar__version">{{versionInfo}}</div>
+    <transition name="cly-vue-sidebar__slide-transition">
+        <div class="cly-vue-sidebar__menu" v-if="showMainMenu">
+            <analytics-menu v-show="selectedMenuOption === 'analytics'"></analytics-menu>
+            <management-menu v-show="selectedMenuOption === 'management'"></management-menu>
+            <component v-for="item in components" :is="item.component" v-show="selectedMenuOption === item.name" :key="item.name"></component>
+            <div class="cly-vue-sidebar__version">{{versionInfo}}</div>
+        </div>
+    </transition>
 </div>

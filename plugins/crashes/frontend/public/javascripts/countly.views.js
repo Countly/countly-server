@@ -1058,13 +1058,15 @@
         template: CV.T("/crashes/templates/crashesHomeWidget.html"),
         data: function() {
             return {
-                crashesItems: []
+                crashesItems: [],
+                isLoading: true
             };
         },
         mounted: function() {
             var self = this;
             this.$store.dispatch("countlyCrashes/overview/refresh").then(function() {
                 self.calculateAllData();
+                self.isLoading = false;
             });
         },
         beforeCreate: function() {
@@ -1076,10 +1078,14 @@
             this.module = null;
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 this.$store.dispatch("countlyCrashes/overview/refresh").then(function() {
                     self.calculateAllData();
+                    self.isLoading = false;
                 });
             },
             calculateAllData: function() {

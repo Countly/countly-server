@@ -7,9 +7,8 @@
     </cly-header>
 
     <cly-main>
-        <cly-date-picker-g class="views-date-picker-container"></cly-date-picker-g>
-
-        <div class="bu-columns bu-is-gapless bu-my-5">
+        <cly-date-picker-g class="bu-mb-2"></cly-date-picker-g>
+        <div class="bu-columns bu-is-gapless bu-mt-5 bu-mb-4">
             <h4 class="bu-pt-1">{{i18n('heatmaps.results-for')}}</h4>
             <div class="bu-pl-1 bu-pr-1">
                 <el-select v-model="selectedPlatform" :arrow="false" :adaptiveLength="true">
@@ -22,8 +21,8 @@
                 </el-select>
             </div>
         </div>
-        <cly-section>
-            <cly-metric-cards v-if="metrics && metrics.t">
+        <cly-section class="bu-mb-2">
+            <cly-metric-cards v-if="metrics && metrics.t" :multiline="false">
                 <cly-metric-card>
                     {{i18n('heatmaps.total-page-views')}}
                     <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5px" v-tooltip.top-center="i18n('heatmaps.total-page-views-tooltip')"></span>
