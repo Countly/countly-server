@@ -323,6 +323,21 @@ class Result extends Validatable {
             errors,
         });
     }
+
+    /**
+     * Construct Result if needed
+     * 
+     * @param {Result|object} data Result instance or result data
+     * @returns {Result} Result instance
+     */
+    static from(data) {
+        if (data instanceof Result) {
+            return data;
+        }
+        else {
+            return new Result(data);
+        }
+    }
 }
 
 

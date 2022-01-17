@@ -612,7 +612,8 @@ class Pusher extends PusherPopper {
             stream = common.db.collection(`app_users${this.audience.app._id}`).aggregate(steps).stream(),
             batch = Push.batchInsert(batchSize),
             start = this.start || this.trigger.start,
-            next = null;
+            next = null,
+            results = {};
 
         for await (let user of stream) {
             let push = user[TK][0];
@@ -626,10 +627,23 @@ class Pusher extends PusherPopper {
                     continue;
                 }
 
-                let d = note._id.getTimestamp().getTime();
+                let p = pf[0],
+                    d = note._id.getTimestamp().getTime();
                 if (!next || d < next) {
                     next = d;
                 }
+
+                if (!results[p]) {
+                    results[p] = {total: 1, next: d};
+                }
+                else {
+                    results[p].total++;
+                    if (d < results[p].next) {
+                        results[p].next = d;
+                    }
+                }
+
+
                 if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);
                     await batch.flush([11000]);
@@ -640,7 +654,11 @@ class Pusher extends PusherPopper {
         this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
         await batch.flush([11000]);
 
-        return {next: next, total: batch.total};
+        Object.values(results).forEach(r => {
+            r.next = new Date(r.next);
+        });
+
+        return {next: next, total: batch.total, results};
     }
 }
 
@@ -661,8 +679,8 @@ class Popper extends PusherPopper {
      * @returns {number} number of records removed
      */
     async clear() {
-        let deleted = await Promise.all(this.message.platforms.map(async p => {
-            let res = await common.db.collection('push').deleteMany({m: this.message._id, p});
+        let deleted = await Promise.all(this.audience.message.platforms.map(async p => {
+            let res = await common.db.collection('push').deleteMany({m: this.audience.message._id, p});
             return res.deletedCount;
         }));
         let update;
@@ -674,10 +692,10 @@ class Popper extends PusherPopper {
             update.$inc[`result.errors.${p}.cancelled`] = (update.$inc[`result.errors.${p}.cancelled`] || 0) + deleted[p];
         }
         if (update) {
-            await this.message.update(update, () => {
+            await this.audience.message.update(update, () => {
                 for (let p in deleted) {
-                    this.message.result.processed += deleted[p];
-                    this.message.result.response(p, 'cancelled', deleted[p]);
+                    this.audience.message.result.processed += deleted[p];
+                    this.audience.message.result.response(p, 'cancelled', deleted[p]);
                 }
             });
         }
@@ -692,7 +710,7 @@ class Popper extends PusherPopper {
      */
     async terminate(msg = 'Terminated') {
         let deleted = await this.clear();
-        await this.message.update({
+        await this.audience.message.update({
             $set: {
                 state: State.Done | State.Error,
                 'result.error': new PushError(msg).serialize()

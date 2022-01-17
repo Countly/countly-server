@@ -18,7 +18,12 @@ const MEDIA_MIME_ANDROID = [
         'video/mpeg',
         'video/quicktime'
     ]),
-    MEDIA_MIME_ALL = MEDIA_MIME_IOS;
+    MEDIA_MIME_ALL = MEDIA_MIME_IOS,
+
+    DBMAP = {
+        MESSAGING_ENABLED: 'm',
+        MESSAGE_ID: 'm',
+    };
 
 const DEFAULTS = {
     schedule_ahead: 5 * 60000,  // schedule job needs to be scheduled this much ms prior to the job date
@@ -199,6 +204,7 @@ module.exports = {
     toDate,
 
     DEFAULTS,
+    DBMAP,
 
     MEDIA_MIME_ALL,
     MEDIA_MIME_IOS,
