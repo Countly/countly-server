@@ -247,7 +247,6 @@
                 error: null,
                 errors: [],
                 status: "",
-                queryFilter: null,
                 messageType: MessageTypeEnum.CONTENT,
                 localizations: [this.getDefaultLocalization()],
                 cohorts: [],
@@ -422,7 +421,10 @@
             });
             return result;
         },
-        shouldAddFilter: function(model) {
+        shouldAddFilter: function(model, options) {
+            if (options.queryFilter && options.from) {
+                return true;
+            }
             if (model.type === TypeEnum.ONE_TIME) {
                 return model.oneTime.targeting === TargetingEnum.SEGMENTED;
             }
@@ -1483,8 +1485,11 @@
             },
             mapFilters: function(model, options) {
                 var result = {};
-                if (model.user) {
-                    result.user = model.user;
+                if (options.queryFilter && options.from === 'user') {
+                    result.user = JSON.stringify(options.queryFilter);
+                }
+                if (options.queryFilter && options.from === 'drill') {
+                    result.drill = JSON.stringify(options.queryFilter);
                 }
                 if (model.type === TypeEnum.ONE_TIME && model[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED && model.cohorts.length) {
                     result.cohorts = model.cohorts;
@@ -1494,9 +1499,6 @@
                 }
                 if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
                     result.geos = model.locations;
-                }
-                if (model.drill) {
-                    result.drill = model.drill;
                 }
                 return Object.keys(result).length === 0 ? null : result;
             },
@@ -1887,7 +1889,7 @@
                     platforms: platformsDto,
                 };
                 var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel, options);
-                if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel) && filtersDto) {
+                if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel, options) && filtersDto) {
                     data.filter = filtersDto;
                 }
                 countlyPushNotification.api.estimate(data).then(function(response) {
