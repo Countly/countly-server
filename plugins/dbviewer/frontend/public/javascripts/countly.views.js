@@ -52,7 +52,9 @@ var DBViewerTab = countlyVue.views.create({
                 throw err;
             },
             onReady: function(context, rows) {
-                self.projectionOptions = Object.keys(rows[0]);
+                if (rows.length) {
+                    self.projectionOptions = Object.keys(rows[0]);
+                }
                 return rows;
             }
         }));
