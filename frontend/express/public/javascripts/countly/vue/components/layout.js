@@ -15,6 +15,12 @@
                 validator: function(value) {
                     return value && value.url && value.title;
                 }
+            },
+            headerClass: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
             }
         },
         computed: {
@@ -28,12 +34,14 @@
                 return !!(this.$scopedSlots["header-tabs"] || this.$slots["header-tabs"]);
             },
             headerClasses: function() {
-                return {
+                var cls = {
                     "cly-vue-header": true,
                     "white-bg": true,
                     "cly-vue-header--no-mb": this.slotHeaderTabs,
                     "cly-vue-header--no-bb": this.slotHeaderTabs
                 };
+
+                return Object.assign(cls, this.headerClass);
             },
             midLevelClasses: function() {
                 return {
