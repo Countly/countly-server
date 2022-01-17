@@ -1,4 +1,4 @@
-/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,countlyCommon*/
+/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,countlyCommon,CountlyHelpers*/
 (function() {
 
     var FEATURE_NAME = "slipping_away_users";
@@ -66,7 +66,7 @@
                 if (currentFilters.query) {
                     Object.assign(data, currentFilters.query);
                 }
-                window.location.hash = '/users/query/' + JSON.stringify(data);
+                CountlyHelpers.goTo({url: '/users/query/' + JSON.stringify(data), from: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/slipping-away-users"});
             },
             refresh: function() {
                 this.$store.dispatch("countlySlippingAwayUsers/fetchAll", false);
