@@ -39,7 +39,7 @@
         data: function() {
             var appsSelectorOption = [];
             for (var id in countlyGlobal.apps) {
-                appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
+                appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id, image: "background-image:url(" + countlyGlobal.apps[id].image + ")"});
             }
             return {
                 appsSelectorOption: appsSelectorOption,
@@ -704,7 +704,7 @@
         data: function() {
             var appsSelectorOption = [];
             for (var id in countlyGlobal.apps) {
-                appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
+                appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id, image: "background-image:url(" + countlyGlobal.apps[id].image + ")"});
             }
 
             return {

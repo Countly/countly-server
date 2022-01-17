@@ -205,6 +205,17 @@
     }
 }
 
+.hook-app-selector-image {
+    border-radius: 3px; 
+    width: 16px; 
+    height: 16px;
+    background-size: cover;
+}
 .code-pre-line {
     white-space: pre-line;
+}
+
+.hooks-table-app-selector .el-input input::placeholder { 
+    color: #333C48;
+    opacity: 1;
 }
