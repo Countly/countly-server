@@ -322,6 +322,16 @@
         countlyCommon.dispatchNotificationToast(payload);
     };
 
+    CountlyHelpers.goTo = function(options) {
+        app.backlinkUrl = options.from;
+        window.location.hash = options.url;
+    };
+
+    CountlyHelpers.getBacklinkUrl = function() {
+        var url = app.backlinkUrl;
+        app.backlinkUrl = null;
+        return url;
+    };
     /**
     * Create new model
     */
