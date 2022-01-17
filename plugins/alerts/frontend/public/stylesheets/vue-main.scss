@@ -1,5 +1,11 @@
 #alerts-view {
 
+    
+    .alerts-table-app-selector .el-input input::placeholder { 
+        color: #333C48;
+        opacity: 1;
+    }
+      
     .compare-value-block {
         .el-input__suffix {
             line-height: 32px;
@@ -7,11 +13,9 @@
     }
 
     .cly-vue-alert-drawer {
-   
         &__is-hidden {
            visibility: hidden;
         }
-
 
         &__card {
             background: #F8FAFD;
