@@ -66,7 +66,11 @@
                 if (currentFilters.query) {
                     Object.assign(data, currentFilters.query);
                 }
-                CountlyHelpers.goTo({url: '/users/query/' + JSON.stringify(data), from: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/slipping-away-users"});
+                CountlyHelpers.goTo({
+                    url: '/users/query/' + JSON.stringify(data),
+                    from: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/slipping-away-users",
+                    title: CV.i18n("slipping-away-users.back-to-slipping-away")
+                });
             },
             refresh: function() {
                 this.$store.dispatch("countlySlippingAwayUsers/fetchAll", false);
