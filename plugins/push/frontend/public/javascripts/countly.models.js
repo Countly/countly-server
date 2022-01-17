@@ -1489,6 +1489,7 @@
                     result.user = JSON.stringify(options.queryFilter);
                 }
                 if (options.queryFilter && options.from === 'drill') {
+                    result.drill = Object.assign({}, options.queryFilter);
                     result.drill = JSON.stringify(options.queryFilter);
                 }
                 if (model.type === TypeEnum.ONE_TIME && model[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED && model.cohorts.length) {

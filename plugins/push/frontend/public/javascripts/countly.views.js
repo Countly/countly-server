@@ -408,7 +408,9 @@
                     return {};
                 }
                 if (this.wrappedUserProperties) {
-                    return countlyPushNotification.helper.unwrapUserProperties(this.queryFilter);
+                    var result = Object.assign({}, this.queryFilter);
+                    result.queryObject = countlyPushNotification.helper.unwrapUserProperties(this.queryFilter.queryObject);
+                    return result;
                 }
                 return this.queryFilter;
             },
