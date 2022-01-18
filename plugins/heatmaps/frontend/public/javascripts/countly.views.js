@@ -214,7 +214,7 @@
             this.renderWhenReady(view);
         });
         $(document).ready(function() {
-            app.addSubMenu("analytics", { code: "heatmaps", url: "#/analytics/heatmaps", text: "heatmaps.title", priority: 80 });
+            app.addSubMenu("analytics", { code: "heatmaps", url: "#/analytics/heatmaps", text: "heatmaps.title", priority: 26 });
         });
     }
 })();
