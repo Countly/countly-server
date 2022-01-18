@@ -88,8 +88,10 @@ var spawn = require('child_process').spawn,
             var limit = parseInt(params.qstring.limit || 20);
             var skip = parseInt(params.qstring.skip || 0);
             var filter = params.qstring.filter || params.qstring.query || "{}";
+            var sSearch = params.qstring.sSearch || "";
             var projection = params.qstring.project || params.qstring.projection || "{}";
             var sort = params.qstring.sort || "{}";
+
             try {
                 sort = JSON.parse(sort);
             }
@@ -104,6 +106,9 @@ var spawn = require('child_process').spawn,
             }
             if (filter._id && isObjectId(filter._id)) {
                 filter._id = common.db.ObjectID(filter._id);
+            }
+            if (sSearch) {
+                filter._id = new RegExp(sSearch);
             }
             try {
                 projection = JSON.parse(projection);
