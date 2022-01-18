@@ -259,7 +259,7 @@ class Audience {
                     qstring: Object.assign({app_id: this.app._id.toString()}, query)
                 };
                 delete params.qstring.queryObject.chr;
-
+                params.qstring.queryObject = JSON.stringify(query.queryObject);
                 this.log.d('Drilling: %j', params);
                 let arr = await new Promise((resolve, reject) => drill().drill.fetchUsers(params, (err, uids) => {
                     this.log.i('Done drilling: ' + (err ? 'error %j' : '%d uids'), err || (uids && uids.length) || 0);
