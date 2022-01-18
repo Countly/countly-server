@@ -1469,6 +1469,18 @@
         }
     }
 
+    @media screen and (max-width: 1281px) {
+        .cly-vue-metric-card__wrapper {
+            h2 {
+                font-size: 18px !important;
+            }
+
+            .cly-trend-up, .cly-trend-down {
+                font-size: 12px !important;
+            }
+        }
+    }
+
     .cly-vue-popover{
         cursor: pointer;
         z-index: 2000;
