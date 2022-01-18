@@ -1,4 +1,5 @@
-/*global $, countlyAuth, countlyGlobal, countlyDBviewer, app, countlyCommon, CV, countlyVue, moment, _*/
+/*global $, countlyAuth, countlyGlobal, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, moment _*/
+
 var FEATURE_NAME = 'dbviewer';
 
 var DBViewerTab = countlyVue.views.create({
@@ -315,7 +316,7 @@ var DBViewerAggregate = countlyVue.views.create({
                 });
             }
             catch (err) {
-                this.$message(CV.i18n('dbviewer.invalid-pipeline'));
+                CountlyHelpers.notify(CV.i18n('dbviewer.invalid-pipeline'));
             }
         }
     },

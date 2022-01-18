@@ -1,4 +1,4 @@
-/*global $, countlyAuth, countlyReporting, countlyGlobal, starRatingPlugin, Promise, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, Promise, app, jQuery, countlyCommon, CV, countlyVue*/
 var FEATURE_NAME = 'star_rating';
 
 var Drawer = countlyVue.views.create({
@@ -439,9 +439,8 @@ var WidgetsTab = countlyVue.views.create({
             this.fetch();
         },
         setWidget: function(row, status) {
-            var self = this;
             starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status }, function() {
-                self.$message({
+                CountlyHelpers.notify({
                     type: 'success',
                     message: CV.i18n('feedback.successfully-updated')
                 });
@@ -665,7 +664,7 @@ var WidgetDetail = countlyVue.views.create({
                 self.widget.is_active = (state ? "true" : "false");
                 self.widget.status = state;
 
-                self.$message({
+                CountlyHelpers.notify({
                     type: 'success',
                     message: CV.i18n('feedback.successfully-updated')
                 });
@@ -682,13 +681,18 @@ var WidgetDetail = countlyVue.views.create({
             var self = this;
             switch (command) {
             case 'delete-widget':
-                starRatingPlugin.removeFeedbackWidget(self.widget._id, false, function() {
-                    self.$message({
-                        type: 'success',
-                        message: CV.i18n('feedback.successfully-removed')
+                CountlyHelpers.confirm(CV.i18n('feedback.delete-a-widget-description'), "popStyleGreen", function(result) {
+                    if (!result) {
+                        return true;
+                    }
+                    starRatingPlugin.removeFeedbackWidget(self.widget._id, false, function() {
+                        CountlyHelpers.notify({
+                            type: 'success',
+                            message: CV.i18n('feedback.successfully-removed')
+                        });
+                        window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets";
                     });
-                    window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets";
-                });
+                }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') });
                 break;
             }
         },

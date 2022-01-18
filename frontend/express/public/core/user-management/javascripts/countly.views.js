@@ -37,28 +37,24 @@
         },
         methods: {
             handleCommand: function(command, index) {
-                var self = this;
                 switch (command) {
                 case "delete-user":
-                    self.$confirm(CV.i18n('management-users.this-will-delete-user'), CV.i18n('management-users.warning'), {
-                        confirmButtonText: CV.i18n('common.ok'),
-                        cancelButtonText: CV.i18n('common.cancel'),
-                        type: 'warning'
-                    })
-                        .then(function() {
-                            countlyUserManagement.deleteUser(index, function() {
-                                self.$message({
-                                    message: CV.i18n('management-users.deleted-message'),
-                                    type: 'success'
-                                });
-                            });
-                        })
-                        .catch(function() {
-                            self.$message({
+                    CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "popStyleGreen", function(result) {
+                        if (!result) {
+                            CountlyHelpers.notify({
                                 type: 'info',
-                                message: CV.i18n('management-users.delete-canceled')
+                                message: CV.i18n('management-users.remove-canceled')
+                            });
+                            return true;
+                        }
+
+                        countlyUserManagement.deleteUser(index, function() {
+                            CountlyHelpers.notify({
+                                message: CV.i18n('management-users.removed-message'),
+                                type: 'success'
                             });
                         });
+                    }, [], { image: 'delete-user', title: CV.i18n('management-users.warning') });
                     break;
                 case 'edit-user':
                     this.$emit('edit-user', index);
@@ -296,7 +292,7 @@
                 }
 
                 if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin) {
-                    this.$message({
+                    CountlyHelpers.notify({
                         message: CV.i18n('management-users.at-least-one-app-required'),
                         type: 'error'
                     });
@@ -322,7 +318,7 @@
                                 var checkUploadProcess = setInterval(function() {
                                     if (self.uploadCompleted) {
                                         // show success message
-                                        self.$message({
+                                        CountlyHelpers.notify({
                                             message: CV.i18n('management-users.updated-message'),
                                             type: 'success'
                                         });
@@ -337,7 +333,7 @@
                             }
                             else {
                                 // show success message
-                                self.$message({
+                                CountlyHelpers.notify({
                                     message: CV.i18n('management-users.updated-message'),
                                     type: 'success'
                                 });
@@ -345,7 +341,7 @@
                             }
                         }
                         else {
-                            self.$message({
+                            CountlyHelpers.notify({
                                 message: res.result,
                                 type: 'error'
                             });
@@ -368,7 +364,7 @@
                                 self.$refs.userDrawerDropzone.processQueue();
                                 var checkUploadProcess = setInterval(function() {
                                     if (self.uploadCompleted) {
-                                        self.$message({
+                                        CountlyHelpers.notify({
                                             message: CV.i18n('management-users.created-message'),
                                             type: 'success'
                                         });
@@ -382,7 +378,7 @@
                                 };
                             }
                             else {
-                                self.$message({
+                                CountlyHelpers.notify({
                                     message: CV.i18n('management-users.created-message'),
                                     type: 'success'
                                 });
@@ -390,7 +386,7 @@
                             }
                         }
                         else {
-                            self.$message({
+                            CountlyHelpers.notify({
                                 message: res.result,
                                 type: 'error'
                             });
@@ -444,7 +440,7 @@
                 // initialize default permission sets for create mode
                 else {
                     if (this.features.length === 0) {
-                        this.$message({
+                        CountlyHelpers.notify({
                             message: 'Somethings went wrong when fetching feature list.',
                             type: 'error'
                         });
