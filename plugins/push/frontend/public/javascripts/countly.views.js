@@ -4,26 +4,17 @@
 
     var featureName = 'push';
 
-    var AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = [
+    var statusFilterOptions = [
+        {label: CV.i18n("push-notification.status-filter-all"), value: countlyPushNotification.service.ALL_FILTER_OPTION_VALUE},
+        {label: CV.i18n("push-notification.status-created"), value: countlyPushNotification.service.StatusEnum.CREATED},
         {label: CV.i18n("push-notification.status-scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
-        {label: CV.i18n("push-notification.status-all"), value: countlyPushNotification.service.StatusEnum.ALL},
         {label: CV.i18n("push-notification.status-sent"), value: countlyPushNotification.service.StatusEnum.SENT},
         {label: CV.i18n("push-notification.status-sending"), value: countlyPushNotification.service.StatusEnum.SENDING},
-        {label: CV.i18n("push-notification.status-aborted"), value: countlyPushNotification.service.StatusEnum.ABORTED},
         {label: CV.i18n("push-notification.status-failed"), value: countlyPushNotification.service.StatusEnum.FAILED},
-        {label: CV.i18n("push-notification.status-stopped"), value: countlyPushNotification.service.StatusEnum.STOPPED}
-    ];
-    var TRANSACTIONAL_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
-
-    var ONE_TIME_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS.concat([
+        {label: CV.i18n("push-notification.status-stopped"), value: countlyPushNotification.service.StatusEnum.STOPPED},
         {label: CV.i18n("push-notification.status-draft"), value: countlyPushNotification.service.StatusEnum.DRAFT},
-        {label: CV.i18n("push-notification.status-pending-approval"), value: countlyPushNotification.service.StatusEnum.NOT_APPROVED},
-    ]);
-
-    var statusFilterOptions = {};
-    statusFilterOptions[countlyPushNotification.service.TypeEnum.ONE_TIME] = ONE_TIME_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
-    statusFilterOptions[countlyPushNotification.service.TypeEnum.AUTOMATIC] = AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
-    statusFilterOptions[countlyPushNotification.service.TypeEnum.TRANSACTIONAL] = TRANSACTIONAL_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
+        {label: CV.i18n("push-notification.status-pending-approval"), value: countlyPushNotification.service.StatusEnum.PENDING_APPROVAL},
+    ];
 
     var platformFilterOptions = [
         {label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL},
@@ -1015,7 +1006,13 @@
                 return this.$store.state.countlyPushNotification.main.areRowsLoading;
             },
             pushNotificationRows: function() {
-                return this.$store.state.countlyPushNotification.main.rows;
+                var self = this;
+                if (this.selectedStatusFilter === countlyPushNotification.service.ALL_FILTER_OPTION_VALUE) {
+                    return this.$store.state.countlyPushNotification.main.rows;
+                }
+                return this.$store.state.countlyPushNotification.main.rows.filter(function(rowItem) {
+                    return rowItem.status === self.selectedStatusFilter;
+                });
             },
             pushNotificationOptions: function() {
                 return {

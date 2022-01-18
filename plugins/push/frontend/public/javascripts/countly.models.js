@@ -11,6 +11,8 @@
 
     var DEFAULT_LOCALIZATION_VALUE = 'default';
     var DEFAULT_LOCALIZATION_LABEL = 'Default';
+    var ALL_FILTER_OPTION_VALUE = 'all';
+    var ALL_FILTER_OPTION_LABEL = 'All';
 
     var TypeEnum = Object.freeze({
         ONE_TIME: "oneTime",
@@ -1681,6 +1683,8 @@
     countlyPushNotification.service = {
         DEFAULT_LOCALIZATION_VALUE: DEFAULT_LOCALIZATION_VALUE,
         DEFAULT_LOCALIZATION_LABEL: DEFAULT_LOCALIZATION_LABEL,
+        ALL_FILTER_OPTION_VALUE: ALL_FILTER_OPTION_VALUE,
+        ALL_FILTER_OPTION_LABEL: ALL_FILTER_OPTION_LABEL,
         TypeEnum: TypeEnum,
         PeriodEnum: PeriodEnum,
         PlatformEnum: PlatformEnum,
@@ -2081,7 +2085,7 @@
                 totalSent: totalSent,
             },
             selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
-            statusFilter: countlyPushNotification.service.StatusEnum.ALL,
+            statusFilter: ALL_FILTER_OPTION_VALUE,
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
             isDashboardLoading: false,
             areRowsLoading: false,
