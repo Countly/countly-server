@@ -13,6 +13,7 @@
 			:searchPlaceholder="searchPlaceholder"
 			:options="allEvents"
 			:searchable="true"
+			expandOnHover
 			v-model="selectedEventFromSearchBar">
 			<template v-slot:option-suffix="option">
 			  <span class="cly-vue-events-group" v-if="option.custom.value">{{option.custom.value}}</span>				

@@ -95,6 +95,19 @@
         width: 100%;
     }
 
+    &.is-expandable {
+        transition: width 200ms;
+        width: 100%;
+        z-index: 100;
+    }
+
+    &.is-expanded {
+        width: 130%;
+        position: relative;
+        -webkit-box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
+        box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
+    }
+
     &.cly-vue-listbox--bordered {
         border-radius: 4px;
         border: 1px solid map.get(c.$colors, "warm-gray-30");

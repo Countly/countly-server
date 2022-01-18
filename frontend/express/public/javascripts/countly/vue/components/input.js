@@ -91,6 +91,7 @@
             },
             disabled: {type: Boolean, default: false, required: false},
             height: {type: [Number, String], default: 300, required: false},
+            expandOnHover: {type: Boolean, default: false, required: false}
         },
         methods: {
             navigateOptions: function() {
@@ -122,6 +123,7 @@
                 scrollCfg: {
                     scrollPanel: {
                         initialScrollX: false,
+                        scrollingX: false
                     },
                     rail: {
                         gutterOfSide: "0px"
@@ -141,7 +143,9 @@
                     "is-focus": this.focused,
                     "cly-vue-listbox--bordered": this.bordered,
                     "cly-vue-listbox--disabled": this.disabled,
-                    "cly-vue-listbox--has-margin": this.margin && !(this.skin === "jumbo")
+                    "cly-vue-listbox--has-margin": this.margin && !(this.skin === "jumbo"),
+                    "is-expanded": this.expandOnHover && this.focused,
+                    "is-expandable": this.expandOnHover
                 };
                 classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
                 return classes;
