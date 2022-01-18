@@ -79,9 +79,13 @@
                 periodData.events = null;
                 approx = true;
             }
+            var appId = app;
+            if (appId === "all-apps" || appId === "natural-dp") {
+                appId = null;
+            }
             tableData.push({
                 "appName": getAppName(app),
-                "appId": (countlyGlobal.apps[app] ? app : null),
+                "appId": appId,
                 "sessions": periodData.sessions,
                 "events": periodData.events,
                 "push": periodData.push,

@@ -1,5 +1,5 @@
 .data-points-tooltip {
-	padding:2px;
+	padding:6px;
 	line-height: 16px;
 }
 .data-points-tooltip  table{
@@ -17,6 +17,12 @@
 .data-points-tooltip  table tr td:first-child {
 	border: none;
 	padding-left:2px;
+}
+
+.routename-data-points table td a
+{
+	cursor: pointer;
+    color: #32659D;
 }
 .data-points-tooltip  table tr td:last-child {
 	padding-right: 2px
