@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, countlyAuth, countlyGlobal, countlyDataMigration, app */
+/*global countlyVue, CV, countlyCommon, countlyAuth, countlyHelpers, countlyGlobal, countlyDataMigration, app */
 (function() {
     var FEATURE_NAME = 'data_migration';
 
@@ -33,28 +33,26 @@
                     break;
                 case 'delete-export':
                     var self = this;
-                    this.$confirm(CV.i18n('data-migration.delete-export-confirm'), CV.i18n('management-users.warning'), {
-                        confirmButtonText: CV.i18n('common.ok'),
-                        cancelButtonText: CV.i18n('common.cancel'),
-                        type: 'warning'
-                    })
-                        .then(function() {
-                            countlyDataMigration.deleteImport(row.key, function(res) {
-                                if (res.result === 'success') {
-                                    self.loadImports();
-                                    self.$message({
-                                        type: 'success',
-                                        message: CV.i18n('data-migration.export-deleted')
-                                    });
-                                }
-                                else {
-                                    self.$message({
-                                        type: 'error',
-                                        message: CV.i18n(res.data.xhr.responseJSON.result)
-                                    });
-                                }
-                            });
+                    CountlyHelpers.confirm(CV.i18n('data-migration.delete-export-confirm'), "popStyleGreen", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyDataMigration.deleteImport(row.key, function(res) {
+                            if (res.result === 'success') {
+                                self.loadImports();
+                                CountlyHelpers.notify({
+                                    type: 'success',
+                                    message: CV.i18n('data-migration.export-deleted')
+                                });
+                            }
+                            else {
+                                CountlyHelpers.notify({
+                                    type: 'error',
+                                    message: CV.i18n(res.data.xhr.responseJSON.result)
+                                });
+                            }
                         });
+                    }, [], { title: CV.i18n('management-users.warning'), image: 'delete-exports' });
                     break;
                 }
             }
@@ -106,13 +104,13 @@
                 case 'resend':
                     countlyDataMigration.sendExport(row._id, row.server_token, row.server_address, row.redirect_traffic, function(res) {
                         if (res.result === 'success') {
-                            self.$message({
+                            CountlyHelpers.notify({
                                 type: 'success',
                                 message: CV.i18n('data-migration.export-started')
                             });
                         }
                         else {
-                            self.$message({
+                            CountlyHelpers.notify({
                                 type: 'error',
                                 message: CV.i18n(res.data.xhr.responseJSON.result)
                             });
@@ -120,40 +118,38 @@
                     });
                     break;
                 case 'delete-export':
-                    this.$confirm(CV.i18n('data-migration.delete-export-confirm'), CV.i18n('management-users.warning'), {
-                        confirmButtonText: CV.i18n('common.ok'),
-                        cancelButtonText: CV.i18n('common.cancel'),
-                        type: 'warning'
-                    })
-                        .then(function() {
-                            countlyDataMigration.deleteExport(row._id, function(res) {
-                                if (res.result === 'success') {
-                                    self.loadExports();
-                                    self.$message({
-                                        type: 'success',
-                                        message: CV.i18n('data-migration.export-deleted')
-                                    });
-                                }
-                                else {
-                                    self.$message({
-                                        type: 'error',
-                                        message: CV.i18n(res.data.xhr.responseJSON.result)
-                                    });
-                                }
-                            });
+                    CountlyHelpers.confirm(CV.i18n('data-migration.delete-export-confirm'), "popStyleGreen", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyDataMigration.deleteExport(row._id, function(res) {
+                            if (res.result === 'success') {
+                                self.loadExports();
+                                CountlyHelpers.notify({
+                                    type: 'success',
+                                    message: CV.i18n('data-migration.export-deleted')
+                                });
+                            }
+                            else {
+                                CountlyHelpers.notify({
+                                    type: 'error',
+                                    message: CV.i18n(res.data.xhr.responseJSON.result)
+                                });
+                            }
                         });
+                    }, [], { title: CV.i18n('management-users.warning'), image: 'delete-exports' });
                     break;
                 case 'stop-export':
                     countlyDataMigration.stopExport(row._id, function(res) {
                         if (res.result === 'success') {
                             self.loadExports();
-                            self.$message({
+                            CountlyHelpers.notify({
                                 type: 'success',
                                 message: CV.i18n('data-migration.export-stopped')
                             });
                         }
                         else {
-                            self.$message({
+                            CountlyHelpers.notify({
                                 type: 'error',
                                 message: CV.i18n(res.data.xhr.responseJSON.result)
                             });
@@ -202,7 +198,7 @@
                         if (res.result === "success") {
                             self.serverToken = res.data;
                             self.tokenGenerated = true;
-                            self.$message({
+                            CountlyHelpers.notify({
                                 type: 'success',
                                 message: CV.i18n('data-migration.generated-token')
                             });
@@ -210,7 +206,7 @@
                             self.importDrawerSaveButtonLabel = false;
                         }
                         else {
-                            self.$message({
+                            CountlyHelpers.notify({
                                 type: 'error',
                                 message: CV.i18n(res.data.xhr.responseJSON.result)
                             });
@@ -225,13 +221,13 @@
             },
             onComplete: function(res) {
                 if (res.xhr.status === 200) {
-                    this.$message({
+                    CountlyHelpers.notify({
                         type: 'success',
                         message: CV.i18n('data-migration.import-started')
                     });
                 }
                 else {
-                    this.$message({
+                    CountlyHelpers.notify({
                         type: 'error',
                         message: CV.i18n(res.data.xhr.responseJSON.result)
                     });
@@ -261,11 +257,10 @@
                 var message = '';
                 if (type === 'token') {
                     message = 'data-migration.tokken-coppied-in-clipboard';
-                }
-                else {
+                } else {
                     message = 'data-migration.address-coppied-in-clipboard';
                 }
-                this.$message({
+                CountlyHelpers.notify({
                     type: 'info',
                     message: CV.i18n(message)
                 });
@@ -301,13 +296,13 @@
 
                 countlyDataMigration.saveExport(requestData, function(res) {
                     if (res.result === "success") {
-                        self.$message({
+                        CountlyHelpers.notify({
                             type: 'success',
                             message: CV.i18n('data-migration.export-started')
                         });
                     }
                     else {
-                        self.$message({
+                        CountlyHelpers.notify({
                             type: 'error',
                             message: CV.i18n(res.data.xhr.responseJSON.result)
                         });
