@@ -322,6 +322,16 @@
         countlyCommon.dispatchNotificationToast(payload);
     };
 
+    CountlyHelpers.goTo = function(options) {
+        app.backlinkUrl = options.from;
+        window.location.hash = options.url;
+    };
+
+    CountlyHelpers.getBacklinkUrl = function() {
+        var url = app.backlinkUrl;
+        app.backlinkUrl = null;
+        return url;
+    };
     /**
     * Create new model
     */
@@ -577,31 +587,36 @@
             return;
         }
 
-        var dialog = $("#cly-alert").clone();
-        dialog.removeAttr("id");
+        if (window.countlyVue && window.countlyVue.vuex) {
 
-        if (moreData && moreData.image) {
-            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
-        }
-        else {
-            dialog.find(".image").css("display", "none");
-        }
+            var confirmLabel = countlyVue.i18n('common.ok'),
+                convertedType = "secondary";
 
-        if (moreData && moreData.title) {
-            dialog.find(".title").text(moreData.title);
-        }
-        else {
-            dialog.find(".title").css("display", "none");
-        }
+            if (moreData && moreData.button_title) {
+                confirmLabel = moreData.button_title;
+            }
 
-        if (moreData && moreData.button_title) {
-            dialog.find("#dialog-ok").text(moreData.button_title);
-            $(dialog.find("#dialog-ok")).removeAttr("data-localize");
-        }
+            if (type === "popStyleGreen") {
+                convertedType = "success";
+            }
+            else if (type === "red") {
+                convertedType = "danger";
+            }
 
-        dialog.find(".message").html(countlyCommon.encodeSomeHtml(msg));
-        dialog.addClass(type);
-        revealDialog(dialog);
+            var payload = {
+                intent: 'message',
+                message: countlyCommon.encodeSomeHtml(msg),
+                type: convertedType,
+                confirmLabel: confirmLabel,
+                title: (moreData && moreData.title) || "An error occurred.",
+                image: moreData && moreData.image
+            };
+
+            var currentStore = window.countlyVue.vuex.getGlobalStore();
+            if (currentStore) {
+                currentStore.dispatch('countlyCommon/onAddDialog', payload);
+            }
+        }
     };
 
     /**

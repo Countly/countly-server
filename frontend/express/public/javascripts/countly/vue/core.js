@@ -131,12 +131,26 @@
         }
     };
 
+    var optionalComponent = function(componentId) {
+        if (componentId in Vue.options.components) {
+            return componentId;
+        }
+        return null;
+    };
+
+    var basicComponentUtilsMixin = {
+        methods: {
+            optionalComponent: optionalComponent
+        }
+    };
+
     var _mixins = {
         'autoRefresh': autoRefreshMixin,
         'refreshOnParentActive': refreshOnParentActiveMixin,
         'i18n': i18nMixin,
         'commonFormatters': commonFormattersMixin,
-        'auth': authMixin
+        'auth': authMixin,
+        'basicComponentUtils': basicComponentUtilsMixin
     };
 
     var _globalVuexStore = new Vuex.Store({
@@ -163,6 +177,16 @@
                     },
                     getAllApps: function(state) {
                         return state.allApps;
+                    },
+                    confirmDialogs: function(state) {
+                        return state.dialogs.filter(function(item) {
+                            return item.intent === "confirm";
+                        });
+                    },
+                    messageDialogs: function(state) {
+                        return state.dialogs.filter(function(item) {
+                            return item.intent === "message";
+                        });
                     }
                 },
                 mutations: {
@@ -404,8 +428,7 @@
         });
     };
 
-    var NotificationToastsView = VueCompositionAPI.defineComponent({
-        name: "NotificationToasts",
+    var NotificationToastsView = {
         template: '<div class="notification-toasts"> \
                         <cly-notification v-for="(toast) in notificationToasts" :key="toast.id" :id="toast.id" :text="toast.text" :autoHide="toast.autoHide" :color="toast.color" :closable="true" @close="onClose" class="notification-toasts__item"></cly-notification>\
                     </div>',
@@ -420,15 +443,12 @@
                 this.$store.dispatch('countlyCommon/onRemoveNotificationToast', id);
             }
         }
-    });
+    };
 
-    var GenericPopupsView = {
-        components: {
-            NotificationToasts: NotificationToastsView
-        },
+    var DialogsView = {
         template: '<div>\
                         <cly-confirm-dialog\
-                            v-for="dialog in dialogs"\
+                            v-for="dialog in confirmDialogs"\
                             @confirm="onCloseDialog(dialog, true)"\
                             @cancel="onCloseDialog(dialog, false)"\
                             @close="onCloseDialog(dialog, false)"\
@@ -442,23 +462,49 @@
                                     <div v-html="dialog.message"></div>\
                                 </template>\
                         </cly-confirm-dialog>\
-                        <NotificationToasts></NotificationToasts>\
+                        <cly-message-dialog\
+                            v-for="dialog in messageDialogs"\
+                            @confirm="onCloseDialog(dialog, true)"\
+                            @close="onCloseDialog(dialog, false)"\
+                            visible\
+                            :show-close="false"\
+                            :key="dialog.id"\
+                            :dialogType="dialog.type"\
+                            :confirmButtonLabel="dialog.confirmLabel"\
+                            :title="dialog.title">\
+                                <template slot-scope="scope">\
+                                    <div v-html="dialog.message"></div>\
+                                </template>\
+                        </cly-message-dialog>\
                 </div>',
         store: _vuex.getGlobalStore(),
         computed: {
-            notificationToasts: function() {
-                return this.$store.state.countlyCommon.notificationToasts;
+            messageDialogs: function() {
+                return this.$store.getters['countlyCommon/messageDialogs'];
             },
-            dialogs: function() {
-                return this.$store.state.countlyCommon.dialogs;
+            confirmDialogs: function() {
+                return this.$store.getters['countlyCommon/confirmDialogs'];
             }
         },
         methods: {
             onCloseDialog: function(dialog, status) {
-                dialog.callback(status);
+                if (dialog.callback) {
+                    dialog.callback(status);
+                }
                 this.$store.dispatch('countlyCommon/onRemoveDialog', dialog.id);
             }
         }
+    };
+
+    var GenericPopupsView = {
+        components: {
+            NotificationToasts: NotificationToastsView,
+            Dialogs: DialogsView
+        },
+        template: '<div>\
+                        <NotificationToasts></NotificationToasts>\
+                        <Dialogs></Dialogs>\
+                    </div>'
     };
 
     var countlyVueWrapperView = countlyView.extend({
@@ -555,6 +601,9 @@
     var _uniqueComponentId = 0;
 
     var countlyBaseComponent = Vue.extend({
+        mixins: [
+            basicComponentUtilsMixin
+        ],
         computed: {
             componentId: function() {
                 return "cly-cmp-" + _uniqueComponentId;
@@ -684,7 +733,8 @@
         views: _views,
         components: _components,
         vuex: _vuex,
-        T: templateUtil.stage
+        T: templateUtil.stage,
+        optionalComponent: optionalComponent
     };
 
     for (var key in rootElements) {

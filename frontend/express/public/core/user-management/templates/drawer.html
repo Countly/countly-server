@@ -127,14 +127,14 @@
                   <div class="text-small user-management-drawer-content__help-text">{{ i18n('management-users.grant-admin-access-description') }}</div>
                 </div>
                 <div class="input" v-if="drawerScope.editedObject.permission">
-                  <el-select placement="bottom-start" @change="onAdminAppsChanged" class="user-management-drawer-content__app-selector" v-model="drawerScope.editedObject.permission._.a" multiple :placeholder="i18n('token_manager.select-apps')">
-                    <el-option
-                      v-for="item in apps"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value">
-                    </el-option>
-                  </el-select>
+                  <cly-select-x
+                    :placeholder="i18n('token_manager.select-apps')"
+                    mode="multi-check"
+                    @input="onAdminAppsChanged"
+                    v-model="drawerScope.editedObject.permission._.a"
+                    class="user-management-drawer-content__app-selector"
+                    :options="apps">
+                  </cly-select-x>
                 </div>
               </div>
             </div>
@@ -154,14 +154,14 @@
                   <div class="text-small user-management-drawer-content__help-text">Some app selection related description can be placed here</div>
                 </div>
                 <div class="user-management-drawer-content__input">
-                  <el-select placement="bottom-start" @change="onUserAppsChanged(index)" class="user-management-drawer-content__app-selector" v-model="drawerScope.editedObject.permission._.u[index]"  multiple placeholder="Select apps">
-                    <el-option
-                      v-for="item in apps"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value">
-                    </el-option>
-                  </el-select>
+                  <cly-select-x
+                    :placeholder="i18n('token_manager.select-apps')"
+                    mode="multi-check"
+                    @change="onUserAppsChanged(index)"
+                    v-model="drawerScope.editedObject.permission._.u[index]"
+                    class="user-management-drawer-content__app-selector"
+                    :options="apps">
+                  </cly-select-x>
                 </div>
                 <div class="user-management-drawer-content__permission-table-header">
                   <div class="user-management-drawer-content__feature-name-col">

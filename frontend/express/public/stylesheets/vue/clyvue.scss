@@ -1906,7 +1906,9 @@
     }
 	
 	//confirm dialog
-	.cly-confirm-dialog {
+    .cly-vue-confirm-dialog,
+    .cly-vue-message-dialog
+    {
 		.el-dialog {
 			width: 400px;
 			&__header {
