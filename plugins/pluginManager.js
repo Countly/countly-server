@@ -548,6 +548,26 @@ var pluginManager = function pluginManager() {
     };
 
     /**
+    * Dispatch specific event on api side
+    * 
+    * @param {string} event - event to dispatch
+    * @param {object} params - object with parameters to pass to event
+    * @returns {Promise} which resolves to array of objects returned by events if any or error
+    */
+    this.dispatchAsPromise = function(event, params) {
+        return new Promise((res, rej) => {
+            this.dispatch(event, params, (err, results) => {
+                if (err) {
+                    rej(err);
+                }
+                else {
+                    res(results || []);
+                }
+            });
+        });
+    };
+
+    /**
     * Load plugins frontend app.js and expose static paths for plugins
     * @param {object} app - express app
     * @param {object} countlyDb - connection to countly database

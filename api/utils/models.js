@@ -46,6 +46,18 @@ class Jsonable {
                 else if (Array.isArray(v)) {
                     json[k] = v.map(x => x instanceof Jsonable ? x.json : x);
                 }
+                else if (typeof v === 'object') {
+                    let ret = {};
+                    for (let key in v) {
+                        if (v[key] && v[key] instanceof Jsonable) {
+                            ret[key] = v[key].json;
+                        }
+                        else {
+                            ret[key] = v[key];
+                        }
+                    }
+                    json[k] = ret;
+                }
                 else {
                     json[k] = v;
                 }
@@ -91,6 +103,18 @@ class Validatable extends Jsonable {
                 }
                 else if (Array.isArray(v)) {
                     json[k] = v.map(x => x instanceof Validatable ? x.json : x);
+                }
+                else if (scheme[k].type === 'Object') {
+                    let ret = {};
+                    for (let key in v) {
+                        if (v[key] && v[key] instanceof Validatable) {
+                            ret[key] = v[key].json;
+                        }
+                        else {
+                            ret[key] = v[key];
+                        }
+                    }
+                    json[k] = ret;
                 }
                 else {
                     let valid = require('./common').validateArgs({data: this._data[k]}, {data: scheme[k]});

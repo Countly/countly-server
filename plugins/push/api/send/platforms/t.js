@@ -7,6 +7,16 @@ const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'
 const key = 't';
 
 /**
+ * Make an estimated guess about request platform
+ * 
+ * @param {string} userAgent user-agent header
+ * @returns {string} platform key if it looks like request made by this platform
+ */
+function guess(userAgent) {
+    return userAgent.includes('Test') && key;
+}
+
+/**
  * Connection implementation for FCM
  */
 class TestConnection extends Base {
@@ -477,6 +487,7 @@ module.exports = {
     key,
     title: 'Test',
     extractor,
+    guess,
     FIELDS,
     FIELDS_TITLES,
     FIELD_DEV,

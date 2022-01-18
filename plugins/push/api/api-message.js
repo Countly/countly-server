@@ -1,8 +1,9 @@
 const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
     { DEFAULTS } = require('./send/data/const'),
-    plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
-    log = common.log('push:api:message');
+    log = common.log('push:api:message'),
+    crypto = require('crypto'),
+    moment = require('moment-timezone');
 
 /**
  * Validate data & construct message out of it, throw in case of error
@@ -127,28 +128,16 @@ module.exports.create = async params => {
     msg.info.createdBy = params.member._id;
     msg.info.createdByName = params.member.full_name;
 
-    if (params.qstring.status === Status.Draft || params.qstring.status === Status.Inactive) {
+    if (params.qstring.status === Status.Draft) {
         msg.status = params.qstring.status;
         msg.state = State.Inactive;
         await msg.save();
     }
-    else if (msg.triggerAutoOrApi()) {
-        msg.state = State.Streamable;
-        msg.status = Status.Scheduled;
-        await msg.save();
-        if (msg.triggerPlain()) {
-            await msg.schedule();
-        }
-        await plugins.getPluginsApis().push.cache.write(msg.id, msg.json);
-    }
-    else if (msg.triggerPlain()) {
+    else {
         msg.state = State.Created;
         msg.status = Status.Created;
         await msg.save();
-        await msg.schedule();
-    }
-    else {
-        throw new ValidationError('Wrong trigger kind');
+        await msg.schedule(log, params);
     }
 
     common.returnOutput(params, msg.json);
@@ -156,11 +145,16 @@ module.exports.create = async params => {
 
 module.exports.update = async params => {
     let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
+    msg.info.updated = new Date();
+    msg.info.updatedBy = params.member._id;
+    msg.info.updatedByName = params.member.full_name;
 
     if (msg.is(State.Done)) {
         if (msg.triggerAutoOrApi()) {
-            msg.state = State.Streamable;
-            msg.status = Status.Scheduled;
+            msg.state = State.Created;
+            msg.status = Status.Created;
+            await msg.save();
+            await msg.schedule(log, params);
         }
         else if (msg.triggerPlain()) {
             throw new ValidationError('Finished plain messages cannot be changed');
@@ -170,36 +164,17 @@ module.exports.update = async params => {
         }
     }
     else {
-        if (msg.triggerPlain()) {
-            if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
-                msg.status = Status.Created;
-                msg.state = State.Inactive;
-                await msg.schedule();
-            }
-            else if (msg.is(State.Streamable) || msg.is(State.Created)) {
-                await msg.schedule();
-            }
+        if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
+            msg.status = Status.Created;
+            msg.state = State.Created;
+            await msg.save();
+            await msg.schedule(log, params);
         }
-        if (msg.triggerAutoOrApi()) {
-            if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
-                msg.state = State.Streamable;
-                msg.status = Status.Scheduled;
-            }
+        else {
+            await msg.save();
         }
     }
 
-    msg.info.updated = new Date();
-    msg.info.updatedBy = params.member._id;
-    msg.info.updatedName = params.member.full_name;
-
-    await msg.save();
-
-    if (msg.triggerAutoOrApi()) {
-        await plugins.getPluginsApis().push.cache.write(msg.id, msg.json);
-    }
-    if (msg.triggerPlain()) {
-        await msg.schedule();
-    }
 
     common.returnOutput(params, msg.json);
 };
@@ -210,26 +185,26 @@ module.exports.remove = async params => {
     }, true);
 
     if (!data.result) {
-        return common.returnOutput(params, {errors: data.errors});
+        common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
     }
 
     let msg = await Message.findOne({_id: data.obj._id, state: {$bitsAllClear: State.Deleted}});
     if (!msg) {
-        return common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
+        common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
+        return true;
     }
 
-    if (msg.is(State.Streaming)) {
-        // TODO: stop the sending via cache, clear the queue
-    }
-    else if (msg.is(State.Streamable)) {
-        // TODO: clear the queue
-    }
+    // TODO: stop the sending via cache
+    await msg.stop(log);
 
-    let ok = await msg.updateAtomically({_id: msg._id, state: msg.state}, {$bit: {state: {or: State.Deleted}}});
+    let ok = await msg.updateAtomically(
+        {_id: msg._id, state: msg.state},
+        {
+            $bit: {state: {or: State.Deleted}},
+            $set: {removed: new Date(), removedBy: params.member._id, removedByName: params.member.full_name}
+        });
     if (ok) {
-        if (msg.triggerAutoOrApi()) {
-            await plugins.getPluginsApis().push.cache.remove(msg.id);
-        }
         common.returnOutput(params, {});
     }
     else {
@@ -247,55 +222,28 @@ module.exports.toggle = async params => {
         data = data.obj;
     }
     else {
-        return common.returnOutput(params, {errors: data.errors});
+        common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
     }
 
     let msg = await Message.findOne(data._id);
-    if (msg) {
-        let update;
+    if (!msg) {
+        common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
+        return true;
+    }
 
-        if (!msg.triggerAuto()) {
-            throw new ValidationError(`The message doesn't have Cohort or Event trigger`);
-        }
+    if (!msg.triggerAuto()) {
+        throw new ValidationError(`The message doesn't have Cohort or Event trigger`);
+    }
 
-        if (msg.is(State.Created) || msg.is(State.Done)) {
-            update = {
-                $set: {
-                    state: State.Streamable,
-                    status: Status.Scheduled,
-                }
-            };
-            if (msg.is(State.Error)) {
-                update.$unset = {'result.error': 1};
-            }
-        }
-        else if (msg.is(State.Streamable)) {
-            update = {
-                $set: {
-                    state: State.Created,
-                    status: Status.Created,
-                }
-            };
-        }
-        else if (msg.is(State.Streaming)) {
-            // TODO: cache-based abortion of message being sent
-        }
-        else {
-            throw new ValidationError(`The message is in wrong state ${msg.state}`);
-        }
-
-        msg = await msg.updateAtomically({_id: msg._id, state: msg.state}, update);
-        if (msg) {
-            await plugins.getPluginsApis().push.cache.write(msg.id, msg.json);
-            common.returnOutput(params, msg.json);
-        }
-        else {
-            throw new ValidationError('Failed to toggle the message, please try again');
-        }
+    if (msg.is(State.Streamable)) {
+        await msg.stop(log);
     }
     else {
-        throw new ValidationError('Message not found');
+        await msg.schedule(log, params);
     }
+
+    common.returnOutput(params, msg.json);
 };
 
 
@@ -327,12 +275,14 @@ module.exports.estimate = async params => {
         }
     }
     else {
-        return common.returnOutput(params, {errors: data.errors});
+        common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
     }
 
     let app = await common.db.collection('apps').findOne({_id: data.app});
     if (!app) {
-        return common.returnOutput(params, {errors: ['No such app']});
+        common.returnMessage(params, 400, {errors: ['No such app']}, null, true);
+        return true;
     }
 
     for (let p of data.platforms) {
@@ -395,7 +345,6 @@ module.exports.mime = async params => {
     }
 };
 
-
 module.exports.one = async params => {
     let data = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
@@ -404,18 +353,92 @@ module.exports.one = async params => {
         data = data.obj;
     }
     else {
-        return common.returnOutput(params, {errors: data.errors});
+        common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
     }
 
     let msg = await Message.findOne(data._id);
-    if (msg) {
-        common.returnOutput(params, msg.json);
+    if (!msg) {
+        common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
+        return true;
     }
-    else {
-        throw new ValidationError('Message not found');
-    }
+
+    let not = new Date(),
+        noy = not.getFullYear(),
+        nom = not.getMonth(),
+        agy = noy - 1,
+
+        /**
+         * Generate ids of event docs
+         * 
+         * @param {string} seg segment name
+         * @param {string} val segment value
+         * @returns {string[]} event doc ids
+         */
+        ids = (seg, val) => ([
+            seg + '_' + noy + ':' + (nom + 1) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0],
+            seg + '_' + (nom === 0 ? agy : noy) + ':' + '_' + (nom === 0 ? 12 : nom) + crypto.createHash('md5').update(val + '').digest('base64')[0]
+        ]),
+
+        c_sent = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + msg.app).digest('hex'),
+        c_actioned = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_action') + msg.app).digest('hex');
+
+    let [sent, actioned, sent_platform, actioned_platform] = await Promise.all([
+        common.db.collection(c_sent).find({_id: {$in: ids('i', msg.id)}, s: 'i'}).toArray(),
+        common.db.collection(c_actioned).find({_id: {$in: ids('i', msg.id)}, s: 'i'}).toArray(),
+        Object.keys(msg.results || {}).length ? common.db.collection(c_sent).find({_id: {$in: Object.keys(msg.results).map(p => ids('ip', msg.id + p)).flat()}, s: 'ip'}).toArray() : [],
+        Object.keys(msg.results || {}).length ? common.db.collection(c_actioned).find({_id: {$in: Object.keys(msg.results).map(p => ids('ip', msg.id + p)).flat()}, s: 'ip'}).toArray() : [],
+    ]);
+
+    msg = msg.json;
+
+    msg.result.sent = toChartData(sent, msg._id);
+    msg.result.actioned = toChartData(actioned, msg._id);
+    Object.keys(msg.results || {}).forEach(p => {
+        msg.results[p].sent = toChartData(sent_platform, msg._id + p);
+        msg.results[p].actioned = toChartData(actioned_platform, msg._id + p);
+    });
+
+    common.returnOutput(params, msg);
 };
 
+/**
+ * Convert event docs to results data
+ * 
+ * @param {object[]} docs event docs
+ * @param {string} segment segment value
+ * @returns {object} chart data
+ */
+function toChartData(docs, segment) {
+    let ret = { daily: Array(30).fill(0), total: 0 },
+        rxp = /([0-9]{4}):([0-9]{1,2})/;
+
+    docs.forEach(e => {
+        var par = e._id.match(rxp),
+            yer = parseInt(par[1]),
+            mon = parseInt(par[2]) - 1;
+
+        Object.keys(e.d).forEach(d => {
+            d = parseInt(d);
+
+            if (!e.d[d][segment]) {
+                return;
+            }
+
+            // current week & month numbers are first and last in wks / mts arrays
+            var date = moment({ year: yer, month: mon, day: d});
+            var diff = moment().diff(date, 'days');
+
+            if (diff <= 29) {
+                var target = 29 - diff;
+                ret.daily[target] += e.d[d][segment].c || 0;
+                ret.total += e.d[d][segment].c;
+            }
+        });
+    });
+
+    return ret;
+}
 
 module.exports.all = async params => {
     let data = common.validateArgs(params.qstring, {
@@ -513,7 +536,8 @@ module.exports.all = async params => {
 
     }
     else {
-        return common.returnOutput(params, {errors: data.errors});
+        common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
     }
 };
 
