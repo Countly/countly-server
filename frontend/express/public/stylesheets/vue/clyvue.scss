@@ -1429,10 +1429,12 @@
     .cly-vue-metric-cards[class*="is-synced"] {
         .cly-vue-metric-card {
             min-width: 270px;
+            flex: 1 !important;
         }
         
         .cly-vue-metric-breakdown {
             min-width: 270px;
+            flex: 1 !important;
         }
     }
 
