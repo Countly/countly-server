@@ -47,14 +47,14 @@
                             });
                             return true;
                         }
-                    
+
                         countlyUserManagement.deleteUser(index, function() {
                             CountlyHelpers.notify({
                                 message: CV.i18n('management-users.removed-message'),
                                 type: 'success'
                             });
                         });
-                    },[], { image: 'delete-user', title: CV.i18n('management-users.warning') });
+                    }, [], { image: 'delete-user', title: CV.i18n('management-users.warning') });
                     break;
                 case 'edit-user':
                     this.$emit('edit-user', index);

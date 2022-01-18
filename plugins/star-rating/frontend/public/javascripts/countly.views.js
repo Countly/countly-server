@@ -1,4 +1,4 @@
-/*global $, countlyAuth, countlyReporting, countlyGlobal, countlyHelpers, starRatingPlugin, Promise, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, Promise, app, jQuery, countlyCommon, CV, countlyVue*/
 var FEATURE_NAME = 'star_rating';
 
 var Drawer = countlyVue.views.create({
@@ -439,7 +439,6 @@ var WidgetsTab = countlyVue.views.create({
             this.fetch();
         },
         setWidget: function(row, status) {
-            var self = this;
             starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status }, function() {
                 CountlyHelpers.notify({
                     type: 'success',
@@ -693,7 +692,7 @@ var WidgetDetail = countlyVue.views.create({
                         });
                         window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets";
                     });
-                }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') })
+                }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') });
                 break;
             }
         },

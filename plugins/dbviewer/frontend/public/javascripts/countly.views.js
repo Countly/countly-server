@@ -1,4 +1,4 @@
-/*global $, countlyAuth, countlyGlobal, countlyDBviewer, app, countlyCommon, CV, countlyVue, _*/
+/*global $, countlyAuth, countlyGlobal, countlyDBviewer, CountlyHelpers, app, countlyCommon, CV, countlyVue, _*/
 var FEATURE_NAME = 'dbviewer';
 
 var DBViewerTab = countlyVue.views.create({

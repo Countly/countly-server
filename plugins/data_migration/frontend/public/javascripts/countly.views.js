@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, countlyAuth, countlyHelpers, countlyGlobal, countlyDataMigration, app */
+/*global countlyVue, CV, countlyCommon, countlyAuth, CountlyHelpers, countlyGlobal, countlyDataMigration, app */
 (function() {
     var FEATURE_NAME = 'data_migration';
 
@@ -257,7 +257,8 @@
                 var message = '';
                 if (type === 'token') {
                     message = 'data-migration.tokken-coppied-in-clipboard';
-                } else {
+                }
+                else {
                     message = 'data-migration.address-coppied-in-clipboard';
                 }
                 CountlyHelpers.notify({
@@ -283,7 +284,6 @@
         methods: {
             onClose: function() {},
             onSubmit: function(submitted) {
-                var self = this;
                 var API_KEY = countlyGlobal.member.api_key;
                 var APP_ID = countlyCommon.ACTIVE_APP_ID;
 
