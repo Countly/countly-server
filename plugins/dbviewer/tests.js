@@ -49,8 +49,8 @@ describe('Testing DBViewer', function() {
                     var ob = JSON.parse(res.text);
                     ob.should.not.be.empty;
                     ob.should.be.an.instanceOf(Object);
-                    ob.should.have.property("iTotalDisplayRecords", 20);
-                    ob.should.have.property("iTotalRecords", 20);
+                    ob.should.have.property("iTotalDisplayRecords", 2);
+                    ob.should.have.property("iTotalRecords", 2);
                     ob.should.have.property("aaData").and.be.an.instanceOf(Array);
                     done();
                 });
