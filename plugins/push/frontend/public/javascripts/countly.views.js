@@ -5,7 +5,7 @@
     var featureName = 'push';
 
     var statusFilterOptions = [
-        {label: CV.i18n("push-notification.status-filter-all"), value: countlyPushNotification.service.ALL_FILTER_OPTION_VALUE},
+        {label: countlyPushNotification.service.ALL_FILTER_OPTION_LABEL, value: countlyPushNotification.service.ALL_FILTER_OPTION_VALUE},
         {label: CV.i18n("push-notification.status-created"), value: countlyPushNotification.service.StatusEnum.CREATED},
         {label: CV.i18n("push-notification.status-scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
         {label: CV.i18n("push-notification.status-sent"), value: countlyPushNotification.service.StatusEnum.SENT},

@@ -12,7 +12,7 @@
     var DEFAULT_LOCALIZATION_VALUE = 'default';
     var DEFAULT_LOCALIZATION_LABEL = 'Default';
     var ALL_FILTER_OPTION_VALUE = 'all';
-    var ALL_FILTER_OPTION_LABEL = 'All';
+    var ALL_FILTER_OPTION_LABEL = CV.i18n("push-notification.status-filter-all");
 
     var TypeEnum = Object.freeze({
         ONE_TIME: "oneTime",
