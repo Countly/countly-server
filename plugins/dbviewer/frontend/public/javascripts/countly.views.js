@@ -258,7 +258,7 @@ var DBViewerAggregate = countlyVue.views.create({
                 });
             }
             catch (err) {
-                this.$message(CV.i18n('dbviewer.invalid-pipeline'));
+                CountlyHelpers.notify(CV.i18n('dbviewer.invalid-pipeline'));
             }
         }
     },
