@@ -46,7 +46,15 @@ var DBViewerTab = countlyVue.views.create({
                 };
             },
             onOverrideRequest: function(context, request) {
-                self.lastRequestPayload = request.data;
+                request.data.skip = request.data.iDisplayStart;
+                request.data.limit = request.data.iDisplayLength;
+                delete request.data.iDisplayLength;
+                delete request.data.iDisplayStart;
+            },
+            onOverrideResponse: function(context, response) {
+                response.aaData = response.collections;
+                response.iTotalRecords = response.limit;
+                response.iTotalDisplayRecords = response.total;
             },
             onError: function(context, err) {
                 throw err;
@@ -72,7 +80,6 @@ var DBViewerTab = countlyVue.views.create({
             projectionOptions: [],
             isDescentSort: false,
             isIndexRequest: false,
-            lastRequestPayload: {},
             searchQuery: ""
         };
     },

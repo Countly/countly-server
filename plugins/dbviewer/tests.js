@@ -49,9 +49,13 @@ describe('Testing DBViewer', function() {
                     var ob = JSON.parse(res.text);
                     ob.should.not.be.empty;
                     ob.should.be.an.instanceOf(Object);
-                    ob.should.have.property("iTotalDisplayRecords", 2);
-                    ob.should.have.property("iTotalRecords", 2);
-                    ob.should.have.property("aaData").and.be.an.instanceOf(Array);
+                    ob.should.have.property("limit", 20);
+                    ob.should.have.property("start", 1);
+                    ob.should.have.property("end");
+                    ob.should.have.property("total");
+                    ob.should.have.property("pages");
+                    ob.should.have.property("curPage", 1);
+                    ob.should.have.property("collections").and.be.an.instanceOf(Array);
                     done();
                 });
         });

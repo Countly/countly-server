@@ -85,8 +85,8 @@ var spawn = require('child_process').spawn,
         * Get collection data from db
         **/
         function dbGetCollection() {
-            var limit = parseInt(params.qstring.iDisplayLength || 20);
-            var skip = parseInt(params.qstring.iDisplayStart || 0);
+            var limit = parseInt(params.qstring.limit || 20);
+            var skip = parseInt(params.qstring.skip || 0);
             var filter = params.qstring.filter || params.qstring.query || "{}";
             var sSearch = params.qstring.sSearch || "";
             var projection = params.qstring.project || params.qstring.projection || "{}";
@@ -141,8 +141,7 @@ var spawn = require('child_process').spawn,
                     }
                     if (params.res.writeHead) {
                         params.res.writeHead(200, headers);
-                        params.res.write('{"iTotalDisplayRecords":' + total + ', "iTotalRecords":' + total + ', "aaData":[');
-
+                        params.res.write('{"limit":' + limit + ', "start":' + (skip + 1) + ', "end":' + Math.min(skip + limit, total) + ', "total":' + total + ', "pages":' + Math.ceil(total / limit) + ', "curPage":' + Math.ceil((skip + 1) / limit) + ', "collections":[');
                         var first = false;
                         stream.on('data', function(doc) {
                             if (!first) {
