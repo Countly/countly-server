@@ -452,6 +452,7 @@
                 options.isEndDateSet = this.isEndDateSet;
                 options.isLocationSet = this.isLocationSet;
                 options.from = this.from;
+                options.queryFilter = this.getQueryFilter();
                 return options;
             },
             save: function(options) {
@@ -461,7 +462,6 @@
                 options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.save(model, options);
             },
             update: function(options) {
@@ -471,7 +471,6 @@
                 options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.update(model, options);
             },
             resend: function(options) {
@@ -481,7 +480,6 @@
                 options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.resend(model, options);
             },
             saveDraft: function() {
