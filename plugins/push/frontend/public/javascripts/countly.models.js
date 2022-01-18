@@ -1486,10 +1486,16 @@
             mapFilters: function(model, options) {
                 var result = {};
                 if (options.queryFilter && options.from === 'user') {
-                    result.user = JSON.stringify(options.queryFilter);
+                    result.user = JSON.stringify(options.queryFilter.queryObject);
                 }
                 if (options.queryFilter && options.from === 'drill') {
-                    result.drill = JSON.stringify(options.queryFilter);
+                    var drillFilter = Object.assign({}, options.queryFilter);
+                    var period = countlyCommon.getPeriod();
+                    drillFilter.period = period;
+                    if (Array.isArray(period)) {
+                        drillFilter.period = JSON.stringify(period);
+                    }
+                    result.drill = JSON.stringify(drillFilter);
                 }
                 if (model.type === TypeEnum.ONE_TIME && model[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED && model.cohorts.length) {
                     result.cohorts = model.cohorts;
