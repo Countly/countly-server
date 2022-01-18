@@ -37,28 +37,24 @@
         },
         methods: {
             handleCommand: function(command, index) {
-                var self = this;
                 switch (command) {
                 case "delete-user":
-                    self.$confirm(CV.i18n('management-users.this-will-delete-user'), CV.i18n('management-users.warning'), {
-                        confirmButtonText: CV.i18n('common.ok'),
-                        cancelButtonText: CV.i18n('common.cancel'),
-                        type: 'warning'
-                    })
-                        .then(function() {
-                            countlyUserManagement.deleteUser(index, function() {
-                                CountlyHelpers.notify({
-                                    message: CV.i18n('management-users.removed-message'),
-                                    type: 'success'
-                                });
-                            });
-                        })
-                        .catch(function() {
+                    CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "popStyleGreen", function(result) {
+                        if (!result) {
                             CountlyHelpers.notify({
                                 type: 'info',
                                 message: CV.i18n('management-users.remove-canceled')
                             });
+                            return true;
+                        }
+                    
+                        countlyUserManagement.deleteUser(index, function() {
+                            CountlyHelpers.notify({
+                                message: CV.i18n('management-users.removed-message'),
+                                type: 'success'
+                            });
                         });
+                    },[], { image: 'delete-user', title: CV.i18n('management-users.warning') });
                     break;
                 case 'edit-user':
                     this.$emit('edit-user', index);
