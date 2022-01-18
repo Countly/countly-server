@@ -16,6 +16,7 @@ let aid = '617e6cf3cd001aac73834e18',
         did1: {device_id: 'did1', tokens: [{ios_token: 'token_ip1', test_mode: 0}], locale: 'en_US'},
         did2: {device_id: 'did2', tokens: [{android_token: 'token_at2', test_mode: 2}], locale: 'en_US', events: [{key: 'push_cart'}, {key: 'push_buy', count: 1, sum: 200, segmentation: {product: 'carrot'}}]},
         did3: {device_id: 'did3', tokens: [{ios_token: 'token_ia3', test_mode: 2}, {android_token: 'token_ap0', test_mode: 0}], locale: 'ru_RU', events: [{key: 'push_subscribe', segmentation: {topic: 'carrots'}}]},
+        did4: {device_id: 'did4', tokens: [{ios_token: 'token_ip4', test_mode: 0}], locale: 'de_DE'}
     };
 
 async function find_pushes(ids) {
@@ -29,7 +30,7 @@ async function find_pushes(ids) {
 describe('PUSH INTEGRATION TESTS', () => {
     let cohort,
         d1, d2,
-        m1, m2, m3, m4;
+        m1, m2, m3, m4, m5;
 
     it('should reset the app', async() => {
         aid = aid || testUtils.get('APP_ID');
@@ -165,7 +166,7 @@ describe('PUSH INTEGRATION TESTS', () => {
         }
     }).timeout(10000);
 
-    it('should return 4-user dashboard', async() => {
+    it('should return 5-user dashboard', async() => {
         aid = aid || testUtils.get('APP_ID');
         api_key = api_key || testUtils.get('API_KEY_ADMIN');
         app_key = app_key || testUtils.get('APP_KEY');
@@ -173,12 +174,12 @@ describe('PUSH INTEGRATION TESTS', () => {
         await supertest.get(`/o/push/dashboard?api_key=${api_key}&app_id=${aid}`)
             .expect('Content-Type', /json/)
             .expect(res => {
-                should.deepEqual(res.body.enabled, {total: 4, i: 3, a: 2, t: 0});
+                should.deepEqual(res.body.enabled, {total: 5, i: 4, a: 2, t: 0});
                 should.deepEqual(res.body.platforms, PLATFORMS_TITLES);
                 should.deepEqual(res.body.tokens, FIELDS_TITLES);
             });
     });
-    it('should estimate 4-user audience', async() => {
+    it('should estimate 5-user audience', async() => {
         await supertest.post(`/o/push/message/estimate?api_key=${api_key}&app_id=${aid}`)
             .send({
                 app: aid,
@@ -186,8 +187,8 @@ describe('PUSH INTEGRATION TESTS', () => {
             })
             .expect('Content-Type', /json/)
             .expect(res => {
-                should.equal(res.body.count, 4);
-                should.deepEqual(res.body.locales, {default: 1, en: 2, ru: 1});
+                should.equal(res.body.count, 5);
+                should.deepEqual(res.body.locales, {default: 1, en: 2, ru: 1, de: 1});
             });
     });
     it('should estimate 3-user audience with user query', async() => {
@@ -518,15 +519,39 @@ describe('PUSH INTEGRATION TESTS', () => {
                 console.log('m4 %s', res.body._id);
             });
 
+        await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                demo: true,
+                app: aid,
+                platforms,
+                filter: {
+                    user: JSON.stringify({la: {$in: ['de']}})
+                },
+                contents: [
+                    {message: 'asd', title: 'asd', expiration: 120000},
+                ],
+                triggers: [
+                    {kind: 'plain', start: new Date(Date.now() + 5000)},
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.ok(res.body._id);
+                should.equal(res.body.app, aid);
+                m5 = res.body;
+                console.log('m5 %s', res.body._id);
+            });
+
         // wait for schedule jobs to run
         await new Promise(res => setTimeout(res, 5000));
 
         let db = await plugins.dbConnection(),
             users = await db.collection(`app_users${aid}`).find().toArray(),
             uids = {},
-            [pushes1, pushes2, pushes3, pushes4] = await find_pushes([m1._id, m2._id, m3._id, m4._id]);
+            [pushes1, pushes2, pushes3, pushes4, pushes5] = await find_pushes([m1._id, m2._id, m3._id, m4._id, m5._id]);
 
-        should.equal(users.length, 4);
+        should.equal(users.length, 5);
         users.forEach(u => uids[u.did] = u.uid);
 
         should.equal(pushes1.length, 2);
@@ -538,6 +563,7 @@ describe('PUSH INTEGRATION TESTS', () => {
 
         should.equal(pushes3.length, 0);
         should.equal(pushes4.length, 0);
+        should.equal(pushes5.length, 1);
 
         let txDate = now + 1000;
         await supertest.post(`/i/push/message/push?api_key=${api_key}&app_id=${aid}`)
@@ -629,6 +655,34 @@ describe('PUSH INTEGRATION TESTS', () => {
         should.equal(pushes3.length, 2);
         should.equal(pushes4.length, 1);
 
+        // simulate actioned for m5
+        await supertest.post(`/i?app_key=${app_key}&device_id=${uids.did4.device_id}`)
+            .send({
+                device_id: uids.did4.device_id,
+                events: [
+                    {key: '[CLY]_push_action', count: 1, segmentation: {i: m5._id, p: 'i', b: 0}, timestamp: Date.now()}
+                ],
+            })
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+        await new Promise(res => setTimeout(res, 20000));
+
+        await supertest.get(`/o/push/message/${m5._id}?api_key=${api_key}&app_id=${aid}`)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.equal(res.body._id, m5._id);
+                should.equal(res.body.app, aid);
+                should.equal(res.body.result.total, 1);
+                should.equal(res.body.result.sent.total, 0);
+                should.equal(res.body.result.actioned.total, 1);
+                should.equal(res.body.results.i.total, 1);
+                should.equal(res.body.results.i.sent.total, 0);
+                should.equal(res.body.results.i.actioned.total, 1);
+                m5 = res.body;
+                console.log('m4 %s', res.body._id);
+            });
 
         // [pushes1, pushes2, pushes3, pushes4] = await find_pushes([m1._id, m2._id, m3._id, m4._id]);
         // should.equal(pushes1.length, 2);
@@ -639,18 +693,37 @@ describe('PUSH INTEGRATION TESTS', () => {
         db.close();
     }).timeout(100000);
 
+    it('should return 5-user dashboard with actioned', async() => {
+        await supertest.get(`/o/push/dashboard?api_key=${api_key}&app_id=${aid}`)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.deepEqual(res.body.enabled, {total: 5, i: 4, a: 2, t: 0});
+                should.deepEqual(res.body.platforms, PLATFORMS_TITLES);
+                should.deepEqual(res.body.tokens, FIELDS_TITLES);
+                should.deepEqual(res.body.actions.total, 1);
+                should.deepEqual(res.body.actions.monthly.data.reduce((a, b) => a + b), 1);
+                should.deepEqual(res.body.actions.weekly.data.reduce((a, b) => a + b), 1);
+                should.deepEqual(res.body.actions.platforms.a.total, 0);
+                should.deepEqual(res.body.actions.platforms.t.total, 0);
+                should.deepEqual(res.body.actions.platforms.i.total, 1);
+                should.deepEqual(res.body.actions.platforms.i.monthly.data.reduce((a, b) => a + b), 1);
+                should.deepEqual(res.body.actions.platforms.i.weekly.data.reduce((a, b) => a + b), 1);
+            });
+    });
+
     it('should return message table', async() => {
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}`)
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 4);
-                should.equal(res.body.iTotalDisplayRecords, 4);
+                should.equal(res.body.iTotalRecords, 5);
+                should.equal(res.body.iTotalDisplayRecords, 5);
                 should.ok(res.body.aaData);
-                should.equal(res.body.aaData.length, 4);
+                should.equal(res.body.aaData.length, 5);
                 should.equal(res.body.aaData.filter(m => m._id === m1._id).length, 1);
                 should.equal(res.body.aaData.filter(m => m._id === m2._id).length, 1);
                 should.equal(res.body.aaData.filter(m => m._id === m4._id).length, 1);
+                should.equal(res.body.aaData.filter(m => m._id === m5._id).length, 1);
                 should.equal(res.body.aaData.filter(m => m._id === d2._id).length, 1);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&auto=true`)
@@ -676,19 +749,20 @@ describe('PUSH INTEGRATION TESTS', () => {
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 4);
-                should.equal(res.body.iTotalDisplayRecords, 4);
+                should.equal(res.body.iTotalRecords, 5);
+                should.equal(res.body.iTotalDisplayRecords, 5);
                 should.ok(res.body.aaData);
-                should.equal(res.body.aaData.length, 3);
+                should.equal(res.body.aaData.length, 4);
                 should.equal(res.body.aaData[0]._id, m2._id);
                 should.equal(res.body.aaData[1]._id, m1._id);
                 should.equal(res.body.aaData[2]._id, d2._id);
+                should.equal(res.body.aaData[3]._id, m5._id);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&sSearch=message`)
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 4);
+                should.equal(res.body.iTotalRecords, 5);
                 should.equal(res.body.iTotalDisplayRecords, 2);
                 should.ok(res.body.aaData);
                 should.equal(res.body.aaData.length, 2);
@@ -699,7 +773,7 @@ describe('PUSH INTEGRATION TESTS', () => {
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 4);
+                should.equal(res.body.iTotalRecords, 5);
                 should.equal(res.body.iTotalDisplayRecords, 1);
                 should.ok(res.body.aaData);
                 should.equal(res.body.aaData.length, 1);
@@ -709,7 +783,7 @@ describe('PUSH INTEGRATION TESTS', () => {
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 4);
+                should.equal(res.body.iTotalRecords, 5);
                 should.equal(res.body.iTotalDisplayRecords, 2);
                 should.ok(res.body.aaData);
                 should.equal(res.body.aaData.length, 2);

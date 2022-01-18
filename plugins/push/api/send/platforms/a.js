@@ -24,6 +24,16 @@ function extractor(qstring) {
 }
 
 /**
+ * Make an estimated guess about request platform
+ * 
+ * @param {string} userAgent user-agent header
+ * @returns {string} platform key if it looks like request made by this platform
+ */
+function guess(userAgent) {
+    return userAgent.includes('Android') && key;
+}
+
+/**
  * Connection implementation for FCM
  */
 class FCM extends Splitter {
@@ -431,6 +441,7 @@ module.exports = {
     key: 'a',
     title: 'Android',
     extractor,
+    guess,
     FIELDS,
     FIELDS_TITLES,
     CREDS,

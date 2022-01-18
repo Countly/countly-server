@@ -47,7 +47,7 @@
                     </div>
                 </div>
                 <cly-section class="dbviewer-tab__result-table bu-mt-3">
-                    <cly-datatable-n :rows="collectionData">
+                    <cly-datatable-n :data-source="remoteTableDataSource" :export-query="getExportQuery" @search-query-changed="setSearchQuery">
                         <template v-slot="scope">
                             <el-table-column fixed type="expand">
                                 <template v-slot="rowScope">

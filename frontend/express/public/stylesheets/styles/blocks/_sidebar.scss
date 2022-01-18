@@ -93,7 +93,7 @@ $bg-color: #24292e;
         height: 100%;
         overflow: auto;
         color: map.get(c.$colors, "cool-gray-40");
-        z-index: 0;
+        z-index: 2005;
         background-color: #191c20;
 
         ul:first-child li:first-child {
@@ -154,7 +154,8 @@ $bg-color: #24292e;
         box-sizing: border-box;
         height: 100%;
         overflow: hidden;
-        z-index: -1;
+        z-index: 2004;
+        position: relative;
     }
 
     &__menu-items,

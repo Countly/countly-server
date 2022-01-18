@@ -1,4 +1,4 @@
-const { S, State, Status, STATUSES, TriggerKind, MEDIA_MIME_ALL, MEDIA_MIME_IOS, MEDIA_MIME_ANDROID } = require('./const'),
+const { S, State, Status, STATUSES, TriggerKind, MEDIA_MIME_ALL, MEDIA_MIME_IOS, MEDIA_MIME_ANDROID, DBMAP } = require('./const'),
     { PushError, SendError, ConnectionError, ValidationError, ERROR } = require('./error'),
     { Trigger, PlainTrigger, EventTrigger, CohortTrigger, APITrigger } = require('./trigger'),
     { Info } = require('./info'),
@@ -42,5 +42,7 @@ module.exports = {
 
     MEDIA_MIME_ALL,
     MEDIA_MIME_IOS,
-    MEDIA_MIME_ANDROID
+    MEDIA_MIME_ANDROID,
+
+    DBMAP
 };

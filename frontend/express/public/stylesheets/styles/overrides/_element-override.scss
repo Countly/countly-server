@@ -35,6 +35,8 @@
 
         &.is-leaf {
             border-bottom-width: 2px;
+
+            border-top: 1px solid c.$table-border-color;
         }
     }
 

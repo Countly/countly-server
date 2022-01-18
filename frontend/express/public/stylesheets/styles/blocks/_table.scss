@@ -20,8 +20,7 @@
 		border-right: none;
 		box-sizing: border-box;
 		padding: 12px;
-        border-top-left-radius: 4px;
-        border-top-right-radius: 4px;
+        border-top: 1px solid map.get(c.$colors, "warm-gray-30");
 
 		&--white {
 			background-color: map.get(c.$colors, "white");
@@ -29,6 +28,27 @@
 			font-size: t.$text-smd-size;
 		}
 	}
+
+    &__export {
+        &--extended {
+            &::after {
+                // shadow
+                content: "";
+                position: absolute;
+                width: 100%;
+                height: 12px;
+                background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
+                top: 185px;
+                left: 0;
+                opacity: 0.12;
+            }
+        }
+        &--search {
+            input[type=text] {
+                background-color: #F6F6F6;
+            }
+        }
+    }
 
 	&__search {
 		&--grey {

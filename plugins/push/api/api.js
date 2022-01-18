@@ -1,7 +1,7 @@
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api'),
-    { Message, State, TriggerKind, fields, platforms, ValidationError, PushError } = require('./send'),
+    { Message, State, TriggerKind, fields, platforms, ValidationError, PushError, DBMAP, guess } = require('./send'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
     { onTokenSession, onSessionUser, onAppPluginsUpdate } = require('./api-push'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
@@ -12,7 +12,9 @@ const plugins = require('../../pluginManager'),
     { clear, reset, removeUsers } = require('./api-reset'),
     FEATURE_NAME = 'push',
     PUSH_CACHE_GROUP = 'P',
-    PUSH = {},
+    PUSH = {
+        FEATURE_NAME
+    },
     apis = {
         o: {
             dashboard: [validateRead, dashboard],
@@ -50,13 +52,13 @@ plugins.internalDrillEvents.push('[CLY]_push_action');
 
 
 plugins.register('/worker', function() {
-    common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = 'm');
+    common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
 });
 
 plugins.register('/master', function() {
-    common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = 'm');
+    common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
 });
@@ -102,22 +104,55 @@ plugins.register('/i', async ob => {
 
         autoOnEvent(params.app_id, params.app_user.uid, keys, events);
 
-        let push = events.filter(e => e.key && e.key.indexOf('[CLY]_push_') === 0 && e.segmentation && e.segmentation.i && e.segmentation.i.length === 24);
+        let push = events.filter(e => e.key && e.key.indexOf('[CLY]_push_action') === 0 && e.segmentation && e.segmentation.i && e.segmentation.i.length === 24);
         if (push.length) {
             try {
                 let ids = push.map(e => common.db.ObjectID(e.segmentation.i)),
-                    msgs = await Message.findMany({_id: {$in: ids}});
-                for (let i = 0; i < msgs.length; i++) {
-                    let m = msgs[i],
-                        count = push.filter(e => e.key === '[CLY]_push_action' && e.segmentation.i === m.id).map(e => e.count).reduce((a, b) => a + b, 0);
-                    if (count) {
-                        await m.update({$inc: {'result.actioned': count}}, () => m.result.actioned += count);
+                    msgs = await Message.findMany({_id: {$in: ids}}),
+                    updates = {};
+                for (let i = 0; i < push.length; i++) {
+                    let event = push[i],
+                        msg = msgs.filter(m => m.id === event.segmentation.i)[0],
+                        count = parseInt(event.count);
+                    if (!msg || count !== 1) {
+                        log.i('Invalid segmentation for [CLY]_push_action from %s: %j (msg %s, count %j)', params.qstring.device_id, event.segmentation, msg ? 'found' : 'not found', event.segmentation.count);
+                        continue;
                     }
-                    push.filter(e => e.segmentation.i === m.id).forEach(e => {
-                        e.segmentation.a = m.triggers.filter(t => t.kind === TriggerKind.Cohort || t.kind === TriggerKind.Event).length > 0;
-                        e.segmentation.t = m.triggers.filter(t => t.kind === TriggerKind.API).length > 0;
-                    });
+
+                    let p = event.segmentation.p,
+                        upd = updates[msg.id];
+                    if (upd) {
+                        upd.$inc['result.actioned'] += count;
+                    }
+                    else {
+                        upd = updates[msg.id] = {$inc: {'result.actioned': count}};
+                    }
+
+                    if (!p && params.headers && params.headers['user-agent']) {
+                        p = guess(params.headers['user-agent']);
+                    }
+
+                    event.segmentation.a = msg.triggers.filter(t => t.kind === TriggerKind.Cohort || t.kind === TriggerKind.Event).length > 0;
+                    event.segmentation.t = msg.triggers.filter(t => t.kind === TriggerKind.API).length > 0;
+
+                    if (p && platforms.indexOf(p) !== -1) {
+                        event.segmentation.p = p;
+                        event.segmentation.ap = event.segmentation.a + p;
+                        event.segmentation.tp = event.segmentation.t + p;
+                        event.segmentation.ip = event.segmentation.i + p;
+                        if (upd.$inc[`results.${p}.actioned`]) {
+                            upd.$inc[`results.${p}.actioned`] += count;
+                        }
+                        else {
+                            upd.$inc[`results.${p}.actioned`] = count;
+                        }
+                    }
+                    else {
+                        delete event.segmentation.p;
+                    }
                 }
+
+                await Promise.all(Object.keys(updates).map(mid => common.db.collection('messages').updateOne({_id: common.db.ObjectID(mid)}, updates[mid])));
             }
             catch (e) {
                 log.e('Wrong [CLY]_push_* event i segmentation', e);
@@ -158,9 +193,9 @@ function apiCall(apisObj, ob) {
                 return true;
             }
         }
-        else if (params.method in apisObj[method]) {
-            if (Array.isArray(apisObj[method][sub])) {
-                let [check, fn, key] = apisObj[method][sub];
+        else if (params.req.method in apisObj[method]) {
+            if (Array.isArray(apisObj[method][params.req.method])) {
+                let [check, fn, key] = apisObj[method][params.req.method];
                 if (key) {
                     params.qstring[key] = sub;
                 }
@@ -170,9 +205,11 @@ function apiCall(apisObj, ob) {
         }
     }
 
-    log.d('invalid endpoint', paths);
-    common.returnMessage(params, 404, 'Invalid endpoint');
-    return true;
+    // if (paths[3] !== 'approve') {
+    //     log.d('invalid endpoint', paths);
+    //     common.returnMessage(params, 404, 'Invalid endpoint');
+    //     return true;
+    // }
 }
 
 /**

@@ -118,10 +118,9 @@ var DataPointsView = countlyVue.views.create({
                     nameLocation: "start",
                     nameTextStyle: {
                         color: "#A7AEB8",
-                        lineHeight: 200
+                        verticalAlign: 'bottom'
                     }
-                },
-                color: "#39C0C8"
+                }
 
             };
             if (!info.dayCount || info.dayCount > 1) {
@@ -158,8 +157,13 @@ var DataPointsView = countlyVue.views.create({
                     /* if (tt < dd.sum) {
                         lines.push('<td>' + countlyCommon.formatNumber(Math.round((dd.sum - tt) * 100 / dd.sum || 1), 0) + '%</td><td> **Unknown</td>');
                     }*/
-                    return '<div class="data-points-tooltip color-cool-gray-100 text-small"><div>' + CV.i18n('common.table.total-users') + '</div><div class="text-big bu-pt-1 bu-pb-3">' + countlyCommon.formatNumber(dd.sum || 0) + '</div><table><tr><td class="bu-pr-2">Max.</td><td>Min.</td><td>Avg.</td></tr><tr class="text-big"><td>' + countlyCommon.formatNumber(dd.max, 0) + '</td><td>' + countlyCommon.formatNumber((dd.min || 0), 0) + '</td><td>' + countlyCommon.formatNumber(dd.avg, 0) + '</td></tr></table>' +
-							'<div class="color-cool-gray-100 text-small bu-p-0 bu-pt-3 data-points-tooltip-bottom-table"><table><tr>' + lines.join('</tr><tr>') + '</tr></table><div>';
+
+                    var retString = '<div class="data-points-tooltip color-cool-gray-100 text-small"><div>' + CV.i18n('common.table.total-users') + '</div><div class="text-big bu-pt-1 bu-pb-3">' + countlyCommon.formatNumber(dd.sum || 0) + '</div><table><tr><td class="bu-pr-2">Max.</td><td>Min.</td><td>Avg.</td></tr><tr class="text-big"><td>' + countlyCommon.formatNumber(dd.max, 0) + '</td><td>' + countlyCommon.formatNumber((dd.min || 0), 0) + '</td><td>' + countlyCommon.formatNumber(dd.avg, 0) + '</td></tr></table>';
+
+                    if (lines.length > 0) {
+                        retString += '<div class="color-cool-gray-100 text-small bu-p-0 bu-pt-3 data-points-tooltip-bottom-table"><table><tr>' + lines.join('</tr><tr>') + '</tr></table></div>';
+                    }
+                    return retString;
                 };
 
                 graphObject.yAxis = {
@@ -174,6 +178,24 @@ var DataPointsView = countlyVue.views.create({
                 graphObject.series = [{
                     name: CV.i18n('server-stats.data-points'),
                     type: "scatter",
+                    itemStyle: {
+                        color: function(params) {
+                            var vv = 1;
+                            if (params && params.value) {
+                                vv = 0.2 + (0.8 * Math.round(100 * params.value[2] / self.max) / 100); //opacity range 0.2 t 1
+                            }
+                            return "rgba(57,192,200,+" + vv + ")";
+                        },
+
+                    },
+                    emphasis: {
+                        scale: false,
+                        itemStyle: {
+                            color: 'rgba(57,192,200,1)',
+                            shadowColor: "#39C0C8",
+                            shadowBlur: 10
+                        }
+                    },
                     symbolSize: function(val) {
                         var dataIndexValue = 2;
                         if (val[dataIndexValue] === 0) {
@@ -226,8 +248,13 @@ var DataPointsView = countlyVue.views.create({
                     /*if (tt < dd.sum) {
                         lines.push('<td>' + countlyCommon.formatNumber(Math.round((dd.sum - tt) * 100 / dd.sum || 1), 0) + '%</td><td> **Unknown</td>');
                     }*/
-                    return '<div class="data-points-tooltip color-cool-gray-100 text-small"><div>' + CV.i18n('common.table.total-users') + '</div><div class="text-big bu-pt-1 bu-pb-3">' + countlyCommon.formatNumber(dd.sum || 0) + '</div>' +
-					'<div class="color-cool-gray-100 text-small bu-p-0 bu-pt-3 data-points-tooltip-bottom-table"><table><tr>' + lines.join('</tr><tr>') + '</tr></table><div>';
+
+                    var retString = '<div class="data-points-tooltip color-cool-gray-100 text-small"><div>' + CV.i18n('common.table.total-users') + '</div><div class="text-big bu-pt-1 bu-pb-3">' + countlyCommon.formatNumber(dd.sum || 0) + '</div>';
+                    if (lines.length > 0) {
+                        retString += '<div class="color-cool-gray-100 text-small bu-p-0 bu-pt-3 data-points-tooltip-bottom-table"><table><tr>' + lines.join('</tr><tr>') + '</tr></table></div>';
+                    }
+                    return retString;
+
                 };
 
                 graphObject.series = [{data: seriesArr, name: "data-points"}];

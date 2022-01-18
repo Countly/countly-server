@@ -134,12 +134,14 @@
             },
             types: function() {
                 var self = this;
-                var result = this.allTypes.filter(function(item) {
+                if (this.enabledTypes && !this.enabledTypes.length) {
+                    return this.allTypes;
+                }
+                return this.allTypes.filter(function(item) {
                     return self.enabledTypes.some(function(enabledItem) {
                         return enabledItem === item.value;
                     });
                 });
-                return result;
             }
         }
     });
@@ -147,27 +149,24 @@
     var AppCountComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/app-count.html'),
         props: {
-            apps: {
-                type: Array,
-                default: []
+            value: {
+                type: String,
+                default: 'single',
+                required: true,
             }
         },
         data: function() {
             return {
-                count: null
+                count: this.value
             };
         },
         computed: {
             appCount: {
                 get: function() {
-                    if (!this.count) {
-                        return (this.apps.length > 1) ? "multiple" : "single";
-                    }
-
-                    return this.count;
+                    return this.value;
                 },
                 set: function(v) {
-                    this.count = v;
+                    this.$emit("input", v);
                 }
             }
         }

@@ -47,6 +47,11 @@
             scope: {
                 type: Object
             }
+        },
+        data: function() {
+            return {
+                appCount: 'single',
+            };
         }
     });
 
