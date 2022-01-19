@@ -110,18 +110,16 @@
             <validation-provider name="aditional_files" v-slot="v">
               <div>
                 <el-checkbox v-model="drawerScope.editedObject.aditional_files">
-                  <div>
-                    {{ i18n('data-migration.export-additional-files') }}
-                  </div>
+                  {{ i18n('data-migration.export-additional-files') }}
                 </el-checkbox>
               </div>
             </validation-provider>
             <validation-provider v-if="drawerScope.editedObject.only_export === 0" class="bu-mt-2" name="redirect_traffic" v-slot="v">
-              <el-checkbox v-model="drawerScope.editedObject.redirect_traffic">
-                <div>
+              <div class="bu-mt-4">
+                <el-checkbox v-model="drawerScope.editedObject.redirect_traffic">
                   {{ i18n('data-migration.redirect-traffic') }}
-                </div>
-              </el-checkbox>
+                </el-checkbox>
+              </div>
             </validation-provider>
           </div>
       </cly-form-step>
