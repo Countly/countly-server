@@ -379,8 +379,6 @@
                 canUpdate: countlyAuth.validateUpdate(ALERTS_FEATURE_NAME),
                 canDelete: countlyAuth.validateDelete(ALERTS_FEATURE_NAME),
                 deleteElement: null,
-                showDeleteDialog: false,
-                deleteMessage: '',
             };
         },
         props: {
@@ -398,23 +396,21 @@
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
+                    var self = this;
                     this.deleteElement = scope.row;
-                    this.showDeleteDialog = true;
-                    this.deleteMessage = CV.i18n("alert.delete-confirm", "<b>" + this.deleteElement.alertName + "</b>");
+                    var deleteMessage = CV.i18n("alert.delete-confirm", "<b>" + this.deleteElement.alertName + "</b>");
+                    CountlyHelpers.confirm(deleteMessage, "red", function (result) {
+                       if (!result) {
+                            return true;
+                        }
+                        if (self.deleteElement.alertDataType === 'online-users') {
+                            self.$store.dispatch("countlyAlerts/deleteOnlineUsersAlert", {alertID: self.deleteElement._id, appid: self.deleteElement.selectedApps[0]});
+                        }
+                        else {
+                            self.$store.dispatch("countlyAlerts/deleteAlert", {alertID: self.deleteElement._id, appid: self.deleteElement.selectedApps[0]});
+                        }
+                    });
                 }
-            },
-            closeDeleteForm: function() {
-                this.deleteElement = null;
-                this.showDeleteDialog = false;
-            },
-            submitDeleteForm: function() {
-                if (this.deleteElement.alertDataType === 'online-users') {
-                    this.$store.dispatch("countlyAlerts/deleteOnlineUsersAlert", {alertID: this.deleteElement._id, appid: this.deleteElement.selectedApps[0]});
-                }
-                else {
-                    this.$store.dispatch("countlyAlerts/deleteAlert", {alertID: this.deleteElement._id, appid: this.deleteElement.selectedApps[0]});
-                }
-                this.showDeleteDialog = false;
             },
             updateStatus: function(scope) {
                 var diff = scope.diff;
