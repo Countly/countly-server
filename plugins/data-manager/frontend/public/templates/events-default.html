@@ -32,7 +32,7 @@
             <el-table-column fixed="left" type="selection" :reserve-selection="true" width="55" prop="isSelected">
             </el-table-column>
 
-            <el-table-column fixed="left" width="280" sortable="custom" prop="name" label="Event Name">
+            <el-table-column fixed="left" min-width="330" sortable="custom" prop="name" label="Event Name">
                 <template v-slot="rowScope">
                     <div>{{rowScope.row.name || rowScope.row.key || rowScope.row.e}}</div>
                     <div v-if="rowScope.row.audit && rowScope.row.audit.userName" class="text-small color-cool-gray-50">Last modified by {{rowScope.row.audit.userName}}</div>
@@ -49,16 +49,16 @@
                 </template>
             </el-table-column>
 
-            <el-table-column width="200" prop="description" label="Description">
+            <el-table-column min-width="350" prop="description" label="Description">
             </el-table-column>
 
-            <el-table-column width="230" prop="category" label="Category">
+            <el-table-column min-width="250" prop="category" label="Category">
                 <template v-slot="rowScope">
                     {{rowScope.row.categoryName || 'Uncategorized'}}
                 </template>
             </el-table-column>
 
-            <el-table-column prop="lastModifiedts" width="200" label="Last Modified">
+            <el-table-column prop="lastModifiedts" min-width="275" label="Last Modified">
                 <template v-slot="rowScope">
                     <div v-if="rowScope.row && rowScope.row.lastModifiedts">
                         <div>{{rowScope.row.lastModifiedDate}}</div>
@@ -67,7 +67,7 @@
                 </template>
             </el-table-column>
 
-            <el-table-column width="200" label="Last Triggered">
+            <el-table-column min-width="250" label="Last Triggered">
             </el-table-column>
 
             <el-table-column type="options" align="center">
@@ -80,7 +80,7 @@
             </el-table-column>
 
             <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
-                <el-table-column width="250" :prop="col.value" :label="col.label">
+                <el-table-column min-width="300" :prop="col.value" :label="col.label">
                     <template v-slot="rowScope">
                         {{rowScope.row[col.value]}}
                     </template>
