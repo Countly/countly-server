@@ -423,6 +423,37 @@
             };
         },
         computed: {
+            missingOptionsTab: function() {
+                var query = this.value;
+
+                if (!query) {
+                    return null;
+                }
+
+                if (!Array.isArray(query)) {
+                    query = [query];
+                }
+                var self = this;
+                var missingOptions = query.filter(function(key) {
+                    return !self.flatOptions.some(function(option) {
+                        return key === option.value;
+                    });
+                }).map(function(missingKey) {
+                    return {
+                        label: missingKey,
+                        value: missingKey
+                    };
+                });
+
+                if (missingOptions.length) {
+                    return {
+                        name: "__missing",
+                        label: "?",
+                        options: missingOptions
+                    };
+                }
+                return null;
+            },
             hasAllOptionsTab: function() {
                 if (this.hideAllOptionsTab || this.mode === "multi-check-sortable") {
                     return false;
@@ -436,22 +467,30 @@
                 return !!this.options[0].options;
             },
             publicTabs: function() {
+                var missingOptionsTab = this.missingOptionsTab,
+                    defaultTabs = [];
+                if (!missingOptionsTab) {
+                    defaultTabs = [];
+                }
+                else {
+                    defaultTabs = [missingOptionsTab];
+                }
                 if (this.hasTabs && this.hasAllOptionsTab) {
                     var allOptions = {
                         name: "__all",
                         label: this.allPlaceholder,
                         options: this.flatOptions
                     };
-                    return [allOptions].concat(this.options);
+                    return [allOptions].concat(defaultTabs).concat(this.options);
                 }
                 else if (this.hasTabs) {
-                    return this.options;
+                    return defaultTabs.concat(this.options);
                 }
                 return [{
                     name: "__root",
                     label: "__root",
                     options: this.options
-                }];
+                }].concat(defaultTabs);
             },
             flatOptions: function() {
                 if (!this.hasTabs || !this.options.length) {
