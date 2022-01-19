@@ -83,6 +83,10 @@
             controls: {
                 type: Object
             },
+            from: {
+                type: String,
+                default: null
+            },
             queryFilter: {
                 type: Object,
                 default: null,
@@ -391,15 +395,15 @@
                 });
             },
             getQueryFilter: function() {
+                if (!this.queryFilter) {
+                    return {};
+                }
                 if (this.wrappedUserProperties) {
-                    return countlyPushNotification.helper.unwrapUserProperties(this.queryFilter);
+                    var result = Object.assign({}, this.queryFilter);
+                    result.queryObject = countlyPushNotification.helper.unwrapUserProperties(this.queryFilter.queryObject);
+                    return result;
                 }
                 return this.queryFilter;
-            },
-            addQueryFilterIfFound: function(model) {
-                if (this.queryFilter) {
-                    model.queryFilter = this.getQueryFilter();
-                }
             },
             estimate: function() {
                 var self = this;
@@ -407,9 +411,10 @@
                 return new Promise(function(resolve) {
                     var options = {};
                     options.isLocationSet = self.isLocationSet;
+                    options.from = self.from;
+                    options.queryFilter = self.getQueryFilter();
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
-                    self.addQueryFilterIfFound(preparePushNotificationModel);
                     countlyPushNotification.service.estimate(preparePushNotificationModel, options).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
                         if (response._id) {
@@ -437,6 +442,8 @@
                 options.isUsersTimezoneSet = this.isUsersTimezoneSet;
                 options.isEndDateSet = this.isEndDateSet;
                 options.isLocationSet = this.isLocationSet;
+                options.from = this.from;
+                options.queryFilter = this.getQueryFilter();
                 return options;
             },
             save: function(options) {
@@ -446,7 +453,6 @@
                 options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.save(model, options);
             },
             update: function(options) {
@@ -456,7 +462,6 @@
                 options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.update(model, options);
             },
             resend: function(options) {
@@ -466,7 +471,6 @@
                 options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.resend(model, options);
             },
             saveDraft: function() {
@@ -1870,6 +1874,10 @@
             controls: {
                 type: Object
             },
+            from: {
+                type: String,
+                default: null,
+            },
             queryFilter: {
                 type: Object,
                 default: null,
@@ -1900,7 +1908,7 @@
         components: {
             'push-notification-drawer': PushNotificationDrawer
         },
-        template: '<push-notification-drawer v-if="shouldDisplay" :queryFilter="queryFilter" :wrappedUserProperties="wrappedUserProperties" :controls="controls" :type="type"></push-notification-drawer>',
+        template: '<push-notification-drawer v-if="shouldDisplay" :queryFilter="queryFilter" :from="from" :wrappedUserProperties="wrappedUserProperties" :controls="controls" :type="type"></push-notification-drawer>',
     });
 
     var PushNotificationWidgetDrawer = countlyVue.views.create({

@@ -1400,7 +1400,10 @@
                 &:hover {
                     background-color: #F6F6F6;
                     .cly-vue-metric-breakdown__numbers {
-                        color: #0166D6; 
+                        color: #0166D6;
+                        i { 
+                            color: black !important;
+                        } 
                     }
                 }
             }
@@ -1724,7 +1727,7 @@
         &__step-separator {
             width: 20%;
             border-top: 1px solid #A7AEB8;
-            max-width: 50px;
+            max-width: 40px;
         }
 
         &__step-label {

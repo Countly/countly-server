@@ -450,6 +450,7 @@
             data: function() {
                 return {
                     canCreate: countlyAuth.validateCreate(FEATURE_NAME),
+                    searchQuery: "",
                 };
             },
             computed: {
@@ -463,9 +464,21 @@
                     return {};
                 },
                 allDashboards: function() {
+                    var query = this.searchQuery;
+
                     var dashboards = this.$store.getters["countlyDashboards/all"];
                     this.identifySelectedDashboard(dashboards);
-                    return dashboards;
+
+                    if (!query) {
+                        return dashboards;
+                    }
+
+                    query = (query + "").trim().toLowerCase();
+
+                    return dashboards.filter(function(option) {
+                        var compareTo = option.name || "";
+                        return compareTo.toLowerCase().indexOf(query) > -1;
+                    });
                 }
             },
             methods: {

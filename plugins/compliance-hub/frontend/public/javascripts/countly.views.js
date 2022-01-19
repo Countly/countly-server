@@ -475,7 +475,7 @@
         this.renderWhenReady(renderedView);
     });
     $(document).ready(function() {
-        app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 20});
+        app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
     });
 
 })();
