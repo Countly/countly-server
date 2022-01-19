@@ -215,8 +215,11 @@
                     visibility: visible;
                 }
                 .cly-vue-listbox__item-prefix,
+                .cly-vue-listbox__item-prefix *,
                 .cly-vue-listbox__item-label,
-                .cly-vue-listbox__item-suffix {
+                .cly-vue-listbox__item-label *,
+                .cly-vue-listbox__item-suffix,
+                .cly-vue-listbox__item-suffix * {
                     color: v.$select-dropdown-item-default-hover-color;
                 }
 
