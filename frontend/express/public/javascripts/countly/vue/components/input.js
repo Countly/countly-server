@@ -423,18 +423,18 @@
             };
         },
         computed: {
-            missingOptionsTab: function() {
+            missingOptions: function() {
                 var query = this.value;
 
                 if (!query) {
-                    return null;
+                    return [];
                 }
 
                 if (!Array.isArray(query)) {
                     query = [query];
                 }
                 var self = this;
-                var missingOptions = query.filter(function(key) {
+                return query.filter(function(key) {
                     return !self.flatOptions.some(function(option) {
                         return key === option.value;
                     });
@@ -444,12 +444,13 @@
                         value: missingKey
                     };
                 });
-
-                if (missingOptions.length) {
+            },
+            missingOptionsTab: function() {
+                if (this.missingOptions.length) {
                     return {
                         name: "__missing",
                         label: "?",
-                        options: missingOptions
+                        options: this.missingOptions
                     };
                 }
                 return null;
@@ -515,21 +516,20 @@
                 if (!this.flatOptions.length) {
                     return {};
                 }
-                var self = this;
+                var self = this,
+                    missingOptions = this.missingOptions || [];
+
                 if (Array.isArray(this.value)) {
-                    return this.flatOptions.filter(function(item) {
+                    return missingOptions.concat(this.flatOptions.filter(function(item) {
                         return self.value.indexOf(item.value) > -1;
-                    });
+                    }));
                 }
                 else {
                     var matching = this.flatOptions.filter(function(item) {
                         return item.value === self.value;
                     });
-                    if (matching.length) {
-                        return matching[0];
-                    }
+                    return missingOptions.concat(matching);
                 }
-                return {};
             }
         },
         methods: {
