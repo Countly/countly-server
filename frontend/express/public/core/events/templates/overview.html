@@ -82,14 +82,20 @@
 			  </div>
 			<div v-if="monitorEventsData.length===0" class="cly-vue-events-overview-monitor-events__empty">
 				<div class="cly-vue-events-overview-monitor-events__empty__block" >
-						<cly-empty-view
-            :title="i18n('events.all.empty-title')"
-            :subTitle="i18n('events.all.empty-text')"
-            :actionTitle="i18n('events.overview.events.configure.events')"
-            :hasAction="true"
-            :actionFunc="configureOverview"
-            >
-            </cly-empty-view>
+								<cly-empty-view :hasAction="true" :actionFunc="configureOverview">
+									<div slot="icon">
+										<img width="60" height="60" src="images/icons/empty-view-icon.svg"/>
+									</div>
+									<div slot="title">
+										<div class="color-cool-gray-100 text-big font-weight-bold">{{i18n('events.all.empty-title')}}</div>
+									</div>
+									<div slot="subTitle">
+										<div class="bu-mt-2 bu-mb-4 text-small color-cool-gray-50 bu-has-text-centered ">{{i18n('events.all.empty-text')}}</div>
+									</div>
+									<div slot="action">
+										<el-button @click="configureOverview" type="text">{{i18n('events.overview.events.configure.events')}}</el-button>
+									</div>
+								</cly-empty-view>
 				</div>
 			</div>
 			  <div v-else class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline" v-loading = "isMonitorEventsLoading"
