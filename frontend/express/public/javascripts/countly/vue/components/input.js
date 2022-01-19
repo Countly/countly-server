@@ -393,7 +393,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" :key="option.value">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
