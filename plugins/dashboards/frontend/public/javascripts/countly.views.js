@@ -31,6 +31,11 @@
 
     var EmptyDashboard = countlyVue.views.BaseView.extend({
         template: '#dashboards-empty',
+        methods: {
+            addWidget: function() {
+                this.$emit("add-widget");
+            }
+        }
     });
 
     var DisabledWidget = countlyVue.views.BaseView.extend({
