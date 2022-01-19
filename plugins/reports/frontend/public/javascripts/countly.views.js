@@ -1,4 +1,5 @@
 /*global
+    CountlyHelpers,
     countlyCommon,
     CountlyHelpers,
     countlyGlobal,
@@ -59,8 +60,8 @@
                     var self = this;
                     this.deleteElement = scope.row;
                     var deleteMessage = CV.i18n("reports.confirm", "<b>" + this.deleteElement.title + "</b>");
-                    CountlyHelpers.confirm(deleteMessage, "red", function (result) {
-                       if (!result) {
+                    CountlyHelpers.confirm(deleteMessage, "red", function(result) {
+                        if (!result) {
                             return true;
                         }
                         self.$store.dispatch("countlyReports/deleteReport", self.deleteElement);

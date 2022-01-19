@@ -1,4 +1,5 @@
 /*global
+    CountlyHelpers,
     countlyGlobal,
     countlyAlerts,
     jQuery,
@@ -399,8 +400,8 @@
                     var self = this;
                     this.deleteElement = scope.row;
                     var deleteMessage = CV.i18n("alert.delete-confirm", "<b>" + this.deleteElement.alertName + "</b>");
-                    CountlyHelpers.confirm(deleteMessage, "red", function (result) {
-                       if (!result) {
+                    CountlyHelpers.confirm(deleteMessage, "red", function(result) {
+                        if (!result) {
                             return true;
                         }
                         if (self.deleteElement.alertDataType === 'online-users') {
