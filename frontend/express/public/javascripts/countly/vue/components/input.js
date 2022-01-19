@@ -91,9 +91,13 @@
             },
             disabled: {type: Boolean, default: false, required: false},
             height: {type: [Number, String], default: 300, required: false},
-            expandOnHover: {type: Boolean, default: false, required: false}
+            expandOnHover: {type: Boolean, default: false, required: false},
+            hasRemovableOptions: {type: Boolean, default: false, required: false}
         },
         methods: {
+            onRemoveOption: function(option) {
+                this.$emit("remove-option", option);
+            },
             navigateOptions: function() {
                 if (!this.visible) {
                     this.visible = true;
@@ -256,6 +260,7 @@
                                         </div>\
                                         <div class="bu-level-right" v-if="!!$scopedSlots[\'option-suffix\']">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
+                                            <div class="cly-vue-listbox__remove-option" v-if="hasRemovableOptions" @click.stop="onRemoveOption(option)"><i class="el-icon-close"></i></div>\
                                         </div>\
                                     </div>\
                                 </div>\

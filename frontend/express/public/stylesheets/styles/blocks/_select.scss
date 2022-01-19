@@ -173,6 +173,14 @@
                 color: v.$select-dropdown-item-default-selected-color;
             }
         }
+        .cly-vue-listbox__remove-option {
+            display: none;
+        }
+        &.hover {
+            .cly-vue-listbox__remove-option {
+                display: block;
+            }
+        }
     }
 
     .cly-vue-listbox__item-content {
@@ -206,9 +214,16 @@
                 .drag-handler {
                     visibility: visible;
                 }
-                * {
+                .cly-vue-listbox__item-prefix,
+                .cly-vue-listbox__item-label,
+                .cly-vue-listbox__item-suffix {
                     color: v.$select-dropdown-item-default-hover-color;
                 }
+
+            }
+
+            .cly-vue-listbox__remove-option:hover {
+                color: v.$select-dropdown-item-default-hover-color;
             }
         }
     }
