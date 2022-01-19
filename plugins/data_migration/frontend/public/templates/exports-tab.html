@@ -7,8 +7,7 @@
                     <div>
                       {{ rowScope.row.app_names.join(",") }}
                     </div>
-                    <cly-status-tag 
-                      class="bu-mt-1"
+                    <cly-status-tag
                       :text="rowScope.row.status.substr(0, 1).toUpperCase() + rowScope.row.status.substr(1, rowScope.row.status.length - 1)"
                       :color="rowScope.row.status === 'finished' ? 'green' : rowScope.row.status === 'progress' ? 'blue' : 'red'">
                     </cly-status-tag>
