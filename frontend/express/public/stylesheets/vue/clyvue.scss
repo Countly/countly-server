@@ -669,6 +669,7 @@
             display: flex;
             margin: 0;
             padding: 16px;
+            align-items: center;
         }
 
         &__time-picker-section {
@@ -677,7 +678,7 @@
 
         
         &__in-between-conj {
-            padding: 11px 11px 0 11px;
+            padding: 0 11px;
         }
 
         &__commit-section {
@@ -1400,7 +1401,10 @@
                 &:hover {
                     background-color: #F6F6F6;
                     .cly-vue-metric-breakdown__numbers {
-                        color: #0166D6; 
+                        color: #0166D6;
+                        i { 
+                            color: black !important;
+                        } 
                     }
                 }
             }
@@ -1429,10 +1433,12 @@
     .cly-vue-metric-cards[class*="is-synced"] {
         .cly-vue-metric-card {
             min-width: 270px;
+            flex: 1 !important;
         }
         
         .cly-vue-metric-breakdown {
             min-width: 270px;
+            flex: 1 !important;
         }
     }
 
@@ -1463,6 +1469,18 @@
                 & + .cly-vue-metric-breakdown .cly-vue-metric-breakdown__wrapper {
                     border-left: 1px solid map.get(c.$colors, "warm-gray-30");
                 }
+            }
+        }
+    }
+
+    @media screen and (max-width: 1281px) {
+        .cly-vue-metric-card__wrapper {
+            h2 {
+                font-size: 18px !important;
+            }
+
+            .cly-trend-up, .cly-trend-down {
+                font-size: 12px !important;
             }
         }
     }
@@ -1724,7 +1742,7 @@
         &__step-separator {
             width: 20%;
             border-top: 1px solid #A7AEB8;
-            max-width: 50px;
+            max-width: 40px;
         }
 
         &__step-label {

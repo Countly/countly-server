@@ -155,6 +155,7 @@ $bg-color: #24292e;
         height: 100%;
         overflow: hidden;
         z-index: 2004;
+        position: relative;
     }
 
     &__menu-items,
@@ -214,17 +215,18 @@ $bg-color: #24292e;
     &__header {
         padding: 16px 12px;
         position: relative;
+    }
 
-        .el-input__inner {
-            height: 50px;
-            padding-left: 49px;
-        }
+    &__header-search {
+        input {
+            background-color: #383A3F;
+            border: none;
+            color: #d6d6d6;
 
-        .el-input__prefix {
-            left: 0px;
-            margin: 0px 12px;
-            height: auto;
-            margin-top: 12px;
+            &:focus {
+                outline: none;
+                box-shadow: none;
+            }
         }
     }
 

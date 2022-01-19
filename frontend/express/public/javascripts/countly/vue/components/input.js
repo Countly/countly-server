@@ -91,6 +91,7 @@
             },
             disabled: {type: Boolean, default: false, required: false},
             height: {type: [Number, String], default: 300, required: false},
+            expandOnHover: {type: Boolean, default: false, required: false}
         },
         methods: {
             navigateOptions: function() {
@@ -122,6 +123,7 @@
                 scrollCfg: {
                     scrollPanel: {
                         initialScrollX: false,
+                        scrollingX: false
                     },
                     rail: {
                         gutterOfSide: "0px"
@@ -141,7 +143,9 @@
                     "is-focus": this.focused,
                     "cly-vue-listbox--bordered": this.bordered,
                     "cly-vue-listbox--disabled": this.disabled,
-                    "cly-vue-listbox--has-margin": this.margin && !(this.skin === "jumbo")
+                    "cly-vue-listbox--has-margin": this.margin && !(this.skin === "jumbo"),
+                    "is-expanded": this.expandOnHover && this.focused,
+                    "is-expandable": this.expandOnHover
                 };
                 classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
                 return classes;
@@ -243,7 +247,7 @@
                                 <div class="cly-vue-listbox__item-content">\
                                     <div class="bu-level">\
                                         <div class="bu-level-left">\
-                                            <div v-if="!!$scopedSlots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-2">\
+                                            <div v-if="!!$scopedSlots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-1">\
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
                                             <slot name="option-label" v-bind="option">\
@@ -389,7 +393,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" :key="option.value">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
@@ -419,6 +423,38 @@
             };
         },
         computed: {
+            missingOptions: function() {
+                var query = this.value;
+
+                if (!query) {
+                    return [];
+                }
+
+                if (!Array.isArray(query)) {
+                    query = [query];
+                }
+                var self = this;
+                return query.filter(function(key) {
+                    return !self.flatOptions.some(function(option) {
+                        return key === option.value;
+                    });
+                }).map(function(missingKey) {
+                    return {
+                        label: missingKey,
+                        value: missingKey
+                    };
+                });
+            },
+            missingOptionsTab: function() {
+                if (this.missingOptions.length) {
+                    return {
+                        name: "__missing",
+                        label: "?",
+                        options: this.missingOptions
+                    };
+                }
+                return null;
+            },
             hasAllOptionsTab: function() {
                 if (this.hideAllOptionsTab || this.mode === "multi-check-sortable") {
                     return false;
@@ -432,22 +468,30 @@
                 return !!this.options[0].options;
             },
             publicTabs: function() {
+                var missingOptionsTab = this.missingOptionsTab,
+                    defaultTabs = [];
+                if (!missingOptionsTab) {
+                    defaultTabs = [];
+                }
+                else {
+                    defaultTabs = [missingOptionsTab];
+                }
                 if (this.hasTabs && this.hasAllOptionsTab) {
                     var allOptions = {
                         name: "__all",
                         label: this.allPlaceholder,
                         options: this.flatOptions
                     };
-                    return [allOptions].concat(this.options);
+                    return [allOptions].concat(defaultTabs).concat(this.options);
                 }
                 else if (this.hasTabs) {
-                    return this.options;
+                    return defaultTabs.concat(this.options);
                 }
                 return [{
                     name: "__root",
                     label: "__root",
                     options: this.options
-                }];
+                }].concat(defaultTabs);
             },
             flatOptions: function() {
                 if (!this.hasTabs || !this.options.length) {
@@ -472,21 +516,20 @@
                 if (!this.flatOptions.length) {
                     return {};
                 }
-                var self = this;
+                var self = this,
+                    missingOptions = this.missingOptions || [];
+
                 if (Array.isArray(this.value)) {
-                    return this.flatOptions.filter(function(item) {
+                    return missingOptions.concat(this.flatOptions.filter(function(item) {
                         return self.value.indexOf(item.value) > -1;
-                    });
+                    }));
                 }
                 else {
                     var matching = this.flatOptions.filter(function(item) {
                         return item.value === self.value;
                     });
-                    if (matching.length) {
-                        return matching[0];
-                    }
+                    return missingOptions.concat(matching);
                 }
-                return {};
             }
         },
         methods: {

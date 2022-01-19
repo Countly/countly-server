@@ -20,8 +20,7 @@
 		border-right: none;
 		box-sizing: border-box;
 		padding: 12px;
-        border-top-left-radius: 4px;
-        border-top-right-radius: 4px;
+        border-top: 1px solid map.get(c.$colors, "warm-gray-30");
 
 		&--white {
 			background-color: map.get(c.$colors, "white");

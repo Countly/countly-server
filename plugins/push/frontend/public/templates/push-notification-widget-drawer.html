@@ -1,9 +1,7 @@
 <div>
     <clyd-appcount v-model="appCount"></clyd-appcount>
     <clyd-sourceapps v-model="scope.editedObject.apps" :multiple="appCount === 'multiple'"></clyd-sourceapps>
-    <clyd-datatype v-model="scope.editedObject.data_type"></clyd-datatype>
+    <clyd-datatype v-model="scope.editedObject.data_type" :enabledTypes="['push']"></clyd-datatype>
     <clyd-metric v-model="scope.editedObject.metrics" :data-type="scope.editedObject.data_type"></clyd-metric>
-    <clyd-metric v-model="scope.editedObject.metrics" :data-type="scope.editedObject.data_type" multiple></clyd-metric>
-    <clyd-visualization v-model="scope.editedObject.visualization"></clyd-visualization>
     <clyd-title v-model="scope.editedObject.title"></clyd-title>
 </div>

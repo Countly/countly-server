@@ -26,6 +26,16 @@ function extractor(qstring) {
 }
 
 /**
+ * Make an estimated guess about request platform
+ * 
+ * @param {string} userAgent user-agent header
+ * @returns {string} platform key if it looks like request made by this platform
+ */
+function guess(userAgent) {
+    return userAgent.includes('iOS') && key;
+}
+
+/**
  * Token types for APN
  * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
  */
@@ -780,6 +790,7 @@ module.exports = {
     key,
     title: 'iOS',
     extractor,
+    guess,
     FIELDS,
     FIELDS_TITLES,
     FIELD_DEV,

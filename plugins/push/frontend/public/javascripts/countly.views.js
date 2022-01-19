@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
 
 (function() {
 
@@ -91,6 +91,10 @@
             },
             controls: {
                 type: Object
+            },
+            from: {
+                type: String,
+                default: null
             },
             queryFilter: {
                 type: Object,
@@ -400,15 +404,15 @@
                 });
             },
             getQueryFilter: function() {
+                if (!this.queryFilter) {
+                    return {};
+                }
                 if (this.wrappedUserProperties) {
-                    return countlyPushNotification.helper.unwrapUserProperties(this.queryFilter);
+                    var result = Object.assign({}, this.queryFilter);
+                    result.queryObject = countlyPushNotification.helper.unwrapUserProperties(this.queryFilter.queryObject);
+                    return result;
                 }
                 return this.queryFilter;
-            },
-            addQueryFilterIfFound: function(model) {
-                if (this.queryFilter) {
-                    model.queryFilter = this.getQueryFilter();
-                }
             },
             estimate: function() {
                 var self = this;
@@ -416,9 +420,10 @@
                 return new Promise(function(resolve) {
                     var options = {};
                     options.isLocationSet = self.isLocationSet;
+                    options.from = self.from;
+                    options.queryFilter = self.getQueryFilter();
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
-                    self.addQueryFilterIfFound(preparePushNotificationModel);
                     countlyPushNotification.service.estimate(preparePushNotificationModel, options).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
                         if (response._id) {
@@ -446,6 +451,8 @@
                 options.isUsersTimezoneSet = this.isUsersTimezoneSet;
                 options.isEndDateSet = this.isEndDateSet;
                 options.isLocationSet = this.isLocationSet;
+                options.from = this.from;
+                options.queryFilter = this.getQueryFilter();
                 return options;
             },
             save: function(options) {
@@ -455,7 +462,6 @@
                 options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.save(model, options);
             },
             update: function(options) {
@@ -465,7 +471,6 @@
                 options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.update(model, options);
             },
             resend: function(options) {
@@ -475,7 +480,6 @@
                 options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.resend(model, options);
             },
             saveDraft: function() {
@@ -1873,6 +1877,10 @@
             controls: {
                 type: Object
             },
+            from: {
+                type: String,
+                default: null,
+            },
             queryFilter: {
                 type: Object,
                 default: null,
@@ -1903,7 +1911,89 @@
         components: {
             'push-notification-drawer': PushNotificationDrawer
         },
-        template: '<push-notification-drawer v-if="shouldDisplay" :queryFilter="queryFilter" :wrappedUserProperties="wrappedUserProperties" :controls="controls" :type="type"></push-notification-drawer>',
+        template: '<push-notification-drawer v-if="shouldDisplay" :queryFilter="queryFilter" :from="from" :wrappedUserProperties="wrappedUserProperties" :controls="controls" :type="type"></push-notification-drawer>',
+    });
+
+    var PushNotificationWidgetDrawer = countlyVue.views.create({
+        template: CV.T('/push/templates/push-notification-widget-drawer.html'),
+        props: {
+            scope: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        data: function() {
+            return {
+                appCount: 'single',
+            };
+        },
+        methods: {
+            onAppCount: function(value) {
+                this.appCount = value;
+            }
+        }
+    });
+
+    var PushNotificationWidgetComponent = countlyVue.views.create({
+        template: CV.T('/push/templates/push-notification-widget.html'),
+        props: {
+            data: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        data: function() {
+            return {};
+        },
+        computed: {
+            dashboardData: function() {
+                return this.data.data || {};
+            },
+            selectedMetric: function() {
+                return this.data.metrics[0];
+            },
+            selectedBucket: function() {
+                return this.data.bucket;
+            },
+            xAxisPeriods: function() {
+                var keys = Object.keys(this.dashboardData);
+                if (keys.length) {
+                    return Object.keys(this.dashboardData[keys[0]]);
+                }
+                return [];
+            },
+            yAxisSeries: function() {
+                var self = this;
+                return Object.keys(this.dashboardData).sort(function(a, b) {
+                    return a < b;
+                }).map(function(appKey) {
+                    return {
+                        data: Object.keys(self.dashboardData[appKey]).map(function(periodKey) {
+                            return self.dashboardData[appKey][periodKey][self.selectedMetric];
+                        }),
+                        name: countlyGlobal.apps[appKey].label
+                    };
+                });
+            },
+            barchartOptions: function() {
+                return {
+                    xAxis: {
+                        data: this.xAxisPeriods
+                    },
+                    series: this.yAxisSeries
+                };
+            },
+            legend: function() {
+                return {
+                    show: false,
+                    type: "primary",
+                };
+            },
+        }
     });
 
     /**
@@ -1953,6 +2043,44 @@
         countlyVue.container.registerData("/users/external/drawers", getDrawerContainerData());
     }
 
+    /**
+     * addWidgetToCustomDashboard - adds push notification widget to custom dashboard
+     */
+    function addWidgetToCustomDashboard() {
+        countlyVue.container.registerData('/custom/dashboards/widget', {
+            type: 'push',
+            label: CV.i18n('push-notification.title'),
+            priority: 6,
+            drawer: {
+                component: PushNotificationWidgetDrawer,
+                getEmpty: function() {
+                    return {
+                        title: "",
+                        widget_type: "push", //TODO: update widget type when server supports push as a plugin widget
+                        isPluginWidget: true,
+                        apps: [],
+                        data_type: "push",
+                        metrics: [],
+                    };
+                },
+                beforeLoadFn: function() {},
+                beforeSaveFn: function() {}
+            },
+            grid: {
+                component: PushNotificationWidgetComponent,
+                dimensions: function() {
+                    return {
+                        minWidth: 6,
+                        minHeight: 4,
+                        width: 7,
+                        height: 4
+                    };
+                }
+            }
+
+        });
+    }
+
     addDrawerToDrillMainView();
     addDrawerToUserProfilesMainView();
 
@@ -1961,6 +2089,7 @@
     $(document).ready(function() {
         if (countlyAuth.validateRead(featureName)) {
             app.addMenuForType("mobile", "reach", {code: "push", url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+            addWidgetToCustomDashboard();
         }
 
         if (app.configurationsView) {
@@ -1968,30 +2097,5 @@
             app.configurationsView.registerLabel("push.proxyhost", "push.proxyhost");
             app.configurationsView.registerLabel("push.proxyport", "push.proxyport");
         }
-
-        var notes = countlyGlobal.member.notes;
-        if (notes && notes.push && notes.push.gcm && notes.push.gcm !== true) {
-            CountlyHelpers.notify({
-                type: 'error',
-                title: jQuery.i18n.map['push.note.gcm.t'],
-                message: jQuery.i18n.prop('push.note.gcm.m', notes.push.gcm.apps.map(function(a) {
-                    return a.name;
-                }).join(', ')),
-                sticky: true,
-                onClick: function() {
-                    return $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/i/users/ack",
-                        data: {
-                            path: 'push.gcm'
-                        },
-                        success: function() {
-                            notes.push.gcm = true;
-                        }
-                    });
-                }
-            });
-        }
-
     });
 }());

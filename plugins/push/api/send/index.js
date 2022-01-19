@@ -2,7 +2,7 @@ const { Base, READY, util, ERROR, SendError, PushError, ConnectionError, Validat
     { FRAME, encode, decode } = require('./proto'),
     { Pool } = require('./pool'),
     { pools } = require('./pools'),
-    { extract, PLATFORM, platforms, FIELDS, FIELDS_TITLES, PLATFORMS_TITLES, field, fields, allAppUserFields } = require('./platforms'),
+    { extract, guess, PLATFORM, platforms, FIELDS, FIELDS_TITLES, PLATFORMS_TITLES, field, fields, allAppUserFields } = require('./platforms'),
     { Audience } = require('./audience'),
     DATA = require('./data');
 
@@ -60,6 +60,7 @@ module.exports = Object.assign({
     ValidationError,
     Audience,
     extract,
+    guess,
     PLATFORM,
     platforms,
     PLATFORMS_TITLES,

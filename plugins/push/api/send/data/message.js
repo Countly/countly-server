@@ -62,6 +62,9 @@ class Message extends Mongoable {
             result: {
                 type: Result.scheme,
             },
+            results: { // {a: Result, i: Result}
+                type: 'Object',
+            },
             info: {
                 type: Info.scheme,
             }
@@ -95,6 +98,10 @@ class Message extends Mongoable {
         }
         this._data.triggers = (this._data.triggers || []).map(Trigger.from);
         this._data.contents = (this._data.contents || []).map(Content.from);
+
+        let res = this._data.results;
+        this._data.results = {};
+        Object.keys(res || {}).forEach(p => this._data.results[p] = Result.from(res[p]));
     }
 
     /**
@@ -450,6 +457,49 @@ class Message extends Mongoable {
     }
 
     /**
+     * Getter for results
+     * 
+     * @returns {object} object of platform specific Result objects ({a: Result, i: Result})
+     */
+    get results() {
+        return this._data.results;
+    }
+
+    /**
+     * Setter for results
+     * 
+     * @param {object} results object of platform specific Result objects ({a: Result, i: Result})
+     */
+    set results(results) {
+        if (results && typeof results === 'object') {
+            this._data.results = results;
+        }
+        else {
+            delete this._data.results;
+        }
+    }
+
+    /**
+     * Utility method for getting/setting platform specific Result
+     * 
+     * @param {string} p platform key
+     * @param {Result} result Result instance
+     * @returns {Result} current Result for given platform key, adds result object if it doesn't exist
+     */
+    platformResult(p, result) {
+        if (!this._data.results) {
+            this._data.results = {};
+        }
+        if (result) {
+            this._data.results[p] = result;
+        }
+        else if (!this._data.results[p]) {
+            this._data.results[p] = new Result();
+        }
+        return this._data.results[p];
+    }
+
+    /**
      * Getter for info
      * 
      * @returns {Info|undefined} info object
@@ -555,6 +605,9 @@ class Message extends Mongoable {
             triggers: Trigger.fromNote(note),
             contents: Content.fromNote(note),
             result: Result.fromNote(note),
+            results: note.platforms.length === 1 ? {
+                [note.platforms[0]]: Result.fromNote(note)
+            } : undefined,
             info: Info.fromNote(note)
         });
     }
@@ -569,25 +622,72 @@ class Message extends Mongoable {
             _id: '0',
             app: '1',
             platforms: ['t'],
-            state: State.Queued,
+            state: State.Streamable,
             status: Status.Scheduled,
             filter: new Filter(),
             triggers: [new PlainTrigger({start: new Date()})],
             contents: [new Content({message: 'test'})],
             result: new Result(),
+            results: {
+                t: new Result()
+            },
             info: new Info()
         });
     }
 
     /**
-     * Create schedule job if needed
+     * Create schedule job if needed for plain messages, put auto/api into streamable
+     * 
+     * @param {log} log logger
      */
-    async schedule() {
+    async schedule(log) {
+        if (this.is(State.Streamable) || this.is(State.Streaming)) {
+            await this.stop(log);
+        }
         let plain = this.triggerPlain();
-        if (plain) {
+        if (plain && this.state === State.Created) {
             let date = plain.delayed ? plain.start.getTime() - DEFAULTS.schedule_ahead : Date.now();
             await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app}).replace().once(date);
         }
+        if (this.triggerAutoOrApi() && (this.state === State.Inactive || this.state === State.Created)) {
+            await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Streamable, status: Status.Scheduled}});
+            await require('../../../../pluginManager').getPluginsApis().push.cache.write(this.id, this.json);
+        }
+    }
+
+    /**
+     * Remove job, clear queue and put message into inactive state
+     * 
+     * @param {log} log logger
+     */
+    async stop(log) {
+        const { Audience } = require('../audience'),
+            JOBS = require('../../../../../api/parts/jobs'),
+            PLUGINS = require('../../../../pluginManager');
+
+        let plain = this.triggerPlain(),
+            auto = this.triggerAutoOrApi(),
+            removed = 0,
+            audience = new Audience(log, this);
+
+        await audience.getApp();
+
+        if (auto) {
+            removed += await audience.pop(auto).clear();
+        }
+        else if (plain) {
+            removed += await audience.pop(plain).clear();
+        }
+
+        await JOBS.cancel('push:schedule', {mid: this._id, aid: this.app});
+
+        await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Done | State.Cleared, status: Status.Stopped}});
+
+        if (auto) {
+            await PLUGINS.getPluginsApis().push.cache.remove(this.id);
+        }
+
+        return removed;
     }
 }
 
