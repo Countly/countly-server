@@ -29,6 +29,16 @@
         }
     };
 
+    var DashboardMixin = {
+        methods: {
+            addDashboard: function() {
+                var empty = countlyDashboards.factory.dashboards.getEmpty();
+                empty.__action = "create";
+                this.openDrawer("dashboards", empty);
+            }
+        }
+    };
+
     var NoWidget = countlyVue.views.BaseView.extend({
         template: '#dashboards-nowidget',
         methods: {
@@ -36,6 +46,11 @@
                 this.$emit("add-widget");
             }
         }
+    });
+
+    var NoDashboard = countlyVue.views.BaseView.extend({
+        template: '#dashboards-nodashboard',
+        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin]
     });
 
     var DisabledWidget = countlyVue.views.BaseView.extend({
@@ -122,9 +137,11 @@
                 }
 
                 this.$store.dispatch(action, obj).then(function(id) {
-                    if (__action === "duplicate" ||
+                    if (id) {
+                        if (__action === "duplicate" ||
                         __action === "create") {
-                        app.navigate('#/custom/' + id, true);
+                            app.navigate('#/custom/' + id, true);
+                        }
                     }
                 });
             },
@@ -201,15 +218,14 @@
                     obj[key] = doc[key];
                 }
 
-                this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(widgetId) {
-                    var id = doc._id;
-                    if (!isEdited) {
-                        id = widgetId;
+                this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(id) {
+                    if (id) {
+                        self.$store.dispatch("countlyDashboards/widgets/get", id).then(function(res) {
+                            if (res) {
+                                //Add widet to grid ?
+                            }
+                        });
                     }
-
-                    self.$store.dispatch("countlyDashboards/widgets/get", id).then(function() {
-                        //Add widet to grid ?
-                    });
                 });
             },
             onCopy: function(doc) {
@@ -306,8 +322,10 @@
                             return false;
                         }
 
-                        self.$store.dispatch("countlyDashboards/widgets/delete", d._id).then(function() {
-                            // self.grid.removeWidget(document.querySelector("[data-id='" + d._id + "']"));
+                        self.$store.dispatch("countlyDashboards/widgets/delete", d._id).then(function(res) {
+                            if (res) {
+                                // self.grid.removeWidget(document.querySelector("[data-id='" + d._id + "']"));
+                            }
                         });
 
                     }, [this.i18nM("common.no-dont-delete"), this.i18nM("dashboards.delete-widget")], {title: this.i18nM("dashboards.delete-widget-title")});
@@ -333,6 +351,7 @@
         template: "#dashboards-main",
         mixins: [countlyVue.mixins.hasDrawers("dashboards"), countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
         components: {
+            "no-dashboard": NoDashboard,
             "no-widget": NoWidget,
             "dashboards-grid": GridComponent,
             "dashboards-drawer": DashboardDrawer,
@@ -344,7 +363,11 @@
             };
         },
         computed: {
-            isEmpty: function() {
+            noDashboards: function() {
+                var selected = this.$store.getters["countlyDashboards/selected"];
+                return !selected.id;
+            },
+            noWidgets: function() {
                 return !this.$store.getters["countlyDashboards/widgets/all"].length;
             },
             dashboard: function() {
@@ -425,6 +448,7 @@
                     mapping: {
                         main: "/dashboards/templates/index.html",
                         nowidget: "/dashboards/templates/transient/no-widget.html",
+                        nodashboard: "/dashboards/templates/transient/no-dashboard.html",
                         disabled: "/dashboards/templates/transient/disabled-widget.html",
                         invalid: "/dashboards/templates/transient/invalid-widget.html",
                         grid: "/dashboards/templates/grid.html"
@@ -455,7 +479,7 @@
 
         var DashboardsMenu = countlyVue.views.create({
             template: CV.T('/dashboards/templates/dashboards-menu.html'),
-            mixins: [countlyVue.mixins.hasDrawers("dashboards")],
+            mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
             components: {
                 "dashboards-drawer": DashboardDrawer
             },
@@ -517,11 +541,6 @@
                     }
 
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
-                },
-                addDashboard: function() {
-                    var empty = countlyDashboards.factory.dashboards.getEmpty();
-                    empty.__action = "create";
-                    this.openDrawer("dashboards", empty);
                 }
             },
             beforeCreate: function() {

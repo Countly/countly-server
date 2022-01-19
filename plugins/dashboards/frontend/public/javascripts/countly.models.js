@@ -1,4 +1,4 @@
-/*global jQuery, countlyCommon, CV, countlyVue, _ */
+/*global jQuery, countlyCommon, CV, countlyVue, _, CountlyHelpers */
 
 (function(countlyDashboards) {
 
@@ -26,7 +26,7 @@
                     url: countlyCommon.API_PARTS.data.r + "/dashboards/all",
                     data: {},
                     dataType: "json"
-                });
+                }, {disableAutoCatch: true});
             },
             get: function(dashboardId, isRefresh) {
                 return CV.$.ajax({
@@ -38,7 +38,7 @@
                         "action": (isRefresh) ? "refresh" : ""
                     },
                     dataType: "json",
-                });
+                }, {disableAutoCatch: true});
             },
             create: function(settings) {
                 return CV.$.ajax({
@@ -55,7 +55,7 @@
                         "theme": settings.theme
                     },
                     dataType: "json"
-                });
+                }, {disableAutoCatch: true});
             },
             update: function(dashboardId, settings) {
                 return CV.$.ajax({
@@ -72,7 +72,7 @@
                         "theme": settings.theme
                     },
                     dataType: "json"
-                });
+                }, {disableAutoCatch: true});
             },
             delete: function(dashboardId) {
                 return CV.$.ajax({
@@ -82,7 +82,7 @@
                         "dashboard_id": dashboardId
                     },
                     dataType: "json"
-                });
+                }, {disableAutoCatch: true});
             }
         },
         widgets: {
@@ -95,7 +95,7 @@
                         "dashboard_id": dashboardId,
                         "widget_id": widgetId
                     }
-                });
+                }, {disableAutoCatch: true});
             },
             create: function(dashboardId, widget) {
                 return CV.$.ajax({
@@ -106,11 +106,7 @@
                         "widget": JSON.stringify(widget)
                     },
                     dataType: "json",
-                }, {disableAutoCatch: true}).then(function(res) {
-                    return res;
-                }).catch(function(err) {
-                    console.log(err);
-                });
+                }, {disableAutoCatch: true});
             },
             update: function(dashboardId, widgetId, widget) {
                 return CV.$.ajax({
@@ -121,7 +117,7 @@
                         "widget_id": widgetId,
                         "widget": JSON.stringify(widget)
                     },
-                });
+                }, {disableAutoCatch: true});
             },
             delete: function(dashboardId, widgetId) {
                 return CV.$.ajax({
@@ -132,7 +128,7 @@
                         "widget_id": widgetId
                     },
                     dataType: "json"
-                });
+                }, {disableAutoCatch: true});
             }
         }
     };
@@ -197,27 +193,62 @@
                         /*
                             Update the widget in the widget store.
                         */
-                        context.commit("update", w && w[0]);
+                        var widget = w && w[0];
+                        context.commit("update", widget);
+                        return widget;
+                    }).catch(function() {
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while getting the widget!",
+                            type: "error"
+                        });
+
+                        return false;
                     });
                 },
                 create: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var settings = widget.settings || {};
 
-                    return countlyDashboards.service.widgets.create(dashboardId, settings);
+                    return countlyDashboards.service.widgets.create(dashboardId, settings).then(function(id) {
+                        return id;
+                    }).catch(function() {
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while creating the widget!",
+                            type: "error"
+                        });
+
+                        return false;
+                    });
                 },
                 update: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var widgetId = widget.id;
                     var settings = widget.settings;
 
-                    return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings);
+                    return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings).then(function() {
+                        return widgetId;
+                    }).catch(function() {
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while updating the widget!",
+                            type: "error"
+                        });
+
+                        return false;
+                    });
                 },
                 delete: function(context, widgetId) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
 
                     return countlyDashboards.service.widgets.delete(dashboardId, widgetId).then(function() {
                         context.commit("remove", widgetId);
+                        return true;
+                    }).catch(function() {
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while deleting the widget!",
+                            type: "error"
+                        });
+
+                        return false;
                     });
                 }
             }
@@ -297,6 +328,14 @@
                 return countlyDashboards.service.dashboards.getAll().then(function(res) {
                     var dashboards = res || [];
                     context.dispatch("setAll", dashboards);
+                    return dashboards;
+                }).catch(function() {
+                    CountlyHelpers.notify({
+                        message: "Something went wrong while fetching all dashboards!",
+                        type: "error"
+                    });
+
+                    return false;
                 });
             },
             getDashboard: function(context, params) {
@@ -339,6 +378,13 @@
                     */
 
                     return dashbaord;
+                }).catch(function() {
+                    CountlyHelpers.notify({
+                        message: "Something went wrong while fetching the dashbaord!",
+                        type: "error"
+                    });
+
+                    return false;
                 });
             },
             setDashboard: function(context, params) {
@@ -402,9 +448,18 @@
                         resolved promise and that inturn sets the dashboard data automatically.
                     */
 
-                    return context.dispatch("getAll").then(function() {
-                        return id;
+                    if (id) {
+                        context.dispatch("getAll");
+                    }
+
+                    return id;
+                }).catch(function() {
+                    CountlyHelpers.notify({
+                        message: "Something went wrong while creating the dashboard!",
+                        type: "error"
                     });
+
+                    return false;
                 });
             },
             update: function(context, settings) {
@@ -412,6 +467,14 @@
 
                 return countlyDashboards.service.dashboards.update(dashboardId, settings).then(function() {
                     context.dispatch("getDashboard");
+                    return true;
+                }).catch(function() {
+                    CountlyHelpers.notify({
+                        message: "Something went wrong while updating the dashboard!",
+                        type: "error"
+                    });
+
+                    return false;
                 });
             },
             duplicate: function(context, settings) {
@@ -420,9 +483,20 @@
             },
             delete: function(context, id) {
                 return countlyDashboards.service.dashboards.delete(id).then(function() {
-                    context.dispatch("getAll").then(function() {
-                        context.dispatch("setDashboard");
+                    context.dispatch("getAll").then(function(res) {
+                        if (res) {
+                            context.dispatch("setDashboard");
+                        }
                     });
+
+                    return true;
+                }).catch(function() {
+                    CountlyHelpers.notify({
+                        message: "Something went wrong while deleting the dashboard!",
+                        type: "error"
+                    });
+
+                    return false;
                 });
             }
         };

@@ -1,29 +1,34 @@
 <div v-bind:class="[componentId, 'cly-vue-dashboards']">
-    <cly-header>
-        <template v-slot:header-left>
-            <div class="bu-level-item">
-                <h2>{{dashboard.name}}</h2>
-            </div>
-        </template>
-        <template v-slot:header-right>
-            <cly-date-picker-g class="bu-mr-3"></cly-date-picker-g>
-            <div class="bu-level-item">
-                <el-button v-if="canUpdate" @click="addWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
-            </div>
-            <div class="bu-level-item" v-if="canUpdate">
-                <cly-more-options @command="onDashboardAction($event, dashboard)">
-                    <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-                    <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
-                    <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
-                </cly-more-options>
-            </div>
-        </template>
-    </cly-header>
-    <cly-main>
-        <no-widget v-if="isEmpty" @add-widget="addWidget"></no-widget>
-        <dashboards-grid v-else></dashboards-grid>
-
-        <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
-        <widgets-drawer @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
+    <cly-main v-if="noDashboards" class="bu-mt-6">
+        <no-dashboard></no-dashboard>
     </cly-main>
+    <template v-else>
+        <cly-header>
+            <template v-slot:header-left>
+                <div class="bu-level-item">
+                    <h2>{{dashboard.name}}</h2>
+                </div>
+            </template>
+            <template v-slot:header-right>
+                <cly-date-picker-g class="bu-mr-3"></cly-date-picker-g>
+                <div class="bu-level-item">
+                    <el-button v-if="canUpdate" @click="addWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
+                </div>
+                <div class="bu-level-item" v-if="canUpdate">
+                    <cly-more-options @command="onDashboardAction($event, dashboard)">
+                        <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                        <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
+                        <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                    </cly-more-options>
+                </div>
+            </template>
+        </cly-header>
+        <cly-main>
+            <no-widget v-if="noWidgets" @add-widget="addWidget"></no-widget>
+            <dashboards-grid v-else></dashboards-grid>
+
+            <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
+            <widgets-drawer @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
+        </cly-main>
+    </template>
 </div>
