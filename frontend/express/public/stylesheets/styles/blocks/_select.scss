@@ -93,6 +93,7 @@
 
     label.el-checkbox {
         width: 100%;
+        margin-left: 8px;
     }
 
     &.is-expandable {
@@ -133,7 +134,7 @@
         line-height: 20px;
         font-weight: t.$font-weight-text;
         color: #333c48;
-        max-width: 350px !important;
+        max-width: 330px !important;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
