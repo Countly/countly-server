@@ -29,8 +29,8 @@
         }
     };
 
-    var EmptyDashboard = countlyVue.views.BaseView.extend({
-        template: '#dashboards-empty',
+    var NoWidget = countlyVue.views.BaseView.extend({
+        template: '#dashboards-nowidget',
         methods: {
             addWidget: function() {
                 this.$emit("add-widget");
@@ -201,8 +201,13 @@
                     obj[key] = doc[key];
                 }
 
-                this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function() {
-                    self.$store.dispatch("countlyDashboards/widgets/get", doc._id).then(function() {
+                this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(widgetId) {
+                    var id = doc._id;
+                    if (!isEdited) {
+                        id = widgetId;
+                    }
+
+                    self.$store.dispatch("countlyDashboards/widgets/get", id).then(function() {
                         //Add widet to grid ?
                     });
                 });
@@ -328,7 +333,7 @@
         template: "#dashboards-main",
         mixins: [countlyVue.mixins.hasDrawers("dashboards"), countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
         components: {
-            "dashboards-empty": EmptyDashboard,
+            "no-widget": NoWidget,
             "dashboards-grid": GridComponent,
             "dashboards-drawer": DashboardDrawer,
             "widgets-drawer": WidgetDrawer
@@ -358,7 +363,9 @@
                 this.getDashboardData(true);
             },
             getDashboardData: function(isRefresh) {
-                this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: isRefresh});
+                if (this.dashboardId) {
+                    this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: isRefresh});
+                }
             },
             onDashboardAction: function(command, data) {
                 var self = this;
@@ -417,7 +424,7 @@
                     namespace: "dashboards",
                     mapping: {
                         main: "/dashboards/templates/index.html",
-                        empty: "/dashboards/templates/transient/empty-dashboard.html",
+                        nowidget: "/dashboards/templates/transient/no-widget.html",
                         disabled: "/dashboards/templates/transient/disabled-widget.html",
                         invalid: "/dashboards/templates/transient/invalid-widget.html",
                         grid: "/dashboards/templates/grid.html"

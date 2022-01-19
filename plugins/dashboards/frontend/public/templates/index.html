@@ -20,7 +20,7 @@
         </template>
     </cly-header>
     <cly-main>
-        <dashboards-empty v-if="isEmpty" @add-widget="addWidget"></dashboards-empty>
+        <no-widget v-if="isEmpty" @add-widget="addWidget"></no-widget>
         <dashboards-grid v-else></dashboards-grid>
 
         <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>

@@ -106,6 +106,10 @@
                         "widget": JSON.stringify(widget)
                     },
                     dataType: "json",
+                }, {disableAutoCatch: true}).then(function(res) {
+                    return res;
+                }).catch(function(err) {
+                    console.log(err);
                 });
             },
             update: function(dashboardId, widgetId, widget) {
@@ -207,9 +211,7 @@
                     var widgetId = widget.id;
                     var settings = widget.settings;
 
-                    return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings).then(function() {
-                        context.dispatch("get", widgetId);
-                    });
+                    return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings);
                 },
                 delete: function(context, widgetId) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
@@ -263,7 +265,7 @@
             setAll: function(state, dashboards) {
                 state.all = dashboards;
             },
-            setDashboard: function(state, dashboard) {
+            setSelectedDashboard: function(state, dashboard) {
                 state.selected = {
                     id: dashboard.id,
                     data: dashboard.data
@@ -300,38 +302,71 @@
             getDashboard: function(context, params) {
                 var dashboardId = context.getters.selected.id;
 
-                countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(d) {
+                countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(res) {
+                    var dashbaord = null;
+                    var widgets = [];
+                    var dId = null;
+
+                    if (res && res._id) {
+                        dId = res._id;
+
+                        if (dId === dashboardId) {
+                            dashbaord = res;
+                            widgets = dashbaord.widgets || [];
+                        }
+                        else {
+                            dId = null;
+                        }
+                    }
+
                     /*
                         On getting the dashboard, Set the selected dashboard data
                         as well as update the local list of all dashboards.
                     */
-                    context.commit("setDashboard", {id: dashboardId, data: d});
-                    context.commit("updateDashboard", d);
+
+                    context.commit("setSelectedDashboard", {id: dId, data: dashbaord});
+
+                    if (dashbaord) {
+                        context.commit("updateDashboard", dashbaord);
+                    }
 
                     /*
                         Set all widgets of this dashboard here in the vuex store - Start
                     */
-                    context.dispatch("widgets/setAll", d && d.widgets || []);
+                    context.dispatch("widgets/setAll", widgets);
                     /*
                         Set all widgets of this dashboard here in the vuex store - End
                     */
 
-                    return d;
+                    return dashbaord;
                 });
             },
-            setDashboard: function(context, data) {
-                data = data || {};
+            setDashboard: function(context, params) {
+                /**
+                 * params will null when dashbaord is deleted
+                 * params will also be null there are no dashboards
+                 * {
+                 *     id: "",
+                 *     isRefresh: false
+                 * }
+                 */
+
+                params = params || {};
+
+                var dashboardId = params.id;
 
                 var dash = context.getters.all.find(function(dashboard) {
-                    return dashboard._id === data.id;
+                    return dashboard._id === dashboardId;
                 });
 
-                context.commit("setDashboard", {id: data.id, data: dash});
+                var widgets = dash && dash.widgets || [];
+
+                context.commit("setSelectedDashboard", {id: dashboardId, data: dash});
 
                 /*
                     Set all widgets of this dashboard here in the vuex store - Start
                 */
-                context.dispatch("widgets/setAll", dash && dash.widgets || []);
+                context.dispatch("widgets/setAll", widgets);
                 /*
                     Set all widgets of this dashboard here in the vuex store - End
                 */
@@ -342,11 +377,8 @@
                     Until the request is processing, we will show the loading states for the widgets if no data is available
                 */
 
-                if (data.id) {
-                    /*
-                        data.id will be null when the dashboard is deleted.
-                    */
-                    context.dispatch("getDashboard", data);
+                if (dashboardId) {
+                    context.dispatch("getDashboard", params);
                 }
             },
 
@@ -389,7 +421,7 @@
             delete: function(context, id) {
                 return countlyDashboards.service.dashboards.delete(id).then(function() {
                     context.dispatch("getAll").then(function() {
-                        context.dispatch("setDashboard", {id: null, data: null});
+                        context.dispatch("setDashboard");
                     });
                 });
             }
