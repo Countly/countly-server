@@ -706,23 +706,65 @@
                 }
                 throw new Error('Unknown push notification type:', dto);
             },
+            mapOneTimeSeriesData: function(dto) {
+                var monthlySendData = {};
+                monthlySendData[PlatformEnum.ALL] = dto.sent.monthly.data || [];
+                monthlySendData[PlatformEnum.ANDROID] = dto.sent.platforms[PlatformDtoEnum.ANDROID].monthly.data || [];
+                monthlySendData[PlatformEnum.IOS] = dto.sent.platforms[PlatformDtoEnum.IOS].monthly.data || [];
+                var monthlyActionsData = {};
+                monthlyActionsData[PlatformEnum.ALL] = dto.actions.monthly.data || [];
+                monthlyActionsData[PlatformEnum.ANDROID] = dto.actions.platforms[PlatformDtoEnum.ANDROID].monthly.data || [];
+                monthlyActionsData[PlatformEnum.IOS] = dto.actions.platforms[PlatformDtoEnum.IOS].monthly.data || [];
+                var weeklySentData = {};
+                weeklySentData[PlatformEnum.ALL] = dto.sent.weekly.data || [];
+                weeklySentData[PlatformEnum.ANDROID] = dto.sent.platforms[PlatformDtoEnum.ANDROID].weekly.data || [];
+                weeklySentData[PlatformEnum.IOS] = dto.sent.platforms[PlatformDtoEnum.IOS].weekly.data || [];
+                var weeklyActionsData = {};
+                weeklyActionsData[PlatformEnum.ALL] = dto.actions.weekly.data || [];
+                weeklyActionsData[PlatformEnum.ANDROID] = dto.actions.platforms[PlatformDtoEnum.ANDROID].weekly.data || [];
+                weeklyActionsData[PlatformEnum.IOS] = dto.actions.platforms[PlatformDtoEnum.IOS].weekly.data || [];
+                return {
+                    monthly: [{data: monthlySendData, label: messagesSentLabel}, {data: monthlyActionsData, label: actionsPerformedLabel}],
+                    weekly: [{data: weeklySentData, label: messagesSentLabel}, {data: weeklyActionsData, label: actionsPerformedLabel}],
+                };
+            },
+            mapAutomaticSeriesData: function(dto) {
+                var dailySendData = {};
+                dailySendData[PlatformEnum.ALL] = dto.sent_automated.daily.data || [];
+                dailySendData[PlatformEnum.ANDROID] = dto.sent_automated.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
+                dailySendData[PlatformEnum.IOS] = dto.sent_automated.platforms[PlatformDtoEnum.IOS].daily.data || [];
+                var dailyActionsData = {};
+                dailyActionsData[PlatformEnum.ALL] = dto.actions_automated.monthly.data || [];
+                dailyActionsData[PlatformEnum.ANDROID] = dto.actions_automated.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
+                dailyActionsData[PlatformEnum.IOS] = dto.actions_automated.platforms[PlatformDtoEnum.IOS].daily.data || [];
+                return {
+                    daily: [{data: dailySendData || [], label: messagesSentLabel}, {data: dailyActionsData || [], label: actionsPerformedLabel}]
+                };
+            },
+            mapTransactionalSeriesData: function(dto) {
+                var dailySendData = {};
+                dailySendData[PlatformEnum.ALL] = dto.sent_tx.daily.data || [];
+                dailySendData[PlatformEnum.ANDROID] = dto.sent_tx.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
+                dailySendData[PlatformEnum.IOS] = dto.sent_tx.platforms[PlatformDtoEnum.IOS].daily.data || [];
+                var dailyActionsData = {};
+                dailyActionsData[PlatformEnum.ALL] = dto.actions_tx.monthly.data || [];
+                dailyActionsData[PlatformEnum.ANDROID] = dto.actions_tx.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
+                dailyActionsData[PlatformEnum.IOS] = dto.actions_tx.platforms[PlatformDtoEnum.IOS].daily.data || [];
+                return {
+                    daily: [{data: dailySendData || [], label: messagesSentLabel}, {data: dailyActionsData || [], label: actionsPerformedLabel}]
+                };
+            },
             mapSeries: function(dto, type) {
                 if (type === TypeEnum.ONE_TIME) {
-                    return {
-                        monthly: [{data: dto.sent.monthly.data || [], label: messagesSentLabel}, {data: dto.actions.monthly.data || [], label: actionsPerformedLabel}],
-                        weekly: [{data: dto.sent.weekly.data || [], label: messagesSentLabel}, {data: dto.actions.weekly.data || [], label: actionsPerformedLabel}],
-                    };
+                    return this.mapOneTimeSeriesData(dto);
                 }
-                else if (type === TypeEnum.AUTOMATIC) {
-                    return {
-                        daily: [{data: dto.sent_automated.daily.data || [], label: messagesSentLabel}, {data: dto.actions_automated.daily.data || [], label: actionsPerformedLabel}]
-                    };
+                if (type === TypeEnum.AUTOMATIC) {
+                    return this.mapAutomaticSeriesData(dto);
                 }
-                else {
-                    return {
-                        daily: [{data: dto.sent_tx.daily.data || [], label: messagesSentLabel}, {data: dto.actions_tx.daily.data || [], label: actionsPerformedLabel}]
-                    };
+                if (type === TypeEnum.TRANSACTIONAL) {
+                    return this.mapTransactionalSeriesData(dto);
                 }
+                throw new Error('Unknown push notification type:' + type);
             },
             mapPeriods: function(dto, type) {
                 if (type === TypeEnum.ONE_TIME) {
@@ -1090,7 +1132,7 @@
                 if (pushNotificationType === TypeEnum.TRANSACTIONAL) {
                     return this.mapDtoToTransactionalModel(dto);
                 }
-                throw new Error('Unknown push notification type, ' + pushNotificationType);
+                throw new Error('Unknown push notification type:' + pushNotificationType);
             },
             mapMediaMetadata: function(metadataDto) {
                 var typeAndFileExtension = metadataDto.mediaMime.split('/');

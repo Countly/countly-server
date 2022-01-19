@@ -1038,9 +1038,10 @@
                 return this.$store.state.countlyPushNotification.main.dashboard.periods[this.selectedPeriodFilter];
             },
             yAxisPushNotificationSeries: function() {
+                var self = this;
                 return this.$store.state.countlyPushNotification.main.dashboard.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
                     return {
-                        data: pushNotificationSerie.data,
+                        data: pushNotificationSerie.data[self.selectedPlatformFilter],
                         name: pushNotificationSerie.label
                     };
                 });
@@ -1077,7 +1078,6 @@
                 },
                 set: function(value) {
                     this.$store.dispatch("countlyPushNotification/main/onSetPlatformFilter", value);
-                    this.$store.dispatch("countlyPushNotification/main/fetchAll", true);
                 }
             },
             selectedPlatformFilterLabel: function() {
