@@ -85,7 +85,7 @@
               <div class="data-migration__drawer__value">
                 {{ serverDomain }}
                 <input type="text" style="position:absolute;top:-1000px" id="data-migration-server-domain-input" v-model="serverDomain">
-                <span @click="copy('domain')" class="bu-has-text-weight-medium data-migration__link-text">
+                <span @click="copy('domain')" class="color-primary bu-is-clickable bu-has-text-weight-medium data-migration__link-text">
                   {{ i18n('data-migration.copy-url') }}
                 </span>
               </div>
@@ -97,7 +97,7 @@
               <div class="data-migration__drawer__value">
                 <input type="text" style="position:absolute;top:-1000px" id="data-migration-server-token-input" v-model="serverToken">
                 {{ serverToken }}
-                <span @click="copy('token')" class="bu-has-text-weight-medium data-migration__link-text">
+                <span @click="copy('token')" class="color-primary bu-is-clickable bu-has-text-weight-medium data-migration__link-text">
                   {{ i18n('data-migration.copy-token') }}
                 </span>
               </div>
