@@ -76,18 +76,16 @@
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
+                    var self = this;
                     this.deleteElement = scope.row;
-                    this.showDeleteDialog = true;
-                    this.deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
+                    var deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
+                    CountlyHelpers.confirm(deleteMessage, "red", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        self.$store.dispatch("countlyHooks/deleteHook", self.deleteElement._id);
+                    });
                 }
-            },
-            closeDeleteForm: function() {
-                this.deleteElement = null;
-                this.showDeleteDialog = false;
-            },
-            submitDeleteForm: function() {
-                this.$store.dispatch("countlyHooks/deleteHook", this.deleteElement._id);
-                this.showDeleteDialog = false;
             },
             updateStatus: function(scope) {
                 var diff = scope.diff;
@@ -827,8 +825,6 @@
         data: function() {
             return {
                 deleteElement: null,
-                showDeleteDialog: false,
-                deleteMessage: '',
             };
         },
         computed: {
@@ -850,18 +846,16 @@
                     this.openDrawer("detail", data);
                 }
                 else if (command === "delete-comment") {
+                    var self = this;
                     this.deleteElement = scope;
-                    this.showDeleteDialog = true;
-                    this.deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
+                    var deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
+                    CountlyHelpers.confirm(deleteMessage, "red", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        self.$store.dispatch("countlyHooks/deleteHook", self.deleteElement._id);
+                    });
                 }
-            },
-            closeDeleteForm: function() {
-                this.deleteElement = null;
-                this.showDeleteDialog = false;
-            },
-            submitDeleteForm: function() {
-                this.$store.dispatch("countlyHooks/deleteHook", this.deleteElement._id);
-                this.showDeleteDialog = false;
             },
         },
         beforeCreate: function() {
