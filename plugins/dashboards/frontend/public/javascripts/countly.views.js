@@ -39,20 +39,6 @@
         }
     };
 
-    var NoWidget = countlyVue.views.BaseView.extend({
-        template: '#dashboards-nowidget',
-        methods: {
-            addWidget: function() {
-                this.$emit("add-widget");
-            }
-        }
-    });
-
-    var NoDashboard = countlyVue.views.BaseView.extend({
-        template: '#dashboards-nodashboard',
-        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin]
-    });
-
     var DisabledWidget = countlyVue.views.BaseView.extend({
         template: '#dashboards-disabled',
         props: {
@@ -159,6 +145,23 @@
                     this.saveButtonLabel = this.i18nM("dashboards.create-dashboard");
                 }
             }
+        }
+    });
+
+    var NoWidget = countlyVue.views.BaseView.extend({
+        template: '#dashboards-nowidget',
+        methods: {
+            addWidget: function() {
+                this.$emit("add-widget");
+            }
+        }
+    });
+
+    var NoDashboard = countlyVue.views.BaseView.extend({
+        template: '#dashboards-nodashboard',
+        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
+        components: {
+            "dashboards-drawer": DashboardDrawer
         }
     });
 
@@ -270,7 +273,7 @@
             },
             canUpdate: function() {
                 var dashboard = this.$store.getters["countlyDashboards/selected"];
-                return dashboard.data.is_editable;
+                return dashboard.data && dashboard.data.is_editable;
             }
         },
         methods: {
@@ -365,7 +368,7 @@
         computed: {
             noDashboards: function() {
                 var selected = this.$store.getters["countlyDashboards/selected"];
-                return !selected.id;
+                return !(selected.id && selected.data);
             },
             noWidgets: function() {
                 return !this.$store.getters["countlyDashboards/widgets/all"].length;
@@ -386,9 +389,7 @@
                 this.getDashboardData(true);
             },
             getDashboardData: function(isRefresh) {
-                if (this.dashboardId) {
-                    this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: isRefresh});
-                }
+                this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: isRefresh});
             },
             onDashboardAction: function(command, data) {
                 var self = this;
