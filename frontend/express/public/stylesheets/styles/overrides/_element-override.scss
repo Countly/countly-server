@@ -109,7 +109,7 @@
 
 .el-radio {
     &.is-autosized {
-        padding: 12px;
+        padding: 16px;
         display: flex;
         width: 100%;
         margin-right: 0;
@@ -169,9 +169,10 @@
 }
 
 .el-switch {
-	&__label {
+	&__label *{
 		font-weight: normal;
 		color: #A7AEB8;
+		font-size:12px;
 	}
 }
 
