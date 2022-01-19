@@ -1432,10 +1432,12 @@
     .cly-vue-metric-cards[class*="is-synced"] {
         .cly-vue-metric-card {
             min-width: 270px;
+            flex: 1 !important;
         }
         
         .cly-vue-metric-breakdown {
             min-width: 270px;
+            flex: 1 !important;
         }
     }
 
@@ -1466,6 +1468,18 @@
                 & + .cly-vue-metric-breakdown .cly-vue-metric-breakdown__wrapper {
                     border-left: 1px solid map.get(c.$colors, "warm-gray-30");
                 }
+            }
+        }
+    }
+
+    @media screen and (max-width: 1281px) {
+        .cly-vue-metric-card__wrapper {
+            h2 {
+                font-size: 18px !important;
+            }
+
+            .cly-trend-up, .cly-trend-down {
+                font-size: 12px !important;
             }
         }
     }

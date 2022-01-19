@@ -256,7 +256,7 @@
                                 </div>\
                                 <div :class=numberClasses>\
                                     <h2><slot name="number">{{formattedNumber}}</slot></h2>\
-                                    <div class="bu-pl-3 bu-is-flex-grow-1"><slot name="description"><span class="text-medium">{{description}}</span></slot></div>\
+                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
                         </div>\
