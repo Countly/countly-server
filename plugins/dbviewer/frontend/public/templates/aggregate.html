@@ -26,7 +26,7 @@
             </div>
         </cly-section>
         <cly-section>
-            <cly-datatable-n :rows="aggregationResult">
+            <cly-datatable-n :show-header="false" :rows="aggregationResult">
                 <template v-slot="scope">
                     <el-table-column fixed>
                         <template v-slot="rowScope">
