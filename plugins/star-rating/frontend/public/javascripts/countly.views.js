@@ -161,8 +161,28 @@ var WidgetsTable = countlyVue.views.create({
             window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
         },
         parseTargeting: function(widget) {
-            widget.targeting.steps = JSON.parse(widget.targeting.steps);
-            widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            if (widget.targeting) {
+                try {
+                    if (typeof widget.targeting.user_segmentation === "string") {
+                        widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+                    }
+                }
+                catch (e) {
+                    widget.targeting.user_segmentation = {};
+                }
+
+                try {
+                    if (typeof widget.targeting.steps === "string") {
+                        widget.targeting.steps = JSON.parse(widget.targeting.steps);
+                    }
+                }
+                catch (e) {
+                    widget.targeting.steps = [];
+                }
+
+                widget.targeting.user_segmentation = widget.targeting.user_segmentation || {};
+                widget.targeting.steps = widget.targeting.steps || [];
+            }
             return widget;
         }
     }
