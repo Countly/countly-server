@@ -258,7 +258,7 @@
                                                 <div class="cly-vue-listbox__item-label" v-tooltip="option.label">{{option.label}}</div>\
                                             </slot>\
                                         </div>\
-                                        <div class="bu-level-right" v-if="!!$scopedSlots[\'option-suffix\']">\
+                                        <div class="bu-level-right" v-if="hasRemovableOptions || !!$scopedSlots[\'option-suffix\']">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
                                             <div class="cly-vue-listbox__remove-option" v-if="hasRemovableOptions" @click.stop="onRemoveOption(option)"><i class="el-icon-close"></i></div>\
                                         </div>\
