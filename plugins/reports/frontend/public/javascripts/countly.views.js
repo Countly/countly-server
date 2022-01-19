@@ -35,8 +35,6 @@
                 localTableTrackedFields: ['enabled'],
                 isAdmin: countlyGlobal.member.global_admin,
                 deleteElement: null,
-                showDeleteDialog: false,
-                deleteMessage: '',
                 canUpdate: countlyAuth.validateUpdate(FEATURE_NAME),
                 canDelete: countlyAuth.validateDelete(FEATURE_NAME),
             };
@@ -58,9 +56,15 @@
                     this.$parent.$parent.openDrawer("home", data);
                     break;
                 case "delete-comment":
+                    var self = this;
                     this.deleteElement = scope.row;
-                    this.showDeleteDialog = true;
-                    this.deleteMessage = CV.i18n("reports.confirm", "<b>" + this.deleteElement.title + "</b>");
+                    var deleteMessage = CV.i18n("reports.confirm", "<b>" + this.deleteElement.title + "</b>");
+                    CountlyHelpers.confirm(deleteMessage, "red", function (result) {
+                       if (!result) {
+                            return true;
+                        }
+                        self.$store.dispatch("countlyReports/deleteReport", self.deleteElement);
+                    });
                     break;
                 case "send-comment":
                     var overlay = $("#overlay").clone();
@@ -87,14 +91,6 @@
                 default:
                     return;
                 }
-            },
-            closeDeleteForm: function() {
-                this.deleteElement = null;
-                this.showDeleteDialog = false;
-            },
-            submitDeleteForm: function() {
-                this.$store.dispatch("countlyReports/deleteReport", this.deleteElement);
-                this.showDeleteDialog = false;
             },
             updateStatus: function(scope) {
                 var diff = scope.diff;
