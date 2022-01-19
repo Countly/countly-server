@@ -190,7 +190,7 @@ var DBViewerTab = countlyVue.views.create({
         }
     },
     created: function() {
-        const routeHashItems = window.location.hash.split("/");
+        var routeHashItems = window.location.hash.split("/");
         if (routeHashItems.length === 6) {
             this.collection = routeHashItems[5];
             this.selectedCollection = this.collection;
