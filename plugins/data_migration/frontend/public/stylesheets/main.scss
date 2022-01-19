@@ -14,7 +14,7 @@
         color: #81868D;
     }
 
-    .cly-vue-status-tag--green {
+    .cly-vue-status-tag {
         // bulma margin classes doesn't have 6px value
         // they are squares of 4
         margin-top: 6px;
@@ -76,5 +76,8 @@
     &__export-radio-item {
         margin-right: 0px !important;
         margin-left: 0px !important;
+        height: 50px !important;
+        align-items: center;
+        padding: 0px 12px !important;
     }
 }
