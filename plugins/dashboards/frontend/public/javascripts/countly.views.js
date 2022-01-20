@@ -151,8 +151,8 @@
     var NoWidget = countlyVue.views.BaseView.extend({
         template: '#dashboards-nowidget',
         methods: {
-            addWidget: function() {
-                this.$emit("add-widget");
+            newWidget: function() {
+                this.$emit("new-widget");
             }
         }
     });
@@ -209,6 +209,12 @@
             isWidgetInvalid: function(widget) {
                 return widget.isPluginWidget && (widget.dashData && (widget.dashData.isValid === false));
             }
+        },
+        mounted: function() {
+            /**
+             * Emitting ready event is useful when we are creating new widgets.
+             */
+            this.$emit("ready", this.widget._id);
         }
     });
 
@@ -269,12 +275,8 @@
                 }
 
                 this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(id) {
-                    if (id) {
-                        self.$store.dispatch("countlyDashboards/widgets/get", id).then(function(res) {
-                            if (res) {
-                                //Add widet to grid ?
-                            }
-                        });
+                    if (!isEdited && id) {
+                        self.$emit("add-widget", {id: id, widget_type: doc.widget_type});
                     }
                 });
             },
@@ -309,13 +311,13 @@
         },
         data: function() {
             return {
-                grid: null
+                grid: null,
             };
         },
         computed: {
             allWidgets: function() {
-                var widgets = this.$store.getters["countlyDashboards/widgets/all"];
-                return widgets;
+                var allWidgets = JSON.parse(JSON.stringify(this.$store.getters["countlyDashboards/widgets/all"]));
+                return allWidgets;
             }
         },
         methods: {
@@ -340,7 +342,9 @@
 
                         self.$store.dispatch("countlyDashboards/widgets/delete", d._id).then(function(res) {
                             if (res) {
-                                // self.grid.removeWidget(document.querySelector("[data-id='" + d._id + "']"));
+                                var node = document.getElementById(d._id);
+                                self.grid.removeWidget(node);
+                                self.$store.dispatch("countlyDashboards/widgets/remove", d._id);
                             }
                         });
 
@@ -373,6 +377,84 @@
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position}});
                     }, 1000);
                 });
+
+                this.grid.on("added", function(event, element) {
+                    /**
+                     * This event is emitted when the widget is added to the grid.
+                     * After it has been added to grid we need to update it in vuex aswell.
+                     * But before we update it in vuex we need to update its size and position.
+                     *
+                     * We cannot add widgets to vuex without size or position since its a
+                     * reactive property on which "allWidgets" variable depends.
+                     *
+                     * So, once we update the size and position of the widget, then we fetch it
+                     * from the server and add it to vuex.
+                     *
+                     * Next, we remove the dummy widget that we added manually to grid,
+                     * since its of no use anymore. Its only use was to place the widget in the grid
+                     * in an available space.
+                     */
+                    var node = element[0];
+
+                    if (node && node.new) {
+                        var widgetId = node.id;
+                        var position = [node.x, node.y];
+                        var size = [node.w, node.h];
+
+                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position, size: size}}).then(function(res) {
+                            if (res) {
+                                self.$store.dispatch("countlyDashboards/widgets/get", widgetId).then(function() {
+                                    self.grid.removeWidget(node.el);
+                                });
+                            }
+                        });
+                    }
+                });
+            },
+            addWidget: function(payload) {
+                /**
+                 * So widget has been created on the server.
+                 * Now we want to add it to the grid.
+                 * Since there is no direct way to communicate between vue and gridstack,
+                 * we need to add it to the grid manually.
+                 *
+                 * After the widget is added to the grid manually,
+                 * grid will "added" event
+                 */
+                var id = payload.id;
+                var widgetType = payload.widget_type;
+
+                if (id) {
+                    var settings = this.__widgets[widgetType];
+                    var node = {
+                        id: id,
+                        autoPosition: true,
+                        w: settings.grid.dimensions().width,
+                        h: settings.grid.dimensions().height,
+                        minW: settings.grid.dimensions().minWidth,
+                        minH: settings.grid.dimensions().minHeight,
+                        new: true
+                    };
+
+                    this.grid.addWidget(node);
+                }
+            },
+            onReady: function(id) {
+                /**
+                 * this.grid will be null on first load.
+                 * Since ready event is fired by the children on mounting.
+                 * And until they all mount, mount of this component will not be called.
+                 * Hence no grid.
+                 *
+                 * However, once we have grid available, and we are creating a new widget,
+                 * we have to make it.
+                 *
+                 * For the first load, initGrid is doing the work of makeWidget.
+                 */
+
+                if (this.grid) {
+                    this.grid.makeWidget("#" + id);
+                }
             },
             destroyGrid: function() {
                 this.grid.destroy();
@@ -464,12 +546,15 @@
                     break;
                 }
             },
-            addWidget: function() {
+            newWidget: function() {
                 var empty = {};
                 var defaultEmpty = this.__widgets["time-series"].drawer.getEmpty();
 
                 empty.__action = "create";
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
+            },
+            addWidget: function(id) {
+                this.$refs.grid.addWidget(id);
             }
         },
         beforeMount: function() {

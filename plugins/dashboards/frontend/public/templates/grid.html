@@ -1,11 +1,14 @@
-<div v-bind:class="[componentId, 'grid-stack']">
-    <widget
-        v-for="(widget) in allWidgets"
-        v-if="__widgets[widget.widget_type]"
-        :key="widget._id"
-        :widget="widget"
-        :settings="__widgets[widget.widget_type]"
-        @command="onWidgetAction">
-    </widget>
+<div v-bind:class="[componentId]">
+    <div class="grid-stack">
+        <widget
+            v-for="(widget, index) in allWidgets"
+            v-if="__widgets[widget.widget_type]"
+            :key="widget._id"
+            :widget="widget"
+            :settings="__widgets[widget.widget_type]"
+            @ready="onReady"
+            @command="onWidgetAction">
+        </widget>
+    </div>
     <widgets-drawer @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
 </div>

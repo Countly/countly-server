@@ -186,6 +186,9 @@
                 setAll: function(context, widgets) {
                     context.commit("setAll", widgets);
                 },
+                remove: function(context, id) {
+                    context.commit("remove", id);
+                },
                 get: function(context, widgetId) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
 
@@ -196,7 +199,8 @@
                         var widget = w && w[0];
                         context.commit("update", widget);
                         return widget;
-                    }).catch(function() {
+                    }).catch(function(e) {
+                        log(e);
                         CountlyHelpers.notify({
                             message: "Something went wrong while getting the widget!",
                             type: "error"
@@ -211,7 +215,8 @@
 
                     return countlyDashboards.service.widgets.create(dashboardId, settings).then(function(id) {
                         return id;
-                    }).catch(function() {
+                    }).catch(function(e) {
+                        log(e);
                         CountlyHelpers.notify({
                             message: "Something went wrong while creating the widget!",
                             type: "error"
@@ -227,7 +232,8 @@
 
                     return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings).then(function() {
                         return widgetId;
-                    }).catch(function() {
+                    }).catch(function(e) {
+                        log(e);
                         CountlyHelpers.notify({
                             message: "Something went wrong while updating the widget!",
                             type: "error"
@@ -240,9 +246,9 @@
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
 
                     return countlyDashboards.service.widgets.delete(dashboardId, widgetId).then(function() {
-                        context.commit("remove", widgetId);
                         return true;
-                    }).catch(function() {
+                    }).catch(function(e) {
+                        log(e);
                         CountlyHelpers.notify({
                             message: "Something went wrong while deleting the widget!",
                             type: "error"
@@ -343,7 +349,7 @@
                     context.dispatch("setAll", dashboards);
                     return dashboards;
                 }).catch(function(e) {
-                    console.log(e);
+                    log(e);
                     CountlyHelpers.notify({
                         message: "Something went wrong while fetching all dashboards!",
                         type: "error"
@@ -393,7 +399,8 @@
                     */
 
                     return dashbaord;
-                }).catch(function() {
+                }).catch(function(e) {
+                    log(e);
                     CountlyHelpers.notify({
                         message: "Something went wrong while fetching the dashbaord!",
                         type: "error"
@@ -452,7 +459,8 @@
             create: function(context, settings) {
                 return countlyDashboards.service.dashboards.create(settings).then(function(id) {
                     return id;
-                }).catch(function() {
+                }).catch(function(e) {
+                    log(e);
                     CountlyHelpers.notify({
                         message: "Something went wrong while creating the dashboard!",
                         type: "error"
@@ -467,7 +475,8 @@
                 return countlyDashboards.service.dashboards.update(dashboardId, settings).then(function() {
                     context.dispatch("getDashboard");
                     return true;
-                }).catch(function() {
+                }).catch(function(e) {
+                    log(e);
                     CountlyHelpers.notify({
                         message: "Something went wrong while updating the dashboard!",
                         type: "error"
@@ -485,7 +494,8 @@
                     context.commit("removeDashboard", id);
                     context.dispatch("setDashboard");
                     return true;
-                }).catch(function() {
+                }).catch(function(e) {
+                    log(e);
                     CountlyHelpers.notify({
                         message: "Something went wrong while deleting the dashboard!",
                         type: "error"
@@ -505,5 +515,15 @@
             destroy: false
         });
     };
+    /**
+     * Utility method to log errors
+     * @param  {Object} e - error object
+     */
+    function log(e) {
+        var DEBUG = true;
+        if (DEBUG) {
+            console.log(e);
+        }
+    }
 
 })(window.countlyDashboards = window.countlyDashboards || {});

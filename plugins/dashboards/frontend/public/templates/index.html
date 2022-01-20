@@ -12,7 +12,7 @@
             <template v-slot:header-right>
                 <cly-date-picker-g class="bu-mr-3"></cly-date-picker-g>
                 <div class="bu-level-item">
-                    <el-button v-if="canUpdate" @click="addWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
+                    <el-button v-if="canUpdate" @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
                 </div>
                 <div class="bu-level-item" v-if="canUpdate">
                     <cly-more-options @command="onDashboardAction($event, dashboard)">
@@ -24,11 +24,11 @@
             </template>
         </cly-header>
         <cly-main>
-            <no-widget v-if="noWidgets" @add-widget="addWidget"></no-widget>
-            <dashboards-grid v-else></dashboards-grid>
+            <no-widget v-if="noWidgets" @new-widget="newWidget"></no-widget>
+            <dashboards-grid ref="grid" v-else></dashboards-grid>
 
             <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
-            <widgets-drawer @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
+            <widgets-drawer @add-widget="addWidget" @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
         </cly-main>
     </template>
 </div>

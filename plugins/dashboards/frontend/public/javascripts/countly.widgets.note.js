@@ -54,7 +54,8 @@
             getEmpty: function() {
                 return {
                     widget_type: "note",
-                    content: ""
+                    content: "",
+                    apps: "*"
                 };
             },
         },
