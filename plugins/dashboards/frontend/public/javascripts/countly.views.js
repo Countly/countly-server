@@ -414,7 +414,15 @@
                             return false;
                         }
 
-                        self.$store.dispatch("countlyDashboards/delete", d._id);
+                        self.$store.dispatch("countlyDashboards/delete", d._id).then(function(res) {
+                            if (res) {
+                                app.navigate('#/custom');
+                                /**
+                                 * Set the current dashboard id to null
+                                 */
+                                self.dashboardId = null;
+                            }
+                        });
 
                     }, [this.i18nM("common.no-dont-delete"), this.i18nM("dashboards.yes-delete-dashboard")], {title: this.i18nM("dashboards.delete-dashboard-title"), image: "delete-dashboard"});
                     break;

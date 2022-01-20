@@ -302,7 +302,7 @@
                     data: dashboard.data
                 };
             },
-            updateDashboard: function(state, dashboard) {
+            addOrUpdateDashboard: function(state, dashboard) {
                 var index = -1;
                 for (var i = 0; i < state.all.length; i++) {
                     if (state.all[i]._id === dashboard._id) {
@@ -317,6 +317,19 @@
                 else {
                     state.all.push(dashboard);
                 }
+            },
+            removeDashboard: function(state, id) {
+                var index = -1;
+                for (var i = 0; i < state.all.length; i++) {
+                    if (state.all[i]._id === id) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                if (index > -1) {
+                    state.all.splice(index, 1);
+                }
             }
         };
 
@@ -329,7 +342,8 @@
                     var dashboards = res || [];
                     context.dispatch("setAll", dashboards);
                     return dashboards;
-                }).catch(function() {
+                }).catch(function(e) {
+                    console.log(e);
                     CountlyHelpers.notify({
                         message: "Something went wrong while fetching all dashboards!",
                         type: "error"
@@ -366,7 +380,7 @@
                     context.commit("setSelectedDashboard", {id: dId, data: dashbaord});
 
                     if (dashbaord) {
-                        context.commit("updateDashboard", dashbaord);
+                        context.commit("addOrUpdateDashboard", dashbaord);
                     }
 
                     /*
@@ -436,22 +450,6 @@
             },
             create: function(context, settings) {
                 return countlyDashboards.service.dashboards.create(settings).then(function(id) {
-                    /*
-                        Dispatching getAll so that the list of dashboards in the sidebar gets updated.
-                        This is required because we navigate the new dashboard after creating it.
-                        And when we navigate, the sidebar component is not remounted as its already mounted.
-                        Basically its out of the backbone render view.
-                        However, the sidebar will react to the all getter whenever all state changes.
-
-                        We could have also dispatched the setDashboard action here itself, but then
-                        the url would not be updated in the browser. To update that we navigate the new url
-                        resolved promise and that inturn sets the dashboard data automatically.
-                    */
-
-                    if (id) {
-                        context.dispatch("getAll");
-                    }
-
                     return id;
                 }).catch(function() {
                     CountlyHelpers.notify({
@@ -483,12 +481,8 @@
             },
             delete: function(context, id) {
                 return countlyDashboards.service.dashboards.delete(id).then(function() {
-                    context.dispatch("getAll").then(function(res) {
-                        if (res) {
-                            context.dispatch("setDashboard");
-                        }
-                    });
-
+                    context.commit("removeDashboard", id);
+                    context.dispatch("setDashboard");
                     return true;
                 }).catch(function() {
                     CountlyHelpers.notify({
