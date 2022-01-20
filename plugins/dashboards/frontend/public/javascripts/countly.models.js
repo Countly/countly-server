@@ -375,6 +375,7 @@
                     /*
                         On getting the dashboard, Set the selected dashboard data
                         as well as update the local list of all dashboards.
+                        If the dashboard is not present in the local list, add it there
                     */
 
                     context.commit("setSelectedDashboard", {id: dId, data: dashbaord});

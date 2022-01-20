@@ -165,6 +165,53 @@
         }
     });
 
+    var WidgetComponent = countlyVue.views.BaseView.extend({
+        template: '#dashboards-widget',
+        props: {
+            widget: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            settings: {
+                type: Object,
+                default: function() {
+                    return {
+                        grid: {
+                            dimensions: function() {
+                                return {};
+                            }
+                        },
+                        drawer: {
+                            getEmpty: function() {
+                                return {};
+                            }
+                        }
+                    };
+                }
+            }
+        },
+        components: {
+            "widget-disabled": DisabledWidget,
+            "widget-invalid": InvalidWidget
+        },
+        computed: {
+            canUpdate: function() {
+                var dashboard = this.$store.getters["countlyDashboards/selected"];
+                return dashboard.data && dashboard.data.is_editable;
+            }
+        },
+        methods: {
+            isWidgetDisabled: function(widget) {
+                return widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
+            },
+            isWidgetInvalid: function(widget) {
+                return widget.isPluginWidget && (widget.dashData && (widget.dashData.isValid === false));
+            }
+        }
+    });
+
     var WidgetDrawer = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widget-drawer.html'),
         mixins: [WidgetsMixin],
@@ -258,8 +305,7 @@
         mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
         components: {
             "widgets-drawer": WidgetDrawer,
-            "widget-disabled": DisabledWidget,
-            "widget-invalid": InvalidWidget
+            "widget": WidgetComponent
         },
         data: function() {
             return {
@@ -270,42 +316,9 @@
             allWidgets: function() {
                 var widgets = this.$store.getters["countlyDashboards/widgets/all"];
                 return widgets;
-            },
-            canUpdate: function() {
-                var dashboard = this.$store.getters["countlyDashboards/selected"];
-                return dashboard.data && dashboard.data.is_editable;
             }
         },
         methods: {
-            initGrid: function() {
-                var self = this;
-                this.grid = GridStack.init({
-                    cellHeight: 100,
-                    margin: 10,
-                    animate: true,
-                });
-
-                this.grid.on("resizestop", function(event, element) {
-                    var node = element.gridstackNode;
-                    var widgetId = node.id;
-                    var size = [node.w, node.h];
-                    setTimeout(function() {
-                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {size: size}});
-                    }, 1000);
-                });
-
-                this.grid.on("dragstop", function(event, element) {
-                    var node = element.gridstackNode;
-                    var widgetId = node.id;
-                    var position = [node.x, node.y];
-                    setTimeout(function() {
-                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position}});
-                    }, 1000);
-                });
-            },
-            destroyGrid: function() {
-                this.grid.destroy();
-            },
             onWidgetAction: function(command, data) {
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
@@ -335,11 +348,34 @@
                     break;
                 }
             },
-            isWidgetDisabled: function(widget) {
-                return widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
+            initGrid: function() {
+                var self = this;
+                this.grid = GridStack.init({
+                    cellHeight: 100,
+                    margin: 10,
+                    animate: true,
+                });
+
+                this.grid.on("resizestop", function(event, element) {
+                    var node = element.gridstackNode;
+                    var widgetId = node.id;
+                    var size = [node.w, node.h];
+                    setTimeout(function() {
+                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {size: size}});
+                    }, 1000);
+                });
+
+                this.grid.on("dragstop", function(event, element) {
+                    var node = element.gridstackNode;
+                    var widgetId = node.id;
+                    var position = [node.x, node.y];
+                    setTimeout(function() {
+                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position}});
+                    }, 1000);
+                });
             },
-            isWidgetInvalid: function(widget) {
-                return widget.isPluginWidget && (widget.dashData && (widget.dashData.isValid === false));
+            destroyGrid: function() {
+                this.grid.destroy();
             }
         },
         mounted: function() {
@@ -460,7 +496,8 @@
                         nodashboard: "/dashboards/templates/transient/no-dashboard.html",
                         disabled: "/dashboards/templates/transient/disabled-widget.html",
                         invalid: "/dashboards/templates/transient/invalid-widget.html",
-                        grid: "/dashboards/templates/grid.html"
+                        grid: "/dashboards/templates/grid.html",
+                        widget: "/dashboards/templates/widget.html",
                     }
                 }
             ]
