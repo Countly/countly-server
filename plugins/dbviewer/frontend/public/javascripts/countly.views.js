@@ -190,6 +190,13 @@ var DBViewerTab = countlyVue.views.create({
         }
     },
     created: function() {
+        var routeHashItems = window.location.hash.split("/");
+        if (routeHashItems.length === 6) {
+            this.collection = routeHashItems[5];
+            this.selectedCollection = this.collection;
+            this.db = routeHashItems[4];
+        }
+
         if (!this.db) {
             this.db = 'countly';
         }

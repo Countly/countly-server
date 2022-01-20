@@ -47,11 +47,6 @@
         }
     }
 
-    &__result-table {
-        height: calc(80vh - 40px);
-        overflow-y: scroll;
-    }
-
     &__collections-list {
         border-radius: 0px !important;
         border: none !important;
@@ -60,6 +55,9 @@
 
 .dbviewer-aggregate {
     &__query-area {
+        border: 1px solid #ECECEC;
+        border-radius: 4px;
+
         .cly-vue-section__content {
             border: none;
         }
