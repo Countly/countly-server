@@ -13,7 +13,7 @@
                     <el-radio-button label="disabled">{{i18n('hooks.status-disabled')}}</el-radio-button> 
                 </el-radio-group>
             </div>
-            <div>
+            <div class="hooks-table-app-selector">
                 <cly-select-x
                    :placeholder="i18n('hooks.all-applications')"
                    mode="multi-check"
@@ -92,18 +92,5 @@
             </cly-diff-helper>
         </template>
     </cly-datatable-n>
-    <cly-confirm-dialog 
-        @cancel="closeDeleteForm" 
-        @confirm="submitDeleteForm" 
-        :before-close="closeDeleteForm" 
-        ref="deleteConfirmDialog" 
-        :visible.sync="showDeleteDialog" 
-        dialogType="danger" 
-        :saveButtonLabel="i18n('common.delete')" 
-        :cancelButtonLabel="i18n('common.no-dont-delete')" 
-        :title="i18n('hooks.delete-confirm-title')" >
-            <template slot-scope="scope">
-                <div v-html="deleteMessage"></div>
-            </template>
-    </cly-confirm-dialog>
+    
 </cly-section>

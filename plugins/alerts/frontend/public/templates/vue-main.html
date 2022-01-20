@@ -27,7 +27,6 @@
             </div>
         </cly-main>
         <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
-        <!-- <cly-in-page-notification text="totalViewCountWarning" v-if="true"></cly-in-page-notification> -->
     </div>
     </script>
     
@@ -49,7 +48,7 @@
             :tracked-fields="localTableTrackedFields"
             :rows="tableRows" :resizable="false" >
             <template v-slot:header-left="scope">
-                <div>
+                <div class="alerts-table-app-selector">
                     <cly-select-x
                        :placeholder="i18n('alert.all-applications')"
                        mode="multi-check"
@@ -70,7 +69,7 @@
                
                 <el-table-column fixed min-width="240"  prop="alertName" :label="i18n('alert.Alert_Name')" sortable="true">
                     <template slot-scope="scope">
-                        <div v-html="scope.row.alertName"></div>
+                        <div style="text-overflow: ellipsis; overflow: hidden;" v-html="scope.row.alertName"></div>
                     </template>
                 </el-table-column> 
     
@@ -113,20 +112,6 @@
                 </cly-diff-helper>
             </template>
         </cly-datatable-n>
-        <cly-confirm-dialog 
-            @cancel="closeDeleteForm" 
-            @confirm="submitDeleteForm" 
-            :before-close="closeDeleteForm" 
-            ref="deleteConfirmDialog" 
-            :visible.sync="showDeleteDialog" 
-            dialogType="danger" 
-            :saveButtonLabel="i18n('common.delete')" 
-            :cancelButtonLabel="i18n('common.no-dont-delete')" 
-            :title="i18n('alert.delete-confirm-title')" >
-                <template slot-scope="scope">
-                    <div v-html="deleteMessage"></div>
-                </template>
-        </cly-confirm-dialog>
     </cly-section>
 </div>
 </script>
@@ -138,7 +123,7 @@
         @submit="onSubmit"
         @close="onClose"
         @copy="onCopy"
-        size="6"
+        :size=6
         :title="title"
         :saveButtonLabel="saveButtonLabel"
         v-bind="$props.controls"  ref="drawerData">>
