@@ -89,6 +89,15 @@
 .hook-test-card-list {
     border: none !important;
 }
+
+.hooks-trigger-switch .el-switch__label span {
+    font-size: 12px;
+    color: #333C48;
+}
+.hooks-trigger-switch .el-switch__label.is-active span {
+    color: #333C48;
+}
+
 .hook-test-collapse-item .el-collapse-item__header {
     border: none !important;
 }
