@@ -84,7 +84,7 @@
                             return true;
                         }
                         self.$store.dispatch("countlyHooks/deleteHook", self.deleteElement._id);
-                    });
+                    }, [jQuery.i18n.map['common.no-dont-delete'], jQuery.i18n.map['common.delete']], {title: jQuery.i18n.map['hooks.delete-confirm-title']});
                 }
             },
             updateStatus: function(scope) {
@@ -536,7 +536,7 @@
                 var c = countlyGlobal.timezones[country];
                 c && c.z && c.z.forEach(function(item) {
                     for (var zone in item) {
-                        zones.push({value: item[zone], label: countlyGlobal.timezones[country].n + ' ' + zone});
+                        zones.push({value: item[zone], label: countlyGlobal.timezones[country].n + ' ' + zone, image: "background-image:url(" + countlyGlobal.path + "/images/flags/" + country.toLowerCase() + ".png)"});
                     }
                 });
             }
@@ -854,7 +854,7 @@
                             return true;
                         }
                         self.$store.dispatch("countlyHooks/deleteHook", self.deleteElement._id);
-                    });
+                    }, [jQuery.i18n.map['common.no-dont-delete'], jQuery.i18n.map['common.delete']], {title: jQuery.i18n.map['hooks.delete-confirm-title']});
                 }
             },
         },

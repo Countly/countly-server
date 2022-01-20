@@ -14,15 +14,16 @@ class APIEndPointTrigger {
     constructor(options) {
         this._rules = options.rules || [];
         this.pipeline = (() => {});
-        if(options.pipeline) {
+        if (options.pipeline) {
             this.pipeline = (data) => {
                 try {
                     data.rule._originalInput = JSON.parse(JSON.stringify(data.params || {}));
-                } catch (e) {
+                }
+                catch (e) {
                     log.e("[hooks api endpoint] parsing originalInput", e);
                 }
                 return options.pipeline(data);
-            }
+            };
         }
         this.register();
     }

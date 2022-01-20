@@ -68,6 +68,11 @@
 .cly-vue-drawer-hook_section_margin {
     margin-top: 24px;
 }
+
+
+.hooks-APIEndpointTrigger .el-input.is-disabled .el-input__inner {
+    background-color: #FBFDFE;
+}
 .hook-test-output-field {
     padding: 16px 16px;
     background: #F6F6F6;
@@ -75,7 +80,7 @@
 }
 .hooks-test-result-row {
     padding: 0px 2px;
-    margin: 4px 0px;
+    margin: 8px 0px;
     background-color: #fff;
     border: 1px solid;
     border: 1px solid #E2E4E8;
@@ -93,6 +98,7 @@
 .hooks-trigger-switch .el-switch__label span {
     font-size: 12px;
     color: #333C48;
+    font-weight: 500;
 }
 .hooks-trigger-switch .el-switch__label.is-active span {
     color: #333C48;
@@ -136,7 +142,7 @@
         word-break: break-word;
     }
     .is-name-col:hover {
-        color: #333C48;
+        color: #32659D;
         text-decoration: underline;
     }
     .is-desc-col {
