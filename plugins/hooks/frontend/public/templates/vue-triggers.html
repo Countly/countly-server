@@ -2,13 +2,10 @@
 <script type="text/x-template" id="hooks-triggers">
     <div>
         <cly-form-field name="trigger" :label="i18n('hooks.trigger-via')" rules="required">
-            <cly-select-x
-                :placeholder="i18n('hooks.select-trigger')"
-                mode="single-list"
-                v-model="value.type"
-                :class="{'cly-vue-hook-drawer__is-full-line':true}"
-                :options="triggersOption">
-            </cly-select-x>
+            <el-select v-model="value.type" class="bu-mt-1">
+				<el-option v-for="item in triggersOption" :key="item.value" :value="item.value" :label="item.label">
+				</el-option>
+            </el-select>
         </cly-form-field>
 
         <div class="bu-mt-2">
