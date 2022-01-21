@@ -65,6 +65,9 @@
                         readonly="readonly" \
                         v-model="description"\
                         :placeholder="placeholder">\
+                        <template v-slot:prefix="scope">\
+                            <slot name="prefix" v-bind="scope"></slot>\
+                        </template>\
                         <template slot="suffix" v-if="arrow">\
                             <i class="el-select__caret" :class="[iconClass]"></i>\
                         </template>\

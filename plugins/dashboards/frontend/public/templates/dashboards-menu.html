@@ -1,4 +1,4 @@
-<div class="cly-vue-sidebar__menu">
+<div style="height: 100%;">
     <div class="cly-vue-sidebar__header">
         <span class="cly-vue-sidebar__header-title">Dashboards</span>
         <span class="cly-vue-sidebar__header-button" v-if="canCreate">
@@ -7,6 +7,13 @@
                 <span>New</span>
             </el-button>
         </span>
+        <el-input
+            class="bu-mt-5 cly-vue-sidebar__header-search"
+            autocomplete="off"
+            v-model="searchQuery"
+            placeholder="Search in Dashboards">
+            <i slot="prefix" class="el-input__icon el-icon-search"></i>
+        </el-input>
     </div>
     <div class="cly-vue-sidebar__main-menu">
         <ul>
@@ -24,5 +31,4 @@
     </div>
 
     <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
-
 </div>

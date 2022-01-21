@@ -5,42 +5,60 @@
 }
 
 .cly-vue-hook-drawer {
-     &__help-text {
+    &__help-text {
         font-family: Inter;
         font-style: normal;
         font-weight: normal;
         font-size: 12px;
         line-height: 16px;
         color: #81868D;
-      }
+    }
       
-      &__is-hidden {
+    &__is-hidden {
         visibility: hidden;
-      }
-      &__is-full-line {
-          width: 100%;
-      }
+    }
+    &__is-full-line {
+        width: 100%;
+    }
 
-      &__no-margin {
-          margin-bottom: 0px !important;
-      }
-      &__small-icon {
+    &__no-margin {
+        margin-bottom: 0px !important;
+    }
+    &__small-icon {
         margin-left: 5px;
         font-size: 15px;
     }
-      &__small-icon-right {
+    &__small-icon-right {
         margin-right: 2px;
         font-size: 15px;
-      }
-      &__check_icon {
+    }
+    &__check_icon {
         width: 18px;
         border-radius: 18px;
         text-align: center;
-        margin-left: 18px;
+        margin-left: 9px;
         margin-right: 9px;
-      }
+    }
+ 
 }
 
+.hook-detail-card {
+    background: #FFFFFF;
+    border: 1px solid #ECECEC;
+    box-sizing: border-box;
+    box-shadow: 0px 1px 0px #ECECEC;
+    border-radius: 4px;
+}
+.hook-filter-block {
+    background: #F8FAFD;
+    border-radius: 6px;
+}
+.hook-segmentation-block{
+    background: #F8FAFD;
+}
+.hook-api-url-block input {
+    color:#333C48 !important;
+}
 .cly-vue-drawer-hook_description {
     font-size: 13px;
     line-height: 16px;
@@ -50,24 +68,47 @@
 .cly-vue-drawer-hook_section_margin {
     margin-top: 24px;
 }
+
+
+.hooks-APIEndpointTrigger .el-input.is-disabled .el-input__inner {
+    background-color: #FBFDFE;
+}
 .hook-test-output-field {
     padding: 16px 16px;
     background: #F6F6F6;
     border-radius: 4px;
 }
-.hoosk-test-result-row {
-    padding: 0px 26px;
-    margin: 4px 0px;
+.hooks-test-result-row {
+    padding: 0px 2px;
+    margin: 8px 0px;
     background-color: #fff;
     border: 1px solid;
     border: 1px solid #E2E4E8;
     box-sizing: border-box;
     box-shadow: 0px 1px 0px #ececec;
     border-radius: 4px;
+    .el-collapse-item__content {
+        margin: 0 12px !important;
+    }
+}
+.hook-test-card-list {
+    border: none !important;
 }
 
+.hooks-trigger-switch .el-switch__label span {
+    font-size: 12px;
+    color: #333C48;
+    font-weight: 500;
+}
+.hooks-trigger-switch .el-switch__label.is-active span {
+    color: #333C48;
+}
+
+.hook-test-collapse-item .el-collapse-item__header {
+    border: none !important;
+}
 .cly-vue-hook-drawer-action-card {
-    background: #FCFCFC;
+    background: #F8FAFD;
     border: 1px solid #E2E4E8;
     box-sizing: border-box;
     border-radius: 6px;
@@ -94,24 +135,21 @@
 }
 
 .cly-vue-hook-table {
-    .el-table_1_column_5  .cell {
-        float: right;
-    }
     .is-name-col {
         font-size: 14px;
         line-height: 20px;
-        color: #333C48;
+        color: #32659D;
         word-break: break-word;
+    }
+    .is-name-col:hover {
+        color: #32659D;
+        text-decoration: underline;
     }
     .is-desc-col {
         font-size: 12px;
         line-height: 16px;
         color: #A7AEB8;
         margin-top: 6px;
-        text-decoration: none !important;
-    }
-    .is-desc-col:hover {
-        text-decoration: none !important;
     }
     .is-trigger-col-tag {
         background: #FCF5E5;
@@ -161,18 +199,6 @@
         .flex-grow {
             flex-grow: 1;
         }
-        .is-option-button {
-            display: none;
-            .el-select {
-                -webkit-box-shadow: unset;
-                box-shadow: unset;
-                border-radius: unset;
-            }
-            
-        }
-    }
-    tr:hover .is-option-button {
-        display: block;
     }
 }
 
@@ -194,6 +220,17 @@
     }
 }
 
+.hook-app-selector-image {
+    border-radius: 3px; 
+    width: 16px; 
+    height: 16px;
+    background-size: cover;
+}
 .code-pre-line {
     white-space: pre-line;
+}
+
+.hooks-table-app-selector .el-input input::placeholder { 
+    color: #333C48;
+    opacity: 1;
 }

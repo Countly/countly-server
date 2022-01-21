@@ -1170,7 +1170,7 @@
         });
 
         $(document).ready(function() {
-            app.addSubMenu("management", { code: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 30 });
+            app.addSubMenu("management", { code: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
         });
     }
 

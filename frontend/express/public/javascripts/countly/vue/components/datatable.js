@@ -198,6 +198,9 @@
             'controlParams.selectedDynamicCols': function() {
                 this.$refs.elTable.store.updateColumns(); // TODO: Hacky, check for memory leaks.
             },
+            'controlParams.searchQuery': function(newVal) {
+                this.$emit('search-query-changed', newVal);
+            },
             lastPage: function() {
                 this.checkPageBoundaries();
             },
@@ -569,17 +572,24 @@
                 type: Function,
                 default: null,
                 required: false
+            },
+            exportColumnSelection: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         data: function() {
             return {
+                selectedExportColumns: null,
                 hasExport: true,
                 selectedExportType: 'csv',
                 availableExportTypes: [
                     {'name': '.CSV', value: 'csv'},
                     {'name': '.JSON', value: 'json'},
                     {'name': '.XLSX', value: 'xlsx'}
-                ]
+                ],
+                searchQuery: ''
             };
         },
         methods: {
@@ -706,6 +716,45 @@
                     $('body').append(form);
                     form.submit();
                 }
+            },
+            getMatching: function(options) {
+                if (!this.searchQuery) {
+                    return options;
+                }
+                var self = this;
+                var query = (self.searchQuery + "").toLowerCase();
+                return options.filter(function(option) {
+                    if (!option) {
+                        return false;
+                    }
+                    var compareTo = option.label || option.value || "";
+                    return compareTo.toLowerCase().indexOf(query) > -1;
+                });
+            }
+        },
+        computed: {
+            exportColumns: {
+                get: function() {
+                    return this.selectedExportColumns || this.controlParams.selectedDynamicCols;
+                },
+                set: function(val) {
+                    this.selectedExportColumns = val;
+                }
+            },
+            exportAllColumns: {
+                get: function() {
+                    return this.exportColumns.length === this.availableDynamicCols.length;
+                },
+                set: function(val) {
+                    if (val) {
+                        this.exportColumns = this.availableDynamicCols.map(function(c) {
+                            return c.value;
+                        });
+                    }
+                    else {
+                        this.exportColumns = [];
+                    }
+                }
             }
         }
     };
@@ -794,7 +843,7 @@
             },
             classes: function() {
                 var classes = [];
-                if (this.dataSource && this.externalStatus === 'silent-pending') {
+                if (!this.forceLoading && this.dataSource && this.externalStatus === 'silent-pending') {
                     classes.push("silent-loading");
                 }
 

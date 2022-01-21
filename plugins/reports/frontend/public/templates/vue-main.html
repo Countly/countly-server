@@ -35,7 +35,7 @@
         :tracked-fields="localTableTrackedFields"
         :rows="tableRows" :resizable="false" >
         <template v-slot="scope">
-            <el-table-column type="switch" fixed="left" width="88" sortable prop="enabled">
+            <el-table-column type="switch" fixed="left" width="88" prop="enabled">
                 <template v-slot="rowScope">
                     <el-switch :value="rowScope.row.enabled" class="bu-ml-4  bu-mr-2" :disabled="!canUpdate"
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
@@ -105,20 +105,6 @@
             </cly-diff-helper>
         </template>
     </cly-datatable-n>
-    <cly-confirm-dialog 
-        @cancel="closeDeleteForm" 
-        @confirm="submitDeleteForm" 
-        :before-close="closeDeleteForm" 
-        ref="deleteConfirmDialog" 
-        :visible.sync="showDeleteDialog" 
-        dialogType="danger" 
-        :saveButtonLabel="i18n('common.delete')" 
-        :cancelButtonLabel="i18n('common.no-dont-delete')" 
-        :title="i18n('reports.delete')" >
-            <template slot-scope="scope">
-                <div v-html="deleteMessage"></div>
-            </template>
-    </cly-confirm-dialog>
 </cly-section>
 </div>
 </script>
@@ -151,7 +137,7 @@
                     {{i18n('reports.report-type')}} <span class="ion-help-circled color-cool-gray-50" v-tooltip.top-center="i18n('reports.type-tips')"/>
                 </div>
             </div>
-            <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+            <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned report-types-block">
                 <el-radio
                     v-on:change="reportTypeChange" 
                     class="is-autosized "

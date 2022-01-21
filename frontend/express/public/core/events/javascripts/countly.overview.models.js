@@ -36,7 +36,7 @@
                 for (var i = 0; i < ob.data.length; i++) {
                     var event = {};
                     event.name = countlyEventsOverview.helpers.getEventLongName(data[i].name, map);
-                    event.value = countlyCommon.getShortNumber((data[i].count));
+                    event.value = countlyCommon.formatNumber((data[i].count));
                     event.change = data[i].change;
                     event.trend = data[i].trend;
                     event.percentage = ob.totalCount === 0 ? 0 : ((data[i].count / ob.totalCount) * 100).toFixed(1);

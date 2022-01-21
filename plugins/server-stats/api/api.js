@@ -2,7 +2,10 @@ const { getUserApps } = require('../../../api/utils/rights.js');
 
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js'),
+    countlyCommon = require('../../../api/lib/countly.common.js'),
     stats = require('./parts/stats.js');
+
+var log = common.log('data-points:api');
 
 (function() {
 
@@ -46,14 +49,12 @@ var plugins = require('../../pluginManager.js'),
         if (!params.cancelRequest) {
             if (params.qstring.events && Array.isArray(params.qstring.events)) {
                 var events = params.qstring.events;
-
                 for (var i = 0; i < events.length; i++) {
                     if (events[i].key) {
                         eventCount += 1;
                     }
                 }
             }
-
             // If the last end_session is received less than 15 seconds ago we will ignore
             // current begin_session request and mark this user as having an ongoing session
             var lastEndSession = params.app_user && params.app_user[common.dbUserMap.last_end_session_timestamp] || 0;
@@ -61,10 +62,8 @@ var plugins = require('../../pluginManager.js'),
             if (params.qstring.begin_session && (params.qstring.ignore_cooldown || !lastEndSession || (params.time.timestamp - lastEndSession) > plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown)) {
                 sessionCount++;
             }
-
             stats.updateDataPoints(common.writeBatcher, params.app_id, sessionCount, eventCount, stats.isConsolidated(params));
         }
-
         return true;
     });
 
@@ -78,24 +77,61 @@ var plugins = require('../../pluginManager.js'),
     });
 
     /**
+    * Collects requeriments for data selection for queries
+    * @param {object} periodObj - period obj 
+	* @param {array} periodsToFetch - list to collect month abbr strings
+    * @param {object} dateObj  - object to collect info about date ranges
+	* @param {string} period {string}  - period string
+    **/
+    function createDateObject(periodObj, periodsToFetch, dateObj, period) {
+        var utcMoment;
+        var mm;
+        if (period === "month") {
+            utcMoment = common.moment.utc(periodObj.start);
+            var yy = utcMoment.format("YYYY");
+            for (var k = 1; k <= 12; k++) {
+                periodsToFetch.push(yy + ":" + k);
+                dateObj[yy + ":" + k] = {"full": true};
+            }
+        }
+        else if (period === "day") {
+            utcMoment = common.moment.utc(periodObj.start);
+            mm = utcMoment.format("YYYY:MM");
+            dateObj[mm] = {"full": true};
+            periodsToFetch.push(mm);
+
+        }
+        else {
+            for (var z = 0; z < periodObj.currentPeriodArr.length; z++) {
+                mm = periodObj.currentPeriodArr[z].split(".");
+                if (!dateObj[mm[0] + ":" + mm[1]]) {
+                    dateObj[mm[0] + ":" + mm[1]] = {};
+                }
+                dateObj[mm[0] + ":" + mm[1]][mm[2]] = {"full": true};
+            }
+            for (var dd in dateObj) {
+                periodsToFetch.push(dd);
+            }
+        }
+    }
+    /**
     * Returns last three month session, event and data point count
     * for all and individual apps
     * @returns {boolean} Returns boolean, always true
     **/
     plugins.register('/o/server-stats/data-points', function(ob) {
         var params = ob.params;
-        var periodsToFetch = [],
-            utcMoment = common.moment.utc();
+        var periodsToFetch = [];
+        params.qstring.period = params.qstring.period || "30days";
+        countlyCommon.setPeriod(params.qstring.period);
+        var periodObj = countlyCommon.periodObj;
+        var dateObj = {};
+        createDateObject(periodObj, periodsToFetch, dateObj, params.qstring.period);
+        var dateObjPrev = {};
 
-        var monthBack = parseInt(params.qstring.months) || 12;
-
-        for (let i = monthBack - 1; i > 0; i--) {
-            utcMoment.subtract(i, "months");
-            periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
-            utcMoment.add(i, "months");
-        }
-
-        periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
+        countlyCommon.setPeriod([periodObj.start - (periodObj.end - periodObj.start), periodObj.start - 1]);
+        periodObj = countlyCommon.periodObj;
+        createDateObject(periodObj, periodsToFetch, dateObjPrev, params.qstring.period);
 
         var filter = {
             _id: {$in: []}
@@ -111,9 +147,8 @@ var plugins = require('../../pluginManager.js'),
                         }
                     }
                 }
-
                 if (filter._id.$in.length) {
-                    stats.fetchDatapoints(common.db, filter, periodsToFetch, function(toReturn) {
+                    stats.fetchDatapoints(common.db, filter, {"dateObj": dateObj, "dateObjPrev": dateObjPrev}, function(toReturn) {
                         common.returnOutput(params, toReturn);
                     });
                 }
@@ -122,11 +157,19 @@ var plugins = require('../../pluginManager.js'),
                 }
             }
             else {
-                for (let i = 0; i < periodsToFetch.length; i++) {
-                    filter._id.$in.push(new RegExp(".*_" + periodsToFetch[i]));
+                if (params.qstring.selected_app && params.qstring.selected_app !== "") {
+                    filter._id = {"$in": []};
+                    periodsToFetch.forEach((period) => {
+                        filter._id.$in.push(`${params.qstring.selected_app}_${period}`);
+                    });
+                }
+                else {
+                    for (let i = 0; i < periodsToFetch.length; i++) {
+                        filter._id.$in.push(new RegExp(".*_" + periodsToFetch[i]));
+                    }
                 }
 
-                stats.fetchDatapoints(common.db, filter, periodsToFetch, function(toReturn) {
+                stats.fetchDatapoints(common.db, filter, {"dateObj": dateObj, "dateObjPrev": dateObjPrev}, function(toReturn) {
                     common.returnOutput(params, toReturn);
                 });
             }
@@ -143,27 +186,52 @@ var plugins = require('../../pluginManager.js'),
     plugins.register("/o/server-stats/punch-card", function(ob) {
         var params = ob.params;
         ob.validateUserForMgmtReadAPI(async() => {
+            var periodsToFetch = [];
+            params.qstring.period = params.qstring.period || "30days";
+            countlyCommon.setPeriod(params.qstring.period);
+            var periodObj = countlyCommon.periodObj;
+            var dateObj = {};
+            createDateObject(periodObj, periodsToFetch, dateObj, params.qstring.period);
+
             try {
-                const dateRangeArray = params.qstring.date_range.split(',');
-                let filter = {"m": {$in: dateRangeArray} };
+                let filter = {"m": {$in: periodsToFetch} };
                 if (!params.member.global_admin) {
                     filter._id = {"$in": []};
                     const hasUserApps = getUserApps(params.member) || [];
-                    hasUserApps.forEach((id) => {
-                        dateRangeArray.forEach((period) => {
-                            filter._id.$in.push({_id: `${id}_${period}`});
+                    if (params.qstring.selected_app) {
+                        if (hasUserApps.indexOf(params.qstring.selected_app) > -1) {
+                            periodsToFetch.forEach((period) => {
+                                filter._id.$in.push(`${params.qstring.selected_app}_${period}`);
+                            });
+                        }
+                        else {
+                            //access denied
+                        }
+                    }
+                    else {
+                        hasUserApps.forEach((id) => {
+                            periodsToFetch.forEach((period) => {
+                                filter._id.$in.push(`${id}_${period}`);
+                            });
                         });
-                    });
+                    }
                 }
-                const _punchCard = await stats.punchCard(common.db, filter);
+                else {
+                    if (params.qstring.selected_app) {
+                        filter._id = {"$in": []};
+                        periodsToFetch.forEach((period) => {
+                            filter._id.$in.push(`${params.qstring.selected_app}_${period}`);
+                        });
+                    }
+                }
+                const _punchCard = await stats.punchCard(common.db, filter, {dateObj: dateObj, periodObj: periodObj});
                 common.returnOutput(params, _punchCard);
             }
             catch (error) {
-                console.log("Error while fetching punch card data: ", error.message);
+                log.e("Error while fetching punch card data: ", error.message);
                 common.returnMessage(params, 400, "Something went wrong");
             }
         }, params);
-
         return true;
     });
 }());

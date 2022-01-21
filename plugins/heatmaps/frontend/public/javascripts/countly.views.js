@@ -31,7 +31,10 @@
         return apiQueryData;
     };
 
-    var viewActionMapClick = function(url, viewid, domain) {
+    var viewActionMapClick = function(url, viewid, domain, currentMap) {
+        if (!currentMap) {
+            currentMap = 'click';
+        }
         var self = this;
         if (domain) {
             url = url.replace("#/analytics/views/action-map/", "");
@@ -41,7 +44,8 @@
         countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
             self.token = token && token.result;
             if (self.token) {
-                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, app_key: countlyCommon.ACTIVE_APP_KEY, url: window.location.protocol + "//" + window.location.host});
+                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, currentMap: currentMap, app_key: countlyCommon.ACTIVE_APP_KEY, url: window.location.protocol + "//" + window.location.host});
+                newWindow.location.href = url;
             }
         });
     };
@@ -71,10 +75,23 @@
         methods: {
             showActionsMapColumn: showActionsMapColumn,
             viewActionMapClick: viewActionMapClick,
-            getExportQuery: getExportQuery
+            getExportQuery: getExportQuery,
+            dateChanged: function() {
+                var self = this;
+                this.$store.dispatch("countlyHeatmaps/fetchHeatmapsClickTable");
+                this.$store.dispatch("countlyHeatmaps/loadDomains").then(function() {
+                    self.showActionsMapColumn();
+                });
+            },
         },
         computed: {
-            domains: displayDomains
+            domains: displayDomains,
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyHeatmaps/isLoading"];
+                },
+                cache: false
+            },
         },
     });
 
@@ -96,10 +113,22 @@
         methods: {
             showActionsMapColumn: showActionsMapColumn,
             viewActionMapClick: viewActionMapClick,
-            getExportQuery: getExportQuery
+            getExportQuery: getExportQuery,
+            dateChanged: function() {
+                this.$store.dispatch("countlyHeatmaps/fetchHeatmapsScrollTable");
+                this.$store.dispatch("countlyHeatmaps/loadDomains").then(function() {
+                    self.showActionsMapColumn();
+                });
+            },
         },
         computed: {
-            domains: displayDomains
+            domains: displayDomains,
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyHeatmaps/isLoading"];
+                },
+                cache: false
+            },
         },
     });
 
@@ -115,6 +144,9 @@
             this.$store.dispatch("countlyHeatmaps/loadMetrics");
         },
         methods: {
+            dateChanged: function() {
+                this.$store.dispatch("countlyHeatmaps/loadMetrics");
+            }
         },
         computed: {
             selectedPlatform: {
@@ -182,7 +214,7 @@
             this.renderWhenReady(view);
         });
         $(document).ready(function() {
-            app.addSubMenu("analytics", { code: "heatmaps", url: "#/analytics/heatmaps", text: "heatmaps.title", priority: 80 });
+            app.addSubMenu("analytics", { code: "heatmaps", url: "#/analytics/heatmaps", text: "heatmaps.title", priority: 26 });
         });
     }
 })();

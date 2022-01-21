@@ -1,5 +1,6 @@
 /*global
- 
+    CountlyHelpers,
+    countlyCommon,
     CountlyHelpers,
     countlyGlobal,
     countlyAuth,
@@ -35,8 +36,6 @@
                 localTableTrackedFields: ['enabled'],
                 isAdmin: countlyGlobal.member.global_admin,
                 deleteElement: null,
-                showDeleteDialog: false,
-                deleteMessage: '',
                 canUpdate: countlyAuth.validateUpdate(FEATURE_NAME),
                 canDelete: countlyAuth.validateDelete(FEATURE_NAME),
             };
@@ -58,9 +57,15 @@
                     this.$parent.$parent.openDrawer("home", data);
                     break;
                 case "delete-comment":
+                    var self = this;
                     this.deleteElement = scope.row;
-                    this.showDeleteDialog = true;
-                    this.deleteMessage = CV.i18n("reports.confirm", "<b>" + this.deleteElement.title + "</b>");
+                    var deleteMessage = CV.i18n("reports.confirm", "<b>" + this.deleteElement.title + "</b>");
+                    CountlyHelpers.confirm(deleteMessage, "red", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        self.$store.dispatch("countlyReports/deleteReport", self.deleteElement);
+                    });
                     break;
                 case "send-comment":
                     var overlay = $("#overlay").clone();
@@ -81,20 +86,12 @@
                     });
                     break;
                 case "preview-comment":
-                    var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id});
+                    var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
                     window.open(url, "_blank");
                     break;
                 default:
                     return;
                 }
-            },
-            closeDeleteForm: function() {
-                this.deleteElement = null;
-                this.showDeleteDialog = false;
-            },
-            submitDeleteForm: function() {
-                this.$store.dispatch("countlyReports/deleteReport", this.deleteElement);
-                this.showDeleteDialog = false;
             },
             updateStatus: function(scope) {
                 var diff = scope.diff;
@@ -228,7 +225,6 @@
             }
         },
         methods: {
-
             reportTypeChange: function(type) {
                 if (type === 'dashboards') {
                     this.showApps = false;
@@ -306,6 +302,11 @@
                 this.title = jQuery.i18n.map["reports.create_new_report_title"];
                 this.saveButtonLabel = jQuery.i18n.map["reports.Create_New_Report"];
             },
+        },
+        mounted: function() {
+            if (reportsView._createDashboard) {
+                this.reportTypeChange('dashboards');
+            }
         }
     });
 
@@ -326,7 +327,16 @@
             createReport: function() {
                 this.openDrawer("home", countlyReporting.defaultDrawerConfigValue());
             },
-
+        },
+        mounted: function() {
+            if (reportsView._createDashboard) {
+                var defaultData = countlyReporting.defaultDrawerConfigValue();
+                var data = Object.assign({}, defaultData);
+                data.report_type = "dashboards";
+                data.dashboards = reportsView._createDashboard;
+                this.openDrawer("home", data);
+                reportsView._createDashboard = null;
+            }
         },
     });
 
@@ -338,12 +348,16 @@
         }],
         templates: [
             "/reports/templates/vue-main.html",
-        ]
+        ],
     });
     reportsView.featureName = FEATURE_NAME;
 
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         app.route('/manage/reports', 'reports', function() {
+            this.renderWhenReady(reportsView);
+        });
+        app.route('/manage/reports/create/dashboard/:dashboardID', 'reports', function(dashboardID) {
+            reportsView._createDashboard = dashboardID;
             this.renderWhenReady(reportsView);
         });
     }

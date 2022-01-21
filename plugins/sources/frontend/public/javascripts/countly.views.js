@@ -102,11 +102,34 @@
                 }
 
                 // set charts center label
-                self.pieSourcesTotalSessions.series[0].label.formatter = function() {
-                    return CV.i18n('common.table.total-sessions') + "\n" + countlyCommon.getShortNumber(sumOfTotalSession || 0);
+                self.pieSourcesTotalSessions.series[0].label = {
+                    formatter: "{a|" + CV.i18n('common.table.total-sessions') + "}\n" + countlyCommon.getShortNumber(sumOfTotalSession || 0),
+                    textAlign: "center",
+                    fontWeight: 500,
+                    fontSize: 16,
+                    lineHeight: 24,
+                    rich: {
+                        a: {
+                            fontWeight: 400,
+                            fontSize: 14,
+                            lineHeight: 20
+                        }
+                    }
                 };
-                self.pieSourcesNewUsers.series[0].label.formatter = function() {
-                    return CV.i18n('common.table.new-users') + "\n " + countlyCommon.getShortNumber(sumOfNewUsers || 0);
+
+                self.pieSourcesNewUsers.series[0].label = {
+                    formatter: "{a|" + CV.i18n('common.table.new-users') + "}\n" + countlyCommon.getShortNumber(sumOfNewUsers || 0),
+                    textAlign: "center",
+                    fontWeight: 500,
+                    fontSize: 16,
+                    lineHeight: 24,
+                    rich: {
+                        a: {
+                            fontWeight: 400,
+                            fontSize: 14,
+                            lineHeight: 20
+                        }
+                    }
                 };
 
                 return {
@@ -280,20 +303,26 @@
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
-                ]
+                ],
+                isLoading: true
             };
         },
         mounted: function() {
             var self = this;
             $.when(countlySources.initializeKeywords()).then(function() {
                 self.searchTermsTop3 = self.calculateAllData();
+                self.isLoading = false;
             });
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 $.when(countlySources.initializeKeywords()).then(function() {
                     self.searchTermsTop3 = self.calculateAllData();
+                    self.isLoading = false;
                 });
             },
             calculateAllData: function() {
@@ -329,20 +358,27 @@
         template: CV.T("/sources/templates/sourcesHomeWidget.html"),
         data: function() {
             return {
-                sourceItems: []
+                sourceItems: [],
+                isLoading: true
             };
         },
         mounted: function() {
             var self = this;
+
             $.when(countlySources.initialize(true)).then(function() {
                 self.calculateAllData();
+                self.isLoading = false;
             });
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 $.when(countlySources.initialize(true)).then(function() {
                     self.calculateAllData();
+                    self.isLoading = false;
                 });
             },
             calculateAllData: function() {

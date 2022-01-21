@@ -59,6 +59,7 @@
             getEmpty: function() {
                 return {
                     widget_type: "time-series",
+                    app_count: 'single',
                     data_type: "",
                     metrics: [],
                     apps: [],

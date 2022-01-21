@@ -35,6 +35,8 @@
 
         &.is-leaf {
             border-bottom-width: 2px;
+
+            border-top: 1px solid c.$table-border-color;
         }
     }
 
@@ -107,7 +109,7 @@
 
 .el-radio {
     &.is-autosized {
-        padding: 12px;
+        padding: 16px;
         display: flex;
         width: 100%;
         margin-right: 0;
@@ -164,17 +166,13 @@
             margin: 0rem 1.5rem 0rem 1.5rem;
         }
     }
-    &:not(.is-bordered-box) {
-        .el-collapse-item__arrow {
-            margin: 0 16px 0 auto;
-        }
-    }
 }
 
 .el-switch {
-	&__label {
+	&__label *{
 		font-weight: normal;
 		color: #A7AEB8;
+		font-size:12px;
 	}
 }
 

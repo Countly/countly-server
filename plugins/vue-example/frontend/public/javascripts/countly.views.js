@@ -202,18 +202,18 @@
                     "label": "A Items",
                     "name": "type-1",
                     "options": [
-                        {"label": "windows 10", "value": 0},
-                        {"label": "hello how", "value": 1},
-                        {"label": "hello2", "value": 2},
-                        {"label": "hello3", "value": 3},
-                        {"label": "hello4", "value": 4},
-                        {"label": "hello5", "value": 5},
-                        {"label": "hello6", "value": 6},
-                        {"label": "hello7", "value": 7},
-                        {"label": "hello8", "value": 8},
-                        {"label": "hello9", "value": 9},
-                        {"label": "hello10", "value": 10},
-                        {"label": "hello11", "value": 11},
+                        {"label": "windows 10", "value": 0, "image": "I"},
+                        {"label": "hello how", "value": 1, "image": "I"},
+                        {"label": "hello2", "value": 2, "image": "I"},
+                        {"label": "hello3", "value": 3, "image": "I"},
+                        {"label": "hello4", "value": 4, "image": "I"},
+                        {"label": "hello5", "value": 5, "image": "I"},
+                        {"label": "hello6", "value": 6, "image": "I"},
+                        {"label": "hello7", "value": 7, "image": "I"},
+                        {"label": "hello8", "value": 8, "image": "I"},
+                        {"label": "hello9", "value": 9, "image": "I"},
+                        {"label": "hello10", "value": 10, "image": "I"},
+                        {"label": "hello11", "value": 11, "image": "I"},
                     ]
                 },
                 {
@@ -289,9 +289,23 @@
                                 { value: 135, name: "Video Ads" },
                                 { value: 1548, name: "Search Engines is a long name" }
                             ],
+                            // label: {
+                            //     formatter: function() {
+                            //         return "New users \n 12k";
+                            //     }
+                            // },
                             label: {
-                                formatter: function() {
-                                    return "New users \n 12k";
+                                formatter: "{a|" + "New Users" + "}\n" + "12K",
+                                fontWeight: 500,
+                                fontSize: 16,
+                                fontFamily: "Inter",
+                                lineHeight: 24,
+                                rich: {
+                                    a: {
+                                        fontWeight: "normal",
+                                        fontSize: 14,
+                                        lineHeight: 16
+                                    }
                                 }
                             },
                         }
@@ -307,8 +321,17 @@
                                 { value: 234, name: "Ad Networks" },
                             ],
                             label: {
-                                formatter: function() {
-                                    return "Total users \n 12k";
+                                formatter: "{a|" + "Total Users" + "}\n" + "12K",
+                                fontWeight: 500,
+                                fontSize: 16,
+                                fontFamily: "Inter",
+                                lineHeight: 24,
+                                rich: {
+                                    a: {
+                                        fontWeight: "normal",
+                                        fontSize: 14,
+                                        lineHeight: 16
+                                    }
                                 }
                             },
                         }

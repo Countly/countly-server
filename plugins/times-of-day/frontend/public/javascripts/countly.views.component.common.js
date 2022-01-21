@@ -36,10 +36,15 @@
                         position: 'top',
                         trigger: 'item',
                         formatter: function(params) {
-                            return '<div class="bu-is-flex bu-is-flex-direction-column times-of-day__scatter-chart-tooltip"> \n' +
-                                        '<span class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.total-users') + '</span>\n' +
-                                        '<span class="times-of-day__scatter-chart-tooltip-total-users-value">' + self.formatNumber(params.value[2]) + '</span> \n' +
-                                        '<span class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.between') + ' ' + countlyTimesOfDay.service.getHoursPeriod(countlyTimesOfDay.service.HOURS[params.value[0]]) + '</span> \n' +
+                            return '<div class="bu-is-flex times-of-day__scatter-chart-tooltip"> \n' +
+                                        '<div> \n' +
+                                            '<div class="times-of-day__scatter-chart-bar bu-mr-2" style="background-color: ' + params.color + ';"></div> \n' +
+                                        '</div> \n' +
+                                        '<div> \n' +
+                                            '<div class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.total-users') + '</div>\n' +
+                                            '<div class="times-of-day__scatter-chart-tooltip-total-users-value">' + self.formatNumber(params.value[2]) + '</div> \n' +
+                                            '<div class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.between') + ' ' + countlyTimesOfDay.service.getHoursPeriod(countlyTimesOfDay.service.HOURS[params.value[0]]) + '</div> \n' +
+                                        '</div> \n' +
                                     '</div>';
                         }
                     },

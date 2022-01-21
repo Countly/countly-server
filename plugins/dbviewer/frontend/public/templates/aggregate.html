@@ -13,20 +13,20 @@
         <div class="bu-is-size-5">
             {{ i18n('dbviewer.execute-aggregation') }} <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </div>
-        <cly-section class="bg-white bu-p-4 bu-mt-5 dbviewer-aggregate__query-area">
+        <cly-section class="bg-white bu-p-5 bu-mt-4 dbviewer-aggregate__query-area">
             <el-input
             type="textarea"
             :placeholder="i18n('dbviewer.enter-aggregation-pipeline')"
             v-model="query">
             </el-input>
             <div class="dbviewer-aggregate__query-button-area">
-                <el-button :disabled="queryLoading" @click="executeQuery()" type="success" class="bu-mt-2">
+                <el-button :disabled="queryLoading" @click="executeQuery()" type="success" class="bu-mt-4">
                     {{ i18n('dbviewer.generate-aggregate-report') }}
                 </el-button>
             </div>
         </cly-section>
         <cly-section>
-            <cly-datatable-n :rows="aggregationResult">
+            <cly-datatable-n :show-header="false" :rows="aggregationResult">
                 <template v-slot="scope">
                     <el-table-column fixed>
                         <template v-slot="rowScope">

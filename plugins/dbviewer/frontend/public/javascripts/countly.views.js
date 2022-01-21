@@ -1,4 +1,5 @@
-/*global $, countlyAuth, countlyGlobal, countlyDBviewer, app, countlyCommon, CV, countlyVue, _*/
+/*global $, countlyAuth, countlyGlobal, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, moment _*/
+
 var FEATURE_NAME = 'dbviewer';
 
 var DBViewerTab = countlyVue.views.create({
@@ -32,7 +33,43 @@ var DBViewerTab = countlyVue.views.create({
         }
     },
     data: function() {
+        var self = this;
+        var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("dbviewerTable", {
+            columns: ['_id'],
+            onRequest: function() {
+                var queryObject = Object.assign({}, self.query);
+                return {
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + self.dbviewerAPIEndpoint,
+                    data: {
+                        query: JSON.stringify(queryObject)
+                    }
+                };
+            },
+            onOverrideRequest: function(context, request) {
+                request.data.skip = request.data.iDisplayStart;
+                request.data.limit = request.data.iDisplayLength;
+                delete request.data.iDisplayLength;
+                delete request.data.iDisplayStart;
+            },
+            onOverrideResponse: function(context, response) {
+                response.aaData = response.collections;
+                response.iTotalRecords = response.limit;
+                response.iTotalDisplayRecords = response.total;
+            },
+            onError: function(context, err) {
+                throw err;
+            },
+            onReady: function(context, rows) {
+                if (rows.length) {
+                    self.projectionOptions = Object.keys(rows[0]);
+                }
+                return rows;
+            }
+        }));
         return {
+            tableStore: tableStore,
+            remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "dbviewerTable"),
             appFilter: "all",
             selectedCollection: null,
             collectionData: [],
@@ -43,7 +80,8 @@ var DBViewerTab = countlyVue.views.create({
             sort: "",
             projectionOptions: [],
             isDescentSort: false,
-            isIndexRequest: false
+            isIndexRequest: false,
+            searchQuery: ""
         };
     },
     watch: {
@@ -52,6 +90,9 @@ var DBViewerTab = countlyVue.views.create({
         }
     },
     methods: {
+        setSearchQuery: function(query) {
+            this.searchQuery = query;
+        },
         dbviewerActions: function(command) {
             switch (command) {
             case 'aggregation':
@@ -81,7 +122,7 @@ var DBViewerTab = countlyVue.views.create({
             // query
             this.queryFilter = formData.filter;
             // fire the request!
-            this.fetch();
+            this.fetch(true);
         },
         removeFilters: function() {
             this.queryFilter = null;
@@ -89,21 +130,41 @@ var DBViewerTab = countlyVue.views.create({
             this.projection = [];
             this.sortEnabled = false;
             this.sort = "";
-            this.fetch(false);
+            this.fetch(true);
         },
-        fetch: function(index) {
-            var self = this;
-            countlyDBviewer.loadCollections(this.db, this.collection, 1, this.queryFilter, 20, this.preparedSortObject, this.projectionEnabled ? this.preparedProjectionFields : null, this.sortEnabled, index)
-                .done(function(response) {
-                    self.collectionData = response.collections;
-                    self.projectionOptions = Object.keys(self.collectionData[0]);
-                })
-                .catch(function() {
-                    // handle error case
-                });
+        fetch: function(force) {
+            this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force});
+        },
+        getExportQuery: function() {
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: '/o' + this.dbviewerAPIEndpoint,
+                method: "GET",
+                filename: "DBViewer" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData'],
+                url: "/o/export/requestQuery"
+            };
+            return apiQueryData;
+        },
+        refresh: function(force) {
+            this.fetch(force);
         }
     },
     computed: {
+        dbviewerAPIEndpoint: function() {
+            var url = '/db?api_key=' + countlyGlobal.member.api_key + '&app_id=' + countlyCommon.ACTIVE_APP_ID + '&dbs=' + this.db + '&collection=' + this.collection;
+            if (this.queryFilter) {
+                url += '&filter=' + this.queryFilter;
+            }
+            if (this.projectionEnabled) {
+                url += '&projection=' + JSON.stringify(this.preparedProjectionFields);
+            }
+            if (this.sortEnabled) {
+                url += '&sort=' + JSON.stringify(this.preparedSortObject);
+            }
+            return url;
+        },
         preparedCollectionList: function() {
             var self = this;
             return this.collections[this.db].list.filter(function(collection) {
@@ -129,6 +190,13 @@ var DBViewerTab = countlyVue.views.create({
         }
     },
     created: function() {
+        var routeHashItems = window.location.hash.split("/");
+        if (routeHashItems.length === 6) {
+            this.collection = routeHashItems[5];
+            this.selectedCollection = this.collection;
+            this.db = routeHashItems[4];
+        }
+
         if (!this.db) {
             this.db = 'countly';
         }
@@ -137,9 +205,6 @@ var DBViewerTab = countlyVue.views.create({
             if (this.collections[this.db].list.length) {
                 window.location = '#/manage/db/' + this.db + '/' + this.collections[this.db].list[0].value;
             }
-        }
-        else {
-            this.fetch(this.index);
         }
     }
 });
@@ -258,7 +323,7 @@ var DBViewerAggregate = countlyVue.views.create({
                 });
             }
             catch (err) {
-                this.$message(CV.i18n('dbviewer.invalid-pipeline'));
+                CountlyHelpers.notify(CV.i18n('dbviewer.invalid-pipeline'));
             }
         }
     },

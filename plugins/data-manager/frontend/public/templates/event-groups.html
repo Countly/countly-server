@@ -23,7 +23,7 @@
         <el-table-column fixed="left" type="selection" :reserve-selection="true" width="55">
         </el-table-column>
 
-        <el-table-column fixed="left" sortable="custom" prop="name" label="Event Group Name">
+        <el-table-column fixed="left" sortable="custom" prop="name" label="Event Group Name" min-width="330px">
             <template v-slot="rowScope">
                 {{rowScope.row.name}}
                 <div class="text-small color-cool-gray-50" v-if="rowScope.row.source_events">{{rowScope.row.source_events.length || 0}} Events</div>
@@ -32,7 +32,7 @@
             </template>
         </el-table-column>
 
-        <el-table-column sortable="custom"  prop="description" label="Description">
+        <el-table-column sortable="custom"  prop="description" label="Description" min-width="330px">
             <template v-slot="rowScope">
                 {{rowScope.row.description}}
             </template>

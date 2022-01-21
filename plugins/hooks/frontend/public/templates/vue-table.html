@@ -3,16 +3,17 @@
         :force-loading="!initialized"
         class="cly-vue-hook-table is-clickable"
         :tracked-fields="localTableTrackedFields"
-        :rows="tableRows" :resizable="false" >
+        :rows="tableRows" :resizable="false"
+        :available-dynamic-cols="tableDynamicCols" >
         <template v-slot:header-left="scope">
             <div class="bu-mr-2">
-                <el-button-group>
-                  <el-button type="primary" @click="filterStatus='all'" size="small" class="hooks-button-group">{{i18n('hooks.status-all')}}</el-button>
-                  <el-button type="primary" @click="filterStatus='enabled'" size="small" class="hooks-button-group">{{i18n('hooks.status-enabled')}}</el-button>
-                  <el-button type="primary" @click="filterStatus='disabled'" size="small" class="hooks-button-group">{{i18n('hooks.status-disabled')}}</el-button>
-                </el-button-group>
+                <el-radio-group :plain="true" v-model="filterStatus">
+                    <el-radio-button label="all">{{i18n('hooks.status-all')}}</el-radio-button>
+                    <el-radio-button label="enabled">{{i18n('hooks.status-enabled')}}</el-radio-button>
+                    <el-radio-button label="disabled">{{i18n('hooks.status-disabled')}}</el-radio-button> 
+                </el-radio-group>
             </div>
-            <div>
+            <div class="hooks-table-app-selector">
                 <cly-select-x
                    :placeholder="i18n('hooks.all-applications')"
                    mode="multi-check"
@@ -32,7 +33,7 @@
                 </template>
             </el-table-column>
            
-            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  min-width="100" :class="is-clickable">
+            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  width="280" :class="is-clickable">
                 <template slot-scope="scope">
                     <div>
                         <div class="is-name-col bu-is-clickable" @click="onRowClick(scope.row)" >{{scope.row.name}}</div>
@@ -41,24 +42,31 @@
                 </template>
             </el-table-column> 
 
-            <el-table-column  :label="(i18n('hooks.trigger') + ' -> '+ i18n('hooks.effects'))" sortable="true" width="400" >
+            <el-table-column sortable="true" min-width="270" >
+            <template v-slot:header="scope">
+               <span>{{i18n('hooks.trigger')}} <i class="el-icon-arrow-right el-icon-right"></i> {{ i18n('hooks.effects') }}</span>
+            </template>
             <template slot-scope="scope" sortable="true">
                 <div v-html="scope.row.triggerEffectColumn"></div>
             </template>
                 
             </el-table-column>
+            <template v-for="(col,idx) in scope.dynamicCols">
+                <el-table-column 
+                    v-if="col.value === 'triggerCount'"  
+                    sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" width="155">
+                </el-table-column>
+                <el-table-column
+                    v-if="col.value === 'lastTriggerTimestampString'"  
+                    sortable="true"  prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" width="165" >
+                </el-table-column>
+            </template>
 
-            <el-table-column sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" min-width="150" >
-                
-            </el-table-column>
 
-            <el-table-column sortable="true" align="center" prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" min-width="150" >
-            </el-table-column>
-
-            <el-table-column :label="i18n('hooks.create-by')" width="100" sortable="true">
+            <el-table-column :label="i18n('hooks.create-by')" min-width="150" sortable="true">
                 <template slot-scope="scope">
                     <div class="is-last-col">
-                        <div class="flex-grow">
+                        <div >
                             <div class="is-created-by-col">
                                 {{scope.row.createdByUser}}
                              </div>
@@ -87,18 +95,5 @@
             </cly-diff-helper>
         </template>
     </cly-datatable-n>
-    <cly-confirm-dialog 
-        @cancel="closeDeleteForm" 
-        @confirm="submitDeleteForm" 
-        :before-close="closeDeleteForm" 
-        ref="deleteConfirmDialog" 
-        :visible.sync="showDeleteDialog" 
-        dialogType="danger" 
-        :saveButtonLabel="i18n('common.delete')" 
-        :cancelButtonLabel="i18n('common.no-dont-delete')" 
-        :title="i18n('hooks.delete-confirm-title')" >
-            <template slot-scope="scope">
-                <div v-html="deleteMessage"></div>
-            </template>
-    </cly-confirm-dialog>
+    
 </cly-section>

@@ -1,6 +1,7 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
+const log = common.log('hooks:api_endpoint_trigger');
 /**
  * API endpoint  trigger
  */
@@ -12,7 +13,18 @@ class APIEndPointTrigger {
      */
     constructor(options) {
         this._rules = options.rules || [];
-        this.pipeline = options.pipeline || (() => {});
+        this.pipeline = (() => {});
+        if (options.pipeline) {
+            this.pipeline = (data) => {
+                try {
+                    data.rule._originalInput = JSON.parse(JSON.stringify(data.params || {}));
+                }
+                catch (e) {
+                    log.e("[hooks api endpoint] parsing originalInput", e);
+                }
+                return options.pipeline(data);
+            };
+        }
         this.register();
     }
 

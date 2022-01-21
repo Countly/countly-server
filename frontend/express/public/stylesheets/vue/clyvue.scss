@@ -669,6 +669,7 @@
             display: flex;
             margin: 0;
             padding: 16px;
+            align-items: center;
         }
 
         &__time-picker-section {
@@ -677,7 +678,7 @@
 
         
         &__in-between-conj {
-            padding: 11px 11px 0 11px;
+            padding: 0 11px;
         }
 
         &__commit-section {
@@ -685,6 +686,17 @@
             margin: 16px;
         }
 
+        &__cancel-button{
+            padding: 8px 12px;
+            border: none;
+            font-weight: 500;
+        }
+
+        &__confirm-button {
+            margin-left: 8px;
+            border: none;
+        }
+        
         &__day-names-wrapper {
             margin: 0 14px 9px 14px;
         }
@@ -996,6 +1008,7 @@
 				}
 				.trend-up{
 					font-size: 14px;
+                    font-weight: 500;
 					position: relative;
 					top: -4px;
 					color: #12AF51;
@@ -1009,6 +1022,7 @@
 				}
 				.trend-down{
 					font-size: 14px;
+                    font-weight: 500;
 					color: #D23F00;
 					position: relative;
 					top: -4px;
@@ -1387,7 +1401,10 @@
                 &:hover {
                     background-color: #F6F6F6;
                     .cly-vue-metric-breakdown__numbers {
-                        color: #0166D6; 
+                        color: #0166D6;
+                        i { 
+                            color: black !important;
+                        } 
                     }
                 }
             }
@@ -1416,10 +1433,12 @@
     .cly-vue-metric-cards[class*="is-synced"] {
         .cly-vue-metric-card {
             min-width: 270px;
+            flex: 1 !important;
         }
         
         .cly-vue-metric-breakdown {
             min-width: 270px;
+            flex: 1 !important;
         }
     }
 
@@ -1450,6 +1469,18 @@
                 & + .cly-vue-metric-breakdown .cly-vue-metric-breakdown__wrapper {
                     border-left: 1px solid map.get(c.$colors, "warm-gray-30");
                 }
+            }
+        }
+    }
+
+    @media screen and (max-width: 1281px) {
+        .cly-vue-metric-card__wrapper {
+            h2 {
+                font-size: 18px !important;
+            }
+
+            .cly-trend-up, .cly-trend-down {
+                font-size: 12px !important;
             }
         }
     }
@@ -1615,14 +1646,37 @@
             .cly-vue-drawer__steps-container,
             .cly-vue-drawer__footer {
                 max-width: 700px;
-                margin: 0 auto;
+                width: 700px;
+                // margin: 0 auto;
+                padding: 0 calc(50% - 350px);
                 > div {
                     margin: 1rem !important;
                 }
             }
 
+            .cly-vue-drawer__steps-container {
+                &.is-scroll-shadow-at-middle::before,
+                &.is-scroll-shadow-at-bottom::before {
+                    width: 685px;
+                }
+                &.is-scroll-shadow-at-middle .scroll-shadow-container::after,
+                &.is-scroll-shadow-at-top .scroll-shadow-container::after {
+                    width: 685px;
+                    bottom: 16px;
+                    margin-left: -16px;
+                }
+            }
+
             .cly-vue-drawer__footer {
-                width: 100%;
+                border: none;
+                // width: 100%;
+                &:after {
+                    content: "";
+                    width: 685px;
+                    position: absolute;
+                    bottom: 63px;
+                    border-top: 1px solid #ECECEC;
+                }
             }
         }
 
@@ -1688,7 +1742,7 @@
         &__step-separator {
             width: 20%;
             border-top: 1px solid #A7AEB8;
-            max-width: 50px;
+            max-width: 40px;
         }
 
         &__step-label {
@@ -1751,7 +1805,7 @@
             border-bottom: 1px solid #E2E4E8;
         }
         &__footer {
-            border-top: 2px solid #ECECEC;
+            border-top: 1px solid #ECECEC;
         }
         &__steps-wrapper{ 
             height: 100%;
@@ -1770,6 +1824,12 @@
     //dialog
 
     .cly-vue-dialog {
+        &.is-auto-centered .el-dialog {
+            margin-top: 0!important;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
         .el-dialog__header {
             padding: 16px;
         }
@@ -1795,7 +1855,7 @@
         }
 
         &__footer {
-            border-top: 2px solid #ECECEC;
+            border-top: 1px solid #ECECEC;
             display: flex;
             justify-content: space-between;
             align-items: baseline;
@@ -1864,7 +1924,9 @@
     }
 	
 	//confirm dialog
-	.cly-confirm-dialog {
+    .cly-vue-confirm-dialog,
+    .cly-vue-message-dialog
+    {
 		.el-dialog {
 			width: 400px;
 			&__header {

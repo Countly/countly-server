@@ -61,7 +61,7 @@ class ScheduleJob extends J.Job {
         }
         else {
             let trigger = this.message.triggerPlain(),
-                {total, next} = await this.audience.push(trigger).setStart(this.data.start).run(); // this.data.start is supposed to be undefined for now
+                {total, next, results} = await this.audience.push(trigger).setStart(this.data.start).run(); // this.data.start is supposed to be undefined for now
 
             if (total === 0) {
                 update = {
@@ -84,10 +84,12 @@ class ScheduleJob extends J.Job {
                         'result.processed': 0,
                         'state': State.Created | State.Streamable,
                         status: Status.Scheduled,
-                        'result.next': next
+                        'result.next': next,
+                        results
                     }
                 };
             }
+
         }
 
         if (update) {

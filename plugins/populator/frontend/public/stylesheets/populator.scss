@@ -192,22 +192,13 @@
 }
 
 .populator-app-locked-wrapper {
-    position: absolute;
-    width: 400px;
-    height: fit-content;
-    left: 50%;
-    top: 50%;
-    margin-left: -100px;
-    margin-top: -200px;
-    text-align: center;
+    height: calc(100vh - 50px);
 
-    &__text {
-        font-family: Inter;
-        font-style: normal;
-        font-weight: normal;
-        font-size: 14px;
-        line-height: 20px;
-        text-align: center;
-        color: #81868D;
+    &__content {
+        height: 300px;
+    }
+
+    &__description {
+        width: 437px;
     }
 }

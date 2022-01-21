@@ -34,11 +34,12 @@
                 var result = this.$store.getters["countlyHooks/table/getInitialized"];
                 return result;
             },
+
         },
         data: function() {
             var appsSelectorOption = [];
             for (var id in countlyGlobal.apps) {
-                appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
+                appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id, image: "background-image:url(" + countlyGlobal.apps[id].image + ")"});
             }
             return {
                 appsSelectorOption: appsSelectorOption,
@@ -49,6 +50,16 @@
                 deleteElement: null,
                 showDeleteDialog: false,
                 deleteMessage: '',
+                tableDynamicCols: [{
+                    value: "triggerCount",
+                    label: CV.i18n('hooks.trigger-count'),
+                    default: true
+                },
+                {
+                    value: "lastTriggerTimestampString",
+                    label: CV.i18n('hooks.trigger-last-time'),
+                    default: true
+                }]
             };
         },
         methods: {
@@ -65,18 +76,16 @@
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
+                    var self = this;
                     this.deleteElement = scope.row;
-                    this.showDeleteDialog = true;
-                    this.deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
+                    var deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
+                    CountlyHelpers.confirm(deleteMessage, "red", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        self.$store.dispatch("countlyHooks/deleteHook", self.deleteElement._id);
+                    }, [jQuery.i18n.map['common.no-dont-delete'], jQuery.i18n.map['common.delete']], {title: jQuery.i18n.map['hooks.delete-confirm-title']});
                 }
-            },
-            closeDeleteForm: function() {
-                this.deleteElement = null;
-                this.showDeleteDialog = false;
-            },
-            submitDeleteForm: function() {
-                this.$store.dispatch("countlyHooks/deleteHook", this.deleteElement._id);
-                this.showDeleteDialog = false;
             },
             updateStatus: function(scope) {
                 var diff = scope.diff;
@@ -527,7 +536,7 @@
                 var c = countlyGlobal.timezones[country];
                 c && c.z && c.z.forEach(function(item) {
                     for (var zone in item) {
-                        zones.push({value: item[zone], label: countlyGlobal.timezones[country].n + ' ' + zone});
+                        zones.push({value: item[zone], label: countlyGlobal.timezones[country].n + ' ' + zone, image: "background-image:url(" + countlyGlobal.path + "/images/flags/" + country.toLowerCase() + ".png)"});
                     }
                 });
             }
@@ -693,7 +702,7 @@
         data: function() {
             var appsSelectorOption = [];
             for (var id in countlyGlobal.apps) {
-                appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
+                appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id, image: "background-image:url(" + countlyGlobal.apps[id].image + ")"});
             }
 
             return {
@@ -787,6 +796,7 @@
                 hookDetail.error_logs && hookDetail.error_logs.forEach(function(item) {
                     item.timestamp_string = moment(item.timestamp).format();
                 });
+                hookDetail.error_logs = hookDetail.error_logs && hookDetail.error_logs.reverse();
                 return hookDetail.error_logs || [];
             },
             detailLogsInitialized: function() {
@@ -815,15 +825,13 @@
         data: function() {
             return {
                 deleteElement: null,
-                showDeleteDialog: false,
-                deleteMessage: '',
             };
         },
         computed: {
             hookDetail: function() {
                 var hookDetail = this.$store.getters["countlyHooks/hookDetail"];
                 hookDetail.created_at_string = moment(hookDetail.created_at).fromNow();
-                hookDetail.lastTriggerTimestampString = moment(hookDetail.lastTriggerTimestamp).fromNow();
+                hookDetail.lastTriggerTimestampString = hookDetail.lastTriggerTimestamp && moment(hookDetail.lastTriggerTimestamp).fromNow() || "-";
                 return hookDetail;
             }
         },
@@ -838,18 +846,16 @@
                     this.openDrawer("detail", data);
                 }
                 else if (command === "delete-comment") {
+                    var self = this;
                     this.deleteElement = scope;
-                    this.showDeleteDialog = true;
-                    this.deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
+                    var deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
+                    CountlyHelpers.confirm(deleteMessage, "red", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        self.$store.dispatch("countlyHooks/deleteHook", self.deleteElement._id);
+                    }, [jQuery.i18n.map['common.no-dont-delete'], jQuery.i18n.map['common.delete']], {title: jQuery.i18n.map['hooks.delete-confirm-title']});
                 }
-            },
-            closeDeleteForm: function() {
-                this.deleteElement = null;
-                this.showDeleteDialog = false;
-            },
-            submitDeleteForm: function() {
-                this.$store.dispatch("countlyHooks/deleteHook", this.deleteElement._id);
-                this.showDeleteDialog = false;
             },
         },
         beforeCreate: function() {

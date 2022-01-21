@@ -7,9 +7,12 @@
     var MB_TO_BYTES_RATIO = 1000000;
     var DAY_TO_MS_RATIO = 86400 * 1000;
     var HOUR_TO_MS_RATIO = 3600000;
+    var ERROR_MESSAGE_REGEX = /^([ia])([0-9]+)(\+(.+))?$/;
 
     var DEFAULT_LOCALIZATION_VALUE = 'default';
     var DEFAULT_LOCALIZATION_LABEL = 'Default';
+    var ALL_FILTER_OPTION_VALUE = 'all';
+    var ALL_FILTER_OPTION_LABEL = CV.i18n("push-notification.status-filter-all");
 
     var TypeEnum = Object.freeze({
         ONE_TIME: "oneTime",
@@ -243,8 +246,9 @@
                         mediaMime: "",
                     }
                 },
+                error: null,
+                errors: [],
                 status: "",
-                queryFilter: null,
                 messageType: MessageTypeEnum.CONTENT,
                 localizations: [this.getDefaultLocalization()],
                 cohorts: [],
@@ -419,7 +423,10 @@
             });
             return result;
         },
-        shouldAddFilter: function(model) {
+        shouldAddFilter: function(model, options) {
+            if (options.queryFilter && options.from) {
+                return true;
+            }
             if (model.type === TypeEnum.ONE_TIME) {
                 return model.oneTime.targeting === TargetingEnum.SEGMENTED;
             }
@@ -477,6 +484,9 @@
                 return result.name;
             }
             return result;
+        },
+        isInternationalizationFound: function(value) {
+            return value !== CV.i18n(value);
         }
     };
 
@@ -698,23 +708,65 @@
                 }
                 throw new Error('Unknown push notification type:', dto);
             },
+            mapOneTimeSeriesData: function(dto) {
+                var monthlySendData = {};
+                monthlySendData[PlatformEnum.ALL] = dto.sent.monthly.data || [];
+                monthlySendData[PlatformEnum.ANDROID] = dto.sent.platforms[PlatformDtoEnum.ANDROID].monthly.data || [];
+                monthlySendData[PlatformEnum.IOS] = dto.sent.platforms[PlatformDtoEnum.IOS].monthly.data || [];
+                var monthlyActionsData = {};
+                monthlyActionsData[PlatformEnum.ALL] = dto.actions.monthly.data || [];
+                monthlyActionsData[PlatformEnum.ANDROID] = dto.actions.platforms[PlatformDtoEnum.ANDROID].monthly.data || [];
+                monthlyActionsData[PlatformEnum.IOS] = dto.actions.platforms[PlatformDtoEnum.IOS].monthly.data || [];
+                var weeklySentData = {};
+                weeklySentData[PlatformEnum.ALL] = dto.sent.weekly.data || [];
+                weeklySentData[PlatformEnum.ANDROID] = dto.sent.platforms[PlatformDtoEnum.ANDROID].weekly.data || [];
+                weeklySentData[PlatformEnum.IOS] = dto.sent.platforms[PlatformDtoEnum.IOS].weekly.data || [];
+                var weeklyActionsData = {};
+                weeklyActionsData[PlatformEnum.ALL] = dto.actions.weekly.data || [];
+                weeklyActionsData[PlatformEnum.ANDROID] = dto.actions.platforms[PlatformDtoEnum.ANDROID].weekly.data || [];
+                weeklyActionsData[PlatformEnum.IOS] = dto.actions.platforms[PlatformDtoEnum.IOS].weekly.data || [];
+                return {
+                    monthly: [{data: monthlySendData, label: messagesSentLabel}, {data: monthlyActionsData, label: actionsPerformedLabel}],
+                    weekly: [{data: weeklySentData, label: messagesSentLabel}, {data: weeklyActionsData, label: actionsPerformedLabel}],
+                };
+            },
+            mapAutomaticSeriesData: function(dto) {
+                var dailySendData = {};
+                dailySendData[PlatformEnum.ALL] = dto.sent_automated.daily.data || [];
+                dailySendData[PlatformEnum.ANDROID] = dto.sent_automated.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
+                dailySendData[PlatformEnum.IOS] = dto.sent_automated.platforms[PlatformDtoEnum.IOS].daily.data || [];
+                var dailyActionsData = {};
+                dailyActionsData[PlatformEnum.ALL] = dto.actions_automated.monthly.data || [];
+                dailyActionsData[PlatformEnum.ANDROID] = dto.actions_automated.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
+                dailyActionsData[PlatformEnum.IOS] = dto.actions_automated.platforms[PlatformDtoEnum.IOS].daily.data || [];
+                return {
+                    daily: [{data: dailySendData || [], label: messagesSentLabel}, {data: dailyActionsData || [], label: actionsPerformedLabel}]
+                };
+            },
+            mapTransactionalSeriesData: function(dto) {
+                var dailySendData = {};
+                dailySendData[PlatformEnum.ALL] = dto.sent_tx.daily.data || [];
+                dailySendData[PlatformEnum.ANDROID] = dto.sent_tx.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
+                dailySendData[PlatformEnum.IOS] = dto.sent_tx.platforms[PlatformDtoEnum.IOS].daily.data || [];
+                var dailyActionsData = {};
+                dailyActionsData[PlatformEnum.ALL] = dto.actions_tx.monthly.data || [];
+                dailyActionsData[PlatformEnum.ANDROID] = dto.actions_tx.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
+                dailyActionsData[PlatformEnum.IOS] = dto.actions_tx.platforms[PlatformDtoEnum.IOS].daily.data || [];
+                return {
+                    daily: [{data: dailySendData || [], label: messagesSentLabel}, {data: dailyActionsData || [], label: actionsPerformedLabel}]
+                };
+            },
             mapSeries: function(dto, type) {
                 if (type === TypeEnum.ONE_TIME) {
-                    return {
-                        monthly: [{data: dto.sent.monthly.data || [], label: messagesSentLabel}, {data: dto.actions.monthly.data || [], label: actionsPerformedLabel}],
-                        weekly: [{data: dto.sent.weekly.data || [], label: messagesSentLabel}, {data: dto.actions.weekly.data || [], label: actionsPerformedLabel}],
-                    };
+                    return this.mapOneTimeSeriesData(dto);
                 }
-                else if (type === TypeEnum.AUTOMATIC) {
-                    return {
-                        daily: [{data: dto.sent_automated.daily.data || [], label: messagesSentLabel}, {data: dto.actions_automated.daily.data || [], label: actionsPerformedLabel}]
-                    };
+                if (type === TypeEnum.AUTOMATIC) {
+                    return this.mapAutomaticSeriesData(dto);
                 }
-                else {
-                    return {
-                        daily: [{data: dto.sent_tx.daily.data || [], label: messagesSentLabel}, {data: dto.actions_tx.daily.data || [], label: actionsPerformedLabel}]
-                    };
+                if (type === TypeEnum.TRANSACTIONAL) {
+                    return this.mapTransactionalSeriesData(dto);
                 }
+                throw new Error('Unknown push notification type:' + type);
             },
             mapPeriods: function(dto, type) {
                 if (type === TypeEnum.ONE_TIME) {
@@ -775,9 +827,42 @@
                 }
                 return TargetingEnum.ALL;
             },
+            mapErrorWithoutCode: function(errorsDto, errorKey) {
+                return {
+                    code: CV.i18n('push-notification.error-code.' + errorKey),
+                    codePostfix: '',
+                    affectedUsers: errorsDto[errorKey],
+                    description: CV.i18n('push-notification.error-code.' + errorKey + '.desc', '<a target="blank" href="https://support.count.ly/hc/en-us/articles/360037270012-Push-notifications#troubleshooting">Troubleshooting</a>'),
+                };
+            },
+            mapErrorWithCode: function(errorsDto, errorKey) {
+                var errorCodeParts = errorKey.match(ERROR_MESSAGE_REGEX);
+                var platformError = errorCodeParts[1];
+                var numberError = errorCodeParts[2];
+                var postfixError = errorCodeParts[4];
+                var result = {
+                    code: CV.i18n('push-notification.error-code.' + platformError + numberError),
+                    codePostfix: postfixError,
+                    affectedUsers: errorsDto[errorKey],
+                    description: CV.i18n('push-notification.error-code.' + errorKey + '.desc')
+                };
+                if (!countlyPushNotification.helper.isInternationalizationFound(result.description) && countlyPushNotification.helper.isInternationalizationFound('push-notification.error-code.' + platformError + numberError + '.desc')) {
+                    result.description = CV.i18n('push-notification.error-code.' + platformError + numberError + '.desc');
+                }
+                return result;
+            },
             mapErrors: function(dto) {
-                //TODO-LA: map push notification message errors;
-                return {codes: dto.result.errorCodes, messages: dto.result.error};
+                var self = this;
+                if (!dto.errors) {
+                    return [];
+                }
+                return Object.keys(dto.errors).map(function(errorKey) {
+                    var errorCodeParts = errorKey.match(ERROR_MESSAGE_REGEX);
+                    if (errorCodeParts && errorCodeParts.length) {
+                        return self.mapErrorWithCode(dto.errors, errorKey);
+                    }
+                    return self.mapErrorWithoutCode(dto.errors, errorKey);
+                });
             },
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
@@ -977,6 +1062,7 @@
                     message: this.mapMessageLocalizationsList(localizations, dto),
                     settings: this.mapSettings(dto),
                     messageType: dto.info && dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
+                    error: dto.error,
                     errors: this.mapErrors(dto),
                     locations: dto.filter && dto.filter.geos || [],
                     cohorts: dto.filter && dto.filter.cohorts || [],
@@ -1048,7 +1134,7 @@
                 if (pushNotificationType === TypeEnum.TRANSACTIONAL) {
                     return this.mapDtoToTransactionalModel(dto);
                 }
-                throw new Error('Unknown push notification type, ' + pushNotificationType);
+                throw new Error('Unknown push notification type:' + pushNotificationType);
             },
             mapMediaMetadata: function(metadataDto) {
                 var typeAndFileExtension = metadataDto.mediaMime.split('/');
@@ -1443,8 +1529,17 @@
             },
             mapFilters: function(model, options) {
                 var result = {};
-                if (model.user) {
-                    result.user = model.user;
+                if (options.queryFilter && options.from === 'user') {
+                    result.user = JSON.stringify(options.queryFilter.queryObject);
+                }
+                if (options.queryFilter && options.from === 'drill') {
+                    var drillFilter = Object.assign({}, options.queryFilter);
+                    var period = countlyCommon.getPeriod();
+                    drillFilter.period = period;
+                    if (Array.isArray(period)) {
+                        drillFilter.period = JSON.stringify(period);
+                    }
+                    result.drill = JSON.stringify(drillFilter);
                 }
                 if (model.type === TypeEnum.ONE_TIME && model[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED && model.cohorts.length) {
                     result.cohorts = model.cohorts;
@@ -1454,9 +1549,6 @@
                 }
                 if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
                     result.geos = model.locations;
-                }
-                if (model.drill) {
-                    result.drill = model.drill;
                 }
                 return Object.keys(result).length === 0 ? null : result;
             },
@@ -1641,6 +1733,8 @@
     countlyPushNotification.service = {
         DEFAULT_LOCALIZATION_VALUE: DEFAULT_LOCALIZATION_VALUE,
         DEFAULT_LOCALIZATION_LABEL: DEFAULT_LOCALIZATION_LABEL,
+        ALL_FILTER_OPTION_VALUE: ALL_FILTER_OPTION_VALUE,
+        ALL_FILTER_OPTION_LABEL: ALL_FILTER_OPTION_LABEL,
         TypeEnum: TypeEnum,
         PeriodEnum: PeriodEnum,
         PlatformEnum: PlatformEnum,
@@ -1847,7 +1941,7 @@
                     platforms: platformsDto,
                 };
                 var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel, options);
-                if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel) && filtersDto) {
+                if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel, options) && filtersDto) {
                     data.filter = filtersDto;
                 }
                 countlyPushNotification.api.estimate(data).then(function(response) {
@@ -2041,7 +2135,7 @@
                 totalSent: totalSent,
             },
             selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
-            statusFilter: countlyPushNotification.service.StatusEnum.ALL,
+            statusFilter: ALL_FILTER_OPTION_VALUE,
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
             isDashboardLoading: false,
             areRowsLoading: false,
