@@ -69,10 +69,10 @@ plugins.connectToAllDatabases().then(function() {
         send_test_email: "",
         //data_retention_period: 0,
         batch_processing: true,
-        batch_on_master: false,
+        //batch_on_master: false,
         batch_period: 10,
         batch_read_processing: true,
-        batch_read_on_master: false,
+        //batch_read_on_master: false,
         batch_read_ttl: 600,
         batch_read_period: 60
     });

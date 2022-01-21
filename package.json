@@ -21,7 +21,7 @@
     "mocha": "^9.0.0",
     "nyc": "^15.0.0",
     "should": "13.2.3",
-    "supertest": "6.1.6"
+    "supertest": "6.2.0"
   },
   "scripts": {
     "test": "grunt --verbose"
@@ -31,7 +31,7 @@
     "apidoc": "^0.50.2",
     "apidoc-template": "github:kanwarujjaval/dash-apidoc-template",
     "argon2": "0.28.3",
-    "async": "3.2.2",
+    "async": "3.2.3",
     "basic-auth": "2.0.1",
     "bluebird": "3.7.2",
     "body-parser": "1.19.1",
@@ -47,13 +47,13 @@
     "docdash": "1.2.0",
     "ejs": "3.1.6",
     "errorhandler": "1.5.1",
-    "express": "4.17.1",
+    "express": "4.17.2",
     "express-rate-limit": "5.5.1",
     "express-session": "1.17.2",
     "external-ip": "2.3.1",
     "formidable": "1.2.2",
     "fs-extra": "^10.0.0",
-    "geoip-lite": "1.4.2",
+    "geoip-lite": "1.4.3",
     "grunt": "1.4.1",
     "grunt-cli": "1.4.3",
     "grunt-contrib-concat": "2.0.0",
@@ -86,7 +86,7 @@
     "puppeteer": "^5.5.0",
     "request": "2.88.2",
     "sass": "^1.32.8",
-    "uglify-js": "3.10.4",
+    "uglify-js": "3.14.5",
     "underscore": "1.13.2",
     "yamljs": "0.3.0"
   },
