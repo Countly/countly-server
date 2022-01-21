@@ -522,6 +522,7 @@
     function log(e) {
         var DEBUG = true;
         if (DEBUG) {
+            // eslint-disable-next-line no-console
             console.log(e);
         }
     }
