@@ -14,6 +14,7 @@
                 <el-radio-group
                     class="bu-columns bu-is-multiline bu-m-0"
                     v-model="drawerScope.editedObject.widget_type"
+                    :disabled="drawerScope.editedObject.__action === 'edit'"
                     @change="onReset">
                     <div
                         v-for="(item, index) in widgetTypes"

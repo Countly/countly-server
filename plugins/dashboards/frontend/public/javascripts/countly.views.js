@@ -277,8 +277,13 @@
                 }
 
                 this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(id) {
-                    if (!isEdited && id) {
-                        self.$emit("add-widget", {id: id, widget_type: doc.widget_type});
+                    if (id) {
+                        if (isEdited) {
+                            self.$store.dispatch("countlyDashboards/widgets/get", doc._id);
+                        }
+                        else {
+                            self.$emit("add-widget", {id: id, widget_type: doc.widget_type});
+                        }
                     }
                 });
             },
