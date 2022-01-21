@@ -48,7 +48,7 @@
     <div class="text-medium text-heading">
        {{i18n('hooks.CustomCodeEffect')}} 
     </div>
-        <textarea v-html="value.code" @change="textChange" style="width:100%;box-sizing: border-box;border: 1px solid #d6d6d6;" name="custom-code-input" rows="5"  cols="60" placeholder="//Javascript code here"></textarea>
+        <textarea v-html="value.code" @change="textChange" style="width:100%;resize: none; box-sizing: border-box;border: 1px solid #d6d6d6;" name="custom-code-input" rows="5"  cols="60" placeholder="//Javascript code here"></textarea>
 </div>
 </script>
 
@@ -78,7 +78,7 @@
         <div class="text-medium text-heading">
         {{i18n('hooks.http-intro')}}
         </div>
-        <textarea v-html="value.requestData"  @change="textChange" style="width:100%;box-sizing: border-box;border: 1px solid #d6d6d6;" name="http-effect-params" rows="5"  cols="60"></textarea>
+        <textarea v-html="value.requestData"  @change="textChange" style="width:100%;box-sizing: border-box; resize: none; border: 1px solid #d6d6d6;" name="http-effect-params" rows="5"  cols="60"></textarea>
     </div>
     
 </div>
