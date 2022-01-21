@@ -1797,11 +1797,10 @@ var AppRouter = Backbone.Router.extend({
                     data: {check_session: true},
                     success: function(result) {
                         if (result === "logout") {
-                            $("#user-logout").click();
+                            CountlyHelpers.logout();
                         }
                         if (result === "login") {
-                            $("#user-logout").click();
-                            window.location = "/login";
+                            CountlyHelpers.logout();
                         }
                         setTimeout(function() {
                             validateSession();
@@ -1821,11 +1820,10 @@ var AppRouter = Backbone.Router.extend({
                         url: countlyGlobal.path + "/session",
                         success: function(result) {
                             if (result === "logout") {
-                                $("#user-logout").click();
+                                CountlyHelpers.logout();
                             }
                             if (result === "login") {
-                                $("#user-logout").click();
-                                window.location = "/login";
+                                CountlyHelpers.logout();
                             }
                             else if (result === "success") {
                                 shouldRecordAction = false;
