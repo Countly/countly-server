@@ -27,4 +27,12 @@
             }
         }
     }
+
+    &__drawer {
+        &-widget-type {
+            width: calc(100% - 20px);
+            display: inline-block;
+            margin-top: -3px;
+        }
+    }
 }
