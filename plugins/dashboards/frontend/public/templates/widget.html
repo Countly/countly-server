@@ -1,0 +1,46 @@
+<div class="grid-stack-item"
+    :id="widget._id"
+    :gs-id="widget._id"
+    :gs-x="widget.position && widget.position[0]"
+    :gs-y="widget.position && widget.position[1]"
+    :gs-w="widget.size && widget.size[0]"
+    :gs-h="widget.size && widget.size[1]"
+    :gs-locked="isWidgetDisabled(widget) || isWidgetInvalid(widget)"
+    :gs-no-resize="isWidgetDisabled(widget) || isWidgetInvalid(widget)"
+    :gs-no-move="isWidgetDisabled(widget) || isWidgetInvalid(widget)"
+    :gs-min-w="settings.grid.dimensions().minWidth"
+    :gs-min-h="settings.grid.dimensions().minHeight"
+    @click="settings.grid.onClick && settings.grid.onClick(widget)">
+
+    <div class="grid-stack-item-content bu-p-4">
+        <widget-disabled v-if="isWidgetDisabled(widget)" :data="widget">
+            <template v-slot:action v-if="canUpdate">
+                <div class="bu-level-item">
+                    <cly-more-options @command="$emit('command', $event, widget)">
+                        <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                    </cly-more-options>
+                </div>
+            </template>
+        </widget-disabled>
+        <widget-invalid v-else-if="isWidgetInvalid(widget)" :data="widget">
+            <template v-slot:action v-if="canUpdate">
+                <div class="bu-level-item">
+                    <cly-more-options @command="$emit('command', $event, widget)">
+                        <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                    </cly-more-options>
+                </div>
+            </template>
+        </widget-invalid>
+        <component v-else :is="settings.grid.component" :data="widget">
+            <template v-slot:action v-if="canUpdate">
+                <div class="bu-level-item">
+                    <cly-more-options @command="$emit('command', $event, widget)">
+                        <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                        <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                    </cly-more-options>
+                </div>
+            </template>
+        </component>
+    </div>
+
+</div>

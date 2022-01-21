@@ -1,4 +1,4 @@
-/*global jQuery, countlyCommon, CV, countlyVue, _ */
+/*global jQuery, countlyCommon, CV, countlyVue, _, CountlyHelpers */
 
 (function(countlyDashboards) {
 
@@ -26,7 +26,7 @@
                     url: countlyCommon.API_PARTS.data.r + "/dashboards/all",
                     data: {},
                     dataType: "json"
-                });
+                }, {disableAutoCatch: true});
             },
             get: function(dashboardId, isRefresh) {
                 return CV.$.ajax({
@@ -38,7 +38,7 @@
                         "action": (isRefresh) ? "refresh" : ""
                     },
                     dataType: "json",
-                });
+                }, {disableAutoCatch: true});
             },
             create: function(settings) {
                 return CV.$.ajax({
@@ -55,7 +55,7 @@
                         "theme": settings.theme
                     },
                     dataType: "json"
-                });
+                }, {disableAutoCatch: true});
             },
             update: function(dashboardId, settings) {
                 return CV.$.ajax({
@@ -72,7 +72,7 @@
                         "theme": settings.theme
                     },
                     dataType: "json"
-                });
+                }, {disableAutoCatch: true});
             },
             delete: function(dashboardId) {
                 return CV.$.ajax({
@@ -82,7 +82,7 @@
                         "dashboard_id": dashboardId
                     },
                     dataType: "json"
-                });
+                }, {disableAutoCatch: true});
             }
         },
         widgets: {
@@ -95,7 +95,7 @@
                         "dashboard_id": dashboardId,
                         "widget_id": widgetId
                     }
-                });
+                }, {disableAutoCatch: true});
             },
             create: function(dashboardId, widget) {
                 return CV.$.ajax({
@@ -106,7 +106,7 @@
                         "widget": JSON.stringify(widget)
                     },
                     dataType: "json",
-                });
+                }, {disableAutoCatch: true});
             },
             update: function(dashboardId, widgetId, widget) {
                 return CV.$.ajax({
@@ -117,7 +117,7 @@
                         "widget_id": widgetId,
                         "widget": JSON.stringify(widget)
                     },
-                });
+                }, {disableAutoCatch: true});
             },
             delete: function(dashboardId, widgetId) {
                 return CV.$.ajax({
@@ -128,7 +128,7 @@
                         "widget_id": widgetId
                     },
                     dataType: "json"
-                });
+                }, {disableAutoCatch: true});
             }
         }
     };
@@ -186,6 +186,9 @@
                 setAll: function(context, widgets) {
                     context.commit("setAll", widgets);
                 },
+                remove: function(context, id) {
+                    context.commit("remove", id);
+                },
                 get: function(context, widgetId) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
 
@@ -193,14 +196,34 @@
                         /*
                             Update the widget in the widget store.
                         */
-                        context.commit("update", w && w[0]);
+                        var widget = w && w[0];
+                        context.commit("update", widget);
+                        return widget;
+                    }).catch(function(e) {
+                        log(e);
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while getting the widget!",
+                            type: "error"
+                        });
+
+                        return false;
                     });
                 },
                 create: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var settings = widget.settings || {};
 
-                    return countlyDashboards.service.widgets.create(dashboardId, settings);
+                    return countlyDashboards.service.widgets.create(dashboardId, settings).then(function(id) {
+                        return id;
+                    }).catch(function(e) {
+                        log(e);
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while creating the widget!",
+                            type: "error"
+                        });
+
+                        return false;
+                    });
                 },
                 update: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
@@ -208,14 +231,30 @@
                     var settings = widget.settings;
 
                     return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings).then(function() {
-                        context.dispatch("get", widgetId);
+                        return widgetId;
+                    }).catch(function(e) {
+                        log(e);
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while updating the widget!",
+                            type: "error"
+                        });
+
+                        return false;
                     });
                 },
                 delete: function(context, widgetId) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
 
                     return countlyDashboards.service.widgets.delete(dashboardId, widgetId).then(function() {
-                        context.commit("remove", widgetId);
+                        return true;
+                    }).catch(function(e) {
+                        log(e);
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while deleting the widget!",
+                            type: "error"
+                        });
+
+                        return false;
                     });
                 }
             }
@@ -263,13 +302,13 @@
             setAll: function(state, dashboards) {
                 state.all = dashboards;
             },
-            setDashboard: function(state, dashboard) {
+            setSelectedDashboard: function(state, dashboard) {
                 state.selected = {
                     id: dashboard.id,
                     data: dashboard.data
                 };
             },
-            updateDashboard: function(state, dashboard) {
+            addOrUpdateDashboard: function(state, dashboard) {
                 var index = -1;
                 for (var i = 0; i < state.all.length; i++) {
                     if (state.all[i]._id === dashboard._id) {
@@ -284,6 +323,19 @@
                 else {
                     state.all.push(dashboard);
                 }
+            },
+            removeDashboard: function(state, id) {
+                var index = -1;
+                for (var i = 0; i < state.all.length; i++) {
+                    if (state.all[i]._id === id) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                if (index > -1) {
+                    state.all.splice(index, 1);
+                }
             }
         };
 
@@ -295,43 +347,94 @@
                 return countlyDashboards.service.dashboards.getAll().then(function(res) {
                     var dashboards = res || [];
                     context.dispatch("setAll", dashboards);
+                    return dashboards;
+                }).catch(function(e) {
+                    log(e);
+                    CountlyHelpers.notify({
+                        message: "Something went wrong while fetching all dashboards!",
+                        type: "error"
+                    });
+
+                    return false;
                 });
             },
             getDashboard: function(context, params) {
                 var dashboardId = context.getters.selected.id;
 
-                countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(d) {
+                countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(res) {
+                    var dashbaord = null;
+                    var widgets = [];
+                    var dId = null;
+
+                    if (res && res._id) {
+                        dId = res._id;
+
+                        if (dId === dashboardId) {
+                            dashbaord = res;
+                            widgets = dashbaord.widgets || [];
+                        }
+                        else {
+                            dId = null;
+                        }
+                    }
+
                     /*
                         On getting the dashboard, Set the selected dashboard data
                         as well as update the local list of all dashboards.
+                        If the dashboard is not present in the local list, add it there
                     */
-                    context.commit("setDashboard", {id: dashboardId, data: d});
-                    context.commit("updateDashboard", d);
+
+                    context.commit("setSelectedDashboard", {id: dId, data: dashbaord});
+
+                    if (dashbaord) {
+                        context.commit("addOrUpdateDashboard", dashbaord);
+                    }
 
                     /*
                         Set all widgets of this dashboard here in the vuex store - Start
                     */
-                    context.dispatch("widgets/setAll", d && d.widgets || []);
+                    context.dispatch("widgets/setAll", widgets);
                     /*
                         Set all widgets of this dashboard here in the vuex store - End
                     */
 
-                    return d;
+                    return dashbaord;
+                }).catch(function(e) {
+                    log(e);
+                    CountlyHelpers.notify({
+                        message: "Something went wrong while fetching the dashbaord!",
+                        type: "error"
+                    });
+
+                    return false;
                 });
             },
-            setDashboard: function(context, data) {
-                data = data || {};
+            setDashboard: function(context, params) {
+                /**
+                 * params will null when dashbaord is deleted
+                 * params will also be null there are no dashboards
+                 * {
+                 *     id: "",
+                 *     isRefresh: false
+                 * }
+                 */
+
+                params = params || {};
+
+                var dashboardId = params.id;
 
                 var dash = context.getters.all.find(function(dashboard) {
-                    return dashboard._id === data.id;
+                    return dashboard._id === dashboardId;
                 });
 
-                context.commit("setDashboard", {id: data.id, data: dash});
+                var widgets = dash && dash.widgets || [];
+
+                context.commit("setSelectedDashboard", {id: dashboardId, data: dash});
 
                 /*
                     Set all widgets of this dashboard here in the vuex store - Start
                 */
-                context.dispatch("widgets/setAll", dash && dash.widgets || []);
+                context.dispatch("widgets/setAll", widgets);
                 /*
                     Set all widgets of this dashboard here in the vuex store - End
                 */
@@ -342,11 +445,8 @@
                     Until the request is processing, we will show the loading states for the widgets if no data is available
                 */
 
-                if (data.id) {
-                    /*
-                        data.id will be null when the dashboard is deleted.
-                    */
-                    context.dispatch("getDashboard", data);
+                if (dashboardId) {
+                    context.dispatch("getDashboard", params);
                 }
             },
 
@@ -358,21 +458,15 @@
             },
             create: function(context, settings) {
                 return countlyDashboards.service.dashboards.create(settings).then(function(id) {
-                    /*
-                        Dispatching getAll so that the list of dashboards in the sidebar gets updated.
-                        This is required because we navigate the new dashboard after creating it.
-                        And when we navigate, the sidebar component is not remounted as its already mounted.
-                        Basically its out of the backbone render view.
-                        However, the sidebar will react to the all getter whenever all state changes.
-
-                        We could have also dispatched the setDashboard action here itself, but then
-                        the url would not be updated in the browser. To update that we navigate the new url
-                        resolved promise and that inturn sets the dashboard data automatically.
-                    */
-
-                    return context.dispatch("getAll").then(function() {
-                        return id;
+                    return id;
+                }).catch(function(e) {
+                    log(e);
+                    CountlyHelpers.notify({
+                        message: "Something went wrong while creating the dashboard!",
+                        type: "error"
                     });
+
+                    return false;
                 });
             },
             update: function(context, settings) {
@@ -380,6 +474,15 @@
 
                 return countlyDashboards.service.dashboards.update(dashboardId, settings).then(function() {
                     context.dispatch("getDashboard");
+                    return true;
+                }).catch(function(e) {
+                    log(e);
+                    CountlyHelpers.notify({
+                        message: "Something went wrong while updating the dashboard!",
+                        type: "error"
+                    });
+
+                    return false;
                 });
             },
             duplicate: function(context, settings) {
@@ -388,9 +491,17 @@
             },
             delete: function(context, id) {
                 return countlyDashboards.service.dashboards.delete(id).then(function() {
-                    context.dispatch("getAll").then(function() {
-                        context.dispatch("setDashboard", {id: null, data: null});
+                    context.commit("removeDashboard", id);
+                    context.dispatch("setDashboard");
+                    return true;
+                }).catch(function(e) {
+                    log(e);
+                    CountlyHelpers.notify({
+                        message: "Something went wrong while deleting the dashboard!",
+                        type: "error"
                     });
+
+                    return false;
                 });
             }
         };
@@ -404,5 +515,16 @@
             destroy: false
         });
     };
+    /**
+     * Utility method to log errors
+     * @param  {Object} e - error object
+     */
+    function log(e) {
+        var DEBUG = true;
+        if (DEBUG) {
+            // eslint-disable-next-line no-console
+            console.log(e);
+        }
+    }
 
 })(window.countlyDashboards = window.countlyDashboards || {});

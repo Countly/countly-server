@@ -155,13 +155,8 @@
                 required: true,
             }
         },
-        data: function() {
-            return {
-                count: this.value
-            };
-        },
         computed: {
-            appCount: {
+            count: {
                 get: function() {
                     return this.value;
                 },

@@ -29,9 +29,15 @@
         }
     };
 
-    var EmptyDashboard = countlyVue.views.BaseView.extend({
-        template: '#dashboards-empty',
-    });
+    var DashboardMixin = {
+        methods: {
+            addDashboard: function() {
+                var empty = countlyDashboards.factory.dashboards.getEmpty();
+                empty.__action = "create";
+                this.openDrawer("dashboards", empty);
+            }
+        }
+    };
 
     var DisabledWidget = countlyVue.views.BaseView.extend({
         template: '#dashboards-disabled',
@@ -117,9 +123,11 @@
                 }
 
                 this.$store.dispatch(action, obj).then(function(id) {
-                    if (__action === "duplicate" ||
+                    if (id) {
+                        if (__action === "duplicate" ||
                         __action === "create") {
-                        app.navigate('#/custom/' + id, true);
+                            app.navigate('#/custom/' + id, true);
+                        }
                     }
                 });
             },
@@ -137,6 +145,76 @@
                     this.saveButtonLabel = this.i18nM("dashboards.create-dashboard");
                 }
             }
+        }
+    });
+
+    var NoWidget = countlyVue.views.BaseView.extend({
+        template: '#dashboards-nowidget',
+        methods: {
+            newWidget: function() {
+                this.$emit("new-widget");
+            }
+        }
+    });
+
+    var NoDashboard = countlyVue.views.BaseView.extend({
+        template: '#dashboards-nodashboard',
+        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
+        components: {
+            "dashboards-drawer": DashboardDrawer
+        }
+    });
+
+    var WidgetComponent = countlyVue.views.BaseView.extend({
+        template: '#dashboards-widget',
+        props: {
+            widget: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            settings: {
+                type: Object,
+                default: function() {
+                    return {
+                        grid: {
+                            dimensions: function() {
+                                return {};
+                            }
+                        },
+                        drawer: {
+                            getEmpty: function() {
+                                return {};
+                            }
+                        }
+                    };
+                }
+            }
+        },
+        components: {
+            "widget-disabled": DisabledWidget,
+            "widget-invalid": InvalidWidget
+        },
+        computed: {
+            canUpdate: function() {
+                var dashboard = this.$store.getters["countlyDashboards/selected"];
+                return dashboard.data && dashboard.data.is_editable;
+            }
+        },
+        methods: {
+            isWidgetDisabled: function(widget) {
+                return widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
+            },
+            isWidgetInvalid: function(widget) {
+                return widget.isPluginWidget && (widget.dashData && (widget.dashData.isValid === false));
+            }
+        },
+        mounted: function() {
+            /**
+             * Emitting ready event is useful when we are creating new widgets.
+             */
+            this.$emit("ready", this.widget._id);
         }
     });
 
@@ -196,10 +274,10 @@
                     obj[key] = doc[key];
                 }
 
-                this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function() {
-                    self.$store.dispatch("countlyDashboards/widgets/get", doc._id).then(function() {
-                        //Add widet to grid ?
-                    });
+                this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(id) {
+                    if (!isEdited && id) {
+                        self.$emit("add-widget", {id: id, widget_type: doc.widget_type});
+                    }
                 });
             },
             onCopy: function(doc) {
@@ -229,25 +307,51 @@
         mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
         components: {
             "widgets-drawer": WidgetDrawer,
-            "widget-disabled": DisabledWidget,
-            "widget-invalid": InvalidWidget
+            "widget": WidgetComponent
         },
         data: function() {
             return {
-                grid: null
+                grid: null,
             };
         },
         computed: {
             allWidgets: function() {
-                var widgets = this.$store.getters["countlyDashboards/widgets/all"];
-                return widgets;
-            },
-            canUpdate: function() {
-                var dashboard = this.$store.getters["countlyDashboards/selected"];
-                return dashboard.data.is_editable;
+                var allWidgets = JSON.parse(JSON.stringify(this.$store.getters["countlyDashboards/widgets/all"]));
+                return allWidgets;
             }
         },
         methods: {
+            onWidgetAction: function(command, data) {
+                var self = this;
+                var d = JSON.parse(JSON.stringify(data));
+
+                var empty = this.__widgets[d.widget_type].drawer.getEmpty();
+
+                switch (command) {
+                case "edit":
+                    d.__action = "edit";
+                    self.openDrawer("widgets", Object.assign({}, empty, d));
+                    break;
+
+                case "delete":
+                    d.__action = "delete";
+                    CountlyHelpers.confirm(this.i18nM("dashboards.delete-widget-text"), "popStyleGreen", function(result) {
+                        if (!result) {
+                            return false;
+                        }
+
+                        self.$store.dispatch("countlyDashboards/widgets/delete", d._id).then(function(res) {
+                            if (res) {
+                                var node = document.getElementById(d._id);
+                                self.grid.removeWidget(node);
+                                self.$store.dispatch("countlyDashboards/widgets/remove", d._id);
+                            }
+                        });
+
+                    }, [this.i18nM("common.no-dont-delete"), this.i18nM("dashboards.delete-widget")], {title: this.i18nM("dashboards.delete-widget-title")});
+                    break;
+                }
+            },
             initGrid: function() {
                 var self = this;
                 this.grid = GridStack.init({
@@ -273,42 +377,87 @@
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position}});
                     }, 1000);
                 });
+
+                this.grid.on("added", function(event, element) {
+                    /**
+                     * This event is emitted when the widget is added to the grid.
+                     * After it has been added to grid we need to update it in vuex aswell.
+                     * But before we update it in vuex we need to update its size and position.
+                     *
+                     * We cannot add widgets to vuex without size or position since its a
+                     * reactive property on which "allWidgets" variable depends.
+                     *
+                     * So, once we update the size and position of the widget, then we fetch it
+                     * from the server and add it to vuex.
+                     *
+                     * Next, we remove the dummy widget that we added manually to grid,
+                     * since its of no use anymore. Its only use was to place the widget in the grid
+                     * in an available space.
+                     */
+                    var node = element[0];
+
+                    if (node && node.new) {
+                        var widgetId = node.id;
+                        var position = [node.x, node.y];
+                        var size = [node.w, node.h];
+
+                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position, size: size}}).then(function(res) {
+                            if (res) {
+                                self.$store.dispatch("countlyDashboards/widgets/get", widgetId).then(function() {
+                                    self.grid.removeWidget(node.el);
+                                });
+                            }
+                        });
+                    }
+                });
+            },
+            addWidget: function(payload) {
+                /**
+                 * So widget has been created on the server.
+                 * Now we want to add it to the grid.
+                 * Since there is no direct way to communicate between vue and gridstack,
+                 * we need to add it to the grid manually.
+                 *
+                 * After the widget is added to the grid manually,
+                 * grid will "added" event
+                 */
+                var id = payload.id;
+                var widgetType = payload.widget_type;
+
+                if (id) {
+                    var settings = this.__widgets[widgetType];
+                    var node = {
+                        id: id,
+                        autoPosition: true,
+                        w: settings.grid.dimensions().width,
+                        h: settings.grid.dimensions().height,
+                        minW: settings.grid.dimensions().minWidth,
+                        minH: settings.grid.dimensions().minHeight,
+                        new: true
+                    };
+
+                    this.grid.addWidget(node);
+                }
+            },
+            onReady: function(id) {
+                /**
+                 * this.grid will be null on first load.
+                 * Since ready event is fired by the children on mounting.
+                 * And until they all mount, mount of this component will not be called.
+                 * Hence no grid.
+                 *
+                 * However, once we have grid available, and we are creating a new widget,
+                 * we have to make it.
+                 *
+                 * For the first load, initGrid is doing the work of makeWidget.
+                 */
+
+                if (this.grid) {
+                    this.grid.makeWidget("#" + id);
+                }
             },
             destroyGrid: function() {
                 this.grid.destroy();
-            },
-            onWidgetAction: function(command, data) {
-                var self = this;
-                var d = JSON.parse(JSON.stringify(data));
-
-                var empty = this.__widgets[d.widget_type].drawer.getEmpty();
-
-                switch (command) {
-                case "edit":
-                    d.__action = "edit";
-                    self.openDrawer("widgets", Object.assign({}, empty, d));
-                    break;
-
-                case "delete":
-                    d.__action = "delete";
-                    CountlyHelpers.confirm(this.i18nM("dashboards.delete-widget-text"), "popStyleGreen", function(result) {
-                        if (!result) {
-                            return false;
-                        }
-
-                        self.$store.dispatch("countlyDashboards/widgets/delete", d._id).then(function() {
-                            // self.grid.removeWidget(document.querySelector("[data-id='" + d._id + "']"));
-                        });
-
-                    }, [this.i18nM("common.no-dont-delete"), this.i18nM("dashboards.delete-widget")], {title: this.i18nM("dashboards.delete-widget-title")});
-                    break;
-                }
-            },
-            isWidgetDisabled: function(widget) {
-                return widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
-            },
-            isWidgetInvalid: function(widget) {
-                return widget.isPluginWidget && (widget.dashData && (widget.dashData.isValid === false));
             }
         },
         mounted: function() {
@@ -323,7 +472,8 @@
         template: "#dashboards-main",
         mixins: [countlyVue.mixins.hasDrawers("dashboards"), countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
         components: {
-            "dashboards-empty": EmptyDashboard,
+            "no-dashboard": NoDashboard,
+            "no-widget": NoWidget,
             "dashboards-grid": GridComponent,
             "dashboards-drawer": DashboardDrawer,
             "widgets-drawer": WidgetDrawer
@@ -334,7 +484,11 @@
             };
         },
         computed: {
-            isEmpty: function() {
+            noDashboards: function() {
+                var selected = this.$store.getters["countlyDashboards/selected"];
+                return !(selected.id && selected.data);
+            },
+            noWidgets: function() {
                 return !this.$store.getters["countlyDashboards/widgets/all"].length;
             },
             dashboard: function() {
@@ -378,18 +532,29 @@
                             return false;
                         }
 
-                        self.$store.dispatch("countlyDashboards/delete", d._id);
+                        self.$store.dispatch("countlyDashboards/delete", d._id).then(function(res) {
+                            if (res) {
+                                app.navigate('#/custom');
+                                /**
+                                 * Set the current dashboard id to null
+                                 */
+                                self.dashboardId = null;
+                            }
+                        });
 
                     }, [this.i18nM("common.no-dont-delete"), this.i18nM("dashboards.yes-delete-dashboard")], {title: this.i18nM("dashboards.delete-dashboard-title"), image: "delete-dashboard"});
                     break;
                 }
             },
-            addWidget: function() {
+            newWidget: function() {
                 var empty = {};
                 var defaultEmpty = this.__widgets["time-series"].drawer.getEmpty();
 
                 empty.__action = "create";
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
+            },
+            addWidget: function(id) {
+                this.$refs.grid.addWidget(id);
             }
         },
         beforeMount: function() {
@@ -412,10 +577,12 @@
                     namespace: "dashboards",
                     mapping: {
                         main: "/dashboards/templates/index.html",
-                        empty: "/dashboards/templates/transient/empty-dashboard.html",
+                        nowidget: "/dashboards/templates/transient/no-widget.html",
+                        nodashboard: "/dashboards/templates/transient/no-dashboard.html",
                         disabled: "/dashboards/templates/transient/disabled-widget.html",
                         invalid: "/dashboards/templates/transient/invalid-widget.html",
-                        grid: "/dashboards/templates/grid.html"
+                        grid: "/dashboards/templates/grid.html",
+                        widget: "/dashboards/templates/widget.html",
                     }
                 }
             ]
@@ -443,7 +610,7 @@
 
         var DashboardsMenu = countlyVue.views.create({
             template: CV.T('/dashboards/templates/dashboards-menu.html'),
-            mixins: [countlyVue.mixins.hasDrawers("dashboards")],
+            mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
             components: {
                 "dashboards-drawer": DashboardDrawer
             },
@@ -505,11 +672,6 @@
                     }
 
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
-                },
-                addDashboard: function() {
-                    var empty = countlyDashboards.factory.dashboards.getEmpty();
-                    empty.__action = "create";
-                    this.openDrawer("dashboards", empty);
                 }
             },
             beforeCreate: function() {
