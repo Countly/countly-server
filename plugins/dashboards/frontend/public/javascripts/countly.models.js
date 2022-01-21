@@ -164,7 +164,12 @@
                         state.all.splice(index, 1, widget);
                     }
                     else if (widget._id) {
-                        state.all.push(widget);
+                        if (widget.size && widget.position) {
+                            state.all.push(widget);
+                        }
+                        else {
+                            log("Widgets position or size not available - ", widget);
+                        }
                     }
                 },
                 remove: function(state, widgetId) {
