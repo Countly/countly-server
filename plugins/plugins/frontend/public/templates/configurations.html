@@ -93,6 +93,9 @@
                         </template>
                     </cly-section>
                 </div>
+                <div v-for="view in predefinedViews[selectedConfig]" key="view.id" >
+                    <component :is="view.component"></component>
+                </div>
             </div>
         </div>
         <cly-diff-helper :diff="diff" @discard="unpatch" @save="save"></cly-diff-helper>

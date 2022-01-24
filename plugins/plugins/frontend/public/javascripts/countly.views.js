@@ -295,6 +295,7 @@
                 searchPlaceholder: CV.i18n("common.search"),
                 predefinedLabels: app.configurationsView.predefinedLabels,
                 predefinedInputs: app.configurationsView.predefinedInputs,
+                predefinedViews: app.configurationsView.predefinedViews,
                 predefinedStructure: app.configurationsView.predefinedStructure
             };
         },
@@ -835,12 +836,19 @@
     app.configurationsView = {
         predefinedInputs: {},
         predefinedLabels: {},
+        predefinedViews: {},
         predefinedStructure: {},
         registerInput: function(id, callback) {
             this.predefinedInputs[id] = callback;
         },
         registerLabel: function(id, html) {
             this.predefinedLabels[id] = html;
+        },
+        registerView: function(id, view) {
+            if (!this.predefinedViews[id]) {
+                this.predefinedViews[id] = [];
+            }
+            this.predefinedViews[id].push(view);
         },
         registerStructure: function(id, obj) {
             this.predefinedStructure[id] = obj;
@@ -919,8 +927,6 @@
     app.configurationsView.registerInput("security.robotstxt", {input: "el-input", attrs: {type: "textarea", rows: 5}});
 
     app.configurationsView.registerInput("security.api_additional_headers", {input: "el-input", attrs: {type: "textarea", rows: 5}});
-
-    app.configurationsView.registerInput("push.proxypass", {input: "el-input", attrs: {type: "password"}});
 
     app.configurationsView.registerInput("api.reports_regenerate_interval", {
         input: "el-select",
