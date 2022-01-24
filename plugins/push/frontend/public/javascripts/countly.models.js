@@ -106,6 +106,11 @@
         API: 'api'
     });
 
+    var AddTestUserDefinitionTypeEnum = Object.freeze({
+        USER_ID: 'userId',
+        COHORT: 'cohorts'
+    });
+
     var audienceSelectionOptions = {};
     audienceSelectionOptions[AudienceSelectionEnum.NOW] = {label: "Now", value: AudienceSelectionEnum.NOW};
     audienceSelectionOptions[AudienceSelectionEnum.BEFORE] = {label: "Right before sending the message", value: AudienceSelectionEnum.BEFORE};
@@ -310,6 +315,13 @@
                 return this.getInitialTransactionalModel();
             }
             throw new Error('Unknown push notification type:' + type);
+        },
+        getInitialTestUsersGlobalConfigModel: function() {
+            return {
+                definitionType: AddTestUserDefinitionTypeEnum.USER_ID,
+                cohorts: [],
+                userIds: [],
+            };
         },
         replaceTagElements: function(htmlString) {
             if (htmlString) {
@@ -1753,6 +1765,7 @@
         TriggerNotMetEnum: TriggerNotMetEnum,
         IOSAuthConfigTypeEnum: IOSAuthConfigTypeEnum,
         UserPropertyTypeEnum: UserPropertyTypeEnum,
+        AddTestUserDefinitionTypeEnum: AddTestUserDefinitionTypeEnum,
         platformOptions: platformOptions,
         startDateOptions: startDateOptions,
         audienceSelectionOptions: audienceSelectionOptions,

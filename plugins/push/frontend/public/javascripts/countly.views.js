@@ -1993,6 +1993,58 @@
         }
     });
 
+    var TestUsersGlobalConfigView = countlyVue.views.create({
+        template: CV.T("/push/templates/test-users-global-config.html"),
+        mixins: [countlyVue.mixins.hasDrawers("testUsersGlobalConfigDrawer")],
+        data: function() {
+            return {
+                AddTestUserDefinitionTypeEnum: countlyPushNotification.service.AddTestUserDefinitionTypeEnum,
+                userIdOptions: [],
+                cohortOptions: [],
+                isSearchUsersLoading: false,
+                isFetchCohortsLoading: false,
+            };
+        },
+        computed: {},
+        methods: {
+            setCohortOptions: function(cohorts) {
+                this.cohortOptions = cohorts;
+            },
+            fetchCohortsIfNotFound: function() {
+                var self = this;
+                if (this.cohortOptions && this.cohortOptions.length) {
+                    return;
+                }
+                this.isFetchCohortsLoading = true;
+                countlyPushNotification.service.fetchCohorts()
+                    .then(function(cohorts) {
+                        self.setCohortOptions(cohorts);
+                    }).catch(function() {
+                        self.setCohortOptions([]);
+                    }).finally(function() {
+                        self.isFetchCohortsLoading = false;
+                    });
+            },
+            onAddNewTestUser: function() {
+                this.openDrawer('testUsersGlobalConfigDrawer', countlyPushNotification.helper.getInitialTestUsersGlobalConfigModel());
+            },
+            onShowTestUserList: function() {
+                // TODO: open dialog and show test users list
+            },
+            onOpen: function() {
+                this.fetchCohortsIfNotFound();
+            },
+            onSubmit: function(editedObject) {
+                // TODO: add test users
+                console.log(editedObject);
+            },
+            onSearchUsers: function(query) {
+                // TODO: Search users by id
+                console.log('search for, ', query);
+            },
+        },
+    });
+
     /**
      * 
      * @returns {Object} container data with create new message event handler
@@ -2092,7 +2144,9 @@
         if (app.configurationsView) {
             app.configurationsView.registerLabel("push", "push.plugin-title");
             app.configurationsView.registerLabel("push.proxyhost", "push.proxyhost");
+            app.configurationsView.registerInput("push.proxypass", {input: "el-input", attrs: {type: "password"}});
             app.configurationsView.registerLabel("push.proxyport", "push.proxyport");
+            app.configurationsView.registerView('push', {id: 'testingUsers', component: TestUsersGlobalConfigView});
         }
     });
 }());

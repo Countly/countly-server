@@ -1,0 +1,83 @@
+<div class="cly-vue-section bu-mr-4 cly-vue-section--has-default-skin">
+    <div class="bu-is-flex bu-level">
+        <div class="bu-level">
+            <h3 class="bu-my-4"> Test users</h3>
+            <cly-tooltip-icon tooltip="Desribe test users" icon="ion ion-help-circled" style="margin-left:8px"> </cly-tooltip-icon>
+        </div>
+        <el-button type="default" size="small" @click="onAddNewTestUser" class="is-light-blue"> +Define New User</el-button>
+    </div>
+    <cly-section class="cly-vue-section__content white-bg">
+        <div class="bu-is-flex bu-level bu-p-3 bu-mx-1 config-section">
+            <div class="bu-column">
+                <p class="bu-has-text-weight-medium">User Definition</p>
+                <p>You can send test notifications to users defined as test users before sending push notifications</p>
+            </div>
+            <el-link type="primary" size="small" @click="onShowTestUserList">See User List </el-link>
+        </div>
+    </cly-section>
+    <cly-drawer 
+        @submit="onSubmit"
+        @open="onOpen"
+        v-bind="drawers.testUsersGlobalConfigDrawer" 
+        title="Define New User" 
+        saveButtonLabel="Add Users">
+        <template v-slot:default="formScope">
+            <cly-form-step id="step1" name="Define new user">
+                <cly-form-field name="definition" label="Definition Type">
+                    <div class="bu-is-flex bu-is-align-items-center">
+                        <el-radio class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.USER_ID" border>
+                            <div class="text">Define with User ID</div>
+                        </el-radio>
+                        <el-radio class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.COHORT" border>
+                            <div class="text">Define with Cohort</div>
+                        </el-radio>
+                    </div>
+                </cly-form-field>
+                <cly-form-field v-if="formScope.editedObject.definitionType === AddTestUserDefinitionTypeEnum.USER_ID" label="User ID" rules="required">
+                    <el-select
+                        v-model="formScope.editedObject.userIds"
+                        multiple
+                        filterable
+                        remote
+                        required
+                        reserve-keyword
+                        :arrow="false"
+                        :remote-method="onSearchUsers"
+                        placeholder="Enter User ID"
+                        :loading="isSearchUsersLoading"
+                        style="width:100%">
+                        <el-option
+                            v-for="item in userIdOptions"
+                            :key="item._id"
+                            :label="item._id"
+                            :value="item._id">
+                        </el-option>
+                    </el-select>
+                </cly-form-field>
+                <div v-if="formScope.editedObject.definitionType === AddTestUserDefinitionTypeEnum.COHORT" class="cly-vue-drawer-step__section">
+                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Select one or more cohorts to set the trigger</div>
+                    <div class="cly-vue-push-notification-drawer__input-description">Recalculation of cohorts above will trigger sending process automatically.</div>
+                    <validation-provider vid="cohort" v-slot="validation" :rules="{required:true}" :detectInput="true">
+                        <el-select
+                            v-model="formScope.editedObject.cohorts"
+                            multiple
+                            filterable
+                            reserve-keyword
+                            required
+                            placeholder="Please select a cohort"
+                            :loading="isFetchCohortsLoading"
+                            :class="{'is-error': validation.errors.length > 0}"
+                            style="width:100%">
+                            <el-option
+                                v-for="item in cohortOptions"
+                                :key="item._id"
+                                :label="item.name"
+                                :value="item._id">
+                            </el-option>
+                        </el-select>
+                    </validation-provider>
+                </div>
+            </cly-form-step>
+        </template>
+    </cly-drawer>
+</div>
