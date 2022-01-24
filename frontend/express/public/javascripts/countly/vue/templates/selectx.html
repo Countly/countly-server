@@ -11,7 +11,20 @@
     @hide="focusOnTrigger">
     <template v-slot:trigger="dropdown">
         <slot name="trigger" v-bind:dropdown="dropdown">
+            <el-select-head
+                v-if="isMultiple"
+                multiple
+                ref="trigger"
+                :disabled="disabled"
+                :opened="dropdown.visible"
+                :placeholder="placeholder"
+                :arrow="arrow"
+                :value="value"
+                @change="commitValue"
+                :options-lookup="selectedOptions">
+            </el-select-head>
             <cly-input-dropdown-trigger
+                v-else
                 ref="trigger"
                 :size="size"
                 :disabled="disabled"
