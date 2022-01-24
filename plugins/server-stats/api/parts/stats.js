@@ -254,7 +254,7 @@ function fetchDatapoints(db, filter, options, callback) {
             }
 
         }
-        if (toReturn["[CLY]_consolidated"] && toReturn["all-apps"]) {
+        if (!options.singleApp && toReturn["[CLY]_consolidated"] && toReturn["all-apps"]) {
             //if we have consolidated data, calculate all data without consolidated data
             toReturn["natural-dp"] = {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0};
 
@@ -265,6 +265,9 @@ function fetchDatapoints(db, filter, options, callback) {
                 }
             }
 
+        }
+        if (options.singleApp) {
+            delete toReturn["all-apps"];
         }
         for (var z in toReturn) {
             toReturn[z].change = toReturn[z].dp - toReturn[z].change;
@@ -287,7 +290,6 @@ function getTop(db, params, callback) {
     db.collection("server_stats_data_points").find({_id: {$regex: ".*_" + curMonth}}, {}).toArray(function(err, data) {
         var res = {};
         if (data) {
-            console.log(JSON.stringify(data));
             for (let i = 0; i < data.length; i++) {
                 res[data[i].a] = res[data[i].a] || 0;
                 if (data[i] && data[i].d && data[i].d[curDate] && data[i].d[curDate][curHour] && data[i].d[curDate][curHour].dp) {
@@ -301,14 +303,13 @@ function getTop(db, params, callback) {
         }
         var rr = [];
         for (var app in res) {
-            //if(res[app]!=0){
-            rr.push({"a": app, "v": res[app]});
-            //}
+            if (app !== "[CLY]_consolidated") {
+                rr.push({"a": app, "v": res[app]});
+            }
         }
         rr = rr.sort(function(a, b) {
             return b.v - a.v;
         });
-        console.log(JSON.stringify(rr));
         rr = rr.slice(0, 3);
         callback(rr);
     });
