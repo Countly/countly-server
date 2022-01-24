@@ -223,7 +223,6 @@ function fetchDatapoints(db, filter, options, callback) {
                                 if (dates[date][k]) {
                                     toReturn["all-apps"] = increaseDataPoints(toReturn["all-apps"], dates[date][k]);
                                     toReturn[result[i].a] = increaseDataPoints(toReturn[result[i].a], dates[date][k]);
-                                    console.log(JSON.stringify(toReturn[result[i].a]));
                                 }
                             }
 
@@ -277,9 +276,10 @@ function fetchDatapoints(db, filter, options, callback) {
 /**
  *  Get top apps DP for current hour
  *  @param {db} db - DB object
+ *  @param {object} params - params object
  *  @param {function} callback - callback
  */
-function getTop(db, callback) {
+function getTop(db, params, callback) {
     var utcMoment = moment.utc();
     var curMonth = utcMoment.format("YYYY") + ":" + utcMoment.format("M");
     var curDate = utcMoment.format("D");
@@ -287,13 +287,30 @@ function getTop(db, callback) {
     db.collection("server_stats_data_points").find({_id: {$regex: ".*_" + curMonth}}, {}).toArray(function(err, data) {
         var res = {};
         if (data) {
+            console.log(JSON.stringify(data));
             for (let i = 0; i < data.length; i++) {
+                res[data[i].a] = res[data[i].a] || 0;
                 if (data[i] && data[i].d && data[i].d[curDate] && data[i].d[curDate][curHour] && data[i].d[curDate][curHour].dp) {
-                    res[data[i].a] = {"data-points": data[i].d[curDate][curHour].dp};
+                    res[data[i].a] += data[i].d[curDate][curHour].dp;
+                }
+
+                if (data[i] && data[i].d && data[i].d[curDate] && data[i].d[curDate][parseInt(curHour) - 1] && data[i].d[curDate][parseInt(curHour) - 1].dp) {
+                    res[data[i].a] += data[i].d[curDate][parseInt(curHour) - 1].dp;
                 }
             }
         }
-        callback(res);
+        var rr = [];
+        for (var app in res) {
+            //if(res[app]!=0){
+            rr.push({"a": app, "v": res[app]});
+            //}
+        }
+        rr = rr.sort(function(a, b) {
+            return b.v - a.v;
+        });
+        console.log(JSON.stringify(rr));
+        rr = rr.slice(0, 3);
+        callback(rr);
     });
 }
 

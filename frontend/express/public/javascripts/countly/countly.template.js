@@ -4231,7 +4231,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     //add to options for independent!!!
 
     var myurl = "";
-    var mydata = "";
+    var mydata = "{}";
     if (originalOptions && originalOptions.url) {
         myurl = originalOptions.url;
     }
