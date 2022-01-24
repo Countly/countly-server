@@ -1,6 +1,7 @@
 <div class="manage-users-table">
   <cly-datatable-n
-    :rows="filteredRows">
+    :rows="filteredRows"
+    :available-dynamic-cols="tableDynamicCols">
       <template v-slot:header-left="selectScope">
         <el-select placement="bottom-start" v-model="tableFilter" :placeholder="i18n('management-users.all-roles')">
           <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
@@ -9,46 +10,50 @@
           <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
         </el-select>
       </template>
-      <template>
-        <el-table-column prop="full_name" :label="i18n('management-users.user')">
+      <template v-slot="scope">
+        <template v-for="(col, idx) in scope.dynamicCols">
+          <el-table-column 
+            v-if="col.value === 'username'"  
+            sortable="true" prop="username" :label="i18n('management-users.username')">
+          </el-table-column>
+          <el-table-column
+            v-if="col.value === 'full_name'"  
+            sortable="true" prop="full_name" :label="i18n('management-users.user')">
+          </el-table-column>
+          <el-table-column
+            v-if="col.value === 'email'"  
+            sortable="true" prop="email" :label="i18n('management-users.email')">
+          </el-table-column>
+          <el-table-column
+            v-if="col.value === 'role'"
+            prop="role"
+            :label="i18n('management-users.role')">
             <template v-slot="rowScope">
-                <span class="text-medium">
-                  {{rowScope.row.full_name}}
-                </span>
-            </template>
-        </el-table-column>
-        <el-table-column prop="username" :label="i18n('management-users.username')">
-          <template v-slot="rowScope">
-              <span class="text-medium">
-                {{rowScope.row.username}}
-              </span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="role" :label="i18n('management-users.role')">
-          <template v-slot="rowScope">
               <span class="text-medium">
                 {{ rowScope.row.global_admin ? i18n('management-users.global-admin') : ((rowScope.row.permission._.a.length > 0) ? i18n('management-users.admin') : i18n('management-users.user')) }}
               </span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="email" :label="i18n('management-users.email')">
-          <template v-slot="rowScope">
-              <span class="text-medium">
-                {{ rowScope.row.email }}
-              </span>
-          </template>
-        </el-table-column>
-        <el-table-column sortable="true" prop="created_at" :label="i18n('management-users.created')">
-          <template v-slot="rowScope">
+            </template>
+          </el-table-column>
+          <el-table-column
+            v-if="col.value === 'created_at'"
+            sortable="true"
+            prop="created_at"
+            :label="i18n('management-users.created')">
+            <template v-slot="rowScope">
               <span class="text-medium" v-html="formatTimeAgo(rowScope.row.created_at)"></span>
-          </template>
-        </el-table-column>
-        <el-table-column sortable="true" prop="last_login" :label="i18n('management-users.last_login')">
-          <template v-slot="rowScope">
-              <span class="text-medium" v-html="rowScope.row.last_login === 0 ? i18n('management-users.not-logged-in-yet') : formatTimeAgo(rowScope.row.last_login)">
-              </span>
-          </template>
-        </el-table-column>
+            </template>
+          </el-table-column>
+          <el-table-column
+            v-if="col.value === 'last_login'"
+            sortable="true"
+            prop="last_login"
+            :label="i18n('management-users.last_login')">
+            <template v-slot="rowScope">
+                <span class="text-medium" v-html="rowScope.row.last_login === 0 ? i18n('management-users.not-logged-in-yet') : formatTimeAgo(rowScope.row.last_login)">
+                </span>
+            </template>
+          </el-table-column>
+        </template>
         <el-table-column type="options">
           <template v-slot="rowScope">
             <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, rowScope.row._id)">
