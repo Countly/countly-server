@@ -128,6 +128,7 @@ var log = common.log('data-points:api');
         var dateObj = {};
         createDateObject(periodObj, periodsToFetch, dateObj, params.qstring.period);
         var dateObjPrev = {};
+        var singleApp = false;
 
         countlyCommon.setPeriod([periodObj.start - (periodObj.end - periodObj.start), periodObj.start - 1]);
         periodObj = countlyCommon.periodObj;
@@ -142,8 +143,16 @@ var log = common.log('data-points:api');
                 var apps = getUserApps(params.member) || [];
                 for (let i = 0; i < periodsToFetch.length; i++) {
                     for (let j = 0; j < apps.length; j++) {
-                        if (apps[j] !== "") {
-                            filter._id.$in.push(apps[j] + "_" + periodsToFetch[i]);
+                        if (params.qstring.selected_app && params.qstring.selected_app !== "") {
+                            singleApp = true;
+                            if (apps[j] === params.qstring.selected_app) {
+                                filter._id.$in.push(apps[j] + "_" + periodsToFetch[i]);
+                            }
+                        }
+                        else {
+                            if (apps[j] !== "") {
+                                filter._id.$in.push(apps[j] + "_" + periodsToFetch[i]);
+                            }
                         }
                     }
                 }
@@ -158,6 +167,7 @@ var log = common.log('data-points:api');
             }
             else {
                 if (params.qstring.selected_app && params.qstring.selected_app !== "") {
+                    singleApp = true;
                     filter._id = {"$in": []};
                     periodsToFetch.forEach((period) => {
                         filter._id.$in.push(`${params.qstring.selected_app}_${period}`);
@@ -169,7 +179,7 @@ var log = common.log('data-points:api');
                     }
                 }
 
-                stats.fetchDatapoints(common.db, filter, {"dateObj": dateObj, "dateObjPrev": dateObjPrev}, function(toReturn) {
+                stats.fetchDatapoints(common.db, filter, {"dateObj": dateObj, "dateObjPrev": dateObjPrev, "singleApp": singleApp}, function(toReturn) {
                     common.returnOutput(params, toReturn);
                 });
             }
