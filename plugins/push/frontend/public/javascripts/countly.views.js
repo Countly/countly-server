@@ -1993,6 +1993,9 @@
                 cohortOptions: [],
                 isSearchUsersLoading: false,
                 isFetchCohortsLoading: false,
+                isDialogVisible: false,
+                areRowsLoading: false,
+                testUsersRows: [],
             };
         },
         computed: {},
@@ -2002,6 +2005,12 @@
             },
             setCohortOptions: function(cohorts) {
                 this.cohortOptions = cohorts;
+            },
+            setTestUserRows: function(testUsers) {
+                this.testUsersRows = testUsers;
+            },
+            openTestUsersDialog: function() {
+                this.isDialogVisible = true;
             },
             fetchCohortsIfNotFound: function() {
                 var self = this;
@@ -2014,15 +2023,33 @@
                         self.setCohortOptions(cohorts);
                     }).catch(function() {
                         self.setCohortOptions([]);
+                        // TODO:log error;
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
+                    });
+            },
+            fetchTestUsersIfNotFound: function() {
+                var self = this;
+                if (this.testUsersRows.length) {
+                    return;
+                }
+                this.areRowsLoading = true;
+                countlyPushNotification.service.fetchTestUsers()
+                    .then(function(testUserRows) {
+                        self.setTestUserRows(testUserRows);
+                    }).catch(function() {
+                        self.setCohortOptions([]);
+                        // TODO:log error;
+                    }).finally(function() {
+                        self.areRowsLoading = false;
                     });
             },
             onAddNewTestUser: function() {
                 this.openDrawer('testUsersGlobalConfigDrawer', countlyPushNotification.helper.getInitialTestUsersGlobalConfigModel());
             },
             onShowTestUserList: function() {
-                // TODO: open dialog and show test users list
+                this.openTestUsersDialog();
+                this.fetchTestUsersIfNotFound();
             },
             onOpen: function() {
                 this.fetchCohortsIfNotFound();
@@ -2039,7 +2066,7 @@
                         self.setUserIdOptions(userIds);
                     }).catch(function() {
                         self.setUserIdOptions([]);
-                    // TODO:log error;
+                        // TODO:log error;
                     }).finally(function() {
                         self.isSearchUsersLoading = false;
                     });

@@ -78,4 +78,23 @@
             </cly-form-step>
         </template>
     </cly-drawer>
+    <cly-dialog
+        title="User List"
+        width="720px"
+        autoCentered
+        :visible.sync="isDialogVisible">
+        <cly-datatable-n :rows="testUsersRows" v-loading="areRowsLoading" :force-loading="areRowsLoading" :hideTop="true">
+            <template v-slot="scope">
+                <el-table-column label="Username" >
+                    <template slot-scope="rowScope">
+                        <div class="bu-is-flex bu-is-align-items-center">
+                            <img :src="rowScope.row.picture" width="16px" height="16px" class="bu-mr-2" style="border-radius: 50%;" />
+                            <span class="has-ellipsis">{{rowScope.row.username}}</span>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="User ID" prop="_id"></el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-dialog>
 </div>

@@ -522,6 +522,15 @@
                 dataType: "json"
             }, {disableAutoCatch: true});
         },
+        findTestUsers: function() {
+            return new Promise(function(resolve) {
+                setTimeout(function() {
+                    resolve([
+                        {username: "Test user", _id: "61eeb983b0feb8ff58d21cdf", picture: "https://www.gravatar.com/avatar/e3bc8beb4947051d0fdecea8133d5750?d=identicon&amp;s=150"},
+                        {username: "Test user", _id: "61eeb983b0feb8ff58d21cdd", picture: "https://www.gravatar.com/avatar/e3bc8beb4947051d0fdecea8133d5750?d=identicon&amp;s=150"}]);
+                }, 350);
+            });
+        },
         getDashboard: function(data) {
             return CV.$.ajax({
                 type: "GET",
@@ -1956,6 +1965,9 @@
                 //TODO:log error
                 return Promise.resolve([]);
             });
+        },
+        fetchTestUsers: function() {
+            return countlyPushNotification.api.findTestUsers();
         },
         searchUsersById: function(idQuery) {
             return new Promise(function(resolve, reject) {
