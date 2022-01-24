@@ -519,7 +519,7 @@
             },
             selectedOptions: function() {
                 if (!this.flatOptions.length) {
-                    return {};
+                    return [];
                 }
                 var self = this,
                     missingOptions = this.missingOptions || [];
@@ -625,6 +625,9 @@
             };
         },
         computed: {
+            isMultiple: function() {
+                return (this.mode + "").startsWith("multi");
+            },
             popClasses: function() {
                 return {
                     "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.hasTabs,
@@ -659,8 +662,7 @@
                 },
                 set: function(newVal) {
                     if (this.autoCommit && this.isItemCountValid) {
-                        this.$emit("input", newVal);
-                        this.$emit("change", newVal);
+                        this.commitValue(newVal);
                     }
                     else {
                         this.uncommittedValue = newVal;
@@ -723,8 +725,7 @@
                     return;
                 }
                 if (this.uncommittedValue) {
-                    this.$emit("input", this.uncommittedValue);
-                    this.$emit("change", this.uncommittedValue);
+                    this.commitValue(this.uncommittedValue);
                     this.uncommittedValue = null;
                 }
                 this.doClose();
@@ -732,6 +733,10 @@
             doDiscard: function() {
                 this.uncommittedValue = null;
                 this.doClose();
+            },
+            commitValue: function(val) {
+                this.$emit("input", val);
+                this.$emit("change", val);
             }
         },
         watch: {

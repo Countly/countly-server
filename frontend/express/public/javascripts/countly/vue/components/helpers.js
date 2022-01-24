@@ -427,27 +427,34 @@
     }));
 
     Vue.component("cly-app-select", {
-        template: '<el-select v-bind="$attrs" v-on="$listeners">\
-                        <el-option\
-                            v-if="allowAll"\
-                            key="all"\
-                            label="All apps"\
-                            value="all">\
-                        </el-option>\
-                        <el-option\
-                            v-for="app in apps"\
-                            :key="app.value"\
-                            :label="app.label"\
-                            :value="app.value">\
-                        </el-option>\
-                    </el-select>',
+        template: '<cly-select-x :options="options" :auto-commit="mode !== \'multi-check\'" :mode="mode" :max-items="multipleLimit" v-bind="$attrs" v-on="$listeners"></cly-select-x>',
         props: {
             allowAll: {
                 type: Boolean,
-                default: false
+                default: false,
+                required: false
+            },
+            multiple: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            multipleLimit: {
+                type: Number,
+                default: 0,
+                required: false
             }
         },
         computed: {
+            options: function() {
+                if (this.allowAll) {
+                    return [{label: 'All apps', value: 'all'}].concat(this.apps);
+                }
+                return this.apps;
+            },
+            mode: function() {
+                return this.multiple ? "multi-check" : "single-list";
+            },
             apps: function() {
                 var apps = countlyGlobal.apps || {};
                 return Object.keys(apps).map(function(key) {
