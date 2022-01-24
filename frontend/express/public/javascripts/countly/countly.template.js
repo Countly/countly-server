@@ -1797,7 +1797,8 @@ var AppRouter = Backbone.Router.extend({
                     data: {check_session: true},
                     success: function(result) {
                         if (result === "logout") {
-                            CountlyHelpers.logout();
+                            CountlyHelpers.logout("/logout");
+
                         }
                         if (result === "login") {
                             CountlyHelpers.logout();
@@ -1820,7 +1821,7 @@ var AppRouter = Backbone.Router.extend({
                         url: countlyGlobal.path + "/session",
                         success: function(result) {
                             if (result === "logout") {
-                                CountlyHelpers.logout();
+                                CountlyHelpers.logout("/logout");
                             }
                             if (result === "login") {
                                 CountlyHelpers.logout();
