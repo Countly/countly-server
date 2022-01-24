@@ -638,6 +638,17 @@
             return countlySegmentation.initialize("").then(function() {
                 return Promise.resolve(countlySegmentation.getFilters());
             });
+        },
+        searchUsersById: function(query) {
+            var data = {
+                query: JSON.stringify({did: {rgxcn: [query]}})
+            };
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_details",
+                contentType: "application/json",
+                data: JSON.stringify(data)
+            }, {disableAutoCatch: true});
         }
     };
 
@@ -1944,6 +1955,23 @@
             return countlyPushNotification.api.findAllUserProperties().catch(function() {
                 //TODO:log error
                 return Promise.resolve([]);
+            });
+        },
+        searchUsersById: function(idQuery) {
+            return new Promise(function(resolve, reject) {
+                countlyPushNotification.api.searchUsersById(idQuery)
+                    .then(function(response) {
+                        if (response && response.aaData) {
+                            resolve(response.aaData.map(function(user) {
+                                return user._id;
+                            }));
+                            return;
+                        }
+                        reject('Unknown error occurred. Please try again later');
+                        // TODO:log error
+                    }).catch(function(error) {
+                        reject(error);
+                    });
             });
         },
         estimate: function(pushNotificationModel, options) {

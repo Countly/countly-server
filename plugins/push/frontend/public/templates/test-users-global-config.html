@@ -39,7 +39,6 @@
                         multiple
                         filterable
                         remote
-                        required
                         reserve-keyword
                         :arrow="false"
                         :remote-method="onSearchUsers"
@@ -47,23 +46,22 @@
                         :loading="isSearchUsersLoading"
                         style="width:100%">
                         <el-option
-                            v-for="item in userIdOptions"
-                            :key="item._id"
-                            :label="item._id"
-                            :value="item._id">
+                            v-for="id in userIdOptions"
+                            :key="id"
+                            :label="id"
+                            :value="id">
                         </el-option>
                     </el-select>
                 </cly-form-field>
                 <div v-if="formScope.editedObject.definitionType === AddTestUserDefinitionTypeEnum.COHORT" class="cly-vue-drawer-step__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Select one or more cohorts to set the trigger</div>
                     <div class="cly-vue-push-notification-drawer__input-description">Recalculation of cohorts above will trigger sending process automatically.</div>
-                    <validation-provider vid="cohort" v-slot="validation" :rules="{required:true}" :detectInput="true">
+                    <validation-provider vid="cohort" v-slot="validation" rules="required">
                         <el-select
                             v-model="formScope.editedObject.cohorts"
                             multiple
                             filterable
                             reserve-keyword
-                            required
                             placeholder="Please select a cohort"
                             :loading="isFetchCohortsLoading"
                             :class="{'is-error': validation.errors.length > 0}"

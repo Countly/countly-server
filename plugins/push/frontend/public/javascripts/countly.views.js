@@ -1997,6 +1997,9 @@
         },
         computed: {},
         methods: {
+            setUserIdOptions: function(userIds) {
+                this.userIdOptions = userIds;
+            },
             setCohortOptions: function(cohorts) {
                 this.cohortOptions = cohorts;
             },
@@ -2029,8 +2032,17 @@
                 console.log(editedObject);
             },
             onSearchUsers: function(query) {
-                // TODO: Search users by id
-                console.log('search for, ', query);
+                var self = this;
+                this.isSearchUsersLoading = true;
+                countlyPushNotification.service.searchUsersById(query)
+                    .then(function(userIds) {
+                        self.setUserIdOptions(userIds);
+                    }).catch(function() {
+                        self.setUserIdOptions([]);
+                    // TODO:log error;
+                    }).finally(function() {
+                        self.isSearchUsersLoading = false;
+                    });
             },
         },
     });
