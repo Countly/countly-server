@@ -10,3 +10,24 @@
 .account-settings-hint {font-size: 12px; line-height: 18px;}
 .account-settings-hint i.fa-check-circle {color: #67C23A;}
 .el-table tr.plugin-highlighted-row {background: #f0f9eb;}
+.config-image-uploader img {height: 100%; width: auto; vertical-align: middle; display: block;}
+.config-error {color:red;}
+.config-image-uploader:hover {
+    border-color: #409EFF;
+}
+.config-image-uploader-icon {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 28px;
+    color: #8c939d;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    float: left;
+}
+
+.config-image-uploader .prelogo {width: 165px; height:50px;}
+.config-image-uploader .stopleftlogo {width: 144px; height:32px;}
+.config-image-uploader .favicon {width: 32px; height:32px;}

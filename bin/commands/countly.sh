@@ -245,7 +245,6 @@ countly_upgrade (){
 }
 
 countly_mark_version (){
-    countly_root ;
     if [ "$1" == "fs" ] || [ "$1" == "db" ]
     then
         UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" write_"$1" "$2");
@@ -259,7 +258,6 @@ countly_mark_version (){
 }
 
 countly_compare_version (){
-    countly_root ;
     if [ "$1" == "fs" ] || [ "$1" == "db" ]
     then
         UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" compare_"$1" "$2");

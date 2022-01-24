@@ -179,6 +179,16 @@ var log = common.log('data-points:api');
         return true;
     });
 
+    plugins.register("/o/server-stats/top", function(ob) {
+        var params = ob.params;
+        ob.validateUserForMgmtReadAPI(async() => {
+            stats.getTop(common.db, params, function(res) {
+                common.returnOutput(params, res);
+            });
+        }, params);
+        return true;
+    });
+
     /**
     * returns punch card data
     * @returns {boolean} Returns boolean, always true

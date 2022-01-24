@@ -83,6 +83,32 @@
                                         :value="configsData[selectedConfig][key]"
                                         v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                     </el-input-number>
+                                    <el-color-picker 
+                                        v-else-if="getInputType(key) === 'el-color-picker'" 
+                                        @change="onChange(key, $event)"
+                                        :value="configsData[selectedConfig][key]"
+                                        v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
+                                    </el-color-picker>
+                                    <el-upload 
+                                        class="config-image-uploader"
+                                        v-else-if="getInputType(key) === 'image'" 
+                                        :show-file-list="false"
+                                        :before-upload="predefinedInputs[selectedConfig + '.' + key].before"
+                                        :on-success="predefinedInputs[selectedConfig + '.' + key].success"
+                                        :on-error="predefinedInputs[selectedConfig + '.' + key].error"
+                                        v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
+                                        <div :class="predefinedInputs[selectedConfig + '.' + key].image_size">
+                                            <img v-if="configsData[selectedConfig][key]" :src="'/white-label/preview/' + configsData[selectedConfig][key] + '?' + Date.now()">
+                                            <i v-else class="el-icon-plus config-image-uploader-icon"></i>
+                                            <el-button 
+                                                v-if="configsData[selectedConfig][key]"
+                                                size="small" 
+                                                type="text" 
+                                                @click.stop="onChange(key, '')"
+                                                class="bu-p-0">{{i18n('management-users.delete')}}</el-button>
+                                        </div>
+                                        <span class="config-error">{{predefinedInputs[selectedConfig + '.' + key].errorMessage || ""}}</span>
+                                    </el-upload>
                                     <el-input 
                                         v-else
                                         @input="onChange(key, $event)"

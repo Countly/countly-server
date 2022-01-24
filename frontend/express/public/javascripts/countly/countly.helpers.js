@@ -11,6 +11,9 @@
  */
 (function(CountlyHelpers) {
 
+    CountlyHelpers.logout = function() {
+        window.location.reload();//this will log us out
+    };
     /**
     * Legacy method for displaying notifications. User {@link CountlyHelpers.notify} instead
     * @param {string} msg - msg to display

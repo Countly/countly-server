@@ -2,19 +2,6 @@
 @use "sass:map";
 
 .cly-vue-dashboards {
-    &__empty {
-        p {
-            text-align: center;
-        }
-
-        &--rounded-image{
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: map.get(c.$colors, "cool-gray-30");
-        }
-    }
-
     &__null-widgets {
         height: 100%;
 
@@ -38,6 +25,14 @@
                 border: 1px solid map.get(c.$colors, "blue-100");
                 background-color: map.get(c.$colors, "light-blue-100");
             }
+        }
+    }
+
+    &__drawer {
+        &-widget-type {
+            width: calc(100% - 20px);
+            display: inline-block;
+            margin-top: -3px;
         }
     }
 }

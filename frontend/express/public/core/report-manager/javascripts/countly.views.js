@@ -276,6 +276,7 @@
                             if (!result) {
                                 return true;
                             }
+                            self.refresh();
                             countlyTaskManager.update(id, function(res, error) {
                                 if (res.result === "Success") {
                                     countlyTaskManager.monitor(id, true);

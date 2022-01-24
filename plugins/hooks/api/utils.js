@@ -17,7 +17,7 @@ utils.updateRuleTriggerTime = function updateRuleTriggerTime(hookID) {
     );
 };
 
-utils.addErrorRecord = function addErrorRecord(hookId, error, params, effectStep) {
+utils.addErrorRecord = function addErrorRecord(hookId, error, params, effectStep, _originalInput) {
     if (!hookId) {
         return;
     }
@@ -31,7 +31,7 @@ utils.addErrorRecord = function addErrorRecord(hookId, error, params, effectStep
     const updateOperation = {
         $push: {
             error_logs: {
-                $each: [ {e: errorString, timestamp: new Date().getTime(), params, effectStep} ],
+                $each: [ {e: errorString, timestamp: new Date().getTime(), params, effectStep, _originalInput} ],
                 $slice: -10
             }
         }

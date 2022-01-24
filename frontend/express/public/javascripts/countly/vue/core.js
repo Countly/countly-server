@@ -70,6 +70,9 @@
             });
             if (!options.disableAutoCatch) {
                 return ajaxP.catch(function(jqXHR) {
+                    if (jqXHR.responseJSON && jqXHR.responseJSON.result === 'Token not valid') {
+                        CountlyHelpers.logout();
+                    }
                     if (jqXHR.abort_reason === "duplicate" || (jqXHR.statusText !== "abort" && jqXHR.statusText !== "canceled")) {
                         app.activeView.onError(jqXHR);
                     }

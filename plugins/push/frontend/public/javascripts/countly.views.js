@@ -1920,16 +1920,6 @@
                     return {};
                 }
             }
-        },
-        data: function() {
-            return {
-                appCount: 'single',
-            };
-        },
-        methods: {
-            onAppCount: function(value) {
-                this.appCount = value;
-            }
         }
     });
 
@@ -2108,6 +2098,7 @@
                         widget_type: "push", //TODO: update widget type when server supports push as a plugin widget
                         isPluginWidget: true,
                         apps: [],
+                        app_count: 'single',
                         data_type: "push",
                         metrics: [],
                     };

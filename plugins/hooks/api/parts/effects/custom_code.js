@@ -20,7 +20,7 @@ class CustomCodeEffect {
      * @return {object} - return processed options object.
      */
     async run(options) {
-        const {effect, params, rule, effectStep} = options;
+        const {effect, params, rule, effectStep, _originalInput} = options;
         let genCode = "";
         let runtimePassed = true ;
         let logs = [];
@@ -37,7 +37,7 @@ class CustomCodeEffect {
                     logs.push(`message:${e.message}
                         stack: ${JSON.stringify(e.stack)}
                     `);
-                    utils.addErrorRecord(rule._id, e, params, effectStep);
+                    utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
                 };
 
                 genCode = `
@@ -68,7 +68,7 @@ class CustomCodeEffect {
             logs.push(`message:${e.message}
                 stack: ${JSON.stringify(e.stack)}
             `);
-            utils.addErrorRecord(rule._id, e, params, effectStep);
+            utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
         }
         return runtimePassed ? options : {...options, logs};
     }

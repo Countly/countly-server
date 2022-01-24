@@ -135,6 +135,7 @@ class Hooks {
                     for (let i = 0; i < rule.effects.length; i++) {
                         item.effect = rule.effects[i];
                         item.effectStep = i;
+                        item._originalInput = rule._originalInput;
                         try {
                             const result = await this._effects[item.effect.type].run(item);
                             log.d("[test trigger result]", result);
