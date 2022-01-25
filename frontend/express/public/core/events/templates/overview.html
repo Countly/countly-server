@@ -135,21 +135,21 @@
 				</div>
 			  </template>
 			</el-table-column>
-			<el-table-column sortable="true" prop="count" :label="i18n('events.overview.count')" min-width="133px">
+			<el-table-column sortable="true" prop="count" :label="i18n('events.overview.count')" min-width="177px">
 			  <template v-slot="rowScope">
 				<div>
 				  {{rowScope.row.count}}
 				</div>
 			  </template>
 			</el-table-column>
-			<el-table-column sortable="true" prop="sum" :label="i18n('events.overview.sum')" min-width="133px">
+			<el-table-column sortable="true" prop="sum" :label="i18n('events.overview.sum')" min-width="177px">
 			  <template v-slot="rowScope">
 				<div>
 				  {{rowScope.row.sum}}
 				</div>
 			  </template>
 			</el-table-column>
-			<el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')" min-width="133px">
+			<el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')" min-width="177px">
 			  <template v-slot="rowScope">
 				<div>
 				  {{rowScope.row.duration>0?rowScope.row.duration:"-"}}
