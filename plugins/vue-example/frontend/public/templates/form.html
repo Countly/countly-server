@@ -456,6 +456,26 @@
                     {{selectX.currentVal}}
                 </div>
             </cly-section>
+            <cly-section title="cly-select-x (Remote)">
+                <div class="example-cell">
+                    <cly-select-x
+                        remote
+                        :remote-method="remoteMethod"
+                        all-placeholder="All Properties" 
+                        search-placeholder="Search in Properties"
+                        placeholder="Select Property" 
+                        v-model="selectX.remoteVal" 
+                        :auto-commit="!autoCommitDisabled"
+                        :mode="selectX.mode"
+                        :disabled="dropdownsDisabled"
+                        :hide-all-options-tab="allOptionsTabHidden"
+                        :options="selectXRemoteOptions">
+                    </cly-select-x>
+                </div>
+                <div class="example-cell">
+                    {{selectX.remoteVal}}
+                </div>
+            </cly-section>
             <cly-section title="cly-select-x (Tabs, custom header)">
                 <div class="example-cell">
                     <cly-select-x 
