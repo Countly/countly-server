@@ -1489,11 +1489,13 @@ plugins.setConfigs("dashboards", {
                 await customDashboards.fetchEventsData(params, apps, widget);
                 break;
             case 'push':
+                await customDashboards.fetchPushData(params, apps, widget);
                 break;
             case 'crash':
+                await customDashboards.fetchCrashData(params, apps, widget);
                 break;
             case 'note':
-                await customDashboards.getNote(params, apps, widget);
+                await customDashboards.fetchNoteData(params, apps, widget);
                 break;
             default:
                 break;

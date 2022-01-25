@@ -104,22 +104,6 @@ function toSegment(val) {
     }
     return val;
 }
-/**
- *  Gets plugin name
- *  @param {string} val - data index
- *  @return {string} plugin name
- */
-/* Not used function
-function toPlugin(val) {
-    var ob = {
-        langs: "locale"
-    };
-    if (ob[val]) {
-        return ob[val];
-    }
-    return val;
-}
-*/
 
 /**
  * Function to map the old widget structure to the new one
@@ -610,7 +594,67 @@ dashboard.fetchEventsData = async function(params, apps, widget) {
     }
 };
 
-dashboard.getNote = async function(params, apps, widget) {
+dashboard.fetchPushData = async function(params, apps, widget) {
+    var dashData = {};
+
+    try {
+        var widgetApps = widget.apps || [];
+        var widgetData = {};
+
+        for (let i = 0; i < widgetApps.length; i++) {
+            var appId = widgetApps[i];
+            widgetData[appId] = await getPushDataForApp(params, apps, appId, widget);
+        }
+
+        dashData.isValid = true;
+        dashData.data = widgetData;
+
+        widget.dashData = dashData;
+    }
+    catch (e) {
+        log.d("Error while fetching events widget data for - ", widget);
+        log.d("Error is - ", e);
+
+        dashData.isValid = false;
+        dashData.data = undefined;
+
+        widget.dashData = dashData;
+
+        return widget;
+    }
+};
+
+dashboard.fetchCrashData = async function(params, apps, widget) {
+    var dashData = {};
+
+    try {
+        var widgetApps = widget.apps || [];
+        var widgetData = {};
+
+        for (let i = 0; i < widgetApps.length; i++) {
+            var appId = widgetApps[i];
+            widgetData[appId] = await getCrashDataForApp(params, apps, appId, widget);
+        }
+
+        dashData.isValid = true;
+        dashData.data = widgetData;
+
+        widget.dashData = dashData;
+    }
+    catch (e) {
+        log.d("Error while fetching events widget data for - ", widget);
+        log.d("Error is - ", e);
+
+        dashData.isValid = false;
+        dashData.data = undefined;
+
+        widget.dashData = dashData;
+
+        return widget;
+    }
+};
+
+dashboard.fetchNoteData = async function(params, apps, widget) {
     return widget;
 };
 
@@ -646,7 +690,7 @@ async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
 
         break;
     default:
-        throw new Error("Invalid visualization");
+        throw new Error("Invalid visualization!");
     }
 
     var model = await getSessionModel(params, apps, appId, collection, segment, widget);
@@ -704,7 +748,7 @@ async function getEventsDataForApp(params, apps, appId, widget) {
 
         break;
     default:
-        throw new Error("Invalid visualization");
+        throw new Error("Invalid visualization!");
     }
 
     for (var k = 0; k < events.length; k++) {
@@ -734,6 +778,119 @@ async function getEventsDataForApp(params, apps, appId, widget) {
                 break;
             }
         }
+    }
+
+    return widgetData;
+}
+
+/**
+ * Function to fetch push data for app
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {Object} widget - widget object
+ */
+async function getPushDataForApp(params, apps, appId, widget) {
+    var visualization = widget.visualization;
+    var metrics = widget.metrics || [];
+    var widgetData = {}, data, segment, pushEvents = [];
+
+    switch (visualization) {
+    case 'time-series':
+    case 'number':
+        segment = toSegment("no-segment");
+
+        break;
+    default:
+        throw new Error("Invalid visualization!");
+    }
+
+    if (Array.isArray(metrics) && metrics.length) {
+        if (metrics.indexOf("sent") !== -1) {
+            pushEvents.push("[CLY]_push_sent");
+        }
+        if (metrics.indexOf("actioned") !== -1) {
+            pushEvents.push("[CLY]_push_action");
+        }
+    }
+
+    for (var k = 0; k < pushEvents.length; k++) {
+        var event = pushEvents[k];
+        var collection = "events" + crypto.createHash('sha1').update(event + appId).digest('hex');
+        var model = await getPushModel(params, apps, appId, collection, segment, event, widget);
+
+        switch (visualization) {
+        case 'time-series':
+            data = model.getTimelineData();
+
+            for (var z in data) {
+                if (!widgetData[z]) {
+                    widgetData[z] = {};
+                }
+
+                if (event === "[CLY]_push_action") {
+                    widgetData[z].actioned = data[z].c;
+                }
+
+                if (event === "[CLY]_push_sent") {
+                    widgetData[z].sent = data[z].c;
+                }
+            }
+
+            break;
+        case 'number':
+            data = model.getNumber();
+            if (event === "[CLY]_push_action") {
+                widgetData.actioned = data;
+            }
+
+            if (event === "[CLY]_push_sent") {
+                widgetData.sent = data;
+            }
+
+            break;
+        default:
+            break;
+        }
+    }
+
+    return widgetData;
+}
+
+/**
+ * Function to fetch crash data for app
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {Object} widget - widget object
+ */
+async function getCrashDataForApp(params, apps, appId, widget) {
+    var visualization = widget.visualization;
+    var widgetData = {}, collection;
+
+    switch (visualization) {
+    case 'time-series':
+    case 'number':
+        collection = "crashdata";
+
+        break;
+    default:
+        throw new Error("Invalid visualization!");
+    }
+
+    var model = await getCrashModel(params, apps, appId, collection, widget);
+
+    switch (visualization) {
+    case 'time-series':
+        widgetData = model.getTimelineData();
+
+        break;
+    case 'number':
+        widgetData = model.getNumber();
+
+        break;
+    default:
+        break;
     }
 
     return widgetData;
@@ -856,6 +1013,84 @@ function getEventsModel(params, apps, appId, collection, segment, event, widget)
              */
 
             model.setMetrics(widget.metrics);
+
+            return resolve(model);
+        });
+    });
+}
+
+/**
+ * Function to get push model
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {String} collection - collection name
+ * @param  {String} segment - segment name
+ * @param  {Object} widget - widget object
+ * @returns {Object} - session data type model object
+ */
+function getPushModel(params, apps, appId, collection, segment, widget) {
+    return new Promise((resolve) => {
+        var paramsObj = {
+            app_id: appId,
+            appTimezone: apps[appId] && apps[appId].timezone,
+            qstring: {
+                period: widget.custom_period || params.qstring.period,
+                segmentation: segment
+            },
+            time: common.initTimeObj(apps[appId] && apps[appId].timezone, params.qstring.timestamp)
+        };
+
+        fetch.getTimeObjForEvents(collection, paramsObj, function(data) {
+            countlyCommon.setPeriod(paramsObj.qstring.period);
+
+            var model = countlyModel.load("event");
+
+            model.setDb(data);
+
+            return resolve(model);
+        });
+    });
+}
+
+/**
+ * Function to get crash model
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {String} collection - collection name
+ * @param  {Object} widget - widget object
+ * @returns {Object} - session data type model object
+ */
+function getCrashModel(params, apps, appId, collection, widget) {
+    return new Promise((resolve) => {
+        var paramsObj = {
+            app_id: appId,
+            appTimezone: apps[appId] && apps[appId].timezone,
+            qstring: {
+                period: widget.custom_period || params.qstring.period
+            },
+            time: common.initTimeObj(apps[appId] && apps[appId].timezone, params.qstring.timestamp)
+        };
+
+        fetch.getTimeObj(collection, paramsObj, {unique: "cru"}, function(data) {
+            countlyCommon.setPeriod(paramsObj.qstring.period);
+
+            var model = model = countlyModel.load(toModel("data"));
+
+            model.setDb(data);
+
+            /**
+             * Can widget.metrics be null? Not sure.
+             * For Events and all its visualizations metrics are required,
+             * so it shouldn't be null imo.
+             * widget.metrics = widget.metrics || model.getMetrics();
+             * Code on master has above line, not sure when its required,
+             * Lets not add it yet and see what happens.
+             */
+
+            model.setMetrics(widget.metrics);
+            model.setUniqueMetrics(["cru"]);
 
             return resolve(model);
         });
