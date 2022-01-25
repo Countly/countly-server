@@ -65,6 +65,7 @@
             </div>
         </div>
         <el-tabs
+            v-loading="isQueryPending"
             v-model="activeTabId"
             @keydown.native.esc.stop.prevent="doClose">
             <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in publicTabs">

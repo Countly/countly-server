@@ -1,4 +1,4 @@
-/* global Vue, CV */
+/* global Vue, CV, _, Promise */
 
 (function(countlyVue) {
 
@@ -181,12 +181,32 @@
         },
         data: function() {
             return {
-                searchQuery: ''
+                searchQuery: '',
+                isQueryPending: false
             };
         },
+        mounted: function() {
+            this.callRemote();
+        },
+        watch: {
+            searchQuery: _.debounce(function(newVal) {
+                this.callRemote(newVal);
+            }, 500)
+        },
         methods: {
+            callRemote: function(query) {
+                if (this.remote && this.remoteMethod) {
+                    var self = this;
+                    this.isQueryPending = true;
+                    Promise.resolve(this.remoteMethod(query || '')).finally(function() {
+                        self.isQueryPending = false;
+                        self.updateDropdown && self.updateDropdown();
+                        self.navigateToFirstRegularTab();
+                    });
+                }
+            },
             getMatching: function(options) {
-                if (!this.searchQuery || !this.searchable) {
+                if (!this.searchQuery || !this.searchable || this.remote) {
                     return options;
                 }
                 var self = this;
@@ -460,13 +480,48 @@
                 }
                 return null;
             },
+            selectedOptions: function() {
+                if (!this.flatOptions.length && !this.missingOptions.length) {
+                    return [];
+                }
+                var self = this,
+                    missingOptions = this.missingOptions || [];
+
+                if (Array.isArray(this.value)) {
+                    return missingOptions.concat(this.flatOptions.filter(function(item) {
+                        return self.value.indexOf(item.value) > -1;
+                    }));
+                }
+                else {
+                    var matching = this.flatOptions.filter(function(item) {
+                        return item.value === self.value;
+                    });
+                    return missingOptions.concat(matching);
+                }
+            },
+            selectedOptionsTab: function() {
+                if (this.hasSelectedOptionsTab && this.selectedOptions && this.selectedOptions.length) {
+                    return {
+                        name: "__selected",
+                        label: "Selected",
+                        options: this.selectedOptions
+                    };
+                }
+                return null;
+            },
             hasAllOptionsTab: function() {
                 if (this.hideAllOptionsTab || this.mode === "multi-check-sortable") {
                     return false;
                 }
                 return true;
             },
+            hasSelectedOptionsTab: function() {
+                return this.isMultiple && this.remote && this.value && this.value.length > 0;
+            },
             hasTabs: function() {
+                if (this.hasSelectedOptionsTab) {
+                    return true;
+                }
                 if (!this.options || !this.options.length) {
                     return false;
                 }
@@ -474,13 +529,16 @@
             },
             publicTabs: function() {
                 var missingOptionsTab = this.missingOptionsTab,
+                    selectedOptionsTab = this.selectedOptionsTab,
                     defaultTabs = [];
-                if (!missingOptionsTab) {
-                    defaultTabs = [];
+
+                if (selectedOptionsTab) {
+                    defaultTabs.push(selectedOptionsTab);
                 }
-                else {
-                    defaultTabs = [missingOptionsTab];
+                else if (missingOptionsTab) {
+                    defaultTabs.push(missingOptionsTab);
                 }
+
                 if (this.hasTabs && this.hasAllOptionsTab) {
                     var allOptions = {
                         name: "__all",
@@ -516,25 +574,6 @@
                     });
                     return items;
                 }, {});
-            },
-            selectedOptions: function() {
-                if (!this.flatOptions.length) {
-                    return [];
-                }
-                var self = this,
-                    missingOptions = this.missingOptions || [];
-
-                if (Array.isArray(this.value)) {
-                    return missingOptions.concat(this.flatOptions.filter(function(item) {
-                        return self.value.indexOf(item.value) > -1;
-                    }));
-                }
-                else {
-                    var matching = this.flatOptions.filter(function(item) {
-                        return item.value === self.value;
-                    });
-                    return missingOptions.concat(matching);
-                }
             }
         },
         methods: {
@@ -558,6 +597,11 @@
                     }
                 });
             },
+            navigateToFirstRegularTab: function() {
+                if (this.options && this.options[0]) {
+                    this.activeTabId = this.options[0].name;
+                }
+            }
         },
         watch: {
             hasAllOptionsTab: function() {
@@ -565,6 +609,11 @@
             },
             hasTabs: function() {
                 this.determineActiveTabId();
+            },
+            'flatOptions.length': function(newVal) {
+                if (!newVal && this.hasSelectedOptionsTab) {
+                    this.activeTabId = "__selected";
+                }
             }
         }
     };
@@ -617,7 +666,10 @@
                 type: Number,
                 default: Number.MAX_SAFE_INTEGER,
                 required: false
-            }
+            },
+            //
+            remote: {type: Boolean, default: false},
+            remoteMethod: {type: Function, required: false}
         },
         data: function() {
             return {
@@ -750,7 +802,10 @@
                     this.doCommit();
                 }
             },
-            value: function() {
+            value: function(newVal) {
+                if (this.isMultiple && this.remote && newVal && newVal.length === 0 && this.activeTabId === "__selected") {
+                    this.navigateToFirstRegularTab();
+                }
                 this.uncommittedValue = null;
             }
         }
