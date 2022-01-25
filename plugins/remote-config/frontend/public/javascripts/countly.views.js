@@ -332,7 +332,18 @@
                 return countlyGlobal.plugins.indexOf("drill") > -1 ? true : false;
             },
             conditionArray: function() {
-                return this.$store.getters["countlyRemoteConfig/conditions/all"];
+                var conditions = this.$store.getters["countlyRemoteConfig/conditions/all"];
+                var ob = [];
+                conditions.forEach(function(condition) {
+                    ob.push({
+                        "label": condition.condition_name,
+                        "value": {
+                            "value": condition.condition_name,
+                            "condition_id": condition._id
+                        }
+                    });
+                });
+                return ob;
             }
         },
         props: {
