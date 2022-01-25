@@ -203,6 +203,7 @@
                     Promise.resolve(this.remoteMethod(query || '')).finally(function() {
                         self.isQueryPending = false;
                         self.updateDropdown && self.updateDropdown();
+                        self.navigateToFirstRegularTab();
                     });
                 }
             },
@@ -592,6 +593,11 @@
                     }
                 });
             },
+            navigateToFirstRegularTab: function() {
+                if (this.options && this.options[0]) {
+                    this.activeTabId = this.options[0].name;
+                }
+            }
         },
         watch: {
             hasAllOptionsTab: function() {
@@ -787,7 +793,10 @@
                     this.doCommit();
                 }
             },
-            value: function() {
+            value: function(newVal) {
+                if (this.isMultiple && this.remote && newVal && newVal.length === 0 && this.activeTabId === "__selected") {
+                    this.navigateToFirstRegularTab();
+                }
                 this.uncommittedValue = null;
             }
         }
