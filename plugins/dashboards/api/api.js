@@ -1479,6 +1479,24 @@ plugins.setConfigs("dashboards", {
         return false;
     });
 
+    plugins.register("/dashboard/data", async function({params, apps, widget}) {
+        try {
+            switch (widget.widget_type) {
+            case 'analytics':
+                await customDashboards.getAnalytics(params, apps, widget);
+                break;
+            case 'note':
+                await customDashboards.getNote(params, apps, widget);
+                break;
+            default:
+                break;
+            }
+        }
+        catch (e) {
+            log.d("Error while fetching data for widget " + widget, e);
+        }
+    });
+
     /**
      * Export Plugin data for given array  of ids
      * 

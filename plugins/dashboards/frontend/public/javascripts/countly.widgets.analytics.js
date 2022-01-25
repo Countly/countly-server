@@ -2,7 +2,7 @@
 
 (function() {
     var TimeSeriesComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/time-series/widget.html'),
+        template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
         props: {
             data: {
                 type: Object,
@@ -42,7 +42,7 @@
     });
 
     var DrawerComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/time-series/drawer.html'),
+        template: CV.T('/dashboards/templates/widgets/analytics/drawer.html'),
         props: {
             scope: {
                 type: Object
@@ -51,14 +51,14 @@
     });
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
-        type: "time-series",
-        label: CV.i18nM("dashboards.time-series"),
+        type: "analytics",
+        label: CV.i18nM("dashboards.analytics"),
         priority: 1,
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
                 return {
-                    widget_type: "time-series",
+                    widget_type: "analytics",
                     app_count: 'single',
                     data_type: "",
                     metrics: [],

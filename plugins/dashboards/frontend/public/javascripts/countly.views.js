@@ -572,7 +572,7 @@
             },
             newWidget: function() {
                 var empty = {};
-                var defaultEmpty = this.__widgets["time-series"].drawer.getEmpty();
+                var defaultEmpty = this.__widgets.analytics.drawer.getEmpty();
 
                 empty.__action = "create";
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));

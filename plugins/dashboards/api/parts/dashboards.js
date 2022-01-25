@@ -116,7 +116,75 @@ function toPlugin(val) {
     return val;
 }
 */
-dashboard.fetchWidgetData = function(params, my_widgets, callback) {
+
+/**
+ * Function to map the old widget structure to the new one
+ * @param  {Object} widget - Widget object
+ */
+function mapWidget(widget) {
+    var widgetType, visualization;
+
+    switch (widget.widget_type) {
+    case "time-series":
+        widgetType = "analytics";
+        visualization = "time-series";
+
+        break;
+    case "bar-chart":
+        widgetType = "analytics";
+        visualization = "bar-chart";
+
+        break;
+    case "number":
+        widgetType = "analytics";
+        visualization = "number";
+
+        break;
+    case "table":
+        widgetType = "analytics";
+        visualization = "table";
+
+        break;
+    case "funnels":
+        /**
+         * Backward compatibility check for already created funnels
+         * Remove when all previous funnels are shifted to client fetch
+         * Funnels are to fetched on the client side
+         */
+        widget.client_fetch = true;
+
+        break;
+    default:
+        break;
+    }
+
+    switch (widget.widget_type) {
+    case "time-series":
+    case "bar-chart":
+    case "number":
+    case "table":
+        if (widget.data_type === "push") {
+            widgetType = "push";
+        }
+
+        if (widget.data_type === "crash") {
+            widgetType = "crash";
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (widgetType) {
+        widget.widget_type = widgetType;
+    }
+
+    if (visualization) {
+        widget.visualization = visualization;
+    }
+}
+
+dashboard.fetchWidgetDataOld = function(params, my_widgets, callback) {
     if (my_widgets) {
         var nonPluginWidgets = {};
         var pluginWidgets = {};
@@ -414,6 +482,67 @@ dashboard.fetchWidgetData = function(params, my_widgets, callback) {
     else {
         callback([]);
     }
+};
+
+dashboard.fetchWidgetData = function(params, widgets, callback) {
+    if (widgets && widgets.length) {
+        var appIds = [];
+        for (var i = 0; i < widgets.length; i++) {
+            var widget = widgets[i];
+
+            mapWidget(widget);
+
+            var widgetApps = widget.apps || [];
+
+            for (var j = 0; j < widgetApps.length; j++) {
+                var appId = widgetApps[j];
+                if (appIds.indexOf(appId) < 0) {
+                    appIds.push(common.db.ObjectID(appId));
+                }
+            }
+        }
+
+        common.db.collection("apps").find({_id: {$in: appIds}}).toArray(function(err, res) {
+            var apps = {};
+
+            if (!err && res) {
+                for (var k = 0; k < res.length; k++) {
+                    apps[res[k]._id + ""] = res[k];
+                }
+            }
+
+            async.map(widgets, function(wget, done) {
+
+                if (wget.client_fetch) {
+                    return done();
+                }
+
+                plugins.dispatch("/dashboard/data", { params: params, apps: apps, widget: wget }, function() {
+                    return done();
+                });
+
+            }, function() {
+                return callback(widgets);
+            });
+        });
+    }
+    else {
+        return callback([]);
+    }
+};
+
+dashboard.getAnalytics = async function(params, apps, widget) {
+    var dashData = {
+        isValid: true,
+        data: {}
+    };
+
+    widget.dashData = dashData;
+    return widget;
+};
+
+dashboard.getNote = async function(params, apps, widget) {
+    return widget;
 };
 
 module.exports = dashboard;
