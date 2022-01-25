@@ -105,10 +105,14 @@ module.exports.onSessionUser = ({params, dbAppUser}) => {
 
 module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     log.d('Updating app %s config: %j', app._id, config);
-
-    let pushcfg = app.plugins && app.plugins.push || (app.plugins.push = {}),
-        old = JSON.stringify(pushcfg);
-
+    if (!app.plugins) {
+        app.plugins = {};
+    }
+    if (!app.plugins.push) {
+        app.plugins.push = {};
+    }
+    let pushcfg = app.plugins.push;
+    let old = JSON.stringify(pushcfg);
     for (let i = 0; i < platforms.length; i++) {
         let p = platforms[i],
             c = config[p];
