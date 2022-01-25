@@ -190,9 +190,7 @@
         },
         watch: {
             searchQuery: _.debounce(function(newVal) {
-                if (this.searchQuery && this.searchable) {
-                    this.callRemote(newVal);
-                }
+                this.callRemote(newVal);
             }, 500)
         },
         methods: {
@@ -483,7 +481,7 @@
                 return null;
             },
             selectedOptions: function() {
-                if (!this.flatOptions.length) {
+                if (!this.flatOptions.length && !this.missingOptions.length) {
                     return [];
                 }
                 var self = this,
@@ -502,7 +500,7 @@
                 }
             },
             selectedOptionsTab: function() {
-                if (this.isMultiple && this.remote && this.selectedOptions && this.selectedOptions.length) {
+                if (this.hasSelectedOptionsTab && this.selectedOptions && this.selectedOptions.length) {
                     return {
                         name: "__selected",
                         label: "Selected",
@@ -517,7 +515,13 @@
                 }
                 return true;
             },
+            hasSelectedOptionsTab: function() {
+                return this.isMultiple && this.remote && this.value && this.value.length > 0;
+            },
             hasTabs: function() {
+                if (this.hasSelectedOptionsTab) {
+                    return true;
+                }
                 if (!this.options || !this.options.length) {
                     return false;
                 }
@@ -605,6 +609,11 @@
             },
             hasTabs: function() {
                 this.determineActiveTabId();
+            },
+            'flatOptions.length': function(newVal) {
+                if (!newVal && this.hasSelectedOptionsTab) {
+                    this.activeTabId = "__selected";
+                }
             }
         }
     };
