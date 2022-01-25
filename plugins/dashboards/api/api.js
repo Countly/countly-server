@@ -131,7 +131,7 @@ plugins.setConfigs("dashboards", {
                                 return callback(null, {widgets: widgets, apps: apps});
                             }
 
-                            customDashboards.fetchWidgetData(params, widgets, function(data) {
+                            customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
                                 var output = { widgets: data || [], apps: apps || [] };
                                 return callback(null, output);
                             });
@@ -216,7 +216,7 @@ plugins.setConfigs("dashboards", {
                         }
 
                         common.db.collection("widgets").findOne({_id: common.db.ObjectID(widgetId)}, function(error, widget) {
-                            customDashboards.fetchWidgetData(params, [widget], function(data) {
+                            customDashboards.fetchAllWidgetsData(params, [widget], function(data) {
                                 common.returnOutput(params, data);
                             });
                         });
@@ -242,7 +242,7 @@ plugins.setConfigs("dashboards", {
             //Error
         }
 
-        customDashboards.fetchWidgetData(params, widgets, function(data) {
+        customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
             common.returnOutput(params, data);
         });
 
@@ -1483,7 +1483,14 @@ plugins.setConfigs("dashboards", {
         try {
             switch (widget.widget_type) {
             case 'analytics':
-                await customDashboards.getAnalytics(params, apps, widget);
+                await customDashboards.fetchAnalyticsData(params, apps, widget);
+                break;
+            case 'event':
+                await customDashboards.fetchEventsData(params, apps, widget);
+                break;
+            case 'push':
+                break;
+            case 'crash':
                 break;
             case 'note':
                 await customDashboards.getNote(params, apps, widget);
@@ -1493,7 +1500,8 @@ plugins.setConfigs("dashboards", {
             }
         }
         catch (e) {
-            log.d("Error while fetching data for widget " + widget, e);
+            log.d("Error while fetching data for widget - ", widget);
+            log.d("Error - ", e);
         }
     });
 
