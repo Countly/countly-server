@@ -1,4 +1,4 @@
-/* global Vue, CV */
+/* global Vue, CV, _ */
 
 (function(countlyVue) {
 
@@ -181,12 +181,25 @@
         },
         data: function() {
             return {
-                searchQuery: ''
+                searchQuery: '',
+                isQueryPending: false
             };
+        },
+        watch: {
+            searchQuery: _.debounce(function() {
+                var self = this;
+                if (this.searchQuery && this.searchQuery && this.remote && this.remoteMethod) {
+                    this.isQueryPending = true;
+                    this.remoteMethod(this.searchQuery).finally(function() {
+                        self.isQueryPending = false;
+                        self.updateDropdown && self.updateDropdown();
+                    });
+                }
+            }, 500)
         },
         methods: {
             getMatching: function(options) {
-                if (!this.searchQuery || !this.searchable) {
+                if (!this.searchQuery || !this.searchable || this.remote) {
                     return options;
                 }
                 var self = this;
@@ -617,7 +630,10 @@
                 type: Number,
                 default: Number.MAX_SAFE_INTEGER,
                 required: false
-            }
+            },
+            //
+            remote: {type: Boolean, default: false},
+            remoteMethod: {type: Function, required: false}
         },
         data: function() {
             return {
