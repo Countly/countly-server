@@ -277,8 +277,6 @@
                 for (var key in consentDp.chartData) {
                     optinYAxisData.push(consentDp.chartData[key].i);
                     optoutYAxisData.push(consentDp.chartData[key].o);
-
-
                 }
                 return {
                     series: [
@@ -323,7 +321,7 @@
                 var presentYAxisData = [];
                 var previousYAxisData = [];
                 for (var key in exportDP.chartData) {
-                    presentYAxisData.push[exportDP.chartData[key].e];
+                    presentYAxisData.push(exportDP.chartData[key].e);
                     previousYAxisData.push(exportDP.chartData[key].pe);
 
 
@@ -331,10 +329,12 @@
                 return {
                     series: [
                         {
+                            name: "present",
                             data: presentYAxisData,
 
                         },
                         {
+                            name: "Previous",
                             data: previousYAxisData
                         }
                     ]
@@ -345,21 +345,24 @@
                 var purgeDpPresent = [];
                 var purgeDpPrevious = [];
                 for (var key in purgeDp.chartData) {
-                    purgeDpPresent.push[purgeDp.chartData[key].p];
+                    purgeDpPresent.push(purgeDp.chartData[key].p);
                     purgeDpPrevious.push(purgeDp.chartData[key].pp);
                 }
-                return {
+                var data = {
                     series: [
                         {
+                            name: "present",
                             data: purgeDpPresent,
 
                         },
                         {
+                            name: "Previous",
                             data: purgeDpPrevious,
 
                         },
                     ]
                 };
+                return data;
             },
             userDatalegend: function() {
                 var data = this.$store.getters["countlyConsentManager/_ePData"];
