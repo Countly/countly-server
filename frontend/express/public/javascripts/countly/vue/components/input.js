@@ -481,6 +481,35 @@
                 }
                 return null;
             },
+            selectedOptions: function() {
+                if (!this.flatOptions.length) {
+                    return [];
+                }
+                var self = this,
+                    missingOptions = this.missingOptions || [];
+
+                if (Array.isArray(this.value)) {
+                    return missingOptions.concat(this.flatOptions.filter(function(item) {
+                        return self.value.indexOf(item.value) > -1;
+                    }));
+                }
+                else {
+                    var matching = this.flatOptions.filter(function(item) {
+                        return item.value === self.value;
+                    });
+                    return missingOptions.concat(matching);
+                }
+            },
+            selectedOptionsTab: function() {
+                if (this.isMultiple && this.remote && this.selectedOptions && this.selectedOptions.length) {
+                    return {
+                        name: "__selected",
+                        label: "Selected",
+                        options: this.selectedOptions
+                    };
+                }
+                return null;
+            },
             hasAllOptionsTab: function() {
                 if (this.hideAllOptionsTab || this.mode === "multi-check-sortable") {
                     return false;
@@ -495,13 +524,16 @@
             },
             publicTabs: function() {
                 var missingOptionsTab = this.missingOptionsTab,
+                    selectedOptionsTab = this.selectedOptionsTab,
                     defaultTabs = [];
-                if (!missingOptionsTab) {
-                    defaultTabs = [];
+
+                if (selectedOptionsTab) {
+                    defaultTabs.push(selectedOptionsTab);
                 }
-                else {
-                    defaultTabs = [missingOptionsTab];
+                else if (missingOptionsTab) {
+                    defaultTabs.push(missingOptionsTab);
                 }
+
                 if (this.hasTabs && this.hasAllOptionsTab) {
                     var allOptions = {
                         name: "__all",
@@ -537,25 +569,6 @@
                     });
                     return items;
                 }, {});
-            },
-            selectedOptions: function() {
-                if (!this.flatOptions.length) {
-                    return [];
-                }
-                var self = this,
-                    missingOptions = this.missingOptions || [];
-
-                if (Array.isArray(this.value)) {
-                    return missingOptions.concat(this.flatOptions.filter(function(item) {
-                        return self.value.indexOf(item.value) > -1;
-                    }));
-                }
-                else {
-                    var matching = this.flatOptions.filter(function(item) {
-                        return item.value === self.value;
-                    });
-                    return missingOptions.concat(matching);
-                }
             }
         },
         methods: {
