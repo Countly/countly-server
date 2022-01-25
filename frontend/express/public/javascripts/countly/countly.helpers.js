@@ -11,8 +11,13 @@
  */
 (function(CountlyHelpers) {
 
-    CountlyHelpers.logout = function() {
-        window.location.reload();//this will log us out
+    CountlyHelpers.logout = function(path) {
+        if (path) {
+            window.location = "/logout";
+        }
+        else {
+            window.location.reload();//this will log us out
+        }
     };
     /**
     * Legacy method for displaying notifications. User {@link CountlyHelpers.notify} instead

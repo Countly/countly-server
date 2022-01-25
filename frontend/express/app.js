@@ -780,6 +780,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         if (req.session.uid) {
                             if (Date.now() > req.session.expires) {
                                 //logout user
+                                membersUtility.logout(req, res);
                                 res.send("logout");
                             }
                             else {
