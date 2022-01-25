@@ -1993,6 +1993,7 @@
                 cohortOptions: [],
                 isSearchUsersLoading: false,
                 isFetchCohortsLoading: false,
+                isAddTestUsersLoading: false,
                 isDialogVisible: false,
                 areRowsLoading: false,
                 testUsersRows: [],
@@ -2054,9 +2055,19 @@
             onOpen: function() {
                 this.fetchCohortsIfNotFound();
             },
-            onSubmit: function(editedObject) {
-                // TODO: add test users
-                console.log(editedObject);
+            onSubmit: function(editedObject, done) {
+                var self = this;
+                this.isAddTestUsersLoading = true;
+                countlyPushNotification.service.addTestUsers(editedObject)
+                    .then(function() {
+                        done();
+                        CountlyHelpers.notify({message: 'Test users have been successfully added.'});
+                    }).catch(function() {
+                        // TODO: log error
+                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.'});
+                    }).finally(function() {
+                        self.isAddTestUsersLoading = false;
+                    });
             },
             onSearchUsers: function(query) {
                 var self = this;

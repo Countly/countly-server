@@ -658,6 +658,11 @@
                 contentType: "application/json",
                 data: JSON.stringify(data)
             }, {disableAutoCatch: true});
+        },
+        addTestUsers: function() {
+            return new Promise(function(resolve) {
+                resolve();
+            });
         }
     };
 
@@ -2069,6 +2074,9 @@
             }
             return countlyPushNotificationApprover.service.approve(messageId);
         },
+        addTestUsers: function(testUsersModel) {
+            return countlyPushNotification.api.saveTestUsers(testUsersModel);
+        }
     };
 
     var getDetailsInitialState = function() {
