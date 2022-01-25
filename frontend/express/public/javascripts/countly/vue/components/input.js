@@ -668,6 +668,12 @@
                 required: false
             },
             //
+            collapseTags: {
+                type: Boolean,
+                default: true,
+                required: false
+            },
+            //
             remote: {type: Boolean, default: false},
             remoteMethod: {type: Function, required: false}
         },
