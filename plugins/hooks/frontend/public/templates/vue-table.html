@@ -54,11 +54,12 @@
             <template v-for="(col,idx) in scope.dynamicCols">
                 <el-table-column 
                     v-if="col.value === 'triggerCount'"  
-                    sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" width="155">
+                    sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" width="140">
                 </el-table-column>
                 <el-table-column
+                    align="left"
                     v-if="col.value === 'lastTriggerTimestampString'"  
-                    sortable="true"  prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" width="165" >
+                    sortable="true"  prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" width="150" >
                 </el-table-column>
             </template>
 
