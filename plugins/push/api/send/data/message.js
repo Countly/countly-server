@@ -1,11 +1,12 @@
 'use strict';
-
 const { State, Status, STATUSES, Mongoable, DEFAULTS, S } = require('./const'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
     { Result } = require('./result'),
-    { Info } = require('./info');
+    { Info } = require('./info'),
+    common = require('./../../../../../api/utils/common');
+
 
 /**
  * Message class encapsulating all the message-related data
@@ -619,8 +620,8 @@ class Message extends Mongoable {
      */
     static test() {
         return new Message({
-            _id: '0',
-            app: '1',
+            _id: common.db.ObjectID(),
+            app: common.db.ObjectID(),
             platforms: ['t'],
             state: State.Streamable,
             status: Status.Scheduled,
