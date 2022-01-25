@@ -1,4 +1,4 @@
-/* global Vue, CV, _ */
+/* global Vue, CV, _, Promise */
 
 (function(countlyVue) {
 
@@ -185,19 +185,27 @@
                 isQueryPending: false
             };
         },
+        mounted: function() {
+            this.callRemote();
+        },
         watch: {
-            searchQuery: _.debounce(function() {
-                var self = this;
-                if (this.searchQuery && this.searchQuery && this.remote && this.remoteMethod) {
-                    this.isQueryPending = true;
-                    this.remoteMethod(this.searchQuery).finally(function() {
-                        self.isQueryPending = false;
-                        self.updateDropdown && self.updateDropdown();
-                    });
+            searchQuery: _.debounce(function(newVal) {
+                if (this.searchQuery && this.searchable) {
+                    this.callRemote(newVal);
                 }
             }, 500)
         },
         methods: {
+            callRemote: function(query) {
+                if (this.remote && this.remoteMethod) {
+                    var self = this;
+                    this.isQueryPending = true;
+                    Promise.resolve(this.remoteMethod(query || '')).finally(function() {
+                        self.isQueryPending = false;
+                        self.updateDropdown && self.updateDropdown();
+                    });
+                }
+            },
             getMatching: function(options) {
                 if (!this.searchQuery || !this.searchable || this.remote) {
                     return options;

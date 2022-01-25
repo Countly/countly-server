@@ -187,26 +187,24 @@
         },
         methods: {
             remoteMethod: function(rawQuery) {
-                if (rawQuery.length > 0) {
-                    var self = this;
-                    var filtered = this.selectXOptions.map(function(group) {
-                        return {
-                            label: group.label,
-                            name: group.name,
-                            options: group.options.filter(function(option) {
-                                return option.label && option.label.includes(rawQuery);
-                            })
-                        };
-                    }).filter(function(group) {
-                        return group.options.length > 0;
-                    });
-                    return new Promise(function(resolve) {
-                        setTimeout(function() {
-                            self.selectXRemoteOptions = filtered;
-                            resolve(filtered);
-                        }, 400);
-                    });
-                }
+                var self = this;
+                var filtered = this.selectXOptions.map(function(group) {
+                    return {
+                        label: group.label,
+                        name: group.name,
+                        options: group.options.filter(function(option) {
+                            return option.label && option.label.includes(rawQuery);
+                        })
+                    };
+                }).filter(function(group) {
+                    return group.options.length > 0;
+                });
+                return new Promise(function(resolve) {
+                    setTimeout(function() {
+                        self.selectXRemoteOptions = filtered;
+                        resolve(filtered);
+                    }, 400);
+                });
             }
         },
         data: function() {
