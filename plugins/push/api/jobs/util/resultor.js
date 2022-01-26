@@ -133,13 +133,8 @@ class Resultor extends SynFlushTransform {
                         rl = rp.sub(p.pr.la || 'default');
                     rp.sent++;
                     rp.processed++;
-                    if (!rl) {
-                        rl = rp.sub(p.pr.la || 'default', new Result({sent: 1, processed: 1}));
-                    }
-                    else {
-                        rl.sent++;
-                        rl.processed++;
-                    }
+                    rl.sent++;
+                    rl.processed++;
 
                     this.toDelete.push(id);
                     delete this.data.pushes[id];

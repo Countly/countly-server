@@ -177,21 +177,26 @@ module.exports.test = async params => {
             await new Promise(res => setTimeout(res, 1000));
         }
 
-        let ok = await msg.updateAtomically(
-            {_id: msg._id, state: msg.state},
-            {
-                $bit: {state: {or: State.Deleted}},
-                $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
-            });
+        if (msg) {
+            let ok = await msg.updateAtomically(
+                {_id: msg._id, state: msg.state},
+                {
+                    $bit: {state: {or: State.Deleted}},
+                    $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
+                });
 
-        if (ok) {
-            common.returnOutput(params, {result: msg.result.json});
+            if (ok) {
+                common.returnOutput(params, {result: msg.result.json});
+            }
+            else {
+                common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
+            }
+
+            msg = undefined;
         }
         else {
-            common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
+            common.returnMessage(params, 400, {errors: ['Message disappeared']}, null, true);
         }
-
-        msg = undefined;
     }
     catch (e) {
         log.e('Error while sending test message', e);
