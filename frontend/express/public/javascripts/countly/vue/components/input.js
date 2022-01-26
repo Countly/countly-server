@@ -491,14 +491,18 @@
                     missingOptions = this.missingOptions || [];
 
                 if (this.onlySelectedOptionsTab && Array.isArray(this.value)) {
-                    return this.value.map(function(missingKey) {
+                    return this.flatOptions.reduce(function(acc, item) {
+                        var idx = acc.indexOf(item.value);
+                        if (idx > -1) {
+                            acc.splice(idx, 1);
+                        }
+                        return acc;
+                    }, this.value.slice()).map(function(missingKey) {
                         return {
                             label: missingKey,
                             value: missingKey
                         };
-                    }).concat(this.flatOptions.filter(function(item) {
-                        return self.value.indexOf(item.value) === -1;
-                    }));
+                    }).concat(this.flatOptions);
                 }
 
                 if (Array.isArray(this.value)) {
