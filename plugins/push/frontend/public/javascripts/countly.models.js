@@ -1534,6 +1534,7 @@
                 }
                 if (options.queryFilter && options.from === 'drill') {
                     var drillFilter = Object.assign({}, options.queryFilter);
+                    drillFilter.queryObject = JSON.stringify(options.queryFilter.queryObject);
                     var period = countlyCommon.getPeriod();
                     drillFilter.period = period;
                     if (Array.isArray(period)) {
