@@ -1,9 +1,7 @@
-const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
+const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
     { DEFAULTS } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
-    log = common.log('push:api:message'),
-    crypto = require('crypto'),
-    moment = require('moment-timezone');
+    log = common.log('push:api:message');
 
 /**
  * Validate data & construct message out of it, throw in case of error
@@ -121,6 +119,107 @@ async function validate(args, draft = false) {
     return msg;
 }
 
+module.exports.test = async params => {
+    let msg = await validate(params.qstring),
+        cfg = params.app.plugins.push || {},
+        test_uids = cfg && cfg.test && cfg.test.uids ? cfg.test.uids.split(',') : undefined,
+        test_cohorts = cfg && cfg.test && cfg.test.cohorts ? cfg.test.cohorts.split(',') : undefined;
+
+    if (test_uids) {
+        msg.filter = new Filter({user: JSON.stringify({uid: {$in: test_uids}})});
+    }
+    else if (test_cohorts) {
+        msg.filter = new Filter({cohorts: test_cohorts});
+    }
+    else {
+        throw new ValidationError('Please define test users in Push plugin configuration');
+    }
+
+    msg._id = common.db.ObjectID();
+    msg.triggers = [new PlainTrigger({start: new Date()})];
+    msg.state = State.Streamable;
+    msg.status = Status.Scheduled;
+    await msg.save();
+
+    try {
+        let audience = new Audience(log.sub('test-audience'), msg);
+        await audience.getApp();
+
+        let result = await audience.push(msg.triggerPlain()).setStart().run();
+        if (result.total === 0) {
+            throw new ValidationError('No users with push tokens found in test users');
+        }
+        else {
+            await msg.update({$set: {result: result.json, test: true}}, () => msg.result = result);
+        }
+
+        let start = Date.now();
+        while (start > 0) {
+            if ((Date.now() - start) > 5000) { // 5 seconds
+                msg.result.processed = msg.result.total; // TODO: remove
+                await msg.save();
+                break;
+            }
+            // if ((Date.now() - start) > 100000) { // 1.5 minutes
+            //     break;
+            // }
+            msg = await Message.findOne(msg._id);
+            if (!msg) {
+                break;
+            }
+            if (msg.result.total === msg.result.processed) {
+                break;
+            }
+            if (msg.is(State.Error)) {
+                break;
+            }
+
+            await new Promise(res => setTimeout(res, 1000));
+        }
+
+        if (msg) {
+            let ok = await msg.updateAtomically(
+                {_id: msg._id, state: msg.state},
+                {
+                    $bit: {state: {or: State.Deleted}},
+                    $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
+                });
+
+            if (ok) {
+                common.returnOutput(params, {result: msg.result.json});
+            }
+            else {
+                common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
+            }
+
+            msg = undefined;
+        }
+        else {
+            common.returnMessage(params, 400, {errors: ['Message disappeared']}, null, true);
+        }
+    }
+    catch (e) {
+        log.e('Error while sending test message', e);
+        common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
+    }
+    finally {
+        if (msg) {
+            let ok = await msg.updateAtomically(
+                {_id: msg._id, state: msg.state},
+                {
+                    $bit: {state: {or: State.Deleted}},
+                    $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
+                });
+            if (ok) {
+                common.returnOutput(params, {result: msg.result.json});
+            }
+            else {
+                common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
+            }
+        }
+    }
+};
+
 module.exports.create = async params => {
     let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
     msg._id = common.db.ObjectID();
@@ -202,7 +301,7 @@ module.exports.remove = async params => {
         {_id: msg._id, state: msg.state},
         {
             $bit: {state: {or: State.Deleted}},
-            $set: {removed: new Date(), removedBy: params.member._id, removedByName: params.member.full_name}
+            $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
         });
     if (ok) {
         common.returnOutput(params, {});
@@ -363,82 +462,8 @@ module.exports.one = async params => {
         return true;
     }
 
-    let not = new Date(),
-        noy = not.getFullYear(),
-        nom = not.getMonth(),
-        agy = noy - 1,
-
-        /**
-         * Generate ids of event docs
-         * 
-         * @param {string} seg segment name
-         * @param {string} val segment value
-         * @returns {string[]} event doc ids
-         */
-        ids = (seg, val) => ([
-            seg + '_' + noy + ':' + (nom + 1) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0],
-            seg + '_' + (nom === 0 ? agy : noy) + ':' + '_' + (nom === 0 ? 12 : nom) + crypto.createHash('md5').update(val + '').digest('base64')[0]
-        ]),
-
-        c_sent = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + msg.app).digest('hex'),
-        c_actioned = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_action') + msg.app).digest('hex');
-
-    let [sent, actioned, sent_platform, actioned_platform] = await Promise.all([
-        common.db.collection(c_sent).find({_id: {$in: ids('i', msg.id)}, s: 'i'}).toArray(),
-        common.db.collection(c_actioned).find({_id: {$in: ids('i', msg.id)}, s: 'i'}).toArray(),
-        Object.keys(msg.results || {}).length ? common.db.collection(c_sent).find({_id: {$in: Object.keys(msg.results).map(p => ids('ip', msg.id + p)).flat()}, s: 'ip'}).toArray() : [],
-        Object.keys(msg.results || {}).length ? common.db.collection(c_actioned).find({_id: {$in: Object.keys(msg.results).map(p => ids('ip', msg.id + p)).flat()}, s: 'ip'}).toArray() : [],
-    ]);
-
-    msg = msg.json;
-
-    msg.result.sent = toChartData(sent, msg._id);
-    msg.result.actioned = toChartData(actioned, msg._id);
-    Object.keys(msg.results || {}).forEach(p => {
-        msg.results[p].sent = toChartData(sent_platform, msg._id + p);
-        msg.results[p].actioned = toChartData(actioned_platform, msg._id + p);
-    });
-
-    common.returnOutput(params, msg);
+    common.returnOutput(params, msg.json);
 };
-
-/**
- * Convert event docs to results data
- * 
- * @param {object[]} docs event docs
- * @param {string} segment segment value
- * @returns {object} chart data
- */
-function toChartData(docs, segment) {
-    let ret = { daily: Array(30).fill(0), total: 0 },
-        rxp = /([0-9]{4}):([0-9]{1,2})/;
-
-    docs.forEach(e => {
-        var par = e._id.match(rxp),
-            yer = parseInt(par[1]),
-            mon = parseInt(par[2]) - 1;
-
-        Object.keys(e.d).forEach(d => {
-            d = parseInt(d);
-
-            if (!e.d[d][segment]) {
-                return;
-            }
-
-            // current week & month numbers are first and last in wks / mts arrays
-            var date = moment({ year: yer, month: mon, day: d});
-            var diff = moment().diff(date, 'days');
-
-            if (diff <= 29) {
-                var target = 29 - diff;
-                ret.daily[target] += e.d[d][segment].c || 0;
-                ret.total += e.d[d][segment].c;
-            }
-        });
-    });
-
-    return ret;
-}
 
 module.exports.all = async params => {
     let data = common.validateArgs(params.qstring, {
