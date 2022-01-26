@@ -124,17 +124,13 @@
             </div>
             <div v-if="!drawerScope.editedObject.global_admin && !group._id" class="user-management-drawer-content__drawer-sub-section bu-px-4 bu-pt-4 bu-pb-5">
               <div class="user-management-drawer-content__section-title">
-                <div>
-                  <span class="user-management-drawer-content__section-header"> {{ i18n('management-users.grant-admin-access-to-apps') }} <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
-                </div>
-                <div>
-                </div>
+                <span class="user-management-drawer-content__section-header"> {{ i18n('management-users.grant-admin-access-to-apps') }} <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
               </div>
               <div class="user-management-drawer-content__section-content">
                 <div class="user-management-drawer-content__label user-management-drawer-content__label--pl-10">
-                  <div class="text-small user-management-drawer-content__help-text">{{ i18n('management-users.grant-admin-access-description') }}</div>
+                  <div class="user-management-drawer-content__help-text">{{ i18n('management-users.grant-admin-access-description') }}</div>
                 </div>
-                <div class="input" v-if="drawerScope.editedObject.permission">
+                <div class="user-management-drawer-content__input" v-if="drawerScope.editedObject.permission">
                   <cly-select-x
                     :placeholder="i18n('token_manager.select-apps')"
                     mode="multi-check"
@@ -159,7 +155,7 @@
               </div>
               <div class="user-management-drawer-content__section-content">
                 <div class="user-management-drawer-content__label user-management-drawer-content__label--pl-10">
-                  <div class="text-small user-management-drawer-content__help-text bu-px-4 bu-mt-1">Some app selection related description can be placed here</div>
+                  <div class="bu-px-4 user-management-drawer-content__help-text">Some app selection related description can be placed here</div>
                 </div>
                 <div class="user-management-drawer-content__input bu-px-4">
                   <cly-select-x
@@ -167,26 +163,26 @@
                     mode="multi-check"
                     @change="onUserAppsChanged(index)"
                     v-model="drawerScope.editedObject.permission._.u[index]"
-                    class="user-management-drawer-content__app-selector bu-mb-5"
+                    class="user-management-drawer-content__app-selector"
                     :options="apps">
                   </cly-select-x>
                 </div>
-                <div class="user-management-drawer-content__permission-table-header bu-px-4">
+                <div class="user-management-drawer-content__permission-table-header bu-px-4 bu-mt-4">
                   <div class="user-management-drawer-content__feature-name-col text-medium bu-has-text-weight-medium">
                     {{ i18n('management-users.feature') }}
                   </div>
                   <div class="user-management-drawer-content__permission-type-cols">
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox class="bu-has-text-weight-medium" @change="setPermissionByType(index, 'c')" v-model="permissionSets[index].c.all">{{ i18n('management-users.create').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'c')" v-model="permissionSets[index].c.all">{{ i18n('management-users.create').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox class="bu-has-text-weight-medium" @change="setPermissionByType(index, 'r')" v-model="permissionSets[index].r.all">{{ i18n('management-users.read').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'r')" v-model="permissionSets[index].r.all">{{ i18n('management-users.read').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox class="bu-has-text-weight-medium" @change="setPermissionByType(index, 'u')" v-model="permissionSets[index].u.all">{{ i18n('management-users.update').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'u')" v-model="permissionSets[index].u.all">{{ i18n('management-users.update').toUpperCase() }}</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <el-checkbox class="bu-has-text-weight-medium" @change="setPermissionByType(index, 'd')" v-model="permissionSets[index].d.all">{{ i18n('management-users.delete').toUpperCase() }}</el-checkbox>
+                      <el-checkbox @change="setPermissionByType(index, 'd')" v-model="permissionSets[index].d.all">{{ i18n('management-users.delete').toUpperCase() }}</el-checkbox>
                     </div>
                   </div>
                 </div>
