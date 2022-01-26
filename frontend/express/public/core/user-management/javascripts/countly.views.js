@@ -11,7 +11,39 @@
         data: function() {
             return {
                 tableFilter: null,
-                showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1
+                showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1,
+                tableDynamicCols: [
+                    {
+                        value: "full_name",
+                        label: CV.i18n('management-users.user'),
+                        default: true
+                    },
+                    {
+                        value: "username",
+                        label: CV.i18n('management-users.username'),
+                        default: true
+                    },
+                    {
+                        value: "email",
+                        label: CV.i18n('management-users.email'),
+                        default: true
+                    },
+                    {
+                        value: "role",
+                        label: CV.i18n('management-users.role'),
+                        default: true
+                    },
+                    {
+                        value: "created_at",
+                        label: CV.i18n('management-users.created'),
+                        default: true
+                    },
+                    {
+                        value: "last_login",
+                        label: CV.i18n('management-users.last_login'),
+                        default: true
+                    }
+                ]
             };
         },
         computed: {

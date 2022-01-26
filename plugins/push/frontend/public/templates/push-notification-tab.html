@@ -48,7 +48,7 @@
                 </cly-chart-time>
             </cly-section>
             <cly-section>
-                <cly-datatable-n  :rows="pushNotificationRows" v-loading="areRowsLoading" :force-loading="areRowsLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true">
+                <cly-datatable-n  :rows="pushNotificationRows" v-loading="areRowsLoading || isUserCommandLoading" :force-loading="areRowsLoading || isUserCommandLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true">
                     <template v-slot:header-left>
                         <el-select v-model="selectedStatusFilter">
                             <el-option

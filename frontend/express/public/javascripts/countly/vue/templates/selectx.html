@@ -15,11 +15,13 @@
                 v-if="isMultiple"
                 multiple
                 ref="trigger"
+                class="el-select-head"
                 :disabled="disabled"
                 :opened="dropdown.visible"
                 :placeholder="placeholder"
                 :arrow="arrow"
                 :value="value"
+                :collapse-tags="collapseTags"
                 @change="commitValue"
                 :options-lookup="selectedOptions">
             </el-select-head>
