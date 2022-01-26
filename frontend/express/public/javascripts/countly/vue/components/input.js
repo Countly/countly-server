@@ -440,7 +440,8 @@
             },
             hideDefaultTabs: {type: Boolean, default: false},
             allPlaceholder: {type: String, default: 'All'},
-            hideAllOptionsTab: {type: Boolean, default: false}
+            hideAllOptionsTab: {type: Boolean, default: false},
+            onlySelectedOptionsTab: {type: Boolean, default: false}
         },
         data: function() {
             return {
@@ -481,7 +482,7 @@
                 return null;
             },
             selectedOptions: function() {
-                if (!this.flatOptions.length && !this.missingOptions.length) {
+                if (!this.onlySelectedOptionsTab && !this.flatOptions.length && !this.missingOptions.length) {
                     return [];
                 }
                 var self = this,
@@ -518,8 +519,8 @@
             hasSelectedOptionsTab: function() {
                 return this.isMultiple && this.remote && this.value && this.value.length > 0;
             },
-            hasTabs: function() {
-                if (this.hasSelectedOptionsTab) {
+            showTabs: function() {
+                if (this.hasSelectedOptionsTab && !this.onlySelectedOptionsTab) {
                     return true;
                 }
                 if (!this.options || !this.options.length) {
@@ -530,34 +531,39 @@
             publicTabs: function() {
                 var missingOptionsTab = this.missingOptionsTab,
                     selectedOptionsTab = this.selectedOptionsTab,
-                    defaultTabs = [];
+                    prefixTabs = [],
+                    postfixTabs = [];
 
                 if (selectedOptionsTab) {
-                    defaultTabs.push(selectedOptionsTab);
+                    postfixTabs.push(selectedOptionsTab);
                 }
                 else if (missingOptionsTab) {
-                    defaultTabs.push(missingOptionsTab);
+                    prefixTabs.push(missingOptionsTab);
                 }
 
-                if (this.hasTabs && this.hasAllOptionsTab) {
-                    var allOptions = {
+                if (this.showTabs && this.hasAllOptionsTab) {
+                    prefixTabs.unshift({
                         name: "__all",
                         label: this.allPlaceholder,
                         options: this.flatOptions
-                    };
-                    return [allOptions].concat(defaultTabs).concat(this.options);
+                    });
                 }
-                else if (this.hasTabs) {
-                    return defaultTabs.concat(this.options);
+
+                if (!this.showTabs && !this.onlySelectedOptionsTab) {
+                    prefixTabs.unshift({
+                        name: "__root",
+                        label: "__root",
+                        options: this.options
+                    });
                 }
-                return [{
-                    name: "__root",
-                    label: "__root",
-                    options: this.options
-                }].concat(defaultTabs);
+
+                if (!this.showTabs) {
+                    return prefixTabs.concat(postfixTabs);
+                }
+                return prefixTabs.concat(this.options).concat(postfixTabs);
             },
             flatOptions: function() {
-                if (!this.hasTabs || !this.options.length) {
+                if (!this.showTabs || !this.options.length) {
                     return this.options;
                 }
                 return this.options.reduce(function(items, tab) {
@@ -583,7 +589,7 @@
             determineActiveTabId: function() {
                 var self = this;
                 this.$nextTick(function() {
-                    if (!self.hasTabs) {
+                    if (!self.showTabs) {
                         self.activeTabId = "__root";
                     }
                     else if (self.value && self.val2tab[self.value]) {
@@ -607,7 +613,7 @@
             hasAllOptionsTab: function() {
                 this.determineActiveTabId();
             },
-            hasTabs: function() {
+            showTabs: function() {
                 this.determineActiveTabId();
             },
             'flatOptions.length': function(newVal) {
@@ -688,7 +694,7 @@
             },
             popClasses: function() {
                 return {
-                    "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.hasTabs,
+                    "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.showTabs,
                     "cly-vue-select-x__pop--has-single-option": this.hasSingleOption
                 };
             },
