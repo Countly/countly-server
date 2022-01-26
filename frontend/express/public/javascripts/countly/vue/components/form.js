@@ -349,8 +349,8 @@
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({
         props: {
-            subheading: String,
-            label: String,
+            subheading: {required: false},
+            label: {required: false},
             optional: {
                 type: Boolean,
                 default: false
