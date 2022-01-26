@@ -73,7 +73,15 @@
               <div class="user-management-drawer-content__label">
                 <div class="text-small text-heading">{{ i18n('management-users.profile-picture') }}</div>
               </div>
+              <div class="bu-is-flex" v-if="!pictureEditMode">
+                <!-- we have problem at here about image src, will be fixed, already noted. -->
+                <img class="user-management-drawer-content__user-pp" :src="'/memberimages/' + drawerScope.editedObject._id + '.png'"/>
+                <cly-more-options class="user-management-drawer-content__pp-options" size="small" @command="handlePPCommand($event)">
+                  <el-dropdown-item command="edit-pp">{{i18n('common.edit')}}</el-dropdown-item>
+                </cly-more-options>
+              </div>
               <cly-dropzone 
+                v-if="pictureEditMode"
                 @vdropzone-removed-file="onFileRemoved" 
                 @vdropzone-file-added="onFileAdded"
                 @vdropzone-sending="onSending"
@@ -108,7 +116,6 @@
               </div>
               <div class="user-management-drawer-content__section-content user-management-drawer-content__role-section">
                 <el-checkbox v-model="drawerScope.editedObject.global_admin">{{ i18n('management-users.global-administrator') }}</el-checkbox>
-                
                 <component v-for="roleInput in rolesInput" :is="roleInput.component" :user="drawerScope.editedObject" @role-change="onRoleChange" key="roleInput.key"></component>
               </div>
             </div>

@@ -1,5 +1,23 @@
 .user-management-drawer-content {
 
+  &__pp-options {
+    height: fit-content;
+    align-self: center;
+    margin-left: 15px;
+    box-shadow: none;
+
+    .el-button {
+      box-shadow: none;
+      border: none;
+    }
+  }
+
+  &__user-pp {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+  }
+
   #user-drawer-dropzone {
     background-color: #F8FAFD;
     border-radius: 6px;
@@ -89,6 +107,7 @@
 
   &__profile-picture-area {
     margin-top: 9px;
+    margin-left: 10px;
 
     &__upload-section {
       border: 1px dashed #81868D;
