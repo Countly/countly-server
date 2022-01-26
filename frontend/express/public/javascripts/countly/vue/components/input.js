@@ -530,7 +530,7 @@
                 return true;
             },
             hasSelectedOptionsTab: function() {
-                return this.isMultiple && this.remote && this.value && this.value.length > 0;
+                return this.onlySelectedOptionsTab || (this.isMultiple && this.remote && this.value && this.value.length > 0);
             },
             showTabs: function() {
                 if (this.onlySelectedOptionsTab) {
