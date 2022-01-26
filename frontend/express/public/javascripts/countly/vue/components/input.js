@@ -201,7 +201,9 @@
                     Promise.resolve(this.remoteMethod(query || '')).finally(function() {
                         self.isQueryPending = false;
                         self.updateDropdown && self.updateDropdown();
-                        self.navigateToFirstRegularTab();
+                        if (this.onlySelectedOptionsTab) {
+                            self.navigateToFirstRegularTab();
+                        }
                     });
                 }
             },
@@ -488,6 +490,17 @@
                 var self = this,
                     missingOptions = this.missingOptions || [];
 
+                if (this.onlySelectedOptionsTab && Array.isArray(this.value)) {
+                    return this.value.map(function(missingKey) {
+                        return {
+                            label: missingKey,
+                            value: missingKey
+                        };
+                    }).concat(this.flatOptions.filter(function(item) {
+                        return self.value.indexOf(item.value) === -1;
+                    }));
+                }
+
                 if (Array.isArray(this.value)) {
                     return missingOptions.concat(this.flatOptions.filter(function(item) {
                         return self.value.indexOf(item.value) > -1;
@@ -520,7 +533,10 @@
                 return this.isMultiple && this.remote && this.value && this.value.length > 0;
             },
             showTabs: function() {
-                if (this.hasSelectedOptionsTab && !this.onlySelectedOptionsTab) {
+                if (this.onlySelectedOptionsTab) {
+                    return false;
+                }
+                if (this.hasSelectedOptionsTab) {
                     return true;
                 }
                 if (!this.options || !this.options.length) {
@@ -563,7 +579,7 @@
                 return prefixTabs.concat(this.options).concat(postfixTabs);
             },
             flatOptions: function() {
-                if (!this.showTabs || !this.options.length) {
+                if ((!this.showTabs && !this.onlySelectedOptionsTab) || !this.options.length) {
                     return this.options;
                 }
                 return this.options.reduce(function(items, tab) {
@@ -589,7 +605,10 @@
             determineActiveTabId: function() {
                 var self = this;
                 this.$nextTick(function() {
-                    if (!self.showTabs) {
+                    if (self.onlySelectedOptionsTab) {
+                        self.activeTabId = "__selected";
+                    }
+                    else if (!self.showTabs) {
                         self.activeTabId = "__root";
                     }
                     else if (self.value && self.val2tab[self.value]) {
@@ -815,7 +834,7 @@
                 }
             },
             value: function(newVal) {
-                if (this.isMultiple && this.remote && newVal && newVal.length === 0 && this.activeTabId === "__selected") {
+                if (!this.onlySelectedOptionsTab && this.isMultiple && this.remote && newVal && newVal.length === 0 && this.activeTabId === "__selected") {
                     this.navigateToFirstRegularTab();
                 }
                 this.uncommittedValue = null;
