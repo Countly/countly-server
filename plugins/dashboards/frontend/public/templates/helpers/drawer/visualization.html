@@ -1,8 +1,8 @@
 <cly-form-field
     name="visualization"
     :rules="{ required: { allowFalse: false } }"
-    :subheading="i18nM('dashbaords.visualization-description')"
-    :label="i18nM('dashbaords.visualization')">
+    :subheading="!mute && i18nM('dashbaords.visualization-description')"
+    :label="!mute && i18nM('dashbaords.visualization')">
     <div class="bu-columns bu-is-multiline bu-m-0 clyd-visualization">
         <div style="box-sizing: border-box; height: 64px;"
             v-for="(item, index) in visualizationTypes"
