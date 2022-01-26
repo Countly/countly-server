@@ -6,12 +6,16 @@
       <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
     </template>
     <template v-slot:header-right>
-      <div class="bu-level-item">
-        <el-button @click="create" type="primary" size="small" icon="el-icon-circle-plus">{{i18n('remote-config.add-parameter-title')}}</el-button>
+      <div class="bu-level-item" v-if="hasCreateRight">
+        <el-button :disabled="isParamterLimitExceeded" @click="create" type="primary" size="small" icon="el-icon-circle-plus">{{i18n('remote-config.add-parameter-title')}}</el-button>
       </div>
     </template>
   </cly-header>
   <cly-main>
+    <div class="bu-mr-5" v-if="isParamterLimitExceeded">
+      <cly-notification class="bu-mb-5" :text="i18n('remote-config.maximum_parameters_added')" color="light-warning">
+      </cly-notification>
+    </div>
     <cly-datatable-n :rows="tableRows">
       <template v-slot:default="scope">
         <el-table-column type="expand" min-width="50">
@@ -32,10 +36,11 @@
         <el-table-column min-width="160" prop="status" :label="i18n('remote-config.parameter.status')">
           <template v-slot:default="rowScope">
             <div>
-              <div class="cly-vue-remote-config-conditions-drawer__margin-bottom">   
+              <div class="cly-vue-remote-config-conditions-drawer__margin-bottom">
                 <cly-status-tag v-if="rowScope.row.status==='Stopped'" :text="i18n('remote-config.parameter.stopped')" color="red"></cly-status-tag>
                 <cly-status-tag v-else-if="rowScope.row.status==='Expired'" :text="i18n('remote-config.parameter.expired')" color="yellow"></cly-status-tag>
-                <cly-status-tag v-else :text="i18n('remote-config.parameter.running')" color="blue"></cly-status-tag> </div>
+                <cly-status-tag v-else :text="i18n('remote-config.parameter.running')" color="blue"></cly-status-tag>
+              </div>
               <div class="color-cool-gray-40 text-small" v-if="rowScope.row.expiry_dttm"> {{i18n('remote-config.expire.date')}} {{getDate(rowScope.row.expiry_dttm)}}</div>
             </div>
           </template>
@@ -53,20 +58,20 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column min-width="160" type="options">
+        <el-table-column min-width="160" v-if="hasUpdateRight || hasDeleteRight" type="options">
           <template v-slot="rowScope">
             <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
-              <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-              <el-dropdown-item command="remove">{{i18n('common.delete')}}</el-dropdown-item>
+              <el-dropdown-item v-if="hasUpdateRight" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+              <el-dropdown-item v-if="hasDeleteRight" command="remove">{{i18n('common.delete')}}</el-dropdown-item>
             </cly-more-options>
           </template>
         </el-table-column>
-         <el-table-column min-width="110">
+        <el-table-column v-if="hasUpdateRight" min-width="110">
           <template v-slot="rowScope">
-              <el-button v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'" @click="startParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.start')}}
-		          </el-button>
-              <el-button v-else @click="stopParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.stop')}}
-		          </el-button>
+            <el-button v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'" @click="startParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.start')}}
+            </el-button>
+            <el-button v-else @click="stopParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.stop')}}
+            </el-button>
           </template>
         </el-table-column>
       </template>
