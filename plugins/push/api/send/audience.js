@@ -1,6 +1,6 @@
 const common = require('../../../../api/utils/common'),
     { PushError, ERROR } = require('./data/error'),
-    { Message, State, TriggerKind } = require('./data'),
+    { Message, State, TriggerKind, Result } = require('./data'),
     { DEFAULTS } = require('./data/const'),
     { PLATFORM } = require('./platforms'),
     { Push } = require('./data/message'),
@@ -264,7 +264,7 @@ class Audience {
                     qstring: Object.assign({app_id: this.app._id.toString()}, query)
                 };
                 delete params.qstring.queryObject.chr;
-                params.qstring.queryObject = JSON.stringify(query.queryObject);
+
                 this.log.d('Drilling: %j', params);
                 let arr = await new Promise((resolve, reject) => drill().drill.fetchUsers(params, (err, uids) => {
                     this.log.i('Done drilling: ' + (err ? 'error %j' : '%d uids'), err || (uids && uids.length) || 0);
@@ -602,6 +602,8 @@ class PusherPopper {
 class Pusher extends PusherPopper {
     /**
      * Insert records into db
+     * 
+     * @returns {Result} result instance with total & next set (along with platform & locale specific result subs)
      */
     async run() {
         this.audience.log.f('d', log => log('pushing ' + (this.uids ? '%d uids' : 'filter %j') + ' into %s date %s variables %j', this.uids ? this.uids.length : this.filter, this.audience.message._id, this.date ? this.date : '', this.variables ? this.variables : '-')) ||
@@ -612,11 +614,11 @@ class Pusher extends PusherPopper {
             stream = common.db.collection(`app_users${this.audience.app._id}`).aggregate(steps).stream(),
             batch = Push.batchInsert(batchSize),
             start = this.start || this.trigger.start,
-            next = null,
-            results = {};
+            result = new Result();
 
         for await (let user of stream) {
-            let push = user[TK][0];
+            let push = user[TK][0],
+                la = user.la || 'default';
             for (let pf in push[TK]) {
                 if (!(pf in this.mappers)) {
                     continue;
@@ -628,21 +630,20 @@ class Pusher extends PusherPopper {
                 }
 
                 let p = pf[0],
-                    d = note._id.getTimestamp().getTime();
-                if (!next || d < next) {
-                    next = d;
+                    d = note._id.getTimestamp().getTime(),
+                    rp = result.sub(p);
+
+                result.total++;
+                if (!result.next || d < result.next.getTime()) {
+                    result.next = d;
                 }
 
-                if (!results[p]) {
-                    results[p] = {total: 1, next: d};
-                }
-                else {
-                    results[p].total++;
-                    if (d < results[p].next) {
-                        results[p].next = d;
-                    }
+                rp.total++;
+                if (!rp.next || d < rp.next.getTime()) {
+                    rp.next = d;
                 }
 
+                rp.sub(la).total++;
 
                 if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);
@@ -654,11 +655,7 @@ class Pusher extends PusherPopper {
         this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
         await batch.flush([11000]);
 
-        Object.values(results).forEach(r => {
-            r.next = new Date(r.next);
-        });
-
-        return {next: next, total: batch.total, results};
+        return result;
     }
 }
 
