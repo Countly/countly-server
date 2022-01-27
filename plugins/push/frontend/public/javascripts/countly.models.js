@@ -156,12 +156,13 @@
     var AppLevelConfigPropertyModelMap = {
         rate: 'rate',
         period: 'period',
-        keyId: 'key',
-        keyFile: 'file',
+        keyId: 'keyid',
+        p12KeyFile: 'cert',
+        p8KeyFile: 'key',
         authType: 'type',
         teamId: 'team',
         bundleId: 'bundle',
-        passphrase: 'pass',
+        passphrase: 'secret',
         firebaseKey: 'key',
         type: 'type',
         appId: 'key',
@@ -1205,12 +1206,13 @@
                 if (hasIOSConfig) {
                     return {
                         _id: dto[PlatformDtoEnum.IOS]._id || '',
-                        keyId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].key : '',
-                        keyFile: '',
+                        keyId: dto[PlatformDtoEnum.IOS].type === 'apn_token' ? dto[PlatformDtoEnum.IOS].keyid : '',
+                        p8KeyFile: dto[PlatformDtoEnum.IOS].type === 'apn_token' ? dto[PlatformDtoEnum.IOS].key : '',
+                        p12KeyFile: dto[PlatformDtoEnum.IOS].type === 'apn_universal' ? dto[PlatformDtoEnum.IOS].cert : '',
                         bundleId: dto[PlatformDtoEnum.IOS].bundle,
-                        authType: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? IOSAuthConfigTypeEnum.P12 : IOSAuthConfigTypeEnum.P8,
-                        passphrase: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? dto[PlatformDtoEnum.IOS].pass : '',
-                        teamId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].team : '',
+                        authType: dto[PlatformDtoEnum.IOS].type === 'apn_universal' ? IOSAuthConfigTypeEnum.P12 : IOSAuthConfigTypeEnum.P8,
+                        passphrase: dto[PlatformDtoEnum.IOS].type === 'apn_universal' ? dto[PlatformDtoEnum.IOS].secret : '',
+                        teamId: dto[PlatformDtoEnum.IOS].type === 'apn_token' ? dto[PlatformDtoEnum.IOS].team : '',
                         hasKeyFile: hasIOSConfig,
                         hasUploadedKeyFile: false
                     };
@@ -1675,18 +1677,21 @@
                 if (iosConfigModel) {
                     var result = {
                         type: iosConfigModel.authType === IOSAuthConfigTypeEnum.P8 ? 'apn_token' : 'apn_universal',
-                        key: iosConfigModel.authType === IOSAuthConfigTypeEnum.P8 ? iosConfigModel.keyId : 'team',
+                        keyid: iosConfigModel.authType === IOSAuthConfigTypeEnum.P8 ? iosConfigModel.keyId : 'team',
                         bundle: iosConfigModel.bundleId || "",
                         fileType: iosConfigModel.authType
                     };
                     if (iosConfigModel._id) {
                         result._id = iosConfigModel._id;
                     }
-                    if (iosConfigModel.hasUploadedKeyFile) {
-                        result.file = iosConfigModel.keyFile;
+                    if (iosConfigModel.authType === IOSAuthConfigTypeEnum.P8) {
+                        result.key = iosConfigModel.p8KeyFile;
+                    }
+                    else {
+                        result.cert = iosConfigModel.p12KeyFile;
                     }
                     if (iosConfigModel.authType === IOSAuthConfigTypeEnum.P12) {
-                        result.pass = iosConfigModel.passphrase;
+                        result.secret = iosConfigModel.passphrase;
                     }
                     if (iosConfigModel.authType === IOSAuthConfigTypeEnum.P8) {
                         result.team = iosConfigModel.teamId;
@@ -1729,6 +1734,24 @@
                 dto[PlatformDtoEnum.ANDROID] = this.mapAndroidAppLevelConfig(model);
                 dto[PlatformDtoEnum.HUAWEI] = this.mapHuaweiAppLevelConfig(model);
                 return dto;
+            },
+            mapAppLevelConfigByPlatform: function(model, platform) {
+                if (platform === PlatformEnum.ANDROID) {
+                    return this.mapAndroidAppLevelConfig(model);
+                }
+                if (platform === PlatformEnum.IOS) {
+                    return this.mapIOSAppLevelConfig(model);
+                }
+                if (platform === PlatformEnum.HUAWEI) {
+                    return this.mapHuaweiAppLevelConfig(model);
+                }
+                throw new Error('Unknown platform type:' + platform);
+            },
+            mapAppLevelConfigRate: function(model) {
+                return {
+                    rate: model.rate,
+                    period: model.period
+                };
             },
             mapAppLevelConfigModelProperty: function(property) {
                 return AppLevelConfigPropertyModelMap[property];

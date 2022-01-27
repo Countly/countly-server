@@ -1565,7 +1565,8 @@
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.IOS] = {
         _id: "",
         keyId: "",
-        keyFile: "",
+        p8keyFile: "",
+        p128keyFile: "",
         teamId: "",
         bundleId: "",
         authType: countlyPushNotification.service.IOSAuthConfigTypeEnum.P8,
@@ -1596,7 +1597,6 @@
                 iosAuthConfigTypeOptions: countlyPushNotification.service.iosAuthConfigTypeOptions,
                 viewModel: JSON.parse(JSON.stringify(initialAppLevelConfig)),
                 modelUnderEdit: Object.assign({}, { rate: "", period: ""}),
-                shouldSendInitializedDto: false,
                 uploadedIOSKeyFilename: '',
                 selectedAppId: this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID,
                 isHuaweiConfigTouched: false,
@@ -1624,6 +1624,7 @@
                 this.$refs.keyFileUploader.clearFiles();
                 this.isHuaweiConfigTouched = false;
                 this.isIOSConfigTouched = false;
+                this.uploadedIOSKeyFilename = '';
             },
             onIOSAuthTypeChange: function(value) {
                 this.iosAuthConfigType = value;
@@ -1640,13 +1641,17 @@
                 else {
                     this.resetIOSModelPlatform();
                     this.resetIOSViewModelPlatform();
-                    this.shouldSendInitializedDto = true;
                     this.dispatchAppLevelConfigChangeEvent('authType', this.PlatformEnum.IOS);
                 }
             },
             setKeyFile: function(dataUrlFile) {
                 this.initializeModelPlatformIfNotFound(this.PlatformEnum.IOS);
-                this.modelUnderEdit[this.PlatformEnum.IOS].keyFile = dataUrlFile;
+                if (this.iosAuthConfigType === this.IOSAuthConfigTypeEnum.P8) {
+                    this.modelUnderEdit[this.PlatformEnum.IOS].p8KeyFile = dataUrlFile;
+                }
+                else {
+                    this.modelUnderEdit[this.PlatformEnum.IOS].p12KeyFile = dataUrlFile;
+                }
                 this.modelUnderEdit[this.PlatformEnum.IOS].hasUploadedKeyFile = true;
                 this.isIOSConfigTouched = true;
             },
@@ -1667,28 +1672,20 @@
             initializeModelPlatformIfNotFound: function(platform) {
                 if (!this.modelUnderEdit[platform]) {
                     this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
-                    this.shouldSendInitializedDto = true;
                     if (platform === this.PlatformEnum.IOS) {
                         this.modelUnderEdit[platform].authType = this.iosAuthConfigType;
                     }
                 }
             },
-            dispatchInitialDtoIfNotSend: function(dto) {
-                if (this.shouldSendInitializedDto) {
-                    this.$emit('change', 'push', dto, true);
-                    this.shouldSendInitializedDto = false;
-                }
-            },
             dispatchAppLevelConfigChangeEvent: function(property, platform) {
-                var dto = countlyPushNotification.mapper.outgoing.mapAppLevelConfig(this.modelUnderEdit);
-                this.dispatchInitialDtoIfNotSend(dto);
-                var propertyDto = countlyPushNotification.mapper.outgoing.mapAppLevelConfigModelProperty(property);
+                var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
                 if (platform) {
-                    var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
-                    this.$emit('change', 'push' + '.' + platformDto + '.' + propertyDto, dto[platformDto][propertyDto]);
+                    var appConfigPlatformDto = countlyPushNotification.mapper.outgoing.mapAppLevelConfigByPlatform(this.modelUnderEdit, platform);
+                    this.$emit('change', 'push' + '.' + platformDto, appConfigPlatformDto);
                 }
                 else {
-                    this.$emit('change', 'push.' + 'rate.' + propertyDto, dto.rate[propertyDto]);
+                    var rateDto = countlyPushNotification.mapper.outgoing.mapAppLevelConfigRate(this.modelUnderEdit);
+                    this.$emit('change', 'push.' + 'rate', rateDto);
                 }
             },
             updateAllModelsOnInput: function(property, value, platform) {
@@ -1727,6 +1724,28 @@
                 this.resetConfig();
                 this.reconcilate();
             },
+            onDeleteAndroidKey: function() {
+                var platform = this.PlatformEnum.ANDROID;
+                var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
+                this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                this.$emit('change', 'push' + '.' + platformDto, null);
+                this.isIOSConfigTouched = false;
+            },
+            onDeleteIosKey: function() {
+                var platform = this.PlatformEnum.IOS;
+                var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
+                this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                this.$emit('change', 'push' + '.' + platformDto, null);
+            },
+            onDeleteHuaweiKey: function() {
+                var platform = this.PlatformEnum.HUAWEI;
+                var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
+                this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                this.$emit('change', 'push' + '.' + platformDto, null);
+            },
             addSelectedAppEventListener: function(callback) {
                 this.$on('selectedApp', callback);
             },
@@ -1741,7 +1760,12 @@
             },
             onKeyFileReady: function() {
                 this.setKeyFile(keyFileReader.result);
-                this.dispatchAppLevelConfigChangeEvent('keyFile', this.PlatformEnum.IOS);
+                if (this.iosAuthConfigType === this.IOSAuthConfigTypeEnum.P8) {
+                    this.dispatchAppLevelConfigChangeEvent('p8KeyFile', this.PlatformEnum.IOS);
+                }
+                else {
+                    this.dispatchAppLevelConfigChangeEvent('p12KeyFile', this.PlatformEnum.IOS);
+                }
             },
             reconcilateViewModel: function(newModel) {
                 var self = this;
@@ -1762,7 +1786,6 @@
                     if (model[this.PlatformEnum.IOS]) {
                         this.iosAuthConfigType = model[this.PlatformEnum.IOS].authType;
                     }
-                    this.shouldSendInitializedDto = true;
                 }
             },
         },
