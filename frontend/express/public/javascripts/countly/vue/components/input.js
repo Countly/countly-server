@@ -201,7 +201,7 @@
                     Promise.resolve(this.remoteMethod(query || '')).finally(function() {
                         self.isQueryPending = false;
                         self.updateDropdown && self.updateDropdown();
-                        if (this.onlySelectedOptionsTab) {
+                        if (!self.onlySelectedOptionsTab) {
                             self.navigateToFirstRegularTab();
                         }
                     });
@@ -490,14 +490,21 @@
                 var self = this,
                     missingOptions = this.missingOptions || [];
 
-                if (this.onlySelectedOptionsTab && Array.isArray(this.value)) {
+                if (this.onlySelectedOptionsTab) {
+                    var selected = null;
+                    if (Array.isArray(this.value)) {
+                        selected = this.value.slice();
+                    }
+                    else {
+                        selected = [this.value];
+                    }
                     return this.flatOptions.reduce(function(acc, item) {
                         var idx = acc.indexOf(item.value);
                         if (idx > -1) {
                             acc.splice(idx, 1);
                         }
                         return acc;
-                    }, this.value.slice()).map(function(missingKey) {
+                    }, selected).map(function(missingKey) {
                         return {
                             label: missingKey,
                             value: missingKey
