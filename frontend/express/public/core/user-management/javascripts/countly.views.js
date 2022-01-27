@@ -123,6 +123,7 @@
         ],
         data: function() {
             return {
+                pictureEditMode: false,
                 changePasswordFlag: false,
                 apps: [],
                 permissionSets: [],
@@ -303,6 +304,13 @@
                 switch (command) {
                 case "remove-set":
                     this.removePermissionSet(index);
+                    break;
+                }
+            },
+            handlePPCommand: function(command) {
+                switch (command) {
+                case "edit-pp":
+                    this.pictureEditMode = true;
                     break;
                 }
             },
