@@ -170,7 +170,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         config.rate.rate = config.rate.rate ? parseInt(config.rate.rate) : 0;
         config.rate.period = config.rate.period ? parseInt(config.rate.period) : 0;
 
-        let update = {};
+        let update = {$set: {}};
         if (config.rate.rate) {
             update.$set = {'plugins.push.rate.rate': config.rate.rate};
             pushcfg.rate.rate = config.rate.rate;
