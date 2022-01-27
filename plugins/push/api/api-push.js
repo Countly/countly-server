@@ -181,11 +181,11 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         }
 
         if (config.rate.period) {
-            update.$set = {'plugins.push.rate.period': config.rate.period};
+            update.$set = Object.assign(update.$set, {'plugins.push.rate.period': config.rate.period});
             pushcfg.rate.period = config.rate.period;
         }
         else {
-            update.$unset = {'plugins.push.rate.period': 1};
+            update.$unset = Object.assign(update.$unset, {'plugins.push.rate.period': 1});
             delete pushcfg.rate.period;
         }
         await common.db.collection('apps').updateOne({_id: app._id}, update);
