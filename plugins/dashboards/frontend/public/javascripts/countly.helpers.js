@@ -237,7 +237,11 @@
                 type: Array,
                 default: null
             },
-            value: String
+            value: String,
+            mute: {
+                type: Boolean,
+                default: false
+            }
         },
         data: function() {
             return {

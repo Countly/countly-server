@@ -12,9 +12,6 @@
                 default: function() {
                     return null;
                 },
-                validator: function(value) {
-                    return value && value.url && value.title;
-                }
             },
             headerClass: {
                 type: Object,
@@ -62,7 +59,7 @@
                         </div>\
                         <div :class="[midLevelClasses]">\
                             <div class="bu-level-left"> \
-                                <template v-if="backlink"> \
+                                <template v-if="backlink && backlink.url && backlink.title"> \
                                     <div class="bu-level-item">\
                                         <cly-back-link :title="backlink.title" :link="backlink.url"></cly-back-link> \
                                     </div> \
