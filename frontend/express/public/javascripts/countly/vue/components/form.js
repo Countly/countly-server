@@ -314,7 +314,8 @@
                 type: Boolean,
                 default: false
             },
-            tooltip: {type: String, default: null}
+            tooltip: {type: String, default: null},
+            description: {type: String, default: null}
         },
         computed: {
             groupingClasses: function() {
@@ -338,6 +339,7 @@
                             {{ label }}\
                             <cly-tooltip-icon v-if='tooltip' class='bu-is-flex-grow-1 bu-ml-2' :tooltip='tooltip'></cly-tooltip-icon>\
                         </h4>\
+                        <span v-if='description' class='color-cool-gray-50 text-small bu-mb-1'>{{description}}</span>\
                         <div :class='groupingClasses'>\
                             <slot></slot>\
                         </div>\
@@ -347,8 +349,8 @@
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({
         props: {
-            subheading: String,
-            label: String,
+            subheading: {required: false},
+            label: {required: false},
             optional: {
                 type: Boolean,
                 default: false
@@ -381,7 +383,7 @@
         mixins: [countlyVue.mixins.i18n],
         template: '<div class="cly-vue-form-field" :class="topClasses">\
                         <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || tooltip || label || optional">\
-                            <div class="text-smallish font-weight-bold bu-mb-1">{{label}}</div>\
+                            <div class="text-smallish font-weight-bold bu-mb-1" v-if="label">{{label}}</div>\
                             <cly-tooltip-icon v-if="tooltip" class="bu-is-flex-grow-1 bu-ml-2" :tooltip="tooltip"></cly-tooltip-icon>\
                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
                         </div>\
