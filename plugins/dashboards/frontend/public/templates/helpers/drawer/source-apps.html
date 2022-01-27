@@ -5,7 +5,9 @@
     <cly-app-select
         style="width: 100%;"
         v-bind="$attrs"
+        v-on="$listeners"
         v-model="selectedApps"
+        :collapse-tags="false"
         :multiple="multiple"
         :multiple-limit="multipleLimit"
         :placeholder="placeholderText">

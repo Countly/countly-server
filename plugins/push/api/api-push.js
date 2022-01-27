@@ -105,10 +105,14 @@ module.exports.onSessionUser = ({params, dbAppUser}) => {
 
 module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     log.d('Updating app %s config: %j', app._id, config);
-
-    let pushcfg = app.plugins && app.plugins.push || (app.plugins.push = {}),
-        old = JSON.stringify(pushcfg);
-
+    if (!app.plugins) {
+        app.plugins = {};
+    }
+    if (!app.plugins.push) {
+        app.plugins.push = {};
+    }
+    let pushcfg = app.plugins.push;
+    let old = JSON.stringify(pushcfg);
     for (let i = 0; i < platforms.length; i++) {
         let p = platforms[i],
             c = config[p];
@@ -183,6 +187,42 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         else {
             update.$unset = {'plugins.push.rate.period': 1};
             delete pushcfg.rate.period;
+        }
+        await common.db.collection('apps').updateOne({_id: app._id}, update);
+    }
+
+    if (config.test !== undefined) {
+        let users = [], cohorts = [];
+        if (config.test && config.test.users) {
+            users = await common.db.collection(`app_users${params.app_id}`).find({_id: {$in: config.test.users.split(',')}}, {_id: 1}).toArray();
+            users = users.map(u => u._id).join(',');
+        }
+
+        if (config.test && config.test.cohorts) {
+            cohorts = await common.db.collection(`cohorts`).find({app_id: params.app_id, _id: {$in: config.test.cohorts.split(',')}}, {_id: 1}).toArray();
+            cohorts = cohorts.map(c => c._id).join(',');
+        }
+
+        let update = {$set: {}};
+        if (cohorts.length || users.length) {
+            pushcfg.test = pushcfg.test || {};
+            if (users.length) {
+                update.$set['plugins.push.test.users'] = users;
+                pushcfg.test.users = users;
+            }
+            else {
+                update.$unset['plugins.push.test.users'] = 1;
+            }
+            if (cohorts.length) {
+                update.$set['plugins.push.test.cohorts'] = cohorts;
+            }
+            else {
+                update.$unset['plugins.push.test.cohorts'] = 1;
+            }
+        }
+        else {
+            update.$unset['plugins.push.test'] = 1;
+            delete pushcfg.test;
         }
         await common.db.collection('apps').updateOne({_id: app._id}, update);
     }

@@ -332,7 +332,18 @@
                 return countlyGlobal.plugins.indexOf("drill") > -1 ? true : false;
             },
             conditionArray: function() {
-                return this.$store.getters["countlyRemoteConfig/conditions/all"];
+                var conditions = this.$store.getters["countlyRemoteConfig/conditions/all"];
+                var ob = [];
+                conditions.forEach(function(condition) {
+                    ob.push({
+                        "label": condition.condition_name,
+                        "value": {
+                            "value": condition.condition_name,
+                            "condition_id": condition._id
+                        }
+                    });
+                });
+                return ob;
             }
         },
         props: {
@@ -361,13 +372,22 @@
         methods: {
             handleSelect: function(item) {
                 this.showCondition = false;
-                var ob = {
-                    name: item.value,
-                    condition_id: item.condition_id,
-                    open: false
-                };
-                this.conditions.push(ob);
-                this.currentConditionValue = "";
+                if (countlyGlobal.conditions_per_paramaeters === this.conditions.length) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("remote-config.maximum_conditions_added"),
+                        type: "error"
+                    });
+                }
+                else {
+                    var ob = {
+                        name: item.value,
+                        condition_id: item.condition_id,
+                        open: false
+                    };
+                    this.conditions.push(ob);
+                    this.currentConditionValue = "";
+                }
             },
             addNewCondition: function() {
                 this.showCondition = true;
@@ -638,6 +658,18 @@
             },
             tableRows: function() {
                 return this.$store.getters["countlyRemoteConfig/parameters/all"];
+            },
+            isParamterLimitExceeded: function() {
+                return countlyGlobal.maximum_allowed_parameters === this.$store.getters["countlyRemoteConfig/parameters/all"].length ? true : false;
+            },
+            hasUpdateRight: function() {
+                return countlyAuth.validateUpdate(FEATURE_NAME);
+            },
+            hasCreateRight: function() {
+                return countlyAuth.validateCreate(FEATURE_NAME);
+            },
+            hasDeleteRight: function() {
+                return countlyAuth.validateDelete(FEATURE_NAME);
             }
         },
         methods: {
@@ -808,21 +840,22 @@
             templates: templates
         });
     };
+    if (countlyAuth.validateRead(FEATURE_NAME)) {
 
-    app.route("/remote-config", 'remote-config', function() {
-        var mainView = getMainView();
-        this.renderWhenReady(mainView);
-    });
+        app.route("/remote-config", 'remote-config', function() {
+            var mainView = getMainView();
+            this.renderWhenReady(mainView);
+        });
 
-    app.route("/remote-config/*tab", 'remote-config-tab', function(tab) {
-        var mainView = getMainView();
-        var params = {
-            tab: tab
-        };
-        mainView.params = params;
-        this.renderWhenReady(mainView);
-    });
-
+        app.route("/remote-config/*tab", 'remote-config-tab', function(tab) {
+            var mainView = getMainView();
+            var params = {
+                tab: tab
+            };
+            mainView.params = params;
+            this.renderWhenReady(mainView);
+        });
+    }
     $(document).ready(function() {
         //We shouldn't be using $ (jquery)
 

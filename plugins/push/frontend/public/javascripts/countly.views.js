@@ -1009,6 +1009,9 @@
             areRowsLoading: function() {
                 return this.$store.state.countlyPushNotification.main.areRowsLoading;
             },
+            isUserCommandLoading: function() {
+                return this.$store.getters['countlyPushNotification/main/isLoading'];
+            },
             pushNotificationRows: function() {
                 var self = this;
                 if (this.selectedStatusFilter === countlyPushNotification.service.ALL_FILTER_OPTION_VALUE) {
@@ -1410,7 +1413,10 @@
                     break;
                 }
                 case this.UserCommandEnum.DELETE: {
-                    this.$store.dispatch('countlyPushNotification/details/onDelete', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/details/onDelete', pushNotificationId)
+                        .then(function() {
+                            window.location.hash = "#/messaging";
+                        });
                     break;
                 }
                 case this.UserCommandEnum.REJECT: {

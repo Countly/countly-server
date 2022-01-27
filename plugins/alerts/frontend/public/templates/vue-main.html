@@ -145,16 +145,15 @@
             </cly-form-field>
 
             <cly-form-field name="apps" :label="i18n('alert.For_Applications')" rules="required">
-                <cly-select-x
-                    :placeholder="i18n('alert.Select_app')"
-                    mode="single-list"
-                    v-on:input="appSelected"
-                    v-model="drawerScope.editedObject.selectedApps[idx]"
-                    v-for="(app, idx) in drawerScope.editedObject.selectedApps"
-                    :key="idx"
-                    class="bu-is-flex"
-                    :options="appsSelectorOption">
-                </cly-select-x>
+                <cly-app-select 
+                        class="bu-is-flex"
+                        v-on:input="appSelected"
+                        v-model="drawerScope.editedObject.selectedApps[idx]"
+                        v-for="(app, idx) in drawerScope.editedObject.selectedApps"
+                        :key="idx"
+                        :options="appsSelectorOption"
+                        >
+                </cly-app-select>
             </cly-form-field> 
             
             <div class="bu-my-4 bu-py-4 cly-vue-alert-drawer__card">

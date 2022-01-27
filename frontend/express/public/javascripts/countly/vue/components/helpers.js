@@ -908,10 +908,10 @@
     }));
 
     Vue.component("cly-empty-view", countlyBaseComponent.extend({
-        template: ' <div class="bu-mt-5 bu-pt-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
+        template: ' <div class="bu-mt-5 bu-pt-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center cly-vue-empty-view">\
                         <slot name="icon">\
                             <div class="bu-mt-6">\
-                                <img width="96" heigh="96" src="images/icons/empty-view-icon.svg"/>\
+                                <img class="cly-vue-empty-view__img" src="images/icons/empty-plugin.svg"/>\
                             </div>\
                         </slot>\
                         <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column 	bu-is-align-items-center">\
@@ -919,7 +919,7 @@
                                 <h3 class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered ">{{subTitle}}</div>\
+                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span v-html="subTitle"></span></div>\
                             </slot>\
                             <slot name="action" v-if="hasAction">\
                                 <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\

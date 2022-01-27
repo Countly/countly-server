@@ -793,9 +793,6 @@
         computed: {
             tableRows: function() {
                 var hookDetail = this.$store.getters["countlyHooks/hookDetail"];
-                hookDetail.error_logs && hookDetail.error_logs.forEach(function(item) {
-                    item.timestamp_string = moment(item.timestamp).format();
-                });
                 hookDetail.error_logs = hookDetail.error_logs && hookDetail.error_logs.reverse();
                 return hookDetail.error_logs || [];
             },
@@ -803,6 +800,10 @@
                 var result = this.$store.getters["countlyHooks/getDetailLogsInitialized"];
                 return result;
             },
+            hookDetail: function() {
+                var hookDetail = this.$store.getters["countlyHooks/hookDetail"];
+                return hookDetail;
+            }
         },
         data: function() {
             return {
@@ -812,6 +813,20 @@
             refresh: function() {
             // this.$store.dispatch("countlyHooks/table/fetchAll");
             },
+            downloadLog: function(text, timestamp) {
+                var element = document.createElement('a');
+                var fileName = 'HookError-' + this.hookDetail._id + '-' + timestamp + '.txt';
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', fileName);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+
+            }
         }
     });
 
