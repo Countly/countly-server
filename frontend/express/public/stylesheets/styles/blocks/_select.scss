@@ -78,10 +78,13 @@
         margin: 16px;
     }
 
-    &__pop--has-single-option {
+    &__pop--has-single-option, &__pop--has-slim-header {
         .cly-vue-select-x__header-slot {
             padding: 0;
         }
+    }
+
+    &__pop--has-single-option {
         .el-tabs__header::after {
             content: none;
         }

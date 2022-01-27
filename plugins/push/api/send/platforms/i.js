@@ -114,7 +114,7 @@ const CREDS = {
         validate() {
             if (this._data.fileType) {
                 let mime = this._data.cert.indexOf(';base64,') === -1 ? null : this._data.cert.substring(0, this._data.cert.indexOf(';base64,'));
-                if (mime === 'data:application/x-pkcs12' || (mime === 'data:application/octet-stream' && this._data.fileType === 'p12')) {
+                if (mime === 'data:application/x-pkcs12' || mime === 'data:application/pkcs12' || (mime === 'data:application/octet-stream' && this._data.fileType === 'p12')) {
                     this._data.cert = this._data.cert.substring(this._data.cert.indexOf(',') + 1);
                     delete this._data.fileType;
                 }
@@ -273,7 +273,7 @@ const CREDS = {
         validate() {
             if (this._data.fileType) {
                 let mime = this._data.key.indexOf(';base64,') === -1 ? null : this._data.key.substring(0, this._data.key.indexOf(';base64,'));
-                if (mime === 'data:application/x-pkcs8' || mime === 'data:' || (mime === 'data:application/octet-stream' && this._data.fileType === 'p8')) {
+                if (mime === 'data:application/x-pkcs8' || mime === 'data:application/pkcs8' || mime === 'data:' || (mime === 'data:application/octet-stream' && this._data.fileType === 'p8')) {
                     this._data.key = this._data.key.substring(this._data.key.indexOf(',') + 1);
                     delete this._data.fileType;
                 }

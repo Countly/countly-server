@@ -7,7 +7,7 @@ const plugins = require('../../pluginManager'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, create, update, toggle, remove, all, one, mime } = require('./api-message'),
+    { estimate, test, create, update, toggle, remove, all, one, mime } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
     FEATURE_NAME = 'push',
@@ -27,6 +27,7 @@ const plugins = require('../../pluginManager'),
         },
         i: {
             message: {
+                test: [validateCreate, test],
                 create: [validateCreate, create],
                 update: [validateUpdate, update],
                 toggle: [validateUpdate, toggle],
@@ -44,6 +45,14 @@ plugins.setConfigs(FEATURE_NAME, {
     proxyport: '',
     proxyuser: '',
     proxypass: '',
+    test: {
+        uids: '', // comma separated list of app_users.uid
+        cohorts: '', // comma separated list of cohorts._id
+    },
+    rate: {
+        rate: '',
+        period: ''
+    }
 });
 
 plugins.internalEvents.push('[CLY]_push_sent');
@@ -95,7 +104,8 @@ plugins.register('/cache/init', function() {
 
 
 plugins.register('/i', async ob => {
-    var params = ob.params;
+    let params = ob.params,
+        la = params.app_user.la;
     log.d('push query', params.qstring);
     if (params.qstring.events && Array.isArray(params.qstring.events)) {
         let events = params.qstring.events,
@@ -137,14 +147,19 @@ plugins.register('/i', async ob => {
 
                     if (p && platforms.indexOf(p) !== -1) {
                         event.segmentation.p = p;
-                        event.segmentation.ap = event.segmentation.a + p;
-                        event.segmentation.tp = event.segmentation.t + p;
-                        event.segmentation.ip = event.segmentation.i + p;
-                        if (upd.$inc[`results.${p}.actioned`]) {
-                            upd.$inc[`results.${p}.actioned`] += count;
+                        if (upd.$inc[`result.subs.${p}.actioned`]) {
+                            upd.$inc[`result.subs.${p}.actioned`] += count;
                         }
                         else {
-                            upd.$inc[`results.${p}.actioned`] = count;
+                            upd.$inc[`result.subs.${p}.actioned`] = count;
+                        }
+                        if (la) {
+                            if (upd.$inc[`result.subs.${p}.subs.${la}.actioned`]) {
+                                upd.$inc[`result.subs.${p}.subs.${la}.actioned`] += count;
+                            }
+                            else {
+                                upd.$inc[`result.subs.${p}.subs.${la}.actioned`] = count;
+                            }
                         }
                     }
                     else {

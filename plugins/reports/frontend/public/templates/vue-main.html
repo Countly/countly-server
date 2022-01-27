@@ -156,21 +156,30 @@
         </cly-form-field>
 
         <cly-form-field name="apps" :label="i18n('reports.select-apps')" rules="required" v-if="showApps">
-            <cly-select-x
+            <cly-app-select 
+                class="bu-is-flex"
+                :placeholder="i18n('reports.Select_apps')"
+                v-on:change="appsChange" 
+                v-model="drawerScope.editedObject.apps" 
+                multiple>
+            </cly-app-select>
+
+            <!-- <cly-select-x
                 :placeholder="i18n('reports.Select_apps')"
                 mode="multi-check"
                 v-on:change="appsChange"
                 v-model="drawerScope.editedObject.apps"
                 class="bu-is-flex"
                 :options="appsSelectorOption">
-            </cly-select-x>
+            </cly-select-x> -->
         </cly-form-field> 
 
 
         <cly-form-field name="metrics" :label="i18n('reports.include-metrics')" rules="required" v-if="showMetrics">
             <cly-select-x
                 :placeholder="i18n('reports.Select_metrics')"
-                mode="multi-check"                v-model="drawerScope.editedObject.metricsArray"
+                mode="multi-check"                
+                v-model="drawerScope.editedObject.metricsArray"
                 class="bu-is-flex"
                 :options="metricOptions">
             </cly-select-x>

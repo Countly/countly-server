@@ -61,8 +61,8 @@ async function check(params, push) {
 
 module.exports.apiPush = async params => {
     let pusher = await check(params, true),
-        {total, next} = await pusher.run();
-    common.returnOutput(params, {total, next});
+        result = await pusher.run();
+    common.returnOutput(params, result.json);
 };
 
 module.exports.apiPop = async params => {

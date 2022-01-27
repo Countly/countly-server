@@ -21,24 +21,24 @@
                 <div class="cly-vue-drawer__header" :class="{ 'is-full-screen': currentScreenMode === 'full'}">
                     <div class="cly-vue-drawer__title">
                         <div v-if="currentScreenMode !== 'full'">
-                            <div class="bu-is-flex bu-is-justify-content-space-between bu-m-3" style="width: 100%;">
-                                <h3 class="bu-mx-4 bu-my-3">{{title}}</h3>
+                            <div class="bu-is-flex bu-is-justify-content-space-between" style="width: 100%;">
+                                <h3 class="" style="margin-top: 24px; margin-left: 32px;">{{title}}</h3>
                                 <span class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose" style="margin-block: auto;">
                                     <i class="ion-ios-close-empty"></i>
                                 </span>
                             </div>
                         </div>
-                        <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile bu-px-2 bu-py-3 bu-mr-5">
+                        <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile cly-vue-drawer__subtitle" style="margin-top: 24px; margin-bottom: 24px">
                             <div class="bu-column bu-is-12 bu-is-flex bu-is-align-items-center bu-is-justify-content-left">
                                 <div class="cly-vue-drawer__steps-header">
                                     <template v-for="(currentContent, i) in stepContents">
                                         <div :key="'label_' + i" @click="setStepSafe(i, 'header-click')" class="cly-vue-drawer__step-label" :class="{'is-locked': i > lastValidIndex, 'is-active': i === currentStepIndex,  'is-passed': i < currentStepIndex}">
-                                            <div>
+                                            <div class="bu-is-flex">
                                                 <div class="cly-vue-drawer__step-sign">
                                                     <span class="index text-small" :class="{'color-white': i === currentStepIndex}">{{i + 1}}</span>
                                                     <span class="done-icon text-small color-white"><i class="fa fa-check"></i></span>
                                                 </div>
-                                                <div class="cly-vue-drawer__step-title text-medium font-weight-bold color-cool-gray-40">{{currentContent.name}}</div>
+                                                <div class="cly-vue-drawer__step-title text-small font-weight-bold color-cool-gray-40">{{currentContent.name}}</div>
                                             </div>
                                         </div>
                                         <div :key="'sep_' + i" class="cly-vue-drawer__step-separator" v-if="i < stepContents.length - 1"></div>
@@ -54,7 +54,7 @@
                             <h3>{{title}}</h3>
                         </div>
                     </div>
-                    <div class="bu-columns bu-is-gapless bu-is-mobile" :class="{ 'bu-px-2 bu-pb-5 bu-pt-4 bu-mx-2 bu-mb-2 bu-mt-1': currentScreenMode !== 'full' }">
+                    <div class="bu-columns bu-is-gapless bu-is-mobile cly-vue-drawer__body-container" :class="{ 'bu-pb-5 bu-pt-4 bu-mb-2 bu-mt-1': currentScreenMode !== 'full' }">
                         <div class="bu-column bu-is-12">
                             <slot name="default"
                                 v-bind="passedScope">

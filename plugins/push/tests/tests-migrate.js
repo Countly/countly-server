@@ -234,7 +234,7 @@ describe('PUSH MIGRATE', () => {
         should.equal(msg.result.processed, 7);
         should.equal(msg.result.sent, 2);
         should.deepEqual(msg.result.errors, {skiptz: 5});
-        should.equal(msg.result.errorsCount, 5);
+        should.equal(msg.result.errored, 5);
     });
 
     it('handles errors', () => {
@@ -304,6 +304,6 @@ describe('PUSH MIGRATE', () => {
         should.equal(msg.result.processed, 0);
         should.equal(msg.result.sent, 0);
         should.deepEqual(msg.result.errors, {aborted: 1});
-        should.equal(msg.result.errorsCount, 1);
+        should.equal(msg.result.errored, 1);
     });
 });
