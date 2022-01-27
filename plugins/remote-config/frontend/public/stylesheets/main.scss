@@ -68,6 +68,12 @@
         border: 1px solid #ddd;
     }
 
+    &__default-value {
+        .text-smallish {
+            font-size: t.$text-lg-size;
+        }
+    }
+
 }
 .cly-vue-remote-config {
     	  &__header {
@@ -77,8 +83,22 @@
             font-family:  t.$font-family;
 		  }
 }
+.cly-vue-remote-config-home-table {
+       .el-table__expanded-cell {
+      padding-right: 48px;
+      padding-left: 24px;
+      padding-top: 24px;
+      padding-bottom: 24px;
+      background-color: c.$table-th-bgcolor;
+      &:hover {
+        background: #f5f8f9 !important;
+      }
+    }
+}
 .cly-vue-remote-config-percentages-breakdown {
     width:100%;
+    padding: 15px 24px 10px;
+    border-collapse: unset;
     &__data {
         width: max-content;
         border-radius: 4px;
@@ -107,5 +127,6 @@
         font-size: t.$text-smaller-size;
         border-radius: 4px;
         background-color: map.get(c.$colors, "warm-gray-20");
+        font-weight: t.$font-weight-primary;
     }
 }
