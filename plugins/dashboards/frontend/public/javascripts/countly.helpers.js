@@ -389,7 +389,8 @@
                 default: function() {
                     return countlyCommon.GRAPH_COLORS;
                 }
-            }
+            },
+            label: {required: false, default: CV.i18n("dashboards.bar-color")}
         },
         methods: {
             commitValue: function(v) {
