@@ -153,22 +153,6 @@
     iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: "Key file (P8)", value: IOSAuthConfigTypeEnum.P8};
     iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P12] = {label: "Sandbox + Production certificate (P12)", value: IOSAuthConfigTypeEnum.P12};
 
-    var AppLevelConfigPropertyModelMap = {
-        rate: 'rate',
-        period: 'period',
-        keyId: 'keyid',
-        p12KeyFile: 'cert',
-        p8KeyFile: 'key',
-        authType: 'type',
-        teamId: 'team',
-        bundleId: 'bundle',
-        passphrase: 'secret',
-        firebaseKey: 'key',
-        type: 'type',
-        appId: 'key',
-        appSecret: 'secret'
-    };
-
     var PlatformDtoEnum = Object.freeze({
         ANDROID: 'a',
         IOS: 'i',
@@ -1746,15 +1730,6 @@
                     return this.mapHuaweiAppLevelConfig(model);
                 }
                 throw new Error('Unknown platform type:' + platform);
-            },
-            mapAppLevelConfigRate: function(model) {
-                return {
-                    rate: model.rate,
-                    period: model.period
-                };
-            },
-            mapAppLevelConfigModelProperty: function(property) {
-                return AppLevelConfigPropertyModelMap[property];
             }
         }
     };

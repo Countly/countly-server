@@ -1565,8 +1565,8 @@
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.IOS] = {
         _id: "",
         keyId: "",
-        p8keyFile: "",
-        p128keyFile: "",
+        p8KeyFile: "",
+        p12KeyFile: "",
         teamId: "",
         bundleId: "",
         authType: countlyPushNotification.service.IOSAuthConfigTypeEnum.P8,
@@ -1601,6 +1601,8 @@
                 selectedAppId: this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID,
                 isHuaweiConfigTouched: false,
                 isIOSConfigTouched: false,
+                isDeleteKeyDialogVisible: false,
+                selectedKeyToDelete: null,
             };
         },
         computed: {
@@ -1678,14 +1680,13 @@
                 }
             },
             dispatchAppLevelConfigChangeEvent: function(property, platform) {
-                var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
                 if (platform) {
+                    var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
                     var appConfigPlatformDto = countlyPushNotification.mapper.outgoing.mapAppLevelConfigByPlatform(this.modelUnderEdit, platform);
                     this.$emit('change', 'push' + '.' + platformDto, appConfigPlatformDto);
                 }
                 else {
-                    var rateDto = countlyPushNotification.mapper.outgoing.mapAppLevelConfigRate(this.modelUnderEdit);
-                    this.$emit('change', 'push.' + 'rate', rateDto);
+                    this.$emit('change', 'push' + '.' + 'rate' + '.' + property, this.modelUnderEdit[property]);
                 }
             },
             updateAllModelsOnInput: function(property, value, platform) {
@@ -1724,27 +1725,56 @@
                 this.resetConfig();
                 this.reconcilate();
             },
-            onDeleteAndroidKey: function() {
+            onDeleteKey: function(platformKey) {
+                this.selectedKeyToDelete = platformKey;
+                this.isDeleteKeyDialogVisible = true;
+            },
+            onDeleteKeyCancel: function() {
+                this.selectedKeyToDelete = null;
+                this.isDeleteKeyDialogVisible = false;
+            },
+            deleteAndroidKey: function() {
                 var platform = this.PlatformEnum.ANDROID;
                 var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
                 this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.$emit('change', 'push' + '.' + platformDto, null);
-                this.isIOSConfigTouched = false;
             },
-            onDeleteIosKey: function() {
+            deleteIosKey: function() {
                 var platform = this.PlatformEnum.IOS;
                 var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
                 this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                this.modelUnderEdit[platform].authType = this.iosAuthConfigType;
+                this.viewModel[platform].authType = this.iosAuthConfigType;
                 this.$emit('change', 'push' + '.' + platformDto, null);
+                this.isIOSConfigTouched = false;
             },
-            onDeleteHuaweiKey: function() {
+            deleteHuaweiKey: function() {
                 var platform = this.PlatformEnum.HUAWEI;
                 var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
                 this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.$emit('change', 'push' + '.' + platformDto, null);
+            },
+            onDeleteKeyConfirm: function() {
+                this.isDeleteKeyDialogVisible = false;
+                if (this.selectedKeyToDelete === this.PlatformEnum.ANDROID) {
+                    this.deleteAndroidKey();
+                    return;
+                }
+                if (this.selectedKeyToDelete === this.PlatformEnum.IOS) {
+                    this.deleteIosKey();
+                    return;
+                }
+                if (this.selectedKeyToDelete === this.PlatformEnum.HUAWEI) {
+                    this.deleteHuaweiKey();
+                    return;
+                }
+                if (!this.selectedKeyToDelete) {
+                    return;
+                }
+                throw new Error('Unknown platform key, ' + this.selectedKeyToDelete);
             },
             addSelectedAppEventListener: function(callback) {
                 this.$on('selectedApp', callback);
