@@ -214,6 +214,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
             }
             else {
                 update.$unset = {'plugins.push.test.uids': 1};
+                delete pushcfg.test.uids;
             }
             if (cohorts.length) {
                 update.$set = update.$set || {};
@@ -222,6 +223,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
             else {
                 update.$unset = update.$unset || {};
                 update.$unset['plugins.push.test.cohorts'] = 1;
+                delete pushcfg.test.cohorts;
             }
         }
         else {
