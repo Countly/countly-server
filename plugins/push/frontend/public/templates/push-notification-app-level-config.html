@@ -38,7 +38,9 @@
     </template>
     <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P12">
         <cly-inline-form-field label="Passphrase" :rules="{required:isIOSConfigRequired}">
-            <el-input type="password" :value="viewModel[PlatformEnum.IOS].passphrase" @input="onInput('passphrase',$event,PlatformEnum.IOS)"></el-input>
+            <form>
+                <el-input type="password" :value="viewModel[PlatformEnum.IOS].passphrase" @input="onInput('passphrase',$event,PlatformEnum.IOS)"></el-input>
+            </form>
         </cly-inline-form-field>
     </template>
 
