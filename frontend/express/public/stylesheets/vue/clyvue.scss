@@ -3838,6 +3838,35 @@
     .vue-dropzone > .dz-preview .dz-error-message:after {
         display: none;
     }
+
+    .clyd-vue-colors {
+        display: flex;
+        &__item {
+            cursor: pointer;
+            margin-right: 8px;
+            width: 32px;
+            height: 32px;
+            background: #39c0c8;
+            border-radius: 4px;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            &--selected .clyd-vue-colors__item-frame {
+                display: flex;
+            }
+        }
+        &__item-frame {
+            display: none;
+            width: 28px;
+            height: 28px;
+            border: 1.5px solid #fff;
+            box-sizing: border-box;
+            border-radius: 3px;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+    }
 }
 
 .cly-vue-tooltip {

@@ -1,4 +1,4 @@
-/*global countlyVue, CV, Vue */
+/*global countlyVue, CV, Vue, countlyCommon */
 
 (function() {
 
@@ -380,6 +380,24 @@
         }
     });
 
+    var ColorsComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/colors.html'),
+        props: {
+            value: { default: 1 },
+            options: {
+                type: Array,
+                default: function() {
+                    return countlyCommon.GRAPH_COLORS;
+                }
+            }
+        },
+        methods: {
+            commitValue: function(v) {
+                this.$emit("input", v);
+            }
+        }
+    });
+
     // var AppsMixin = {
     //     methods: {
     //         getAppname: function(appId) {
@@ -415,6 +433,7 @@
     Vue.component("clyd-sourceapps", SourceAppsComponent);
     Vue.component("clyd-visualization", VisualizationComponent);
     Vue.component("clyd-title", TitleComponent);
+    Vue.component("clyd-colors", ColorsComponent);
 
     /**
      * WIDGET HELPERS REGISTRATION
