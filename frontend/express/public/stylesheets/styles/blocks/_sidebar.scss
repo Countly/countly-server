@@ -115,10 +115,11 @@ $bg-color: #24292e;
     }
 
     &__menu-option-app {
-        background-color: map.get(c.$colors, "primary-green");
-        border-radius: 4px;
         height: 24px;
         width: 24px;
+        background-image: url('../../images/dashboard/logo-square.svg'); 
+        background-repeat: no-repeat; 
+        background-size: contain;
     }
 
     &__menu-option-divider {
@@ -155,7 +156,6 @@ $bg-color: #24292e;
         height: 100%;
         overflow: hidden;
         z-index: 2004;
-        position: relative;
     }
 
     &__menu-items,
@@ -215,18 +215,17 @@ $bg-color: #24292e;
     &__header {
         padding: 16px 12px;
         position: relative;
-    }
 
-    &__header-search {
-        input {
-            background-color: #383A3F;
-            border: none;
-            color: #d6d6d6;
+        .el-input__inner {
+            height: 50px;
+            padding-left: 49px;
+        }
 
-            &:focus {
-                outline: none;
-                box-shadow: none;
-            }
+        .el-input__prefix {
+            left: 0px;
+            margin: 0px 12px;
+            height: auto;
+            margin-top: 12px;
         }
     }
 
