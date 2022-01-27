@@ -1022,7 +1022,9 @@
         }
     }));
 
-    var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+    var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)',
+        SIMPLE_EMAIL = new RegExp('^' + REGEX_EMAIL + '$', 'i'),
+        NAMED_EMAIL = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
 
     Vue.component('cly-select-email', countlyVue.components.BaseComponent.extend({
         mixins: [
@@ -1038,17 +1040,19 @@
                         hideAllOptionsTab\
                         mode="multi-check"\
                         ref="selectx"\
-                        noMatchFoundPlaceholder="No addresses have been specified"\
+                        :noMatchFoundPlaceholder="i18n(\'common.no-email-addresses\')"\
                         class="cly-vue-select-email"\
                         @input="handleInput">\
                         <template v-slot:header="selectScope">\
                             <el-input\
                                 v-model="currentInput"\
                                 :class="{\'is-error\': hasError}"\
-                                placeholder="(e.g. john@doe.mail)"\
+                                :placeholder="i18n(\'common.email-example\')"\
                                 @keyup.enter.native="tryPush">\
                             </el-input>\
-                            <div class="bu-mt-2 color-red-100 text-small" v-show="hasError">{{i18n("common.invalid-email-address", currentInput)}}</div>\
+                            <div class="bu-mt-2 color-red-100 text-small" v-show="hasError">\
+                                {{i18n("common.invalid-email-address", currentInput)}}\
+                            </div>\
                         </template>\
                     </cly-select-x>',
         props: {
@@ -1077,11 +1081,11 @@
                 if (!input) {
                     return false;
                 }
-                else if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                else if (SIMPLE_EMAIL.test(input)) {
                     return {value: input, label: input};
                 }
                 else {
-                    var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                    var match = input.match(NAMED_EMAIL);
                     if (match) {
                         // Current implementation ignores name field
                         return {value: match[2], label: match[2]};
