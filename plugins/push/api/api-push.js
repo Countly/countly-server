@@ -165,30 +165,36 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         }
     }
 
-    if (config.rate) {
-        pushcfg.rate = pushcfg.rate || {};
-        config.rate.rate = config.rate.rate ? parseInt(config.rate.rate) : 0;
-        config.rate.period = config.rate.period ? parseInt(config.rate.period) : 0;
-
+    if (config.rate !== undefined) {
         let update = {};
-        if (config.rate.rate) {
-            update.$set = {'plugins.push.rate.rate': config.rate.rate};
-            pushcfg.rate.rate = config.rate.rate;
-        }
-        else {
-            update.$unset = {'plugins.push.rate.rate': 1};
-            delete pushcfg.rate.rate;
-        }
+        if (config.rate) {
+            pushcfg.rate = pushcfg.rate || {};
+            config.rate.rate = config.rate.rate ? parseInt(config.rate.rate) : 0;
+            config.rate.period = config.rate.period ? parseInt(config.rate.period) : 0;
 
-        if (config.rate.period) {
-            update.$set = update.$set || {};
-            update.$set['plugins.push.rate.period'] = config.rate.period;
-            pushcfg.rate.period = config.rate.period;
+            if (config.rate.rate) {
+                update.$set = {'plugins.push.rate.rate': config.rate.rate};
+                pushcfg.rate.rate = config.rate.rate;
+            }
+            else {
+                update.$unset = {'plugins.push.rate.rate': 1};
+                delete pushcfg.rate.rate;
+            }
+
+            if (config.rate.period) {
+                update.$set = update.$set || {};
+                update.$set['plugins.push.rate.period'] = config.rate.period;
+                pushcfg.rate.period = config.rate.period;
+            }
+            else {
+                update.$unset = update.$unset || {};
+                update.$unset['plugins.push.rate.period'] = 1;
+                delete pushcfg.rate.period;
+            }
         }
         else {
-            update.$unset = update.$unset || {};
-            update.$unset['plugins.push.rate.period'] = 1;
-            delete pushcfg.rate.period;
+            update.$unset = {'plugins.push.rate': 1};
+            delete pushcfg.rate;
         }
         await common.db.collection('apps').updateOne({_id: app._id}, update);
     }
