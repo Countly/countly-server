@@ -14,7 +14,7 @@
   <cly-main>
     <cly-datatable-n :rows="tableRows">
       <template v-slot="scope">
-        <el-table-column  prop="condition_name" :label="i18n('remote-config.condition-name')">
+        <el-table-column  prop="condition_name" :label="i18n('remote-config.condition-name')" sortable="custom">
           <template v-slot="rowScope">
             <div>
               <div class="cly-vue-remote-config-conditions-drawer__margin-bottom"> {{rowScope.row.condition_name}}</div>

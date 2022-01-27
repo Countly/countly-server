@@ -25,7 +25,7 @@
             </cly-section>
           </template>
         </el-table-column>
-        <el-table-column min-width="160" prop="parameter_key" :label="i18n('remote-config.parameter')" :sortable="true">
+        <el-table-column min-width="160" prop="parameter_key" :label="i18n('remote-config.parameter')" sortable="custom">
           <template v-slot:default="rowScope">
             <div>
               <div class="cly-vue-remote-config-conditions-drawer__margin-bottom">             {{rowScope.row.parameter_key}}</div>
@@ -50,7 +50,7 @@
             {{rowScope.row.description || "-"}}
           </template>
         </el-table-column>
-        <el-table-column min-width="160" prop="created" :label="i18n('remote-config.parameter.created')">
+        <el-table-column min-width="160" prop="created" :label="i18n('remote-config.parameter.created')" sortable="custom">
           <template v-slot:default="rowScope">
             <div>
               <div class="cly-vue-remote-config-conditions-drawer__margin-bottom"> {{getDate(rowScope.row.ts)}}</div>
