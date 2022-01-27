@@ -75,6 +75,7 @@
                     {{tab.label}}
                 </span>
                 <cly-listbox
+                    :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-if="mode === 'single-list'"
                     :bordered="false"
@@ -89,6 +90,7 @@
                     </template>
                 </cly-listbox>
                 <cly-checklistbox
+                    :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check'"
                     :bordered="false"
@@ -97,6 +99,7 @@
                     v-model="innerValue">
                 </cly-checklistbox>
                 <cly-checklistbox
+                    :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check-sortable'"
                     :sortable="true"
