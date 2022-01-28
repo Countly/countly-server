@@ -1,11 +1,12 @@
 'use strict';
-
 const { State, Status, STATUSES, Mongoable, DEFAULTS, S } = require('./const'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
     { Result } = require('./result'),
-    { Info } = require('./info');
+    { Info } = require('./info'),
+    common = require('./../../../../../api/utils/common');
+
 
 /**
  * Message class encapsulating all the message-related data
@@ -62,9 +63,6 @@ class Message extends Mongoable {
             result: {
                 type: Result.scheme,
             },
-            results: { // {a: Result, i: Result}
-                type: 'Object',
-            },
             info: {
                 type: Info.scheme,
             }
@@ -98,10 +96,6 @@ class Message extends Mongoable {
         }
         this._data.triggers = (this._data.triggers || []).map(Trigger.from);
         this._data.contents = (this._data.contents || []).map(Content.from);
-
-        let res = this._data.results;
-        this._data.results = {};
-        Object.keys(res || {}).forEach(p => this._data.results[p] = Result.from(res[p]));
     }
 
     /**
@@ -406,9 +400,11 @@ class Message extends Mongoable {
      */
     static userFieldsFor(contents) {
         let keys = contents.map(content => Object.values(content.messagePers || {}).concat(Object.values(content.titlePers || {})).map(obj => obj.k).concat(content.extras || []).map(Message.decodeFieldKey)).flat();
-        if (contents.length > 1) {
+        // if (contents.length > 1) { // commenting out for now because we always need locale now - for result subs
+        if (keys.indexOf('la') !== -1) {
             keys.push('la');
         }
+        // }
         keys = keys.filter((k, i) => keys.indexOf(k) === i);
         return keys;
     }
@@ -420,7 +416,7 @@ class Message extends Mongoable {
      * @returns {string} key with dots replaced by separator
      */
     static encodeFieldKey(key) {
-        return key.replaceAll('.', S);
+        return key.replace(/\./g, S);
     }
 
     /**
@@ -430,7 +426,7 @@ class Message extends Mongoable {
      * @returns {string} original field name
      */
     static decodeFieldKey(key) {
-        return key.replaceAll(S, '.');
+        return key.replace(new RegExp(S, 'g'), '.');
     }
 
     /**
@@ -454,49 +450,6 @@ class Message extends Mongoable {
         else {
             delete this._data.result;
         }
-    }
-
-    /**
-     * Getter for results
-     * 
-     * @returns {object} object of platform specific Result objects ({a: Result, i: Result})
-     */
-    get results() {
-        return this._data.results;
-    }
-
-    /**
-     * Setter for results
-     * 
-     * @param {object} results object of platform specific Result objects ({a: Result, i: Result})
-     */
-    set results(results) {
-        if (results && typeof results === 'object') {
-            this._data.results = results;
-        }
-        else {
-            delete this._data.results;
-        }
-    }
-
-    /**
-     * Utility method for getting/setting platform specific Result
-     * 
-     * @param {string} p platform key
-     * @param {Result} result Result instance
-     * @returns {Result} current Result for given platform key, adds result object if it doesn't exist
-     */
-    platformResult(p, result) {
-        if (!this._data.results) {
-            this._data.results = {};
-        }
-        if (result) {
-            this._data.results[p] = result;
-        }
-        else if (!this._data.results[p]) {
-            this._data.results[p] = new Result();
-        }
-        return this._data.results[p];
     }
 
     /**
@@ -605,9 +558,6 @@ class Message extends Mongoable {
             triggers: Trigger.fromNote(note),
             contents: Content.fromNote(note),
             result: Result.fromNote(note),
-            results: note.platforms.length === 1 ? {
-                [note.platforms[0]]: Result.fromNote(note)
-            } : undefined,
             info: Info.fromNote(note)
         });
     }
@@ -619,8 +569,8 @@ class Message extends Mongoable {
      */
     static test() {
         return new Message({
-            _id: '0',
-            app: '1',
+            _id: common.db.ObjectID(),
+            app: common.db.ObjectID(),
             platforms: ['t'],
             state: State.Streamable,
             status: Status.Scheduled,
@@ -628,9 +578,6 @@ class Message extends Mongoable {
             triggers: [new PlainTrigger({start: new Date()})],
             contents: [new Content({message: 'test'})],
             result: new Result(),
-            results: {
-                t: new Result()
-            },
             info: new Info()
         });
     }

@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, CV, moment */
+/*global app, countlyVue, countlyVueExample, countlyCommon, CV, moment, Promise */
 
 (function() {
     var TableView = countlyVue.views.create({
@@ -185,6 +185,28 @@
                 };
             }
         },
+        methods: {
+            remoteMethod: function(rawQuery) {
+                var self = this;
+                var filtered = this.selectXOptions.map(function(group) {
+                    return {
+                        label: group.label,
+                        name: group.name,
+                        options: group.options.filter(function(option) {
+                            return option.label && option.label.includes(rawQuery);
+                        })
+                    };
+                }).filter(function(group) {
+                    return group.options.length > 0;
+                });
+                return new Promise(function(resolve) {
+                    setTimeout(function() {
+                        self.selectXRemoteOptions = filtered;
+                        resolve(filtered);
+                    }, 400);
+                });
+            }
+        },
         data: function() {
             var manyItems = [];
 
@@ -198,6 +220,7 @@
                 dropdownsDisabled: false,
                 autoCommitDisabled: false,
                 allOptionsTabHidden: false,
+                selectXRemoteOptions: [],
                 selectXOptions: [{
                     "label": "A Items",
                     "name": "type-1",
@@ -227,6 +250,7 @@
                 selectXModeBuffer: 'single-list',
                 selectX: {
                     currentVal: null,
+                    remoteVal: null,
                     mode: 'single-list',
                 },
 

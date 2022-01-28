@@ -27,7 +27,7 @@
              </div>
             <el-input v-model="value.path" placeholder="URL-Path" class="hook-api-url-block" disabled style="background-color:#FBFDFE;">
                 <template v-slot:suffix	>
-                    <span style='color:#0166D6;margin: 0px 12px; font-size:12px; cursor:pointer;' class='hook-trigger-url' @click="copyURL">{{i18n('hooks.copy-url')}}</span>
+                    <span class='hook-trigger-url' @click="copyURL">{{i18n('hooks.copy-url')}}</span>
                     <textarea id='url-box' style='position:fixed; z-index:-1000;top:-100px;' v-model ="url"/>
                 </template>
             </el-input>

@@ -11,7 +11,39 @@
         data: function() {
             return {
                 tableFilter: null,
-                showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1
+                showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1,
+                tableDynamicCols: [
+                    {
+                        value: "full_name",
+                        label: CV.i18n('management-users.user'),
+                        default: true
+                    },
+                    {
+                        value: "username",
+                        label: CV.i18n('management-users.username'),
+                        default: true
+                    },
+                    {
+                        value: "email",
+                        label: CV.i18n('management-users.email'),
+                        default: true
+                    },
+                    {
+                        value: "role",
+                        label: CV.i18n('management-users.role'),
+                        default: true
+                    },
+                    {
+                        value: "created_at",
+                        label: CV.i18n('management-users.created'),
+                        default: true
+                    },
+                    {
+                        value: "last_login",
+                        label: CV.i18n('management-users.last_login'),
+                        default: true
+                    }
+                ]
             };
         },
         computed: {
@@ -60,7 +92,7 @@
                     this.$emit('edit-user', index);
                     break;
                 case 'show-logs':
-                    window.location.hash = "#/manage/systemlogs/query/" + JSON.stringify({"user_id": index});
+                    window.location.hash = "#/manage/logs/systemlogs/query/" + JSON.stringify({"user_id": index});
                     break;
                 }
             }
@@ -91,6 +123,7 @@
         ],
         data: function() {
             return {
+                pictureEditMode: false,
                 changePasswordFlag: false,
                 apps: [],
                 permissionSets: [],
@@ -271,6 +304,13 @@
                 switch (command) {
                 case "remove-set":
                     this.removePermissionSet(index);
+                    break;
+                }
+            },
+            handlePPCommand: function(command) {
+                switch (command) {
+                case "edit-pp":
+                    this.pictureEditMode = true;
                     break;
                 }
             },

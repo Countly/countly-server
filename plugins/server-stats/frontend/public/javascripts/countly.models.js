@@ -5,7 +5,8 @@
     var _dataPointsObj = {},
         _periods = [],
         _todPunchCardData = [],
-        _selectedPeriod = "";
+        _selectedPeriod = "",
+        _top = [];
 
     //Public Methods
     countlyDataPoints.initialize = function(options) {
@@ -50,8 +51,35 @@
         });
     };
 
+    countlyDataPoints.calculateTop = function(/*options*/) {
+        var data = {};
+        data.period = countlyCommon.getPeriodForAjax();
+        return $.when(
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + "/server-stats/top",
+                dataType: "json",
+                //data: data,
+                success: function(json) {
+                    _top = json;
+                }
+            })
+        ).then(function() {
+            return true;
+        });
+    };
+
     countlyDataPoints.getPunchCardData = function() {
         return _todPunchCardData;
+    };
+
+    countlyDataPoints.getTop = function() {
+        _top = _top || [];
+        for (var z = 0; z < _top.length; z++) {
+            _top[z].value = countlyCommon.formatNumber(_top[z].v || 0);
+            _top[z].name = getAppName(_top[z].a);
+        }
+        return _top;
     };
 
     countlyDataPoints.refresh = function() {

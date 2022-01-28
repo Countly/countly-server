@@ -349,7 +349,7 @@
             return infoDto.count === 0;
         },
         isNoPushCredentialsError: function(error) {
-            if (error.responseJSON) {
+            if (error && error.responseJSON) {
                 return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
                     return message === 'No push credentials in db';
                 });
@@ -357,7 +357,7 @@
             return false;
         },
         hasNoAndroidCredentialsError: function(error) {
-            if (error.responseJSON) {
+            if (error && error.responseJSON) {
                 return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
                     return message === 'No push credentials for platform a';
                 });
@@ -365,10 +365,16 @@
             return false;
         },
         hasNoIosCredentialsError: function(error) {
-            if (error.responseJSON) {
+            if (error && error.responseJSON) {
                 return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
                     return message === 'No push credentials for platform i';
                 });
+            }
+            return false;
+        },
+        isServerError: function(error) {
+            if (error && error.responseJSON) {
+                return error.responseJSON.kind === 'ServerError';
             }
             return false;
         },
@@ -545,8 +551,8 @@
                         resolve();
                     },
                     error: function() {
+                        // TODO:log error
                         reject(new Error('Unknown error occurred.Please try again later.'));
-                        //TODO:log error
                     }
                 }, {disableAutoCatch: true});
             });
@@ -570,7 +576,7 @@
                         resolve();
                     },
                     error: function() {
-                        //TODO:log error
+                        // TODO:log error
                         reject(new Error('Unknown error occurred.Please try again later.'));
                     }
                 }, {disableAutoCatch: true});
@@ -595,7 +601,7 @@
                         resolve(response);
                     },
                     error: function(error) {
-                        //TODO:log error
+                        // TODO:log error
                         if (countlyPushNotification.helper.hasNoAndroidCredentialsError(error)) {
                             reject(new Error('No push notification credentials were found for Android'));
                             return;
@@ -1896,7 +1902,7 @@
                             resolve(model);
                         });
                     }).catch(function(error) {
-                        //TODO:log error
+                        // TODO:log error
                         reject(error);
                     });
                 });
@@ -1929,7 +1935,7 @@
         }, DEBOUNCE_TIME_IN_MS),
         fetchUserProperties: function() {
             return countlyPushNotification.api.findAllUserProperties().catch(function() {
-                //TODO:log error
+                // TODO:log error
                 return Promise.resolve([]);
             });
         },
@@ -1950,7 +1956,7 @@
                     var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
                     resolve({localizations: localizations, total: response.count, _id: response._id});
                 }).catch(function(error) {
-                    //TODO:log error
+                    // TODO:log error
                     reject(error);
                 });
             });
@@ -1967,7 +1973,7 @@
                 var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
-                //TODO:log error;
+                // TODO:log error
                 return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
             }
             return countlyPushNotification.api.save(dto);
@@ -1977,7 +1983,7 @@
                 var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
-                //TODO:log error
+                // TODO:log error
                 return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
             }
             return countlyPushNotification.api.update(dto);
@@ -1987,7 +1993,7 @@
                 var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
-                //TODO:log error
+                // TODO:log error
                 return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
             }
             var resendUserFilter = {message: {$nin: [model._id]}};
@@ -2044,7 +2050,7 @@
                     context.dispatch('onFetchSuccess', {useLoader: true});
                 }).catch(function(error) {
                     context.dispatch('onFetchError', {error: error, useLoader: true});
-                    //TODO: log error
+                    // TODO:log error
                 });
         },
         onUserCommand: function(context, payload) {
@@ -2057,18 +2063,31 @@
             context.dispatch('onFetchInit', {useLoader: false});
             countlyPushNotification.service.approve(id).then(function() {
                 context.dispatch('onFetchSuccess', {useLoader: false});
-                CountlyHelpers.notify({
-                    title: "Push notification approver",
-                    message: "Push notification has been successfully sent for approval.",
-                });
+                CountlyHelpers.notify({message: "Push notification has been successfully sent for approval."});
             }).catch(function(error) {
+                // TODO:log error
                 context.dispatch('onFetchError', {error: error, useLoader: false});
-                CountlyHelpers.notify({
-                    title: "Push notification approver error",
-                    message: error.message,
-                    type: "error"
-                });
-                //TODO: log error
+                CountlyHelpers.notify({message: error.message, type: "error"});
+            });
+        },
+        onDelete: function(context, id) {
+            return new Promise(function(resolve, reject) {
+                context.dispatch('onFetchInit', {useLoader: true});
+                countlyPushNotification.service.delete(id)
+                    .then(function() {
+                        context.dispatch('onFetchSuccess', {useLoader: true});
+                        CountlyHelpers.notify({message: "Push notification was successfully deleted."});
+                        resolve();
+                    }).catch(function(error) {
+                        // TODO:log error
+                        context.dispatch('onFetchError', {error: error, useLoader: true});
+                        reject();
+                        if (countlyPushNotification.helper.isServerError(error)) {
+                            CountlyHelpers.notify({message: "Server error occurred. Please try again later.", type: "error"});
+                            return;
+                        }
+                        CountlyHelpers.notify({message: "Unknown error occurred. Please try again later.", type: "error"});
+                    });
             });
         },
         onSetLocalFilter: function(context, value) {
@@ -2156,7 +2175,7 @@
                 .then(function(response) {
                     context.commit('setRows', response);
                 }).catch(function() {
-                    //TODO: log error
+                    // TODO:log error
                 }).finally(function() {
                     context.dispatch('onSetAreRowsLoading', false);
                 });
@@ -2167,7 +2186,7 @@
                 .then(function(response) {
                     context.commit('setDashboard', response);
                 }).catch(function() {
-                    //TODO: log error
+                    // TODO:log error
                 }).finally(function() {
                     context.dispatch('onSetIsDashboardLoading', false);
                 });
@@ -2176,11 +2195,17 @@
             context.dispatch('onFetchInit', {useLoader: true});
             countlyPushNotification.service.delete(id)
                 .then(function() {
-                    context.dispatch('fetchAll');
+                    context.dispatch('fetchAll', true);
                     context.dispatch('onFetchSuccess', {useLoader: true});
+                    CountlyHelpers.notify({message: "Push notification was successfully deleted."});
                 }).catch(function(error) {
-                    //TODO: log error
+                    // TODO:log error
                     context.dispatch('onFetchError', {error: error, useLoader: true});
+                    if (countlyPushNotification.helper.isServerError(error)) {
+                        CountlyHelpers.notify({message: "Server error occurred. Please try again later.", type: "error"});
+                        return;
+                    }
+                    CountlyHelpers.notify({message: "Unknown error occurred. Please try again later.", type: "error"});
                 });
         },
         onApprove: function(context, id) {
@@ -2193,13 +2218,13 @@
                     message: "Push notification has been successfully sent for approval.",
                 });
             }).catch(function(error) {
+                // TODO:log error
                 context.dispatch('onFetchError', {error: error, useLoader: true});
                 CountlyHelpers.notify({
                     title: "Push notification approver error",
                     message: error.message,
                     type: "error"
                 });
-                //TODO: log error
             });
         },
         onUserCommand: function(context, payload) {

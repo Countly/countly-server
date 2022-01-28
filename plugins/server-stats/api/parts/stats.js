@@ -223,7 +223,6 @@ function fetchDatapoints(db, filter, options, callback) {
                                 if (dates[date][k]) {
                                     toReturn["all-apps"] = increaseDataPoints(toReturn["all-apps"], dates[date][k]);
                                     toReturn[result[i].a] = increaseDataPoints(toReturn[result[i].a], dates[date][k]);
-                                    console.log(JSON.stringify(toReturn[result[i].a]));
                                 }
                             }
 
@@ -255,7 +254,7 @@ function fetchDatapoints(db, filter, options, callback) {
             }
 
         }
-        if (toReturn["[CLY]_consolidated"] && toReturn["all-apps"]) {
+        if (!options.singleApp && toReturn["[CLY]_consolidated"] && toReturn["all-apps"]) {
             //if we have consolidated data, calculate all data without consolidated data
             toReturn["natural-dp"] = {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0};
 
@@ -267,6 +266,9 @@ function fetchDatapoints(db, filter, options, callback) {
             }
 
         }
+        if (options.singleApp) {
+            delete toReturn["all-apps"];
+        }
         for (var z in toReturn) {
             toReturn[z].change = toReturn[z].dp - toReturn[z].change;
         }
@@ -277,9 +279,10 @@ function fetchDatapoints(db, filter, options, callback) {
 /**
  *  Get top apps DP for current hour
  *  @param {db} db - DB object
+ *  @param {object} params - params object
  *  @param {function} callback - callback
  */
-function getTop(db, callback) {
+function getTop(db, params, callback) {
     var utcMoment = moment.utc();
     var curMonth = utcMoment.format("YYYY") + ":" + utcMoment.format("M");
     var curDate = utcMoment.format("D");
@@ -288,12 +291,27 @@ function getTop(db, callback) {
         var res = {};
         if (data) {
             for (let i = 0; i < data.length; i++) {
+                res[data[i].a] = res[data[i].a] || 0;
                 if (data[i] && data[i].d && data[i].d[curDate] && data[i].d[curDate][curHour] && data[i].d[curDate][curHour].dp) {
-                    res[data[i].a] = {"data-points": data[i].d[curDate][curHour].dp};
+                    res[data[i].a] += data[i].d[curDate][curHour].dp;
+                }
+
+                if (data[i] && data[i].d && data[i].d[curDate] && data[i].d[curDate][parseInt(curHour) - 1] && data[i].d[curDate][parseInt(curHour) - 1].dp) {
+                    res[data[i].a] += data[i].d[curDate][parseInt(curHour) - 1].dp;
                 }
             }
         }
-        callback(res);
+        var rr = [];
+        for (var app in res) {
+            if (app !== "[CLY]_consolidated") {
+                rr.push({"a": app, "v": res[app]});
+            }
+        }
+        rr = rr.sort(function(a, b) {
+            return b.v - a.v;
+        });
+        rr = rr.slice(0, 3);
+        callback(rr);
     });
 }
 

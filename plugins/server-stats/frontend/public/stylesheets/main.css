@@ -19,11 +19,21 @@
 	padding-left:2px;
 }
 
-.routename-data-points table td a
+.routename-data-points table td .i_am_not_clickable
 {
-	cursor: pointer;
-    color: #32659D;
+	cursor: default;
+    color: #333C48;
 }
+
+.routename-data-points table td .cell:hover
+{
+	text-decoration:none
+}
+
+.routename-data-points table td .cell:hover a {
+	text-decoration:underline;
+}
+
 .data-points-tooltip  table tr td:last-child {
 	padding-right: 2px
 }

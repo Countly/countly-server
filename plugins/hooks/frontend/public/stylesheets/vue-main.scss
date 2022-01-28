@@ -139,10 +139,13 @@
         line-height: 20px;
         color: #32659D;
         word-break: break-word;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
     .is-name-col:hover {
-        color: #32659D;
+        color: #0166D6;
         text-decoration: underline;
+        cursor: pointer !important;
     }
     .is-desc-col {
         font-size: 12px;
@@ -199,6 +202,24 @@
             flex-grow: 1;
         }
     }
+    
+}
+.hook-error-table {
+    .el-table__expanded-cell {
+        padding: 23px 24px;
+    }
+    tr td:nth-child(4) .cell {
+        background: #F6F6F6;
+        border-radius: 4px;
+        margin-left: 16px;
+        padding-left: 14.81px !important;
+    }
+    tr td:nth-child(5) .cell {
+        background: #F6F6F6;
+        border-radius: 4px;
+        margin: 0px 14.32px;
+        padding-left: 14.81px !important;;
+    }
 }
 
 .is-hook-table-option-dropdown {
@@ -232,4 +253,34 @@
 .hooks-table-app-selector .el-input input::placeholder { 
     color: #333C48;
     opacity: 1;
+}
+
+.hook-log-lines-bar {
+    font-family: "Roboto Mono", monospace;
+    font-size: 12px;
+    line-height: 17px;
+    color: #A7AEB8;
+    float: left;
+    padding-right: 0.5em;
+    margin-right: 1em;
+    border-right: 1px solid #ECECEC;
+}
+.hook-log-code {
+    font-family: "Roboto Mono", monospace !important;
+    font-size: 12px;
+    line-height: 17px;
+}
+.hook-logs-card {
+    padding: 20px 24px;
+    background: #FFFFFF;
+    border: 1px solid #ECECEC;
+    box-sizing: border-box;
+    border-radius: 4px;
+}
+.hook-trigger-url {
+    color:#0166D6;
+    margin: 0px 12px;
+    cursor:pointer;
+    font-size: 12px;
+    font-weight: 500;
 }

@@ -427,27 +427,34 @@
     }));
 
     Vue.component("cly-app-select", {
-        template: '<el-select v-bind="$attrs" v-on="$listeners">\
-                        <el-option\
-                            v-if="allowAll"\
-                            key="all"\
-                            label="All apps"\
-                            value="all">\
-                        </el-option>\
-                        <el-option\
-                            v-for="app in apps"\
-                            :key="app.value"\
-                            :label="app.label"\
-                            :value="app.value">\
-                        </el-option>\
-                    </el-select>',
+        template: '<cly-select-x :options="options" :auto-commit="mode !== \'multi-check\'" :mode="mode" :max-items="multipleLimit" v-bind="$attrs" v-on="$listeners"></cly-select-x>',
         props: {
             allowAll: {
                 type: Boolean,
-                default: false
+                default: false,
+                required: false
+            },
+            multiple: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            multipleLimit: {
+                type: Number,
+                default: 0,
+                required: false
             }
         },
         computed: {
+            options: function() {
+                if (this.allowAll) {
+                    return [{label: 'All apps', value: 'all'}].concat(this.apps);
+                }
+                return this.apps;
+            },
+            mode: function() {
+                return this.multiple ? "multi-check" : "single-list";
+            },
             apps: function() {
                 var apps = countlyGlobal.apps || {};
                 return Object.keys(apps).map(function(key) {
@@ -901,10 +908,10 @@
     }));
 
     Vue.component("cly-empty-view", countlyBaseComponent.extend({
-        template: ' <div class="bu-mt-5 bu-pt-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
+        template: ' <div class="bu-mt-5 bu-pt-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center cly-vue-empty-view">\
                         <slot name="icon">\
                             <div class="bu-mt-6">\
-                                <img width="96" heigh="96" src="images/icons/empty-view-icon.svg"/>\
+                                <img class="cly-vue-empty-view__img" src="images/icons/empty-plugin.svg"/>\
                             </div>\
                         </slot>\
                         <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column 	bu-is-align-items-center">\
@@ -912,7 +919,7 @@
                                 <h3 class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered ">{{subTitle}}</div>\
+                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span v-html="subTitle"></span></div>\
                             </slot>\
                             <slot name="action" v-if="hasAction">\
                                 <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\

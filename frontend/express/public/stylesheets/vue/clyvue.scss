@@ -1424,6 +1424,19 @@
         }
     }
 
+    //responsive design for metric cards
+    @media screen and (max-width: 1281px) {
+        .cly-vue-metric-card__wrapper {
+            h2 {
+                font-size: 18px !important;
+            }
+
+            .cly-trend-up, .cly-trend-down {
+                font-size: 12px !important;
+            }
+        }
+    }
+
     .cly-vue-section__content {
         .cly-vue-metric-cards {
             border-top: 0px;
@@ -1469,18 +1482,6 @@
                 & + .cly-vue-metric-breakdown .cly-vue-metric-breakdown__wrapper {
                     border-left: 1px solid map.get(c.$colors, "warm-gray-30");
                 }
-            }
-        }
-    }
-
-    @media screen and (max-width: 1281px) {
-        .cly-vue-metric-card__wrapper {
-            h2 {
-                font-size: 18px !important;
-            }
-
-            .cly-trend-up, .cly-trend-down {
-                font-size: 12px !important;
             }
         }
     }
@@ -1657,19 +1658,13 @@
             .cly-vue-drawer__steps-container {
                 &.is-scroll-shadow-at-middle::before,
                 &.is-scroll-shadow-at-bottom::before {
-                    width: 100%;
-                    left: -16px;
+                    width: 685px;
                 }
                 &.is-scroll-shadow-at-middle .scroll-shadow-container::after,
                 &.is-scroll-shadow-at-top .scroll-shadow-container::after {
-                    width: 100%;
-                    bottom: 15px;
+                    width: 685px;
+                    bottom: 16px;
                     margin-left: -16px;
-                }
-
-                &.is-scroll-shadow-at-middle .scroll-shadow-container,
-                &.is-scroll-shadow-at-top .scroll-shadow-container {
-                    left: -16px;
                 }
             }
 
@@ -1698,6 +1693,10 @@
             box-sizing: border-box;
         }
 
+        &__subtitle {
+            margin-left: 32px !important;
+        }
+
         &__close-button {
             font-size: 30px;
             color: #81868D;
@@ -1710,11 +1709,19 @@
             }
         }
 
+        &__body-container {
+            margin-left: 32px !important;
+            margin-right: 32px !important;
+
+            .bu-column {
+                padding: unset !important;
+            }
+        }
+
         &__steps-header {
             background-color: #fff;
             position: relative;
             display: flex;
-            justify-content: space-between;
             align-items: center;
             z-index: 1000;    
             width: 100%;
@@ -1730,7 +1737,7 @@
             color: #A7AEB8;
             display: inline-block;   
             min-width: 18px;
-            margin: 0px 6px;
+            // margin: 0px 6px;
             .index {
                 vertical-align: top;
             }
@@ -1743,12 +1750,15 @@
 
         &__step-title {
             display: inline-block;
+            margin-left: 6px;
         }
 
         &__step-separator {
-            width: 20%;
+            width: 40px;
             border-top: 1px solid #A7AEB8;
             max-width: 40px;
+            margin-left: 12px;
+            margin-right: 12px;
         }
 
         &__step-label {
@@ -1923,7 +1933,7 @@
             }
             &__auto-group {
                 + .cly-vue-form-step__auto-group {
-                    margin-top: 12px;
+                    margin-top: 20px; //12px 
                 }
             }
         }
@@ -1946,6 +1956,12 @@
 				padding: 12px 24px 24px 24px;
 			}
 		}
+
+        &__title {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 	}
 
     .cly-vue-blank {
@@ -3938,5 +3954,16 @@
 .el-table {
     &__empty-text {
         line-height: normal;
+    }
+}
+
+.cly-vue-empty-view {
+    &__img {
+        width: 96px;
+        height: 96px;
+    }
+
+    &__subtitle {
+        max-width: 500px;
     }
 }

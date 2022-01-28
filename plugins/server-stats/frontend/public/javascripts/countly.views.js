@@ -15,7 +15,8 @@ var DataPointsView = countlyVue.views.create({
             topDropdown: [],
             dataPointsGraph: this.calculateSeries(),
             useBasicGraph: false,
-            showPushColumn: false
+            showPushColumn: false,
+            topApps: []
         };
         if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("push") > -1) {
             //We have push plugin
@@ -34,13 +35,13 @@ var DataPointsView = countlyVue.views.create({
     },
     mounted: function() {
         var self = this;
-        $.when(countlyDataPoints.initialize({app_id: this.app_id}), countlyDataPoints.punchCard({app_id: this.app_id})).then(function() {
+        $.when(countlyDataPoints.initialize({app_id: this.app_id}), countlyDataPoints.calculateTop(), countlyDataPoints.punchCard({app_id: this.app_id})).then(function() {
             self.dataPointsGraph = self.calculateSeries();
             self.dataPointsRows = countlyDataPoints.getTableData();
+            self.topApps = countlyDataPoints.getTop();
             self.isLoading = false;
         });
     },
-
     methods: {
         refresh: function(force) {
             if (force) {
@@ -50,8 +51,14 @@ var DataPointsView = countlyVue.views.create({
             $.when(countlyDataPoints.initialize({app_id: this.app_id}), countlyDataPoints.punchCard({app_id: this.app_id})).then(function() {
                 self.dataPointsGraph = self.calculateSeries();
                 self.dataPointsRows = countlyDataPoints.getTableData(),
+
                 self.isLoading = false;
             });
+            $.when(countlyDataPoints.calculateTop()).then(function() {
+                self.topApps = countlyDataPoints.getTop();
+            });
+
+
         },
         getNormalizedSymbolCoefficient: function() {
             return 30 / this.max;
@@ -114,10 +121,11 @@ var DataPointsView = countlyVue.views.create({
                     axisLine: {
                         show: false
                     },
-                    name: CV.i18n('user-loyalty.range.hours'),
+                    name: CV.i18n('common.hours'),
                     nameLocation: "start",
                     nameTextStyle: {
                         color: "#A7AEB8",
+                        padding: [0, 0, -18, 0],
                         verticalAlign: 'bottom'
                     }
                 }
@@ -256,8 +264,8 @@ var DataPointsView = countlyVue.views.create({
                     return retString;
 
                 };
-
-                graphObject.series = [{data: seriesArr, name: "data-points"}];
+                graphObject.xAxis.nameTextStyle.padding = [0, 0, -30, 0];
+                graphObject.series = [{"type": "bar", data: seriesArr, name: "data-points"}];
                 return graphObject;
 
             }
