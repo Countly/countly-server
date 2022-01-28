@@ -1,4 +1,4 @@
-<cly-confirm-dialog @cancel="cancel" @confirm="submit" :visible.sync="isOpen" :show-close="false" width="500px"
+<cly-confirm-dialog @cancel="cancel" @confirm="submit" :visible.sync="isOpen" :show-close="false" width="674px"
   :modal="false" center>
   <template v-slot:title>
     <h3 class="color-cool-gray-100">{{i18n('remote-config.parameter.conditions.add.new.condition')}}</h3>
@@ -52,16 +52,17 @@
               </el-input>
             </div>
             <div class="bu-pt-4">
-              <div class="font-weight-bold text-smallish bu-mb-1">
+              <div class="font-weight-bold text-big bu-mb-1">
                 {{i18n('remote-config.condition-definition')}}
               </div>
               <div class="color-cool-gray-50 text-small bu-mb-1">
                 {{i18n('remote-config.condition-definition.description')}}
               </div>
               <div>
-                <validation-provider name="name" v-slot="v">
+                  <validation-provider name="condition-definition" rules="required" v-slot="v">
                   <cly-qb-segmentation 
                     ref="conditionQb"
+                    :class="{'is-error': v.errors.length > 0}"
                     :additional-properties="additionalProperties"
                     :additionalRules="remoteConfigFilterRules"
                     :add-empty-row-on-empty-query="true"
