@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyGlobal*/
+/* global countlyVue,CV,countlyCommon*/
 var AppBrowserView = countlyVue.views.create({
     template: CV.T("/browser/templates/browser.html"),
     data: function() {
@@ -238,12 +238,11 @@ var AppBrowserView = countlyVue.views.create({
 
 });
 
-if (countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-    countlyVue.container.registerTab("/analytics/technology", {
-        priority: 6,
-        name: "browsers",
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/browsers",
-        title: CV.i18n('browser.title'),
-        component: AppBrowserView
-    });
-}
+countlyVue.container.registerTab("/analytics/technology", {
+    type: "web",
+    priority: 6,
+    name: "browsers",
+    route: "#/analytics/technology/browsers",
+    title: CV.i18n('browser.title'),
+    component: AppBrowserView
+});

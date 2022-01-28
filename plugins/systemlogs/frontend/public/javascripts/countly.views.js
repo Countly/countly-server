@@ -223,7 +223,7 @@
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         countlyVue.container.registerTab("/manage/logs", {
             priority: 2,
-            route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/logs/systemlogs",
+            route: "#/manage/logs/systemlogs",
             component: SystemLogsView,
             title: "Audit Logs",
             name: "systemlogs",
