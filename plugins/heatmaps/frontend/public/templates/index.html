@@ -22,7 +22,7 @@
             </div>
         </div>
         <cly-section class="bu-mb-2">
-            <cly-metric-cards v-if="metrics && metrics.t" :multiline="false">
+            <cly-metric-cards v-if="metrics && metrics.t" :multiline="false" v-loading="isLoading">
                 <cly-metric-card>
                     {{i18n('heatmaps.total-page-views')}}
                     <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5px" v-tooltip.top-center="i18n('heatmaps.total-page-views-tooltip')"></span>

@@ -165,37 +165,45 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         }
     }
 
-    if (config.rate) {
-        pushcfg.rate = pushcfg.rate || {};
-        config.rate.rate = config.rate.rate ? parseInt(config.rate.rate) : 0;
-        config.rate.period = config.rate.period ? parseInt(config.rate.period) : 0;
-
+    if (config.rate !== undefined) {
         let update = {};
-        if (config.rate.rate) {
-            update.$set = {'plugins.push.rate.rate': config.rate.rate};
-            pushcfg.rate.rate = config.rate.rate;
-        }
-        else {
-            update.$unset = {'plugins.push.rate.rate': 1};
-            delete pushcfg.rate.rate;
-        }
+        if (config.rate) {
+            pushcfg.rate = pushcfg.rate || {};
+            config.rate.rate = config.rate.rate ? parseInt(config.rate.rate) : 0;
+            config.rate.period = config.rate.period ? parseInt(config.rate.period) : 0;
 
-        if (config.rate.period) {
-            update.$set = {'plugins.push.rate.period': config.rate.period};
-            pushcfg.rate.period = config.rate.period;
+            if (config.rate.rate) {
+                update.$set = {'plugins.push.rate.rate': config.rate.rate};
+                pushcfg.rate.rate = config.rate.rate;
+            }
+            else {
+                update.$unset = {'plugins.push.rate.rate': 1};
+                delete pushcfg.rate.rate;
+            }
+
+            if (config.rate.period) {
+                update.$set = update.$set || {};
+                update.$set['plugins.push.rate.period'] = config.rate.period;
+                pushcfg.rate.period = config.rate.period;
+            }
+            else {
+                update.$unset = update.$unset || {};
+                update.$unset['plugins.push.rate.period'] = 1;
+                delete pushcfg.rate.period;
+            }
         }
         else {
-            update.$unset = {'plugins.push.rate.period': 1};
-            delete pushcfg.rate.period;
+            update.$unset = {'plugins.push.rate': 1};
+            delete pushcfg.rate;
         }
         await common.db.collection('apps').updateOne({_id: app._id}, update);
     }
 
     if (config.test !== undefined) {
-        let users = [], cohorts = [];
-        if (config.test && config.test.users) {
-            users = await common.db.collection(`app_users${params.app_id}`).find({_id: {$in: config.test.users.split(',')}}, {_id: 1}).toArray();
-            users = users.map(u => u._id).join(',');
+        let uids = [], cohorts = [];
+        if (config.test && config.test.uids) {
+            uids = await common.db.collection(`app_users${params.app_id}`).find({uid: {$in: config.test.uids.split(',')}}, {_id: 1}).toArray();
+            uids = uids.map(u => u._id).join(',');
         }
 
         if (config.test && config.test.cohorts) {
@@ -203,25 +211,29 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
             cohorts = cohorts.map(c => c._id).join(',');
         }
 
-        let update = {$set: {}};
-        if (cohorts.length || users.length) {
+        let update = {};
+        if (cohorts.length || uids.length) {
             pushcfg.test = pushcfg.test || {};
-            if (users.length) {
-                update.$set['plugins.push.test.users'] = users;
-                pushcfg.test.users = users;
+            if (uids.length) {
+                update.$set = {'plugins.push.test.uids': uids};
+                pushcfg.test.uids = uids;
             }
             else {
-                update.$unset['plugins.push.test.users'] = 1;
+                update.$unset = {'plugins.push.test.uids': 1};
+                delete pushcfg.test.uids;
             }
             if (cohorts.length) {
+                update.$set = update.$set || {};
                 update.$set['plugins.push.test.cohorts'] = cohorts;
             }
             else {
+                update.$unset = update.$unset || {};
                 update.$unset['plugins.push.test.cohorts'] = 1;
+                delete pushcfg.test.cohorts;
             }
         }
         else {
-            update.$unset['plugins.push.test'] = 1;
+            update.$unset = {'plugins.push.test': 1};
             delete pushcfg.test;
         }
         await common.db.collection('apps').updateOne({_id: app._id}, update);

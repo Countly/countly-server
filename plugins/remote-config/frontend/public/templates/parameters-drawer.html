@@ -29,7 +29,7 @@
             </cly-form-field>
           </div>
         </div>
-        <div class="bu-py-1">
+        <div class="bu-py-1 cly-vue-remote-config-parameters-drawer__default-value">
           <cly-form-field name="default-value" :subheading="i18n('remote-config.default-value.description')" :label="i18n('remote-config.default-value')" rules="required">
             <el-autocomplete
               class="cly-vue-remote-config-parameters-drawer__autocomplete"
@@ -43,7 +43,7 @@
         </div>
         <json-editor :isOpen="isOpen" v-model="defaultValue"></json-editor>
         <div class="bu-py-4" v-if="isDrillEnabled">
-          <div class="font-weight-bold text-smallish bu-mb-1">
+          <div class="font-weight-bold text-big bu-mb-1">
             {{i18n('remote-config.conditions')}}
           </div>
           <div class="color-cool-gray-50 text-small bu-mb-1">
@@ -70,6 +70,7 @@
               @change="handleSelect"
               v-model="currentConditionValue"
               :options="conditionArray"
+              :width="450"
               search-placeholder="Search in conditions">
               <template v-slot:trigger>
                 <el-button class="bg-light-blue-100 color-blue-100" size="small" type="text">

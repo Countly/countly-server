@@ -92,7 +92,7 @@
                     this.$emit('edit-user', index);
                     break;
                 case 'show-logs':
-                    window.location.hash = "#/manage/systemlogs/query/" + JSON.stringify({"user_id": index});
+                    window.location.hash = "#/manage/logs/systemlogs/query/" + JSON.stringify({"user_id": index});
                     break;
                 }
             }
