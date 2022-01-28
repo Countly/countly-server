@@ -1065,18 +1065,23 @@ var AppRouter = Backbone.Router.extend({
             return;
         }
         else if (Backbone.history.fragment !== "/" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
-            $("#" + countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type + "-type a").each(function() {
-                if (this.hash !== "#/" && this.hash !== "") {
-                    if ("#" + Backbone.history.fragment === this.hash && $(this).css('display') !== 'none') {
-                        change = false;
-                        return false;
-                    }
-                    else if (("#" + Backbone.history.fragment).indexOf(this.hash) === 0 && $(this).css('display') !== 'none') {
-                        redirect = this.hash;
-                        return false;
-                    }
+            var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type || "mobile";
+
+            var submenus = countlyVue.container.data(["/sidebar/analytics/menu", "/sidebar/analytics/submenu"]);
+            submenus.sort();
+            for (i = 0; i < submenus.length; i++) {
+                if (submenus[i].url === "#/") {
+                    continue;
                 }
-            });
+                if ("#" + Backbone.history.fragment === submenus[i].url && type === submenus[i].app_type) {
+                    change = false;
+                    break;
+                }
+                else if (("#" + Backbone.history.fragment).indexOf(submenus[i].url) === 0 && type === submenus[i].app_type) {
+                    redirect = submenus[i].url;
+                    break;
+                }
+            }
         }
 
         if (redirect) {

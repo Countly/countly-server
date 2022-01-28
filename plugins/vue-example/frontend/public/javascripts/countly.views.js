@@ -1080,7 +1080,7 @@
         priority: 1,
         title: 'External tab 1',
         name: 'external1',
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/external1",
+        route: "#/vue/example/external1",
         component: countlyVue.components.create({
             data: function() {
                 return {
@@ -1108,7 +1108,7 @@
         priority: 2,
         title: 'External tab 2',
         name: 'external2',
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/external2",
+        route: "#/vue/example/external2",
         vuex: [{
             clyModel: window.foo
         }],

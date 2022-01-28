@@ -114,6 +114,18 @@
         return mixin;
     };
 
+    Container.prototype.data = function(ids) {
+        var self = this;
+        var data = [];
+
+        ids.forEach(function(id) {
+            var d = self.dict[id] ? self.dict[id].data : [];
+            data = data.concat(d);
+        });
+
+        return data;
+    };
+
     Container.prototype.mixins = function(ids) {
         var self = this;
         var mixins = [];

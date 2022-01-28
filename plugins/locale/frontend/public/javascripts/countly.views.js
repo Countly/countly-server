@@ -95,7 +95,7 @@ countlyVue.container.registerTab("/analytics/geo", {
     priority: 10,
     name: "languages",
     title: CV.i18n('sidebar.analytics.languages'),
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/geo/languages",
+    route: "#/analytics/geo/languages",
     component: LanguageView,
     vuex: [{
         clyModel: countlyLanguage

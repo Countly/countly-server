@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyAppCarrier,countlyGlobal*/
+/* global countlyVue,CV,countlyCommon,countlyAppCarrier*/
 var AppCarrierView = countlyVue.views.create({
     template: CV.T("/core/carrier/templates/carrier.html"),
     data: function() {
@@ -98,16 +98,14 @@ var AppCarrierView = countlyVue.views.create({
     ]
 });
 
-if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
-    countlyVue.container.registerTab("/analytics/technology", {
-        priority: 5,
-        name: "carriers",
-        title: CV.i18n('carriers.title'),
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/carriers",
-        component: AppCarrierView,
-        vuex: [{
-            clyModel: countlyAppCarrier
-        }]
-    });
-}
-
+countlyVue.container.registerTab("/analytics/technology", {
+    type: "mobile",
+    priority: 5,
+    name: "carriers",
+    title: CV.i18n('carriers.title'),
+    route: "#/analytics/technology/carriers",
+    component: AppCarrierView,
+    vuex: [{
+        clyModel: countlyAppCarrier
+    }]
+});

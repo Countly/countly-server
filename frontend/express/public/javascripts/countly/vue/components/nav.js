@@ -1,4 +1,4 @@
-/* global Vue, Backbone, app */
+/* global Vue, Backbone, app, countlyGlobal, countlyCommon */
 
 (function(countlyVue) {
 
@@ -52,6 +52,12 @@
         that platform in an efficient and simple way.
     */
     Vue.component("cly-dynamic-tabs", countlyBaseComponent.extend({
+        data: function() {
+            return {
+                apps: countlyGlobal.apps,
+                app_id: countlyCommon.ACTIVE_APP_ID
+            };
+        },
         props: {
             value: String,
             tabs: {
@@ -149,6 +155,7 @@
                                     v-bind:key="tab.name"\
                                     v-bind:class="[tabClasses, activeClasses(tab.name)]"\
                                     v-on:click="setTab(tab.name)"\
+                                    v-if="(!tab.type) || (tab.type === \'mobile\' && !apps[app_id].type) || (apps[app_id].type === tab.type)"\
                                     >\
                                         <slot :name="tab.name" :tab="tab">\
                                             <span>{{ tab.title }}</span>\
