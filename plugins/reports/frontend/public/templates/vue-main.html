@@ -160,6 +160,9 @@
                 class="bu-is-flex"
                 :placeholder="i18n('reports.Select_apps')"
                 v-on:change="appsChange" 
+                :collapse-tags="false"
+                :multiple="multiple"
+                :multiple-limit="4"
                 v-model="drawerScope.editedObject.apps" 
                 multiple>
             </cly-app-select>
