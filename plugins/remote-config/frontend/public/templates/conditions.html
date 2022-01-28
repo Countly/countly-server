@@ -12,7 +12,7 @@
     </template>
   </cly-header>
   <cly-main>
-    <cly-datatable-n :rows="tableRows">
+    <cly-datatable-n :rows="tableRows" class="cly-vue-remote-config-conditions-table"  :row-class-name="tableRowClassName">
       <template v-slot="scope">
         <el-table-column  prop="condition_name" :label="i18n('remote-config.condition-name')" sortable="custom">
           <template v-slot="rowScope">
