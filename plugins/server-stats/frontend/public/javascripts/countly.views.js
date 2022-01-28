@@ -121,10 +121,11 @@ var DataPointsView = countlyVue.views.create({
                     axisLine: {
                         show: false
                     },
-                    name: CV.i18n('user-loyalty.range.hours'),
+                    name: CV.i18n('common.hours'),
                     nameLocation: "start",
                     nameTextStyle: {
                         color: "#A7AEB8",
+                        padding: [0, 0, -18, 0],
                         verticalAlign: 'bottom'
                     }
                 }
@@ -263,7 +264,7 @@ var DataPointsView = countlyVue.views.create({
                     return retString;
 
                 };
-
+                graphObject.xAxis.nameTextStyle.padding = [0, 0, -30, 0];
                 graphObject.series = [{"type": "bar", data: seriesArr, name: "data-points"}];
                 return graphObject;
 
