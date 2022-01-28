@@ -656,27 +656,8 @@
                 data: JSON.stringify(data)
             }, {disableAutoCatch: true});
         },
-        // updateGlobalConfig: function(newConfig) {
-        //     var pushConfig = {push: {}};
-        //     pushConfig.push = newConfig;
-        //     return CV.$.ajax({
-        //         type: "GET",
-        //         url: countlyCommon.API_URL + "/i/configs",
-        //         data: {
-        //             configs: JSON.stringify(pushConfig),
-        //             app_id: countlyCommon.ACTIVE_APP_ID
-        //         }
-        //     }, {disableAutoCatch: true});
-        // }
         getGlobalConfig: function() {
             return countlyPlugins.getConfigsData();
-            // return $.ajax({
-            //     type: "GET",
-            //     url: countlyCommon.API_URL + "/o/configs",
-            //     data: {
-            //         app_id: countlyCommon.ACTIVE_APP_ID
-            //     }
-            // });
         }
     };
 
@@ -1993,24 +1974,28 @@
             return null;
         },
         fetchTestUsers: function(options) {
-            var drillQuery = {$or: []};
-            if (options.uids) {
-                drillQuery.$or.push({uid: {$in: options.uids}});
+            var queries = [];
+            if (options.uids && options.uids.length) {
+                queries.push({uid: {$in: options.uids}});
             }
-            if (options.cohorts) {
-                drillQuery.$or.push({chr: {$in: options.cohorts}});
+            if (options.cohorts && options.cohorts.length) {
+                queries.push({chr: {$in: options.cohorts}});
             }
+
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.searchUsers(drillQuery)
-                    .then(function(response) {
-                        if (response && response.aaData) {
-                            resolve(response.aaData.map(function(user) {
-                                return {_id: user._id, username: user.name || '', picture: user.picture};
-                            }));
-                            return;
-                        }
-                        // TODO: log error;
-                        reject('Unknown error occurred. Please try again later');
+                Promise.all(queries.map(function(testUserQuery) {
+                    return countlyPushNotification.api.searchUsers(testUserQuery);
+                }))
+                    .then(function(responses) {
+                        var testUsersArraysList = responses.map(function(queryResponse) {
+                            return queryResponse.aaData;
+                        });
+                        var allTestUsers = testUsersArraysList.reduce(function(addedTestUsersList, currentArray) {
+                            return addedTestUsersList.concat(currentArray);
+                        }, []).map(function(user) {
+                            return {_id: user._id, username: user.name || '', picture: user.picture};
+                        });
+                        resolve(allTestUsers);
                     }).catch(function(error) {
                     // TODO: log error;
                         reject(error);
