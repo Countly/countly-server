@@ -157,6 +157,16 @@
 
         var mutations = {
             setDetail: function(state, detail) {
+                detail.error_logs = detail.error_logs && detail.error_logs.map(function(err, idx) {
+                    // err.e = err.e.replaceAll("\n",'<br/>');
+                    err.e = err.e.replaceAll("\\n", '\n');
+                    err._id = idx;
+                    err.timestamp_string = moment(err.timestamp).format('ddd, DD MMM YYYY, HH:mm:ss');
+                    err._lines = Array.apply(null, Array(err.e.split("\n").length)).map(function(_, i) {
+                        return i + 1;
+                    }).join("\n");
+                    return err;
+                });
                 state.hookDetail = detail;
             },
             setDetailLogsInitialized: function(state, initialized) {

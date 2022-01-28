@@ -23,10 +23,7 @@ utils.addErrorRecord = function addErrorRecord(hookId, error, params, effectStep
     }
     let errorString = error;
     if (typeof error === 'object') {
-        errorString = `
-            message:${error.message}
-            stack: ${JSON.stringify(error.stack)}
-        `;
+        errorString = `message:${error.message}\n\nstack: ${JSON.stringify(error.stack)}`;
     }
     const updateOperation = {
         $push: {

@@ -3,7 +3,8 @@ const testUtils = require('../../../test/testUtils'),
     plugins = require('../../pluginManager'),
     // supertest = require('supertest').agent(testUtils.url),
     supertest = require('supertest').agent('http://localhost:3001'),
-    should = require('should');
+    should = require('should'),
+    { onAppPluginsUpdate } = require('../api/api-push');
 
 // let aid,
 //     app_key,
@@ -240,6 +241,7 @@ describe('PUSH INTEGRATION TESTS', () => {
             })
             .expect('Content-Type', /json/)
             .expect(res => {
+                should.equal(res.status, 200);
                 should.equal(res.body.count, 3);
                 should.deepEqual(res.body.locales, {default: 0, ru: 1, en: 2});
             });
@@ -413,6 +415,54 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.equal(res.body.filter.user, JSON.stringify({la: {$in: ['es']}}));
             });
     });
+    it('should send test messages', async() => {
+        // test message
+        await supertest.post(`/i/push/message/test?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                demo: true,
+                app: aid,
+                platforms,
+                filter: {
+                    user: JSON.stringify({la: {$in: ['de']}})
+                },
+                contents: [
+                    {message: 'asd', title: 'asd', expiration: 120000},
+                ],
+                triggers: [
+                    {kind: 'plain', start: new Date(Date.now() + 5000)},
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.ok(res.body.result, 1);
+                should.equal(res.body.result.total, 1);
+                should.equal(res.body.result.subs.i.total, 1);
+                should.equal(res.body.result.subs.i.subs.en.total, 1);
+            });
+
+        // // test message
+        // await supertest.post(`/i/push/message/test?api_key=${api_key}&app_id=${aid}`)
+        //     .send({
+        //         demo: true,
+        //         app: aid,
+        //         platforms,
+        //         filter: {
+        //             user: JSON.stringify({la: {$in: ['de']}})
+        //         },
+        //         contents: [
+        //             {message: 'asd', title: 'asd', expiration: 120000},
+        //         ],
+        //         triggers: [
+        //             {kind: 'plain', start: new Date(Date.now() + 5000)},
+        //         ]
+        //     })
+        //     .expect('Content-Type', /json/)
+        //     .expect(res => {
+        //         should.equal(res.status, 400);
+        //         should.deepEqual(res.body.errors, ['Please define test users in Push plugin configuration']);
+        //     });
+    }).timeout(10000);
     it('should create a few simple messages', async() => {
         let now = Date.now();
 
@@ -598,7 +648,7 @@ describe('PUSH INTEGRATION TESTS', () => {
             .expect(res => {
                 should.equal(res.status, 200);
                 should.equal(res.body.total, 1);
-                should.equal(res.body.next, Math.floor(txDate / 1000) * 1000);
+                should.equal(res.body.next, new Date(Math.floor(txDate / 1000) * 1000).toISOString());
             });
 
         [pushes1, pushes2, pushes3, pushes4] = await find_pushes([m1._id, m2._id, m3._id, m4._id]);
@@ -675,11 +725,9 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.equal(res.body._id, m5._id);
                 should.equal(res.body.app, aid);
                 should.equal(res.body.result.total, 1);
-                should.equal(res.body.result.sent.total, 0);
-                should.equal(res.body.result.actioned.total, 1);
-                should.equal(res.body.results.i.total, 1);
-                should.equal(res.body.results.i.sent.total, 0);
-                should.equal(res.body.results.i.actioned.total, 1);
+                should.equal(res.body.result.actioned, 1);
+                should.equal(res.body.result.subs.i.total, 1);
+                should.equal(res.body.result.subs.i.actioned, 1);
                 m5 = res.body;
                 console.log('m4 %s', res.body._id);
             });

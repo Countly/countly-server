@@ -45,19 +45,19 @@
 					<th class="cly-vue-remote-config-percentages-breakdown__heading">\
 						{{i18n("remote-config.condition")}}\
 					</th>\
-                    		<th class="cly-vue-remote-config-percentages-breakdown__heading">\
+                    <th class="cly-vue-remote-config-percentages-breakdown__heading">\
 						{{i18n("remote-config.percentage")}}\
 					</th>\
 				</tr>\
 			</thead>\
 			<tbody>\
-                <tr><td><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2">1</div></td><td><div class="bu-is-align-items-center	bu-is-flex cly-vue-remote-config-percentages-breakdown__data bu-p-1 cly-vue-remote-config-percentages-breakdown__default-value"><span class="bu-ml-2 bu-mr-3">{{i18n("remote-config.default-value")}}</span><span class="cly-vue-remote-config-percentages-breakdown__default-value__value bu-py-1 bu-px-2">{{defaultValue.value}}</span></div></td><td>{{defaultValue.percentage}} {{i18n("remote-config.percent.of.total")}}</td></tr>\
+                <tr><td><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2">1</div></td><td><div class="bu-is-align-items-center	bu-is-flex cly-vue-remote-config-percentages-breakdown__data bu-p-1 cly-vue-remote-config-percentages-breakdown__default-value"><span class="bu-ml-2 bu-mr-3 text-medium">{{i18n("remote-config.default-value")}}</span><span class="cly-vue-remote-config-percentages-breakdown__default-value__value bu-py-1 bu-px-2 text-small">{{defaultValue.value}}</span></div></td><td><div class="bu-is-flex"><div class="text-big font-weight-bold">{{defaultValue.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1">{{i18n("remote-config.percent.of.total")}}</div></div></td></tr>\
 				<tr v-if="isDrillEnabled" v-for="(condition, i) in conditions" :key="i">\
                     <td><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2">{{i+2}}</div>\
                     </td>\
-					     <td><div class="bu-is-align-items-center	bu-is-flex cly-vue-remote-config-percentages-breakdown__data bu-p-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span><img src="/remote-config/images/call_split.svg"/></span><span class="bu-ml-2 bu-mr-3">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2">{{condition.value}}</span></div></td>\
+					<td><div class="bu-is-align-items-center	bu-is-flex cly-vue-remote-config-percentages-breakdown__data bu-p-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span><img src="/remote-config/images/call_split.svg"/></span><span class="bu-ml-2 bu-mr-3 text-medium">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2 text-small">{{condition.value}}</span></div></td>\
 					<td>\
-                    {{condition.percentage}} {{i18n("remote-config.percent.of.total")}}\
+                    <div class="bu-is-flex"><div class="text-big font-weight-bold">{{condition.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1">{{i18n("remote-config.percent.of.total")}}</div><div>\
 					</td>\
 				</tr>\
 			</tbody>\
@@ -372,13 +372,22 @@
         methods: {
             handleSelect: function(item) {
                 this.showCondition = false;
-                var ob = {
-                    name: item.value,
-                    condition_id: item.condition_id,
-                    open: false
-                };
-                this.conditions.push(ob);
-                this.currentConditionValue = "";
+                if (countlyGlobal.conditions_per_paramaeters === this.conditions.length) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("remote-config.maximum_conditions_added"),
+                        type: "error"
+                    });
+                }
+                else {
+                    var ob = {
+                        name: item.value,
+                        condition_id: item.condition_id,
+                        open: false
+                    };
+                    this.conditions.push(ob);
+                    this.currentConditionValue = "";
+                }
             },
             addNewCondition: function() {
                 this.showCondition = true;
@@ -649,6 +658,18 @@
             },
             tableRows: function() {
                 return this.$store.getters["countlyRemoteConfig/parameters/all"];
+            },
+            isParamterLimitExceeded: function() {
+                return countlyGlobal.maximum_allowed_parameters === this.$store.getters["countlyRemoteConfig/parameters/all"].length ? true : false;
+            },
+            hasUpdateRight: function() {
+                return countlyAuth.validateUpdate(FEATURE_NAME);
+            },
+            hasCreateRight: function() {
+                return countlyAuth.validateCreate(FEATURE_NAME);
+            },
+            hasDeleteRight: function() {
+                return countlyAuth.validateDelete(FEATURE_NAME);
             }
         },
         methods: {
@@ -725,6 +746,15 @@
         computed: {
             tableRows: function() {
                 return this.$store.getters["countlyRemoteConfig/conditions/all"];
+            },
+            hasUpdateRight: function() {
+                return countlyAuth.validateUpdate(FEATURE_NAME);
+            },
+            hasCreateRight: function() {
+                return countlyAuth.validateCreate(FEATURE_NAME);
+            },
+            hasDeleteRight: function() {
+                return countlyAuth.validateDelete(FEATURE_NAME);
             }
         },
         methods: {
@@ -819,21 +849,22 @@
             templates: templates
         });
     };
+    if (countlyAuth.validateRead(FEATURE_NAME)) {
 
-    app.route("/remote-config", 'remote-config', function() {
-        var mainView = getMainView();
-        this.renderWhenReady(mainView);
-    });
+        app.route("/remote-config", 'remote-config', function() {
+            var mainView = getMainView();
+            this.renderWhenReady(mainView);
+        });
 
-    app.route("/remote-config/*tab", 'remote-config-tab', function(tab) {
-        var mainView = getMainView();
-        var params = {
-            tab: tab
-        };
-        mainView.params = params;
-        this.renderWhenReady(mainView);
-    });
-
+        app.route("/remote-config/*tab", 'remote-config-tab', function(tab) {
+            var mainView = getMainView();
+            var params = {
+                tab: tab
+            };
+            mainView.params = params;
+            this.renderWhenReady(mainView);
+        });
+    }
     $(document).ready(function() {
         //We shouldn't be using $ (jquery)
 

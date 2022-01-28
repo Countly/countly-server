@@ -15,11 +15,13 @@
                 v-if="isMultiple"
                 multiple
                 ref="trigger"
+                class="el-select-head"
                 :disabled="disabled"
                 :opened="dropdown.visible"
                 :placeholder="placeholder"
                 :arrow="arrow"
                 :value="value"
+                :collapse-tags="collapseTags"
                 @change="commitValue"
                 :options-lookup="selectedOptions">
             </el-select-head>
@@ -65,6 +67,7 @@
             </div>
         </div>
         <el-tabs
+            v-loading="isQueryPending"
             v-model="activeTabId"
             @keydown.native.esc.stop.prevent="doClose">
             <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in publicTabs">
@@ -72,6 +75,7 @@
                     {{tab.label}}
                 </span>
                 <cly-listbox
+                    :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-if="mode === 'single-list'"
                     :bordered="false"
@@ -88,6 +92,7 @@
                     </template>
                 </cly-listbox>
                 <cly-checklistbox
+                    :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check'"
                     :bordered="false"
@@ -96,6 +101,7 @@
                     v-model="innerValue">
                 </cly-checklistbox>
                 <cly-checklistbox
+                    :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check-sortable'"
                     :sortable="true"

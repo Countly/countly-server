@@ -128,28 +128,28 @@
 		  <template v-slot:header-left="selectScope">
 		  </template>
 		  <template v-slot="scope">
-			<el-table-column sortable="true" type="clickable" prop="name" :label="i18n('events.overview.event')">
+			<el-table-column sortable="true" type="clickable" prop="name" :label="i18n('events.overview.event')" min-width="590px">
 			  <template v-slot="rowScope">
 				<div class="color-cool-gray-100" @click="onRowClick(rowScope.row)">
 				  {{rowScope.row.name}}
 				</div>
 			  </template>
 			</el-table-column>
-			<el-table-column sortable="true" prop="count" :label="i18n('events.overview.count')">
+			<el-table-column sortable="true" prop="count" :label="i18n('events.overview.count')" min-width="177px">
 			  <template v-slot="rowScope">
 				<div>
 				  {{rowScope.row.count}}
 				</div>
 			  </template>
 			</el-table-column>
-			<el-table-column sortable="true" prop="sum" :label="i18n('events.overview.sum')">
+			<el-table-column sortable="true" prop="sum" :label="i18n('events.overview.sum')" min-width="177px">
 			  <template v-slot="rowScope">
 				<div>
 				  {{rowScope.row.sum}}
 				</div>
 			  </template>
 			</el-table-column>
-			<el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')">
+			<el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')" min-width="177px">
 			  <template v-slot="rowScope">
 				<div>
 				  {{rowScope.row.duration>0?rowScope.row.duration:"-"}}

@@ -1,6 +1,7 @@
-/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyGlobal, countlyVue, countlyCrashesEventLogs, Promise */
+/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyGlobal, countlyVue, countlyCrashesEventLogs, Promise, $ */
 
 (function(countlyCrashes) {
+    var _list = {};
     countlyCrashes.getVuexModule = function() {
         var _overviewSubmodule = {
             state: function() {
@@ -981,4 +982,41 @@
 
         return badges;
     };
+
+    countlyCrashes.loadList = function(id) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": id,
+                "method": "crashes",
+                "list": 1,
+                "preventRequestAbort": true
+            },
+            dataType: "json",
+            success: function(json) {
+                for (var i = 0; i < json.length; i++) {
+                    _list[json[i]._id] = json[i].name;
+                }
+            }
+        });
+    };
+
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0) {
+        countlyCrashes.loadList(countlyCommon.ACTIVE_APP_ID);
+    }
+
+    app.addAppSwitchCallback(function(appId) {
+        if (app._isFirstLoad !== true) {
+            countlyCrashes.loadList(appId);
+        }
+    });
+
+    countlyCrashes.getCrashName = function(id) {
+        if (_list[id]) {
+            return _list[id];
+        }
+        return id;
+    };
+
 }(window.countlyCrashes = window.countlyCrashes || {}));
