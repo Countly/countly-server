@@ -785,6 +785,25 @@
             },
             onSubmit: function() {
                 this.$store.dispatch("countlyRemoteConfig/initialize");
+            },
+            tableRowClassName: function(obj) {
+                if (obj.row.condition_color === 1) {
+                    return 'remote-config-purple';
+                }
+                else if (obj.row.condition_color === 2) {
+                    return 'remote-config-teal';
+                }
+                else if (obj.row.condition_color === 3) {
+                    return 'remote-config-orange';
+
+                }
+                else if (obj.row.condition_color === 4) {
+                    return 'remote-config-magenta';
+
+                }
+                else {
+                    return 'remote-config-amber';
+                }
             }
         }
     });
