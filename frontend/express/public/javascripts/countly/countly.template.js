@@ -1066,19 +1066,20 @@ var AppRouter = Backbone.Router.extend({
         }
         else if (Backbone.history.fragment !== "/" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
             var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type || "mobile";
-
-            var submenus = countlyVue.container.data(["/sidebar/analytics/menu", "/sidebar/analytics/submenu"]);
-            submenus.sort();
-            for (i = 0; i < submenus.length; i++) {
-                if (submenus[i].url === "#/") {
+            var urls = countlyVue.container.getAllRoutes();
+            urls.sort(function(a, b) {
+                return b.url.length - a.url.length;
+            });
+            for (var i = 0; i < urls.length; i++) {
+                if (urls[i].url === "#/") {
                     continue;
                 }
-                if ("#" + Backbone.history.fragment === submenus[i].url && type === submenus[i].app_type) {
+                if ("#" + Backbone.history.fragment === urls[i].url && (type === urls[i].app_type || !urls[i].app_type)) {
                     change = false;
                     break;
                 }
-                else if (("#" + Backbone.history.fragment).indexOf(submenus[i].url) === 0 && type === submenus[i].app_type) {
-                    redirect = submenus[i].url;
+                else if (("#" + Backbone.history.fragment).indexOf(urls[i].url) === 0 && (type === urls[i].app_type || !urls[i].app_type)) {
+                    redirect = urls[i].url;
                     break;
                 }
             }

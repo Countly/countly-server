@@ -158,7 +158,8 @@
                                     v-if="(!tab.type) || (tab.type === \'mobile\' && !apps[app_id].type) || (apps[app_id].type === tab.type)"\
                                     >\
                                         <slot :name="tab.name" :tab="tab">\
-                                            <span>{{ tab.title }}</span>\
+                                            <a v-if=\'tab.route\' :href="tab.route"><span>{{ tab.title }}</span></a>\
+                                            <span v-else>{{ tab.title }}</span>\
                                         </slot>\
                                 </div>\
                             </div>\

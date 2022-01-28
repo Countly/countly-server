@@ -114,16 +114,27 @@
         return mixin;
     };
 
-    Container.prototype.data = function(ids) {
-        var self = this;
-        var data = [];
+    Container.prototype.getAllRoutes = function() {
+        var routes = [];
 
-        ids.forEach(function(id) {
-            var d = self.dict[id] ? self.dict[id].data : [];
-            data = data.concat(d);
-        });
+        for (var id in this.dict) {
+            if (this.dict[id].data) {
+                for (var j = 0; j < this.dict[id].data.length; j++) {
+                    if (this.dict[id].data[j].url) {
+                        routes.push({url: this.dict[id].data[j].url, app_type: this.dict[id].data[j].app_type});
+                    }
+                }
+            }
+            if (this.dict[id].tabs) {
+                for (var k = 0; k < this.dict[id].tabs.length; k++) {
+                    if (this.dict[id].tabs[k].route) {
+                        routes.push({url: this.dict[id].tabs[k].route, app_type: this.dict[id].tabs[k].type});
+                    }
+                }
+            }
+        }
 
-        return data;
+        return routes;
     };
 
     Container.prototype.mixins = function(ids) {
