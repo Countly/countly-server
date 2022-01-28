@@ -62,7 +62,7 @@
                                 <div class="bu-level-left">\
                                     <cly-back-link :title="backlink.title" :link="backlink.url"></cly-back-link> \
                                 </div> \
-                            <div>\
+                            </div>\
                         </template> \
                         <div :class="[midLevelClasses]">\
                             <div class="bu-level-left"> \
