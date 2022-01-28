@@ -6,12 +6,12 @@
             :export-query="getExportQuery"
             :persist-key="heatmapsClicksPersistKey">
             <template v-slot="scope">
-                <el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.table.pages')" fixed="left">
+                <el-table-column sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.table.pages')" fixed="left">
                     <template slot-scope="scope">
                         {{scope.row.view}}
                     </template>
                 </el-table-column>
-                <el-table-column min-width="175"  v-if="showActionMapColumn"  prop="actionLink" :label="i18n('heatmaps.table.heatmap')">
+                <el-table-column v-if="showActionMapColumn"  prop="actionLink" :label="i18n('heatmaps.table.heatmap')">
                     <template slot-scope="scope">
                         <cly-more-options v-if="scope.row.useDropdown" icon="el-icon-right" :text="i18n('heatmaps.view-heatmap')">
                             <template slot="trigger">
