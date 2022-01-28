@@ -77,6 +77,8 @@
                     :bordered="false"
                     :options="getMatching(tab.options)"
                     @change="handleValueChange"
+                    :hasRemovableOptions="hasRemovableOptions"
+                    @remove-option="removeOption"
                     v-model="innerValue">
                     <template v-slot:option-prefix="scope">
                         <slot name="option-prefix" v-bind="scope"></slot>

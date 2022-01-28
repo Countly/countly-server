@@ -617,6 +617,11 @@
                 type: Number,
                 default: Number.MAX_SAFE_INTEGER,
                 required: false
+            },
+            hasRemovableOptions: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         data: function() {
@@ -737,6 +742,9 @@
             commitValue: function(val) {
                 this.$emit("input", val);
                 this.$emit("change", val);
+            },
+            removeOption: function(options) {
+                this.$emit("remove-option", options);
             }
         },
         watch: {
