@@ -694,6 +694,7 @@
                         })
                         .map(function(m) {
                             m.isSelected = false;
+                            delete m.hover;
                             return m;
                         });
                 }
