@@ -2029,34 +2029,44 @@
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
                     }).catch(function() {
-                        self.setCohortOptions([]);
                         // TODO:log error;
+                        self.setCohortOptions([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
                     });
             },
-            fetchTestUsersIfNotFound: function() {
+            fetchTestUsers: function(options) {
                 var self = this;
-                if (this.testUsersRows.length) {
-                    return;
-                }
                 this.areRowsLoading = true;
-                countlyPushNotification.service.fetchTestUsers()
+                countlyPushNotification.service.fetchTestUsers(options)
                     .then(function(testUserRows) {
                         self.setTestUserRows(testUserRows);
                     }).catch(function() {
-                        self.setCohortOptions([]);
                         // TODO:log error;
+                        self.setTestUserRows([]);
                     }).finally(function() {
                         self.areRowsLoading = false;
                     });
+            },
+            getTestUsersListFromGlobalConfig: function() {
+                var pushNotificationGlobalConfig = countlyPushNotification.service.getGlobalConfig();
+                var result = {};
+                if (pushNotificationGlobalConfig && pushNotificationGlobalConfig.test) {
+                    if (pushNotificationGlobalConfig.test.uids) {
+                        result.uids = pushNotificationGlobalConfig.test.uids.split(',');
+                    }
+                    if (pushNotificationGlobalConfig.test.cohorts) {
+                        result.cohorts = pushNotificationGlobalConfig.test.cohorts.split(',');
+                    }
+                }
+                return result;
             },
             onAddNewTestUser: function() {
                 this.openDrawer('testUsersGlobalConfigDrawer', countlyPushNotification.helper.getInitialTestUsersGlobalConfigModel());
             },
             onShowTestUserList: function() {
                 this.openTestUsersDialog();
-                this.fetchTestUsersIfNotFound();
+                this.fetchTestUsers(this.getTestUsersListFromGlobalConfig());
             },
             onOpen: function() {
                 this.fetchCohortsIfNotFound();
@@ -2082,8 +2092,8 @@
                     .then(function(userIds) {
                         self.setUserIdOptions(userIds);
                     }).catch(function() {
-                        self.setUserIdOptions([]);
                         // TODO:log error;
+                        self.setUserIdOptions([]);
                     }).finally(function() {
                         self.isSearchUsersLoading = false;
                     });

@@ -18,6 +18,7 @@
     <cly-drawer 
         @submit="onSubmit"
         @open="onOpen"
+        :requires-async-submit="true"
         v-bind="drawers.testUsersGlobalConfigDrawer" 
         title="Define New User" 
         saveButtonLabel="Add Users">
@@ -46,10 +47,10 @@
                         :loading="isSearchUsersLoading"
                         style="width:100%">
                         <el-option
-                            v-for="id in userIdOptions"
-                            :key="id"
-                            :label="id"
-                            :value="id">
+                            v-for="userIdOption in userIdOptions"
+                            :key="userIdOption._id"
+                            :label="userIdOption._id"
+                            :value="userIdOption.uid">
                         </el-option>
                     </el-select>
                 </cly-form-field>

@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers,countlyPlugins*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -528,15 +528,6 @@
                 dataType: "json"
             }, {disableAutoCatch: true});
         },
-        findTestUsers: function() {
-            return new Promise(function(resolve) {
-                setTimeout(function() {
-                    resolve([
-                        {username: "Test user", _id: "61eeb983b0feb8ff58d21cdf", picture: "https://www.gravatar.com/avatar/e3bc8beb4947051d0fdecea8133d5750?d=identicon&amp;s=150"},
-                        {username: "Test user", _id: "61eeb983b0feb8ff58d21cdd", picture: "https://www.gravatar.com/avatar/e3bc8beb4947051d0fdecea8133d5750?d=identicon&amp;s=150"}]);
-                }, 350);
-            });
-        },
         getDashboard: function(data) {
             return CV.$.ajax({
                 type: "GET",
@@ -654,9 +645,9 @@
                 return Promise.resolve(countlySegmentation.getFilters());
             });
         },
-        searchUsersById: function(query) {
+        searchUsers: function(query) {
             var data = {
-                query: JSON.stringify({did: {rgxcn: [query]}})
+                query: JSON.stringify(query)
             };
             return CV.$.ajax({
                 type: "POST",
@@ -665,10 +656,27 @@
                 data: JSON.stringify(data)
             }, {disableAutoCatch: true});
         },
-        addTestUsers: function() {
-            return new Promise(function(resolve) {
-                resolve();
-            });
+        // updateGlobalConfig: function(newConfig) {
+        //     var pushConfig = {push: {}};
+        //     pushConfig.push = newConfig;
+        //     return CV.$.ajax({
+        //         type: "GET",
+        //         url: countlyCommon.API_URL + "/i/configs",
+        //         data: {
+        //             configs: JSON.stringify(pushConfig),
+        //             app_id: countlyCommon.ACTIVE_APP_ID
+        //         }
+        //     }, {disableAutoCatch: true});
+        // }
+        getGlobalConfig: function() {
+            return countlyPlugins.getConfigsData();
+            // return $.ajax({
+            //     type: "GET",
+            //     url: countlyCommon.API_URL + "/o/configs",
+            //     data: {
+            //         app_id: countlyCommon.ACTIVE_APP_ID
+            //     }
+            // });
         }
     };
 
@@ -1977,16 +1985,46 @@
                 return Promise.resolve([]);
             });
         },
-        fetchTestUsers: function() {
-            return countlyPushNotification.api.findTestUsers();
+        getGlobalConfig: function() {
+            var globalConfig = countlyPushNotification.api.getGlobalConfig();
+            if (globalConfig) {
+                return globalConfig.push;
+            }
+            return null;
         },
-        searchUsersById: function(idQuery) {
+        fetchTestUsers: function(options) {
+            var drillQuery = {$or: []};
+            if (options.uids) {
+                drillQuery.$or.push({uid: {$in: options.uids}});
+            }
+            if (options.cohorts) {
+                drillQuery.$or.push({chr: {$in: options.cohorts}});
+            }
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.searchUsersById(idQuery)
+                countlyPushNotification.api.searchUsers(drillQuery)
                     .then(function(response) {
                         if (response && response.aaData) {
                             resolve(response.aaData.map(function(user) {
-                                return user._id;
+                                return {_id: user._id, username: user.name || '', picture: user.picture};
+                            }));
+                            return;
+                        }
+                        // TODO: log error;
+                        reject('Unknown error occurred. Please try again later');
+                    }).catch(function(error) {
+                    // TODO: log error;
+                        reject(error);
+                    });
+            });
+        },
+        searchUsersById: function(idQuery) {
+            return new Promise(function(resolve, reject) {
+                var drillQuery = {did: {rgxcn: [idQuery]}};
+                countlyPushNotification.api.searchUsers(drillQuery)
+                    .then(function(response) {
+                        if (response && response.aaData) {
+                            resolve(response.aaData.map(function(user) {
+                                return {_id: user._id, uid: user.uid};
                             }));
                             return;
                         }
@@ -2081,7 +2119,25 @@
             return countlyPushNotificationApprover.service.approve(messageId);
         },
         addTestUsers: function(testUsersModel) {
-            return countlyPushNotification.api.saveTestUsers(testUsersModel);
+            var testUsersConfigDto = {};
+            if (testUsersModel.definitionType === AddTestUserDefinitionTypeEnum.USER_ID) {
+                testUsersConfigDto = { test: {uids: testUsersModel.userIds.join(',') }};
+            }
+            if (testUsersModel.definitionType === AddTestUserDefinitionTypeEnum.COHORT) {
+                testUsersConfigDto = { test: {cohorts: testUsersModel.cohorts.join(',') }};
+            }
+            var pushConfig = {push: {}};
+            pushConfig.push = testUsersConfigDto;
+            return new Promise(function(resolve, reject) {
+                countlyPlugins.updateConfigs(pushConfig, function(error, response) {
+                    if (error) {
+                        // TODO: log error
+                        reject(error);
+                        return;
+                    }
+                    resolve(response);
+                });
+            });
         }
     };
 
