@@ -2049,7 +2049,7 @@
                         self.areRowsLoading = false;
                     });
             },
-            getTestUsersListFromGlobalConfig: function() {
+            getTestUsersFromGlobalConfig: function() {
                 var pushNotificationGlobalConfig = countlyPushNotification.service.getGlobalConfig();
                 var result = {};
                 if (pushNotificationGlobalConfig && pushNotificationGlobalConfig.test) {
@@ -2067,7 +2067,7 @@
             },
             onShowTestUserList: function() {
                 this.openTestUsersDialog();
-                this.fetchTestUsers(this.getTestUsersListFromGlobalConfig());
+                this.fetchTestUsers(this.getTestUsersFromGlobalConfig());
             },
             onOpen: function() {
                 this.fetchCohortsIfNotFound();
