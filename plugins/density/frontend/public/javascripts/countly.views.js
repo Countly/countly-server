@@ -241,7 +241,7 @@ var AppDensityView = countlyVue.views.create({
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 7,
     name: "densities",
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/densities",
+    route: "#/analytics/technology/densities",
     title: CV.i18n('density.title'),
     component: AppDensityView
 });
