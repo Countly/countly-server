@@ -128,7 +128,7 @@
         </cly-form-field>
 
         <cly-form-field name="email" :label="i18n('reports.email-to-receive')" rules="required">
-            <cly-select-email v-model="drawerScope.editedObject.emails"></cly-select-email>
+            <cly-select-email :collapse-tags="false" v-model="drawerScope.editedObject.emails"></cly-select-email>
         </cly-form-field>
 
         <cly-form-field class="bu-py-4 report-type-block">
@@ -180,6 +180,7 @@
 
         <cly-form-field name="metrics" :label="i18n('reports.include-metrics')" rules="required" v-if="showMetrics">
             <cly-select-x
+                :collapse-tags="false"
                 :placeholder="i18n('reports.Select_metrics')"
                 mode="multi-check"                
                 v-model="drawerScope.editedObject.metricsArray"
@@ -218,6 +219,7 @@
                    mode="multi-check"
                    v-model="drawerScope.editedObject.selectedEvents"
                    maxInputWidth="300"
+                   :collapse-tags="false"
                    :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="eventOptions">
                 </cly-select-x>
