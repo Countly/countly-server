@@ -18,6 +18,7 @@
         <template v-slot:header-left>
             <cly-multi-select
              ref="eventCategoryFilters" 
+             v-bind:arrow="true"
              v-model="filter" 
              :fields="filterFields">
                 <template v-slot:action>

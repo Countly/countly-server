@@ -73,7 +73,7 @@
             width: 100%;
             table-layout: fixed;
             border-collapse: separate;
-            border-spacing: 0 0.5em;
+            border-spacing: 0 0.75em;
             tr td:nth-child(1) {
                 font-weight: 500;
             }
@@ -91,5 +91,14 @@
                 border-bottom: 1px solid #ECECEC;
             }
         }
+    }
+}
+
+.cly-vue-data-manager-segments-drawer {
+    .cly-vue-form-step__section-group--filled{
+        padding:20px;
+    }
+    &__name {
+        min-width:160px;
     }
 }
