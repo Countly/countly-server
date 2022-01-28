@@ -1799,6 +1799,12 @@
         isPushNotificationApproverPluginEnabled: function() {
             return Boolean(window.countlyPushNotificationApprover);
         },
+        isUserProfilesPluginEnabled: function() {
+            return Boolean(window.countlyUsers);
+        },
+        isDrillPluginEnabled: function() {
+            return Boolean(window.countlyDrill);
+        },
         hasApproverBypassPermission: function() {
             return this.isPushNotificationApproverPluginEnabled && countlyGlobal.member.approver_bypass;
         },
@@ -1974,6 +1980,7 @@
             return null;
         },
         fetchTestUsers: function(options) {
+            var self = this;
             var queries = [];
             if (options.uids && options.uids.length) {
                 queries.push({uid: {$in: options.uids}});
@@ -1981,8 +1988,15 @@
             if (options.cohorts && options.cohorts.length) {
                 queries.push({chr: {$in: options.cohorts}});
             }
-
             return new Promise(function(resolve, reject) {
+                if (!self.isDrillPluginEnabled()) {
+                    reject(new Error('Error finding test users. Drill plugin must be enabled.'));
+                    return;
+                }
+                if (!self.isUserProfilesPluginEnabled()) {
+                    reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
+                    return;
+                }
                 Promise.all(queries.map(function(testUserQuery) {
                     return countlyPushNotification.api.searchUsers(testUserQuery);
                 }))

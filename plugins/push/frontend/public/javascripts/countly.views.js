@@ -2041,9 +2041,10 @@
                 countlyPushNotification.service.fetchTestUsers(options)
                     .then(function(testUserRows) {
                         self.setTestUserRows(testUserRows);
-                    }).catch(function() {
+                    }).catch(function(error) {
                         // TODO:log error;
                         self.setTestUserRows([]);
+                        CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
                         self.areRowsLoading = false;
                     });
