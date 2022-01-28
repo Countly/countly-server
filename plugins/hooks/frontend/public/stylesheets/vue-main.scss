@@ -139,6 +139,8 @@
         line-height: 20px;
         color: #32659D;
         word-break: break-word;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
     .is-name-col:hover {
         color: #0166D6;
