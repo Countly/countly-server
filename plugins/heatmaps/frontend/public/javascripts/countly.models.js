@@ -73,6 +73,7 @@
                 app.activeView.onError(error);
             }
         }
+        context.rootState.countlyHeatmaps.isLoading = false;
     };
 
     var heatmapsClickTableResource = countlyVue.vuex.ServerDataTable("heatmapsClickTable", {
