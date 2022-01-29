@@ -194,7 +194,13 @@
                         component: ScrollsTable
                     }
                 ];
-            }
+            },
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyHeatmaps/isLoading"];
+                },
+                cache: false
+            },
         },
     });
 

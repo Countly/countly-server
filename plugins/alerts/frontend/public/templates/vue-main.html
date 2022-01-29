@@ -257,7 +257,7 @@
             </div>
 
             <cly-form-field name="alertValues" :label="i18n('alert.email-to-receive')" rules="required">
-                <cly-select-email v-model="drawerScope.editedObject.alertValues"></cly-select-email>
+                <cly-select-email v-model="drawerScope.editedObject.alertValues" :collapse-tags="false"></cly-select-email>
             </cly-form-field>
  
             <pre v-if="0">

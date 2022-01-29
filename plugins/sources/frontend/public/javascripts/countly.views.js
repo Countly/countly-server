@@ -428,7 +428,7 @@
         }
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME) && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" || countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile")) {
+    if (countlyAuth.validateRead(FEATURE_NAME)) {
         countlyVue.container.registerData("/home/widgets", {
             _id: "sources-dashboard-widget",
             label: CV.i18n('sidebar.acquisition'),
@@ -441,20 +441,18 @@
             component: SourcesDashboardWidget
         });
 
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-            countlyVue.container.registerData("/home/widgets", {
-                _id: "keywords-dashboard-widget",
-                label: CV.i18n('keywords.top_terms'),
-                description: CV.i18n('sources.description'),
-                enabled: {"default": true}, //object. For each type set if by default enabled
-                available: {"default": false, "web": true}, //object. default - for all app types. For other as specified.
-                placeBeforeDatePicker: false,
-                linkTo: {"label": CV.i18n('keywords.go-to-keywords'), "href": "#/analytics/acquisition/search-terms"},
-                order: 5,
-                width: 6,
-                component: KeywordsDashboardWidget
-            });
-        }
+        countlyVue.container.registerData("/home/widgets", {
+            _id: "keywords-dashboard-widget",
+            label: CV.i18n('keywords.top_terms'),
+            description: CV.i18n('sources.description'),
+            enabled: {"default": true}, //object. For each type set if by default enabled
+            available: {"default": false, "web": true}, //object. default - for all app types. For other as specified.
+            placeBeforeDatePicker: false,
+            linkTo: {"label": CV.i18n('keywords.go-to-keywords'), "href": "#/analytics/acquisition/search-terms"},
+            order: 5,
+            width: 6,
+            component: KeywordsDashboardWidget
+        });
     }
 
     $(document).ready(function() {

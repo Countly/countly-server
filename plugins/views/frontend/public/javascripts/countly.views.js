@@ -643,7 +643,7 @@
             priority: 4,
             name: "views-per-session",
             title: CV.i18n('views-per-session.title'),
-            route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/views-per-session",
+            route: "#/analytics/sessions/views-per-session",
             component: ViewsPerSessionView,
             vuex: [{
                 clyModel: countlyViewsPerSession
