@@ -479,6 +479,9 @@
                         e.lastModifiedts = e.audit && e.audit.ts ? e.audit.ts * 1000 : null;
                         e.lastModifiedDate = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("MMM DD,YYYY") : null;
                         e.lastModifiedTime = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("H:mm:ss") : null;
+                        if (e.lts) {
+                            e.lastTriggerDate = moment(e.lts).format("MMM DD,YYYY");
+                        }
                         if (!e.e) {
                             e.e = e.key;
                         }

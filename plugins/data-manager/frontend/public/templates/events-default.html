@@ -83,7 +83,12 @@
                 </template>
             </el-table-column>
 
-            <el-table-column min-width="250"  label="Last Triggered">
+            <el-table-column v-if="isDrill" sortable="custom" min-width="250" prop="lts" label="Last Triggered">
+                <template v-slot="rowScope">
+                    <div v-if="rowScope.row && rowScope.row.lts">
+                        <div>{{rowScope.row.lastTriggerDate}}</div>
+                    </div>
+                </template>
             </el-table-column>
 
             <el-table-column type="options" align="center">
