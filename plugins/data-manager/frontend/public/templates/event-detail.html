@@ -14,10 +14,23 @@
                                 <span>{{event.status || 'unplanned'}}</span>
                             </span>
                         </span>
-                        <span v-if="event.is_visible === false" class="bu-tag bu-mx-2"><i class="fa fa-eye-slash"></i></span>
-                        <span v-else class="bu-tag bu-mx-2"><i class="fa fa-eye"></i></ion-icon></span>
-                        <span v-if="event.audit" class="bu-mr-2 text-small color-cool-gray-50">
-                            <i class="el-icon-time"></i> Last modified on {{new Date( event.audit.ts * 1000 )}} by {{event.audit.userName}}
+                        <span v-if="event.is_visible === false" class="cly-vue-data-manager__hidden-icon bu-mx-1"><i class="fa fa-eye-slash"></i></span>
+                        <span v-else class="cly-vue-data-manager__hidden-icon bu-mx-1"><i class="fa fa-eye"></i></ion-icon></span>
+                        <span v-if="eventTransformationMap && eventTransformationMap[event.name || event.key]" class="cly-vue-data-manager__transform-icon bu-mx-1">
+                            <svg width="12px" height="10px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                    <g id="transformations" transform="translate(-320.000000, -295.000000)" fill="#444444" fill-rule="nonzero">
+                                        <g id="Group-9" transform="translate(320.000000, 292.000000)">
+                                            <g id="merge_type-24px" transform="translate(46.500000, 8.000000) rotate(90.000000) translate(-46.500000, -8.000000) translate(38.500000, -38.500000)">
+                                                <path fill="#fff" d="M11.3333333,92.6066667 L12.2733333,91.6666667 L10,89.3933333 L9.06,90.3333333 L11.3333333,92.6066667 Z M5,84.3333333 L7.33333333,84.3333333 L7.33333333,88.06 L3.72666667,91.6666667 L4.66666667,92.6066667 L8.66666667,88.6066667 L8.66666667,84.3333333 L11,84.3333333 L8,81.3333333 L5,84.3333333 Z" id="Shape"></path>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </svg>
+                        </span>
+                        <span v-if="event.audit && event.auditDate" class="bu-mr-2 text-small color-cool-gray-50">
+                            <i class="el-icon-time"></i> Last modified on {{event.auditDate}} {{event.auditTime}} by {{event.audit.userName}}
                         </span>
                     </div>
                 </div>
@@ -37,9 +50,9 @@
         <div class="bu-columns bu-is-gapless">
             <div class="bu-column">
                 <div class="bu-mx-5 bu-my-5">
-                    <h4 class="bu-is-capitalized">
+                    <span class="text-medium font-weight-bold text-uppercase">
                         Event Details
-                    </h4>
+                    </span>
                     <table class="bu-mt-5 cly-vue-data-manager__box-container__table text-medium">
                         <colgroup>
                             <col width="30%" />
@@ -83,11 +96,12 @@
             <h4>Event Segmentation</h4>
         </template>
         <cly-datatable-n 
+        :keyFn="function(row) {return row.name}"
         :hasDynamicCols="false" 
         :rows="segments"
         >
             <template v-slot="scope">
-                <el-table-column label="Name">
+                <el-table-column label="Segment Name" sortable="custom" prop="name">
                     <template v-slot="rowScope">
                         {{rowScope.row.name}}
                     </template>
@@ -97,12 +111,25 @@
                         {{rowScope.row.description}}
                     </template>
                 </el-table-column>
-                <el-table-column label="Status">
+                <el-table-column label="Status" sortable="custom" prop="status">
                     <template v-slot="rowScope">
-                        {{rowScope.row.status}}
+                        <span v-if="isDrill" class="tag-container">
+                            <span v-bind:class="statusClassObject(rowScope.row.status)" class="bu-tag bu-mt-1"> 
+                                <span class="blinker"></span>
+                                <span>{{rowScope.row.status}}</span>
+                            </span>
+                        </span>
                     </template>
                 </el-table-column>
-                <el-table-column width="90px">
+                <el-table-column label="Last modıfıed" prop="auditTs" sortable="custom">
+                    <template v-slot="rowScope">
+                        <div v-if="rowScope.row.audit && rowScope.row.audit.ts && rowScope.row.auditDate">
+                            <div>{{rowScope.row.auditDate}}</div>
+                            <span class="text-small color-cool-gray-50">{{rowScope.row.auditTime}}</span>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column type="options" width="90px" align="center">
                     <template v-slot="rowScope">
                         <el-button @click="handleEditSegment(rowScope.row)" size="small">Edit</el-button>
                     </template>

@@ -8,17 +8,14 @@
     <template v-slot:default="drawerScope">
         <cly-form-step id="create-event-form" name="First Step">
 
-            <cly-form-field label="Enter Name">
-                <validation-provider name="name" v-slot="v">
+            <cly-form-field label="Enter Name" rules="required">
                     <el-input
-                        :class="{'is-error': v.errors.length > 0}"
                         v-model="drawerScope.editedObject.name"
                         placeholder="Event Name">
                     </el-input>
-                </validation-provider>
             </cly-form-field>
 
-            <cly-form-field label="Event Key">
+            <cly-form-field label="Event Key" rules="required" tooltip="Event Key">
                 <el-input
                 :disabled="drawerScope.editedObject.isEditMode"
                 class="bu-mb-3" 
@@ -39,7 +36,7 @@
             </cly-form-field>
 
             <div v-if="isDrill">
-                <cly-form-field label="Category" :optional="true">
+                <cly-form-field label="Category" :optional="true" tooltip="Category">
                     <cly-select-x
                         class="bu-pt-1"
                         search-placeholder="Search Category"
@@ -97,7 +94,8 @@
             </div>
 
             <div v-if="drawerScope.editedObject.isEditMode">
-                <cly-form-field label="Omit Segments" subheading="Choose which segments of this custom event to omit. Omitted segments will not be saved in the future and past data for these segments will be purged immediately after you save these settings.">
+                <cly-form-field label="Omit Segments" 
+                subheading="It allows to delete segmentations from aggregated data only, and keep recording to granular data as string. Omitted segments will not be saved in the future and past data for these segments will be purged immediately after you save these settings. Data for omitted segments will still be stored in Drill.">
                     <el-select multiple v-model="omitList" >
                         <el-option v-for="item in drawerScope.editedObject.segments" :key="item.name" :value="item.name">
                         </el-option>

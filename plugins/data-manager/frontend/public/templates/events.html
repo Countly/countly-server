@@ -52,6 +52,7 @@
         <segments-drawer @close="closeDrawer" :controls="drawers.segments"></segments-drawer>
         <regenerate-drawer @close="closeDrawer" :controls="drawers.regenerate"></regenerate-drawer>
         <cly-form-dialog
+            class="cly-vue-data-manager__dropzone"
             ref="importSchemaFormDialog"
             title="Import Event Schema"
             name="Import Event Schema"
@@ -67,16 +68,15 @@
                 id="import-schema-dropzone"
                 :useCustomSlot=true 
                 :options="dropzoneOptions">
-                    <div class="dropzone-custom-content">
-                        <div class="dz-message">
-                            <div class="give-upload">
-                                <div class="arrow"></div>
-                                <p class="fline">{{i18n('export.upload-title')}}</p>
-                                <p class="sline">
-                                    <span>{{i18n('export.drag-drop')}}</span>
-                                    <span>{{i18n('export.browse')}}</span>
-                                    <span>{{i18n('export.files-to-import')}}</span>
-                                </p>
+                    <div class="cly-vue-data-manager__dropzone__content">
+                        <div class="give-upload">
+                            <div style="cursor:default">
+                                <svg width="28" height="22" viewBox="0 0 28 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M11.3332 0.333252H3.33317C1.8665 0.333252 0.679837 1.53325 0.679837 2.99992L0.666504 18.9999C0.666504 20.4666 1.8665 21.6666 3.33317 21.6666H24.6665C26.1332 21.6666 27.3332 20.4666 27.3332 18.9999V5.66658C27.3332 4.19992 26.1332 2.99992 24.6665 2.99992H13.9998L11.3332 0.333252Z" fill="#A7AEB8"/>
+                                </svg>
+                            </div>
+                            <div class="bu-mt-3 text-medium color-cool-gray-50">
+                                Drag and drop file here or <span class="color-blue-100">click to upload</span>
                             </div>
                         </div>
                     </div>
