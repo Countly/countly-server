@@ -1485,7 +1485,7 @@ plugins.setConfigs("dashboards", {
             case 'analytics':
                 await customDashboards.fetchAnalyticsData(params, apps, widget);
                 break;
-            case 'event':
+            case 'events':
                 await customDashboards.fetchEventsData(params, apps, widget);
                 break;
             case 'push':

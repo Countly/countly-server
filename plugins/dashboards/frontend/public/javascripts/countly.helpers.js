@@ -9,8 +9,11 @@
     var MetricComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/metric.html'),
         props: {
-            dataType: {
-                type: String
+            metrics: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
             },
             multiple: {
                 type: Boolean,
@@ -28,35 +31,9 @@
             }
         },
         data: function() {
-            return {
-                metrics: {
-                    session: [
-                        { label: this.i18n("sidebar.analytics.sessions"), value: "t" },
-                        { label: this.i18n("sidebar.analytics.users"), value: "u" },
-                        { label: this.i18n("common.table.new-users"), value: "n" }
-                    ],
-                    event: [
-                        { label: this.i18n("events.table.count"), value: "c" },
-                        { label: this.i18n("events.table.sum"), value: "s" },
-                        { label: this.i18n("events.table.dur"), value: "dur" }
-                    ],
-                    push: [
-                        { label: this.i18n("dashboards.sent"), value: "sent" },
-                        { label: this.i18n("dashboards.actioned"), value: "actioned" }
-                    ],
-                    crash: [
-                        { label: this.i18n("dashboards.crf"), value: "crf" },
-                        { label: this.i18n("dashboards.crnf"), value: "crnf" },
-                        { label: this.i18n("dashboards.cruf"), value: "cruf" },
-                        { label: this.i18n("dashboards.crunf"), value: "crunf" }
-                    ]
-                }
-            };
+            return {};
         },
         computed: {
-            selectedMetrics: function() {
-                return this.metrics[this.dataType];
-            },
             placeholderText: function() {
                 if (this.placeholder) {
                     return this.placeholder;
@@ -96,6 +73,12 @@
             placeholder: {
                 type: String
             },
+            extraTypes: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
             enabledTypes: {
                 type: Array,
                 default: function() {
@@ -108,20 +91,28 @@
                 allTypes: [
                     {
                         value: "session",
-                        label: this.i18n("dashboards.session")
+                        label: this.i18n("dashboards.data-type.session")
                     },
                     {
-                        value: "event",
-                        label: this.i18n("dashboards.event")
+                        value: "user-analytics",
+                        label: this.i18n("dashboards.data-type.user-analytics")
                     },
                     {
-                        value: "push",
-                        label: this.i18n("dashboards.push")
+                        value: "technology",
+                        label: this.i18n("dashboards.data-type.technology")
                     },
                     {
-                        value: "crash",
-                        label: this.i18n("dashboards.crash")
+                        value: "geo",
+                        label: this.i18n("dashboards.data-type.geo")
                     },
+                    {
+                        value: "views",
+                        label: this.i18n("dashboards.data-type.views")
+                    },
+                    {
+                        value: "sources",
+                        label: this.i18n("dashboards.data-type.sources")
+                    }
                 ]
             };
         },
@@ -133,15 +124,20 @@
                 return this.i18n("placeholder.dashbaords.select-data-type");
             },
             types: function() {
-                var self = this;
-                if (this.enabledTypes && !this.enabledTypes.length) {
-                    return this.allTypes;
-                }
-                return this.allTypes.filter(function(item) {
-                    return self.enabledTypes.some(function(enabledItem) {
-                        return enabledItem === item.value;
-                    });
+                var fullList = this.allTypes.concat(this.extraTypes);
+
+                fullList.sort(function(a, b) {
+                    return (a.priority || 0) - (b.priority || 0);
                 });
+
+                if (this.enabledTypes && this.enabledTypes.length) {
+                    var self = this;
+                    return fullList.filter(function(item) {
+                        return self.enabledTypes.includes(item.value);
+                    });
+                }
+
+                return fullList;
             }
         }
     });
@@ -220,6 +216,23 @@
 
                     this.$emit("input", i);
                 }
+            },
+            allListeners: function() {
+                return Object.assign({},
+                    this.$listeners,
+                    {
+                        input: function() {
+                            /**
+                             * Overwrite the input listener passed from parent,
+                             * Since all parent listeners are passed to the children,
+                             * we want to overwrite this input listener so that the value
+                             * is not updated in the parent directly from the children.
+                             * We want to intercept the child value and return as array to parent
+                             * with the help of the selectedApps computed property
+                             */
+                        }
+                    }
+                );
             }
         }
     });
@@ -235,13 +248,15 @@
             },
             enabledTypes: {
                 type: Array,
-                default: null
+                default: function() {
+                    return [];
+                }
             },
-            value: String,
             mute: {
                 type: Boolean,
                 default: false
-            }
+            },
+            value: String,
         },
         data: function() {
             return {
@@ -267,16 +282,26 @@
         },
         computed: {
             visualizationTypes: function() {
-                var fullList = this.types.concat(this.extraTypes);
+                var extraTypes = this.extraTypes;
+                var enabledTypes = this.enabledTypes;
+                var fullList = this.types.concat(extraTypes);
+
                 fullList.sort(function(a, b) {
                     return (a.priority || 0) - (b.priority || 0);
                 });
-                if (this.enabledTypes) {
-                    var self = this;
-                    return fullList.filter(function(item) {
-                        return self.enabledTypes.includes(item.value);
+
+                if (enabledTypes && enabledTypes.length) {
+                    fullList = fullList.filter(function(item) {
+                        return enabledTypes.includes(item.value);
                     });
                 }
+
+                /**
+                 * Everytime visualization types change, we need to reset the selected visualization type
+                 */
+
+                this.$emit("input", "");
+
                 return fullList;
             },
             selectedType: function() {
@@ -335,6 +360,25 @@
         }
     });
 
+    var ColorsComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/colors.html'),
+        props: {
+            value: { default: 1 },
+            options: {
+                type: Array,
+                default: function() {
+                    return countlyCommon.GRAPH_COLORS;
+                }
+            },
+            label: {required: false, default: CV.i18n("dashboards.bar-color")}
+        },
+        methods: {
+            commitValue: function(v) {
+                this.$emit("input", v);
+            }
+        }
+    });
+
     /**
      * WIDGET HELPERS
      */
@@ -376,25 +420,6 @@
                 });
 
                 this.$emit("input", b);
-            }
-        }
-    });
-
-    var ColorsComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/helpers/drawer/colors.html'),
-        props: {
-            value: { default: 1 },
-            options: {
-                type: Array,
-                default: function() {
-                    return countlyCommon.GRAPH_COLORS;
-                }
-            },
-            label: {required: false, default: CV.i18n("dashboards.bar-color")}
-        },
-        methods: {
-            commitValue: function(v) {
-                this.$emit("input", v);
             }
         }
     });

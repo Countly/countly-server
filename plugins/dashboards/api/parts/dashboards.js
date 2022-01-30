@@ -110,27 +110,44 @@ function toSegment(val) {
  * @param  {Object} widget - Widget object
  */
 function mapWidget(widget) {
-    var widgetType, visualization;
+    var widgetType, visualization, dataType, appcount;
 
     switch (widget.widget_type) {
     case "time-series":
         widgetType = "analytics";
         visualization = "time-series";
 
+        var apps = widget.apps;
+
+        if (apps.length > 1) {
+            appcount = 'multiple';
+        }
+        else {
+            appcount = 'single';
+        }
+
         break;
     case "bar-chart":
         widgetType = "analytics";
         visualization = "bar-chart";
+        appcount = "single";
 
         break;
     case "number":
         widgetType = "analytics";
         visualization = "number";
+        appcount = "single";
 
         break;
     case "table":
         widgetType = "analytics";
         visualization = "table";
+        appcount = "single";
+
+        break;
+    case "views":
+        widgetType = "analytics";
+        dataType = "views";
 
         break;
     case "funnels":
@@ -155,14 +172,16 @@ function mapWidget(widget) {
             widgetType = "push";
             delete widget.data_type;
         }
-
-        if (widget.data_type === "crash") {
+        else if (widget.data_type === "crash") {
             widgetType = "crash";
             delete widget.data_type;
         }
-
-        if (widget.data_type === "event") {
-            widgetType = "event";
+        else if (widget.data_type === "event") {
+            widgetType = "events";
+            delete widget.data_type;
+        }
+        else if (widget.data_type === "session") {
+            dataType = "session";
             delete widget.data_type;
         }
 
@@ -177,6 +196,14 @@ function mapWidget(widget) {
 
     if (visualization) {
         widget.visualization = visualization;
+    }
+
+    if (dataType) {
+        widget.data_type = dataType;
+    }
+
+    if (appcount) {
+        widget.app_count = appcount;
     }
 }
 

@@ -47,24 +47,42 @@
             scope: {
                 type: Object
             }
+        },
+        data: function() {
+            return {
+                sessionMetrics: [
+                    { label: this.i18n("sidebar.analytics.sessions"), value: "t" },
+                    { label: this.i18n("sidebar.analytics.users"), value: "u" },
+                    { label: this.i18n("common.table.new-users"), value: "n" }
+                ]
+            };
+        },
+        computed: {
+            enabledTypes: function() {
+                if (this.scope.editedObject.app_count === 'multiple') {
+                    return ['time-series'];
+                }
+
+                return [];
+            }
         }
     });
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
-        label: CV.i18nM("dashboards.analytics"),
+        label: CV.i18nM("dashboards.widget-type.analytics"),
         priority: 1,
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
                 return {
+                    title: "",
                     widget_type: "analytics",
                     app_count: 'single',
-                    data_type: "",
+                    data_type: "session",
                     metrics: [],
                     apps: [],
                     visualization: "",
-                    title: ""
                 };
             },
         },

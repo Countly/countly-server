@@ -2,8 +2,10 @@
     <clyd-appcount v-model="scope.editedObject.app_count"></clyd-appcount>
     <clyd-sourceapps v-model="scope.editedObject.apps" :multiple="scope.editedObject.app_count === 'multiple'"></clyd-sourceapps>
     <clyd-datatype v-model="scope.editedObject.data_type"></clyd-datatype>
-    <clyd-metric v-model="scope.editedObject.metrics" :data-type="scope.editedObject.data_type"></clyd-metric>
-    <clyd-metric v-model="scope.editedObject.metrics" :data-type="scope.editedObject.data_type" multiple></clyd-metric>
-    <clyd-visualization v-model="scope.editedObject.visualization"></clyd-visualization>
+    <clyd-visualization v-model="scope.editedObject.visualization" :enabled-types="enabledTypes"></clyd-visualization>
+    <clyd-metric v-model="scope.editedObject.metrics"
+        :metrics="sessionMetrics"
+        :multiple="(scope.editedObject.visualization === 'table') ||
+                    ((scope.editedObject.app_count === 'single') && (scope.editedObject.visualization === 'time-series'))"></clyd-metric>
     <clyd-title v-model="scope.editedObject.title"></clyd-title>
 </div>

@@ -11,7 +11,7 @@
         :multiple-limit="multipleLimit"
         :placeholder="placeholderText">
         <el-option
-            v-for="metric in selectedMetrics"
+            v-for="metric in metrics"
             :key="metric.value"
             :label="metric.label"
             :value="metric.value">
