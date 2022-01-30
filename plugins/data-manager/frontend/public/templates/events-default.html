@@ -19,10 +19,11 @@
             <cly-multi-select
              ref="eventCategoryFilters" 
              v-bind:arrow="true"
+             :selectXWidth="336"
              v-model="filter" 
              :fields="filterFields">
                 <template v-slot:action>
-                    <div class="bu-level-item bu-is-clickable text-small color-red-100">
+                    <div class="bu-level-item bu-is-clickable text-small color-red-100 bu-pl-1">
                         <a @click="manageCategories">Manage</a>
                     </div>
                 </template>
