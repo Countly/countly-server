@@ -46,23 +46,39 @@
                     return this.i18n("placeholder.dashboards.select-metric-single");
                 }
             },
-            val: function() {
-                if (!this.multiple) {
-                    return this.value && this.value[0] || "";
+            selectedMetrics: {
+                get: function() {
+                    if (!this.multiple) {
+                        return this.value && this.value[0] || "";
+                    }
+
+                    return this.value;
+                },
+                set: function(item) {
+                    var i = item;
+                    if (!this.multiple) {
+                        i = [item];
+                    }
+
+                    this.$emit("input", i);
                 }
-
-                return this.value;
-            }
-        },
-        methods: {
-            change: function(item) {
-                var i = item;
-
-                if (!this.multiple) {
-                    i = [item];
-                }
-
-                this.$emit("input", i);
+            },
+            allListeners: function() {
+                return Object.assign({},
+                    this.$listeners,
+                    {
+                        input: function() {
+                            /**
+                             * Overwrite the input listener passed from parent,
+                             * Since all parent listeners are passed to the children,
+                             * we want to overwrite this input listener so that the value
+                             * is not updated in the parent directly from the children.
+                             * We want to intercept the child value and return as array to parent
+                             * with the help of the selectedApps computed property
+                             */
+                        }
+                    }
+                );
             }
         }
     });
@@ -296,12 +312,6 @@
                     });
                 }
 
-                /**
-                 * Everytime visualization types change, we need to reset the selected visualization type
-                 */
-
-                this.$emit("input", "");
-
                 return fullList;
             },
             selectedType: function() {
@@ -314,6 +324,22 @@
         methods: {
             onClick: function(item) {
                 this.$emit("input", item.value);
+            }
+        },
+        watch: {
+            enabledTypes: {
+                handler: function(val, oldVal) {
+                    if (val.length !== oldVal.length) {
+                        return this.$emit("input", "");
+                    }
+
+                    for (var i = 0; i < val.length; i++) {
+                        var v = val[i];
+                        if (!oldVal.includes(v)) {
+                            return this.$emit("input", "");
+                        }
+                    }
+                }
             }
         }
     });

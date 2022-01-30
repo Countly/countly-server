@@ -303,7 +303,7 @@
                     }
                 }
             },
-            onReset: function(v) {
+            reset: function(v) {
                 this.$emit("reset", v);
             }
         }

@@ -64,6 +64,19 @@
                 }
 
                 return [];
+            },
+            isMultiple: function() {
+                var multiple = false;
+                var appCount = this.scope.editedObject.app_count;
+                var visualization = this.scope.editedObject.visualization;
+
+                if (appCount === 'single') {
+                    if (visualization === 'table' || visualization === 'time-series') {
+                        multiple = true;
+                    }
+                }
+
+                return multiple;
             }
         }
     });

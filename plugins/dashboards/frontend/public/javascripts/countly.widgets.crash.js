@@ -35,12 +35,26 @@
         },
         computed: {
             enabledTypes: function() {
+                /**
+                 * Allowed visualization types for this widget are time-series and number
+                 */
+
                 if (this.scope.editedObject.app_count === 'single') {
                     return ['time-series', 'number'];
                 }
                 else {
                     return ['time-series'];
                 }
+            },
+            isMultiple: function() {
+                var multiple = false;
+
+                if ((this.scope.editedObject.app_count === 'single') &&
+                    (this.scope.editedObject.visualization === 'time-series')) {
+                    multiple = true;
+                }
+
+                return multiple;
             }
         }
     });

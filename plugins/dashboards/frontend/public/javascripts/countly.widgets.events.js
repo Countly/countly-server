@@ -39,6 +39,18 @@
                 }
 
                 return [];
+            },
+            isMultiple: function() {
+                var multiple = false;
+
+                if (this.scope.editedObject.app_count === 'single') {
+                    if (this.scope.editedObject.visualization === 'table' ||
+                        this.scope.editedObject.visualization === 'time-series') {
+                        multiple = true;
+                    }
+                }
+
+                return multiple;
             }
         }
     });

@@ -5,8 +5,8 @@
     <el-select
         style="width: 100%;"
         v-bind="$attrs"
-        :value="val"
-        @input="change"
+        v-on="allListeners"
+        v-model="selectedMetrics"
         :multiple="multiple"
         :multiple-limit="multipleLimit"
         :placeholder="placeholderText">

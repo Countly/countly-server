@@ -15,7 +15,7 @@
                     class="bu-columns bu-is-multiline bu-m-0"
                     v-model="drawerScope.editedObject.widget_type"
                     :disabled="drawerScope.editedObject.__action === 'edit'"
-                    @change="onReset">
+                    @change="reset">
                     <div
                         v-for="(item, index) in widgetTypes"
                         style="box-sizing: border-box;"
@@ -38,6 +38,7 @@
                 v-for="(item) in widgetTypes"
                 v-if="drawerScope.editedObject.widget_type === item.type"
                 :is="item.drawer.component"
+                @reset="reset"
                 :key="item.type"
                 :scope="drawerScope">
             </component>
