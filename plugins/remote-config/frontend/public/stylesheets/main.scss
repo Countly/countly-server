@@ -30,6 +30,7 @@
   }
 }
 .cly-vue-remote-config-conditions-drawer-json-editor {
+  background: rgba(0,0,0,.5);
   .el-dialog__header {
     text-align: left;
     padding: 8px 16px 0 !important;
@@ -158,4 +159,7 @@
     border-left-color: map.get(c.$colors, "charts-amber");
     border-left-width: 8px;
   }
+}
+.cly-vue-remote-config-condition-dialog {
+  background: rgba(0,0,0,.5);
 }

@@ -57,7 +57,7 @@
                     </td>\
 					<td><div class="bu-is-align-items-center	bu-is-flex cly-vue-remote-config-percentages-breakdown__data bu-p-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span><img src="/remote-config/images/call_split.svg"/></span><span class="bu-ml-2 bu-mr-3 text-medium">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2 text-small">{{condition.value}}</span></div></td>\
 					<td>\
-                    <div class="bu-is-flex"><div class="text-big font-weight-bold">{{condition.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1">{{i18n("remote-config.percent.of.total")}}</div><div>\
+                    <div class="bu-is-flex"><div class="text-big font-weight-bold">{{condition.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1">{{i18n("remote-config.percent.of.total")}}</div></div>\
 					</td>\
 				</tr>\
 			</tbody>\
@@ -86,7 +86,7 @@
                         var conditionProperties = conditionsArr[0];
                         var ob = {
                             color: self.getColor(conditionProperties.condition_color),
-                            percentage: condition.c ? ((condition.c) / self.totalConditions).toFixed(2) : 0,
+                            percentage: (condition.c ? (((condition.c) / self.totalConditions) * 100).toFixed(2) : 0),
                             name: conditionProperties.condition_name,
                             value: condition.value
                         };
@@ -99,7 +99,7 @@
                 var total = this.parameter.c ? this.parameter.c : 0;
                 if (this.parameter.conditions.length > 0) {
                     this.parameter.conditions.forEach(function(condition) {
-                        total = total + condition.c ? condition.c : 0;
+                        total = total + (condition.c ? condition.c : 0);
                     });
                 }
                 return total;
@@ -107,7 +107,7 @@
             defaultValue: function() {
                 var ob = {
                     value: this.parameter.default_value,
-                    percentage: this.parameter.c ? ((this.parameter.c) / this.totalConditions).toFixed(2) : 0,
+                    percentage: (this.parameter.c ? (((this.parameter.c) / this.totalConditions) * 100).toFixed(2) : 0),
                 };
                 return ob;
             }
@@ -456,6 +456,7 @@
             },
             onCopy: function(doc) {
                 if (doc._id) {
+                    this.showExpirationDate = false;
                     this.defaultValue = doc.default_value;
 
                     if (doc.description === "-") {
@@ -505,6 +506,7 @@
                 this.$delete(this.conditions, index);
             },
             showConditionDialog: function() {
+                this.$refs.selectX.doClose();
                 this.$store.dispatch("countlyRemoteConfig/parameters/showConditionDialog", true);
             },
             handleConditionDialog: function() {
@@ -684,14 +686,14 @@
                     return "-";
                 }
                 var d = new Date(ts);
-                return moment(d).format("MMM Do, YYYY");
+                return moment(d).utc().format("MMM Do, YYYY");
             },
             getTime: function(ts) {
                 if (!ts) {
                     return "-";
                 }
                 var d = new Date(ts);
-                return moment(d).format("h:mm a");
+                return moment(d).utc().format("h:mm a");
             },
             create: function() {
                 this.openDrawer("parameters", countlyRemoteConfig.factory.parameters.getEmpty());
