@@ -506,6 +506,7 @@
                 this.$delete(this.conditions, index);
             },
             showConditionDialog: function() {
+                this.$refs.selectX.doClose();
                 this.$store.dispatch("countlyRemoteConfig/parameters/showConditionDialog", true);
             },
             handleConditionDialog: function() {
