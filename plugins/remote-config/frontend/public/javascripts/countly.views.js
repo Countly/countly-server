@@ -86,7 +86,7 @@
                         var conditionProperties = conditionsArr[0];
                         var ob = {
                             color: self.getColor(conditionProperties.condition_color),
-                            percentage: (condition.c ? ((condition.c) / self.totalConditions).toFixed(2) : 0) * 100,
+                            percentage: (condition.c ? (((condition.c) / self.totalConditions) * 100).toFixed(2) : 0),
                             name: conditionProperties.condition_name,
                             value: condition.value
                         };
@@ -107,7 +107,7 @@
             defaultValue: function() {
                 var ob = {
                     value: this.parameter.default_value,
-                    percentage: (this.parameter.c ? ((this.parameter.c) / this.totalConditions).toFixed(2) : 0) * 100,
+                    percentage: (this.parameter.c ? (((this.parameter.c) / this.totalConditions) * 100).toFixed(2) : 0),
                 };
                 return ob;
             }
