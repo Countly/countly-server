@@ -99,10 +99,13 @@ class Resultor extends SynFlushTransform {
                     }
                     arr.forEach(id => {
                         let {p, m, pr} = this.data.pushes[id],
-                            msg = this.messages[m];
+                            msg = this.messages[m],
+                            rp = msg.result.sub(p),
+                            rl = rp.sub(pr.la || 'default');
                         msg.result.processed++;
-                        msg.result.response(p, results.message, 1);
-                        msg.result.sub(p).response(pr.la || 'default', results.message, 1);
+                        msg.result.recordError(results.message, 1);
+                        rp.recordError(results.message, 1);
+                        rl.recordError(results.message, 1);
                         delete this.data.pushes[id];
                         this.toDelete.push(id);
                     });
@@ -168,6 +171,7 @@ class Resultor extends SynFlushTransform {
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
 
+                    m = this.messages[m];
                     let rp = m.result.sub(p),
                         rl = rp.sub(pr.la || 'default');
                     if (!rl) {

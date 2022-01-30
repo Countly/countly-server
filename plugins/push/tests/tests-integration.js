@@ -462,7 +462,7 @@ describe('PUSH INTEGRATION TESTS', () => {
         //         should.equal(res.status, 400);
         //         should.deepEqual(res.body.errors, ['Please define test users in Push plugin configuration']);
         //     });
-    }).timeout(10000);
+    }).timeout(100000);
     it('should create a few simple messages', async() => {
         let now = Date.now();
 

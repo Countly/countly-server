@@ -37,6 +37,9 @@ class Connector extends SynFlushTransform {
     _transform(push, encoding, callback) {
         if (push.frame & FRAME.CMD) {
             this.push(push);
+            if (push.frame & (FRAME.FLUSH | FRAME.SYN)) {
+                this.do_flush(callback);
+            }
             return;
         }
         this.do_transform(push, encoding, callback);
@@ -67,7 +70,7 @@ class Connector extends SynFlushTransform {
         }
         else if (!app) { // app is not loaded
             this.state.discardApp(push.a); // only turns to app if there's one or more credentials found
-            this.db.collection('apps').findOne(push.a).then(a => {
+            this.db.collection('apps').findOne({_id: push.a}).then(a => {
                 if (a && a.plugins && a.plugins.push) {
                     a.creds = a.creds || {};
 
@@ -76,7 +79,7 @@ class Connector extends SynFlushTransform {
                         let id = a.plugins.push[p]._id;
                         if (id) {
                             this.log.d('Loading credentials %s', id);
-                            promises.push(this.db.collection(Creds.collection).findOne(id).then(cred => {
+                            promises.push(this.db.collection(Creds.collection).findOne({_id: id}).then(cred => {
                                 if (cred) {
                                     a.creds[p] = cred;
                                 }
@@ -177,13 +180,25 @@ class Connector extends SynFlushTransform {
 
         this.discardedByAppOrCreds.forEach(id => {
             let push = this.state.pushes[id];
-            creds[push.m] = (creds[push.m] || 0) + 1;
+            if (!creds[push.m]) {
+                creds[push.m] = {};
+            }
+            if (!creds[push.m][push.p]) {
+                creds[push.m][push.p] = {};
+            }
+            creds[push.m][push.p][push.pr.la || 'default'] = (creds[push.m][push.p][push.pr.la || 'default'] || 0) + 1;
             delete this.state.pushes[id];
         });
 
         this.discardedByMessage.forEach(id => {
             let push = this.state.pushes[id];
-            messages[push.m] = (messages[push.m] || 0) + 1;
+            if (!creds[push.m]) {
+                creds[push.m] = {};
+            }
+            if (!creds[push.m][push.p]) {
+                creds[push.m][push.p] = {};
+            }
+            messages[push.m][push.p][push.pr.la || 'default'] = (messages[push.m][push.p][push.pr.la || 'default'] || 0) + 1;
             delete this.state.pushes[id];
         });
 
@@ -194,10 +209,28 @@ class Connector extends SynFlushTransform {
         mids.forEach(mid => {
             let q = {$inc: {}};
             if (creds[mid]) {
-                q.$inc['result.errors.nocreds'] = creds[mid];
+                Object.keys(creds[mid]).forEach(p => Object.keys(creds[mid][p]).forEach(la => {
+                    let inc = creds[mid][p][la];
+                    q.$inc['result.processed'] = (q.$inc['result.processed'] || 0) + inc;
+                    q.$inc['result.errored'] = (q.$inc['result.errored'] || 0) + inc;
+                    q.$inc['result.errors.nocreds'] = (q.$inc['result.errors.nocreds'] || 0) + inc;
+                    q.$inc[`result.subs.${p}.errored`] = (q.$inc[`result.subs.${p}.errored`] || 0) + inc;
+                    q.$inc[`result.subs.${p}.errors.nocreds`] = (q.$inc[`result.subs.${p}.errors.nocreds`] || 0) + inc;
+                    q.$inc[`result.subs.${p}.subs.${la}.errored`] = (q.$inc[`result.subs.${p}.subs.${la}.errored`] || 0) + inc;
+                    q.$inc[`result.subs.${p}.subs.${la}.errors.nocreds`] = (q.$inc[`result.subs.${p}.subs.${la}.errors.nocreds`] || 0) + inc;
+                }));
             }
             if (messages[mid]) {
-                q.$inc['result.errors.nomsg'] = messages[mid];
+                Object.keys(creds[mid]).forEach(p => Object.keys(creds[mid][p]).forEach(la => {
+                    let inc = creds[mid][p][la];
+                    q.$inc['result.processed'] = (q.$inc['result.processed'] || 0) + inc;
+                    q.$inc['result.errored'] = (q.$inc['result.errored'] || 0) + inc;
+                    q.$inc['result.errors.nomsg'] = (q.$inc['result.errors.nomsg'] || 0) + inc;
+                    q.$inc[`result.subs.${p}.errored`] = (q.$inc[`result.subs.${p}.errored`] || 0) + inc;
+                    q.$inc[`result.subs.${p}.errors.nomsg`] = (q.$inc[`result.subs.${p}.errors.nomsg`] || 0) + inc;
+                    q.$inc[`result.subs.${p}.subs.${la}.errored`] = (q.$inc[`result.subs.${p}.subs.${la}.errored`] || 0) + inc;
+                    q.$inc[`result.subs.${p}.subs.${la}.errors.nomsg`] = (q.$inc[`result.subs.${p}.subs.${la}.errors.nomsg`] || 0) + inc;
+                }));
             }
             promises.push(this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, q));
         });

@@ -22,7 +22,7 @@ const FRAME = {
     CLOSE: 1 << 5, // 32 close connection after processing the queue and return success/error, {force} in payload makes connection ignore the rest of queue
     CMD: 1 << 6, // 64 marker for service frames (below)
     FLUSH: 1 << 7 | 1 << 6, // 192 flush following streams
-    SYN: 1 << 8 | 1 << 6, // 320 frame with a 64-bit number used to synchronise sender & reciever side
+    SYN: 1 << 8 | 1 << 6, // 320 frame with a 64-bit number used to synchronise sender & receiver side
 };
 
 const FRAME_NAME = {

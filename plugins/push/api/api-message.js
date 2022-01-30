@@ -155,14 +155,14 @@ module.exports.test = async params => {
 
         let start = Date.now();
         while (start > 0) {
-            if ((Date.now() - start) > 5000) { // 5 seconds
-                msg.result.processed = msg.result.total; // TODO: remove
-                await msg.save();
-                break;
-            }
-            // if ((Date.now() - start) > 100000) { // 1.5 minutes
+            // if ((Date.now() - start) > 5000) { // 5 seconds
+            //     msg.result.processed = msg.result.total; // TODO: remove
+            //     await msg.save();
             //     break;
             // }
+            if ((Date.now() - start) > 100000) { // 1.5 minutes
+                break;
+            }
             msg = await Message.findOne(msg._id);
             if (!msg) {
                 break;

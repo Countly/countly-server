@@ -5,7 +5,7 @@ const { State, Status, STATUSES, Mongoable, DEFAULTS, S } = require('./const'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
     { Result } = require('./result'),
     { Info } = require('./info'),
-    common = require('./../../../../../api/utils/common');
+    db = require('./db');
 
 
 /**
@@ -77,9 +77,7 @@ class Message extends Mongoable {
     setData(data) {
         super.setData(data);
 
-        let db = require('../../../../../api/utils/common').db;
-
-        if (this._data._id && !db.isoid(this._data._id)) {
+        if (!db.isoid(this._data._id)) {
             this._data._id = db.oid(this._data._id);
         }
         if (this._data.app && !db.isoid(this._data.app)) {
@@ -401,7 +399,7 @@ class Message extends Mongoable {
     static userFieldsFor(contents) {
         let keys = contents.map(content => Object.values(content.messagePers || {}).concat(Object.values(content.titlePers || {})).map(obj => obj.k).concat(content.extras || []).map(Message.decodeFieldKey)).flat();
         // if (contents.length > 1) { // commenting out for now because we always need locale now - for result subs
-        if (keys.indexOf('la') !== -1) {
+        if (keys.indexOf('la') === -1) {
             keys.push('la');
         }
         // }
@@ -569,8 +567,8 @@ class Message extends Mongoable {
      */
     static test() {
         return new Message({
-            _id: common.db.ObjectID(),
-            app: common.db.ObjectID(),
+            _id: db.ObjectID(),
+            app: db.ObjectID(),
             platforms: ['t'],
             state: State.Streamable,
             status: Status.Scheduled,

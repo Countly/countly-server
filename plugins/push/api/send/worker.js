@@ -37,7 +37,7 @@ if (isMainThread) {
             this.out = new Measurement();
             this.processing = 0;
             this.bytes = opts.options.bytes;
-            this.worker = new Worker(__filename, {workerData: opts});
+            this.worker = new Worker(__filename, {workerData: {json: JSON.stringify(opts)}});
             this.worker.unref();
             this.log = logger(opts.log).sub(`wrk-m`);
             this.init = new Promise((res, rej) => {
@@ -245,7 +245,7 @@ if (isMainThread) {
 else {
     let processing = 0;
 
-    const {id: wrkid, log: logid, type, creds, messages, options} = workerData,
+    const {id: wrkid, log: logid, type, creds, messages, options} = JSON.parse(workerData.json),
         id = `wrk-${wrkid}-w`,
         connection = factory(logid, type, creds, messages, options),
         log = logger(logid).sub(id),

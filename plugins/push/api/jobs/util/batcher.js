@@ -49,10 +49,12 @@ class Batcher extends SynFlushTransform {
     _transform(push, encoding, callback) {
         if (push.frame & FRAME.CMD) {
             if (push.frame & (FRAME.FLUSH | FRAME.SYN)) {
-                this.do_flush(() => {});
+                if (this.do_flush(() => callback()) === true) {
+                    this.push(push);
+                }
             }
             for (let id in this.listeners) {
-                pools.pools[id].write(encode(push.frame, push.payload));
+                pools.pools[id].write(encode(push.frame, push.payload), () => callback());
             }
             return;
         }
@@ -101,7 +103,7 @@ class Batcher extends SynFlushTransform {
                 callback(err);
             }
             else {
-                this.syn(callback);
+                this.synIt(callback);
             }
         });
     }
@@ -110,10 +112,11 @@ class Batcher extends SynFlushTransform {
      * Flush the leftover
      * 
      * @param {function} callback callback
+     * @returns {boolean|undefined} true in case nothing has been written
      */
     do_flush(callback) {
         let count = 0,
-            something = false,
+            anything = false,
             /**
              * Callback for each pool write
              * 
@@ -133,7 +136,7 @@ class Batcher extends SynFlushTransform {
 
         for (let id in this.buffers) {
             if (this.buffers[id].length) {
-                something = true;
+                anything = true;
                 count++;
                 this.count -= this.buffers[id].length;
 
@@ -151,8 +154,9 @@ class Batcher extends SynFlushTransform {
             }
         }
 
-        if (!something) {
+        if (!anything) {
             callback();
+            return true;
         }
         else {
             this.log.d('flushed');

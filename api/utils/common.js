@@ -12,6 +12,7 @@ var common = {},
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose'),
     argon2 = require('argon2'),
+    mongodb = require('mongodb'),
     _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
@@ -967,8 +968,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         // do nothing
                     }
                     else if (typeof args[arg] === 'string') {
-                        if (common.db._ObjectID.isValid(args[arg])) {
-                            parsed = common.db._ObjectID(args[arg]);
+                        if (mongodb.ObjectId.isValid(args[arg])) {
+                            parsed = mongodb.ObjectId(args[arg]);
                         }
                         else {
                             if (returnErrors) {
@@ -981,7 +982,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             }
                         }
                     }
-                    else if (args[arg] instanceof common.db._ObjectID) {
+                    else if (args[arg] instanceof mongodb.ObjectId) {
                         parsed = args[arg];
                     }
                     else {
