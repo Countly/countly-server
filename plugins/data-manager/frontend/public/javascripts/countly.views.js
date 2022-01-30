@@ -20,26 +20,6 @@
         classObject['tag--' + status] = true;
         return classObject;
     };
-    // var tagColorObject = function(status) {
-    //     if (!status) {
-    //         status = "unplanned";
-    //     }
-    //     var color = 'blue';
-    //     switch (status) {
-    //     case "unplanned":
-    //     case "blocked":
-    //     case "deleted":
-    //         color = "red";
-    //         break;
-    //     case "live":
-    //         color = 'green';
-    //         break;
-    //     case "completed":
-    //         color = 'green';
-    //         break;
-    //     }
-    //     return color;
-    // };
 
     var ManageCategoryInput = countlyVue.views.create({
         template: "#data-manager-manage-category-input",
