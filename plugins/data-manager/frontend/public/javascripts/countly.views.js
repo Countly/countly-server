@@ -350,7 +350,7 @@
                 this.showDeleteDialog = false;
                 app.navigate("#/manage/data-manager/events/event-groups", true);
             },
-            statusClassObject: statusClassObject
+            statusClassObject: statusClassObject,
         },
         created: function() {
             this.initialize();
@@ -412,6 +412,14 @@
             categoriesMap: function() {
                 return this.$store.getters["countlyDataManager/categoriesMap"];
             },
+            eventTransformationMap: function() {
+                if (this.isDrill) {
+                    return this.$store.getters["countlyDataManager/eventTransformationMap"];
+                }
+                else {
+                    return null;
+                }
+            },
             events: function() {
                 var self = this;
                 return this.$store.getters["countlyDataManager/events"]
@@ -451,6 +459,9 @@
                         e.lastModifiedts = e.audit && e.audit.ts ? e.audit.ts * 1000 : null;
                         e.lastModifiedDate = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("MMM DD,YYYY") : null;
                         e.lastModifiedTime = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("H:mm:ss") : null;
+                        if (e.lts) {
+                            e.lastTriggerDate = moment(e.lts).format("MMM DD,YYYY");
+                        }
                         if (!e.e) {
                             e.e = e.key;
                         }
@@ -658,7 +669,7 @@
                 this.$store.dispatch('countlyDataManager/deleteEvents', events);
                 this.showDeleteDialog = false;
             },
-            statusClassObject: statusClassObject
+            statusClassObject: statusClassObject,
         },
     });
 
@@ -694,6 +705,7 @@
                         })
                         .map(function(m) {
                             m.isSelected = false;
+                            delete m.hover;
                             return m;
                         });
                 }
@@ -790,7 +802,9 @@
                     acceptedFiles: 'text/csv',
                     dictDefaultMessage: 'a<br/> b',
                     maxFiles: 1,
-                    dictRemoveFile: this.i18n('surveys.generic.remove-file')
+                    dictRemoveFile: this.i18n('surveys.generic.remove-file'),
+                    previewTemplate: '<div class="cly-vue-data-manager__dropzone__preview bu-level bu-mx-4 bu-mt-3">\
+                                      <div class="dz-filename bu-ml-2"><span data-dz-name></span></div></div>'
                 },
                 localTabs: [
                     {
@@ -1039,6 +1053,10 @@
                 if (!event.status) {
                     event.status = 'unplanned';
                 }
+                if (event.audit && event.audit.ts) {
+                    event.auditDate = moment(event.audit.ts * 1000).format("MMM DD,YYYY");
+                    event.auditTime = moment(event.audit.ts * 1000).format("H:mm:ss");
+                }
                 return event;
             },
             segments: function() {
@@ -1056,12 +1074,25 @@
                     if (!seg.status) {
                         seg.status = 'unplanned';
                     }
+                    if (seg.audit && seg.audit.ts) {
+                        seg.auditTs = seg.audit.ts;
+                        seg.auditDate = moment(seg.audit.ts * 1000).format("MMM DD,YYYY");
+                        seg.auditTime = moment(seg.audit.ts * 1000).format("H:mm:ss");
+                    }
                     return seg;
                 });
             },
             categoriesMap: function() {
                 return this.$store.getters["countlyDataManager/categoriesMap"];
             },
+            eventTransformationMap: function() {
+                if (this.isDrill) {
+                    return this.$store.getters["countlyDataManager/eventTransformationMap"];
+                }
+                else {
+                    return null;
+                }
+            }
         },
         methods: {
             handleCommand: function(ev, event) {
@@ -1098,7 +1129,7 @@
             handleEditSegment: function(seg) {
                 this.openDrawer("segments", seg);
             },
-            statusClassObject: statusClassObject
+            statusClassObject: statusClassObject,
         },
         created: function() {
             this.initialize();
