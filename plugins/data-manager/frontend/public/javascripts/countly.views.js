@@ -966,7 +966,13 @@
                 doc.isExistingEvent = 'true';
                 // doc.tab;
                 // delete doc.transformType;
+                if (doc.actionType === 'value') {
+                    doc.actionType = 'change-value';
+                }
                 doc.isEditMode = true;
+                if (doc.parentEvent) {
+                    doc.selectedParentEvent = doc.parentEvent;
+                }
                 self.openDrawer("transform", doc);
             });
             this.$root.$on('dm-open-edit-event-group-drawer', function(data) {
