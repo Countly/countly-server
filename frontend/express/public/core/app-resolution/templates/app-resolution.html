@@ -18,15 +18,15 @@
 		<cly-section>
 			<div class="bu-columns bu-is-gapless bu-mt-2 technology-pie-graphs">
 				<div class="bu-column bu-is-6">
-					<cly-chart-pie :option="pieOptionsNew" :showToggle="false"></cly-chart-pie>
+					<cly-chart-pie :option="pieOptionsNew" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
 				</div>
 				<div class="bu-column bu-is-6">
-					<cly-chart-pie :option="pieOptionsTotal" :showToggle="false"></cly-chart-pie>
+					<cly-chart-pie :option="pieOptionsTotal" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
 				</div>
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="appResolutionRows" :resizable="true" >
+			<cly-datatable-n  :rows="appResolutionRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading">
 				<template v-slot="scope">
 					<el-table-column sortable="custom" prop="resolutions" :label="i18n('resolutions.table.resolution')"></el-table-column>
 					<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>

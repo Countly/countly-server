@@ -1422,6 +1422,15 @@
             justify-content: center;
             align-items: center;
         }
+        &__blur_container {
+            position: absolute;
+            bottom: 0px;
+            width: 98%;
+            background-color: white;
+            height: 25px;
+            opacity: 0.7;
+            left: 3px;
+        }
     }
 
     .cly-vue-section__content {

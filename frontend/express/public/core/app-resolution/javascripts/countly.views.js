@@ -78,7 +78,7 @@ var AppResolutionView = countlyVue.views.create({
             return this.appResolution.table || [];
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.resolutionLoading;
         },
         topDropdown: function() {
             if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {

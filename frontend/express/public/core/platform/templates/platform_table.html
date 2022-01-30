@@ -1,5 +1,5 @@
 <cly-section>
-	<cly-datatable-n  :rows="appPlatformRows" :resizable="true" >
+	<cly-datatable-n  :rows="appPlatformRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading">
 		<template v-slot="scope">
 			<el-table-column sortable="custom" prop="origos_" :label="i18n('platforms.title')"></el-table-column>
 			<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>

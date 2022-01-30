@@ -1,32 +1,32 @@
 <div v-bind:class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2> {{i18n('app-versions.title')}} </h2>
-            <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
-        </template>
-		<template v-slot:header-right>
-          <cly-more-options v-if="topDropdown" size="small">
-            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-              <span :class="item.icon"></span>
-              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
-            </el-dropdown-item>
-          </cly-more-options>
-        </template>
-    </cly-header>
-    <cly-main>
-		<cly-date-picker-g class="app-version-date-picker-container"></cly-date-picker-g>
-		<cly-section>
-			<cly-chart-bar :option="appVersionOptions" :height="400" ></cly-chart-bar>
-		</cly-section>
-		<cly-section>
-			<cly-datatable-n  :rows="appVersionRows" :resizable="true" >
-				<template v-slot="scope">
-					<el-table-column sortable="custom" prop="app_versions" :label="i18n('app-versions.table.app-version')"></el-table-column>
-					<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
-					<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
-					<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
-				</template>
-			</cly-datatable-n>
-		</cly-section>
-    </cly-main>
+  <cly-header>
+      <template v-slot:header-left>
+          <h2> {{i18n('app-versions.title')}} </h2>
+          <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
+      </template>
+  <template v-slot:header-right>
+        <cly-more-options v-if="topDropdown" size="small">
+          <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+            <span :class="item.icon"></span>
+            <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+          </el-dropdown-item>
+        </cly-more-options>
+      </template>
+  </cly-header>
+  <cly-main>
+  <cly-date-picker-g class="app-version-date-picker-container"></cly-date-picker-g>
+  <cly-section>
+    <cly-chart-bar :option="appVersionOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
+  </cly-section>
+  <cly-section>
+    <cly-datatable-n  :rows="appVersionRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading">
+      <template v-slot="scope">
+        <el-table-column sortable="custom" prop="app_versions" :label="i18n('app-versions.table.app-version')"></el-table-column>
+        <el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
+        <el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
+        <el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
+      </template>
+    </cly-datatable-n>
+  </cly-section>
+  </cly-main>
 </div>
