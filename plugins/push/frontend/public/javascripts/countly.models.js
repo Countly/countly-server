@@ -569,6 +569,31 @@
                 }, {disableAutoCatch: true});
             });
         },
+        sendToTestUsers: function(dto) {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: window.countlyCommon.API_URL + '/i/push/message/test',
+                    data: JSON.stringify(dto),
+                    contentType: "application/json",
+                    success: function(response) {
+                        if (response.error) {
+                            reject(new Error(response.error));
+                            return;
+                        }
+                        if (response.result.errors) {
+                            reject(response.result.errors);
+                            return;
+                        }
+                        resolve();
+                    },
+                    error: function() {
+                        // TODO:log error
+                        reject(new Error('Unknown error occurred.Please try again later.'));
+                    }
+                }, {disableAutoCatch: true});
+            });
+        },
         update: function(dto) {
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
@@ -2082,6 +2107,16 @@
                 return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
             }
             return countlyPushNotification.api.update(dto);
+        },
+        sendToTestUsers: function(model, options) {
+            try {
+                var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+            }
+            catch (error) {
+                // TODO:log error
+                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
+            }
+            return countlyPushNotification.api.sendToTestUsers(dto);
         },
         resend: function(model, options) {
             try {

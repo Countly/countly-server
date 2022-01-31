@@ -455,6 +455,15 @@
                 model.type = this.type;
                 return countlyPushNotification.service.save(model, options);
             },
+            sendToTestUsers: function(options) {
+                if (!options) {
+                    options = {};
+                }
+                options = Object.assign(options, this.getBaseOptions());
+                var model = Object.assign({}, this.pushNotificationUnderEdit);
+                model.type = this.type;
+                return countlyPushNotification.service.sendToTestUsers(model, options);
+            },
             update: function(options) {
                 if (!options) {
                     options = {};
@@ -552,6 +561,22 @@
                         type: "error"
                     });
                     done(true);
+                });
+            },
+            onSendToTestUsers: function() {
+                var self = this;
+                this.isLoading = true;
+                this.sendToTestUsers().then(function() {
+                    CountlyHelpers.notify({
+                        message: "Push notification message was successfully sent to test users."
+                    });
+                }).catch(function(error) {
+                    CountlyHelpers.notify({
+                        message: error.message,
+                        type: "error"
+                    });
+                }).finally(function() {
+                    self.isLoading = false;
                 });
             },
             resetState: function() {
@@ -680,7 +705,7 @@
                 this.setActiveLocalization(localization.value);
                 this.resetMessageInHTMLToActiveLocalization();
             },
-            onSendToTestUsers: function() {},
+
             onSettingChange: function(platform, property, value) {
                 this.pushNotificationUnderEdit.settings[platform][property] = value;
             },
