@@ -272,7 +272,7 @@
         priority: 1,
         name: "detail",
         title: "Event Stats",
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events",
+        route: "#/analytics/events",
         component: AllEventsView,
         vuex: [{
             clyModel: countlyAllEvents

@@ -312,7 +312,10 @@
                 var loadedState = localStorage.getItem(this.persistKey);
                 try {
                     if (loadedState) {
-                        return JSON.parse(loadedState);
+                        var parsed = JSON.parse(loadedState);
+                        // disable loading of persisted searchQuery
+                        delete parsed.searchQuery;
+                        return parsed;
                     }
                     return defaultState;
                 }

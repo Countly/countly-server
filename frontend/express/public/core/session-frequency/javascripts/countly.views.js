@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlySessionFrequency,countlyCommon*/
+/* global countlyVue,CV,countlySessionFrequency*/
 var SessionFrequencyView = countlyVue.views.create({
     template: CV.T("/core/session-frequency/templates/session-frequency.html"),
     mixins: [countlyVue.mixins.commonFormatters],
@@ -59,7 +59,7 @@ countlyVue.container.registerTab("/analytics/sessions", {
     priority: 3,
     name: "frequency",
     title: CV.i18n('session-frequency.title'),
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/frequency",
+    route: "#/analytics/sessions/frequency",
     component: SessionFrequencyView,
     vuex: [{
         clyModel: countlySessionFrequency

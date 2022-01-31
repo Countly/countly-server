@@ -1422,6 +1422,15 @@
             justify-content: center;
             align-items: center;
         }
+        &__blur_container {
+            position: absolute;
+            bottom: 0px;
+            width: 98%;
+            background-color: white;
+            height: 25px;
+            opacity: 0.7;
+            left: 3px;
+        }
     }
 
     //responsive design for metric cards
@@ -1933,7 +1942,7 @@
             }
             &__auto-group {
                 + .cly-vue-form-step__auto-group {
-                    margin-top: 12px;
+                    margin-top: 20px; //12px 
                 }
             }
         }

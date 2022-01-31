@@ -1,6 +1,37 @@
 .cly-vue-data-manager{
+    &__transform-icon {
+        height: 20px;
+        width: 26px;
+        border-radius: 4px;
+        background: #81868D;
+        padding: 1.5px 5.5px 1.5px 6px;
+        margin-left: 2px;
+    }
+    &__hidden-icon{
+        color: #fff;
+        background: #A7AEB8;
+        border-radius: 4px;
+        height: 20px;
+        width: 26px;
+        padding: 1.4px 4px 1.4px 3.5px;
+        margin-left: 2px;
+    }
     .tag-container{
         font-size: 12px;
+        .bu-tag {
+            padding-left: 6px;
+            padding-right: 6px;
+            height: 18px;
+            padding-top: 1px;
+            padding-bottom: 1px;
+            font-size: 12px;
+            line-height: 16px;
+            margin-bottom: 4px;
+            text-transform: capitalize;
+        }
+        .blinker{
+                margin-right:6px;
+        }
         .tag{
             &--unplanned{
                 background-color: #FBECE5;
@@ -73,7 +104,7 @@
             width: 100%;
             table-layout: fixed;
             border-collapse: separate;
-            border-spacing: 0 0.5em;
+            border-spacing: 0 20px;
             tr td:nth-child(1) {
                 font-weight: 500;
             }
@@ -89,6 +120,51 @@
         &:last-child {
             .cly-vue-data-manager__mci--block {
                 border-bottom: 1px solid #ECECEC;
+            }
+        }
+    }
+
+    &-segments-drawer {
+        .cly-vue-form-step__section-group--filled{
+            padding:20px;
+        }
+        &__name {
+            min-width:160px;
+        }
+    }
+
+    &__dropzone{
+        width: 548px !important;
+        &__content{
+            height: 214px;
+            padding-top: 71px
+        }
+        &__preview{
+            font-size: 14px;
+            font-weight: 400;
+            min-height: 69px;
+            height: 69px;
+            cursor: default;
+            .dz-remove {
+                color: #D23F00;
+                cursor: pointer !important;
+            }
+        }
+        .dz-max-files-reached{
+            border: 1px solid #ECECEC !important;
+            min-height: 69px !important;
+        }
+        #import-schema-dropzone{
+            width: 516px;
+            border: 1px dashed #0166D6;
+            border-radius: 4px;
+            margin: 16px 0px 16px 0px;
+            padding: 0px;
+            &:hover{
+                background: #f5f5f5;
+            }
+            .dz-preview{
+                margin-top: 24px;
             }
         }
     }

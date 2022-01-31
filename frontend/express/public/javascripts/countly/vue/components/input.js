@@ -264,7 +264,7 @@
                             <div\
                                 tabindex="0"\
                                 class="text-medium font-weight-bold"\
-                                :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group\': option.group}"\
+                                :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group text-uppercase\': option.group}"\
                                 :key="\'i\' + idx + \'.\' + option.value"\
                                 @focus="!option.group && handleItemHover(option)"\
                                 @mouseenter="!option.group && handleItemHover(option)"\
@@ -705,6 +705,11 @@
                 default: Number.MAX_SAFE_INTEGER,
                 required: false
             },
+            hasRemovableOptions: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
             //
             collapseTags: {
                 type: Boolean,
@@ -834,6 +839,9 @@
             commitValue: function(val) {
                 this.$emit("input", val);
                 this.$emit("change", val);
+            },
+            removeOption: function(options) {
+                this.$emit("remove-option", options);
             }
         },
         watch: {

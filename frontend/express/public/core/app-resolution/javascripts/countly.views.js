@@ -78,7 +78,7 @@ var AppResolutionView = countlyVue.views.create({
             return this.appResolution.table || [];
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.resolutionLoading;
         },
         topDropdown: function() {
             if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
@@ -103,7 +103,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     priority: 3,
     name: "resolutions",
     title: CV.i18n('resolutions.title'),
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/resolutions",
+    route: "#/analytics/technology/resolutions",
     component: AppResolutionView
 });
 

@@ -14,11 +14,13 @@
                 <el-table-column min-width="355" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.avg-scroll-depth')">
                     <template v-slot:default="rowScope">
                         <div class="bu-is-flex bu-is-align-items-center">
-                            <div class="text-medium" style="width: 80px;text-align: right;">
-                                <span style="display: inline-block;">{{rowScope.row.scr}}&nbsp;px </span>
-                            </div>
-                            <div class="bu-mr-2" style="width: 75px;">
-                                <span class="color-cool-gray-50">&nbsp;|</span> &nbsp;{{rowScope.row.scrCalc}}
+                            <div class="bu-level bu-is-align-items-center bu-mr-2" style="width: 130px;">
+                                <div class="text-medium" style="width: 65px;">
+                                    <span>{{rowScope.row.scr}} px</span>
+                                </div>
+                                <div style="width: 65px;">
+                                    <span class="color-cool-gray-50">&nbsp;|</span>&nbsp;{{rowScope.row.scrCalc}}
+                                </div>
                             </div>
                             <div style="width: 200px;">
                                 <cly-progress-bar

@@ -174,7 +174,7 @@ app.route("/analytics/users/*tab", "user-analytics-tab", function(tab) {
 
 countlyVue.container.registerTab("/analytics/users", {
     priority: 1,
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/users/overview",
+    route: "#/analytics/users/overview",
     name: "overview",
     title: CV.i18n('user-analytics.overview-title'),
     component: UserAnalyticsOverview,

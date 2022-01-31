@@ -3,23 +3,19 @@
     @close="onClose"
     ref="eventDrawer"
     :title="title"
-    :size="5"
     :saveButtonLabel="saveButtonLabel"
     v-bind="$props.controls">
     <template v-slot:default="drawerScope">
         <cly-form-step id="create-event-form" name="First Step">
 
             <cly-form-field label="Enter Name">
-                <validation-provider name="name" v-slot="v">
                     <el-input
-                        :class="{'is-error': v.errors.length > 0}"
                         v-model="drawerScope.editedObject.name"
                         placeholder="Event Name">
                     </el-input>
-                </validation-provider>
             </cly-form-field>
 
-            <cly-form-field label="Event Key">
+            <cly-form-field label="Event Key" rules="required" tooltip="Event Key">
                 <el-input
                 :disabled="drawerScope.editedObject.isEditMode"
                 class="bu-mb-3" 
@@ -28,7 +24,7 @@
 			    </el-input>
             </cly-form-field>
 
-            <div class="text-big text-heading bu-mt-4">Event Details</div>
+            <div class="text-big text-heading bu-mt-2 bu-mb-1">Event Details</div>
 
             <cly-form-field label="Event Description" :optional="true">
                 <el-input
@@ -40,8 +36,9 @@
             </cly-form-field>
 
             <div v-if="isDrill">
-                <cly-form-field label="Category" :optional="true">
+                <cly-form-field label="Category" :optional="true" tooltip="Category">
                     <cly-select-x
+                        class="bu-pt-1"
                         search-placeholder="Search Category"
                         placeholder="Uncategorized" 
                         v-model="drawerScope.editedObject.category"
@@ -56,7 +53,7 @@
             <div v-if='drawerScope.editedObject.isEditMode'>
                 <div v-if="isDrill">
                     <cly-form-field label="Status">
-                        <el-select v-model="drawerScope.editedObject.status" >
+                        <el-select class="bu-pt-1" v-model="drawerScope.editedObject.status" >
                             <el-option v-for="item in statusList" :key="item.value" :value="item.value">
                             </el-option>
                         </el-select>
@@ -64,7 +61,7 @@
                 </div>
 
                 <cly-form-field label="Visibility">
-                    <el-select v-model="drawerScope.editedObject.is_visible" >
+                    <el-select class="bu-pt-1" v-model="drawerScope.editedObject.is_visible" >
                         <el-option :value=true label="Visible">
                         </el-option>
                         <el-option :value=false label="Hidden">
@@ -72,11 +69,10 @@
                     </el-select>
                 </cly-form-field>
 
-                <div class="text-big text-heading bu-mt-5">Event Properties</div>
+                <div class="text-big text-heading bu-mt-4 bu-pt-1">Event Properties</div>
 
-                <cly-form-field label="Display Name for Count" subheading="A display name for the count property of this event">
+                <cly-form-field class="bu-pt-0" label="Display Name for Count" subheading="A display name for the count property of this event">
                     <el-input
-                    class="bu-mb-3" 
                     v-model="drawerScope.editedObject.count" 
 			        placeholder="Count">
 			        </el-input>
@@ -84,7 +80,6 @@
 
                 <cly-form-field label="Display Name for Sum" :optional="true" subheading="A display name for the sum property of this event">
                     <el-input
-                    class="bu-mb-3" 
                     v-model="drawerScope.editedObject.sum" 
                     placeholder="Sum">
                     </el-input>
@@ -92,7 +87,6 @@
 
                 <cly-form-field label="Display Name for Duration" :optional="true" subheading="A display name for the duration property of this event">
                     <el-input
-                    class="bu-mb-3" 
                     v-model="drawerScope.editedObject.dur" 
                     placeholder="Duration">
                     </el-input>
@@ -100,7 +94,8 @@
             </div>
 
             <div v-if="drawerScope.editedObject.isEditMode">
-                <cly-form-field label="Omit Segments" subheading="Choose which segments of this custom event to omit. Omitted segments will not be saved in the future and past data for these segments will be purged immediately after you save these settings.">
+                <cly-form-field label="Omit Segments" 
+                subheading="It allows to delete segmentations from aggregated data only, and keep recording to granular data as string. Omitted segments will not be saved in the future and past data for these segments will be purged immediately after you save these settings. Data for omitted segments will still be stored in Drill.">
                     <el-select multiple v-model="omitList" >
                         <el-option v-for="item in drawerScope.editedObject.segments" :key="item.name" :value="item.name">
                         </el-option>
@@ -108,8 +103,8 @@
                 </cly-form-field>
             </div>
 
-            <div v-if="isDrill">
-                <div class="text-big text-heading bu-mt-5">Event Segmentation</div>
+            <div v-if="isDrill" class="bu-mt-1">
+                <div class="text-big text-heading bu-pt-4">Event Segmentation</div>
                 <data-manager-create-segment
                 ref="segments"
 			    :max-segments="20"
