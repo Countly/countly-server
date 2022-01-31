@@ -1,5 +1,5 @@
 /* PLUGINS */
-
+@use "sass:map";
 .config-section {border-bottom: 1px solid #ECECEC;}
 .config-section:last-child { border-bottom: none; }
 .config-section-overwritten { color: #F56C6C; font-size: 12px; line-height: 1; }
@@ -31,3 +31,27 @@
 .config-image-uploader .prelogo {width: 165px; height:50px;}
 .config-image-uploader .stopleftlogo {width: 144px; height:32px;}
 .config-image-uploader .favicon {width: 32px; height:32px;}
+.configurations {
+    .cly-vue-section--has-default-skin .cly-vue-section__content{
+        border: 1px solid #ECECEC !important;
+        border-radius: 4px;
+        .config-section { 
+            margin: 0px !important;
+            font-size: 14px;
+            color: #333C48;
+            div p:first-child {
+                line-height: 14px;
+                margin: 0px;
+            }
+            div p:nth-child(2) {
+                line-height: 20px;
+                margin: 0px;
+            }
+            .bu-column {padding: 0px;}
+        } 
+    }
+    .selected-config {
+        h2 {letter-spacing: 0.3px;}
+        h3 {letter-spacing: 0.3px;}
+    }
+}
