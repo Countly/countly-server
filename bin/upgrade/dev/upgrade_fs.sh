@@ -27,7 +27,7 @@ then
     fi
     
     #upgrade files
-    bash "$CUR/puppeteer.sh
+    bash "$CUR/puppeteer.sh"
 
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
