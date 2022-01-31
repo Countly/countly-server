@@ -103,7 +103,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     priority: 3,
     name: "resolutions",
     title: CV.i18n('resolutions.title'),
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/resolutions",
+    route: "#/analytics/technology/resolutions",
     component: AppResolutionView
 });
 

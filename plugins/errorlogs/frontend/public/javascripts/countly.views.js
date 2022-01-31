@@ -5,15 +5,20 @@
         template: CV.T('/errorlogs/templates/logs.html'),
         data: function() {
             return {
-                selectLog: this.$route.params.log || "api",
-                downloadLink: countlyGlobal.path + "/o/errorlogs?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&download=true&log=" + this.$route.params.log || "api",
+                selectLog: this.query || "api",
+                downloadLink: countlyGlobal.path + "/o/errorlogs?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&download=true&log=" + this.query || "api",
                 logList: [{name: "Api Log", value: "api"}],
                 cachedLog: {}
             };
         },
-        beforeCreate: function() {
+        props: {
+            query: {
+                default: "api"
+            }
+        },
+        created: function() {
             var self = this;
-            return $.when(countlyErrorLogs.initialize(), countlyErrorLogs.getLogByName(this.$route.params.log || "api"))
+            return $.when(countlyErrorLogs.initialize(), countlyErrorLogs.getLogByName(this.query || "api"))
                 .then(function() {
                     self.logList = countlyErrorLogs.getLogNameList();
                     self.cachedLog = countlyErrorLogs.getLogCached();
@@ -31,7 +36,7 @@
             },
             changeLog: function(value) {
                 this.downloadLink = countlyGlobal.path + "/o/errorlogs?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&download=true&log=" + value,
-                app.navigate("#/manage/errorlogs/" + value);
+                app.navigate("#/manage/logs/errorlogs/" + value);
                 this.refresh(true);
             },
             clear: function() {
@@ -57,29 +62,14 @@
         }
     });
 
-    var getMainView = function() {
-        return new countlyVue.views.BackboneWrapper({
-            component: ErrorLogsView,
-            vuex: [] //empty array if none
-        });
-    };
-
     if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route('/manage/errorlogs', 'errorlogs', function() {
-            var view = getMainView();
-            view.params = {log: "api"};
-            this.renderWhenReady(view);
-        });
-
-        app.route('/manage/errorlogs/*log', 'errorlogs', function(log) {
-            var view = getMainView();
-            view.params = {log: log};
-            this.renderWhenReady(view);
-        });
-
-
-        $(document).ready(function() {
-            app.addMenu("management", {code: "errorlogs", url: "#/manage/errorlogs", text: "errorlogs.title", icon: '<div class="logo-icon fa fa-server"></div>', priority: 110});
+        countlyVue.container.registerTab("/manage/logs", {
+            priority: 1,
+            route: "#/manage/logs/errorlogs",
+            component: ErrorLogsView,
+            title: "Server Logs",
+            name: "errorlogs",
+            vuex: []
         });
     }
 })();

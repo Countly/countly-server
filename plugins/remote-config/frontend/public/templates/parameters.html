@@ -7,7 +7,7 @@
     </template>
     <template v-slot:header-right>
       <div class="bu-level-item" v-if="hasCreateRight">
-        <el-button :disabled="isParamterLimitExceeded" @click="create" type="primary" size="small" icon="el-icon-circle-plus">{{i18n('remote-config.add-parameter-title')}}</el-button>
+        <el-button :disabled="isParamterLimitExceeded" @click="create" type="success" size="small" icon="el-icon-circle-plus">{{i18n('remote-config.add-parameter-title')}}</el-button>
       </div>
     </template>
   </cly-header>
@@ -16,7 +16,7 @@
       <cly-notification class="bu-mb-5" :text="i18n('remote-config.maximum_parameters_added')" color="light-warning">
       </cly-notification>
     </div>
-    <cly-datatable-n :rows="tableRows">
+    <cly-datatable-n :rows="tableRows" class="cly-vue-remote-config-home-table">
       <template v-slot:default="scope">
         <el-table-column type="expand" min-width="50">
           <template v-slot="props">
@@ -25,7 +25,7 @@
             </cly-section>
           </template>
         </el-table-column>
-        <el-table-column min-width="160" prop="parameter_key" :label="i18n('remote-config.parameter')" :sortable="true">
+        <el-table-column min-width="160" prop="parameter_key" :label="i18n('remote-config.parameter')" sortable="custom">
           <template v-slot:default="rowScope">
             <div>
               <div class="cly-vue-remote-config-conditions-drawer__margin-bottom">             {{rowScope.row.parameter_key}}</div>
@@ -50,7 +50,7 @@
             {{rowScope.row.description || "-"}}
           </template>
         </el-table-column>
-        <el-table-column min-width="160" prop="created" :label="i18n('remote-config.parameter.created')">
+        <el-table-column min-width="160" prop="created" :label="i18n('remote-config.parameter.created')" sortable="custom">
           <template v-slot:default="rowScope">
             <div>
               <div class="cly-vue-remote-config-conditions-drawer__margin-bottom"> {{getDate(rowScope.row.ts)}}</div>
@@ -68,10 +68,12 @@
         </el-table-column>
         <el-table-column v-if="hasUpdateRight" min-width="110">
           <template v-slot="rowScope">
+            <div v-if="rowScope.row.hover">
             <el-button v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'" @click="startParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.start')}}
             </el-button>
             <el-button v-else @click="stopParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.stop')}}
             </el-button>
+            </div>
           </template>
         </el-table-column>
       </template>

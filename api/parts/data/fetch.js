@@ -1181,7 +1181,7 @@ fetch.fetchDataTopEvents = function(params) {
     const _app_id = common.db.ObjectID(app_id);
     common.db.collection(collectionName).findOne({ period, app_id: _app_id }, function(error, result) {
         if (error || !result) {
-            common.returnOutput(params, false);
+            return common.returnOutput(params, false);
         }
         else {
             if (filter) {
@@ -1193,7 +1193,7 @@ fetch.fetchDataTopEvents = function(params) {
                         return { name: decodeKey, duration: total, trend: trend, change: change };
                     });
                     const sortByDuration = _data.sort((a, b) => b.duration - a.duration).slice(0, limit);
-                    common.returnOutput(params, { _id, app_id, ts, period, totalCount, data: sortByDuration });
+                    return common.returnOutput(params, { _id, app_id, ts, period, totalCount, data: sortByDuration });
                 }
                 else if (filter === "sum") {
                     const { data, _id, ts, totalCount } = result;
@@ -1203,7 +1203,7 @@ fetch.fetchDataTopEvents = function(params) {
                         return { name: decodeKey, sum: total, trend: trend, change: change };
                     });
                     const sortBySum = _data.sort((a, b) => b.sum - a.sum).slice(0, limit);
-                    common.returnOutput(params, { _id, app_id, ts, period, totalCount, data: sortBySum });
+                    return common.returnOutput(params, { _id, app_id, ts, period, totalCount, data: sortBySum });
                 }
                 else {
                     const { data, _id, ts, totalCount } = result;
@@ -1213,7 +1213,7 @@ fetch.fetchDataTopEvents = function(params) {
                         return { name: decodeKey, count: total, trend: trend, change: change };
                     });
                     const sortByCount = _data.sort((a, b) => b.count - a.count).slice(0, limit);
-                    common.returnOutput(params, { _id, app_id, ts, period, totalCount, data: sortByCount });
+                    return common.returnOutput(params, { _id, app_id, ts, period, totalCount, data: sortByCount });
                 }
             }
             const { data, _id, ts, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration, prevSessionCount, totalSessionCount, prevUsersCount, totalUsersCount } = result;

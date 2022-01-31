@@ -40,6 +40,7 @@
                     v-model="newCategoryName">
                 </el-input>
                 <el-button
+                    class="text-smallish font-weight-bold color-blue-100"
                     size="small bu-mx-3"
                     type="text"
                     :disabled="!newCategoryAllowed"
@@ -49,7 +50,7 @@
             </div>
         </div>
 	    <div v-if="categories.length" class="bu-mb-4">
-            <div class="text-big font-weight-bold bu-mb-1">Manage categories</div>
+            <div class="text-big font-weight-bold bu-mb-1 bu-pt-2">Manage categories</div>
 	    	<data-manager-manage-category-input
                 ref="categoryInput"
                 v-for="(category, i) in categories"

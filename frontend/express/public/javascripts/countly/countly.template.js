@@ -1065,18 +1065,24 @@ var AppRouter = Backbone.Router.extend({
             return;
         }
         else if (Backbone.history.fragment !== "/" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
-            $("#" + countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type + "-type a").each(function() {
-                if (this.hash !== "#/" && this.hash !== "") {
-                    if ("#" + Backbone.history.fragment === this.hash && $(this).css('display') !== 'none') {
-                        change = false;
-                        return false;
-                    }
-                    else if (("#" + Backbone.history.fragment).indexOf(this.hash) === 0 && $(this).css('display') !== 'none') {
-                        redirect = this.hash;
-                        return false;
-                    }
-                }
+            var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type || "mobile";
+            var urls = countlyVue.container.getAllRoutes();
+            urls.sort(function(a, b) {
+                return b.url.length - a.url.length;
             });
+            for (var i = 0; i < urls.length; i++) {
+                if (urls[i].url === "#/") {
+                    continue;
+                }
+                if ("#" + Backbone.history.fragment === urls[i].url && (type === urls[i].app_type || !urls[i].app_type)) {
+                    change = false;
+                    break;
+                }
+                else if (("#" + Backbone.history.fragment).indexOf(urls[i].url) === 0 && (type === urls[i].app_type || !urls[i].app_type)) {
+                    redirect = urls[i].url;
+                    break;
+                }
+            }
         }
 
         if (redirect) {
