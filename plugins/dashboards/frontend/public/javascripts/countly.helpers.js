@@ -27,7 +27,8 @@
                 type: String
             },
             value: {
-                type: Array
+                type: Array,
+                required: true
             }
         },
         data: function() {
@@ -80,6 +81,14 @@
                     }
                 );
             }
+        },
+        watch: {
+            multiple: {
+                immediate: true,
+                handler: function() {
+                    this.$emit("input", []);
+                }
+            }
         }
     });
 
@@ -97,7 +106,8 @@
                 required: true
             },
             value: {
-                type: Array
+                type: Array,
+                required: true
             }
         },
         computed: {
@@ -208,6 +218,111 @@
                     }
                 );
             }
+        }
+    });
+
+    var EventComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/events.html'),
+        props: {
+            appIds: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            multiple: {
+                type: Boolean,
+                default: false
+            },
+            multipleLimit: {
+                type: Number,
+                default: 3
+            },
+            placeholder: {
+                type: String
+            },
+            value: {
+                type: Array,
+                required: true
+            }
+        },
+        data: function() {
+            return {
+                store: null
+            };
+        },
+        computed: {
+            placeholderText: function() {
+                if (this.placeholder) {
+                    return this.placeholder;
+                }
+
+                if (this.multiple) {
+                    return this.i18n("placeholder.dashboards.select-event-multi", this.multipleLimit);
+                }
+                else {
+                    return this.i18n("placeholder.dashboards.select-event-single");
+                }
+            },
+            allEvents: function() {
+                var appIds = this.appIds;
+                return this.store.getters["countlyDashboards/allEvents"](appIds);
+            },
+            selectedEvents: {
+                get: function() {
+                    if (!this.multiple) {
+                        return this.value && this.value[0] || "";
+                    }
+
+                    return this.value;
+                },
+                set: function(item) {
+                    var i = item;
+                    if (!this.multiple) {
+                        i = [item];
+                    }
+
+                    this.$emit("input", i);
+                }
+            },
+            allListeners: function() {
+                return Object.assign({},
+                    this.$listeners,
+                    {
+                        input: function() {
+                            /**
+                             * Overwrite the input listener passed from parent,
+                             * Since all parent listeners are passed to the children,
+                             * we want to overwrite this input listener so that the value
+                             * is not updated in the parent directly from the children.
+                             * We want to intercept the child value and return as array to parent
+                             * with the help of the selectedApps computed property
+                             */
+                        }
+                    }
+                );
+            }
+        },
+        watch: {
+            appIds: {
+                immediate: true,
+                handler: function(newVal) {
+                    var appIds = newVal;
+
+                    if (Array.isArray(appIds) && appIds.length) {
+                        this.store.dispatch("countlyDashboards/getEvents", {appIds: appIds});
+                    }
+                }
+            },
+            multiple: {
+                immediate: true,
+                handler: function() {
+                    this.$emit("input", []);
+                }
+            }
+        },
+        beforeMount: function() {
+            this.store = countlyVue.vuex.getGlobalStore();
         }
     });
 
@@ -325,7 +440,8 @@
                 type: String
             },
             value: {
-                type: Array
+                type: Array,
+                required: true
             }
         },
         data: function() {
@@ -377,6 +493,14 @@
                         }
                     }
                 );
+            }
+        },
+        watch: {
+            multiple: {
+                immediate: true,
+                handler: function() {
+                    this.$emit("input", []);
+                }
             }
         }
     });
@@ -475,7 +599,9 @@
     var TitleComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/title.html'),
         props: {
-            value: {type: String}
+            value: {
+                type: String
+            }
         },
         data: function() {
             return {
@@ -609,6 +735,7 @@
      */
     Vue.component("clyd-metric", MetricComponent);
     Vue.component("clyd-breakdown", BreakdownComponent);
+    Vue.component("clyd-event", EventComponent);
     Vue.component("clyd-datatype", DataTypeComponent);
     Vue.component("clyd-appcount", AppCountComponent);
     Vue.component("clyd-sourceapps", SourceAppsComponent);

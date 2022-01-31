@@ -6,8 +6,9 @@
         style="width: 100%;"
         v-bind="$attrs"
         v-on="allListeners"
+        :collapse-tags="false"
         v-model="selectedBreakdown"
-        :placeholder="i18nM('dashboards.select-breakdown')">
+        :placeholder="i18nM('placeholder.dashboards.select-breakdown')">
         <el-option
             v-for="breakdown in breakdowns"
             :key="breakdown.value"

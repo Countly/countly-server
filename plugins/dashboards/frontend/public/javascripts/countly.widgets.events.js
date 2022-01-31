@@ -54,6 +54,9 @@
             },
             showBreakdown: function() {
                 return ["bar-chart", "table"].indexOf(this.scope.editedObject.visualization) > -1;
+            },
+            isMultipleEvents: function() {
+                return this.scope.editedObject.visualization === "time-series";
             }
         }
     });
@@ -70,10 +73,20 @@
                     widget_type: "events",
                     app_count: 'single',
                     apps: [],
+                    visualization: "",
+                    events: [],
                     metrics: [],
-                    visualization: ""
+                    breakdowns: []
                 };
             },
+            beforeSaveFn: function(doc) {
+                /**
+                 * Sanitize the widget object before saving on the server
+                 */
+                if (["bar-chart", "table"].indexOf(doc.visualization) === -1) {
+                    delete doc.breakdowns;
+                }
+            }
         },
         grid: {
             component: EventsComponent,
