@@ -49,13 +49,14 @@ class Batcher extends SynFlushTransform {
     _transform(push, encoding, callback) {
         if (push.frame & FRAME.CMD) {
             if (push.frame & (FRAME.FLUSH | FRAME.SYN)) {
-                if (this.do_flush(() => callback()) === true) {
+                if (this.do_flush(() => {}) === true) {
                     this.push(push);
                 }
             }
             for (let id in this.listeners) {
-                pools.pools[id].write(encode(push.frame, push.payload), () => callback());
+                pools.pools[id].write(encode(push.frame, push.payload));
             }
+            callback();
             return;
         }
 

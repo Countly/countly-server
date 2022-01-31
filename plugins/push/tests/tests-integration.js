@@ -437,8 +437,12 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.equal(res.status, 200);
                 should.ok(res.body.result, 1);
                 should.equal(res.body.result.total, 1);
+                should.equal(res.body.result.processed, 1);
+                should.equal(res.body.result.errored, 1);
                 should.equal(res.body.result.subs.i.total, 1);
+                should.equal(res.body.result.subs.i.errored, 1);
                 should.equal(res.body.result.subs.i.subs.en.total, 1);
+                should.equal(res.body.result.subs.i.subs.en.errored, 1);
             });
 
         // // test message

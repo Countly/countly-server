@@ -1,6 +1,6 @@
 const { FRAME } = require('../../send/proto'),
     { SynFlushTransform } = require('./syn'),
-    { ERROR, Message, Result } = require('../../send/data');
+    { ERROR, Result } = require('../../send/data');
 
 /**
  * Stream responsible for handling sending results:
@@ -36,7 +36,6 @@ class Resultor extends SynFlushTransform {
         this.toDelete = []; // [push id, push id, ...]
         this.count = 0; // number of results cached
         this.last = null; // time of last data from 
-        this.messages = {}; // {_id: Message}
 
         this.data.on('app', app => {
             this.changed[app._id] = {};
@@ -53,7 +52,6 @@ class Resultor extends SynFlushTransform {
         });
 
         this.data.on('message', message => {
-            this.messages[message._id] = new Message(message);
             this.sent[message._id] = 0;
             this.processed[message._id] = 0;
             this.fatalErrors[message._id] = [];
@@ -79,7 +77,9 @@ class Resultor extends SynFlushTransform {
         if (frame & FRAME.CMD) {
             if (frame & (FRAME.FLUSH | FRAME.SYN)) {
                 this.do_flush(() => {
+                    this.log.d('flush push');
                     this.push(chunk);
+                    this.log.d('flush callback');
                     callback();
                 });
             }
@@ -93,13 +93,19 @@ class Resultor extends SynFlushTransform {
                 [results.affected, results.left].forEach(arr => {
                     if (results.type & (ERROR.DATA_TOKEN_EXPIRED | ERROR.DATA_TOKEN_INVALID)) {
                         arr.forEach(id => {
+                            if (id === -1) {
+                                return;
+                            }
                             let {a, p, f, u} = this.data.pushes[id];
                             this.removeTokens[a][p + f].push(u);
                         });
                     }
                     arr.forEach(id => {
+                        if (id === -1) {
+                            return;
+                        }
                         let {p, m, pr} = this.data.pushes[id],
-                            msg = this.messages[m],
+                            msg = this.data.message(m),
                             rp = msg.result.sub(p),
                             rl = rp.sub(pr.la || 'default');
                         msg.result.processed++;
@@ -128,7 +134,7 @@ class Resultor extends SynFlushTransform {
                         return;
                     }
 
-                    let m = this.messages[p.m];
+                    let m = this.data.message(p.m);
                     m.result.sent++;
                     m.result.processed++;
 
@@ -166,12 +172,15 @@ class Resultor extends SynFlushTransform {
 
             [results.affected, results.left].forEach(arr => {
                 arr.forEach(id => {
+                    if (id === -1) {
+                        return;
+                    }
                     let {m, p, pr} = this.data.pushes[id];
                     mids[m] = (mids[m] || 0) + 1;
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
 
-                    m = this.messages[m];
+                    m = this.data.message(m);
                     let rp = m.result.sub(p),
                         rl = rp.sub(pr.la || 'default');
                     if (!rl) {
@@ -185,7 +194,7 @@ class Resultor extends SynFlushTransform {
             });
 
             for (let mid in mids) {
-                let m = this.messages[mid];
+                let m = this.data.message(mid);
                 m.result.processed[m] += mids[mid];
                 m.result.pushError(error);
             }
@@ -209,7 +218,10 @@ class Resultor extends SynFlushTransform {
         this.count = 0;
 
         let updates = {},
-            promises = Object.values(this.messages).map(m => m.save());
+            promises = this.data.messages().map(m => {
+                console.log('in resultor', m.id, m.result.json);
+                m.save();
+            });
 
         if (this.toDelete.length) {
             promises.push(this.db.collection('push').deleteMany({_id: {$in: this.toDelete.map(this.db.ObjectID)}}));

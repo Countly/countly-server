@@ -100,10 +100,10 @@ class Message extends Mongoable {
      * Get query of messages active at data
      * 
      * @param {Date} date date
-     * @param {State} state state, queued by default
+     * @param {State} state state, streamable by default
      * @returns {object} MongoDB filter object
      */
-    static filter(date, state = State.Queued) {
+    static filter(date, state = State.Streamable) {
         return {
             state,
             $or: [
