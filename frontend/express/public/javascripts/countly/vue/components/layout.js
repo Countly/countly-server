@@ -12,9 +12,6 @@
                 default: function() {
                     return null;
                 },
-                validator: function(value) {
-                    return value && value.url && value.title;
-                }
             },
             headerClass: {
                 type: Object,
@@ -60,14 +57,16 @@
                                 <slot name="header-top"></slot>\
                             </div>\
                         </div>\
+                        <template v-if="backlink && backlink.url && backlink.title"> \
+                            <div class="bu-level bu-is-mobile">\
+                                <div class="bu-level-left">\
+                                    <cly-back-link :title="backlink.title" :link="backlink.url"></cly-back-link> \
+                                </div> \
+                            </div>\
+                        </template> \
                         <div :class="[midLevelClasses]">\
                             <div class="bu-level-left"> \
-                                <template v-if="backlink"> \
-                                    <div class="bu-level-item">\
-                                        <cly-back-link :title="backlink.title" :link="backlink.url"></cly-back-link> \
-                                    </div> \
-                                </template> \
-                                <template v-else> \
+                                <template> \
                                     <slot name="header-left">\
                                         <div class="bu-level-item">\
                                             <h2>{{title}}</h2>\

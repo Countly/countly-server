@@ -357,7 +357,7 @@
                                             </el-select>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
-                                            <cly-select-x ref="selectX" v-bind="field" class="cly-multi-select__field-dropdown" :width="320" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                            <cly-select-x ref="selectX" v-bind="field" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
                                                 <template v-slot:header="headerScope" v-if="field.header">\
                                                     <slot name="header" v-bind="headerScope"></slot>\
                                                 </template>\
@@ -383,6 +383,7 @@
             confirmLabel: {type: String, default: CV.i18n("events.general.confirm")},
             resetLabel: {type: String, default: "Reset Filters"},
             adaptiveLength: {type: Boolean, default: true},
+            selectXWidth: {type: Number, default: 320},
             emptyValue: {
                 type: String,
                 default: function() {

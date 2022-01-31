@@ -92,7 +92,8 @@
             disabled: {type: Boolean, default: false, required: false},
             height: {type: [Number, String], default: 300, required: false},
             expandOnHover: {type: Boolean, default: false, required: false},
-            hasRemovableOptions: {type: Boolean, default: false, required: false}
+            hasRemovableOptions: {type: Boolean, default: false, required: false},
+            noMatchFoundPlaceholder: {type: String, default: CV.i18n('common.search.no-match-found'), required: false }
         },
         methods: {
             onRemoveOption: function(option) {
@@ -201,7 +202,9 @@
                     Promise.resolve(this.remoteMethod(query || '')).finally(function() {
                         self.isQueryPending = false;
                         self.updateDropdown && self.updateDropdown();
-                        self.navigateToFirstRegularTab();
+                        if (!self.onlySelectedOptionsTab) {
+                            self.navigateToFirstRegularTab();
+                        }
                     });
                 }
             },
@@ -288,7 +291,7 @@
                         </div>\
                     </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
-                        {{i18n(\'common.search.no-match-found\')}}\
+                        {{noMatchFoundPlaceholder}}\
                     </div>\
                 </div>'
     }));
@@ -425,7 +428,7 @@
                         </div>\
                     </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
-                        {{i18n(\'common.search.no-match-found\')}}\
+                        {{noMatchFoundPlaceholder}}\
                     </div>\
                 </div>'
     }));
@@ -440,7 +443,8 @@
             },
             hideDefaultTabs: {type: Boolean, default: false},
             allPlaceholder: {type: String, default: 'All'},
-            hideAllOptionsTab: {type: Boolean, default: false}
+            hideAllOptionsTab: {type: Boolean, default: false},
+            onlySelectedOptionsTab: {type: Boolean, default: false}
         },
         data: function() {
             return {
@@ -481,11 +485,33 @@
                 return null;
             },
             selectedOptions: function() {
-                if (!this.flatOptions.length && !this.missingOptions.length) {
+                if (!this.onlySelectedOptionsTab && !this.flatOptions.length && !this.missingOptions.length) {
                     return [];
                 }
                 var self = this,
                     missingOptions = this.missingOptions || [];
+
+                if (this.onlySelectedOptionsTab) {
+                    var selected = null;
+                    if (Array.isArray(this.value)) {
+                        selected = this.value.slice();
+                    }
+                    else {
+                        selected = [this.value];
+                    }
+                    return this.flatOptions.reduce(function(acc, item) {
+                        var idx = acc.indexOf(item.value);
+                        if (idx > -1) {
+                            acc.splice(idx, 1);
+                        }
+                        return acc;
+                    }, selected).map(function(missingKey) {
+                        return {
+                            label: missingKey,
+                            value: missingKey
+                        };
+                    }).concat(this.flatOptions);
+                }
 
                 if (Array.isArray(this.value)) {
                     return missingOptions.concat(this.flatOptions.filter(function(item) {
@@ -516,9 +542,12 @@
                 return true;
             },
             hasSelectedOptionsTab: function() {
-                return this.isMultiple && this.remote && this.value && this.value.length > 0;
+                return this.onlySelectedOptionsTab || (this.isMultiple && this.remote && this.value && this.value.length > 0);
             },
-            hasTabs: function() {
+            showTabs: function() {
+                if (this.onlySelectedOptionsTab) {
+                    return false;
+                }
                 if (this.hasSelectedOptionsTab) {
                     return true;
                 }
@@ -530,34 +559,39 @@
             publicTabs: function() {
                 var missingOptionsTab = this.missingOptionsTab,
                     selectedOptionsTab = this.selectedOptionsTab,
-                    defaultTabs = [];
+                    prefixTabs = [],
+                    postfixTabs = [];
 
                 if (selectedOptionsTab) {
-                    defaultTabs.push(selectedOptionsTab);
+                    postfixTabs.push(selectedOptionsTab);
                 }
                 else if (missingOptionsTab) {
-                    defaultTabs.push(missingOptionsTab);
+                    prefixTabs.push(missingOptionsTab);
                 }
 
-                if (this.hasTabs && this.hasAllOptionsTab) {
-                    var allOptions = {
+                if (this.showTabs && this.hasAllOptionsTab) {
+                    prefixTabs.unshift({
                         name: "__all",
                         label: this.allPlaceholder,
                         options: this.flatOptions
-                    };
-                    return [allOptions].concat(defaultTabs).concat(this.options);
+                    });
                 }
-                else if (this.hasTabs) {
-                    return defaultTabs.concat(this.options);
+
+                if (!this.showTabs && !this.onlySelectedOptionsTab) {
+                    prefixTabs.unshift({
+                        name: "__root",
+                        label: "__root",
+                        options: this.options
+                    });
                 }
-                return [{
-                    name: "__root",
-                    label: "__root",
-                    options: this.options
-                }].concat(defaultTabs);
+
+                if (!this.showTabs) {
+                    return prefixTabs.concat(postfixTabs);
+                }
+                return prefixTabs.concat(this.options).concat(postfixTabs);
             },
             flatOptions: function() {
-                if (!this.hasTabs || !this.options.length) {
+                if ((!this.showTabs && !this.onlySelectedOptionsTab) || !this.options.length) {
                     return this.options;
                 }
                 return this.options.reduce(function(items, tab) {
@@ -583,7 +617,10 @@
             determineActiveTabId: function() {
                 var self = this;
                 this.$nextTick(function() {
-                    if (!self.hasTabs) {
+                    if (self.onlySelectedOptionsTab) {
+                        self.activeTabId = "__selected";
+                    }
+                    else if (!self.showTabs) {
                         self.activeTabId = "__root";
                     }
                     else if (self.value && self.val2tab[self.value]) {
@@ -607,7 +644,7 @@
             hasAllOptionsTab: function() {
                 this.determineActiveTabId();
             },
-            hasTabs: function() {
+            showTabs: function() {
                 this.determineActiveTabId();
             },
             'flatOptions.length': function(newVal) {
@@ -624,6 +661,7 @@
         props: {
             title: {type: String, default: ''},
             placeholder: {type: String, default: 'Select'},
+            noMatchFoundPlaceholder: {default: CV.i18n('common.search.no-match-found'), required: false },
             value: { type: [String, Number, Array] },
             mode: {type: String, default: 'single-list'}, // multi-check,
             autoCommit: {type: Boolean, default: true},
@@ -667,6 +705,11 @@
                 default: Number.MAX_SAFE_INTEGER,
                 required: false
             },
+            hasRemovableOptions: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
             //
             collapseTags: {
                 type: Boolean,
@@ -688,8 +731,9 @@
             },
             popClasses: function() {
                 return {
-                    "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.hasTabs,
-                    "cly-vue-select-x__pop--has-single-option": this.hasSingleOption
+                    "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.showTabs,
+                    "cly-vue-select-x__pop--has-single-option": this.hasSingleOption,
+                    "cly-vue-select-x__pop--has-slim-header": !this.searchable && !this.showTabs
                 };
             },
             currentTab: function() {
@@ -795,6 +839,9 @@
             commitValue: function(val) {
                 this.$emit("input", val);
                 this.$emit("change", val);
+            },
+            removeOption: function(options) {
+                this.$emit("remove-option", options);
             }
         },
         watch: {
@@ -809,7 +856,7 @@
                 }
             },
             value: function(newVal) {
-                if (this.isMultiple && this.remote && newVal && newVal.length === 0 && this.activeTabId === "__selected") {
+                if (!this.onlySelectedOptionsTab && this.isMultiple && this.remote && newVal && newVal.length === 0 && this.activeTabId === "__selected") {
                     this.navigateToFirstRegularTab();
                 }
                 this.uncommittedValue = null;
@@ -983,29 +1030,39 @@
         }
     }));
 
-    var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+    var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)',
+        SIMPLE_EMAIL = new RegExp('^' + REGEX_EMAIL + '$', 'i'),
+        NAMED_EMAIL = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
 
     Vue.component('cly-select-email', countlyVue.components.BaseComponent.extend({
-        template: '<el-select\
+        mixins: [
+            _mixins.i18n
+        ],
+        template: '<cly-select-x\
                         v-on="$listeners"\
                         v-bind="$attrs"\
-                        :remote-method="tryParsingEmail"\
+                        :options="options"\
                         :placeholder="placeholder"\
-                        :no-data-text="invalidEmailText"\
                         :value="value"\
-                        @input="handleInput"\
-                        remote\
-                        multiple\
-                        filterable\
+                        :searchable="false"\
+                        hideAllOptionsTab\
+                        mode="multi-check"\
+                        ref="selectx"\
+                        :noMatchFoundPlaceholder="i18n(\'common.no-email-addresses\')"\
                         class="cly-vue-select-email"\
-                        autocomplete="off">\
-                        <el-option\
-                            v-for="item in options"\
-                            :key="item.value"\
-                            :label="item.label"\
-                            :value="item.value">\
-                        </el-option>\
-                    </el-select>',
+                        @input="handleInput">\
+                        <template v-slot:header="selectScope">\
+                            <el-input\
+                                v-model="currentInput"\
+                                :class="{\'is-error\': hasError}"\
+                                :placeholder="i18n(\'common.email-example\')"\
+                                @keyup.enter.native="tryPush">\
+                            </el-input>\
+                            <div class="bu-mt-2 color-red-100 text-small" v-show="hasError">\
+                                {{i18n("common.invalid-email-address", currentInput)}}\
+                            </div>\
+                        </template>\
+                    </cly-select-x>',
         props: {
             value: {
                 type: Array
@@ -1018,38 +1075,60 @@
         },
         data: function() {
             return {
-                options: [],
-                invalidEmailText: ''
+                currentInput: '',
             };
         },
-        mounted: function() {
-            this.resetOptions('');
+        computed: {
+            options: function() {
+                return this.value.map(function(val) {
+                    return {value: val, label: val};
+                });
+            },
+            parsedValue: function() {
+                var input = this.currentInput;
+                if (!input) {
+                    return false;
+                }
+                else if (SIMPLE_EMAIL.test(input)) {
+                    return {value: input, label: input};
+                }
+                else {
+                    var match = input.match(NAMED_EMAIL);
+                    if (match) {
+                        // Current implementation ignores name field
+                        return {value: match[2], label: match[2]};
+                    }
+                }
+            },
+            hasError: function() {
+                return !this.parsedValue && this.currentInput;
+            }
         },
         methods: {
             handleInput: function(value) {
                 this.$emit("input", value);
             },
-            resetOptions: function(input) {
-                this.options = [];
-                this.invalidEmailText = CV.i18n('common.invalid-email-address', input);
+            pushAddress: function(address) {
+                if (!this.value.includes(address.value)) {
+                    this.handleInput(this.value.concat([address.value]));
+                }
             },
-            tryParsingEmail: function(input) {
-                if (!input) {
-                    this.resetOptions(input);
+            tryPush: function() {
+                if (this.parsedValue) {
+                    this.pushAddress(this.parsedValue);
+                    this.currentInput = "";
                 }
-                else if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
-                    this.options = [{value: input, label: input}];
-                }
-                else {
-                    var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-                    if (match) {
-                        // Current implementation ignores name field
-                        this.options = [{value: match[2], label: match[2]}];
-                    }
-                    else {
-                        this.resetOptions(input);
-                    }
-                }
+            },
+            updateDropdown: function() {
+                this.$refs && this.$refs.selectx && this.$refs.selectx.updateDropdown();
+            }
+        },
+        watch: {
+            value: function() {
+                this.updateDropdown();
+            },
+            hasError: function() {
+                this.updateDropdown();
             }
         }
     }));

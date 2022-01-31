@@ -369,7 +369,7 @@ countlyVue.container.registerTab("/analytics/geo", {
     priority: 1,
     name: "countries",
     title: CV.i18n('sidebar.analytics.countries'),
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/geo/countries",
+    route: "#/analytics/geo/countries",
     component: CountryView,
     vuex: [{
         clyModel: countlyCountry

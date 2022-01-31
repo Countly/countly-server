@@ -1,0 +1,7 @@
+<div v-bind:class="[componentId]">
+    <cly-dynamic-tabs v-model="selectedTab" :tabs="tabs" :query="$route.params.query">
+        <template v-slot:tables="scope">
+            <span>{{scope.tab.title}}</span>
+        </template>
+    </cly-dynamic-tabs>
+</div>

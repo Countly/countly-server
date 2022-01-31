@@ -165,28 +165,76 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         }
     }
 
-    if (config.rate) {
-        pushcfg.rate = pushcfg.rate || {};
-        config.rate.rate = config.rate.rate ? parseInt(config.rate.rate) : 0;
-        config.rate.period = config.rate.period ? parseInt(config.rate.period) : 0;
+    if (config.rate !== undefined) {
+        let update = {};
+        if (config.rate) {
+            pushcfg.rate = pushcfg.rate || {};
+            config.rate.rate = config.rate.rate ? parseInt(config.rate.rate) : 0;
+            config.rate.period = config.rate.period ? parseInt(config.rate.period) : 0;
+
+            if (config.rate.rate) {
+                update.$set = {'plugins.push.rate.rate': config.rate.rate};
+                pushcfg.rate.rate = config.rate.rate;
+            }
+            else {
+                update.$unset = {'plugins.push.rate.rate': 1};
+                delete pushcfg.rate.rate;
+            }
+
+            if (config.rate.period) {
+                update.$set = update.$set || {};
+                update.$set['plugins.push.rate.period'] = config.rate.period;
+                pushcfg.rate.period = config.rate.period;
+            }
+            else {
+                update.$unset = update.$unset || {};
+                update.$unset['plugins.push.rate.period'] = 1;
+                delete pushcfg.rate.period;
+            }
+        }
+        else {
+            update.$unset = {'plugins.push.rate': 1};
+            delete pushcfg.rate;
+        }
+        await common.db.collection('apps').updateOne({_id: app._id}, update);
+    }
+
+    if (config.test !== undefined) {
+        let uids = [], cohorts = [];
+        if (config.test && config.test.uids) {
+            uids = await common.db.collection(`app_users${params.app_id}`).find({uid: {$in: config.test.uids.split(',')}}, {_id: 1}).toArray();
+            uids = uids.map(u => u._id).join(',');
+        }
+
+        if (config.test && config.test.cohorts) {
+            cohorts = await common.db.collection(`cohorts`).find({app_id: params.app_id, _id: {$in: config.test.cohorts.split(',')}}, {_id: 1}).toArray();
+            cohorts = cohorts.map(c => c._id).join(',');
+        }
 
         let update = {};
-        if (config.rate.rate) {
-            update.$set = {'plugins.push.rate.rate': config.rate.rate};
-            pushcfg.rate.rate = config.rate.rate;
+        if (cohorts.length || uids.length) {
+            pushcfg.test = pushcfg.test || {};
+            if (uids.length) {
+                update.$set = {'plugins.push.test.uids': uids};
+                pushcfg.test.uids = uids;
+            }
+            else {
+                update.$unset = {'plugins.push.test.uids': 1};
+                delete pushcfg.test.uids;
+            }
+            if (cohorts.length) {
+                update.$set = update.$set || {};
+                update.$set['plugins.push.test.cohorts'] = cohorts;
+            }
+            else {
+                update.$unset = update.$unset || {};
+                update.$unset['plugins.push.test.cohorts'] = 1;
+                delete pushcfg.test.cohorts;
+            }
         }
         else {
-            update.$unset = {'plugins.push.rate.rate': 1};
-            delete pushcfg.rate.rate;
-        }
-
-        if (config.rate.period) {
-            update.$set = {'plugins.push.rate.period': config.rate.period};
-            pushcfg.rate.period = config.rate.period;
-        }
-        else {
-            update.$unset = {'plugins.push.rate.period': 1};
-            delete pushcfg.rate.period;
+            update.$unset = {'plugins.push.test': 1};
+            delete pushcfg.test;
         }
         await common.db.collection('apps').updateOne({_id: app._id}, update);
     }

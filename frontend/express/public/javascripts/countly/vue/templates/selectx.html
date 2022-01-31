@@ -75,11 +75,14 @@
                     {{tab.label}}
                 </span>
                 <cly-listbox
+                    :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-if="mode === 'single-list'"
                     :bordered="false"
                     :options="getMatching(tab.options)"
                     @change="handleValueChange"
+                    :hasRemovableOptions="hasRemovableOptions"
+                    @remove-option="removeOption"
                     v-model="innerValue">
                     <template v-slot:option-prefix="scope">
                         <slot name="option-prefix" v-bind="scope"></slot>
@@ -89,6 +92,7 @@
                     </template>
                 </cly-listbox>
                 <cly-checklistbox
+                    :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check'"
                     :bordered="false"
@@ -97,6 +101,7 @@
                     v-model="innerValue">
                 </cly-checklistbox>
                 <cly-checklistbox
+                    :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check-sortable'"
                     :sortable="true"

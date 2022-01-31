@@ -89,7 +89,7 @@
             priority: 2,
             name: "slipping-away-users",
             title: CV.i18n('slipping-away-users.title'),
-            route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/slipping-away-users",
+            route: "#/analytics/loyalty/slipping-away-users",
             component: SlippingAwayUsersView,
             vuex: [{
                 clyModel: countlySlippingAwayUsers

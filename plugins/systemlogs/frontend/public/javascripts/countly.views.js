@@ -37,7 +37,7 @@
                             app_id: countlyCommon.ACTIVE_APP_ID,
                             method: 'systemlogs',
                             period: countlyCommon.getPeriodForAjax(),
-                            query: JSON.stringify(self.$route.params.query)
+                            query: JSON.stringify(self.parsedQuery)
                         }
                     };
                 },
@@ -84,15 +84,47 @@
             }));
             return {
                 loaded: true,
-                selectAction: this.$route.params.query.a || "all",
-                selectUser: this.$route.params.query.user_id || "all",
+                parsedQuery: {},
+                selectAction: "all",
+                selectUser: "all",
                 detailData: {},
-                back: this.$route.params.back || false,
+                back: false,
                 tableStore: tableStore,
                 allActions: {"all": jQuery.i18n.map["systemlogs.all-actions"]},
                 allUsers: {"all": jQuery.i18n.map["systemlogs.all-users"]},
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "systemLogsTable")
             };
+        },
+        props: {
+            query: {
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        watch: {
+            query: {
+                handler: function(newQuery) {
+                    if (typeof newQuery === 'object') {
+                        this.parsedQuery = {};
+                    }
+                    else if (newQuery && newQuery.indexOf('/') > -1) {
+                        var parts = newQuery.split('/');
+                        if (parts[0] === "filter") {
+                            this.back = true;
+                        }
+                        try {
+                            this.parsedQuery = JSON.parse(parts[1]);
+                        }
+                        catch (error) {
+                            this.parsedQuery = {};
+                        }
+                        this.selectAction = this.parsedQuery.a || "all";
+                        this.selectUser = this.parsedQuery.user_id || "all";
+                    }
+                },
+                immediate: true
+            }
         },
         beforeCreate: function() {
             var self = this;
@@ -134,27 +166,27 @@
             },
             changeAction: function(value) {
                 if (value !== "all") {
-                    this.$route.params.query.a = value;
+                    this.parsedQuery.a = value;
                 }
                 else {
-                    delete this.$route.params.query.a;
+                    delete this.parsedQuery.a;
                 }
-                app.navigate("#/manage/systemlogs/query/" + JSON.stringify(this.$route.params.query));
+                app.navigate("#/manage/logs/systemlogs/query/" + JSON.stringify(this.parsedQuery));
                 this.refresh(true);
             },
             changeUser: function(value) {
                 if (value !== "all") {
-                    this.$route.params.query.user_id = value;
+                    this.parsedQuery.user_id = value;
                 }
                 else {
-                    delete this.$route.params.query.user_id;
+                    delete this.parsedQuery.user_id;
                 }
-                app.navigate("#/manage/systemlogs/query/" + JSON.stringify(this.$route.params.query));
+                app.navigate("#/manage/logs/systemlogs/query/" + JSON.stringify(this.parsedQuery));
                 this.refresh(true);
             },
             getExportAPI: function() {
                 var query, requestPath, apiQueryData;
-                query = this.$route.params.query;
+                query = this.parsedQuery;
                 requestPath = '/o?api_key=' + countlyGlobal.member.api_key +
                 "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=systemlogs&iDisplayStart=0&export=true" +
                 "&query=" + encodeURIComponent(JSON.stringify(query)) +
@@ -188,44 +220,15 @@
         }
     });
 
-    var getMainView = function() {
-        return new countlyVue.views.BackboneWrapper({
-            component: SystemLogsView,
-            vuex: [] //empty array if none
-        });
-    };
-
     if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route('/manage/systemlogs', 'systemlogs', function() {
-            var view = getMainView();
-            view.params = {query: {}};
-            this.renderWhenReady(view);
+        countlyVue.container.registerTab("/manage/logs", {
+            priority: 2,
+            route: "#/manage/logs/systemlogs",
+            component: SystemLogsView,
+            title: "Audit Logs",
+            name: "systemlogs",
+            vuex: []
         });
-
-        app.route('/manage/systemlogs/query/*query', 'systemlogs_query', function(query) {
-            try {
-                query = JSON.parse(query);
-            }
-            catch (ex) {
-                query = {};
-            }
-            var view = getMainView();
-            view.params = {query: query};
-            this.renderWhenReady(view);
-        });
-
-        app.route('/manage/systemlogs/filter/*query', 'systemlogs_query', function(query) {
-            try {
-                query = JSON.parse(query);
-            }
-            catch (ex) {
-                query = {};
-            }
-            var view = getMainView();
-            view.params = {query: query, back: true};
-            this.renderWhenReady(view);
-        });
-
         app.addPageScript("/manage/compliance#", function() {
             if (app.activeView && app.activeView.tabs) {
                 var ul = app.activeView.tabs.find("ul");
@@ -365,10 +368,6 @@
     }
 
     $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addMenu("management", {code: "systemlogs", url: "#/manage/systemlogs", text: "systemlogs.title", icon: '<div class="logo-icon fa fa-book"></div>', priority: 120});
-        }
-
         app.addPageScript("/manage/users", function() {
             setTimeout(function() {
                 $("#user-table").on("click", "tr", function() {
@@ -377,7 +376,7 @@
                         setTimeout(function() {
                             container = container.next("tr");
                             var id = container.find(".user_id").val();
-                            container.find(".button-container").append("<a class='icon-button light' data-localize='systemlogs.view-user-actions' href='#/manage/systemlogs/filter/{\"user_id\":\"" + id + "\"}'>" + jQuery.i18n.map["systemlogs.view-user-actions"] + "</a>");
+                            container.find(".button-container").append("<a class='icon-button light' data-localize='systemlogs.view-user-actions' href='#/manage/logs/systemlogs/filter/{\"user_id\":\"" + id + "\"}'>" + jQuery.i18n.map["systemlogs.view-user-actions"] + "</a>");
                         }, 0);
                     }
                 });

@@ -14,11 +14,13 @@ class Result extends Validatable {
      * @param {number}                  data.processed      number of queued notifications processed
      * @param {number}                  data.sent           number of notifications accepted by service provider
      * @param {number}                  data.actioned       number of actions performed on devices for this message
+     * @param {number}                  data.errored        number of errors happened during sending (not necessarily equal to total - processed)
      * @param {object|PushError}        data.error          message-global error object, message must be Stopped if error is set
      * @param {object}                  data.errors         non fatal platform-specific response counts ({i400+InvalidToken: 123, a400+WrongMessage: 501})
      * @param {object[]|PushError[]}    data.lastErrors     last 10 non fatal noteworthy errors (mostly connectivity)
      * @param {object[]}                data.lastRuns       last 10 sending runs
      * @param {Date}                    data.next           next run if any
+     * @param {object}                  data.subs           sub results ({key: Result})
      */
     constructor(data) {
         super(data);
@@ -27,6 +29,12 @@ class Result extends Validatable {
         }
         if (this._data.lastErrors) {
             this._data.lastErrors = this._data.lastErrors.map(PushError.deserialize);
+        }
+
+        if (this._data.subs) {
+            let subs = this._data.subs;
+            this._data.subs = {};
+            Object.keys(subs || {}).forEach(key => this._data.subs[key] = Result.from(subs[key]));
         }
     }
 
@@ -39,11 +47,13 @@ class Result extends Validatable {
             processed: {type: 'Number', required: true},
             sent: {type: 'Number', required: true},
             actioned: {type: 'Number', required: true},
+            errored: {type: 'Number', required: false},
             error: {type: 'Object', required: false},
             errors: {type: 'Object', required: false},
             lastErrors: {type: 'Object[]', required: false},
             lastRuns: {type: 'Object[]', required: false},
             next: {type: 'Date', required: false},
+            subs: {type: 'Object', required: false},
         };
     }
 
@@ -140,6 +150,29 @@ class Result extends Validatable {
     }
 
     /**
+     * Getter for errored
+     * 
+     * @returns {number|undefined} number of sending errors
+     */
+    get errored() {
+        return this._data.errored || 0;
+    }
+
+    /**
+     * Setter for errored
+     * 
+     * @param {number|undefined} errored number of sending errors
+     */
+    set errored(errored) {
+        if (errored !== null && errored !== undefined) {
+            this._data.errored = errored;
+        }
+        else {
+            delete this._data.errored;
+        }
+    }
+
+    /**
      * Getter for error
      * 
      * @returns {PushError|undefined} message-global critical error object
@@ -201,47 +234,33 @@ class Result extends Validatable {
      * @returns {object|undefined} errors object 
      */
     get errors() {
+        if (!this._data.errors) {
+            this._data.errors = {};
+        }
         return this._data.errors;
     }
 
     /**
      * Add a response to errors object
      * 
-     * @param {string} platform platform key
+     * @param {string} key sub key
      * @param {string} code response code
      * @param {number} count number of errors to add
      * @returns {number} response count after addition
      */
-    response(platform, code, count) {
+    response(key, code, count) {
         if (!this._data.errors) {
             this._data.errors = {};
         }
-        if (!this._data.errors[platform]) {
-            this._data.errors[platform] = {};
+        let sub = this.sub(key);
+        if (sub) {
+            sub.errored += count;
+            sub.errors[code] = (sub.errors[code] || 0) + count;
         }
-        return this._data.errors[platform][code] = (this._data.errors[platform][code] || 0) + count;
-    }
-
-    /**
-     * Returns count of all errors in errors
-     * 
-     * @returns {number} total number of errors in errors
-     */
-    get errorsCount() {
-        let sum = 0;
-        for (let p in this._data.errors) {
-            // platform specific codes
-            if (require('../platforms').platforms.indexOf(p) !== -1) {
-                for (let code in this._data.errors[p]) {
-                    sum += this._data.errors[p][code];
-                }
-            }
-            else {
-                // p is code, non platform specific codes
-                sum += this._data.errors[p];
-            }
+        else {
+            this.sub(key, new Result({errored: count, errors: {[code]: count}}));
         }
-        return sum;
+        return this._data.errors[code] = (this._data.errors[code] || 0) + count;
     }
 
     /**
@@ -292,6 +311,49 @@ class Result extends Validatable {
     }
 
     /**
+     * Getter for subs
+     * 
+     * @returns {object} subs object
+     */
+    get subs() {
+        return this._data.subs;
+    }
+
+    /**
+     * Setter for subs
+     * 
+     * @param {object} subs subs object
+     */
+    set subs(subs) {
+        if (subs !== null && subs !== undefined) {
+            this._data.subs = subs;
+        }
+        else {
+            delete this._data.subs;
+        }
+    }
+
+    /**
+     * Utility method for getting/setting sub Result
+     * 
+     * @param {string} key sub result key
+     * @param {Result} result Result instance
+     * @returns {Result} current Result for given sub key, adds result object if it doesn't exist
+     */
+    sub(key, result) {
+        if (!this._data.subs) {
+            this._data.subs = {};
+        }
+        if (result) {
+            this._data.subs[key] = result;
+        }
+        else if (!this._data.subs[key]) {
+            this._data.subs[key] = new Result();
+        }
+        return this._data.subs[key];
+    }
+
+    /**
      * Backwards-compatibility conversion of Note to Result
      * 
      * @deprecated
@@ -300,13 +362,24 @@ class Result extends Validatable {
      */
     static fromNote(note) {
         let lastErrors = undefined,
-            errors = undefined;
+            errors = undefined,
+            subs;
         if (note.result.resourceErrors && note.result.resourceErrors.length) {
             lastErrors = note.result.resourceErrors.map(e => new PushError(e.error || 'Unknown error', ERROR.EXCEPTION, e.date || Date.now()));
         }
         if (note.result.error) {
             lastErrors = lastErrors || [];
             lastErrors.unshift(new PushError(note.result.error, ERROR.EXCEPTION, note.date.getTime()));
+        }
+        if (note.platforms.length === 1) {
+            subs = {
+                [note.platforms[0]]: new Result({
+                    total: note.result.total || (note.build && note.build.total || 0),
+                    processed: note.result.processed,
+                    sent: note.result.sent,
+                    actioned: note.result.actioned,
+                })
+            };
         }
         // eslint-disable-next-line no-unused-vars
         for (let _k in note.result.errorCodes) {
@@ -321,6 +394,7 @@ class Result extends Validatable {
             error: lastErrors ? lastErrors[0] : undefined,
             lastErrors,
             errors,
+            subs
         });
     }
 

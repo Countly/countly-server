@@ -1,5 +1,23 @@
 .user-management-drawer-content {
 
+  &__pp-options {
+    height: fit-content;
+    align-self: center;
+    margin-left: 15px;
+    box-shadow: none;
+
+    .el-button {
+      box-shadow: none;
+      border: none;
+    }
+  }
+
+  &__user-pp {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+  }
+
   #user-drawer-dropzone {
     background-color: #F8FAFD;
     border-radius: 6px;
@@ -64,7 +82,6 @@
     font-size: 12px;
     line-height: 16px;
     color: #81868D;
-    padding-bottom: 5px;
   }
 
   &__help-menu-icon {
@@ -89,6 +106,7 @@
 
   &__profile-picture-area {
     margin-top: 9px;
+    margin-left: 10px;
 
     &__upload-section {
       border: 1px dashed #81868D;
@@ -248,8 +266,8 @@
       margin-top: 4px !important;
     }
 
-    .el-checkbox {
-      margin-top: 8px;
+    .el-checkbox__label {
+      font-weight: normal !important;
     }
   }
 

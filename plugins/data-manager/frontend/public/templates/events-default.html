@@ -18,10 +18,12 @@
         <template v-slot:header-left>
             <cly-multi-select
              ref="eventCategoryFilters" 
+             v-bind:arrow="true"
+             :selectXWidth="336"
              v-model="filter" 
              :fields="filterFields">
                 <template v-slot:action>
-                    <div class="bu-level-item bu-is-clickable text-small color-red-100">
+                    <div class="bu-level-item bu-is-clickable text-small color-red-100 bu-pl-1">
                         <a @click="manageCategories">Manage</a>
                     </div>
                 </template>
@@ -40,11 +42,26 @@
                         <span v-if="isDrill" class="tag-container">
                             <span v-bind:class="statusClassObject(rowScope.row.status)" class="bu-tag bu-mt-1"> 
                                 <span class="blinker"></span>
-                                <span class="bu-is-capitalized">{{rowScope.row.status || 'unplanned'}}</span>
+                                <span>{{rowScope.row.status}}</span>
                             </span>
                         </span>
-                        <span v-if="rowScope.row.is_visible === false" class="bu-tag"><i class="fa fa-eye-slash"></i></span>
-                        <span v-else class="bu-tag"><i class="fa fa-eye"></i></ion-icon></span>
+                        <span v-if="rowScope.row.is_visible === false" class="cly-vue-data-manager__hidden-icon">
+                            <i class="fa fa-eye-slash"></i>
+                        </span>
+                        <span v-else class="cly-vue-data-manager__hidden-icon"><i class="fa fa-eye"></i></ion-icon></span>
+                        <span v-if="eventTransformationMap && eventTransformationMap[rowScope.row.key]" class="cly-vue-data-manager__transform-icon">
+                            <svg width="12px" height="10px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                    <g id="transformations" transform="translate(-320.000000, -295.000000)" fill="#444444" fill-rule="nonzero">
+                                        <g id="Group-9" transform="translate(320.000000, 292.000000)">
+                                            <g id="merge_type-24px" transform="translate(46.500000, 8.000000) rotate(90.000000) translate(-46.500000, -8.000000) translate(38.500000, -38.500000)">
+                                                <path fill="#fff" d="M11.3333333,92.6066667 L12.2733333,91.6666667 L10,89.3933333 L9.06,90.3333333 L11.3333333,92.6066667 Z M5,84.3333333 L7.33333333,84.3333333 L7.33333333,88.06 L3.72666667,91.6666667 L4.66666667,92.6066667 L8.66666667,88.6066667 L8.66666667,84.3333333 L11,84.3333333 L8,81.3333333 L5,84.3333333 Z" id="Shape"></path>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </svg>
+                        </span>
                     </div>
                 </template>
             </el-table-column>
@@ -52,13 +69,13 @@
             <el-table-column min-width="350" prop="description" label="Description">
             </el-table-column>
 
-            <el-table-column min-width="250" prop="category" label="Category">
+            <el-table-column min-width="250" sortable="custom" prop="category" label="Category">
                 <template v-slot="rowScope">
                     {{rowScope.row.categoryName || 'Uncategorized'}}
                 </template>
             </el-table-column>
 
-            <el-table-column prop="lastModifiedts" min-width="275" label="Last Modified">
+            <el-table-column prop="lastModifiedts" sortable="custom" min-width="275" label="Last Modified">
                 <template v-slot="rowScope">
                     <div v-if="rowScope.row && rowScope.row.lastModifiedts">
                         <div>{{rowScope.row.lastModifiedDate}}</div>
@@ -67,7 +84,12 @@
                 </template>
             </el-table-column>
 
-            <el-table-column min-width="250" label="Last Triggered">
+            <el-table-column v-if="isDrill" sortable="custom" min-width="250" prop="lts" label="Last Triggered">
+                <template v-slot="rowScope">
+                    <div v-if="rowScope.row && rowScope.row.lts">
+                        <div>{{rowScope.row.lastTriggerDate}}</div>
+                    </div>
+                </template>
             </el-table-column>
 
             <el-table-column type="options" align="center">

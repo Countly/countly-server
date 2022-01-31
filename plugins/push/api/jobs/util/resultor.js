@@ -1,6 +1,6 @@
 const { FRAME } = require('../../send/proto'),
     { SynFlushTransform } = require('./syn'),
-    { ERROR, Message } = require('../../send/data');
+    { ERROR, Message, Result } = require('../../send/data');
 
 /**
  * Stream responsible for handling sending results:
@@ -98,10 +98,11 @@ class Resultor extends SynFlushTransform {
                         });
                     }
                     arr.forEach(id => {
-                        let {p, m} = this.data.pushes[id],
+                        let {p, m, pr} = this.data.pushes[id],
                             msg = this.messages[m];
                         msg.result.processed++;
                         msg.result.response(p, results.message, 1);
+                        msg.result.sub(p).response(pr.la || 'default', results.message, 1);
                         delete this.data.pushes[id];
                         this.toDelete.push(id);
                     });
@@ -127,6 +128,13 @@ class Resultor extends SynFlushTransform {
                     let m = this.messages[p.m];
                     m.result.sent++;
                     m.result.processed++;
+
+                    let rp = m.result.sub(p.p),
+                        rl = rp.sub(p.pr.la || 'default');
+                    rp.sent++;
+                    rp.processed++;
+                    rl.sent++;
+                    rl.processed++;
 
                     this.toDelete.push(id);
                     delete this.data.pushes[id];
@@ -155,10 +163,18 @@ class Resultor extends SynFlushTransform {
 
             [results.affected, results.left].forEach(arr => {
                 arr.forEach(id => {
-                    let {m} = this.data.pushes[id];
+                    let {m, p, pr} = this.data.pushes[id];
                     mids[m] = (mids[m] || 0) + 1;
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
+
+                    let rp = m.result.sub(p),
+                        rl = rp.sub(pr.la || 'default');
+                    if (!rl) {
+                        rl = rp.sub(p.pr.la || 'default', new Result());
+                    }
+                    rp.processed++;
+                    rl.processed++;
                 });
 
                 this.count += arr.length;
@@ -166,7 +182,7 @@ class Resultor extends SynFlushTransform {
 
             for (let mid in mids) {
                 let m = this.messages[mid];
-                m.result.processed[m]++;
+                m.result.processed[m] += mids[mid];
                 m.result.pushError(error);
             }
         }

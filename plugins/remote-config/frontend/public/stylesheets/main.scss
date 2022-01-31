@@ -1,111 +1,165 @@
-@use "../../../../../frontend/express/public/stylesheets/styles/base/_typography-variables.scss" as t;
-@use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
+@use "../../../../../frontend/express/public/stylesheets/styles/base/_typography-variables.scss"
+  as t;
+@use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as
+  c;
 @use "sass:map";
 
 .cly-vue-remote-config-conditions-drawer {
+  &__margin-bottom {
+    margin-bottom: 6px;
+  }
 
-    &__margin-bottom {
-        margin-bottom: 6px;
-    }
+  &__letter-spacing {
+    letter-spacing: 0.5px;
+  }
 
-    &__letter-spacing {
-        letter-spacing: 0.5px;
-    }
-
-    textarea {
-        min-width: 100%;
-        max-width: 100%;
-        height: 64px;
-        min-height: 64px;
-        max-height: 256px;
-        border-radius: 4px;
-        border: solid 1px #CFD6E4;
-        background-color:  map.get(c.$colors, "cool-gray-05");
-        padding: 8px;
-        font-size: 14px;
-        color: map.get(c.$colors, "cool-gray-100");
-        box-sizing: border-box;
-        outline: none;
-    }
+  textarea {
+    min-width: 100%;
+    max-width: 100%;
+    height: 64px;
+    min-height: 64px;
+    max-height: 256px;
+    border-radius: 4px;
+    border: solid 1px #cfd6e4;
+    background-color: map.get(c.$colors, "cool-gray-05");
+    padding: 8px;
+    font-size: 14px;
+    color: map.get(c.$colors, "cool-gray-100");
+    box-sizing: border-box;
+    outline: none;
+  }
 }
 .cly-vue-remote-config-conditions-drawer-json-editor {
-    .el-dialog__header{
-        text-align: left;
-        padding: 8px 16px 0 !important;
-		color: map.get(c.$colors, "white");
-    }
-    .el-dialog__body {
-        padding: 0 !important;
-    }
-    &__textarea{
-        width:100%;
-        box-sizing: border-box;
-        outline: none;
-        border: none;
-        border-top: 1px solid #81868D;
-        border-bottom: 1px solid #81868D;
-        background-color: map.get(c.$colors, "cool-gray-10");
-    }
+  background: rgba(0,0,0,.5);
+  .el-dialog__header {
+    text-align: left;
+    padding: 8px 16px 0 !important;
+    color: map.get(c.$colors, "white");
+  }
+  .el-dialog__body {
+    padding: 0 !important;
+  }
+  &__textarea {
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    border: none;
+    border-top: 1px solid #81868d;
+    border-bottom: 1px solid #81868d;
+    background-color: map.get(c.$colors, "cool-gray-10");
+  }
 }
 .cly-vue-remote-config-parameters-drawer {
-    &__autocomplete{
-        width:100%;
-    }
-    &__autocomplete-button {
-        padding: 0px;
-        border: none;
-        color: map.get(c.$colors, "cool-gray-50");
-        
-    }
-      &__autocomplete-button:hover, &__autocomplete-button:focus, &__autocomplete-button:active {
-        background-color: transparent;
-      }
+  &__autocomplete {
+    width: 100%;
+  }
+  &__autocomplete-button {
+    padding: 0px;
+    border: none;
+    color: map.get(c.$colors, "cool-gray-50");
+  }
+  &__autocomplete-button:hover,
+  &__autocomplete-button:focus,
+  &__autocomplete-button:active {
+    background-color: transparent;
+  }
 
-    &__condition {
-        border-radius: 4px;
-        display: inline-block;
-        padding: 10px;
-        border: 1px solid #ddd;
-    }
+  &__condition {
+    border-radius: 4px;
+    display: inline-block;
+    padding: 10px;
+    border: 1px solid #ddd;
+  }
 
+  &__default-value {
+    .text-smallish {
+      font-size: t.$text-lg-size;
+    }
+  }
 }
 .cly-vue-remote-config {
-    	  &__header {
-		    color: map.get(c.$colors, "cool-gray-100");
-			padding-right:9.5px;
-			letter-spacing: 0.003em;
-            font-family:  t.$font-family;
-		  }
+  &__header {
+    color: map.get(c.$colors, "cool-gray-100");
+    padding-right: 9.5px;
+    letter-spacing: 0.003em;
+    font-family: t.$font-family;
+  }
+}
+.cly-vue-remote-config-home-table {
+  .el-table__expanded-cell {
+    padding-right: 48px;
+    padding-left: 24px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background-color: c.$table-th-bgcolor;
+    &:hover {
+      background: #f5f8f9 !important;
+    }
+  }
 }
 .cly-vue-remote-config-percentages-breakdown {
-    width:100%;
-    &__data {
-        width: max-content;
-        border-radius: 4px;
+  width: 100%;
+  padding: 15px 24px 10px;
+  border-collapse: unset;
+  &__data {
+    width: max-content;
+    border-radius: 4px;
+  }
+  &__default-value {
+    background-color: map.get(c.$colors, "cool-gray-20");
+    &__value {
+      background-color: map.get(c.$colors, "white");
+      border-radius: 4px;
     }
-    &__default-value {
-        background-color: map.get(c.$colors, "cool-gray-20");
-        &__value{
-            background-color: map.get(c.$colors, "white");
-            border-radius: 4px;
-        }
+  }
+  &__condition {
+    &__value {
+      background-color: map.get(c.$colors, "white");
+      border-radius: 4px;
     }
-    &__condition {
-        &__value{
-            background-color: map.get(c.$colors, "white");
-            border-radius: 4px;
-        }
+  }
+  th {
+    background-color: transparent !important;
+  }
+  &__sequence {
+    &__heading {
+      width: 10%;
     }
-    th {
-        background-color: transparent !important;
-    }
-    &__sequence {
-        &__heading{
-            width:10%;
-        }
-        display: inline-block;
-        font-size: t.$text-smaller-size;
-        border-radius: 4px;
-        background-color: map.get(c.$colors, "warm-gray-20");
-    }
+    display: inline-block;
+    font-size: t.$text-smaller-size;
+    border-radius: 4px;
+    background-color: map.get(c.$colors, "warm-gray-20");
+    font-weight: t.$font-weight-primary;
+  }
+}
+
+.cly-vue-remote-config-conditions-table {
+  .el-table .remote-config-purple > td:first-child {
+    border-left-style: solid;
+    border-left-color: map.get(c.$colors, "charts-purple");
+    border-left-width: 8px;
+  }
+  .el-table .remote-config-teal > td:first-child {
+    border-left-style: solid;
+    border-left-color: map.get(c.$colors, "charts-turquoise");
+    border-left-width: 8px;
+  }
+  .el-table .remote-config-orange > td:first-child {
+    border-left-style: solid;
+    border-left-color: map.get(c.$colors, "charts-orange");
+    border-left-width: 8px;
+  }
+  .el-table .remote-config-magenta > td:first-child {
+    border-left-style: solid;
+    border-left-color: map.get(c.$colors, "charts-magenta");
+    border-left-width: 8px;
+  }
+  .el-table .remote-config-amber > td:first-child {
+    border-left-style: solid;
+    border-left-color: map.get(c.$colors, "charts-amber");
+    border-left-width: 8px;
+  }
+}
+.cly-vue-remote-config-condition-dialog {
+  background: rgba(0,0,0,.5);
 }

@@ -92,7 +92,7 @@
                     this.$emit('edit-user', index);
                     break;
                 case 'show-logs':
-                    window.location.hash = "#/manage/systemlogs/query/" + JSON.stringify({"user_id": index});
+                    window.location.hash = "#/manage/logs/systemlogs/query/" + JSON.stringify({"user_id": index});
                     break;
                 }
             }
@@ -123,6 +123,7 @@
         ],
         data: function() {
             return {
+                pictureEditMode: false,
                 changePasswordFlag: false,
                 apps: [],
                 permissionSets: [],
@@ -303,6 +304,13 @@
                 switch (command) {
                 case "remove-set":
                     this.removePermissionSet(index);
+                    break;
+                }
+            },
+            handlePPCommand: function(command) {
+                switch (command) {
+                case "edit-pp":
+                    this.pictureEditMode = true;
                     break;
                 }
             },

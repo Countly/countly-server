@@ -17,7 +17,7 @@
                     "preventRequestAbort": true,
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         loadEventGroups: function() {
             return CV.$.ajax({
@@ -29,7 +29,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         createEventGroups: function(payload) {
             return CV.$.ajax({
@@ -40,7 +40,7 @@
                     "args": JSON.stringify(payload)
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         editEventGroups: function(data, order, update_status, status) {
             return CV.$.ajax({
@@ -54,7 +54,7 @@
                     "status": status
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         deleteEventGroups: function(events) {
             return CV.$.ajax({
@@ -65,7 +65,7 @@
                     "args": JSON.stringify(events),
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         saveEvent: function(event) {
             return CV.$.ajax({
@@ -76,7 +76,7 @@
                     event: JSON.stringify(event)
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         editEvent: function(eventMap, omittedSegments) {
             return CV.$.ajax({
@@ -87,7 +87,7 @@
                     "event_map": JSON.stringify(eventMap),
                     "omitted_segments": JSON.stringify(omittedSegments)
                 }
-            });
+            }, {"disableAutoCatch": true});
         },
         changeVisibility: function(events, visibility) {
             return CV.$.ajax({
@@ -98,7 +98,7 @@
                     "set_visibility": visibility,
                     "events": JSON.stringify(events)
                 }
-            });
+            }, {"disableAutoCatch": true});
         },
         deleteEvents: function(events) {
             return CV.$.ajax({
@@ -108,7 +108,7 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "events": countlyCommon.decodeHtml(JSON.stringify(events))
                 }
-            });
+            }, {"disableAutoCatch": true});
         },
         getCategories: function() {
             return CV.$.ajax({
@@ -119,7 +119,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         createCategory: function(categories) {
             return CV.$.ajax({
@@ -130,7 +130,7 @@
                     categories: JSON.stringify(categories)
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         editCategories: function(categories) {
             return CV.$.ajax({
@@ -141,7 +141,7 @@
                     categories: JSON.stringify(categories)
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         deleteCategories: function(categoryIds) {
             return CV.$.ajax({
@@ -152,7 +152,7 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         changeCategory: function(events, category) {
             return CV.$.ajax({
@@ -163,7 +163,7 @@
                     "category": category,
                     "events": JSON.stringify(events)
                 }
-            });
+            }, {"disableAutoCatch": true});
         },
     }, EXTENDED_SERVICE);
 
