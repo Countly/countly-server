@@ -167,17 +167,26 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/report-manager/javascripts/countly.views.js',
                     'frontend/express/public/core/app-resolution/javascripts/countly.views.js',
                     'frontend/express/public/core/platform/javascripts/countly.views.js',
-                    'frontend/express/public/core/browser/javascripts/countly.views.js',
-                    'frontend/express/public/core/devices-and-types/javascripts/countly.views.js',
                     'frontend/express/public/core/devices-and-types/javascripts/countly.models.js',
-                    'frontend/express/public/core/carrier/javascripts/countly.views.js',
+                    'frontend/express/public/core/devices-and-types/javascripts/countly.views.js',
                     'frontend/express/public/core/carrier/javascripts/countly.models.js',
+                    'frontend/express/public/core/carrier/javascripts/countly.views.js',
                     'frontend/express/public/core/events/javascripts/countly.overview.models.js',
                     'frontend/express/public/core/events/javascripts/countly.overview.views.js',
-                    'frontend/express/public/core/events/javascripts/countly.details.views.js',
                     'frontend/express/public/core/events/javascripts/countly.details.models.js',
+                    'frontend/express/public/core/events/javascripts/countly.details.views.js',
                     'frontend/express/public/core/user-management/javascripts/countly.overview.models.js',
-                    'frontend/express/public/core/user-management/javascripts/countly.overview.views.js'
+                    'frontend/express/public/core/user-management/javascripts/countly.overview.views.js',
+                    'frontend/express/public/core/app-management/javascripts/countly.views.js',
+                    'frontend/express/public/core/logs/javascripts/countly.views.js',
+                    'frontend/express/public/core/token-manager/javascripts/countly.views.js',
+                    'frontend/express/public/core/report-manager/javascripts/countly.views.js',
+                    'frontend/express/public/core/geo-countries/javascripts/countly.cities.models.js',
+                    'frontend/express/public/core/geo-countries/javascripts/countly.models.js',
+                    'frontend/express/public/core/user-analytics-overview/javascripts/countly.views.js',
+                    'frontend/express/public/core/geo-countries/javascripts/countly.views.js',
+                    'frontend/express/public/core/home/javascripts/countly.models.js',
+                    'frontend/express/public/core/home/javascripts/countly.views.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }
@@ -332,6 +341,12 @@ module.exports = function(grunt) {
             }
         }
 
+        if (plugins.indexOf('plugins') !== -1) {
+            plugins.splice(plugins.indexOf('plugins'), 1);
+            plugins.unshift('plugins');
+        }
+
+
         plugins.forEach(function(plugin) {
             var files, pluginPath = path.join(__dirname, 'plugins', plugin),
                 javascripts = path.join(pluginPath, 'frontend/public/javascripts'),
@@ -341,16 +356,19 @@ module.exports = function(grunt) {
             if (fs.existsSync(javascripts) && fs.statSync(javascripts).isDirectory()) {
                 files = fs.readdirSync(javascripts);
                 if (files.length) {
-                    // move models to the top, then all dependencies, then views
-                    for (var i = 0; i < files.length; i++) {
-                        if (files[i].indexOf('countly.models.js') !== -1 && i !== 0) {
-                            files.splice(0, 0, files.splice(i, 1)[0]);
-                        }
-                        else if (files[i].indexOf('countly.views.js') !== -1 && i !== files.length - 1) {
-                            files.splice(files.length - 1, 0, files.splice(i, 1)[0]);
-                        }
+                    // move models and views to the bottom
+                    if (files.indexOf('countly.models.js') !== -1) {
+                        files.splice(files.indexOf('countly.models.js'), 1);
+                        files.push('countly.models.js');
                     }
-
+                    if (files.indexOf('countly.widgets.js') !== -1) {
+                        files.splice(files.indexOf('countly.widgets.js'), 1);
+                        files.push('countly.widgets.js');
+                    }
+                    if (files.indexOf('countly.views.js') !== -1) {
+                        files.splice(files.indexOf('countly.views.js'), 1);
+                        files.push('countly.views.js');
+                    }
                     files.forEach(function(name) {
                         var file = path.join(javascripts, name);
                         if (fs.statSync(file).isFile() && name.indexOf('.') !== 0 && name.endsWith('.js')) {
