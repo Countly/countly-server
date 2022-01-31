@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers,countlyPlugins*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -316,7 +316,7 @@
             }
             throw new Error('Unknown push notification type:' + type);
         },
-        getInitialTestUsersGlobalConfigModel: function() {
+        getInitialTestUsersAppConfigModel: function() {
             return {
                 definitionType: AddTestUserDefinitionTypeEnum.USER_ID,
                 cohorts: [],
@@ -656,8 +656,25 @@
                 data: JSON.stringify(data)
             }, {disableAutoCatch: true});
         },
-        getGlobalConfig: function() {
-            return countlyPlugins.getConfigsData();
+        // getAppConfig: function() {
+        //     return CV.$.ajax({
+        //         type: "GET",
+        //         url: countlyCommon.API_URL + "/o/apps/plugins",
+        //         data: {
+        //             app_id: countlyCommon.ACTIVE_APP_ID,
+        //         }
+        //     });
+        // },
+        updateAppConfig: function(config, options) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
+                data: {
+                    args: JSON.stringify(config),
+                    app_id: options.app_id
+                },
+                dataType: "json",
+            }, {disableAutoCatch: true});
         }
     };
 
@@ -1972,13 +1989,6 @@
                 return Promise.resolve([]);
             });
         },
-        getGlobalConfig: function() {
-            var globalConfig = countlyPushNotification.api.getGlobalConfig();
-            if (globalConfig) {
-                return globalConfig.push;
-            }
-            return null;
-        },
         fetchTestUsers: function(options) {
             var self = this;
             var queries = [];
@@ -2017,7 +2027,16 @@
             });
         },
         searchUsersById: function(idQuery) {
+            var self = this;
             return new Promise(function(resolve, reject) {
+                if (!self.isDrillPluginEnabled()) {
+                    reject(new Error('Error finding test users. Drill plugin must be enabled.'));
+                    return;
+                }
+                if (!self.isUserProfilesPluginEnabled()) {
+                    reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
+                    return;
+                }
                 var drillQuery = {did: {rgxcn: [idQuery]}};
                 countlyPushNotification.api.searchUsers(drillQuery)
                     .then(function(response) {
@@ -2117,7 +2136,7 @@
             }
             return countlyPushNotificationApprover.service.approve(messageId);
         },
-        addTestUsers: function(testUsersModel) {
+        addTestUsers: function(testUsersModel, options) {
             var testUsersConfigDto = {};
             if (testUsersModel.definitionType === AddTestUserDefinitionTypeEnum.USER_ID) {
                 testUsersConfigDto = { test: {uids: testUsersModel.userIds.join(',') }};
@@ -2125,17 +2144,17 @@
             if (testUsersModel.definitionType === AddTestUserDefinitionTypeEnum.COHORT) {
                 testUsersConfigDto = { test: {cohorts: testUsersModel.cohorts.join(',') }};
             }
-            var pushConfig = {push: {}};
-            pushConfig.push = testUsersConfigDto;
+            var appConfig = {push: {}};
+            appConfig.push = testUsersConfigDto;
             return new Promise(function(resolve, reject) {
-                countlyPlugins.updateConfigs(pushConfig, function(error, response) {
-                    if (error) {
-                        // TODO: log error
-                        reject(error);
-                        return;
-                    }
-                    resolve(response);
-                });
+                countlyPushNotification.api.updateAppConfig(appConfig, options)
+                    .then(function(response) {
+                        console.log(response);
+                        resolve(response);
+                    }).catch(function(error) {
+                    // TODO: log error;
+                        reject(error.message);
+                    });
             });
         }
     };

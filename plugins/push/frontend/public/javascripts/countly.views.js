@@ -1585,9 +1585,11 @@
     };
 
     var keyFileReader = new FileReader();
-    var PushNotificationAppLevelConfigView = countlyVue.views.create({
+
+    var PushNotificationAppConfigView = countlyVue.views.create({
         componentName: "AppSettingsContainerObservable",
-        template: CV.T("/push/templates/push-notification-app-level-config.html"),
+        template: CV.T("/push/templates/push-notification-app-config.html"),
+        mixins: [countlyVue.mixins.hasDrawers("testUsersDrawer")],
         data: function() {
             return {
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
@@ -1601,6 +1603,15 @@
                 selectedAppId: this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID,
                 isHuaweiConfigTouched: false,
                 isIOSConfigTouched: false,
+                AddTestUserDefinitionTypeEnum: countlyPushNotification.service.AddTestUserDefinitionTypeEnum,
+                userIdOptions: [],
+                cohortOptions: [],
+                isSearchUsersLoading: false,
+                isFetchCohortsLoading: false,
+                isAddTestUsersLoading: false,
+                isDialogVisible: false,
+                areRowsLoading: false,
+                testUsersRows: [],
             };
         },
         computed: {
@@ -1765,6 +1776,107 @@
                     this.shouldSendInitializedDto = true;
                 }
             },
+            setUserIdOptions: function(userIds) {
+                this.userIdOptions = userIds;
+            },
+            setCohortOptions: function(cohorts) {
+                this.cohortOptions = cohorts;
+            },
+            setTestUserRows: function(testUsers) {
+                this.testUsersRows = testUsers;
+            },
+            openTestUsersDialog: function() {
+                this.isDialogVisible = true;
+            },
+            fetchCohortsIfNotFound: function() {
+                var self = this;
+                if (this.cohortOptions && this.cohortOptions.length) {
+                    return;
+                }
+                this.isFetchCohortsLoading = true;
+                countlyPushNotification.service.fetchCohorts()
+                    .then(function(cohorts) {
+                        self.setCohortOptions(cohorts);
+                    }).catch(function() {
+                        // TODO:log error;
+                        self.setCohortOptions([]);
+                    }).finally(function() {
+                        self.isFetchCohortsLoading = false;
+                    });
+            },
+            fetchTestUsers: function(options) {
+                var self = this;
+                this.areRowsLoading = true;
+                countlyPushNotification.service.fetchTestUsers(options)
+                    .then(function(testUserRows) {
+                        self.setTestUserRows(testUserRows);
+                    }).catch(function(error) {
+                        // TODO:log error;
+                        self.setTestUserRows([]);
+                        CountlyHelpers.notify({message: error.message, type: 'error'});
+                    }).finally(function() {
+                        self.areRowsLoading = false;
+                    });
+            },
+            getTestUsersFromAppConfig: function() {
+                var appConfig = countlyGlobal.apps[this.selectedAppId].plugins;
+                var pushNotificationConfig = appConfig && appConfig.push || {};
+                var result = {};
+                if (pushNotificationConfig && pushNotificationConfig.test) {
+                    if (pushNotificationConfig.test.uids) {
+                        result.uids = pushNotificationConfig.test.uids.split(',');
+                    }
+                    if (pushNotificationConfig.test.cohorts) {
+                        result.cohorts = pushNotificationConfig.test.cohorts.split(',');
+                    }
+                }
+                return result;
+            },
+            onAddNewTestUser: function() {
+                this.openDrawer('testUsersDrawer', countlyPushNotification.helper.getInitialTestUsersAppConfigModel());
+            },
+            onShowTestUserList: function() {
+                this.openTestUsersDialog();
+                this.fetchTestUsers(this.getTestUsersFromAppConfig());
+            },
+            onOpen: function() {
+                this.fetchCohortsIfNotFound();
+            },
+            // updateTestUsersAppConfig: function(testUsersConfig) {
+            //     countlyGlobal.apps[this.selectedAppId].plugins.push.test = testUsersConfig;
+            // },
+            onSubmit: function(editedObject, done) {
+                var self = this;
+                this.isAddTestUsersLoading = true;
+                var options = {};
+                options.app_id = this.selectedAppId;
+                countlyPushNotification.service.addTestUsers(editedObject, options)
+                    .then(function() {
+                        // self.updateTestUsersAppConfig(response.push.test);
+                        done();
+                        CountlyHelpers.notify({message: 'Test users have been successfully added.'});
+                    }).catch(function() {
+                        // TODO: log error
+                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.'});
+                    }).finally(function() {
+                        self.isAddTestUsersLoading = false;
+                        done(false);
+                    });
+            },
+            onSearchUsers: function(query) {
+                var self = this;
+                this.isSearchUsersLoading = true;
+                countlyPushNotification.service.searchUsersById(query)
+                    .then(function(userIds) {
+                        self.setUserIdOptions(userIds);
+                    }).catch(function(error) {
+                        // TODO:log error;
+                        self.setUserIdOptions([]);
+                        CountlyHelpers.notify({message: error.message, type: 'error'});
+                    }).finally(function() {
+                        self.isSearchUsersLoading = false;
+                    });
+            },
         },
         mounted: function() {
             this.addKeyFileReaderLoadListener(this.onKeyFileReady);
@@ -1781,7 +1893,7 @@
         _id: "push",
         inputs: {},
         title: CV.i18n('push-notification.title'),
-        component: PushNotificationAppLevelConfigView
+        component: PushNotificationAppConfigView
     });
 
     //NOTE: modifyUserDetailsForPush adds the create new message action in user details page and sends the message to the actual user
@@ -1989,118 +2101,7 @@
         }
     });
 
-    var TestUsersGlobalConfigView = countlyVue.views.create({
-        template: CV.T("/push/templates/test-users-global-config.html"),
-        mixins: [countlyVue.mixins.hasDrawers("testUsersGlobalConfigDrawer")],
-        data: function() {
-            return {
-                AddTestUserDefinitionTypeEnum: countlyPushNotification.service.AddTestUserDefinitionTypeEnum,
-                userIdOptions: [],
-                cohortOptions: [],
-                isSearchUsersLoading: false,
-                isFetchCohortsLoading: false,
-                isAddTestUsersLoading: false,
-                isDialogVisible: false,
-                areRowsLoading: false,
-                testUsersRows: [],
-            };
-        },
-        computed: {},
-        methods: {
-            setUserIdOptions: function(userIds) {
-                this.userIdOptions = userIds;
-            },
-            setCohortOptions: function(cohorts) {
-                this.cohortOptions = cohorts;
-            },
-            setTestUserRows: function(testUsers) {
-                this.testUsersRows = testUsers;
-            },
-            openTestUsersDialog: function() {
-                this.isDialogVisible = true;
-            },
-            fetchCohortsIfNotFound: function() {
-                var self = this;
-                if (this.cohortOptions && this.cohortOptions.length) {
-                    return;
-                }
-                this.isFetchCohortsLoading = true;
-                countlyPushNotification.service.fetchCohorts()
-                    .then(function(cohorts) {
-                        self.setCohortOptions(cohorts);
-                    }).catch(function() {
-                        // TODO:log error;
-                        self.setCohortOptions([]);
-                    }).finally(function() {
-                        self.isFetchCohortsLoading = false;
-                    });
-            },
-            fetchTestUsers: function(options) {
-                var self = this;
-                this.areRowsLoading = true;
-                countlyPushNotification.service.fetchTestUsers(options)
-                    .then(function(testUserRows) {
-                        self.setTestUserRows(testUserRows);
-                    }).catch(function(error) {
-                        // TODO:log error;
-                        self.setTestUserRows([]);
-                        CountlyHelpers.notify({message: error.message, type: 'error'});
-                    }).finally(function() {
-                        self.areRowsLoading = false;
-                    });
-            },
-            getTestUsersFromGlobalConfig: function() {
-                var pushNotificationGlobalConfig = countlyPushNotification.service.getGlobalConfig();
-                var result = {};
-                if (pushNotificationGlobalConfig && pushNotificationGlobalConfig.test) {
-                    if (pushNotificationGlobalConfig.test.uids) {
-                        result.uids = pushNotificationGlobalConfig.test.uids.split(',');
-                    }
-                    if (pushNotificationGlobalConfig.test.cohorts) {
-                        result.cohorts = pushNotificationGlobalConfig.test.cohorts.split(',');
-                    }
-                }
-                return result;
-            },
-            onAddNewTestUser: function() {
-                this.openDrawer('testUsersGlobalConfigDrawer', countlyPushNotification.helper.getInitialTestUsersGlobalConfigModel());
-            },
-            onShowTestUserList: function() {
-                this.openTestUsersDialog();
-                this.fetchTestUsers(this.getTestUsersFromGlobalConfig());
-            },
-            onOpen: function() {
-                this.fetchCohortsIfNotFound();
-            },
-            onSubmit: function(editedObject, done) {
-                var self = this;
-                this.isAddTestUsersLoading = true;
-                countlyPushNotification.service.addTestUsers(editedObject)
-                    .then(function() {
-                        done();
-                        CountlyHelpers.notify({message: 'Test users have been successfully added.'});
-                    }).catch(function() {
-                        // TODO: log error
-                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.'});
-                    }).finally(function() {
-                        self.isAddTestUsersLoading = false;
-                    });
-            },
-            onSearchUsers: function(query) {
-                var self = this;
-                this.isSearchUsersLoading = true;
-                countlyPushNotification.service.searchUsersById(query)
-                    .then(function(userIds) {
-                        self.setUserIdOptions(userIds);
-                    }).catch(function() {
-                        // TODO:log error;
-                        self.setUserIdOptions([]);
-                    }).finally(function() {
-                        self.isSearchUsersLoading = false;
-                    });
-            },
-        },
-    });
+
 
     /**
      * 
@@ -2204,7 +2205,6 @@
             app.configurationsView.registerLabel("push.proxyhost", "push.proxyhost");
             app.configurationsView.registerInput("push.proxypass", {input: "el-input", attrs: {type: "password"}});
             app.configurationsView.registerLabel("push.proxyport", "push.proxyport");
-            app.configurationsView.registerView('push', {id: 'testingUsers', component: TestUsersGlobalConfigView});
         }
     });
 }());
