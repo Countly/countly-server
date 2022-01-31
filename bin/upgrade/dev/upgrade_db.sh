@@ -18,7 +18,7 @@ if [ "$CONTINUE" == "1" ]
 then
     echo "Running database modifications"
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-    #CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     
     #default setting for meta now
     countly config "drill.record_meta" "false"
@@ -32,7 +32,11 @@ then
     fi
 
     #run upgrade scripts
-    #nodejs "$CUR/scripts/removeUserProps.js"
+    nodejs "$CUR/scripts/fix_cohorts_appID.js"
+    nodejs "$CUR/scripts/loadCitiesInDb.js"
+    nodejs "$CUR/scripts/member_permission_generator.js"
+    nodejs "$CUR/scripts/push_all_things.js"
+    nodejs "$CUR/scripts/update_app_users.js"
     
     #add indexes
     nodejs "$DIR/scripts/add_indexes.js"

@@ -19,14 +19,15 @@ fi
 if [ "$CONTINUE" == "1" ]
 then
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-    # CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     
     if [[ -f /usr/local/bin/npm && -f /usr/bin/npm ]]; then
         rm /usr/local/bin/npm
         ln -s /usr/bin/npm /usr/local/bin/npm
     fi
     
-    
+    #upgrade files
+    bash "$CUR/puppeteer.sh
 
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
