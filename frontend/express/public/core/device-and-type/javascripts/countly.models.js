@@ -460,23 +460,29 @@
                 selectedPlatform: "",
                 selectedBrowser: "",
                 selectedDensity: "",
-                plaformLoading: false
+                platformLoading: true,
+                deviceTypesLoading: true,
+                typeLoading: true,
+                resolutionLoading: true,
+                versionLoading: true,
+                browserLoading: true,
+                densityLoading: true
             };
         };
 
         var devicesAndTypesActions = {
             fetchResolution: function(context) {
-                context.dispatch('onFetchInit');
+                context.dispatch('onFetchInit', "resolution");
                 countlyDevicesAndTypes.service.fetchResolution().then(function() {
                     var resolutions = countlyDevicesAndTypes.service.calculateData("resolutions", {"pie": true});
                     context.commit('setResolution', resolutions);
-                    context.dispatch('onFetchSuccess');
+                    context.dispatch('onFetchSuccess', "resolution");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
                 });
             },
             fetchAppVersion: function(context) {
-                context.dispatch('onFetchInit');
+                context.dispatch('onFetchInit', "version");
                 countlyDevicesAndTypes.service.fetchAppVersion().then(function() {
                     var versions = countlyDevicesAndTypes.service.calculateData("app_versions", {
                         "chart": true,
@@ -485,7 +491,7 @@
                         }
                     });
                     context.commit('setAppVersion', versions);
-                    context.dispatch('onFetchSuccess');
+                    context.dispatch('onFetchSuccess', "version");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
                 });
@@ -503,41 +509,41 @@
                 });
             },
             fetchBrowser: function(context) {
-                context.dispatch('onFetchInit');
+                context.dispatch('onFetchInit', "browser");
                 countlyDevicesAndTypes.service.fetchBrowser().then(function() {
                     var browsers = countlyDevicesAndTypes.service.calculateBrowser();
                     context.commit('setAppBrowser', browsers);
-                    context.dispatch('onFetchSuccess');
+                    context.dispatch('onFetchSuccess', "browser");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
                 });
             },
             fetchDensity: function(context) {
-                context.dispatch('onFetchInit');
+                context.dispatch('onFetchInit', "density");
                 countlyDevicesAndTypes.service.fetchDensity().then(function() {
                     var densities = countlyDevicesAndTypes.service.calculateDensity();
                     context.commit('setAppDensity', densities);
-                    context.dispatch('onFetchSuccess');
+                    context.dispatch('onFetchSuccess', "density");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
                 });
             },
             fetchDeviceTypes: function(context) {
-                context.dispatch('onFetchInit');
+                context.dispatch('onFetchInit', "deviceType");
                 countlyDevicesAndTypes.service.fetchDeviceTypes().then(function() {
                     var deviceTypes = countlyDevicesAndTypes.service.calculateData("device_type", {"pie": true});
                     context.commit('setDeviceTypes', deviceTypes);
-                    context.dispatch('onFetchSuccess');
+                    context.dispatch('onFetchSuccess', "deviceType");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
                 });
             },
             fetchDevices: function(context) {
-                context.dispatch('onFetchInit');
+                context.dispatch('onFetchInit', "device");
                 countlyDevicesAndTypes.service.fetchDevices().then(function() {
                     var devices = countlyDevicesAndTypes.service.calculateDevices();
                     context.commit('setAppDevices', devices);
-                    context.dispatch('onFetchSuccess');
+                    context.dispatch('onFetchSuccess', "device");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
                 });
@@ -579,6 +585,7 @@
             setResolution: function(state, value) {
                 state.appResolution = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appResolution);
+                state.resolutionLoading = false;
             },
             setDashboardTotals: function(state, value) {
                 state.dashboardTotals = value;
@@ -586,10 +593,12 @@
             setDeviceTypes: function(state, value) {
                 state.deviceTypes = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.deviceTypes);
+                state.deviceTypesLoading = false;
             },
             setAppVersion: function(state, value) {
                 state.appVersion = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appVersion);
+                state.versionLoading = false;
             },
             setAppPlatform: function(state, value) {
                 state.appPlatform = value;
@@ -599,10 +608,12 @@
             setAppBrowser: function(state, value) {
                 state.appBrowser = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appBrowser);
+                state.browserLoading = false;
             },
             setAppDensity: function(state, value) {
                 state.appDensity = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appDensity);
+                state.densityLoading = false;
             },
             setAppDevices: function(state, value) {
                 state.appDevices = value;
@@ -628,7 +639,7 @@
             setFetchInit: function(state, part) {
                 if (part) {
                     if (part === "platform") {
-                        state.plaformLoading = true;
+                        state.platformLoading = true;
                     }
                 }
                 else {
@@ -647,9 +658,28 @@
                 state.isLoading = false;
                 state.hasError = false;
                 state.error = null;
+
                 if (part) {
                     if (part === "platform") {
-                        state.plaformLoading = false;
+                        state.platformLoading = false;
+                    }
+                    else if (part === "device") {
+                        state.deviceTypesLoading = false;
+                    }
+                    else if (part === "deviceType") {
+                        state.typeLoading = false;
+                    }
+                    else if (part === "resolution") {
+                        state.resolutionLoading = false;
+                    }
+                    else if (part === "version") {
+                        state.versionLoading = false;
+                    }
+                    else if (part === "browser") {
+                        state.browserLoading = false;
+                    }
+                    else if (part === "density") {
+                        state.densityLoading = false;
                     }
                 }
             }

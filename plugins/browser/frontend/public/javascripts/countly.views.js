@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyGlobal*/
+/* global countlyVue,CV,countlyCommon*/
 var AppBrowserView = countlyVue.views.create({
     template: CV.T("/browser/templates/browser.html"),
     data: function() {
@@ -50,7 +50,12 @@ var AppBrowserView = countlyVue.views.create({
                                 return this.appBrowser.chartData;
                             },
                             isLoading: function() {
-                                return this.$store.state.countlyDevicesAndTypes.isLoading;
+                                return this.$store.state.countlyDevicesAndTypes.browserLoading;
+                            }
+                        },
+                        methods: {
+                            numberFormatter: function(row, col, value) {
+                                return countlyCommon.formatNumber(value, 0);
                             }
                         }
                     })
@@ -68,7 +73,7 @@ var AppBrowserView = countlyVue.views.create({
                         },
                         computed: {
                             isLoading: function() {
-                                return this.$store.state.countlyDevicesAndTypes.isLoading;
+                                return this.$store.state.countlyDevicesAndTypes.browserLoading;
                             },
                             appBrowser: function() {
                                 return this.$store.state.countlyDevicesAndTypes.appBrowser;
@@ -116,6 +121,9 @@ var AppBrowserView = countlyVue.views.create({
                                     }
                                 }
                                 this.versionDetail = versionDetail;
+                            },
+                            numberFormatter: function(row, col, value) {
+                                return countlyCommon.formatNumber(value, 0);
                             }
                         },
                         mounted: function() {
@@ -210,13 +218,20 @@ var AppBrowserView = countlyVue.views.create({
                 }
                 returnData.push({"values": display, "label": browsers[z].label, itemCn: display.length});
             }
+            for (var i = 0; i < returnData.length; i++) {
+                returnData[i].values.sort(function(a, b) {
+                    return parseFloat(b.percent) - parseFloat(a.percent);
+                });
+                returnData[i].values = returnData[i].values.slice(0, 12);
+            }
+
             return returnData;
         },
         appBrowserRows: function() {
             return this.appBrowser.chartData;
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.browserLoading;
         },
         tabs: function() {
             return this.browserTabs;
@@ -238,12 +253,11 @@ var AppBrowserView = countlyVue.views.create({
 
 });
 
-if (countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-    countlyVue.container.registerTab("/analytics/technology", {
-        priority: 6,
-        name: "browsers",
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/browsers",
-        title: CV.i18n('browser.title'),
-        component: AppBrowserView
-    });
-}
+countlyVue.container.registerTab("/analytics/technology", {
+    type: "web",
+    priority: 6,
+    name: "browsers",
+    route: "#/analytics/technology/browsers",
+    title: CV.i18n('browser.title'),
+    component: AppBrowserView
+});

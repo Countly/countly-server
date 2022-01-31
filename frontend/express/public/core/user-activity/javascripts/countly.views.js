@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyUserActivity,app,CountlyHelpers,countlyCommon*/
+/* global countlyVue,CV,countlyUserActivity,app,CountlyHelpers*/
 (function() {
     var UserActivityView = countlyVue.views.create({
         template: CV.T("/core/user-activity/templates/user-activity.html"),
@@ -162,7 +162,7 @@
         priority: 1,
         name: "user-activity",
         title: CV.i18n('user-activity.title'),
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/user-activity",
+        route: "#/analytics/loyalty/user-activity",
         component: UserActivityView,
         vuex: [{
             clyModel: countlyUserActivity

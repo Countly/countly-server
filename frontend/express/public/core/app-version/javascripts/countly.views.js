@@ -35,7 +35,7 @@ var AppVersionView = countlyVue.views.create({
             return this.appVersion.chart;
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.versionLoading;
         },
         topDropdown: function() {
             if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
@@ -58,7 +58,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     priority: 4,
     name: "versions",
     title: CV.i18n('app-versions.title'),
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/versions",
+    route: "#/analytics/technology/versions",
     component: AppVersionView
 });
 

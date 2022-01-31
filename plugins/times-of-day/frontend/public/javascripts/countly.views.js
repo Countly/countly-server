@@ -1,4 +1,4 @@
-/*global countlyAuth,CV,countlyCommon,countlyVue,countlyTimesOfDay,countlyTimesOfDayComponent */
+/*global countlyAuth,CV,countlyVue,countlyTimesOfDay,countlyTimesOfDayComponent */
 
 var featureName = "times_of_day";
 
@@ -59,7 +59,7 @@ if (countlyAuth.validateRead(featureName)) {
         priority: 3,
         name: "times-of-day",
         title: CV.i18n('times-of-day.title'),
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/times-of-day",
+        route: "#/analytics/loyalty/times-of-day",
         component: TimesOfDayView,
         vuex: [{
             clyModel: countlyTimesOfDay
