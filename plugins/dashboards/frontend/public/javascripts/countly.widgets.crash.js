@@ -34,7 +34,7 @@
             };
         },
         computed: {
-            enabledTypes: function() {
+            enabledVisualizationTypes: function() {
                 /**
                  * Allowed visualization types for this widget are time-series and number
                  */
@@ -46,7 +46,7 @@
                     return ['time-series'];
                 }
             },
-            isMultiple: function() {
+            isMultipleMetric: function() {
                 var multiple = false;
 
                 if ((this.scope.editedObject.app_count === 'single') &&

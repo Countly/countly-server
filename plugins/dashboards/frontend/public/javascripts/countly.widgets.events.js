@@ -33,14 +33,14 @@
             };
         },
         computed: {
-            enabledTypes: function() {
+            enabledVisualizationTypes: function() {
                 if (this.scope.editedObject.app_count === 'multiple') {
                     return ['time-series'];
                 }
 
                 return [];
             },
-            isMultiple: function() {
+            isMultipleMetric: function() {
                 var multiple = false;
 
                 if (this.scope.editedObject.app_count === 'single') {
@@ -51,6 +51,9 @@
                 }
 
                 return multiple;
+            },
+            showBreakdown: function() {
+                return ["bar-chart", "table"].indexOf(this.scope.editedObject.visualization) > -1;
             }
         }
     });

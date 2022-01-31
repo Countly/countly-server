@@ -1,4 +1,4 @@
-/*global countlyVue, CV, Vue, countlyCommon */
+/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal */
 
 (function() {
 
@@ -59,6 +59,134 @@
                     if (!this.multiple) {
                         i = [item];
                     }
+
+                    this.$emit("input", i);
+                }
+            },
+            allListeners: function() {
+                return Object.assign({},
+                    this.$listeners,
+                    {
+                        input: function() {
+                            /**
+                             * Overwrite the input listener passed from parent,
+                             * Since all parent listeners are passed to the children,
+                             * we want to overwrite this input listener so that the value
+                             * is not updated in the parent directly from the children.
+                             * We want to intercept the child value and return as array to parent
+                             * with the help of the selectedApps computed property
+                             */
+                        }
+                    }
+                );
+            }
+        }
+    });
+
+    var BreakdownComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/breakdown.html'),
+        props: {
+            appId: {
+                type: String
+            },
+            type: {
+                type: String,
+                validator: function(value) {
+                    return (["session", "events"].indexOf(value) > -1) ? true : false;
+                },
+                required: true
+            },
+            value: {
+                type: Array
+            }
+        },
+        computed: {
+            breakdowns: function() {
+                var breakdowns = [];
+
+                switch (this.type) {
+                case "session":
+
+                    var app = countlyGlobal.apps[this.appId];
+
+                    if (app && app.type) {
+
+                        breakdowns.push(
+                            { label: "Countries", value: "countries"},
+                            { label: "Devices", value: "devices"},
+                            { label: "App Versions", value: "versions"},
+                            { label: "Platforms", value: "platforms"}
+                        );
+
+                        switch (app.type) {
+                        case "web":
+
+                            breakdowns.push({ label: "Resolutions", value: "resolutions"});
+
+                            if (typeof countlyDensity !== "undefined") {
+                                breakdowns.push({ label: "Densities", value: "density"});
+                            }
+
+                            if (typeof countlyBrowser !== "undefined") {
+                                breakdowns.push({ label: "Browsers", value: "browser"});
+                            }
+
+                            if (typeof countlyLanguage !== "undefined") {
+                                breakdowns.push({ label: "Languages", value: "langs"});
+                            }
+
+                            if (typeof countlySources !== "undefined") {
+                                breakdowns.push({ label: "Sources", value: "sources"});
+                            }
+
+                            break;
+                        case "mobile":
+
+                            breakdowns.push({ label: "Carriers", value: "carriers"});
+                            breakdowns.push({ label: "Resolutions", value: "resolutions"});
+
+                            if (typeof countlyDensity !== "undefined") {
+                                breakdowns.push({ label: "Densities", value: "density"});
+                            }
+
+                            if (typeof countlyLanguage !== "undefined") {
+                                breakdowns.push({ label: "Languages", value: "langs"});
+                            }
+
+                            if (typeof countlySources !== "undefined") {
+                                breakdowns.push({ label: "Sources", value: "sources"});
+                            }
+
+                            break;
+                        case "desktop":
+
+                            breakdowns.push({ label: "Resolutions", value: "resolutions"});
+
+                            if (typeof countlyDensity !== "undefined") {
+                                breakdowns.push({ label: "Densities", value: "density"});
+                            }
+
+                            if (typeof countlyLanguage !== "undefined") {
+                                breakdowns.push({ label: "Languages", value: "langs"});
+                            }
+
+                            break;
+                        }
+                    }
+
+                    break;
+                case "event":
+                    break;
+                }
+
+                return breakdowns;
+            },
+            selectedBreakdown: {
+                get: function() {
+                    return this.value && this.value[0] || "";
+                },
+                set: function(item) {
+                    var i = [item];
 
                     this.$emit("input", i);
                 }
@@ -480,6 +608,7 @@
      * DRAWER HELPERS REGISTRATION
      */
     Vue.component("clyd-metric", MetricComponent);
+    Vue.component("clyd-breakdown", BreakdownComponent);
     Vue.component("clyd-datatype", DataTypeComponent);
     Vue.component("clyd-appcount", AppCountComponent);
     Vue.component("clyd-sourceapps", SourceAppsComponent);

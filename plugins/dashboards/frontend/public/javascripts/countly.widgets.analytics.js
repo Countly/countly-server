@@ -58,14 +58,14 @@
             };
         },
         computed: {
-            enabledTypes: function() {
+            enabledVisualizationTypes: function() {
                 if (this.scope.editedObject.app_count === 'multiple') {
                     return ['time-series'];
                 }
 
                 return [];
             },
-            isMultiple: function() {
+            isMultipleMetric: function() {
                 var multiple = false;
                 var appCount = this.scope.editedObject.app_count;
                 var visualization = this.scope.editedObject.visualization;
@@ -77,6 +77,9 @@
                 }
 
                 return multiple;
+            },
+            showBreakdown: function() {
+                return ["bar-chart", "table"].indexOf(this.scope.editedObject.visualization) > -1;
             }
         }
     });
@@ -96,8 +99,17 @@
                     metrics: [],
                     apps: [],
                     visualization: "",
+                    breakdowns: [],
                 };
             },
+            beforeSaveFn: function(doc) {
+                /**
+                 * Sanitize the widget object before saving on the server
+                 */
+                if (["bar-chart", "table"].indexOf(doc.visualization) === -1) {
+                    delete doc.breakdowns;
+                }
+            }
         },
         grid: {
             component: TimeSeriesComponent,
