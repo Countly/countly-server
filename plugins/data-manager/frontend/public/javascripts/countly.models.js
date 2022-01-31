@@ -1,4 +1,4 @@
-/*global countlyVue countlyCommon CV countlyGlobal*/
+/*global countlyVue countlyCommon CV countlyGlobal CountlyHelpers*/
 
 (function(countlyDataManager) {
 
@@ -260,23 +260,33 @@
             },
             saveEventGroups: function(context, data) {
                 countlyDataManager.service.createEventGroups(data).then(function(res) {
+                    CountlyHelpers.notify({message: 'Event Group Created', sticky: false, type: 'success'});
                     context.dispatch("loadEventGroups");
                     return res;
+                }).catch(function() {
+                    CountlyHelpers.notify({message: 'Error while creating event group', sticky: false, type: 'error'});
                 });
             },
             editEventGroups: function(context, data) {
                 countlyDataManager.service.editEventGroups(data).then(function(res) {
+                    CountlyHelpers.notify({message: 'Event Group Updated', sticky: false, type: 'success'});
                     context.dispatch("loadEventGroups");
                     return res;
+                }).catch(function() {
+                    CountlyHelpers.notify({message: 'Error while updating event group', sticky: false, type: 'error'});
                 });
             },
             saveEvent: function(context, event) {
                 countlyDataManager.service.saveEvent(event).then(function(err) {
                     if (err !== 'Error') {
+                        CountlyHelpers.notify({message: 'Event Created', sticky: false, type: 'success'});
                         context.dispatch('loadEventsData');
                         context.dispatch('loadSegmentsMap');
                     }
-                    return err;
+                    else {
+                        CountlyHelpers.notify({message: 'Error while creating event', sticky: false, type: 'error'});
+                        return err;
+                    }
                 });
             },
             editEvent: function(context, event) {
@@ -318,8 +328,10 @@
                     if (isDrill) {
                         countlyDataManager.service.editEventMeta(eventMeta).then(function(errMeta) {
                             if (err === 'Error' || errMeta === "Error") {
+                                CountlyHelpers.notify({message: 'Error while updating event', sticky: false, type: 'error'});
                                 return 'Error';
                             }
+                            CountlyHelpers.notify({message: 'Event Updated Successfully', sticky: false, type: 'success'});
                             context.dispatch('loadEventsData');
                             context.dispatch('loadValidations');
                             context.dispatch('loadSegmentsMap');
@@ -327,8 +339,10 @@
                     }
                     else {
                         if (err === 'Error') {
+                            CountlyHelpers.notify({message: 'Error while updating event', sticky: false, type: 'error'});
                             return 'Error';
                         }
+                        CountlyHelpers.notify({message: 'Event Updated Successfully', sticky: false, type: 'success'});
                         context.dispatch('loadEventsData');
                     }
                 });
@@ -376,16 +390,22 @@
             },
             saveCategories: function(context, categories) {
                 countlyDataManager.service.createCategory(categories).then(function(data) {
+                    CountlyHelpers.notify({message: 'Category Created', sticky: false, type: 'success'});
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
                     return data;
+                }).catch(function() {
+                    CountlyHelpers.notify({message: 'Error while creating Category', sticky: false, type: 'error'});
                 });
             },
             editCategories: function(context, categories) {
                 return countlyDataManager.service.editCategories(categories).then(function(data) {
+                    CountlyHelpers.notify({message: 'Category Updated', sticky: false, type: 'success'});
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
                     return data;
+                }).catch(function() {
+                    CountlyHelpers.notify({message: 'Error while creating Category', sticky: false, type: 'error'});
                 });
             },
             deleteCategories: function(context, categories) {
