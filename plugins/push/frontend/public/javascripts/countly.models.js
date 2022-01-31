@@ -1775,6 +1775,16 @@
             },
             mapAppLevelConfigModelProperty: function(property) {
                 return AppLevelConfigPropertyModelMap[property];
+            },
+            mapTestUsersEditedModelToDto: function(editedModel) {
+                var testUsersDto = {};
+                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.USER_ID) {
+                    Object.assign(testUsersDto, {uids: editedModel.userIds.join(',')});
+                }
+                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.COHORT) {
+                    Object.assign(testUsersDto, {cohorts: editedModel.cohorts.join(',')});
+                }
+                return testUsersDto;
             }
         }
     };
@@ -2137,25 +2147,16 @@
             return countlyPushNotificationApprover.service.approve(messageId);
         },
         addTestUsers: function(testUsersModel, options) {
-            var testUsersConfigDto = {};
-            if (testUsersModel.definitionType === AddTestUserDefinitionTypeEnum.USER_ID) {
-                testUsersConfigDto = { test: {uids: testUsersModel.userIds.join(',') }};
+            try {
+                var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(testUsersModel);
+                var appConfig = {push: {test: {}}};
+                appConfig.push.test = testDto;
             }
-            if (testUsersModel.definitionType === AddTestUserDefinitionTypeEnum.COHORT) {
-                testUsersConfigDto = { test: {cohorts: testUsersModel.cohorts.join(',') }};
+            catch (error) {
+                // TODO:log error
+                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
             }
-            var appConfig = {push: {}};
-            appConfig.push = testUsersConfigDto;
-            return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.updateAppConfig(appConfig, options)
-                    .then(function(response) {
-                        console.log(response);
-                        resolve(response);
-                    }).catch(function(error) {
-                    // TODO: log error;
-                        reject(error.message);
-                    });
-            });
+            return countlyPushNotification.api.updateAppConfig(appConfig, options);
         }
     };
 

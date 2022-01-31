@@ -1842,9 +1842,10 @@
             onOpen: function() {
                 this.fetchCohortsIfNotFound();
             },
-            // updateTestUsersAppConfig: function(testUsersConfig) {
-            //     countlyGlobal.apps[this.selectedAppId].plugins.push.test = testUsersConfig;
-            // },
+            updateTestUsersAppConfig: function(editedObject) {
+                var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(editedObject);
+                countlyGlobal.apps[this.selectedAppId].plugins.push.test = testDto;
+            },
             onSubmit: function(editedObject, done) {
                 var self = this;
                 this.isAddTestUsersLoading = true;
@@ -1852,7 +1853,7 @@
                 options.app_id = this.selectedAppId;
                 countlyPushNotification.service.addTestUsers(editedObject, options)
                     .then(function() {
-                        // self.updateTestUsersAppConfig(response.push.test);
+                        self.updateTestUsersAppConfig(editedObject);
                         done();
                         CountlyHelpers.notify({message: 'Test users have been successfully added.'});
                     }).catch(function() {
