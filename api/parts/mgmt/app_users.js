@@ -225,6 +225,15 @@ usersApi.delete = function(app_id, query, params, callback) {
                         catch (err2) {
                             console.log(err2);
                         }
+                        plugins.dispatch("/systemlogs", {
+                            params: params,
+                            action: "app_user_deleted",
+                            data: {
+                                app_id: app_id,
+                                query: query,
+                                uids: res[0].uid,
+                            }
+                        });
                         callback(err, res[0].uid);
                     });
                 });
