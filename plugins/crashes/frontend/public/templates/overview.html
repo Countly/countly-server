@@ -18,7 +18,7 @@
                         <el-table-column :label="errorColumnLabel" min-width="415" fixed="left">
                             <template slot-scope="col">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <div class="has-ellipsis" v-html="col.row.name"></div>
+                                    <div class="crash-group-title has-ellipsis" v-html="col.row.name"></div>
                                     <div class="bu-mt-2 bu-is-flex">
                                         <crash-badge :type="badge.type" v-html="badge.content" v-for="badge in badgesFor(col.row)"></crash-badge>
                                     </div>
@@ -36,11 +36,11 @@
                     <template v-slot:bottomline="scope">
                         <div class="crashes-action-bar" v-if="selectedCrashgroups.length > 0">
                             <el-button @click="setSelectedAs('unresolved')" icon="fas fa-circle crash-icon-color-orange"> {{i18n("crashes.action-unresolved")}}</el-button>
-                            <el-button @click="setSelectedAs('resolving')" icon="fas fa-circle crash-icon-color-blue"> {{i18n("crashes.action-resolving")}}</el-button>
-                            <el-button @click="setSelectedAs('resolved')" icon="fas fa-circle crash-icon-color-green"> {{i18n("crashes.action-resolved")}}</el-button>
-                            <el-button @click="setSelectedAs('show')" icon="fas fa-eye crash-icon-color-gray"> {{i18n("crashes.action-show")}}</el-button>
-                            <el-button @click="setSelectedAs('hide')" icon="fas fa-eye-slash crash-icon-color-gray"> {{i18n("crashes.action-hide")}}</el-button>
                             <el-button @click="setSelectedAs('delete')" icon="el-icon-delete">{{i18n("crashes.action-delete")}}</el-button>
+                            <el-button @click="setSelectedAs('hide')" icon="fas fa-eye-slash crash-icon-color-gray"> {{i18n("crashes.action-hide")}}</el-button>
+                            <el-button @click="setSelectedAs('show')" icon="fas fa-eye crash-icon-color-gray"> {{i18n("crashes.action-view")}}</el-button>
+                            <el-button @click="setSelectedAs('resolved')" icon="fas fa-circle crash-icon-color-green"> {{i18n("crashes.action-resolved")}}</el-button>
+                            <el-button @click="setSelectedAs('resolving')" icon="fas fa-circle crash-icon-color-blue"> {{i18n("crashes.action-resolving")}}</el-button>
                         </div>
                     </template>
                 </cly-datatable-n>
@@ -66,17 +66,19 @@
                                 <cly-metric-card :is-percentage="true" color="#CDAD7A" :number="statistics.users.affected.totalPercent">
                                     {{i18n('crashes.affected-users')}}
                                     <template v-slot:description>
-                                        <span class="text-medium">{{statistics.users.affected.total}} of {{statistics.users.total}} Total Users</span>
+                                        <span class="text-medium" style="white-space: initial;">{{statistics.users.affected.total}} of {{statistics.users.total}} Total Users</span>
                                     </template>
                                 </cly-metric-card>
+                                <div class="cly-divider"></div>
                                 <cly-metric-card :label="i18n('crashes.resolution-status')" :is-percentage="true" color="#F96300" :number="statistics.crashes.resolvedPercent" :tooltip="i18n('crashes.help-resolved')">
                                     <template v-slot:description>
-                                        <span class="text-medium">{{statistics.crashes.resolved}} Resolved of {{statistics.crashes.total}} Total Crashes</span>
+                                        <span class="text-medium" style="white-space: initial;">{{statistics.crashes.resolved}} Resolved of {{statistics.crashes.total}} Total Crashes</span>
                                     </template>
                                 </cly-metric-card>
+                                <div class="cly-divider"></div>
                                 <cly-metric-card :label="i18n('crashes.fatality')" :is-percentage="true" color="#F62404" :number="parseFloat(statistics.crashes.fatalPercent.toFixed(2))">
                                     <template v-slot:description>
-                                        <span class="text-medium">{{statistics.crashes.fatal}} Fatal of {{statistics.crashes.total}} Total Crashes</span>
+                                        <span class="text-medium" style="white-space: initial;">{{statistics.crashes.fatal}} Fatal of {{statistics.crashes.total}} Total Crashes</span>
                                     </template>
                                 </cly-metric-card>
                             </div>
@@ -113,22 +115,18 @@
                                     <template v-slot:title>{{i18n("crashes.loss")}}</template>
                                     <template v-slot:value>{{statistics.revenueLoss}}</template>
                                 </cly-crashes-dashboard-tile>
-                                <cly-crashes-dashboard-tile isVertical>
-                                    <template v-slot:title>{{i18n("crashes.highest-version")}}</template>
-                                    <template v-slot:value>{{statistics.latestAppVersion}}</template>
-                                </cly-crashes-dashboard-tile>
                             </div>
                         </cly-crashes-dashboard-tile>
                     </div>
                 </cly-section>
-                <div class="bu-is-flex bu-is-align-items-center bu-mt-5 bu-mb-4">
+                <div class="bu-is-flex bu-is-align-items-center bu-mt-5 bu-mb-4" style="margin-top: 32px !important;">
                     <cly-date-picker-g></cly-date-picker-g>
                     <div class="text-small text-uppercase bu-mx-3" style="color: #969FAD;">{{i18n("crashes.crash-filters")}}</div>
                     <cly-multi-select v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
                 </div>
                 <cly-section class="crashes-statistics-graph">
                     <el-tabs v-model="statisticsGraphTab" type="card" stretch>
-                        <el-tab-pane name="total-occurances">
+                        <el-tab-pane name="total-occurances" style="border-top-left-radius: 4px;">
                             <div class="bu-py-4" slot="label">
                                 <crash-tab-label :title="i18n('crashes.total')" tooltip="Hello" :data="dashboardData[{'both': 'cr', 'fatal': 'crf', 'nonfatal': 'crnf'}[activeFilter.fatality]]">
                                 </crash-tab-label>
@@ -156,7 +154,7 @@
                             </div>
                             <cly-chart-line :option="chartData('crau')"></cly-chart-line>
                         </el-tab-pane>
-                        <el-tab-pane name="crashfree-sessions">
+                        <el-tab-pane name="crashfree-sessions" style="border-top-right-radius: 4px;">
                             <div class="bu-py-4" slot="label">
                                 <crash-tab-label :title="i18n('crashes.free-sessions')" tooltip="Hello" :data="dashboardData[{'both': 'crses', 'fatal': 'crfses', 'nonfatal': 'crnfses'}[activeFilter.fatality]]" negateTrend>
                                 </crash-tab-label>

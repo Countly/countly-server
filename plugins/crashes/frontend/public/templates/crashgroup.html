@@ -12,7 +12,7 @@
             </div>
         </template>
         <template v-slot:header-right>
-            <div class="bu-is-flex bu-is-align-items-center">
+            <div class="bu-is-flex bu-is-align-items-flex-start">
                 <!--
                 <el-button class="crash-header-button text-button" size="small" v-if="jiraIntegrationEnabled">
                     <i class="fab fa-jira bu-mr-1"></i>
@@ -85,14 +85,14 @@
                 </el-tab-pane>
                 <el-tab-pane name="comments">
                     <span slot="label">
-                        {{i18n("crashes.comments")}} <span class="bu-tag">{{comments.length}}</span>
+                        {{i18n("crashes.comments")}} <span class="bu-tag" style="background-color: #A7AEB8;">{{comments.length}}</span>
                     </span>
-                    <div class="bu-mx-5 bu-mt-5 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="comments.length === 0">
-                        <img class="bu-mb-2" src="images/crashes/no-comments.svg"/>
+                    <div class="bu-mx-5 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="comments.length === 0">
+                        <img class="bu-mb-2" style="margin-top: 32px; height: 76px;" src="images/crashes/no-comments.svg"/>
                         <div class="bu-mb-1"><h4>{{i18n("crashes.no-comments-yet")}}</h4></div>
                         <div class="text-small color-cool-gray-50">{{i18n("crashes.no-comments-yet-long")}}</div>
                     </div>
-                    <el-card class="bu-mx-5 bu-mt-5 bu-p-4" shadow="never" :body-style="{padding: '0px'}" v-for="comment in comments">
+                    <el-card class="bu-mx-5 bu-p-4" shadow="never" :body-style="{padding: '0px'}" v-for="comment in comments">
                         <div class="bu-is-flex bu-is-flex-direction-column">
                             <div class="bu-is-flex bu-is-flex-direction-row bu-is-justify-content-space-between bu-mb-4">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
@@ -113,7 +113,7 @@
                         <div>
                         </div>
                     </el-card>
-                    <div class="bu-m-5">
+                    <div class="bu-m-5 comment-box">
                         <el-input type="textarea" autosize placeholder="Enter your comment" v-model="commentInput"></el-input>
                         <div class="bu-level bu-mt-3">
                             <div class="bu-left">
@@ -124,7 +124,7 @@
                                     <el-button size="small" type="primary" @click="saveComment">{{i18n("common.save")}}</el-button>
                                 </div>
                                 <div v-else-if="!!commentInput  || comments.length === 0">
-                                    <el-button class="icon-button green" size="small" type="primary" @click="saveComment">{{i18n("crashes.add_comment")}}</el-button>
+                                    <el-button class="icon-button" type="success" size="small" @click="saveComment">{{i18n("crashes.add_comment")}}</el-button>
                                 </div>
                             </div>
                         </div>
@@ -144,7 +144,7 @@
                             </div>
                             <div class="text-small color-cool-gray-50">{{i18n('crashes.average')}}</div>
                         </div>
-                        <div class="bu-columns bu-m-0 bu-is-justify-content-space-between">
+                        <div style="padding-top: 16px;" class="bu-columns bu-m-0 bu-is-justify-content-space-between">
                             <div>
                                 {{mobileDiagnostics[diagnosticKey].min.toFixed(2)}}
                                 <div class="text-small color-cool-gray-50">{{i18n('crashes.minimum')}}</div>
@@ -172,7 +172,7 @@
                     <template v-slot:title>{{i18n('crashes.muted')}}</template>
                     <template v-slot:value>{{mobileMetrics.mutedPercent.toFixed(2)}} %</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-background')" showDonut :donutPercentage="mobileMetrics.backgroundPercent">
+                <cly-crashes-dashboard-tile class="has-ellipsis" columnWidth="3" :tooltip="i18n('crashes.help-background')" showDonut :donutPercentage="mobileMetrics.backgroundPercent">
                     <template v-slot:title>{{i18n('crashes.background')}}</template>
                     <template v-slot:value>{{mobileMetrics.backgroundPercent.toFixed(2)}} %</template>
                 </cly-crashes-dashboard-tile>
@@ -185,7 +185,7 @@
                     <el-option v-for="item in chartByOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
                 </el-select>
             </template>
-            <cly-chart-bar :option="chartData" :legend="{show: false}"></cly-chart-bar>
+            <cly-chart-bar :option="chartData" :legend="{show: true}"></cly-chart-bar>
         </cly-section>
         <cly-section :title="i18n('crashes.crash-occurences')">
             <cly-datatable-n :rows="crashes" ref="tableData" @row-click="handleRowClick">
@@ -195,7 +195,7 @@
                 <template v-slot="scope">
                     <el-table-column type="expand">
                         <template slot-scope="props">
-                            <el-card class="bu-mb-5" shadow="never" :body-style="{padding: '0px'}">
+                            <el-card class="bu-mb-5" :body-style="{padding: '0px'}">
                                 <div class="bu-columns bu-is-gapless bu-is-mobile">
                                     <cly-crashes-dashboard-tile :columnWidth="props.row.custom ? 3 : 4">
                                         <div class="bu-p-5 bu-is-align-self-flex-start">
@@ -232,7 +232,7 @@
                                         </div>
                                         <div v-else>
                                             <el-button class="crash-link text-medium" type="text" @click="symbolicateCrash(props.row)" :loading="isCrashBeingSymbolicated(props.row._id)" v-if="!!crashgroup._symbol_id">{{i18n("crash_symbolication.symbolicate_error")}}</el-button>
-                                            <a class="crash-link text-medium" href="#/crash/symbols/" v-else>{{i18n("crash_symbolication.should-upload")}}</a>
+                                            <span class="text-small bu-ml-3 text-uppercase font-weight-bold">{{i18n("crashes.stacktrace")}}</span>
                                         </div>
                                     </template>
                                     <template v-slot:header-right>

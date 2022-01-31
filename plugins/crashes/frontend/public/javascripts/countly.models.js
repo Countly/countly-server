@@ -549,7 +549,7 @@
                         data: mapKeys
                     },
                     series: [
-                        {data: Object.values(mapObj)}
+                        {data: Object.values(mapObj), color: "#F96300", name: `${jQuery.i18n.prop("crashes.fatal_crash_count")} by ${chartBy}`}
                     ]
                 };
 
@@ -957,7 +957,7 @@
             badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.resolving")});
         }
         else {
-            badges.push({type: "negative", content: jQuery.i18n.prop("crashes.unresolved")});
+            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.unresolved")});
         }
 
         if (crash.is_renewed) {
