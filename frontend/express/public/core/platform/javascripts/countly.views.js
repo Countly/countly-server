@@ -181,7 +181,6 @@ var AppPlatformView = countlyVue.views.create({
                     "color": this.graphColors[k % this.graphColors.length]
                 });
             }
-
             return display;
         },
         topDropdown: function() {
@@ -217,18 +216,25 @@ var AppPlatformView = countlyVue.views.create({
                 }
                 returnData.push({"values": display, "label": platforms[z].label, itemCn: display.length});
             }
+            for (var i = 0; i < returnData.length; i++) {
+                returnData[i].values.sort(function(a, b) {
+                    return parseFloat(b.percent) - parseFloat(a.percent);
+                });
+                returnData[i].values = returnData[i].values.slice(0, 12);
+            }
             return returnData;
         },
         appPlatformRows: function() {
             return this.appPlatform.chartData;
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.platformLoading;
         },
         tabs: function() {
             return this.platformTabs;
         }
     },
+
     mixins: [
         countlyVue.container.dataMixin({
             'externalLinks': '/analytics/platforms/links'
