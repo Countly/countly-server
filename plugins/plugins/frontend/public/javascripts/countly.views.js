@@ -445,7 +445,7 @@
                     return jQuery.i18n.map["configs.user-level-configuration"];
                 }
 
-                return app.configurationsView.getInputLabel(this.selectedConfig + "." + id);
+                return app.configurationsView.getInputLabel((ns || this.selectedConfig) + "." + id);
             },
             getHelperLabel: function(id, ns) {
                 ns = ns || this.selectedConfig;
