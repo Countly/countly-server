@@ -19,7 +19,7 @@
     <cly-chart-bar :option="appVersionOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
   </cly-section>
   <cly-section>
-    <cly-datatable-n  :rows="appVersionRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading">
+    <cly-datatable-n  :rows="appVersionRows" :resizable="true" :force-loading="isLoading">
       <template v-slot="scope">
         <el-table-column sortable="custom" prop="app_versions" :label="i18n('app-versions.table.app-version')"></el-table-column>
         <el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>

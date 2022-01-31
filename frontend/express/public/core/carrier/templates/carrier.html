@@ -29,7 +29,7 @@
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="appCarrierRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading">
+			<cly-datatable-n  :rows="appCarrierRows" :resizable="true" :force-loading="isLoading">
 				<template v-slot="scope">
 					<el-table-column sortable="custom"  prop="carriers" :label="i18n('carriers.table.carrier')"></el-table-column>
 					<el-table-column sortable="custom" :formatter="numberFormatter" prop="t" :label="i18n('common.table.total-sessions')"></el-table-column>

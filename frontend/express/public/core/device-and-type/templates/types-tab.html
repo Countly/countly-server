@@ -11,7 +11,7 @@
 		</div>
 	</cly-section>
 	<cly-section>
-		<cly-datatable-n  :rows="deviceTypesRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading">
+		<cly-datatable-n  :rows="deviceTypesRows" :resizable="true" :force-loading="isLoading">
 			<template v-slot="scope">
 				<el-table-column sortable="custom" prop="device_type" :label="i18n('device_type.table.device_type')"></el-table-column>
 					<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
