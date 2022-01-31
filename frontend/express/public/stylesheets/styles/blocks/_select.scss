@@ -174,7 +174,16 @@
             opacity: 0.12;
         }
     }
-
+    .cly-vue-listbox__group {
+        font-size: 12px;
+        line-height: 14px;
+        background-color: #F6F6F6;
+        border-bottom: solid 1px #ECECEC;
+        max-height: 32px;
+        display: flex;
+        align-items: center;
+        padding: v.$select-dropdown-item-default-padding;
+    }
     .cly-vue-listbox__item {
         display: flex;
         cursor: pointer;
