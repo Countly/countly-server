@@ -70,14 +70,5 @@
     <cly-inline-form-field label="Period duration (seconds)" rules="numeric">
         <el-input :value="viewModel.period" @input="onInput('period',$event)"></el-input>
     </cly-inline-form-field>
-    <cly-confirm-dialog 
-        title="Delete key"
-        dialogType="danger"
-        saveButtonLabel="I understand, delete this key" 
-        cancelButtonLabel="Cancel" 
-        :visible.sync="isDeleteKeyDialogVisible"
-        @cancel="onDeleteKeyCancel" 
-        @confirm="onDeleteKeyConfirm">
-    </cly-confirm-dialog>
 </cly-confirm-dialog >
 </div>

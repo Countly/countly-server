@@ -1601,7 +1601,6 @@
                 selectedAppId: this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID,
                 isHuaweiConfigTouched: false,
                 isIOSConfigTouched: false,
-                isDeleteKeyDialogVisible: false,
                 selectedKeyToDelete: null,
             };
         },
@@ -1727,11 +1726,7 @@
             },
             onDeleteKey: function(platformKey) {
                 this.selectedKeyToDelete = platformKey;
-                this.isDeleteKeyDialogVisible = true;
-            },
-            onDeleteKeyCancel: function() {
-                this.selectedKeyToDelete = null;
-                this.isDeleteKeyDialogVisible = false;
+                CountlyHelpers.confirm('', 'danger', this.onConfirmCallback, ['Cancel', 'I understand, delete this key'], {title: 'Delete key'});
             },
             deleteAndroidKey: function() {
                 var platform = this.PlatformEnum.ANDROID;
@@ -1757,8 +1752,7 @@
                 this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.$emit('change', 'push' + '.' + platformDto, null);
             },
-            onDeleteKeyConfirm: function() {
-                this.isDeleteKeyDialogVisible = false;
+            deleteKeyOnCofirm: function() {
                 if (this.selectedKeyToDelete === this.PlatformEnum.ANDROID) {
                     this.deleteAndroidKey();
                     return;
@@ -1775,6 +1769,12 @@
                     return;
                 }
                 throw new Error('Unknown platform key, ' + this.selectedKeyToDelete);
+            },
+            onConfirmCallback: function(isConfirmed) {
+                if (isConfirmed) {
+                    this.deleteKeyOnCofirm();
+                }
+                this.selectedKeyToDelete = null;
             },
             addSelectedAppEventListener: function(callback) {
                 this.$on('selectedApp', callback);
