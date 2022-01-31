@@ -249,7 +249,10 @@
             deleteEventGroups: function(context, events) {
                 countlyDataManager.service.deleteEventGroups(events).then(function(data) {
                     context.dispatch("loadEventGroups");
+                    CountlyHelpers.notify({message: 'Event Group Deleted', sticky: false, type: 'success'});
                     return data;
+                }).catch(function() {
+                    CountlyHelpers.notify({message: 'Error while deleting event group', sticky: false, type: 'error'});
                 });
             },
             changeEventGroupsVisibility: function(context, data) {
@@ -370,11 +373,15 @@
                 countlyDataManager.service.deleteEvents(events).then(function(res) {
                     countlyDataManager.service.deleteEventsMeta(events).then(function(res2) {
                         if (res === 'Error' || res2 === 'Error') {
+                            CountlyHelpers.notify({message: 'Error while deleting Event', sticky: false, type: 'error'});
                             return 'Error';
                         }
                         context.dispatch('loadEventsData');
                         context.dispatch('loadSegmentsMap');
+                        CountlyHelpers.notify({message: 'Event Deleted', sticky: false, type: 'success'});
                     });
+                }).catch(function() {
+                    CountlyHelpers.notify({message: 'Error while deleting Event', sticky: false, type: 'error'});
                 });
             },
             loadCategories: function(context) {
@@ -410,14 +417,20 @@
             },
             deleteCategories: function(context, categories) {
                 countlyDataManager.service.deleteCategories(categories).then(function(data) {
+                    CountlyHelpers.notify({message: 'Category Deleted', sticky: false, type: 'success'});
                     return data;
+                }).catch(function() {
+                    CountlyHelpers.notify({message: 'Error while deleting category', sticky: false, type: 'error'});
                 });
             },
             changeCategory: function(context, data) {
                 countlyDataManager.service.changeCategory(data.events, data.category).then(function(res) {
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
+                    CountlyHelpers.notify({message: 'Category Changed', sticky: false, type: 'success'});
                     return res;
+                }).catch(function() {
+                    CountlyHelpers.notify({message: 'Error while changing category', sticky: false, type: 'error'});
                 });
             },
         };
