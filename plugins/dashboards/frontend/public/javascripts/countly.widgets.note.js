@@ -47,7 +47,7 @@
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "note",
-        label: CV.i18nM("dashboards.note"),
+        label: CV.i18nM("dashboards.widget-type.note"),
         priority: 5,
         drawer: {
             component: DrawerComponent,

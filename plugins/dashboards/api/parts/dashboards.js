@@ -8,12 +8,14 @@ var countlyModel = require("../../../../api/lib/countly.model.js"),
     common = require('../../../../api/utils/common.js'),
     countlyCommon = require('../../../../api/lib/countly.common'),
     fetch = require("../../../../api/parts/data/fetch.js"),
+    log = common.log('dashboards:api'),
     plugins = require("../../../pluginManager.js");
 
 /** @lends module:api/parts/data/dashboard */
 var dashboard = {};
 
 var separator = "***";
+
 /**
  *  @brief Brief description
  *  
@@ -61,9 +63,11 @@ function toCollection(val) {
         resolutions: "device_details",
         countries: "users"
     };
+
     if (ob[val]) {
         return ob[val];
     }
+
     return val;
 }
 /**
@@ -100,23 +104,110 @@ function toSegment(val) {
     }
     return val;
 }
+
 /**
- *  Gets plugin name
- *  @param {string} val - data index
- *  @return {string} plugin name
+ * Function to map the old widget structure to the new one
+ * @param  {Object} widget - Widget object
  */
-/* Not used function
-function toPlugin(val) {
-    var ob = {
-        langs: "locale"
-    };
-    if (ob[val]) {
-        return ob[val];
+function mapWidget(widget) {
+    var widgetType, visualization, dataType, appcount;
+
+    switch (widget.widget_type) {
+    case "time-series":
+        widgetType = "analytics";
+        visualization = "time-series";
+
+        var apps = widget.apps;
+
+        if (apps.length > 1) {
+            appcount = 'multiple';
+        }
+        else {
+            appcount = 'single';
+        }
+
+        break;
+    case "bar-chart":
+        widgetType = "analytics";
+        visualization = "bar-chart";
+        appcount = "single";
+
+        break;
+    case "number":
+        widgetType = "analytics";
+        visualization = "number";
+        appcount = "single";
+
+        break;
+    case "table":
+        widgetType = "analytics";
+        visualization = "table";
+        appcount = "single";
+
+        break;
+    case "views":
+        widgetType = "analytics";
+        dataType = "views";
+
+        break;
+    case "funnels":
+        /**
+         * Backward compatibility check for already created funnels
+         * Remove when all previous funnels are shifted to client fetch
+         * Funnels are to fetched on the client side
+         */
+        widget.client_fetch = true;
+
+        break;
+    default:
+        break;
     }
-    return val;
+
+    switch (widget.widget_type) {
+    case "time-series":
+    case "bar-chart":
+    case "number":
+    case "table":
+        if (widget.data_type === "push") {
+            widgetType = "push";
+            delete widget.data_type;
+        }
+        else if (widget.data_type === "crash") {
+            widgetType = "crash";
+            delete widget.data_type;
+        }
+        else if (widget.data_type === "event") {
+            widgetType = "events";
+            delete widget.data_type;
+        }
+        else if (widget.data_type === "session") {
+            dataType = "session";
+            delete widget.data_type;
+        }
+
+        break;
+    default:
+        break;
+    }
+
+    if (widgetType) {
+        widget.widget_type = widgetType;
+    }
+
+    if (visualization) {
+        widget.visualization = visualization;
+    }
+
+    if (dataType) {
+        widget.data_type = dataType;
+    }
+
+    if (appcount) {
+        widget.app_count = appcount;
+    }
 }
-*/
-dashboard.fetchWidgetData = function(params, my_widgets, callback) {
+
+dashboard.fetchWidgetDataOld = function(params, my_widgets, callback) {
     if (my_widgets) {
         var nonPluginWidgets = {};
         var pluginWidgets = {};
@@ -415,5 +506,637 @@ dashboard.fetchWidgetData = function(params, my_widgets, callback) {
         callback([]);
     }
 };
+
+dashboard.fetchAllWidgetsData = function(params, widgets, callback) {
+    if (widgets && widgets.length) {
+        var appIds = [];
+        for (var i = 0; i < widgets.length; i++) {
+            var widget = widgets[i];
+
+            mapWidget(widget);
+
+            var widgetApps = widget.apps || [];
+
+            for (var j = 0; j < widgetApps.length; j++) {
+                var appId = widgetApps[j];
+                if (appIds.indexOf(appId) < 0) {
+                    appIds.push(common.db.ObjectID(appId));
+                }
+            }
+        }
+
+        common.db.collection("apps").find({_id: {$in: appIds}}).toArray(function(err, res) {
+            var apps = {};
+
+            if (!err && res) {
+                for (var k = 0; k < res.length; k++) {
+                    apps[res[k]._id + ""] = res[k];
+                }
+            }
+
+            async.map(widgets, function(wget, done) {
+
+                if (wget.client_fetch) {
+                    return done();
+                }
+
+                var newParams = {
+                    qstring: params.qstring,
+                    member: params.member
+                };
+
+                plugins.dispatch("/dashboard/data", {
+                    params: JSON.parse(JSON.stringify(newParams)),
+                    apps: JSON.parse(JSON.stringify(apps)),
+                    widget: wget
+                }, function() {
+                    return done();
+                });
+
+            }, function() {
+                return callback(widgets);
+            });
+        });
+    }
+    else {
+        return callback([]);
+    }
+};
+
+dashboard.fetchAnalyticsData = async function(params, apps, widget) {
+    var dashData = {};
+
+    switch (widget.data_type) {
+    case "session":
+        try {
+            var widgetApps = widget.apps || [];
+            var widgetData = {};
+
+            for (let i = 0; i < widgetApps.length; i++) {
+                var appId = widgetApps[i];
+                widgetData[appId] = await getAnalyticsSessionDataForApp(params, apps, appId, widget);
+            }
+
+            dashData.isValid = true;
+            dashData.data = widgetData;
+
+            widget.dashData = dashData;
+        }
+        catch (e) {
+            log.d("Error while fetching analytics widget data for - ", widget);
+            log.d("Error is - ", e);
+
+            dashData.isValid = false;
+            dashData.data = undefined;
+
+            widget.dashData = dashData;
+
+            return widget;
+        }
+
+        break;
+    default:
+        break;
+    }
+};
+
+dashboard.fetchEventsData = async function(params, apps, widget) {
+    var dashData = {};
+
+    try {
+        var widgetApps = widget.apps || [];
+        var widgetData = {};
+
+        for (let i = 0; i < widgetApps.length; i++) {
+            var appId = widgetApps[i];
+            widgetData[appId] = await getEventsDataForApp(params, apps, appId, widget);
+        }
+
+        dashData.isValid = true;
+        dashData.data = widgetData;
+
+        widget.dashData = dashData;
+    }
+    catch (e) {
+        log.d("Error while fetching events widget data for - ", widget);
+        log.d("Error is - ", e);
+
+        dashData.isValid = false;
+        dashData.data = undefined;
+
+        widget.dashData = dashData;
+
+        return widget;
+    }
+};
+
+dashboard.fetchPushData = async function(params, apps, widget) {
+    var dashData = {};
+
+    try {
+        var widgetApps = widget.apps || [];
+        var widgetData = {};
+
+        for (let i = 0; i < widgetApps.length; i++) {
+            var appId = widgetApps[i];
+            widgetData[appId] = await getPushDataForApp(params, apps, appId, widget);
+        }
+
+        dashData.isValid = true;
+        dashData.data = widgetData;
+
+        widget.dashData = dashData;
+    }
+    catch (e) {
+        log.d("Error while fetching events widget data for - ", widget);
+        log.d("Error is - ", e);
+
+        dashData.isValid = false;
+        dashData.data = undefined;
+
+        widget.dashData = dashData;
+
+        return widget;
+    }
+};
+
+dashboard.fetchCrashData = async function(params, apps, widget) {
+    var dashData = {};
+
+    try {
+        var widgetApps = widget.apps || [];
+        var widgetData = {};
+
+        for (let i = 0; i < widgetApps.length; i++) {
+            var appId = widgetApps[i];
+            widgetData[appId] = await getCrashDataForApp(params, apps, appId, widget);
+        }
+
+        dashData.isValid = true;
+        dashData.data = widgetData;
+
+        widget.dashData = dashData;
+    }
+    catch (e) {
+        log.d("Error while fetching events widget data for - ", widget);
+        log.d("Error is - ", e);
+
+        dashData.isValid = false;
+        dashData.data = undefined;
+
+        widget.dashData = dashData;
+
+        return widget;
+    }
+};
+
+dashboard.fetchNoteData = async function(params, apps, widget) {
+    widget.dashData = {
+        isValid: true,
+        isProcessing: false,
+        data: widget.content
+    };
+
+    return widget;
+};
+
+/**
+ * Function to fetch sessions analytics data for app
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {Object} widget - widget object
+ */
+async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
+    var visualization = widget.visualization;
+    var breakdowns = widget.breakdowns;
+    var widgetData = {};
+
+    var collection, segment;
+
+    switch (visualization) {
+    case 'time-series':
+    case 'number':
+        collection = "users";
+        segment = toSegment("users");
+
+        break;
+    case 'bar-chart':
+    case 'table':
+        if (!breakdowns || !breakdowns.length) {
+            throw new Error("Breakdowns are required for bar chart and table");
+        }
+
+        collection = toCollection(breakdowns[0]);
+        segment = toSegment(breakdowns[0]);
+
+        break;
+    default:
+        throw new Error("Invalid visualization!");
+    }
+
+    var model = await getSessionModel(params, apps, appId, collection, segment, widget);
+
+    switch (visualization) {
+    case 'time-series':
+        widgetData = model.getTimelineData();
+
+        break;
+    case 'number':
+        widgetData = model.getNumber();
+
+        break;
+    case 'bar-chart':
+        widgetData = model.getBars(segment, 10);
+
+        break;
+    case 'table':
+        widgetData = model.getTableData(segment, 10);
+
+        break;
+    default:
+        break;
+    }
+
+    return widgetData;
+}
+
+/**
+ * Function to fetch events data for app
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {Object} widget - widget object
+ */
+async function getEventsDataForApp(params, apps, appId, widget) {
+    var visualization = widget.visualization;
+    var breakdowns = widget.breakdowns;
+    var events = widget.events || [];
+    var widgetData = {}, segment;
+
+    switch (visualization) {
+    case 'time-series':
+    case 'number':
+        segment = toSegment("no-segment");
+
+        break;
+    case 'bar-chart':
+    case 'table':
+        if (!breakdowns || !breakdowns.length) {
+            throw new Error("Breakdowns are required for bar chart and table");
+        }
+
+        segment = toSegment(breakdowns[0]);
+
+        break;
+    default:
+        throw new Error("Invalid visualization!");
+    }
+
+    for (var k = 0; k < events.length; k++) {
+        if (events[k].startsWith(appId)) {
+            var event = events[k].replace(appId + separator, "");
+            var collection = "events" + crypto.createHash('sha1').update(event + appId).digest('hex');
+            var model = await getEventsModel(params, apps, appId, collection, segment, event, widget);
+
+            switch (visualization) {
+            case 'time-series':
+                widgetData[event] = model.getTimelineData();
+
+                break;
+            case 'number':
+                widgetData[event] = model.getNumber();
+
+                break;
+            case 'bar-chart':
+                widgetData[event] = model.getBars(segment, 10);
+
+                break;
+            case 'table':
+                widgetData[event] = model.getTableData(segment, 10);
+
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    return widgetData;
+}
+
+/**
+ * Function to fetch push data for app
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {Object} widget - widget object
+ */
+async function getPushDataForApp(params, apps, appId, widget) {
+    var visualization = widget.visualization;
+    var metrics = widget.metrics || [];
+    var widgetData = {}, data, segment, pushEvents = [];
+
+    switch (visualization) {
+    case 'time-series':
+    case 'number':
+        segment = toSegment("no-segment");
+
+        break;
+    default:
+        throw new Error("Invalid visualization!");
+    }
+
+    if (Array.isArray(metrics) && metrics.length) {
+        if (metrics.indexOf("sent") !== -1) {
+            pushEvents.push("[CLY]_push_sent");
+        }
+        if (metrics.indexOf("actioned") !== -1) {
+            pushEvents.push("[CLY]_push_action");
+        }
+    }
+
+    for (var k = 0; k < pushEvents.length; k++) {
+        var event = pushEvents[k];
+        var collection = "events" + crypto.createHash('sha1').update(event + appId).digest('hex');
+        var model = await getPushModel(params, apps, appId, collection, segment, event, widget);
+
+        switch (visualization) {
+        case 'time-series':
+            data = model.getTimelineData();
+
+            for (var z in data) {
+                if (!widgetData[z]) {
+                    widgetData[z] = {};
+                }
+
+                if (event === "[CLY]_push_action") {
+                    widgetData[z].actioned = data[z].c;
+                }
+
+                if (event === "[CLY]_push_sent") {
+                    widgetData[z].sent = data[z].c;
+                }
+            }
+
+            break;
+        case 'number':
+            data = model.getNumber();
+            if (event === "[CLY]_push_action") {
+                widgetData.actioned = data;
+            }
+
+            if (event === "[CLY]_push_sent") {
+                widgetData.sent = data;
+            }
+
+            break;
+        default:
+            break;
+        }
+    }
+
+    return widgetData;
+}
+
+/**
+ * Function to fetch crash data for app
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {Object} widget - widget object
+ */
+async function getCrashDataForApp(params, apps, appId, widget) {
+    var visualization = widget.visualization;
+    var widgetData = {}, collection;
+
+    switch (visualization) {
+    case 'time-series':
+    case 'number':
+        collection = "crashdata";
+
+        break;
+    default:
+        throw new Error("Invalid visualization!");
+    }
+
+    var model = await getCrashModel(params, apps, appId, collection, widget);
+
+    switch (visualization) {
+    case 'time-series':
+        widgetData = model.getTimelineData();
+
+        break;
+    case 'number':
+        widgetData = model.getNumber();
+
+        break;
+    default:
+        break;
+    }
+
+    return widgetData;
+}
+
+/**
+ * Function to get analytics session data type model
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {String} collection - collection name
+ * @param  {String} segment - segment name
+ * @param  {Object} widget - widget object
+ * @returns {Object} - session data type model object
+ */
+function getSessionModel(params, apps, appId, collection, segment, widget) {
+    return new Promise((resolve) => {
+        var paramsObj = {
+            app_id: appId,
+            appTimezone: apps[appId] && apps[appId].timezone,
+            qstring: {
+                period: widget.custom_period || params.qstring.period
+            },
+            time: common.initTimeObj(apps[appId] && apps[appId].timezone, params.qstring.timestamp)
+        };
+
+        fetch.getTimeObj(collection, paramsObj, function(data) {
+            fetch.getTotalUsersObj(segment, paramsObj, function(dbTotalUsersObj) {
+                var formattedUserObj = fetch.formatTotalUsersObj(dbTotalUsersObj);
+
+                countlyCommon.setPeriod(paramsObj.qstring.period);
+
+                var model = countlyModel.load(toModel(segment));
+
+                model.setDb(data);
+
+                if (formattedUserObj) {
+                    model.setTotalUsersObj(formattedUserObj);
+                }
+
+                /**
+                 * Can widget.metrics be null? Not sure.
+                 * For Session data type and all its visualizations metrics are required,
+                 * so it shouldn't be null imo.
+                 * widget.metrics = widget.metrics || model.getMetrics();
+                 * Code on master has above line, not sure when its required,
+                 * Lets not add it yet and see what happens.
+                 */
+                var widgetMetrics = JSON.parse(JSON.stringify(widget.metrics));
+
+                if (widgetMetrics.indexOf("u") !== -1) {
+                    if (widgetMetrics.indexOf("t") === -1) {
+                        widgetMetrics.push("t");
+                    }
+                    if (widgetMetrics.indexOf("n") === -1) {
+                        widgetMetrics.push("n");
+                    }
+                }
+
+                if (widgetMetrics.indexOf("n") !== -1) {
+                    if (widgetMetrics.indexOf("u") === -1) {
+                        widgetMetrics.push("u");
+                    }
+                }
+
+                model.setMetrics(widgetMetrics);
+
+                return resolve(model);
+            });
+        });
+    });
+}
+
+/**
+ * Function to get events model
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {String} collection - collection name
+ * @param  {String} segment - segment name
+ * @param  {String} event - event name
+ * @param  {Object} widget - widget object
+ * @returns {Object} - session data type model object
+ */
+function getEventsModel(params, apps, appId, collection, segment, event, widget) {
+    return new Promise((resolve) => {
+        var paramsObj = {
+            app_id: appId,
+            appTimezone: apps[appId] && apps[appId].timezone,
+            qstring: {
+                period: widget.custom_period || params.qstring.period,
+                segmentation: segment
+            },
+            time: common.initTimeObj(apps[appId] && apps[appId].timezone, params.qstring.timestamp)
+        };
+
+        var fn;
+
+        if (event.startsWith('[CLY]_group_')) {
+            fn = fetch.getMergedEventGroups.bind(null, paramsObj, event, {});
+        }
+        else {
+            fn = fetch.getTimeObjForEvents.bind(null, collection, paramsObj);
+        }
+
+        fn(function(data) {
+            countlyCommon.setPeriod(paramsObj.qstring.period);
+
+            var model = countlyModel.load("event");
+
+            model.setDb(data);
+
+            /**
+             * Can widget.metrics be null? Not sure.
+             * For Events and all its visualizations metrics are required,
+             * so it shouldn't be null imo.
+             * widget.metrics = widget.metrics || model.getMetrics();
+             * Code on master has above line, not sure when its required,
+             * Lets not add it yet and see what happens.
+             */
+
+            model.setMetrics(widget.metrics);
+
+            return resolve(model);
+        });
+    });
+}
+
+/**
+ * Function to get push model
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {String} collection - collection name
+ * @param  {String} segment - segment name
+ * @param  {Object} widget - widget object
+ * @returns {Object} - session data type model object
+ */
+function getPushModel(params, apps, appId, collection, segment, widget) {
+    return new Promise((resolve) => {
+        var paramsObj = {
+            app_id: appId,
+            appTimezone: apps[appId] && apps[appId].timezone,
+            qstring: {
+                period: widget.custom_period || params.qstring.period,
+                segmentation: segment
+            },
+            time: common.initTimeObj(apps[appId] && apps[appId].timezone, params.qstring.timestamp)
+        };
+
+        fetch.getTimeObjForEvents(collection, paramsObj, function(data) {
+            countlyCommon.setPeriod(paramsObj.qstring.period);
+
+            var model = countlyModel.load("event");
+
+            model.setDb(data);
+
+            return resolve(model);
+        });
+    });
+}
+
+/**
+ * Function to get crash model
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {String} collection - collection name
+ * @param  {Object} widget - widget object
+ * @returns {Object} - session data type model object
+ */
+function getCrashModel(params, apps, appId, collection, widget) {
+    return new Promise((resolve) => {
+        var paramsObj = {
+            app_id: appId,
+            appTimezone: apps[appId] && apps[appId].timezone,
+            qstring: {
+                period: widget.custom_period || params.qstring.period
+            },
+            time: common.initTimeObj(apps[appId] && apps[appId].timezone, params.qstring.timestamp)
+        };
+
+        fetch.getTimeObj(collection, paramsObj, {unique: "cru"}, function(data) {
+            countlyCommon.setPeriod(paramsObj.qstring.period);
+
+            var model = model = countlyModel.load(toModel("data"));
+
+            model.setDb(data);
+
+            /**
+             * Can widget.metrics be null? Not sure.
+             * For Events and all its visualizations metrics are required,
+             * so it shouldn't be null imo.
+             * widget.metrics = widget.metrics || model.getMetrics();
+             * Code on master has above line, not sure when its required,
+             * Lets not add it yet and see what happens.
+             */
+
+            model.setMetrics(widget.metrics);
+            model.setUniqueMetrics(["cru"]);
+
+            return resolve(model);
+        });
+    });
+}
 
 module.exports = dashboard;
