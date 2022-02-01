@@ -17,23 +17,34 @@
     writing-mode: vertical-rl;
 }
 #countly-ratings-iframe{
-    width:400px;
-    height:100%;
+    width: 400px;
+    height: 500px;
     border:none;
-    background:0 0;
     background-color:transparent;
     overflow:hidden;
+    z-index: 9;
 }
 .countly-ratings-wrapper{
-    z-index:999999999;
-    box-sizing:border-box;
-    height:100%;
-    background:0 0;
+    z-index: 9999;
+    box-sizing: border-box;
+    height: 99vh;
     background-color:transparent;
     position: absolute;
     display:none;
-    width: 100%;
+    width: 99vw;
     justify-content: center;
+    align-items: center;
+    top: 0;
+    left: 0;
+}
+.countly-ratings-overlay {
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+    background: black;
+    opacity: 0.3;
+    left: 0;
+    top: 0;
 }
 .countly-feedback-sticker.mright-m {
     padding: 15px 10px;

@@ -106,6 +106,11 @@
         API: 'api'
     });
 
+    var AddTestUserDefinitionTypeEnum = Object.freeze({
+        USER_ID: 'userId',
+        COHORT: 'cohorts'
+    });
+
     var audienceSelectionOptions = {};
     audienceSelectionOptions[AudienceSelectionEnum.NOW] = {label: "Now", value: AudienceSelectionEnum.NOW};
     audienceSelectionOptions[AudienceSelectionEnum.BEFORE] = {label: "Right before sending the message", value: AudienceSelectionEnum.BEFORE};
@@ -295,6 +300,13 @@
                 return this.getInitialTransactionalModel();
             }
             throw new Error('Unknown push notification type:' + type);
+        },
+        getInitialTestUsersAppConfigModel: function() {
+            return {
+                definitionType: AddTestUserDefinitionTypeEnum.USER_ID,
+                cohorts: [],
+                userIds: [],
+            };
         },
         replaceTagElements: function(htmlString) {
             if (htmlString) {
@@ -617,6 +629,28 @@
             return countlySegmentation.initialize("").then(function() {
                 return Promise.resolve(countlySegmentation.getFilters());
             });
+        },
+        searchUsers: function(query) {
+            var data = {
+                query: JSON.stringify(query)
+            };
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_details",
+                contentType: "application/json",
+                data: JSON.stringify(data)
+            }, {disableAutoCatch: true});
+        },
+        updateAppConfig: function(config, options) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
+                data: {
+                    args: JSON.stringify(config),
+                    app_id: options.app_id
+                },
+                dataType: "json",
+            }, {disableAutoCatch: true});
         }
     };
 
@@ -1526,6 +1560,7 @@
                 }
                 if (options.queryFilter && options.from === 'drill') {
                     var drillFilter = Object.assign({}, options.queryFilter);
+                    drillFilter.queryObject = JSON.stringify(options.queryFilter.queryObject);
                     var period = countlyCommon.getPeriod();
                     drillFilter.period = period;
                     if (Array.isArray(period)) {
@@ -1719,6 +1754,16 @@
                 dto[PlatformDtoEnum.HUAWEI] = this.mapHuaweiAppLevelConfig(model);
                 return dto;
             },
+            mapTestUsersEditedModelToDto: function(editedModel) {
+                var testUsersDto = {};
+                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.USER_ID) {
+                    Object.assign(testUsersDto, {uids: editedModel.userIds.join(',')});
+                }
+                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.COHORT) {
+                    Object.assign(testUsersDto, {cohorts: editedModel.cohorts.join(',')});
+                }
+                return testUsersDto;
+            },
             mapAppLevelConfigByPlatform: function(model, platform) {
                 if (platform === PlatformEnum.ANDROID) {
                     return this.mapAndroidAppLevelConfig(model);
@@ -1757,6 +1802,7 @@
         TriggerNotMetEnum: TriggerNotMetEnum,
         IOSAuthConfigTypeEnum: IOSAuthConfigTypeEnum,
         UserPropertyTypeEnum: UserPropertyTypeEnum,
+        AddTestUserDefinitionTypeEnum: AddTestUserDefinitionTypeEnum,
         platformOptions: platformOptions,
         startDateOptions: startDateOptions,
         audienceSelectionOptions: audienceSelectionOptions,
@@ -1769,6 +1815,12 @@
         iosAuthConfigTypeOptions: iosAuthConfigTypeOptions,
         isPushNotificationApproverPluginEnabled: function() {
             return Boolean(window.countlyPushNotificationApprover);
+        },
+        isUserProfilesPluginEnabled: function() {
+            return Boolean(window.countlyUsers);
+        },
+        isDrillPluginEnabled: function() {
+            return Boolean(window.countlyDrill);
         },
         hasApproverBypassPermission: function() {
             return this.isPushNotificationApproverPluginEnabled && countlyGlobal.member.approver_bypass;
@@ -1937,6 +1989,70 @@
                 return Promise.resolve([]);
             });
         },
+        fetchTestUsers: function(options) {
+            var self = this;
+            var queries = [];
+            if (options.uids && options.uids.length) {
+                queries.push({uid: {$in: options.uids}});
+            }
+            if (options.cohorts && options.cohorts.length) {
+                queries.push({chr: {$in: options.cohorts}});
+            }
+            return new Promise(function(resolve, reject) {
+                if (!self.isDrillPluginEnabled()) {
+                    reject(new Error('Error finding test users. Drill plugin must be enabled.'));
+                    return;
+                }
+                if (!self.isUserProfilesPluginEnabled()) {
+                    reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
+                    return;
+                }
+                Promise.all(queries.map(function(testUserQuery) {
+                    return countlyPushNotification.api.searchUsers(testUserQuery);
+                }))
+                    .then(function(responses) {
+                        var testUsersArraysList = responses.map(function(queryResponse) {
+                            return queryResponse.aaData;
+                        });
+                        var allTestUsers = testUsersArraysList.reduce(function(addedTestUsersList, currentArray) {
+                            return addedTestUsersList.concat(currentArray);
+                        }, []).map(function(user) {
+                            return {_id: user._id, username: user.name || '', picture: user.picture};
+                        });
+                        resolve(allTestUsers);
+                    }).catch(function(error) {
+                    // TODO: log error;
+                        reject(error);
+                    });
+            });
+        },
+        searchUsersById: function(idQuery) {
+            var self = this;
+            return new Promise(function(resolve, reject) {
+                if (!self.isDrillPluginEnabled()) {
+                    reject(new Error('Error finding test users. Drill plugin must be enabled.'));
+                    return;
+                }
+                if (!self.isUserProfilesPluginEnabled()) {
+                    reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
+                    return;
+                }
+                var drillQuery = {did: {rgxcn: [idQuery]}};
+                countlyPushNotification.api.searchUsers(drillQuery)
+                    .then(function(response) {
+                        if (response && response.aaData) {
+                            resolve(response.aaData.map(function(user) {
+                                return {_id: user._id, uid: user.uid};
+                            }));
+                            return;
+                        }
+                        reject('Unknown error occurred. Please try again later');
+                        // TODO:log error
+                    }).catch(function(error) {
+                        reject(error);
+                    });
+            });
+        },
         estimate: function(pushNotificationModel, options) {
             return new Promise(function(resolve, reject) {
                 var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
@@ -2020,6 +2136,18 @@
             }
             return countlyPushNotificationApprover.service.approve(messageId);
         },
+        addTestUsers: function(testUsersModel, options) {
+            try {
+                var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(testUsersModel);
+                var appConfig = {push: {test: {}}};
+                appConfig.push.test = testDto;
+            }
+            catch (error) {
+                // TODO:log error
+                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
+            }
+            return countlyPushNotification.api.updateAppConfig(appConfig, options);
+        }
     };
 
     var getDetailsInitialState = function() {
