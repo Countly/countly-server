@@ -71,7 +71,7 @@
             handleCommand: function(command, index) {
                 switch (command) {
                 case "delete-user":
-                    CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "red", function(result) {
                         if (!result) {
                             CountlyHelpers.notify({
                                 type: 'info',
