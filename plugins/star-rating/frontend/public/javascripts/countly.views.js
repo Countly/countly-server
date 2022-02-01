@@ -773,11 +773,27 @@ var WidgetDetail = countlyVue.views.create({
             }
         },
         parseTargeting: function(widget) {
-            if (typeof widget.targeting.steps === "string") {
-                widget.targeting.steps = JSON.parse(widget.targeting.steps);
-            }
-            if (typeof widget.targeting.user_segmentation === "string") {
-                widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            if (widget.targeting) {
+                try {
+                    if (typeof widget.targeting.user_segmentation === "string") {
+                        widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+                    }
+                }
+                catch (e) {
+                    widget.targeting.user_segmentation = {};
+                }
+
+                try {
+                    if (typeof widget.targeting.steps === "string") {
+                        widget.targeting.steps = JSON.parse(widget.targeting.steps);
+                    }
+                }
+                catch (e) {
+                    widget.targeting.steps = [];
+                }
+
+                widget.targeting.user_segmentation = widget.targeting.user_segmentation || {};
+                widget.targeting.steps = widget.targeting.steps || [];
             }
             return widget;
         }
@@ -807,7 +823,8 @@ var WidgetDetail = countlyVue.views.create({
             ];
         },
         ratingRate: function() {
-            return parseFloat(((this.count / this.widget.timesShown) * 100).toFixed(2)) || 0;
+            let timesShown = this.widget.timesShown == 0 ? 1 : this.widget.timesShown;
+            return parseFloat(((this.widget.ratingsCount / timesShown) * 100).toFixed(2)) || 0;
         }
     },
     mounted: function() {
