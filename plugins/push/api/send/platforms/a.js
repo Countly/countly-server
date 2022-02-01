@@ -216,7 +216,7 @@ function flattenObject(ob) {
  * @returns {object} empty payload object
  */
 function empty(msg) {
-    return {data: {}, c: {i: msg.id}};
+    return {data: {'c.i': msg.id}};
 }
 
 /**

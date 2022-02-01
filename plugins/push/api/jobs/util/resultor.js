@@ -1,6 +1,6 @@
 const { FRAME } = require('../../send/proto'),
     { SynFlushTransform } = require('./syn'),
-    { ERROR, Result } = require('../../send/data');
+    { ERROR, Result, TriggerKind } = require('../../send/data');
 
 /**
  * Stream responsible for handling sending results:
@@ -27,9 +27,8 @@ class Resultor extends SynFlushTransform {
 
         // temporary storage to decrease number of database updates
         this.changed = {}; // {aid: {field: {uid: new token}}}
-        this.sent = {}; // {mid: int}
         this.processed = {}; // {mid: int}
-        this.sentUsers = {}; // {aid: {mid: [uid, uid, uid]}}
+        this.sentUsers = {}; // {aid: {mid: {users: [uid, uid, uid], 'a': 0, 'i': 2132}}}
         this.removeTokens = {}; // {aid: {field: [uid, uid, uid]}}
         this.errors = {}; // {mid: {platform: {InvalidToken: 0}}}
         this.fatalErrors = {}; // {mid: []}
@@ -39,8 +38,8 @@ class Resultor extends SynFlushTransform {
 
         this.data.on('app', app => {
             this.changed[app._id] = {};
-            this.sentUsers[app._id] = {};
             this.removeTokens[app._id] = {};
+            this.sentUsers[app._id] = {};
 
             let { PLATFORM } = require('../../send/platforms');
             for (let p in PLATFORM) {
@@ -52,10 +51,12 @@ class Resultor extends SynFlushTransform {
         });
 
         this.data.on('message', message => {
-            this.sent[message._id] = 0;
             this.processed[message._id] = 0;
             this.fatalErrors[message._id] = [];
-            this.sentUsers[message.app][message._id] = [];
+            this.sentUsers[message.app][message._id] = {users: []};
+            message.platforms.forEach(p => {
+                this.sentUsers[message.app][message._id][p] = 0;
+            });
 
             this.errors[message._id] = {};
             let { PLATFORM } = require('../../send/platforms');
@@ -148,7 +149,8 @@ class Resultor extends SynFlushTransform {
                     this.toDelete.push(id);
                     delete this.data.pushes[id];
 
-                    this.sentUsers[p.a][p.m].push(p.u);
+                    this.sentUsers[p.a][p.m].users.push(p.u);
+                    this.sentUsers[p.a][p.m][p.p]++;
                     if (token) {
                         this.changed[p.a][p.p + p.f][p.u] = token;
                     }
@@ -281,10 +283,10 @@ class Resultor extends SynFlushTransform {
                 updates[collection] = [];
             }
             for (let mid in this.sentUsers[aid]) {
-                if (this.sentUsers[aid][mid].length) {
+                if (this.sentUsers[aid][mid].users.length) {
                     updates[collection].push({
                         updateMany: {
-                            filter: {_id: {$in: this.sentUsers[aid][mid]}},
+                            filter: {_id: {$in: this.sentUsers[aid][mid].users}},
                             update: {
                                 $set: {
                                     ['msgs.' + mid]: now
@@ -292,8 +294,38 @@ class Resultor extends SynFlushTransform {
                             }
                         }
                     });
-                    this.sentUsers[aid][mid] = [];
+                    this.sentUsers[aid][mid].users = [];
                 }
+                let m = this.data.message(mid),
+                    app = this.data.app(aid),
+                    common = require('../../../../../api/utils/common');
+                m.platforms.forEach(p => {
+                    let sent = this.sentUsers[aid][mid][p];
+                    if (sent) {
+                        let params = {
+                            qstring: {
+                                events: [
+                                    { key: '[CLY]_push_sent', count: sent, segmentation: {i: mid, a: !!m.triggerAuto(), t: !!m.triggerFind(TriggerKind.API)} }
+                                ]
+                            },
+                            app_id: app._id,
+                            appTimezone: app.timezone,
+                            time: common.initTimeObj(app.timezone)
+                        };
+
+                        this.log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
+                        require('../../../../../api/parts/data/events').processEvents(params);
+
+                        try {
+                            this.log.d('Recording %d data points', sent);
+                            require('../../../server-stats/api/parts/stats.js').updateDataPoints(common.writeBatcher, this.app._id, 0, {"p": sent});
+                        }
+                        catch (e) {
+                            this.log.d('Error during dp recording', e);
+                        }
+                        this.sentUsers[aid][mid][p] = 0;
+                    }
+                });
                 // this.sentUsers[aid][mid].forEach(uid => {
                 //     updates[collection].push({
                 //         updateOne: {
