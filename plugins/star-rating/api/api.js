@@ -939,6 +939,10 @@ function uploadFile(myfile, id, callback) {
                 common.returnMessage(params, 404, 'Widget not found.');
             }
             else {
+                // not from dashboard
+                if (params.qstring.nfd) {
+                    increaseWidgetShowCount(ob);
+                }
                 common.returnOutput(params, doc);
             }
         });
