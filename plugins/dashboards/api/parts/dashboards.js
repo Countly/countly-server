@@ -540,7 +540,16 @@ dashboard.fetchAllWidgetsData = function(params, widgets, callback) {
                     return done();
                 }
 
-                plugins.dispatch("/dashboard/data", { params: params, apps: apps, widget: wget }, function() {
+                var newParams = {
+                    qstring: params.qstring,
+                    member: params.member
+                };
+
+                plugins.dispatch("/dashboard/data", {
+                    params: JSON.parse(JSON.stringify(newParams)),
+                    apps: JSON.parse(JSON.stringify(apps)),
+                    widget: wget
+                }, function() {
                     return done();
                 });
 
