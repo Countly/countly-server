@@ -2119,10 +2119,23 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     plugins.register("/dashboard/data", function(ob) {
         return new Promise((resolve) => {
             var params = ob.params;
-            var data = ob.data;
-            params.app_id = data.apps[0];
+            var data = ob.widget;
+            var allApps = ob.apps;
 
             if (data.widget_type === "views") {
+                var appId = data.apps[0];
+
+                var paramsObj = {
+                    app_id: appId,
+                    app: allApps[appId],
+                    appTimezone: allApps[appId] && allApps[appId].timezone,
+                    qstring: {
+                        period: data.custom_period || params.qstring.period
+                    },
+                    time: common.initTimeObj(allApps[appId] && allApps[appId].timezone),
+                    member: params.member
+                };
+
                 var sort_arr = {};
                 if (data.views) {
                     for (var k = 0; k < data.views.length; k++) {
@@ -2138,8 +2151,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 else {
                     sort_arr = {"t": -1};
                 }
-                var colName = "app_viewdata" + crypto.createHash('sha1').update("" + params.app_id).digest('hex');//collection segment/app
-                getAggregatedData(colName, params, {app_id: params.app_id, startPos: 0, segment: "", segmentVal: "", dataLength: 10, sortby: {$sort: sort_arr}, sortcol: "t", unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "scr", "uvc", "br"], monthly: ["u", "t", "s", "b", "e", "d", "n", "scr", "uvc", "br"]}}, function(dati/*, total*/) {
+                var colName = "app_viewdata" + crypto.createHash('sha1').update("" + paramsObj.app_id).digest('hex');//collection segment/app
+                getAggregatedData(colName, paramsObj, {app_id: paramsObj.app_id, startPos: 0, segment: "", segmentVal: "", dataLength: 10, sortby: {$sort: sort_arr}, sortcol: "t", unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "scr", "uvc", "br"], monthly: ["u", "t", "s", "b", "e", "d", "n", "scr", "uvc", "br"]}}, function(dati/*, total*/) {
                     var values = ["u", "t", "s", "b", "e", "d", "n", "scr", "uvalue", "uvc", "br"];
                     dati = dati || [];
                     for (var z = 0; z < dati.length; z++) {
