@@ -179,7 +179,7 @@
                                     template += '<div class="chart-tooltip__body">\
                                                         <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
-                                                            <span class="text-small">' + params[i].seriesName + '</span>\
+                                                            <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
                                                         <div class="chart-tooltip__value">\
                                                             <span class="text-big">' + countlyCommon.getShortNumber(params[i].value) + '</span>\
                                                         </div>\

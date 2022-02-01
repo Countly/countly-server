@@ -280,8 +280,13 @@
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, #FFFFFF 100%);
   }
 
-.chart-tooltip {
+  .chart-tooltip {
     margin-bottom: -24px;
+    max-height: 250px; 
+    overflow: auto; 
+    margin-bottom: 2px; 
+    max-width: 450px; 
+    white-space: nowrap;
 
     &__bar {
         width: 12px;
@@ -307,7 +312,8 @@
         display: flex; 
         flex-direction: column; 
         justify-content: space-between;
-    }
+        width: calc(100% - 24px);
+    } 
 
     &__value {
         margin-top: 2px; 
