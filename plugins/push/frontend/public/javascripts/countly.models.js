@@ -378,6 +378,15 @@
         isNoUsersFoundError: function(error) {
             return error.message === 'No users were found from selected configuration';
         },
+        getFirstErrorMessageIfFound: function(response) {
+            if (response && response.responseJSON) {
+                if (response.responseJSON.errors && response.responseJSON.errors.length) {
+                    return response.responseJSON.errors[0];
+                }
+                return null;
+            }
+            return null;
+        },
         convertDateTimeToMS: function(datetime) {
             var result = 0;
             if (datetime.days) {
@@ -549,6 +558,36 @@
                     },
                     error: function() {
                         // TODO:log error
+                        reject(new Error('Unknown error occurred.Please try again later.'));
+                    }
+                }, {disableAutoCatch: true});
+            });
+        },
+        sendToTestUsers: function(dto) {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: window.countlyCommon.API_URL + '/i/push/message/test?app_id=' + countlyCommon.ACTIVE_APP_ID,
+                    data: JSON.stringify(dto),
+                    contentType: "application/json",
+                    success: function(response) {
+                        if (response.error) {
+                            reject(new Error(response.error));
+                            return;
+                        }
+                        if (response.result.errors) {
+                            reject(response.result.errors);
+                            return;
+                        }
+                        resolve();
+                    },
+                    error: function(errorResponse) {
+                        // TODO:log error
+                        var firstErrorMessage = countlyPushNotification.helper.getFirstErrorMessageIfFound(errorResponse);
+                        if (firstErrorMessage) {
+                            reject(new Error(firstErrorMessage));
+                            return;
+                        }
                         reject(new Error('Unknown error occurred.Please try again later.'));
                     }
                 }, {disableAutoCatch: true});
@@ -2101,6 +2140,16 @@
                 return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
             }
             return countlyPushNotification.api.update(dto);
+        },
+        sendToTestUsers: function(model, options) {
+            try {
+                var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+            }
+            catch (error) {
+                // TODO:log error
+                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
+            }
+            return countlyPushNotification.api.sendToTestUsers(dto);
         },
         resend: function(model, options) {
             try {

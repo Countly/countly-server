@@ -806,7 +806,7 @@
                     </el-collapse>
                 </div>
             </cly-form-step>
-            <cly-form-step id="step4" :name="i18n('push-notification.drawer-step-four')">
+            <cly-form-step id="step4" :name="i18n('push-notification.drawer-step-four')" >
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-header">
                     Review Message
                     <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-review-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
@@ -934,7 +934,7 @@
                             </div>
                             <div class="cly-vue-push-notification-review-section-row__value">You can send the test message to test users</div>
                         </div>
-                        <el-button type="default" @click="onSendToTestUsers">
+                        <el-button type="default" @click="onSendToTestUsers" v-loading="isLoading">
                             <div class="ion ion-android-send"></div>Send to test users
                         </el-button>
                     </div>
