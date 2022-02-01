@@ -181,7 +181,7 @@
                                                     <div class="chart-tooltip__series">\
                                                             <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
                                                         <div class="chart-tooltip__value">\
-                                                            <span class="text-big">' + countlyCommon.getShortNumber(params[i].value) + '</span>\
+                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? countlyCommon.getShortNumber(params[i].value[1]) : countlyCommon.getShortNumber(params[i].value)) + '</span>\
                                                         </div>\
                                                     </div>\
                                                 </div>';
