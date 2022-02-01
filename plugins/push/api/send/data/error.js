@@ -217,9 +217,7 @@ class PushError extends Error {
                     .setLeft(data.left, data.leftBytes);
             }
             else {
-                e = new PushError(data.message, data.type || ERROR.EXCEPTION)
-                    .setAffected(data.affected, data.affectedBytes)
-                    .setLeft(data.left, data.leftBytes);
+                e = new PushError(data.message, data.type || ERROR.EXCEPTION);
             }
 
             e.stack = data.stack;

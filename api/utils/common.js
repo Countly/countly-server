@@ -12,6 +12,7 @@ var common = {},
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose'),
     argon2 = require('argon2'),
+    mongodb = require('mongodb'),
     _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
@@ -967,8 +968,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         // do nothing
                     }
                     else if (typeof args[arg] === 'string') {
-                        if (common.db._ObjectID.isValid(args[arg])) {
-                            parsed = common.db._ObjectID(args[arg]);
+                        if (mongodb.ObjectId.isValid(args[arg])) {
+                            parsed = mongodb.ObjectId(args[arg]);
                         }
                         else {
                             if (returnErrors) {
@@ -981,7 +982,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             }
                         }
                     }
-                    else if (args[arg] instanceof common.db._ObjectID) {
+                    else if (args[arg] instanceof mongodb.ObjectId) {
                         parsed = args[arg];
                     }
                     else {
@@ -2413,6 +2414,46 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
+        if (params.qstring.device_id && typeof user.did === "undefined") {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.did) {
+                update.$set.did = params.qstring.device_id;
+            }
+        }
+
+        //store device type and mark users as know by custome device id
+        if (params.qstring.t && typeof user.t !== params.qstring.t) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.t) {
+                update.$set.t = params.qstring.t;
+            }
+            if (params.qstring.t + "" !== "0" && !user.hasInfo && typeof update.$set.hasInfo === "undefined") {
+                update.$set.hasInfo = true;
+            }
+        }
+        else if (user.merges && !user.hasInfo) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (typeof update.$set.hasInfo === "undefined") {
+                update.$set.hasInfo = true;
+            }
+        }
+
+        //store user's timezone offset too
+        if (params.qstring.tz && typeof user.tz !== params.qstring.tz) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.tz) {
+                update.$set.tz = params.qstring.tz;
+            }
+        }
+
         if (callback) {
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
                 new: true,
@@ -2827,6 +2868,67 @@ common.mergeQuery = function(ob1, ob2) {
     }
 
     return ob1;
+};
+
+/**
+ * DB-related extensions / functions
+ */
+common.dbext = {
+    ObjectID: function(id) {
+        try {
+            return mongodb.ObjectId(id);
+        }
+        catch (ex) {
+            return id;
+        }
+    },
+
+    ObjectId: mongodb.ObjectId,
+
+    /**
+     * Check if passed value is an ObjectId
+     * 
+     * @param {any} id value
+     * @returns {boolean} true if id is instance of ObjectId
+     */
+    isoid: function(id) {
+        return id && (id instanceof mongodb.ObjectId);
+    },
+
+    /**
+     * Decode string to ObjectID if needed
+     * 
+     * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
+     * @returns {ObjectID} id
+     */
+    oid: function(id) {
+        return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
+    },
+
+    /**
+     * Create ObjectID with given timestamp. Uses current ObjectID random/server parts, meaning the 
+     * object id returned still has same uniquness guarantees as random ones.
+     * 
+     * @param {Date|number} date Date object or timestamp in seconds, current date by default
+     * @returns {ObjectID} with given timestamp
+     */
+    oidWithDate: function(date = new Date()) {
+        let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16),
+            server = new mongodb.ObjectId().toString().substr(8);
+        return new mongodb.ObjectId(seconds + server);
+    },
+
+    /**
+     * Create blank ObjectID with given timestamp. Everything except for date part is zeroed.
+     * For use in queries like {_id: {$gt: oidBlankWithDate()}}
+     * 
+     * @param {Date|number} date Date object or timestamp in seconds, current date by default
+     * @returns {ObjectID} with given timestamp and zeroes in the rest of the bytes
+     */
+    oidBlankWithDate: function(date = new Date()) {
+        let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16);
+        return new mongodb.ObjectId(seconds + '0000000000000000');
+    },
 };
 
 /**

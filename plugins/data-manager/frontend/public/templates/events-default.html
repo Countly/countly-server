@@ -13,6 +13,7 @@
     @select="handleCurrentChange"
     :available-dynamic-cols="dynamicEventCols"
     :persist-key="eventsTablePersistKey"
+    :default-sort="{prop: 'lastModifiedts', order: 'descending'}"
     class="bu-mx-5">
 
         <template v-slot:header-left>

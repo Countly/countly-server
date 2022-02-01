@@ -1,6 +1,6 @@
 const common = require('../../../../api/utils/common'),
     { PushError, ERROR } = require('./data/error'),
-    { Message, State, TriggerKind, Result } = require('./data'),
+    { Message, State, TriggerKind, Result, dbext } = require('./data'),
     { DEFAULTS } = require('./data/const'),
     { PLATFORM } = require('./platforms'),
     { Push } = require('./data/message'),
@@ -370,7 +370,7 @@ class Mapper {
      */
     map(user, date, c) {
         let ret = {
-            _id: common.db.oidWithDate(date),
+            _id: dbext.oidWithDate(date),
             a: this.message.app,
             m: this.message._id,
             p: this.p,
@@ -692,7 +692,8 @@ class Popper extends PusherPopper {
             await this.audience.message.update(update, () => {
                 for (let p in deleted) {
                     this.audience.message.result.processed += deleted[p];
-                    this.audience.message.result.response(p, 'cancelled', deleted[p]);
+                    this.audience.message.result.recordError('cancelled', deleted[p]);
+                    this.audience.message.result.sub(p).recordError('cancelled', deleted[p]);
                 }
             });
         }

@@ -3,6 +3,7 @@ const { Template, Message, PushError, ERROR } = require('../../data'),
     { ProxyAgent } = require('./agent'),
     { Agent } = require('https'),
     https = require('https');
+const { FRAME } = require('../../proto');
 
 /**
  * Splitter stands in front of actual connection stream and splits incoming stream of pushes into stream of messages with the same content.
@@ -124,7 +125,12 @@ class Splitter extends Base {
 
         try {
             for (let i = 0; i < chunks.length; i++) {
-                let {payload, length} = chunks[i];
+                let {payload, length, frame} = chunks[i];
+
+                if (!(frame & FRAME.SEND)) {
+                    continue;
+                }
+                // console.log(length, payload);
 
                 if (payload.length === 1) {
                     await this.send(payload, length);

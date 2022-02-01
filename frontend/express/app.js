@@ -828,14 +828,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     /**
-     * Stringify all object ested properties named `prop`
+     * Stringify all object nested properties named `prop`
      * 
      * @param {object} obj object to fix
      * @param {string} prop property name
      */
     function stringifyIds(obj, prop = '_id') {
         for (let k in obj) {
-            if (k === prop && common.db.isoid(obj[k])) {
+            if (k === prop && common.dbext.isoid(obj[k])) {
                 obj[k] = obj[k].toString();
             }
             else if (typeof obj[k] === 'object') {

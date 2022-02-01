@@ -50,7 +50,12 @@ var AppDensityView = countlyVue.views.create({
                                 return this.appDensity.chartData;
                             },
                             isLoading: function() {
-                                return this.$store.state.countlyDevicesAndTypes.isLoading;
+                                return this.$store.state.countlyDevicesAndTypes.densityLoading;
+                            }
+                        },
+                        methods: {
+                            numberFormatter: function(row, col, value) {
+                                return countlyCommon.formatNumber(value, 0);
                             }
                         }
                     })
@@ -68,7 +73,7 @@ var AppDensityView = countlyVue.views.create({
                         },
                         computed: {
                             isLoading: function() {
-                                return this.$store.state.countlyDevicesAndTypes.isLoading;
+                                return this.$store.state.countlyDevicesAndTypes.densityLoading;
                             },
                             appDensity: function() {
                                 return this.$store.state.countlyDevicesAndTypes.appDensity;
@@ -116,6 +121,9 @@ var AppDensityView = countlyVue.views.create({
                                     }
                                 }
                                 this.versionDetail = versionDetail;
+                            },
+                            numberFormatter: function(row, col, value) {
+                                return countlyCommon.formatNumber(value, 0);
                             }
                         },
                         mounted: function() {
@@ -147,6 +155,9 @@ var AppDensityView = countlyVue.views.create({
                 pos1 = pos1.scrollLeft;
                 this.$refs.topSlider.scrollTo({x: pos1}, 0);
             }
+        },
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
         }
     },
     computed: {
@@ -210,13 +221,20 @@ var AppDensityView = countlyVue.views.create({
                 }
                 returnData.push({"values": display, "label": densities[z].label, itemCn: display.length});
             }
+            for (var i = 0; i < returnData.length; i++) {
+                returnData[i].values.sort(function(a, b) {
+                    return parseFloat(b.percent) - parseFloat(a.percent);
+                });
+                returnData[i].values = returnData[i].values.slice(0, 12);
+            }
+
             return returnData;
         },
         appDensityRows: function() {
             return this.appDensity.chartData;
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.densityLoading;
         },
         tabs: function() {
             return this.densityTabs;

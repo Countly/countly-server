@@ -35,7 +35,7 @@ var AppVersionView = countlyVue.views.create({
             return this.appVersion.chart;
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.versionLoading;
         },
         topDropdown: function() {
             if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {

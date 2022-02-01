@@ -249,6 +249,7 @@ plugins.connectToAllDatabases().then(function() {
     };
 
     if (cluster.isMaster) {
+        common.runners = require('./parts/jobs/runner');
         common.cache = new CacheMaster(common.db);
         common.cache.start().then(plugins.dispatch.bind(plugins, '/cache/init', {}), e => {
             console.log(e);

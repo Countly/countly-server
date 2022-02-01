@@ -207,7 +207,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         }
 
         if (config.test && config.test.cohorts) {
-            cohorts = await common.db.collection(`cohorts`).find({app_id: params.app_id, _id: {$in: config.test.cohorts.split(',')}}, {_id: 1}).toArray();
+            cohorts = await common.db.collection(`cohorts`).find({app_id: params.app_id.toString(), _id: {$in: config.test.cohorts.split(',')}}, {_id: 1}).toArray();
             cohorts = cohorts.map(c => c._id).join(',');
         }
 

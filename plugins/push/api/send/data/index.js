@@ -7,7 +7,8 @@ const { S, State, Status, STATUSES, TriggerKind, MEDIA_MIME_ALL, MEDIA_MIME_IOS,
     { Content } = require('./content'),
     { Result } = require('./result'),
     { Message } = require('./message'),
-    { Template } = require('./template');
+    { Template } = require('./template'),
+    dbext = require('./db');
 
 module.exports = {
     S,
@@ -44,5 +45,6 @@ module.exports = {
     MEDIA_MIME_IOS,
     MEDIA_MIME_ANDROID,
 
-    DBMAP
+    DBMAP,
+    dbext
 };

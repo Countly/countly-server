@@ -312,6 +312,15 @@
                 .then(function() {
                     try {
                         self.configsData = JSON.parse(JSON.stringify(countlyPlugins.getConfigsData()));
+                        var arr = Object.entries(self.configsData);
+                        arr.forEach(function(arr2) {
+                            arr2.forEach(function() {
+                                if (arr2[1].use_google || arr2[1].google_maps_api_key) {
+                                    delete arr2[1].use_google;
+                                    delete arr2[1].google_maps_api_key;
+                                }
+                            });
+                        });
                     }
                     catch (ex) {
                         self.configsData = {};
@@ -436,7 +445,7 @@
                     return jQuery.i18n.map["configs.user-level-configuration"];
                 }
 
-                return app.configurationsView.getInputLabel(this.selectedConfig + "." + id);
+                return app.configurationsView.getInputLabel((ns || this.selectedConfig) + "." + id);
             },
             getHelperLabel: function(id, ns) {
                 ns = ns || this.selectedConfig;
@@ -920,7 +929,6 @@
 
     app.configurationsView.registerInput("security.api_additional_headers", {input: "el-input", attrs: {type: "textarea", rows: 5}});
 
-    app.configurationsView.registerInput("push.proxypass", {input: "el-input", attrs: {type: "password"}});
 
     app.configurationsView.registerInput("api.reports_regenerate_interval", {
         input: "el-select",
@@ -965,6 +973,7 @@
             {label: "configs.api.batch", list: ["batch_processing", "batch_period", "batch_on_master"]},
             {label: "configs.api.cache", list: ["batch_read_processing", "batch_read_period", "batch_read_ttl", "batch_read_on_master"]},
             {label: "configs.api.limits", list: ["event_limit", "event_segmentation_limit", "event_segmentation_value_limit", "metric_limit", "session_duration_limit"]},
+            {label: "configs.api.others", list: ["safe", "domain", "export_limit", "offline_mode", "reports_regenerate_interval", "request_threshold", "sync_plugins", "send_test_email", "city_data", "session_cooldown", "total_users", "prevent_duplicate_requests", "metric_changes", "data_retention_period"]},
         ]
     });
 
@@ -976,8 +985,7 @@
         ]
     });
 
-    var showInAppManagment = {"api": {"safe": true, "send_test_email": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true, "data_retention_period": true}};
-
+    var showInAppManagment = {};
     if (countlyAuth.validateRead(FEATURE_PLUGIN_NAME)) {
         if (countlyGlobal.plugins.indexOf("drill") !== -1) {
             showInAppManagment.drill = {"big_list_limit": true, "record_big_list": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_apm": true, "record_views": true};
