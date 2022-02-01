@@ -525,7 +525,12 @@
         },
         methods: {
             refresh: function() {
-                this.getDashboardData(true);
+                if (!this.drawers.dashboards.isOpened && !this.drawers.widgets.isOpened) {
+                    /**
+                     * Refresh only if the drawers are not open at the moment.
+                     */
+                    this.getDashboardData(true);
+                }
             },
             dateChanged: function() {
                 this.getDashboardData(true);

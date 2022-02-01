@@ -28,7 +28,10 @@
             },
             value: {
                 type: Array,
-                required: true
+                required: true,
+                default: function() {
+                    return [];
+                }
             }
         },
         data: function() {
@@ -107,7 +110,10 @@
             },
             value: {
                 type: Array,
-                required: true
+                required: true,
+                default: function() {
+                    return [];
+                }
             }
         },
         computed: {
@@ -243,7 +249,10 @@
             },
             value: {
                 type: Array,
-                required: true
+                required: true,
+                default: function() {
+                    return [];
+                }
             }
         },
         data: function() {
@@ -441,7 +450,10 @@
             },
             value: {
                 type: Array,
-                required: true
+                required: true,
+                default: function() {
+                    return [];
+                }
             }
         },
         data: function() {
@@ -600,7 +612,8 @@
         template: CV.T('/dashboards/templates/helpers/drawer/title.html'),
         props: {
             value: {
-                type: String
+                type: String,
+                default: ""
             }
         },
         data: function() {
@@ -667,7 +680,7 @@
         template: CV.T('/dashboards/templates/helpers/widget/bucket.html'),
         props: {
             widgetId: {type: String, required: true},
-            value: {type: String, required: true}
+            value: {type: String, required: true, default: ""}
         },
         data: function() {
             return {

@@ -606,9 +606,7 @@
                                 countlyDashboards.service.dashboards.getEvents(appId),
                                 countlyDashboards.service.dashboards.getEventGroups(appId)
                             ]
-                        ).catch(function(e) {
-                            throw new Error(e);
-                        }));
+                        ));
                     }
                 }
 
