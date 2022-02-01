@@ -1,5 +1,5 @@
 <cly-main>
-    <div class="bu-level bu-my-3">
+    <div class="bu-level bu-my-4">
         <div class="bu-level-left bu-my-3">
             <span class="text-big font-weight-bold">Export/Purge History for</span>
             <cly-select-x
@@ -19,7 +19,7 @@
             end-placeholder="End date">
         </cly-date-picker-g>
     </div>
-    <cly-section>
+    <cly-section class="cly-vue-complaince__export__table">
         <cly-datatable-n :data-source="exportHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}">
             <template v-slot="scope">
                 <el-table-column sortable="custom" prop="u" label="USER">
