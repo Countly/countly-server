@@ -610,7 +610,13 @@
                 var series = opt.series || [];
 
                 var legendData = [];
+                var sumOfOthers;
+                var seriesArr;
+
                 for (var i = 0; i < series.length; i++) {
+                    seriesArr = [];
+                    sumOfOthers = 0;
+
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                     var seriesData = series[i].data;
 
@@ -622,6 +628,15 @@
                     seriesData.sort(function(a, b) {
                         return b.value - a.value;
                     });
+
+                    if (seriesData.length > 12) {
+                        for (var k = 12; k < seriesData.length; k++) {
+                            sumOfOthers += seriesData[k].value;
+                        }
+                        seriesArr = seriesData.slice(0, 12);
+                        seriesArr.push({value: sumOfOthers, name: 'Others'});
+                        series[i].data = seriesData = seriesArr;
+                    }
 
                     /*
                         Legend data in series comes from within series data names

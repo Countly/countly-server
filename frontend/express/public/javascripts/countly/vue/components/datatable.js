@@ -59,6 +59,8 @@
                 var self = this;
                 return this.controlParams.selectedDynamicCols.map(function(val) {
                     return self.availableDynamicColsLookup[val];
+                }).filter(function(val) {
+                    return !!val;
                 });
             },
             localSearchedRows: function() {
@@ -312,7 +314,10 @@
                 var loadedState = localStorage.getItem(this.persistKey);
                 try {
                     if (loadedState) {
-                        return JSON.parse(loadedState);
+                        var parsed = JSON.parse(loadedState);
+                        // disable loading of persisted searchQuery
+                        delete parsed.searchQuery;
+                        return parsed;
                     }
                     return defaultState;
                 }

@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, countlyLocation*/
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon*/
 
 (function(countlyVue, $) {
 
@@ -432,30 +432,13 @@
                                 "username": countlyGlobal.member.username,
                                 "lang": countlyCommon.BROWSER_LANG_SHORT,
                                 _csrf: countlyGlobal.csrf_token
-                            }
-                        });
-
-                        jQuery.i18n.properties({
-                            name: window.production ? 'localization/min/locale' : ["localization/dashboard/dashboard", "localization/help/help", "localization/mail/mail"].concat(countlyGlobal.plugins.map(function(plugin) {
-                                return plugin + "/localization/" + plugin;
-                            })),
-                            cache: true,
-                            language: countlyCommon.BROWSER_LANG_SHORT,
-                            countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
-                            path: countlyGlobal.cdn,
-                            mode: 'map',
-                            callback: function() {
-                                for (var key in jQuery.i18n.map) {
-                                    if (countlyGlobal.company) {
-                                        jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
-                                    }
-                                    jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
-                                }
-
-                                app.origLang = JSON.stringify(jQuery.i18n.map);
-                                $.when(countlyLocation.changeLanguage()).then(function() {
-                                    window.location.reload(true);
-                                });
+                            },
+                            success: function() {
+                                window.location.reload(true);
+                            },
+                            error: function() {
+                                //we could output error here
+                                window.location.reload(true);
                             }
                         });
                     }

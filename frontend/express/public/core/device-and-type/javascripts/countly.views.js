@@ -90,7 +90,7 @@ var DevicesTabView = countlyVue.views.create({
             };
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.deviceTypesLoading;
         }
     }
 });
@@ -169,7 +169,7 @@ var TypesTabView = countlyVue.views.create({
             };
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.typeLoading;
         }
     }
 });
