@@ -691,6 +691,12 @@ dashboard.fetchCrashData = async function(params, apps, widget) {
 };
 
 dashboard.fetchNoteData = async function(params, apps, widget) {
+    widget.dashData = {
+        isValid: true,
+        isProcessing: false,
+        data: widget.content
+    };
+
     return widget;
 };
 
