@@ -136,18 +136,7 @@ const widgetPropertyPreprocessors = {
             return JSON.parse(targeting);
         }
         catch (jsonParseError) {
-            if ((targeting !== null) && (typeof targeting === "object")) {
-                return targeting;
-            }
-            else {
-                return {
-                    user_segmentation: JSON.stringify({
-                        query: "",
-                        queryText: ""
-                    }),
-                    steps: JSON.stringify([])
-                };
-            }
+            return null;
         }
     },
     ratings_texts: function(ratingsTexts) {
@@ -332,6 +321,7 @@ function uploadFile(myfile, id, callback) {
                     return widget;
                 });
 
+
                 if (widgets && widgets.length > 0) {
                     //filter out based on cohorts
                     if (cohortsEnabled) {
@@ -388,7 +378,6 @@ function uploadFile(myfile, id, callback) {
         widget.appearance = {};
 
         //widget.created_by = common.db.ObjectID(obParams.member._id);
-
         validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
