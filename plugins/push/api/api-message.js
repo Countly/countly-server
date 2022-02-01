@@ -121,7 +121,7 @@ async function validate(args, draft = false) {
 
 module.exports.test = async params => {
     let msg = await validate(params.qstring),
-        cfg = params.app.plugins.push || {},
+        cfg = params.app.plugins && params.app.plugins.push || {},
         test_uids = cfg && cfg.test && cfg.test.uids ? cfg.test.uids.split(',') : undefined,
         test_cohorts = cfg && cfg.test && cfg.test.cohorts ? cfg.test.cohorts.split(',') : undefined;
 
@@ -192,30 +192,29 @@ module.exports.test = async params => {
                 common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
             }
 
-            msg = undefined;
         }
         else {
             common.returnMessage(params, 400, {errors: ['Message disappeared']}, null, true);
         }
+        msg = undefined;
     }
     catch (e) {
         log.e('Error while sending test message', e);
-        common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
+        common.returnMessage(params, 400, {errors: ['Failed to send test message']}, null, true);
     }
-    finally {
-        if (msg) {
-            let ok = await msg.updateAtomically(
-                {_id: msg._id, state: msg.state},
-                {
-                    $bit: {state: {or: State.Deleted}},
-                    $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
-                });
-            if (ok) {
-                common.returnOutput(params, {result: msg.result.json});
-            }
-            else {
-                common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
-            }
+
+    if (msg) {
+        let ok = await msg.updateAtomically(
+            {_id: msg._id, state: msg.state},
+            {
+                $bit: {state: {or: State.Deleted}},
+                $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
+            });
+        if (ok) {
+            common.returnOutput(params, {result: msg.result.json});
+        }
+        else {
+            common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
         }
     }
 };
