@@ -2413,6 +2413,46 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
+        if (params.qstring.device_id && typeof user.did === "undefined") {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.did) {
+                update.$set.did = params.qstring.device_id;
+            }
+        }
+
+        //store device type and mark users as know by custome device id
+        if (params.qstring.t && typeof user.t !== params.qstring.t) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.t) {
+                update.$set.t = params.qstring.t;
+            }
+            if (params.qstring.t + "" !== "0" && !user.hasInfo && typeof update.$set.hasInfo === "undefined") {
+                update.$set.hasInfo = true;
+            }
+        }
+        else if (user.merges && !user.hasInfo) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (typeof update.$set.hasInfo === "undefined") {
+                update.$set.hasInfo = true;
+            }
+        }
+
+        //store user's timezone offset too
+        if (params.qstring.tz && typeof user.tz !== params.qstring.tz) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.tz) {
+                update.$set.tz = params.qstring.tz;
+            }
+        }
+
         if (callback) {
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
                 new: true,
