@@ -1,4 +1,4 @@
-/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyGlobal, countlyVue, countlyCrashesEventLogs, Promise, $ */
+/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyGlobal, countlyVue, countlyCrashesEventLogs, CV, Promise, $ */
 
 (function(countlyCrashes) {
     var _list = {};
@@ -478,11 +478,11 @@
                 };
 
                 var tooltips = {
-                    ram: jQuery.i18n.prop("crashes.help-ram"),
-                    disk: jQuery.i18n.prop("crashes.help-disk"),
-                    battery: jQuery.i18n.prop("crashes.help-battery"),
-                    running: jQuery.i18n.prop("crashes.help-run"),
-                    sessions: jQuery.i18n.prop("crashes.help-session")
+                    ram: CV.i18n("crashes.help-ram"),
+                    disk: CV.i18n("crashes.help-disk"),
+                    battery: CV.i18n("crashes.help-battery"),
+                    running: CV.i18n("crashes.help-run"),
+                    sessions: CV.i18n("crashes.help-session")
                 };
 
                 Object.keys(diagnostics).forEach(function(diagnosticKey) {
@@ -493,7 +493,7 @@
                 ["average", "max", "min"].forEach(function(key) {
                     diagnostics.running[key] = diagnostics.running[key] / 60;
                 });
-                diagnostics.running.unit = jQuery.i18n.prop("crashes.minutes-short");
+                diagnostics.running.unit = CV.i18n("crashes.minutes-short");
                 diagnostics.sessions.unit = "";
 
                 return diagnostics;
@@ -550,7 +550,7 @@
                         data: mapKeys
                     },
                     series: [
-                        {data: Object.values(mapObj), color: "#F96300", name: `${jQuery.i18n.prop("crashes.fatal_crash_count")} by ${chartBy}`}
+                        {data: Object.values(mapObj), color: "#F96300", name: CV.i18n("crashes.fatal_crash_count") + ' by ' + chartBy}
                     ]
                 };
 
@@ -945,39 +945,39 @@
         var badges = [];
 
         if (crash.nonfatal) {
-            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.nonfatal")});
+            badges.push({type: "neutral", content: CV.i18n("crashes.nonfatal")});
         }
         else {
-            badges.push({type: "negative", content: jQuery.i18n.prop("crashes.fatal")});
+            badges.push({type: "negative", content: CV.i18n("crashes.fatal")});
         }
 
         if (crash.is_resolved) {
-            badges.push({type: "positive", content: jQuery.i18n.prop("crashes.resolved") + " (" + crash.resolved_version + ")"});
+            badges.push({type: "positive", content: CV.i18n("crashes.resolved") + " (" + crash.resolved_version + ")"});
         }
         else if (crash.is_resolving) {
-            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.resolving")});
+            badges.push({type: "neutral", content: CV.i18n("crashes.resolving")});
         }
         else {
-            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.unresolved")});
+            badges.push({type: "neutral", content: CV.i18n("crashes.unresolved")});
         }
 
         if (crash.is_renewed) {
-            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.reoccuring")});
+            badges.push({type: "neutral", content: CV.i18n("crashes.reoccuring")});
         }
 
 
         if ("session" in crash) {
             var frequency = Math.round(crash.session.total / crash.session.count);
             if (frequency === 1) {
-                badges.push({type: "info", content: jQuery.i18n.prop("crashes.every-session")});
+                badges.push({type: "info", content: CV.i18n("crashes.every-session")});
             }
             else if (frequency > 1) {
-                badges.push({type: "info", content: jQuery.i18n.prop("crashes.every-n-sessions", frequency)});
+                badges.push({type: "info", content: CV.i18n("crashes.every-n-sessions", frequency)});
             }
         }
 
         if (crash.is_new) {
-            badges.push({type: "info", content: jQuery.i18n.prop("crashes.new")});
+            badges.push({type: "info", content: CV.i18n("crashes.new")});
         }
 
         return badges;
