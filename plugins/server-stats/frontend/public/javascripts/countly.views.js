@@ -125,7 +125,7 @@ var DataPointsView = countlyVue.views.create({
                     nameLocation: "start",
                     nameTextStyle: {
                         color: "#A7AEB8",
-                        padding: [0, 0, -18, 0],
+                        padding: [0, 0, -20, 0],
                         verticalAlign: 'bottom'
                     }
                 }
