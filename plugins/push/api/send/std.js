@@ -95,6 +95,7 @@ class Base extends Duplex {
         }, error => {
             this.log.e('Sending %d chunks errored', chunks.length, error);
             this.send_push_fail(PushError.deserialize(error));
+            callback();
         });
         // Promise.all(chunks.map(chunk => {
         //     chunk = chunk.chunk;

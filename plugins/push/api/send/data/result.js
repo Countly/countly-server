@@ -241,25 +241,17 @@ class Result extends Validatable {
     }
 
     /**
-     * Add a response to errors object
+     * Add an error to errors object
      * 
-     * @param {string} key sub key
      * @param {string} code response code
      * @param {number} count number of errors to add
      * @returns {number} response count after addition
      */
-    response(key, code, count) {
+    recordError(code, count) {
         if (!this._data.errors) {
             this._data.errors = {};
         }
-        let sub = this.sub(key);
-        if (sub) {
-            sub.errored += count;
-            sub.errors[code] = (sub.errors[code] || 0) + count;
-        }
-        else {
-            this.sub(key, new Result({errored: count, errors: {[code]: count}}));
-        }
+        this.errored++;
         return this._data.errors[code] = (this._data.errors[code] || 0) + count;
     }
 

@@ -1,4 +1,5 @@
-const EventEmitter = require("events");
+const EventEmitter = require("events"),
+    { Message } = require('../../send');
 
 /**
  * Data object shared across streams to hold state
@@ -94,7 +95,7 @@ class State extends EventEmitter {
      * @returns {Message[]} array of messages
      */
     messages() {
-        return Object.values(this._messages);
+        return Object.values(this._messages).filter(m => !!m);
     }
 
     /**
@@ -103,6 +104,9 @@ class State extends EventEmitter {
      * @param {object} message message object
      */
     setMessage(message) {
+        if (!(message instanceof Message)) {
+            message = new Message(message);
+        }
         if (!(message._id in this._messages)) {
             this.emit('message', message);
         }

@@ -8,6 +8,9 @@ function decode() {
 }
 
 describe('PUSH PLATFORMS', () => {
+
+    it('initializes common', () => require('../../pluginManager').connectToAllDatabases());
+
     class SplitterTest extends Splitter {
         constructor(log, type, creds, messages, options) {
             super(log, type, creds, messages, Object.assign(options, {concurrency: 500}));
