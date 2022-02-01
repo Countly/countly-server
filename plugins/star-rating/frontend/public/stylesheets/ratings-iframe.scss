@@ -5,11 +5,24 @@
 .ratings-popup .modal-content {
   border-radius: 13px;
   background-color: white;
-  padding: 40px 25px;
+  padding: 0px 25px 40px 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
+
+  &__top {
+    width: 100%;
+    height: fit-content;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+
+    .close-button {
+      font-size: 36px;
+      cursor: pointer;
+    }
+  }
 }
 
 .ratings-popup .emotions-area {
