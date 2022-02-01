@@ -1,4 +1,4 @@
-const { Message, Creds, State, Status, platforms, Audience, ValidationError, PushError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
+const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
     { DEFAULTS } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message');
