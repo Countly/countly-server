@@ -929,7 +929,6 @@
 
     app.configurationsView.registerInput("security.api_additional_headers", {input: "el-input", attrs: {type: "textarea", rows: 5}});
 
-    app.configurationsView.registerInput("push.proxypass", {input: "el-input", attrs: {type: "password"}});
 
     app.configurationsView.registerInput("api.reports_regenerate_interval", {
         input: "el-select",
