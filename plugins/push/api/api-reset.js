@@ -1,6 +1,6 @@
 const common = require('../../../api/utils/common'),
     plugins = require('../../pluginManager'),
-    { Creds } = require('./send');
+    { Creds, dbext } = require('./send');
 
 /**
  * Reset the app by removing all push artifacts
@@ -8,7 +8,7 @@ const common = require('../../../api/utils/common'),
  * @param {object} ob ob
  */
 async function reset(ob) {
-    let aid = common.db.oid(ob.appId);
+    let aid = dbext.oid(ob.appId);
     await Promise.all([
         plugins.getPluginsApis().push.cache.purgeAll(),
         common.db.collection('messages').deleteMany({app: aid}).catch(() => {}),
@@ -35,7 +35,7 @@ async function reset(ob) {
  * @param {object} ob ob
  */
 async function clear(ob) {
-    let aid = common.db.oid(ob.appId);
+    let aid = dbext.oid(ob.appId);
     await Promise.all([
         plugins.getPluginsApis().push.cache.purgeAll(),
         common.db.collection('messages').deleteMany({app: aid}).catch(() => {}),
@@ -65,7 +65,7 @@ async function removeUsers(appId, uids) {
         }
     }
 
-    await Promise.all(Object.keys(updates).map(mid => common.db.collection('messages').updateOne({_id: common.db.oid(mid)}, updates[mid])));
+    await Promise.all(Object.keys(updates).map(mid => common.db.collection('messages').updateOne({_id: dbext.oid(mid)}, updates[mid])));
 }
 
 module.exports = { reset, clear, removeUsers };

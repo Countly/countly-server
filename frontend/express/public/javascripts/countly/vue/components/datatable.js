@@ -59,6 +59,8 @@
                 var self = this;
                 return this.controlParams.selectedDynamicCols.map(function(val) {
                     return self.availableDynamicColsLookup[val];
+                }).filter(function(val) {
+                    return !!val;
                 });
             },
             localSearchedRows: function() {

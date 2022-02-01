@@ -1,6 +1,9 @@
 <div id="push-notification-app-config">
     <div>
-        <div>iOS Settings </div>
+        <div class="bu-is-flex bu-is-justify-content-space-between">
+            <h3>iOS Settings </h3>
+            <el-button type="danger" @click="onDeleteKey(PlatformEnum.IOS)">Delete</el-button>
+        </div>        
         <cly-inline-form-field label="Authentication type">
             <el-select  :value="iosAuthConfigType" @change="onIOSAuthTypeChange">
                 <el-option :key="iosAuthType.value" :value="iosAuthType.value" :label="iosAuthType.label" v-for="iosAuthType in iosAuthConfigTypeOptions"></el-option>
@@ -36,16 +39,24 @@
         </template>
         <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P12">
             <cly-inline-form-field label="Passphrase" :rules="{required:isIOSConfigRequired}">
-                <el-input :value="viewModel[PlatformEnum.IOS].passphrase" @input="onInput('passphrase',$event,PlatformEnum.IOS)"></el-input>
+                <form>
+                    <el-input type="password" :value="viewModel[PlatformEnum.IOS].passphrase" @input="onInput('passphrase',$event,PlatformEnum.IOS)"></el-input>
+                </form>            
             </cly-inline-form-field>
         </template>
 
-        <div> Android (Google FM) </div>
+        <div class="bu-is-flex bu-is-justify-content-space-between">
+            <h3>Android (Google FM) </h3>
+            <el-button type="danger" @click="onDeleteKey(PlatformEnum.ANDROID)">Delete</el-button>
+        </div>        
         <cly-inline-form-field label="Firebase key">
             <el-input :value="viewModel[PlatformEnum.ANDROID].firebaseKey" @input="onInput('firebaseKey',$event,PlatformEnum.ANDROID)"></el-input>
         </cly-inline-form-field>
 
-        <div> Android (Huawei Push Kit) </div>
+        <div class="bu-is-flex bu-is-justify-content-space-between">
+            <h3>Android (Huawei Push Kit) </h3>
+            <el-button type="danger" @click="onDeleteKey(PlatformEnum.HUAWEI)">Delete</el-button>
+        </div>        
         <cly-inline-form-field label="Huawei App ID" :rules="{required:isHuaweiConfigRequired}">
             <el-input :value="viewModel[PlatformEnum.HUAWEI].appId" @input="onInput('appId',$event,PlatformEnum.HUAWEI)"></el-input>
         </cly-inline-form-field>
