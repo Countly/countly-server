@@ -15,10 +15,6 @@
                     return [];
                 }
             },
-            multiple: {
-                type: Boolean,
-                default: false
-            },
             multipleLimit: {
                 type: Number,
                 default: 3
@@ -32,10 +28,16 @@
                 default: function() {
                     return [];
                 }
+            },
+            multiple: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
-            return {};
+            return {
+                rerender: "_id_" + this.multiple
+            };
         },
         computed: {
             placeholderText: function() {
@@ -87,9 +89,19 @@
         },
         watch: {
             multiple: {
-                immediate: true,
-                handler: function() {
-                    this.$emit("input", []);
+                handler: function(newVal, oldVal) {
+                    /**
+                     * Everytime multiple changes we want to reset the selected value of
+                     * the component because the value depends on the multiple value.
+                     *
+                     * We also want to rerender the component to update the selected value.
+                     * We want to do this because el-select has a bug where even if the model
+                     * value changes, the input value is not updated.
+                     */
+                    if (newVal !== oldVal) {
+                        this.rerender = "_id_" + this.multiple;
+                        this.$emit("input", []);
+                    }
                 }
             }
         }
@@ -236,10 +248,6 @@
                     return [];
                 }
             },
-            multiple: {
-                type: Boolean,
-                default: false
-            },
             multipleLimit: {
                 type: Number,
                 default: 3
@@ -253,11 +261,16 @@
                 default: function() {
                     return [];
                 }
+            },
+            multiple: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
             return {
-                store: null
+                store: null,
+                rerender: "_id_" + this.multiple + "_" + this.appIds
             };
         },
         computed: {
@@ -318,15 +331,28 @@
                 handler: function(newVal) {
                     var appIds = newVal;
 
-                    if (Array.isArray(appIds) && appIds.length) {
+                    if (this.store && Array.isArray(appIds) && appIds.length) {
                         this.store.dispatch("countlyDashboards/getEvents", {appIds: appIds});
                     }
+
+                    this.rerender = "_id_" + this.multiple + "_" + this.appIds;
+                    this.$emit("input", []);
                 }
             },
             multiple: {
-                immediate: true,
-                handler: function() {
-                    this.$emit("input", []);
+                handler: function(newVal, oldVal) {
+                    /**
+                     * Everytime multiple changes we want to reset the selected value of
+                     * the component because the value depends on the multiple value and appIds.
+                     *
+                     * We also want to rerender the component to update the selected value.
+                     * We want to do this because el-select has a bug where even if the model
+                     * value changes, the input value is not updated.
+                     */
+                    if (newVal !== oldVal) {
+                        this.rerender = "_id_" + this.multiple + "_" + this.appIds;
+                        this.$emit("input", []);
+                    }
                 }
             }
         },
@@ -437,10 +463,6 @@
     var SourceAppsComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/source-apps.html'),
         props: {
-            multiple: {
-                type: Boolean,
-                default: false
-            },
             multipleLimit: {
                 type: Number,
                 default: 4
@@ -454,10 +476,16 @@
                 default: function() {
                     return [];
                 }
+            },
+            multiple: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
-            return {};
+            return {
+                rerender: "_id_" + this.multiple
+            };
         },
         computed: {
             placeholderText: function() {
@@ -509,9 +537,19 @@
         },
         watch: {
             multiple: {
-                immediate: true,
-                handler: function() {
-                    this.$emit("input", []);
+                handler: function(newVal, oldVal) {
+                    /**
+                     * Everytime multiple changes we want to reset the selected value of
+                     * the component because the value depends on the multiple value.
+                     *
+                     * We also want to rerender the component to update the selected value.
+                     * We want to do this because el-select has a bug where even if the model
+                     * value changes, the input value is not updated.
+                     */
+                    if (newVal !== oldVal) {
+                        this.rerender = "_id_" + this.multiple;
+                        this.$emit("input", []);
+                    }
                 }
             }
         }

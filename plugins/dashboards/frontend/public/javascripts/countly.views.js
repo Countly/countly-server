@@ -207,7 +207,16 @@
                 return widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
             },
             isWidgetInvalid: function(widget) {
-                return widget.isPluginWidget && (widget.dashData && (widget.dashData.isValid === false));
+                var invalid = true;
+
+                var dashData = widget.dashData;
+
+                if (dashData) {
+                    invalid = dashData.isValid === false ? true : false;
+                    invalid = dashData.isProcessing ? false : invalid;
+                }
+
+                return invalid;
             }
         },
         mounted: function() {

@@ -3,6 +3,7 @@
     rules="required"
     :label="i18nM(multiple ? 'dashboards.metrics-multi': 'dashboards.metrics-single')">
     <el-select
+        :key="rerender"
         style="width: 100%;"
         v-bind="$attrs"
         v-on="allListeners"
