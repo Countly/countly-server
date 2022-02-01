@@ -641,15 +641,6 @@
                 data: JSON.stringify(data)
             }, {disableAutoCatch: true});
         },
-        // getAppConfig: function() {
-        //     return CV.$.ajax({
-        //         type: "GET",
-        //         url: countlyCommon.API_URL + "/o/apps/plugins",
-        //         data: {
-        //             app_id: countlyCommon.ACTIVE_APP_ID,
-        //         }
-        //     });
-        // },
         updateAppConfig: function(config, options) {
             return CV.$.ajax({
                 type: "POST",
