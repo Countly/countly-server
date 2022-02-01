@@ -24,7 +24,7 @@
 				</el-select>
 			</div>
 		</div>
-		<div class="technology-density-wrapper__items bu-pb-5">
+		<div class="technology-density-wrapper__items bu-pb-5" v-loading="isLoading">
             <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
                 <cly-metric-cards :multiline="false" :is-synced-scroll="true">
                     <cly-metric-card 
@@ -33,24 +33,24 @@
                         :color="item.color" 
                         :number="item.percent"
                         :key="idx" 
-						:label="item.name"
                         v-for="(item, idx) in densityItems">
+						{{item.name}}
                         <template v-slot:number>{{item.value}}</template>
                         <template v-slot:description>
                             <span class="text-medium">{{item.percentText}}</span>
                         </template>
                     </cly-metric-card>
-					<div v-if="densityItems.length < 4" class="technology-density-wrapper__empty-card">
+					<div v-if="densityItems.length < 4 && !isLoading" class="technology-density-wrapper__empty-card">
 						<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 					</div>
                 </cly-metric-cards>
             </vue-scroll>
         </div>
 		<h5 class="bu-pb-4"> {{i18n('density.distribution')}} </h5>
-		<div v-if="densityVersions.length < 4" class="technology-density-wrapper__versions-empty-card">
+		<div v-if="densityVersions.length < 4 && !isLoading" class="technology-density-wrapper__versions-empty-card">
 			<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 		</div>
-        <div v-else class="technology-density-wrapper__versions">
+        <div v-else v-loading="isLoading" class="technology-density-wrapper__versions">
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 					<cly-metric-cards :multiline="false" :is-synced-scroll="true">
 						<cly-metric-breakdown 

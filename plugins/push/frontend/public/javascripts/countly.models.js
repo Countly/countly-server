@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers,countlyPlugins*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -158,21 +158,6 @@
     iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: "Key file (P8)", value: IOSAuthConfigTypeEnum.P8};
     iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P12] = {label: "Sandbox + Production certificate (P12)", value: IOSAuthConfigTypeEnum.P12};
 
-    var AppLevelConfigPropertyModelMap = {
-        rate: 'rate',
-        period: 'period',
-        keyId: 'key',
-        keyFile: 'file',
-        authType: 'type',
-        teamId: 'team',
-        bundleId: 'bundle',
-        passphrase: 'pass',
-        firebaseKey: 'key',
-        type: 'type',
-        appId: 'key',
-        appSecret: 'secret'
-    };
-
     var PlatformDtoEnum = Object.freeze({
         ANDROID: 'a',
         IOS: 'i',
@@ -316,7 +301,7 @@
             }
             throw new Error('Unknown push notification type:' + type);
         },
-        getInitialTestUsersGlobalConfigModel: function() {
+        getInitialTestUsersAppConfigModel: function() {
             return {
                 definitionType: AddTestUserDefinitionTypeEnum.USER_ID,
                 cohorts: [],
@@ -681,8 +666,16 @@
                 data: JSON.stringify(data)
             }, {disableAutoCatch: true});
         },
-        getGlobalConfig: function() {
-            return countlyPlugins.getConfigsData();
+        updateAppConfig: function(config, options) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
+                data: {
+                    args: JSON.stringify(config),
+                    app_id: options.app_id
+                },
+                dataType: "json",
+            }, {disableAutoCatch: true});
         }
     };
 
@@ -1256,12 +1249,13 @@
                 if (hasIOSConfig) {
                     return {
                         _id: dto[PlatformDtoEnum.IOS]._id || '',
-                        keyId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].key : '',
-                        keyFile: '',
+                        keyId: dto[PlatformDtoEnum.IOS].type === 'apn_token' ? dto[PlatformDtoEnum.IOS].keyid : '',
+                        p8KeyFile: dto[PlatformDtoEnum.IOS].type === 'apn_token' ? dto[PlatformDtoEnum.IOS].key : '',
+                        p12KeyFile: dto[PlatformDtoEnum.IOS].type === 'apn_universal' ? dto[PlatformDtoEnum.IOS].cert : '',
                         bundleId: dto[PlatformDtoEnum.IOS].bundle,
-                        authType: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? IOSAuthConfigTypeEnum.P12 : IOSAuthConfigTypeEnum.P8,
-                        passphrase: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? dto[PlatformDtoEnum.IOS].pass : '',
-                        teamId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].team : '',
+                        authType: dto[PlatformDtoEnum.IOS].type === 'apn_universal' ? IOSAuthConfigTypeEnum.P12 : IOSAuthConfigTypeEnum.P8,
+                        passphrase: dto[PlatformDtoEnum.IOS].type === 'apn_universal' ? dto[PlatformDtoEnum.IOS].secret : '',
+                        teamId: dto[PlatformDtoEnum.IOS].type === 'apn_token' ? dto[PlatformDtoEnum.IOS].team : '',
                         hasKeyFile: hasIOSConfig,
                         hasUploadedKeyFile: false
                     };
@@ -1726,18 +1720,21 @@
                 if (iosConfigModel) {
                     var result = {
                         type: iosConfigModel.authType === IOSAuthConfigTypeEnum.P8 ? 'apn_token' : 'apn_universal',
-                        key: iosConfigModel.authType === IOSAuthConfigTypeEnum.P8 ? iosConfigModel.keyId : 'team',
+                        keyid: iosConfigModel.authType === IOSAuthConfigTypeEnum.P8 ? iosConfigModel.keyId : 'team',
                         bundle: iosConfigModel.bundleId || "",
                         fileType: iosConfigModel.authType
                     };
                     if (iosConfigModel._id) {
                         result._id = iosConfigModel._id;
                     }
-                    if (iosConfigModel.hasUploadedKeyFile) {
-                        result.file = iosConfigModel.keyFile;
+                    if (iosConfigModel.authType === IOSAuthConfigTypeEnum.P8) {
+                        result.key = iosConfigModel.p8KeyFile;
+                    }
+                    else {
+                        result.cert = iosConfigModel.p12KeyFile;
                     }
                     if (iosConfigModel.authType === IOSAuthConfigTypeEnum.P12) {
-                        result.pass = iosConfigModel.passphrase;
+                        result.secret = iosConfigModel.passphrase;
                     }
                     if (iosConfigModel.authType === IOSAuthConfigTypeEnum.P8) {
                         result.team = iosConfigModel.teamId;
@@ -1781,8 +1778,27 @@
                 dto[PlatformDtoEnum.HUAWEI] = this.mapHuaweiAppLevelConfig(model);
                 return dto;
             },
-            mapAppLevelConfigModelProperty: function(property) {
-                return AppLevelConfigPropertyModelMap[property];
+            mapTestUsersEditedModelToDto: function(editedModel) {
+                var testUsersDto = {};
+                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.USER_ID) {
+                    Object.assign(testUsersDto, {uids: editedModel.userIds.join(',')});
+                }
+                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.COHORT) {
+                    Object.assign(testUsersDto, {cohorts: editedModel.cohorts.join(',')});
+                }
+                return testUsersDto;
+            },
+            mapAppLevelConfigByPlatform: function(model, platform) {
+                if (platform === PlatformEnum.ANDROID) {
+                    return this.mapAndroidAppLevelConfig(model);
+                }
+                if (platform === PlatformEnum.IOS) {
+                    return this.mapIOSAppLevelConfig(model);
+                }
+                if (platform === PlatformEnum.HUAWEI) {
+                    return this.mapHuaweiAppLevelConfig(model);
+                }
+                throw new Error('Unknown platform type:' + platform);
             }
         }
     };
@@ -1997,13 +2013,6 @@
                 return Promise.resolve([]);
             });
         },
-        getGlobalConfig: function() {
-            var globalConfig = countlyPushNotification.api.getGlobalConfig();
-            if (globalConfig) {
-                return globalConfig.push;
-            }
-            return null;
-        },
         fetchTestUsers: function(options) {
             var self = this;
             var queries = [];
@@ -2042,7 +2051,16 @@
             });
         },
         searchUsersById: function(idQuery) {
+            var self = this;
             return new Promise(function(resolve, reject) {
+                if (!self.isDrillPluginEnabled()) {
+                    reject(new Error('Error finding test users. Drill plugin must be enabled.'));
+                    return;
+                }
+                if (!self.isUserProfilesPluginEnabled()) {
+                    reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
+                    return;
+                }
                 var drillQuery = {did: {rgxcn: [idQuery]}};
                 countlyPushNotification.api.searchUsers(drillQuery)
                     .then(function(response) {
@@ -2152,26 +2170,17 @@
             }
             return countlyPushNotificationApprover.service.approve(messageId);
         },
-        addTestUsers: function(testUsersModel) {
-            var testUsersConfigDto = {};
-            if (testUsersModel.definitionType === AddTestUserDefinitionTypeEnum.USER_ID) {
-                testUsersConfigDto = { test: {uids: testUsersModel.userIds.join(',') }};
+        addTestUsers: function(testUsersModel, options) {
+            try {
+                var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(testUsersModel);
+                var appConfig = {push: {test: {}}};
+                appConfig.push.test = testDto;
             }
-            if (testUsersModel.definitionType === AddTestUserDefinitionTypeEnum.COHORT) {
-                testUsersConfigDto = { test: {cohorts: testUsersModel.cohorts.join(',') }};
+            catch (error) {
+                // TODO:log error
+                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
             }
-            var pushConfig = {push: {}};
-            pushConfig.push = testUsersConfigDto;
-            return new Promise(function(resolve, reject) {
-                countlyPlugins.updateConfigs(pushConfig, function(error, response) {
-                    if (error) {
-                        // TODO: log error
-                        reject(error);
-                        return;
-                    }
-                    resolve(response);
-                });
-            });
+            return countlyPushNotification.api.updateAppConfig(appConfig, options);
         }
     };
 

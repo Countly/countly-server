@@ -10,6 +10,7 @@ const plugins = require('../../pluginManager'),
     { estimate, test, create, update, toggle, remove, all, one, mime } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
+    Sender = require('./send/sender'),
     FEATURE_NAME = 'push',
     PUSH_CACHE_GROUP = 'P',
     PUSH = {
@@ -70,6 +71,21 @@ plugins.register('/master', function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
+});
+
+plugins.register('/master/runners', runners => {
+    let sender;
+    runners.push(async() => {
+        if (!sender) {
+            sender = new Sender();
+            await sender.prepare();
+            let has = await sender.watch();
+            if (has) {
+                await sender.send();
+            }
+            sender = undefined;
+        }
+    });
 });
 
 plugins.register('/cache/init', function() {

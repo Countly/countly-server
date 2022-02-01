@@ -1,5 +1,6 @@
+const { PushError, SendError, ERROR } = require('../../send/std');
 const { SynFlushTransform } = require('./syn'),
-    { Message, Creds, pools, FRAME } = require('../../send');
+    { Message, State, Status, Creds, pools, FRAME } = require('../../send');
 
 /**
  * Stream responsible for handling sending results:
@@ -37,6 +38,9 @@ class Connector extends SynFlushTransform {
     _transform(push, encoding, callback) {
         if (push.frame & FRAME.CMD) {
             this.push(push);
+            if (push.frame & (FRAME.FLUSH | FRAME.SYN)) {
+                this.do_flush(callback);
+            }
             return;
         }
         this.do_transform(push, encoding, callback);
@@ -67,7 +71,7 @@ class Connector extends SynFlushTransform {
         }
         else if (!app) { // app is not loaded
             this.state.discardApp(push.a); // only turns to app if there's one or more credentials found
-            this.db.collection('apps').findOne(push.a).then(a => {
+            this.db.collection('apps').findOne({_id: push.a}).then(a => {
                 if (a && a.plugins && a.plugins.push) {
                     a.creds = a.creds || {};
 
@@ -76,7 +80,7 @@ class Connector extends SynFlushTransform {
                         let id = a.plugins.push[p]._id;
                         if (id) {
                             this.log.d('Loading credentials %s', id);
-                            promises.push(this.db.collection(Creds.collection).findOne(id).then(cred => {
+                            promises.push(Creds.load(id).then(cred => {
                                 if (cred) {
                                     a.creds[p] = cred;
                                 }
@@ -120,6 +124,17 @@ class Connector extends SynFlushTransform {
                     this.do_transform(push, encoding, callback);
                 }, callback);
             }
+            else if (!message.is(State.Streaming)) {
+                message.updateAtomically({_id: message._id, state: message.state}, {$set: {status: Status.Sending}, $bit: {state: {or: State.Streaming}}})
+                    .then(ok => {
+                        if (ok) {
+                            this.do_transform(push, encoding, callback);
+                        }
+                        else {
+                            callback(new PushError('Failed to mark message as streaming'));
+                        }
+                    }, callback);
+            }
             else {
                 let pid = pools.id(push.a, push.p, push.f),
                     creds = app.creds[push.p];
@@ -128,7 +143,7 @@ class Connector extends SynFlushTransform {
                 }
                 else { // no connection yet
                     this.log.i('Connecting %s', pid);
-                    pools.connect(push.a, push.p, push.f, creds.key, creds.secret, this.state.messages(), this.state.cfg.pool).then(() => {
+                    pools.connect(push.a, push.p, push.f, creds, this.state.messages(), this.state.cfg.pool).then(() => {
                         this.log.i('Connected %s', pid);
                         callback(null, push);
                     }, err => {
@@ -172,47 +187,90 @@ class Connector extends SynFlushTransform {
             return;
         }
 
-        let creds = {},
-            messages = {};
+        let updates = {};
 
         this.discardedByAppOrCreds.forEach(id => {
-            let push = this.state.pushes[id];
-            creds[push.m] = (creds[push.m] || 0) + 1;
-            delete this.state.pushes[id];
+            let push = this.state.pushes[id],
+                p = push.p,
+                la = push.pr.la,
+                inc = updates[push.m] ? updates[push.m].$inc : (updates[push.m] = {$inc: {}}).$inc;
+            inc['result.processed'] = (inc['result.processed'] || 0) + 1;
+            inc['result.errored'] = (inc['result.errored'] || 0) + 1;
+            inc['result.errors.nocreds'] = (inc['result.errors.nocreds'] || 0) + 1;
+            inc[`result.subs.${p}.errored`] = (inc[`result.subs.${p}.errored`] || 0) + 1;
+            inc[`result.subs.${p}.errors.nocreds`] = (inc[`result.subs.${p}.errors.nocreds`] || 0) + 1;
+            inc[`result.subs.${p}.subs.${la}.errored`] = (inc[`result.subs.${p}.subs.${la}.errored`] || 0) + 1;
+            inc[`result.subs.${p}.subs.${la}.errors.nocreds`] = (inc[`result.subs.${p}.subs.${la}.errors.nocreds`] || 0) + 1;
         });
 
         this.discardedByMessage.forEach(id => {
-            let push = this.state.pushes[id];
-            messages[push.m] = (messages[push.m] || 0) + 1;
-            delete this.state.pushes[id];
+            let push = this.state.pushes[id],
+                p = push.p,
+                la = push.pr.la,
+                inc = updates[push.m] ? updates[push.m].$inc : (updates[push.m] = {$inc: {}}).$inc;
+            inc['result.processed'] = (inc['result.processed'] || 0) + 1;
+            inc['result.errored'] = (inc['result.errored'] || 0) + 1;
+            inc['result.errors.nomsg'] = (inc['result.errors.nomsg'] || 0) + 1;
+            inc[`result.subs.${p}.errored`] = (inc[`result.subs.${p}.errored`] || 0) + 1;
+            inc[`result.subs.${p}.errors.nomsg`] = (inc[`result.subs.${p}.errors.nomsg`] || 0) + 1;
+            inc[`result.subs.${p}.subs.${la}.errored`] = (inc[`result.subs.${p}.subs.${la}.errored`] || 0) + 1;
+            inc[`result.subs.${p}.subs.${la}.errors.nomsg`] = (inc[`result.subs.${p}.subs.${la}.errors.nomsg`] || 0) + 1;
         });
 
-        let mids = Object.keys(creds).concat(Object.keys(messages)),
-            promises = [];
-        mids = mids.filter((mid, i) => mids.indexOf(mid) === i);
+        // we have to use fresh messages as they've been updated in Resultor, we only add two errors above (nomsg, nocreds) in this class & update status for all messages
+        Promise.all(Object.keys(updates).map(mid => this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, updates[mid])))
+            .then(async() => {
+                let mids = this.state.messages().map(m => m.id).concat(Object.keys(updates));
+                mids = mids.filter((mid, i) => mids.indexOf(mid) === i);
 
-        mids.forEach(mid => {
-            let q = {$inc: {}};
-            if (creds[mid]) {
-                q.$inc['result.errors.nocreds'] = creds[mid];
-            }
-            if (messages[mid]) {
-                q.$inc['result.errors.nomsg'] = messages[mid];
-            }
-            promises.push(this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, q));
-        });
+                await new Promise(res => setTimeout(res, 5000));
+                let messages = await Message.findMany({_id: {$in: mids.map(this.db.ObjectID)}});
+                for (let m of messages) {
+                    console.log('in connector', m.id, m.result.json);
+                    let state, status, error;
+                    if (m.triggerAutoOrApi()) {
+                        if (m.result.total === m.result.errored) {
+                            state = State.Error | State.Done;
+                            status = Status.Stopped;
+                            error = 'Failed to send all notifications';
+                        }
+                        else {
+                            state = m.state & ~State.Streaming;
+                            status = Status.Scheduled;
+                        }
+                    }
+                    else {
+                        if (m.result.total === m.result.errored) {
+                            state = State.Error | State.Done;
+                            status = Status.Failed;
+                            error = 'Failed to send all notifications';
+                        }
+                        else if (m.result.total === m.result.processed) {
+                            state = State.Done;
+                            status = Status.Sent;
+                        }
+                        else {
+                            state = m.state & ~State.Streaming;
+                            status = Status.Scheduled;
+                        }
+                    }
 
-        if (this.discardedByAppOrCreds.length || this.discardedByMessage.length) {
-            promises.push(this.db.collection('push').deleteMany({_id: {$in: this.discardedByAppOrCreds.concat(this.discardedByMessage).map(this.db.ObjectID)}}));
-        }
-
-        Promise.all(promises).then(() => {
-            this.discardedByAppOrCreds = [];
-            this.discardedByMessage = [];
-            if (callback) {
-                callback();
-            }
-        }, callback);
+                    let update = {state, status};
+                    if (error) {
+                        update['result.error'] = new SendError(error, ERROR.EXCEPTION).serialize();
+                    }
+                    this.log.i('Message %s results: %s [%d] (%s)', m.id, status, state, error);
+                    await this.db.collection('messages').updateOne({_id: m._id}, {$set: {state, status}});
+                }
+            })
+            .then(() => this.db.collection('push').deleteMany({_id: {$in: this.discardedByAppOrCreds.concat(this.discardedByMessage).map(this.db.ObjectID)}}))
+            .then(() => {
+                this.discardedByAppOrCreds = [];
+                this.discardedByMessage = [];
+                if (callback) {
+                    callback();
+                }
+            }, callback);
     }
 }
 

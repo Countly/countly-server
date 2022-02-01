@@ -54,19 +54,18 @@ class Pools {
      * @param {string} app app id of the pool
      * @param {string} platform platform of the pool
      * @param {string} field type of connection: ap, at, id, ia, ip, ht, hp
-     * @param {string} key authorization key: server key for FCM/HW, P8/P12 for APN
-     * @param {string} secret passphrase for P12
+     * @param {Creds} creds credentials instance
      * @param {Object[]} messages array of initial messages
      * @param {Object} options options object
      * @param {integer} options.bytes how much bytes can be processed simultaniously by a single connection
      * @param {integer} options.workers how much connections (workers) can be used in parallel
      * @param {Object} options.proxy proxy configuration
      */
-    async connect(app, platform, field, key, secret, messages, options) {
+    async connect(app, platform, field, creds, messages, options) {
         let id = this.id(app, platform, field);
         if (!(id in this.pools)) {
             log.i('Adding pool %s ', id);
-            let pool = new Pool(id, platform + field, key, secret, messages, options),
+            let pool = new Pool(id, platform + field, creds, messages, options),
                 tm,
                 ls = Date.now(),
                 /**

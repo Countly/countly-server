@@ -1,3 +1,5 @@
+const mongodb = require('mongodb');
+
 /**
  * Base class for data classes for json getter
  * 
@@ -201,7 +203,7 @@ class Mongoable extends Validatable {
         if (typeof query === 'string') {
             query = {_id: require('./common').db.ObjectID(query)};
         }
-        else if (require('./common').db.isoid(query)) {
+        else if (query instanceof mongodb.ObjectId) {
             query = {_id: query};
         }
         let data = await require('./common').db.collection(this.collection).findOne(query);

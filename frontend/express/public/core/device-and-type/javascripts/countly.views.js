@@ -90,7 +90,7 @@ var DevicesTabView = countlyVue.views.create({
             };
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.deviceTypesLoading;
         }
     }
 });
@@ -169,7 +169,7 @@ var TypesTabView = countlyVue.views.create({
             };
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.typeLoading;
         }
     }
 });
@@ -262,7 +262,7 @@ app.route("/analytics/technology/*tab", "technology-tab", function(tab) {
 
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 2,
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/devices-and-types",
+    route: "#/analytics/technology/devices-and-types",
     name: "devices-and-types",
     title: CV.i18n('devices.devices-and-types.title'),
     component: AllTabs,
