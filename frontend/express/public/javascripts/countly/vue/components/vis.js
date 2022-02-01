@@ -570,9 +570,8 @@
                     tooltip: {
                         trigger: 'item',
                         position: function(point, params, dom, rect, size) {
-                            size.contentSize[1].height = 54 ;
-                            if (size.contentSize[0] + 30 >= size.viewSize[0]) {
-                                return [point[0] + 20, point[1] + 20];
+                            if (size.contentSize[0] + 110 >= size.viewSize[0]) {
+                                return [point[0] + 30, point[1] + 30];
                             }
                         }
                     },
