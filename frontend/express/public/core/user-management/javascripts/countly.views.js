@@ -331,7 +331,10 @@
                     }
                 }
 
-                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin) {
+                // block process if no app selected
+                // and user is not admin
+                // and user doesn't have assigned to any group
+                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin && typeof this.group._id === "undefined") {
                     CountlyHelpers.notify({
                         message: CV.i18n('management-users.at-least-one-app-required'),
                         type: 'error'
@@ -346,13 +349,14 @@
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.editUser(this.user._id, submitted, function(res) {
                         if (res.result) {
-                            if (typeof self.group._id !== "undefined") {
+                            // we don't need to send group request if group doesn't change
+                            if (typeof self.group._id !== "undefined" && self.group._id !== self.user.group_id[0]) {
                                 groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
                                     .then(function() {});
                             }
                             self.$emit('refresh-table');
                             self.group = {};
-                            if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
+                            if (self.$refs.userDrawerDropzone && self.$refs.userDrawerDropzone.getAcceptedFiles() && self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
                                 self.dropzoneOptions.member = { _id: self.user._id };
                                 self.$refs.userDrawerDropzone.processQueue();
                                 var checkUploadProcess = setInterval(function() {
@@ -399,7 +403,7 @@
                             }
                             self.group = {};
                             self.$emit('refresh-table');
-                            if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
+                            if (self.$refs.userDrawerDropzone && self.$refs.userDrawerDropzone.getAcceptedFiles() && self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
                                 self.dropzoneOptions.member = { _id: res._id };
                                 self.$refs.userDrawerDropzone.processQueue();
                                 var checkUploadProcess = setInterval(function() {
