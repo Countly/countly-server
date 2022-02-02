@@ -179,9 +179,9 @@
                                     template += '<div class="chart-tooltip__body">\
                                                         <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
-                                                            <span class="text-small">' + params[i].seriesName + '</span>\
+                                                            <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
                                                         <div class="chart-tooltip__value">\
-                                                            <span class="text-big">' + countlyCommon.getShortNumber(params[i].value) + '</span>\
+                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? countlyCommon.getShortNumber(params[i].value[1]) : countlyCommon.getShortNumber(params[i].value)) + '</span>\
                                                         </div>\
                                                     </div>\
                                                 </div>';
@@ -570,9 +570,8 @@
                     tooltip: {
                         trigger: 'item',
                         position: function(point, params, dom, rect, size) {
-                            size.contentSize[1].height = 54 ;
-                            if (size.contentSize[0] + 30 >= size.viewSize[0]) {
-                                return [point[0] + 20, point[1] + 20];
+                            if (size.contentSize[0] + 110 >= size.viewSize[0]) {
+                                return [point[0] + 30, point[1] + 30];
                             }
                         }
                     },
