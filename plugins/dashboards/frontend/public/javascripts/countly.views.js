@@ -216,6 +216,10 @@
                     invalid = dashData.isProcessing ? false : invalid;
                 }
 
+                if (widget.client_fetch) {
+                    invalid = false;
+                }
+
                 return invalid;
             }
         },
