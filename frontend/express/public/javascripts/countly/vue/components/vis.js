@@ -1593,6 +1593,111 @@
                     </div>'
     }));
 
+    Vue.component("cly-map-picker", countlyVue.components.create({
+        components: {
+            'l-map': Vue2Leaflet.LMap,
+            'l-tile-layer': Vue2Leaflet.LTileLayer,
+            'l-marker': Vue2Leaflet.LMarker,
+            'l-circle': Vue2Leaflet.LCircle,
+        },
+        props: {
+            radius: {
+                type: Object,
+                required: false,
+                validator: function(value) {
+                    return value && (value.unit === 'km' || value.unit === 'mi') && value.value;
+                },
+                default: null
+            }
+        },
+        data: function() {
+            return {
+                markerCoordinates: null,
+                defaultCenterCoordinates: {lat: 48.66194284607008, lng: 8.964843750000002}, // Note: arbitrary coordinates used for map center when user location is not found
+                userCenterCoordinates: null,
+                tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+                MI_TO_KM_RATIO: 1.60934,
+                KM_TO_M_RATIO: 1000,
+                RadiusUnitEnum: {
+                    KM: 'km',
+                    MI: 'mi'
+                }
+            };
+        },
+        computed: {
+            radiusInMeters: function() {
+                if (this.radius && this.radius.unit === this.RadiusUnitEnum.KM) {
+                    return this.radius.value * this.KM_TO_M_RATIO;
+                }
+                if (this.radius && this.radius.unit === this.RadiusUnitEnum.MI) {
+                    return this.radius.value * this.MI_TO_KM_RATIO * this.KM_TO_M_RATIO;
+                }
+                return 0;
+            },
+            centerCoordinates: function() {
+                if (this.markerCoordinates) {
+                    return this.markerCoordinates;
+                }
+                if (this.userCenterCoordinates) {
+                    return this.userCenterCoordinates;
+                }
+                return this.defaultCenterCoordinates;
+            },
+            dynamicZoom: function() {
+                if (this.userCenterCoordinates) {
+                    return 12;
+                }
+                return 6;
+            },
+        },
+        methods: {
+            setMarkerCoordinates: function(coordinates) {
+                this.markerCoordinates = coordinates;
+            },
+            onLocationPick: function(event) {
+                this.setMarkerCoordinates(event.latlng);
+                this.$emit('location-pick', event.latlng);
+            },
+            onLocationFound: function(event) {
+                this.userCenterCoordinates = event.latlng;
+            },
+            locateUser: function() {
+                this.$nextTick(function() {
+                    this.$refs.lmap.mapObject.locate({setView: true});
+                });
+            },
+            registerEventListeners: function(listeners) {
+                var self = this;
+                this.$nextTick(function() {
+                    listeners.forEach(function(item) {
+                        self.$refs.lmap.mapObject.on(item.name, item.handler);
+                    });
+                });
+            },
+            unregisterEventListeners: function(listeners) {
+                var self = this;
+                listeners.forEach(function(item) {
+                    self.$refs.lmap.mapObject.off(item.name, item.handler);
+                });
+            }
+        },
+        mounted: function() {
+            this.registerEventListeners([
+                {name: 'click', handler: this.onLocationPick},
+                {name: 'locationfound', handler: this.onLocationFound}
+            ]);
+            this.locateUser();
+        },
+        destroyed: function() {
+            this.unregisterEventListeners([
+                {name: 'click', handler: this.onLocationPick},
+                {name: 'locationfound', handler: this.onLocationFound}
+            ]);
+        },
+        template: CV.T('/javascripts/countly/vue/templates/mappicker.html')
+    }));
+
     Vue.component("cly-worldmap", countlyVue.components.create({
         components: {
             'l-map': Vue2Leaflet.LMap,
