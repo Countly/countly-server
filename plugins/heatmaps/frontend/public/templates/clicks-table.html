@@ -8,7 +8,7 @@
             <template v-slot="scope">
                 <el-table-column sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.table.pages')" fixed="left">
                     <template slot-scope="scope">
-                        {{scope.row.view}}
+                        {{scope.row.display || scope.row.view || scope.row._id}}
                     </template>
                 </el-table-column>
                 <el-table-column v-if="showActionMapColumn"  prop="actionLink" :label="i18n('heatmaps.table.heatmap')">
