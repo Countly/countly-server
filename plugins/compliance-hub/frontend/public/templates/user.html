@@ -12,9 +12,12 @@
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row.consent">
                             <p class="color-primary-green text-medium font-weight-bold">{{i18n("consent.opt-i")}}</p>
-                            <span class="text-medium" v-html="rowScope.row.optin.join(',')"></span>
+                            <span v-html="rowScope.row.optin.join(',')"></span>
                             <p class="color-red-100 text-medium font-weight-bold">{{i18n("consent.opt-o")}}</p>
-                            <span class="text-medium" v-html="rowScope.row.optout.join(',')"></span>
+                            <span v-html="rowScope.row.optout.join(',')"></span>
+                        </div>
+                        <div v-if="!rowScope.row.consent">
+                            -
                         </div>
 
                     </template>

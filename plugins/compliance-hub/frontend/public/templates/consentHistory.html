@@ -1,6 +1,6 @@
 <cly-main>
     <div class="bu-level bu-my-4">
-        <div class="bu-level-left bu-my-3">
+        <div class="bu-level-left">
             <span class="text-big font-weight-bold">Consent History for </span>
             <cly-select-x class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :adaptiveLength="true"
                 :auto-commit="true" :hide-default-tabs="true" :arrow="false" :hide-all-options-tab="true" :options="filter1"
@@ -12,9 +12,10 @@
                 v-model="selectedfilterforMetrics">
             </cly-select-x>
         </div>
-        <cly-date-picker-g type="daterange" range-separator="To" start-placeholder="Start date"
-            end-placeholder="End date">
-        </cly-date-picker-g>
+        <div class="bu-level-right">
+            <cly-date-picker-g type="daterange" range-separator="To" start-placeholder="Start date" end-placeholder="End date">
+            </cly-date-picker-g>
+        </div>
     </div>
     <cly-section>
         <cly-datatable-n :data-source="consentHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}">
