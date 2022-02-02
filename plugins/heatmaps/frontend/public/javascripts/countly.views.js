@@ -37,23 +37,32 @@
         }
         var self = this;
         if (domain) {
-            url = url.replace("#/analytics/views/action-map/", "");
             if (domain.indexOf("http") !== 0) {
                 domain = "http://" + domain;
             }
             if (domain.substr(domain.length - 1) === '/') {
                 domain = domain.substr(0, domain.length - 1);
             }
+
+            url = url.replace("#/analytics/views/action-map/", "");
             url = domain + url;
         }
-        var newWindow = window.open("");
-        countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
-            self.token = token && token.result;
-            if (self.token) {
-                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, currentMap: currentMap, app_key: countlyCommon.ACTIVE_APP_KEY, url: window.location.protocol + "//" + window.location.host});
-                newWindow.location.href = url;
-            }
-        });
+
+        var followLink = false;
+        if (url.indexOf("#/analytics/views/action-map/") < 0) {
+            followLink = true;
+        }
+
+        if (followLink) {
+            var newWindow = window.open("");
+            countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
+                self.token = token && token.result;
+                if (self.token) {
+                    newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, currentMap: currentMap, app_key: countlyCommon.ACTIVE_APP_KEY, url: window.location.protocol + "//" + window.location.host});
+                    newWindow.location.href = url;
+                }
+            });
+        }
     };
 
     var showActionsMapColumn = function() {
