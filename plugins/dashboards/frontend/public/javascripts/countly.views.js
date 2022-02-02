@@ -513,7 +513,38 @@
                 this.grid.on("resizestop", function(event, element) {
                     var node = element.gridstackNode;
                     var widgetId = node.id;
-                    var size = [node.w, node.h];
+                    var setWidth = node.w;
+                    var setHeight = node.h;
+
+                    var validatedWidth = self.calculateWidth(setWidth);
+                    var validatedHeight = self.calculateHeight(setHeight);
+
+                    var finalWidth = setWidth;
+                    var finalHeight = setHeight;
+                    var change = false;
+
+                    if (validatedWidth !== setWidth) {
+                        /**
+                         * Widths can only change as per the calculateWidth logic
+                         */
+                        finalWidth = validatedWidth;
+                        change = true;
+                    }
+
+                    if (validatedHeight !== setHeight) {
+                        /**
+                         * Heights can only change as per the calculateWidth logic
+                         */
+                        finalHeight = validatedHeight;
+                        change = true;
+                    }
+
+                    if (change) {
+                        self.grid.update(node.el, {w: finalWidth, h: finalHeight});
+                    }
+
+                    var size = [finalWidth, finalHeight];
+
                     setTimeout(function() {
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {size: size}});
                     }, 1000);
