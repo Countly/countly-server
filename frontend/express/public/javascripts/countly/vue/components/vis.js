@@ -1656,9 +1656,9 @@
             setMarkerCoordinates: function(coordinates) {
                 this.markerCoordinates = coordinates;
             },
-            onLocationPick: function(event) {
+            onLocationClick: function(event) {
                 this.setMarkerCoordinates(event.latlng);
-                this.$emit('location-pick', event.latlng);
+                this.$emit('select', event.latlng);
             },
             onLocationFound: function(event) {
                 this.userCenterCoordinates = event.latlng;
@@ -1685,14 +1685,14 @@
         },
         mounted: function() {
             this.registerEventListeners([
-                {name: 'click', handler: this.onLocationPick},
+                {name: 'click', handler: this.onLocationClick},
                 {name: 'locationfound', handler: this.onLocationFound}
             ]);
             this.locateUser();
         },
         destroyed: function() {
             this.unregisterEventListeners([
-                {name: 'click', handler: this.onLocationPick},
+                {name: 'click', handler: this.onLocationClick},
                 {name: 'locationfound', handler: this.onLocationFound}
             ]);
         },
