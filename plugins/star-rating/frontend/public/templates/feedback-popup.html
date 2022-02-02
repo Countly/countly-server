@@ -201,7 +201,8 @@
             "type": "GET",
             "url": url + "/o/feedback/widget",
             "data": {
-                "widget_id": widget_id
+                "widget_id": widget_id,
+                "nfd": 1
             },
             "success": function(response) {
                 $('.rating-loader-wrapper').fadeOut();
