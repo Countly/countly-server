@@ -17,20 +17,19 @@
                             <template slot="trigger">
                                 <el-button 
                                 size="small" 
-                                @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" 
                                 type="default">
                                     {{i18n('heatmaps.view-heatmap')}}
                                     <i class="el-icon-arrow-right el-icon-right"></i>
                                 </el-button>
                             </template>
                             <el-dropdown-item :key="idx" v-for="(item, idx) in domains">
-                                <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value,'click')" class="bu-ml-1 ">{{item.label}}</div>
+                                <div @click="viewActionMapClick(scope.row.actionLink, scope.row._id, item.value)" class="bu-ml-1 ">{{item.label}}</div>
                             </el-dropdown-item>
                         </cly-more-options>
                          <div v-else>
                             <el-button 
                             size="small" 
-                            @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" 
+                            @click="viewActionMapClick(scope.row.actionLink, scope.row._id)" 
                             type="default">
                                 {{i18n('heatmaps.view-heatmap')}}
                                 <i class="el-icon-arrow-right el-icon-right"></i>
