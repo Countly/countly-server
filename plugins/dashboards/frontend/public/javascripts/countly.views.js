@@ -559,6 +559,13 @@
                     }, 1000);
                 });
 
+                this.grid.on("change", function() {
+                    /**
+                     * Update the values that changed for the widget in the store
+                     * and on the server as well.
+                     */
+                });
+
                 this.grid.on("added", function(event, element) {
                     /**
                      * This event is emitted when the widget is added to the grid.
