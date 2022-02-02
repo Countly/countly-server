@@ -25,7 +25,8 @@
                 else {
                     return eventKey;
                 }
-            }
+            },
+            separator: "***"
         }
     };
 
@@ -362,7 +363,7 @@
                                         isGroupEvent = true;
                                     }
 
-                                    var value = events._id + "***" + eventName;
+                                    var value = events._id + countlyDashboards.factory.events.separator + eventName;
                                     var name = countlyDashboards.factory.events.getEventLongName(eventName, events.map) + eventNamePostfix;
 
                                     allEvents.push({
@@ -376,6 +377,18 @@
                     }
 
                     return allEvents;
+                };
+            },
+            allSegments: function(state) {
+                var eventsObj = state.events;
+
+                return function(appId) {
+                    var segments = {};
+                    if (eventsObj[appId]) {
+                        segments = eventsObj[appId].segments || {};
+                    }
+
+                    return segments;
                 };
             }
         };
