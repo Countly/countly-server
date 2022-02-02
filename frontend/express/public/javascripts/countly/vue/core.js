@@ -393,12 +393,15 @@
         this.elementsToBeRendered.forEach(function(el) {
             var jqEl = $(el);
             var elId = jqEl.get(0).id;
-            if ($(parentSelector).find("#" + elId).length === 0) {
-                $(parentSelector).append(jqEl);
-            }
-            else {
-                // eslint-disable-next-line no-console
-                console.log("Duplicate component templates are not allowed. Please check the template with \"" + elId + "\" id.");
+            var elType = jqEl.get(0).type;
+            if (elId && elType === "text/x-template") {
+                if ($(parentSelector).find("#" + elId).length === 0) {
+                    $(parentSelector).append(jqEl);
+                }
+                else {
+                    // eslint-disable-next-line no-console
+                    console.log("Duplicate component templates are not allowed. Please check the template with \"" + elId + "\" id.");
+                }
             }
         });
     };
