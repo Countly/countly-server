@@ -169,8 +169,6 @@
         loadedData: {},
         // eslint-disable-next-line 
         onRequest: function(context) {
-            debugger
-            console.log(this.$store);
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
             };
