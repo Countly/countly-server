@@ -455,6 +455,36 @@
             }
         }
     });
+
+    countlyVue.container.registerTab("/users/tabs", {
+        priority: 3,
+        title:  CV.i18n("consent.title"),
+        name: 'Consent',
+        component: countlyVue.components.create({
+            template: CV.T("/compliance-hub/templates/userConsentHistory.html"),
+            mixins: [countlyVue.mixins.i18n],
+            data: function() {
+                return {
+                    userConsentHistoryTableSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyConsentManager", "consentHistoryUserResource"),
+                };
+            },
+            mounted: function() {
+                userDetails = this.userDetails();
+                if (userDetails.uid) {
+                    this.$store.dispatch("countlyConsentManager/fetchConsentHistoryUserResource", userDetails);
+                }
+            },
+            methods: {
+                userDetails: function() {
+                    return this.$store.getters["countlyUsers/userDetailsResource/userDetails"];
+                },
+            }
+            
+        }),
+        vuex: [{
+            clyModel: countlyConsentManager
+        }],
+    });
     var getMainView = function() {
         var vuex = [{
             clyModel: countlyConsentManager
