@@ -82,21 +82,22 @@
         onError: onError,
         onReady: function(context, rows) {
             for (var k = 0; k < rows.length; k++) {
-                rows[k].view = rows[k].display || rows[k].view || rows[k]._id;
                 rows[k].u = rows[k].uvalue || rows[k].u || 0;
                 rows[k].actionLink = "unknown";
                 rows[k].useDropdown = true;
                 var url = "#/analytics/views/action-map/";
                 if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain.length > 0) {
                     url = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain;
+                    rows[k].useDropdown = false;
+
                     if (url.indexOf("http") !== 0) {
                         url = "http://" + url;
                     }
                     if (url.substr(url.length - 1) === '/') {
                         url = url.substr(0, url.length - 1);
                     }
-                    rows[k].useDropdown = false;
                 }
+
                 var link = rows[k]._id;
                 if (rows[k].url) {
                     link = rows[k].url;
@@ -117,7 +118,6 @@
         onError: onError,
         onReady: function(context, rows) {
             for (var k = 0; k < rows.length; k++) {
-                rows[k].view = rows[k].display || rows[k].view || rows[k]._id;
                 rows[k].u = rows[k].uvalue || rows[k].u || 0;
 
                 if (rows[k].t > 0) {
@@ -137,14 +137,16 @@
                 var url = "#/analytics/views/action-map/";
                 if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain.length > 0) {
                     url = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain;
+                    rows[k].useDropdown = false;
+
                     if (url.indexOf("http") !== 0) {
                         url = "http://" + url;
                     }
                     if (url.substr(url.length - 1) === '/') {
                         url = url.substr(0, url.length - 1);
                     }
-                    rows[k].useDropdown = false;
                 }
+
                 var link = rows[k]._id;
                 if (rows[k].url) {
                     link = rows[k].url;
