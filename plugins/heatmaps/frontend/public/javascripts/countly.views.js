@@ -38,6 +38,12 @@
         var self = this;
         if (domain) {
             url = url.replace("#/analytics/views/action-map/", "");
+            if (domain.indexOf("http") !== 0) {
+                domain = "http://" + domain;
+            }
+            if (domain.substr(domain.length - 1) === '/') {
+                domain = domain.substr(0, domain.length - 1);
+            }
             url = domain + url;
         }
         var newWindow = window.open("");
