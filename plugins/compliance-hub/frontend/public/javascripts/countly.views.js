@@ -458,7 +458,7 @@
 
     countlyVue.container.registerTab("/users/tabs", {
         priority: 3,
-        title:  CV.i18n("consent.title"),
+        title: CV.i18n("consent.title"),
         name: 'Consent',
         component: countlyVue.components.create({
             template: CV.T("/compliance-hub/templates/userConsentHistory.html"),
@@ -469,7 +469,7 @@
                 };
             },
             mounted: function() {
-                userDetails = this.userDetails();
+                var userDetails = this.userDetails();
                 if (userDetails.uid) {
                     this.$store.dispatch("countlyConsentManager/fetchConsentHistoryUserResource", userDetails);
                 }
@@ -479,7 +479,7 @@
                     return this.$store.getters["countlyUsers/userDetailsResource/userDetails"];
                 },
             }
-            
+
         }),
         vuex: [{
             clyModel: countlyConsentManager
