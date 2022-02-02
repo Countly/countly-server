@@ -27,6 +27,13 @@
                 }
             },
             separator: "***"
+        },
+        log: function(e) {
+            var DEBUG = true;
+            if (DEBUG) {
+                // eslint-disable-next-line no-console
+                console.log(e);
+            }
         }
     };
 
@@ -681,11 +688,7 @@
      * @param  {Object} e - error object
      */
     function log(e) {
-        var DEBUG = true;
-        if (DEBUG) {
-            // eslint-disable-next-line no-console
-            console.log(e);
-        }
+        countlyDashboards.factory.log(e);
     }
 
 })(window.countlyDashboards = window.countlyDashboards || {});
