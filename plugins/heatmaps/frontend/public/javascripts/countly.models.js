@@ -89,13 +89,15 @@
                 if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain.length > 0) {
                     url = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain;
                     rows[k].useDropdown = false;
+
+                    if (url.indexOf("http") !== 0) {
+                        url = "http://" + url;
+                    }
+                    if (url.substr(url.length - 1) === '/') {
+                        url = url.substr(0, url.length - 1);
+                    }
                 }
-                if (url.indexOf("http") !== 0) {
-                    url = "http://" + url;
-                }
-                if (url.substr(url.length - 1) === '/') {
-                    url = url.substr(0, url.length - 1);
-                }
+
                 var link = rows[k]._id;
                 if (rows[k].url) {
                     link = rows[k].url;
@@ -136,13 +138,15 @@
                 if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain.length > 0) {
                     url = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain;
                     rows[k].useDropdown = false;
+
+                    if (url.indexOf("http") !== 0) {
+                        url = "http://" + url;
+                    }
+                    if (url.substr(url.length - 1) === '/') {
+                        url = url.substr(0, url.length - 1);
+                    }
                 }
-                if (url.indexOf("http") !== 0) {
-                    url = "http://" + url;
-                }
-                if (url.substr(url.length - 1) === '/') {
-                    url = url.substr(0, url.length - 1);
-                }
+
                 var link = rows[k]._id;
                 if (rows[k].url) {
                     link = rows[k].url;
