@@ -130,7 +130,7 @@
 		  <template v-slot="scope">
 			<el-table-column sortable="true" type="clickable" prop="name" :label="i18n('events.overview.event')" min-width="590px">
 			  <template v-slot="rowScope">
-				<div class="color-cool-gray-100" @click="onRowClick(rowScope.row)">
+				<div @click="onRowClick(rowScope.row)">
 				  {{rowScope.row.name}}
 				</div>
 			  </template>
