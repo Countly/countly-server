@@ -52,28 +52,17 @@
                 return pos;
             },
             validateWidgetSize: function(widget, dimension) {
-                var size, newSize;
+                var size;
 
                 switch (dimension) {
                 case "w":
                     size = widget.size && widget.size[0];
-
-                    if (size < this.MIN_WIDTH) {
-                        newSize = this.MIN_WIDTH;
-                        countlyDashboards.factory.log("Width should be atleast equal to " + this.MIN_WIDTH + "! Old width = " + size + ", New width = " + newSize);
-                        size = newSize;
-                    }
-
-                    var rem = size % this.MIN_WIDTH;
-                    if (rem !== 0) {
-                        newSize = this.calculateWidth(size);
-                        countlyDashboards.factory.log("Width should be a multiple of " + this.MIN_WIDTH + "! Old width = " + size + ", New width = " + newSize);
-                        size = newSize;
-                    }
+                    size = this.calculateWidth(size);
 
                     break;
                 case "h":
                     size = widget.size && widget.size[1];
+                    size = this.calculateHeight(size);
                     break;
                 }
 
@@ -81,31 +70,18 @@
             },
             validateWidgetDimension: function(settings, dimension) {
                 var dimensions = settings.grid.dimensions();
-                var dim, newDim;
+                var dim;
 
                 switch (dimension) {
                 case "w":
                     dim = dimensions.minWidth;
-                    if (dim < this.MIN_WIDTH) {
-                        newDim = this.MIN_WIDTH;
-                        countlyDashboards.factory.log("Min width should be atleast equal to " + this.MIN_WIDTH + "! Old width = " + dim + ", New width = " + newDim);
-                        dim = newDim;
-                    }
+                    dim = this.calculateWidth(dim);
 
-                    var rem = dim % this.MIN_WIDTH;
-                    if (rem !== 0) {
-                        newDim = this.calculateWidth(dim);
-                        countlyDashboards.factory.log("Min width should be a multiple of " + this.MIN_WIDTH + "! Old width = " + dim + ", New width = " + newDim);
-                        dim = newDim;
-                    }
                     break;
                 case "h":
                     dim = dimensions.minHeight;
-                    if (dim < this.MIN_HEIGHT) {
-                        newDim = this.MIN_HEIGHT;
-                        countlyDashboards.factory.log("Min height should be atleast equal to " + this.MIN_HEIGHT + "! Old height = " + dim + ", New height = " + newDim);
-                        dim = newDim;
-                    }
+                    dim = this.calculateHeight(dim);
+
                     break;
                 }
 
@@ -115,19 +91,38 @@
                 /**
                  * This function returns the width that is a multiple of 3 and closest to the old width.
                  */
-                var w;
-                var quo = parseInt(width / 3);
+                var w = width;
 
-                var prevNum = quo * 3;
-                var nextNum = (quo + 1) * 3;
-                if (((width - prevNum) - (nextNum - width)) > 0) {
-                    w = nextNum;
+                if (w < this.MIN_WIDTH) {
+                    w = this.MIN_WIDTH;
+                    countlyDashboards.factory.log("Width should be atleast equal to " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
                 }
-                else {
-                    w = prevNum;
+
+                var rem = w % this.MIN_WIDTH;
+                if (rem !== 0) {
+                    var quo = parseInt(w / 3);
+                    var prevNum = quo * 3;
+                    var nextNum = (quo + 1) * 3;
+                    if (((w - prevNum) - (nextNum - w)) > 0) {
+                        w = nextNum;
+                    }
+                    else {
+                        w = prevNum;
+                    }
+
+                    countlyDashboards.factory.log("Width should be a multiple of " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
                 }
 
                 return w;
+            },
+            calculateHeight: function(height) {
+                var h = height;
+                if (h < this.MIN_HEIGHT) {
+                    h = this.MIN_HEIGHT;
+                    countlyDashboards.factory.log("Height should be atleast equal to " + this.MIN_HEIGHT + "! Old height = " + height + ", New height = " + h);
+                }
+
+                return h;
             }
         }
     };
@@ -428,7 +423,7 @@
 
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
-        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
+        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, DimensionsValidationMixin],
         components: {
             "widgets-drawer": WidgetDrawer,
             "widget": WidgetComponent
