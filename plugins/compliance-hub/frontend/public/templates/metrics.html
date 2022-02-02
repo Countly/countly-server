@@ -1,6 +1,6 @@
     <cly-main>
-        <div class="bu-level bu-mb-3">
-            <div class="bu-level-left bu-my-3">
+        <div class="bu-level bu-mb-4">
+            <div class="bu-level-left">
                 Consent Requests for
                 <cly-select-x
                         class="bu-ml-3"
@@ -15,9 +15,10 @@
                         v-model="selectedfilterforMetrics">
                     </cly-select-x>
             </div>
-            <cly-date-picker-g type="daterange" range-separator="To" start-placeholder="Start date"
-                end-placeholder="End date">
-            </cly-date-picker-g>
+            <div class="bu-level-right">
+                <cly-date-picker-g type="daterange" range-separator="To" start-placeholder="Start date" end-placeholder="End date">
+                </cly-date-picker-g>
+            </div>
         </div>
         <cly-section>
             <cly-chart-time v-if="consentDpChart && consentDpChart.series"
