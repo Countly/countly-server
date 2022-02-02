@@ -198,6 +198,43 @@
             return rows;
         }
     });
+
+    var consentHistoryUserResource = countlyVue.vuex.ServerDataTable("consentHistoryUserResource", {
+        columns: ['_id', 'type', 'optin', 'optout', 'av', 'ts' ],
+        loadedData: {},
+        // eslint-disable-next-line 
+        onRequest: function(context, payload) {
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+            };
+            if (payload.uid) {
+                return {
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.data.r + '/consent/search' + '?api_key=' + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + '&query=' + JSON.stringify({ uid: payload.uid }),
+                    data: data
+                };
+            }
+            return [];
+        },
+        onReady: function(context, rows) {
+            for (var k = 0; k < rows.length; k++) {
+                rows[k].optin = [];
+                rows[k].optout = [];
+                rows[k].time = countlyCommon.formatTimeAgoText(rows[k].ts || 0).text;
+                if (rows[k].change) {
+                    for (var i in rows[k].change) {
+                        if (rows[k].change[i]) {
+                            rows[k].optin.push(i.charAt(0).toUpperCase() + i.slice(1));
+                        }
+                        else {
+                            rows[k].optout.push(i.charAt(0).toUpperCase() + i.slice(1));
+                        }
+                    }
+                }
+            }
+            return rows;
+        }
+    });
     countlyConsentManager.getVuexModule = function() {
         var _consentManagerDbModule = {
             namespaced: true,
@@ -309,7 +346,7 @@
             getters: _consentManagerDbModule.getters,
             actions: _consentManagerDbModule.actions,
             mutations: _consentManagerDbModule.mutations,
-            submodules: [userDataResource, consentHistoryResource, exportHistoryDataResource]
+            submodules: [userDataResource, consentHistoryResource, exportHistoryDataResource, consentHistoryUserResource]
         };
         return countlyVue.vuex.Module("countlyConsentManager", _module);
 

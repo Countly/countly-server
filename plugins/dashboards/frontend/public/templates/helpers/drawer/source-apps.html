@@ -3,9 +3,10 @@
     rules="required"
     :label="i18nM('dashboards.source-apps')">
     <cly-app-select
+        :key="rerender"
         style="width: 100%;"
         v-bind="$attrs"
-        v-on="$listeners"
+        v-on="allListeners"
         v-model="selectedApps"
         :collapse-tags="false"
         :multiple="multiple"

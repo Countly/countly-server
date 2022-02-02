@@ -253,7 +253,7 @@ const FEATURE_NAME = 'times_of_day';
 
     plugins.register("/dashboard/data", function(ob) {
         return new Promise((resolve) => {
-            var data = ob.data;
+            var data = ob.widget;
 
             if (data.widget_type === "times-of-day") {
                 var collectionName = "";

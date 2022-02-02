@@ -455,6 +455,15 @@
                 model.type = this.type;
                 return countlyPushNotification.service.save(model, options);
             },
+            sendToTestUsers: function(options) {
+                if (!options) {
+                    options = {};
+                }
+                options = Object.assign(options, this.getBaseOptions());
+                var model = Object.assign({}, this.pushNotificationUnderEdit);
+                model.type = this.type;
+                return countlyPushNotification.service.sendToTestUsers(model, options);
+            },
             update: function(options) {
                 if (!options) {
                     options = {};
@@ -552,6 +561,22 @@
                         type: "error"
                     });
                     done(true);
+                });
+            },
+            onSendToTestUsers: function() {
+                var self = this;
+                this.isLoading = true;
+                this.sendToTestUsers().then(function() {
+                    CountlyHelpers.notify({
+                        message: "Push notification message was successfully sent to test users."
+                    });
+                }).catch(function(error) {
+                    CountlyHelpers.notify({
+                        message: error.message,
+                        type: "error"
+                    });
+                }).finally(function() {
+                    self.isLoading = false;
                 });
             },
             resetState: function() {
@@ -680,7 +705,7 @@
                 this.setActiveLocalization(localization.value);
                 this.resetMessageInHTMLToActiveLocalization();
             },
-            onSendToTestUsers: function() {},
+
             onSettingChange: function(platform, property, value) {
                 this.pushNotificationUnderEdit.settings[platform][property] = value;
             },
@@ -2092,6 +2117,38 @@
                     return {};
                 }
             }
+        },
+        data: function() {
+            return {
+                metrics: [
+                    { label: this.i18n("dashboards.sent"), value: "sent" },
+                    { label: this.i18n("dashboards.actioned"), value: "actioned" }
+                ]
+            };
+        },
+        computed: {
+            enabledVisualizationTypes: function() {
+                /**
+                 * Allowed visualization types for this widget are time-series and number
+                 */
+
+                if (this.scope.editedObject.app_count === 'single') {
+                    return ['time-series', 'number'];
+                }
+                else {
+                    return ['time-series'];
+                }
+            },
+            isMultipleMetric: function() {
+                var multiple = false;
+
+                if ((this.scope.editedObject.app_count === 'single') &&
+                    (this.scope.editedObject.visualization === 'time-series')) {
+                    multiple = true;
+                }
+
+                return multiple;
+            }
         }
     });
 
@@ -2217,11 +2274,11 @@
                 getEmpty: function() {
                     return {
                         title: "",
-                        widget_type: "push", //TODO: update widget type when server supports push as a plugin widget
+                        widget_type: "push",
                         isPluginWidget: true,
                         apps: [],
                         app_count: 'single',
-                        data_type: "push",
+                        visualization: "",
                         metrics: [],
                     };
                 },

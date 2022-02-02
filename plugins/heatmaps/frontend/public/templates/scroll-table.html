@@ -8,7 +8,7 @@
             <template v-slot="scope">
                 <el-table-column min-width="400" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.table.pages')" fixed="left">
                     <template slot-scope="scope">
-                        {{scope.row.view}}
+                         {{scope.row.display || scope.row.view || scope.row._id}}
                     </template>
                 </el-table-column>
                 <el-table-column min-width="355" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.avg-scroll-depth')">
@@ -40,20 +40,19 @@
                              <template slot="trigger">
                                 <el-button 
                                 size="small" 
-                                @click="viewActionMapClick(scope.row.actionLink,scope.row._id, 'scroll')" 
                                 type="default">
                                     {{i18n('heatmaps.view-heatmap')}}
                                     <i class="el-icon-arrow-right el-icon-right"></i>
                                 </el-button>
                             </template>
                             <el-dropdown-item :key="idx" v-for="(item, idx) in domains">
-                                <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value, 'scroll')" class="bu-ml-1 ">{{item.label}}</div>
+                                <div @click="viewActionMapClick(scope.row.actionLink, scope.row._id, item.value, 'scroll')" class="bu-ml-1 ">{{item.label}}</div>
                             </el-dropdown-item>
                         </cly-more-options>
                         <div v-else>
                             <el-button 
                             size="small" 
-                            @click="viewActionMapClick(scope.row.actionLink,scope.row._id, 'scroll')" 
+                            @click="viewActionMapClick(scope.row.actionLink, scope.row._id, null, 'scroll')" 
                             type="default">
                                 {{i18n('heatmaps.view-heatmap')}}
                                 <i class="el-icon-arrow-right el-icon-right"></i>
