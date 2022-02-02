@@ -29,6 +29,109 @@
         }
     };
 
+    var DimensionsValidationMixin = {
+        data: function() {
+            return {
+                MIN_WIDTH: 3,
+                MIN_HEIGHT: 3
+            };
+        },
+        methods: {
+            validateWidgetPosition: function(widget, axis) {
+                var pos;
+
+                switch (axis) {
+                case "x":
+                    pos = widget.position && widget.position[0];
+                    break;
+                case "y":
+                    pos = widget.position && widget.position[1];
+                    break;
+                }
+
+                return pos;
+            },
+            validateWidgetSize: function(widget, dimension) {
+                var size, newSize;
+
+                switch (dimension) {
+                case "w":
+                    size = widget.size && widget.size[0];
+
+                    if (size < this.MIN_WIDTH) {
+                        newSize = this.MIN_WIDTH;
+                        countlyDashboards.factory.log("Width should be atleast equal to " + this.MIN_WIDTH + "! Old width = " + size + ", New width = " + newSize);
+                        size = newSize;
+                    }
+
+                    var rem = size % this.MIN_WIDTH;
+                    if (rem !== 0) {
+                        newSize = this.calculateWidth(size);
+                        countlyDashboards.factory.log("Width should be a multiple of " + this.MIN_WIDTH + "! Old width = " + size + ", New width = " + newSize);
+                        size = newSize;
+                    }
+
+                    break;
+                case "h":
+                    size = widget.size && widget.size[1];
+                    break;
+                }
+
+                return size;
+            },
+            validateWidgetDimension: function(settings, dimension) {
+                var dimensions = settings.grid.dimensions();
+                var dim, newDim;
+
+                switch (dimension) {
+                case "w":
+                    dim = dimensions.minWidth;
+                    if (dim < this.MIN_WIDTH) {
+                        newDim = this.MIN_WIDTH;
+                        countlyDashboards.factory.log("Min width should be atleast equal to " + this.MIN_WIDTH + "! Old width = " + dim + ", New width = " + newDim);
+                        dim = newDim;
+                    }
+
+                    var rem = dim % this.MIN_WIDTH;
+                    if (rem !== 0) {
+                        newDim = this.calculateWidth(dim);
+                        countlyDashboards.factory.log("Min width should be a multiple of " + this.MIN_WIDTH + "! Old width = " + dim + ", New width = " + newDim);
+                        dim = newDim;
+                    }
+                    break;
+                case "h":
+                    dim = dimensions.minHeight;
+                    if (dim < this.MIN_HEIGHT) {
+                        newDim = this.MIN_HEIGHT;
+                        countlyDashboards.factory.log("Min height should be atleast equal to " + this.MIN_HEIGHT + "! Old height = " + dim + ", New height = " + newDim);
+                        dim = newDim;
+                    }
+                    break;
+                }
+
+                return dim;
+            },
+            calculateWidth: function(width) {
+                /**
+                 * This function returns the width that is a multiple of 3 and closest to the old width.
+                 */
+                var w;
+                var quo = parseInt(width / 3);
+
+                var prevNum = quo * 3;
+                var nextNum = (quo + 1) * 3;
+                if (((width - prevNum) - (nextNum - width)) > 0) {
+                    w = nextNum;
+                }
+                else {
+                    w = prevNum;
+                }
+
+                return w;
+            }
+        }
+    };
+
     var DashboardMixin = {
         methods: {
             addDashboard: function() {
@@ -167,6 +270,7 @@
 
     var WidgetComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-widget',
+        mixins: [DimensionsValidationMixin],
         props: {
             widget: {
                 type: Object,

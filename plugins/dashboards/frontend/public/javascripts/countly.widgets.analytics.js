@@ -18,7 +18,7 @@
         },
         computed: {
             title: function() {
-                var autoTitle = "Time series";
+                var autoTitle = "Analytics";
                 return this.data.title || autoTitle;
             },
             apps: function() {
