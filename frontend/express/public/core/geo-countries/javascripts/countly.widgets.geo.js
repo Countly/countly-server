@@ -2,7 +2,7 @@
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/geo/widget.html'),
+        template: CV.T('/core/geo-countries/templates/dashboard-widget/widget.html'),
         props: {
             data: {
                 type: Object,
@@ -22,7 +22,7 @@
     });
 
     var DrawerComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/geo/drawer.html'),
+        template: CV.T('/core/geo-countries/templates/dashboard-widget/drawer.html'),
         props: {
             scope: {
                 type: Object
