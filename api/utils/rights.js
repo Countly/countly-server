@@ -591,7 +591,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
-            var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
+            //var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
             // then result is owner id
             if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
@@ -617,7 +617,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                     return false;
                 }
 
-                if (!member.global_admin && appIdExceptions.indexOf(feature) === -1 && typeof params.qstring.app_id === "undefined") {
+                if (!member.global_admin && /*appIdExceptions.indexOf(feature) === -1 && */ typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
                     return false;
@@ -740,7 +740,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
-            var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
+            //var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
             // then result is owner id
             if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
@@ -766,7 +766,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                     return false;
                 }
 
-                if (!member.global_admin && appIdExceptions.indexOf(feature) === -1 && typeof params.qstring.app_id === "undefined") {
+                if (!member.global_admin && /*appIdExceptions.indexOf(feature) === -1 && */ typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
                     return false;
@@ -938,7 +938,6 @@ exports.hasDeleteRight = function(feature, app_id, member) {
     return member.global_admin || member.permission.d[app_id].allowed[feature] || member.permission.d[app_id].all;
 };
 
-/* not tested yet */
 exports.getUserApps = function(member) {
     let userApps = [];
     if (member.global_admin) {
@@ -957,7 +956,6 @@ exports.getUserApps = function(member) {
     }
 };
 
-/* not tested yet */
 exports.getAdminApps = function(member) {
     if (member.global_admin) {
         return [];
@@ -971,3 +969,4 @@ exports.getAdminApps = function(member) {
         }
     }
 };
+
