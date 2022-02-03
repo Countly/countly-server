@@ -50,6 +50,9 @@
         label: CV.i18nM("dashboards.widget-type.note"),
         priority: 5,
         primary: true,
+        getter: function(widget) {
+            return widget.widget_type === "note";
+        },
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {

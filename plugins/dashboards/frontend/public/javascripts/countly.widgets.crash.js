@@ -64,6 +64,9 @@
         label: CV.i18nM("dashboards.widget-type.crash"),
         priority: 11,
         primary: true,
+        getter: function(widget) {
+            return widget.widget_type === "crash";
+        },
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
