@@ -56,5 +56,9 @@
     .el-collapse-item__wrap {
       padding-top: 1rem !important;
     }
+
+    .el-collapse-item__header {
+      text-transform: uppercase;
+    }
   }
 }
