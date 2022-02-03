@@ -275,6 +275,10 @@
                 handler: function(newVal) {
                     var event = newVal;
 
+                    if (this.type !== "events") {
+                        return;
+                    }
+
                     if (this.store && event && event.length) {
                         var appId = event.split(countlyDashboards.factory.events.separator)[0];
 

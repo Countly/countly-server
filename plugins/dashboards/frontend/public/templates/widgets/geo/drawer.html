@@ -2,8 +2,6 @@
     <clyd-appcount v-model="scope.editedObject.app_count"></clyd-appcount>
     <clyd-sourceapps v-model="scope.editedObject.apps" :multiple="scope.editedObject.app_count === 'multiple'"></clyd-sourceapps>
     <clyd-datatype v-model="scope.editedObject.data_type"></clyd-datatype>
-    <clyd-visualization v-model="scope.editedObject.visualization" :enabled-types="enabledVisualizationTypes"></clyd-visualization>
-    <clyd-metric v-model="scope.editedObject.metrics" :metrics="sessionMetrics" :multiple="isMultipleMetric"></clyd-metric>
-    <clyd-breakdown v-model="scope.editedObject.breakdowns" type="session" v-if="showBreakdown" :appId="scope.editedObject.apps[0]"></clyd-breakdown>
+    <clyd-visualization v-model="scope.editedObject.visualization"></clyd-visualization>
     <clyd-title v-model="scope.editedObject.title"></clyd-title>
 </div>
