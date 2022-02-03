@@ -1716,7 +1716,7 @@
             ]);
             this.locateUserWhenMarkerNotFound();
         },
-        destroyed: function() {
+        beforeDestroy: function() {
             this.unregisterEventListenersWhenEnabled([
                 {name: 'click', handler: this.onLocationClick},
                 {name: 'locationfound', handler: this.onLocationFound}
