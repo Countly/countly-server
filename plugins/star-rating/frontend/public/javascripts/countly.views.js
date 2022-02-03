@@ -706,7 +706,7 @@ var WidgetDetail = countlyVue.views.create({
             var self = this;
             switch (command) {
             case 'delete-widget':
-                CountlyHelpers.confirm(CV.i18n('feedback.delete-a-widget-description'), "popStyleGreen", function(result) {
+                CountlyHelpers.confirm(CV.i18n('feedback.delete-a-widget-description'), "red", function(result) {
                     if (!result) {
                         return true;
                     }
