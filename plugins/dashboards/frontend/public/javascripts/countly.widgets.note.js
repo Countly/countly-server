@@ -1,7 +1,7 @@
 /*global countlyVue, CV */
 
 (function() {
-    var NoteComponent = countlyVue.views.create({
+    var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/note/widget.html'),
         props: {
             data: {
@@ -49,6 +49,7 @@
         type: "note",
         label: CV.i18nM("dashboards.widget-type.note"),
         priority: 5,
+        primary: true,
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
@@ -60,11 +61,11 @@
             },
         },
         grid: {
-            component: NoteComponent,
+            component: WidgetComponent,
             dimensions: function() {
                 return {
                     minWidth: 6,
-                    minHeight: 2,
+                    minHeight: 3,
                     width: 6,
                     height: 3
                 };

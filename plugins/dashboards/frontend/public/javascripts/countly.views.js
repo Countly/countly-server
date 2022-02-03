@@ -13,7 +13,11 @@
                 w = w.data().widgets;
 
                 w = w.reduce(function(acc, component) {
-                    acc[component.type] = component;
+                    if (!acc[component.type]) {
+                        acc[component.type] = [];
+                    }
+
+                    acc[component.type].push(component);
                     return acc;
                 }, {});
 
@@ -25,6 +29,9 @@
                 var defaultEmpty = this.__widgets[widgetType].drawer.getEmpty();
 
                 this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
+            },
+            getWidgetSettings: function(widget) {
+
             }
         }
     };
@@ -351,7 +358,17 @@
                 var widgetTypes = [];
 
                 for (var key in this.__widgets) {
-                    widgetTypes.push(this.__widgets[key]);
+                    var registrations = this.__widgets[key];
+                    var primary = registrations.find(function(registration) {
+                        return registration.primary;
+                    });
+
+                    if (primary) {
+                        widgetTypes.push(primary);
+                    }
+                    else {
+                        countlyDashboards.factory.log("No primary widget found for " + key + " !. Please set primary to true in the widget registration.");
+                    }
                 }
 
                 widgetTypes.sort(function(a, b) {
@@ -382,11 +399,16 @@
                 var empty = this.__widgets[doc.widget_type].drawer.getEmpty();
                 var obj = {};
 
-                //Don't send all widget properties to the server.
-                //Send only the ones specified in the widget's drawer settings (getEmpty)
+                /**
+                 * Don't send all widget properties to the server.
+                 * Send only the ones specified in the widget's drawer settings (getEmpty)
+                 */
+
                 for (var key in empty) {
                     obj[key] = doc[key];
                 }
+
+                obj = JSON.parse(JSON.stringify(obj));
 
                 this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(id) {
                     if (id) {
@@ -394,7 +416,8 @@
                             self.$store.dispatch("countlyDashboards/widgets/get", doc._id);
                         }
                         else {
-                            self.$emit("add-widget", {id: id, widget_type: doc.widget_type});
+                            obj.id = id;
+                            self.$emit("add-widget", obj);
                         }
                     }
                 });
@@ -471,7 +494,7 @@
                     break;
                 }
             },
-            addWidget: function(payload) {
+            addWidget: function(widget) {
                 /**
                  * So widget has been created on the server.
                  * Now we want to add it to the grid.
@@ -481,8 +504,8 @@
                  * After the widget is added to the grid manually,
                  * grid will trigger "added" event
                  */
-                var id = payload.id;
-                var widgetType = payload.widget_type;
+                var id = widget.id;
+                var widgetType = widget.widget_type;
 
                 if (id) {
                     var settings = this.__widgets[widgetType];
@@ -732,8 +755,8 @@
                 empty.__action = "create";
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
             },
-            addWidget: function(id) {
-                this.$refs.grid.addWidget(id);
+            addWidgetToGrid: function(widget) {
+                this.$refs.grid.addWidget(widget);
             }
         },
         beforeMount: function() {
