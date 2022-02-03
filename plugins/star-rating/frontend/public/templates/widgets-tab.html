@@ -6,7 +6,7 @@
       </template>
 			<template v-slot:header-right>
         <div class="bu-level-item">
-          <el-button class="manage-users-action-btn" @click="createWidget()" type="success" size="small" icon="el-icon-circle-plus"> {{ i18n('feedback.add-new-widget') }}
+          <el-button v-if="canUserCreate" class="manage-users-action-btn" @click="createWidget()" type="success" size="small" icon="el-icon-circle-plus"> {{ i18n('feedback.add-new-widget') }}
           </el-button>
         </div>
       </template>

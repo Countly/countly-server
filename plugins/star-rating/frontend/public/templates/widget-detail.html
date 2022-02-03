@@ -19,13 +19,13 @@
     </template>
     <template v-slot:header-right>
       <div class="bu-mt-2">
-        <el-button v-if="widget.status" @click="setWidget(false)" size="small" icon="el-icon-video-pause"> {{ i18n('feedback.stop-widget') }}
+        <el-button v-if="widget.status && canUserUpdate" @click="setWidget(false)" size="small" icon="el-icon-video-pause"> {{ i18n('feedback.stop-widget') }}
         </el-button>
-        <el-button v-if="!widget.status" @click="setWidget(true)" size="small" icon="el-icon-video-play"> {{ i18n('feedback.start-widget') }}
+        <el-button v-if="!widget.status && canUserUpdate" @click="setWidget(true)" size="small" icon="el-icon-video-play"> {{ i18n('feedback.start-widget') }}
         </el-button>
-        <el-button @click="editWidget()" class="ratings-widget-detail-view__edit-widget" size="small" icon="el-icon-edit"> {{ i18n('feedback.edit-widget') }}
+        <el-button v-if="canUserUpdate" @click="editWidget()" class="ratings-widget-detail-view__edit-widget" size="small" icon="el-icon-edit"> {{ i18n('feedback.edit-widget') }}
         </el-button>
-        <cly-more-options class="bu-ml-2" size="small" @command="handleCommand($event)">
+        <cly-more-options v-if="canUserDelete" class="bu-ml-2" size="small" @command="handleCommand($event)">
           <el-dropdown-item command="delete-widget"> {{ i18n('feedback.delete-widget') }} </el-dropdown-item>
         </cly-more-options>
       </div>
