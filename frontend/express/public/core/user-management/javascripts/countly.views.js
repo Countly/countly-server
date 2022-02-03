@@ -1,7 +1,5 @@
 /*global countlyAuth, app, countlyGlobal, $, groupsModel, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
-    var FEATURE_NAME = "global_users";
-
     var DataTable = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/data-table.html"),
         mixins: [countlyVue.mixins.commonFormatters],
@@ -623,7 +621,7 @@
 
     app.ManageUsersView = ManageUsersView;
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
+    if (countlyAuth.validateGlobalAdmin()) {
         app.route("/manage/users", "manage-users", function() {
             var params = {
                 tab: "users"
