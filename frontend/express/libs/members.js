@@ -1086,7 +1086,7 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     if (!data || !Object.keys(data).length) {
         throw new Error('Invalid user data provided');
     }
-    user._id = data._id || data.id || data.sub;
+    user._id = data._id || data.id || data.sub || data.username;
     user.email = data.email || '';
     user.username = data.username || data.email;
     user.full_name = data.full_name || data.name || `${data.firstName} ${data.lastName}` || "";
