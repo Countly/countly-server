@@ -1,7 +1,7 @@
 /*global countlyVue, CV */
 
 (function() {
-    var TimeSeriesComponent = countlyVue.views.create({
+    var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
         props: {
             data: {
@@ -32,11 +32,6 @@
                         name: this.getAppName(appId)
                     });
                 }
-            }
-        },
-        methods: {
-            beforeCopy: function(data) {
-                return data;
             }
         }
     });
@@ -84,10 +79,17 @@
         }
     });
 
+    /**
+     * Set primary: true since Analytics widget can have multiple registrations of
+     * type analytics. But among all of them only one should be primary.
+     * We have chosen Analytics widget with data_type = session to be primary.
+     * For other registrations of type analytics, we set primary: false.
+     */
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
         label: CV.i18nM("dashboards.widget-type.analytics"),
         priority: 1,
+        primary: true,
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
@@ -112,11 +114,11 @@
             }
         },
         grid: {
-            component: TimeSeriesComponent,
+            component: WidgetComponent,
             dimensions: function() {
                 return {
                     minWidth: 6,
-                    minHeight: 2,
+                    minHeight: 3,
                     width: 6,
                     height: 3
                 };

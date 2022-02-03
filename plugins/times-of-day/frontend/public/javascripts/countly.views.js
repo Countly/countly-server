@@ -124,6 +124,7 @@ if (countlyAuth.validateRead(featureName)) {
         type: "times-of-day",
         label: CV.i18n("times-of-day.title"),
         priority: 8,
+        primary: true,
         drawer: {
             component: TimesOfDayWidgetDrawer,
             getEmpty: function() {

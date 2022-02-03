@@ -28,7 +28,7 @@
             <dashboards-grid ref="grid" v-else></dashboards-grid>
 
             <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
-            <widgets-drawer @add-widget="addWidget" @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
+            <widgets-drawer @add-widget="addWidgetToGrid" @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
         </cly-main>
     </template>
 </div>

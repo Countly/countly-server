@@ -1507,6 +1507,23 @@ plugins.setConfigs("dashboards", {
         }
     });
 
+    plugins.register("/dashboard/data", async function({widget}) {
+        try {
+            if (widget.widget_type === 'analytics') {
+                if (widget.data_tyep === 'geo') {
+                    widget.dashData = {
+                        isValid: true,
+                        data: {}
+                    };
+                }
+            }
+        }
+        catch (e) {
+            log.d("Error while fetching data for widget - ", widget);
+            log.d("Error - ", e);
+        }
+    });
+
     /**
      * Export Plugin data for given array  of ids
      * 

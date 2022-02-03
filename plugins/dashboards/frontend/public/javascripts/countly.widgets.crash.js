@@ -1,7 +1,7 @@
 /*global countlyVue, CV */
 
 (function() {
-    var CrashComponent = countlyVue.views.create({
+    var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/crash/widget.html'),
         props: {
             data: {
@@ -63,6 +63,7 @@
         type: "crash",
         label: CV.i18nM("dashboards.widget-type.crash"),
         priority: 11,
+        primary: true,
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
@@ -77,7 +78,7 @@
             },
         },
         grid: {
-            component: CrashComponent,
+            component: WidgetComponent,
             dimensions: function() {
                 return {
                     minWidth: 6,

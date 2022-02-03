@@ -1075,6 +1075,7 @@
         countlyVue.container.registerData("/custom/dashboards/widget", {
             type: "views",
             label: CV.i18n("views.widget-type"),
+            primary: true,
             priority: 5,
             drawer: {
                 component: DrawerComponent,

@@ -1,7 +1,7 @@
 /*global countlyVue, CV */
 
 (function() {
-    var EventsComponent = countlyVue.views.create({
+    var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/events/widget.html'),
         props: {
             data: {
@@ -65,6 +65,7 @@
         type: "events",
         label: CV.i18nM("dashboards.widget-type.events"),
         priority: 2,
+        primary: true,
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
@@ -89,7 +90,7 @@
             }
         },
         grid: {
-            component: EventsComponent,
+            component: WidgetComponent,
             dimensions: function() {
                 return {
                     minWidth: 6,
