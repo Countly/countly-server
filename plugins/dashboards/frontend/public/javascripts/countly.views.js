@@ -67,11 +67,12 @@
                     return registration.getter(widget);
                 });
 
-                if (setting) {
-                    return setting;
+                if (!setting) {
+                    countlyDashboards.factory.log("No setting found for the current widget type based on the widget getter - ", widget.widget_type);
                 }
 
-                return false;
+
+                return setting;
             },
             widgetSettingsPrimary: function(widget) {
                 /**
