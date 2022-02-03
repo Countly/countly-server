@@ -1601,6 +1601,14 @@
             'l-circle': Vue2Leaflet.LCircle,
         },
         props: {
+            value: {
+                type: [Object],
+                required: false,
+                validator: function(item) {
+                    return item && item.lng && item.lat;
+                },
+                default: null
+            },
             radius: {
                 type: Object,
                 required: false,
@@ -1608,11 +1616,15 @@
                     return value && (value.unit === 'km' || value.unit === 'mi') && value.value;
                 },
                 default: null
+            },
+            isEnabled: {
+                type: Boolean,
+                required: false,
+                default: false
             }
         },
         data: function() {
             return {
-                markerCoordinates: null,
                 defaultCenterCoordinates: {lat: 48.66194284607008, lng: 8.964843750000002}, // Note: arbitrary coordinates used for map center when user location is not found
                 userCenterCoordinates: null,
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -1636,8 +1648,8 @@
                 return 0;
             },
             centerCoordinates: function() {
-                if (this.markerCoordinates) {
-                    return this.markerCoordinates;
+                if (this.value) {
+                    return this.value;
                 }
                 if (this.userCenterCoordinates) {
                     return this.userCenterCoordinates;
@@ -1645,6 +1657,9 @@
                 return this.defaultCenterCoordinates;
             },
             dynamicZoom: function() {
+                if (this.value) {
+                    return 8;
+                }
                 if (this.userCenterCoordinates) {
                     return 12;
                 }
@@ -1652,45 +1667,49 @@
             },
         },
         methods: {
-            setMarkerCoordinates: function(coordinates) {
-                this.markerCoordinates = coordinates;
-            },
             onLocationClick: function(event) {
-                this.setMarkerCoordinates(event.latlng);
-                this.$emit('select', event.latlng);
+                this.$emit('input', event.latlng);
             },
             onLocationFound: function(event) {
                 this.userCenterCoordinates = event.latlng;
             },
-            locateUser: function() {
-                this.$nextTick(function() {
-                    this.$refs.lmap.mapObject.locate({setView: true});
-                });
+            locateUserWhenMarkerNotFound: function() {
+                if (!this.value) {
+                    this.$nextTick(function() {
+                        this.$refs.lmap.mapObject.locate({setView: true});
+                    });
+                }
             },
-            registerEventListeners: function(listeners) {
+            registerEventListenersWhenEnabled: function(listeners) {
                 var self = this;
+                if (!this.isEnabled) {
+                    return;
+                }
                 this.$nextTick(function() {
                     listeners.forEach(function(item) {
                         self.$refs.lmap.mapObject.on(item.name, item.handler);
                     });
                 });
             },
-            unregisterEventListeners: function(listeners) {
+            unregisterEventListenersWhenEnabled: function(listeners) {
                 var self = this;
+                if (!this.isEnabled) {
+                    return;
+                }
                 listeners.forEach(function(item) {
                     self.$refs.lmap.mapObject.off(item.name, item.handler);
                 });
             }
         },
         mounted: function() {
-            this.registerEventListeners([
+            this.registerEventListenersWhenEnabled([
                 {name: 'click', handler: this.onLocationClick},
                 {name: 'locationfound', handler: this.onLocationFound}
             ]);
-            this.locateUser();
+            this.locateUserWhenMarkerNotFound();
         },
         destroyed: function() {
-            this.unregisterEventListeners([
+            this.unregisterEventListenersWhenEnabled([
                 {name: 'click', handler: this.onLocationClick},
                 {name: 'locationfound', handler: this.onLocationFound}
             ]);
