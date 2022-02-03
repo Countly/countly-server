@@ -2119,9 +2119,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         return new Promise((resolve) => {
             var params = ob.params;
             var data = ob.widget;
-            var allApps = ob.apps;
+            var allApps = data.apps;
 
-            if (data.widget_type === "views") {
+            if (data.widget_type === "analytics" && data.data_type === "views") {
                 var appId = data.apps[0];
 
                 var paramsObj = {
@@ -2169,6 +2169,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         dati = {chartData: dati};
                     }
                     data.dashData = {
+                        isValid: true,
                         data: dati || { chartData: [] }
                     };
                     resolve();

@@ -978,9 +978,9 @@
                     var columns = [{prop: "view", "title": CV.i18n("views.widget-type")}];
 
                     this.data = this.data || {};
-                    this.data.views = this.data.views || [];
-                    for (var k = 0; k < this.data.views.length; k++) {
-                        columns.push({"prop": this.data.views[k], "title": CV.i18n("views." + this.data.views[k])});
+                    this.data.metrics = this.data.metrics || [];
+                    for (var k = 0; k < this.data.metrics.length; k++) {
+                        columns.push({"prop": this.data.metrics[k], "title": CV.i18n("views." + this.data.metrics[k])});
                     }
                     return columns;
                 },
@@ -1002,15 +1002,15 @@
                     useCustomTitle: false,
                     useCustomPeriod: false,
                     availableStatsMetric: [
-                        { name: CV.i18n("views.u"), value: "u" },
-                        { name: CV.i18n("views.n"), value: "n" },
-                        { name: CV.i18n("views.t"), value: "t" },
-                        { name: CV.i18n("views.d"), value: "d" },
-                        { name: CV.i18n("views.s"), value: "s" },
-                        { name: CV.i18n("views.e"), value: "e" },
-                        { name: CV.i18n("views.b"), value: "b" },
-                        { name: CV.i18n("views.br"), value: "br" },
-                        { name: CV.i18n("views.uvc"), value: "uvc" }
+                        { label: CV.i18n("views.u"), value: "u" },
+                        { label: CV.i18n("views.n"), value: "n" },
+                        { label: CV.i18n("views.t"), value: "t" },
+                        { label: CV.i18n("views.d"), value: "d" },
+                        { label: CV.i18n("views.s"), value: "s" },
+                        { label: CV.i18n("views.e"), value: "e" },
+                        { label: CV.i18n("views.b"), value: "b" },
+                        { label: CV.i18n("views.br"), value: "br" },
+                        { label: CV.i18n("views.uvc"), value: "uvc" }
                     ]
                 };
             },
@@ -1021,45 +1021,34 @@
             methods: {
             },
             watch: {
-                useCustomTitle: function(newVal) {
-                    if (!newVal) {
-                        this.scope.editedObject.title = '';
-                    }
-                },
-                useCustomPeriod: function(newVal) {
-                    if (!newVal) {
-                        this.scope.editedObject.period = '';
-                    }
-                },
                 'scope.editedObject.selectedApp': function(newVal) {
                     if (countlyGlobal.apps[newVal] && countlyGlobal.apps[newVal].type === "web") {
                         this.availableStatsMetric = [
-                            { name: CV.i18n("web.common.table.total-users"), value: "u" },
-                            { name: CV.i18n("web.common.table.new-users"), value: "n" },
-                            { name: CV.i18n("views.t"), value: "t" },
-                            { name: CV.i18n("views.d"), value: "d" },
-                            { name: CV.i18n("views.s"), value: "s" },
-                            { name: CV.i18n("views.e"), value: "e" },
-                            { name: CV.i18n("views.b"), value: "b" },
-                            { name: CV.i18n("views.br"), value: "br" },
-                            { name: CV.i18n("views.uvc"), value: "uvc" },
-                            { name: CV.i18n("views.scr"), value: "scr" }
+                            { label: CV.i18n("web.common.table.total-users"), value: "u" },
+                            { label: CV.i18n("web.common.table.new-users"), value: "n" },
+                            { label: CV.i18n("views.t"), value: "t" },
+                            { label: CV.i18n("views.d"), value: "d" },
+                            { label: CV.i18n("views.s"), value: "s" },
+                            { label: CV.i18n("views.e"), value: "e" },
+                            { label: CV.i18n("views.b"), value: "b" },
+                            { label: CV.i18n("views.br"), value: "br" },
+                            { label: CV.i18n("views.uvc"), value: "uvc" },
+                            { label: CV.i18n("views.scr"), value: "scr" }
                         ];
                     }
                     else {
                         this.availableStatsMetric = [
-                            { name: CV.i18n("views.u"), value: "u" },
-                            { name: CV.i18n("views.n"), value: "n" },
-                            { name: CV.i18n("views.t"), value: "t" },
-                            { name: CV.i18n("views.d"), value: "d" },
-                            { name: CV.i18n("views.s"), value: "s" },
-                            { name: CV.i18n("views.e"), value: "e" },
-                            { name: CV.i18n("views.b"), value: "b" },
-                            { name: CV.i18n("views.br"), value: "br" },
-                            { name: CV.i18n("views.uvc"), value: "uvc" }
+                            { label: CV.i18n("views.u"), value: "u" },
+                            { label: CV.i18n("views.n"), value: "n" },
+                            { label: CV.i18n("views.t"), value: "t" },
+                            { label: CV.i18n("views.d"), value: "d" },
+                            { label: CV.i18n("views.s"), value: "s" },
+                            { label: CV.i18n("views.e"), value: "e" },
+                            { label: CV.i18n("views.b"), value: "b" },
+                            { label: CV.i18n("views.br"), value: "br" },
+                            { label: CV.i18n("views.uvc"), value: "uvc" }
                         ];
                     }
-                    this.scope.editedObject.views = [];
                 },
             },
             props: {
@@ -1073,36 +1062,31 @@
         });
 
         countlyVue.container.registerData("/custom/dashboards/widget", {
-            type: "views",
+            type: "analytics",
             label: CV.i18n("views.widget-type"),
-            primary: true,
-            priority: 5,
+            priority: 1,
+            primary: false,
             getter: function(widget) {
-                return widget.widget_type === "views";
+                return widget.widget_type === "analytics" && widget.data_type === "views";
             },
             drawer: {
                 component: DrawerComponent,
                 getEmpty: function() {
                     return {
-                        apps: [], // Only present in backend
-                        cmetric_refs: [], // Only present in backend
-                        widget_type: "views",
-                        selectedApp: null,
                         title: "",
+                        widget_type: "analytics",
+                        data_type: "views",
+                        app_count: 'single',
+                        metrics: [],
+                        apps: [],
                         custom_period: "30days",
-                        isPluginWidget: true,
-                        views: []
+                        visualization: "",
+                        breakdowns: []
                     };
                 },
-                beforeLoadFn: function(doc, isEdited) {
-                    if (isEdited) {
-                        doc.selectedApp = doc.apps[0];
-                        delete doc.apps;
-                    }
+                beforeLoadFn: function(/*doc, isEdited*/) {
                 },
-                beforeSaveFn: function(doc) {
-
-                    doc.apps = [doc.selectedApp];
+                beforeSaveFn: function(/*doc*/) {
 
                 }
             },
@@ -1110,10 +1094,10 @@
                 component: GridComponent,
                 dimensions: function() {
                     return {
-                        minWidth: 4,
-                        minHeight: 3,
-                        width: 4,
-                        height: 3
+                        minWidth: 6,
+                        minHeight: 6,
+                        width: 6,
+                        height: 4
                     };
                 }
             }
