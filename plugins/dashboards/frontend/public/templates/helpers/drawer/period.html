@@ -1,0 +1,9 @@
+<div class="bu-py-3">
+    <el-checkbox v-model="checkbox">{{i18nM("dashboards.custom-period")}}</el-checkbox>
+    <cly-form-field
+        v-if="checkbox"
+        name="title"
+        :rules="checkbox ? 'required' : ''">
+       <cly-date-picker v-model="custom_period" timestampFormat="ms"></cly-date-picker>
+    </cly-form-field>
+</div>
