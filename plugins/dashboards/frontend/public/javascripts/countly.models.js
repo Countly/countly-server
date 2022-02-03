@@ -25,6 +25,14 @@
                 else {
                     return eventKey;
                 }
+            },
+            separator: "***"
+        },
+        log: function(e) {
+            var DEBUG = true;
+            if (DEBUG) {
+                // eslint-disable-next-line no-console
+                console.log(e);
             }
         }
     };
@@ -362,7 +370,7 @@
                                         isGroupEvent = true;
                                     }
 
-                                    var value = events._id + "***" + eventName;
+                                    var value = events._id + countlyDashboards.factory.events.separator + eventName;
                                     var name = countlyDashboards.factory.events.getEventLongName(eventName, events.map) + eventNamePostfix;
 
                                     allEvents.push({
@@ -376,6 +384,18 @@
                     }
 
                     return allEvents;
+                };
+            },
+            allSegments: function(state) {
+                var eventsObj = state.events;
+
+                return function(appId) {
+                    var segments = {};
+                    if (eventsObj[appId]) {
+                        segments = eventsObj[appId].segments || {};
+                    }
+
+                    return segments;
                 };
             }
         };
@@ -668,11 +688,7 @@
      * @param  {Object} e - error object
      */
     function log(e) {
-        var DEBUG = true;
-        if (DEBUG) {
-            // eslint-disable-next-line no-console
-            console.log(e);
-        }
+        countlyDashboards.factory.log(e);
     }
 
 })(window.countlyDashboards = window.countlyDashboards || {});

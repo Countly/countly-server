@@ -1,19 +1,19 @@
 <div class="grid-stack-item"
     :id="widget._id"
     :gs-id="widget._id"
-    :gs-x="widget.position && widget.position[0]"
-    :gs-y="widget.position && widget.position[1]"
-    :gs-w="widget.size && widget.size[0]"
-    :gs-h="widget.size && widget.size[1]"
+    :gs-x="validateWidgetPosition(widget, 'x')"
+    :gs-y="validateWidgetPosition(widget, 'y')"
+    :gs-w="validateWidgetSize(widget, 'w')"
+    :gs-h="validateWidgetSize(widget, 'h')"
     :gs-locked="isWidgetDisabled(widget) || isWidgetInvalid(widget)"
     :gs-no-resize="isWidgetDisabled(widget) || isWidgetInvalid(widget)"
     :gs-no-move="isWidgetDisabled(widget) || isWidgetInvalid(widget)"
-    :gs-min-w="settings.grid.dimensions().minWidth"
-    :gs-min-h="settings.grid.dimensions().minHeight"
+    :gs-min-w="validateWidgetDimension(settings, 'w')"
+    :gs-min-h="validateWidgetDimension(settings, 'h')"
     @click="settings.grid.onClick && settings.grid.onClick(widget)">
 
     <div class="grid-stack-item-content bu-p-4">
-        <widget-disabled v-if="isWidgetDisabled(widget)" :data="widget">
+        <widget-disabled v-if="isWidgetDisabled(widget)" :widget="widget">
             <template v-slot:action v-if="canUpdate">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">
@@ -22,7 +22,7 @@
                 </div>
             </template>
         </widget-disabled>
-        <widget-invalid v-else-if="isWidgetInvalid(widget)" :data="widget">
+        <widget-invalid v-else-if="isWidgetInvalid(widget)" :widget="widget">
             <template v-slot:action v-if="canUpdate">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">

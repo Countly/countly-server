@@ -10,9 +10,7 @@
         ],
         data: function() {
             return {
-                list: [],
-                hasCreateRight: countlyAuth.validateCreate(FEATURE_NAME),
-                hasDeleteRight: countlyAuth.validateDelete(FEATURE_NAME)
+                list: []
             };
         },
         methods: {
@@ -70,10 +68,7 @@
         ],
         data: function() {
             return {
-                list: [],
-                hasCreateRight: countlyAuth.validateCreate(FEATURE_NAME),
-                hasDeleteRight: countlyAuth.validateDelete(FEATURE_NAME),
-                hasUpdateRight: countlyAuth.validateDelete(FEATURE_NAME)
+                list: []
             };
         },
         methods: {
@@ -355,8 +350,7 @@
                     export: {
                         title: CV.i18n('data-migration.export-data')
                     }
-                },
-                hasCreateRight: countlyAuth.validateCreate(FEATURE_NAME)
+                }
             };
         },
         methods: {

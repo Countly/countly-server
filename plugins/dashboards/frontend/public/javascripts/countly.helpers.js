@@ -1,4 +1,4 @@
-/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal */
+/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal, countlyDashboards */
 
 (function() {
 
@@ -111,7 +111,8 @@
         template: CV.T('/dashboards/templates/helpers/drawer/breakdown.html'),
         props: {
             appId: {
-                type: String
+                type: String,
+                default: ""
             },
             type: {
                 type: String,
@@ -126,16 +127,27 @@
                 default: function() {
                     return [];
                 }
+            },
+            event: {
+                type: String,
+                default: ""
             }
+        },
+        data: function() {
+            return {
+                store: null
+            };
         },
         computed: {
             breakdowns: function() {
                 var breakdowns = [];
+                var event = this.event;
+                var appId = this.appId;
 
                 switch (this.type) {
                 case "session":
 
-                    var app = countlyGlobal.apps[this.appId];
+                    var app = countlyGlobal.apps[appId];
 
                     if (app && app.type) {
 
@@ -203,7 +215,27 @@
                     }
 
                     break;
-                case "event":
+                case "events":
+                    if (event && event.length) {
+                        var eventKey = event.split(countlyDashboards.factory.events.separator)[1];
+                        appId = event.split(countlyDashboards.factory.events.separator)[0];
+
+                        var allSegments = this.store.getters["countlyDashboards/allSegments"]([appId]);
+
+                        var eventSegments = allSegments[eventKey] || [];
+
+                        if (eventSegments && eventSegments.length) {
+                            for (var i = 0; i < eventSegments.length; i++) {
+                                if (eventSegments[i]) {
+                                    breakdowns.push({
+                                        value: eventSegments[i],
+                                        name: eventSegments[i]
+                                    });
+                                }
+                            }
+                        }
+                    }
+
                     break;
                 }
 
@@ -236,6 +268,25 @@
                     }
                 );
             }
+        },
+        watch: {
+            event: {
+                immediate: true,
+                handler: function(newVal) {
+                    var event = newVal;
+
+                    if (this.store && event && event.length) {
+                        var appId = event.split(countlyDashboards.factory.events.separator)[0];
+
+                        this.store.dispatch("countlyDashboards/getEvents", {appIds: [appId]});
+                    }
+
+                    this.$emit("input", []);
+                }
+            }
+        },
+        beforeMount: function() {
+            this.store = countlyVue.vuex.getGlobalStore();
         }
     });
 

@@ -29,6 +29,104 @@
         }
     };
 
+    var DimensionsValidationMixin = {
+        data: function() {
+            return {
+                MIN_WIDTH: 3,
+                MIN_HEIGHT: 3
+            };
+        },
+        methods: {
+            validateWidgetPosition: function(widget, axis) {
+                var pos;
+
+                switch (axis) {
+                case "x":
+                    pos = widget.position && widget.position[0];
+                    break;
+                case "y":
+                    pos = widget.position && widget.position[1];
+                    break;
+                }
+
+                return pos;
+            },
+            validateWidgetSize: function(widget, dimension) {
+                var size;
+
+                switch (dimension) {
+                case "w":
+                    size = widget.size && widget.size[0];
+                    size = this.calculateWidth(size);
+
+                    break;
+                case "h":
+                    size = widget.size && widget.size[1];
+                    size = this.calculateHeight(size);
+                    break;
+                }
+
+                return size;
+            },
+            validateWidgetDimension: function(settings, dimension) {
+                var dimensions = settings.grid.dimensions();
+                var dim;
+
+                switch (dimension) {
+                case "w":
+                    dim = dimensions.minWidth;
+                    dim = this.calculateWidth(dim);
+
+                    break;
+                case "h":
+                    dim = dimensions.minHeight;
+                    dim = this.calculateHeight(dim);
+
+                    break;
+                }
+
+                return dim;
+            },
+            calculateWidth: function(width) {
+                /**
+                 * This function returns the width that is a multiple of 3 and closest to the old width.
+                 */
+                var w = width;
+
+                if (w < this.MIN_WIDTH) {
+                    w = this.MIN_WIDTH;
+                    countlyDashboards.factory.log("Width should be atleast equal to " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
+                }
+
+                var rem = w % this.MIN_WIDTH;
+                if (rem !== 0) {
+                    var quo = parseInt(w / 3);
+                    var prevNum = quo * 3;
+                    var nextNum = (quo + 1) * 3;
+                    if (((w - prevNum) - (nextNum - w)) > 0) {
+                        w = nextNum;
+                    }
+                    else {
+                        w = prevNum;
+                    }
+
+                    countlyDashboards.factory.log("Width should be a multiple of " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
+                }
+
+                return w;
+            },
+            calculateHeight: function(height) {
+                var h = height;
+                if (h < this.MIN_HEIGHT) {
+                    h = this.MIN_HEIGHT;
+                    countlyDashboards.factory.log("Height should be atleast equal to " + this.MIN_HEIGHT + "! Old height = " + height + ", New height = " + h);
+                }
+
+                return h;
+            }
+        }
+    };
+
     var DashboardMixin = {
         methods: {
             addDashboard: function() {
@@ -167,6 +265,7 @@
 
     var WidgetComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-widget',
+        mixins: [DimensionsValidationMixin],
         props: {
             widget: {
                 type: Object,
@@ -324,7 +423,7 @@
 
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
-        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
+        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, DimensionsValidationMixin],
         components: {
             "widgets-drawer": WidgetDrawer,
             "widget": WidgetComponent
@@ -414,7 +513,38 @@
                 this.grid.on("resizestop", function(event, element) {
                     var node = element.gridstackNode;
                     var widgetId = node.id;
-                    var size = [node.w, node.h];
+                    var setWidth = node.w;
+                    var setHeight = node.h;
+
+                    var validatedWidth = self.calculateWidth(setWidth);
+                    var validatedHeight = self.calculateHeight(setHeight);
+
+                    var finalWidth = setWidth;
+                    var finalHeight = setHeight;
+                    var change = false;
+
+                    if (validatedWidth !== setWidth) {
+                        /**
+                         * Widths can only change as per the calculateWidth logic
+                         */
+                        finalWidth = validatedWidth;
+                        change = true;
+                    }
+
+                    if (validatedHeight !== setHeight) {
+                        /**
+                         * Heights can only change as per the calculateWidth logic
+                         */
+                        finalHeight = validatedHeight;
+                        change = true;
+                    }
+
+                    if (change) {
+                        self.grid.update(node.el, {w: finalWidth, h: finalHeight});
+                    }
+
+                    var size = [finalWidth, finalHeight];
+
                     setTimeout(function() {
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {size: size}});
                     }, 1000);
@@ -427,6 +557,13 @@
                     setTimeout(function() {
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position}});
                     }, 1000);
+                });
+
+                this.grid.on("change", function() {
+                    /**
+                     * Update the values that changed for the widget in the store
+                     * and on the server as well.
+                     */
                 });
 
                 this.grid.on("added", function(event, element) {
