@@ -349,9 +349,9 @@
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.editUser(this.user._id, submitted, function(res) {
                         if (res.result) {
-                            // we don't need to send group request if group doesn't change
-                            if (typeof self.group._id !== "undefined" && self.group._id !== self.user.group_id[0]) {
-                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
+                            if (self.groupsInput.length) {
+                                var group_id = self.group._id ? [self.group._id] : [];
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id })
                                     .then(function() {});
                             }
                             self.$emit('refresh-table');
