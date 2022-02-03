@@ -46,13 +46,20 @@
                 return $.when(countlyPlugins.initialize()).then(
                     function() {
                         try {
-                            self.pluginsData = JSON.parse(JSON.stringify(countlyPlugins.getData()));
+                            var plugins = JSON.parse(JSON.stringify(countlyPlugins.getData()));
+                            self.pluginsData = plugins.filter(function(row) {
+                                self.formatRow(row);
+                                if (self.filterValue === "enabled") {
+                                    return row.enabled;
+                                }
+                                else if (self.filterValue === "disabled") {
+                                    return !row.enabled;
+                                }
+                                return true;
+                            });
                         }
                         catch (ex) {
                             self.pluginsData = [];
-                        }
-                        for (var i = 0; i < self.pluginsData.length; i++) {
-                            self.formatRow(self.pluginsData[i]);
                         }
                     }
                 );
