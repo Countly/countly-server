@@ -1,4 +1,4 @@
-/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, Promise, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
 var FEATURE_NAME = 'star_rating';
 
 var Drawer = countlyVue.views.create({
