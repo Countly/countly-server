@@ -1702,8 +1702,19 @@
             box-sizing: border-box;
         }
 
+        &__title-container {
+            width: 100%; 
+            margin-bottom: 24px;
+        }
+
+        &__title-header {
+            margin-top: 24px; 
+            margin-left: 32px;
+        }
+
         &__subtitle {
             margin-left: 32px !important;
+            margin-bottom: 24px !important;
         }
 
         &__close-button {
@@ -1712,6 +1723,8 @@
             transition: color 1s;
             cursor: pointer;
             width: 30px;
+            height: 15px;
+            margin-block: auto;
             &:hover {
                 color: #333;
                 transition: color 1s;
