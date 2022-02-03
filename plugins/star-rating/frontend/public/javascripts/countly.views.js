@@ -130,6 +130,9 @@ var RatingsTable = countlyVue.views.create({
 
 var WidgetsTable = countlyVue.views.create({
     template: CV.T("/star-rating/templates/widgets-table.html"),
+    mixins: [
+        countlyVue.mixins.auth(FEATURE_NAME)
+    ],
     props: {
         rows: {
             type: Array,
@@ -403,7 +406,8 @@ var WidgetsTab = countlyVue.views.create({
         'drawer': Drawer
     },
     mixins: [
-        countlyVue.mixins.hasDrawers("widget")
+        countlyVue.mixins.hasDrawers("widget"),
+        countlyVue.mixins.auth(FEATURE_NAME)
     ],
     data: function() {
         return {
@@ -551,7 +555,8 @@ var WidgetDetail = countlyVue.views.create({
         'drawer': Drawer
     },
     mixins: [
-        countlyVue.mixins.hasDrawers("widget")
+        countlyVue.mixins.hasDrawers("widget"),
+        countlyVue.mixins.auth(FEATURE_NAME)
     ],
     data: function() {
         return {
