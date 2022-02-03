@@ -1,7 +1,7 @@
 /*global countlyVue, CV */
 
 (function() {
-    var TimeSeriesComponent = countlyVue.views.create({
+    var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
         props: {
             data: {
@@ -32,11 +32,6 @@
                         name: this.getAppName(appId)
                     });
                 }
-            }
-        },
-        methods: {
-            beforeCopy: function(data) {
-                return data;
             }
         }
     });
@@ -84,10 +79,27 @@
         }
     });
 
+    /**
+     * Set primary: true since Analytics widget can have multiple registrations of
+     * type analytics. But among all of them only one should be primary.
+     * We have chosen Analytics widget with data_type = session to be primary.
+     * For other registrations of type analytics, we set primary: false.
+     *
+     * Set getter to return this widget registration object.
+     * The returned value should be a boolean.
+     * It should be something unique for each widget registration.
+     * Getter accepts the widget data object as an argument.
+     * Based on the data you can decide if this registration should be returned or not.
+     * Please don't mutate the widget data object passed in the argument to the getter.
+     */
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
         label: CV.i18nM("dashboards.widget-type.analytics"),
         priority: 1,
+        primary: true,
+        getter: function(widget) {
+            return widget.widget_type === "analytics" && widget.data_type === "session";
+        },
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
@@ -112,11 +124,11 @@
             }
         },
         grid: {
-            component: TimeSeriesComponent,
+            component: WidgetComponent,
             dimensions: function() {
                 return {
                     minWidth: 6,
-                    minHeight: 2,
+                    minHeight: 3,
                     width: 6,
                     height: 3
                 };

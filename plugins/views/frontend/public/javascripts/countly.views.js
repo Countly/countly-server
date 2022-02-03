@@ -1075,7 +1075,11 @@
         countlyVue.container.registerData("/custom/dashboards/widget", {
             type: "views",
             label: CV.i18n("views.widget-type"),
+            primary: true,
             priority: 5,
+            getter: function(widget) {
+                return widget.widget_type === "views";
+            },
             drawer: {
                 component: DrawerComponent,
                 getEmpty: function() {

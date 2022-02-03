@@ -124,6 +124,10 @@ if (countlyAuth.validateRead(featureName)) {
         type: "times-of-day",
         label: CV.i18n("times-of-day.title"),
         priority: 8,
+        primary: true,
+        getter: function(widget) {
+            return widget.widget_type === "times-of-day";
+        },
         drawer: {
             component: TimesOfDayWidgetDrawer,
             getEmpty: function() {

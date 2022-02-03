@@ -1,0 +1,7 @@
+<div>
+    <clyd-appcount v-model="scope.editedObject.app_count"></clyd-appcount>
+    <clyd-sourceapps v-model="scope.editedObject.apps" :multiple="scope.editedObject.app_count === 'multiple'"></clyd-sourceapps>
+    <clyd-datatype v-model="scope.editedObject.data_type"></clyd-datatype>
+    <clyd-visualization v-model="scope.editedObject.visualization"></clyd-visualization>
+    <clyd-title v-model="scope.editedObject.title"></clyd-title>
+</div>
