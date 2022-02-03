@@ -214,7 +214,6 @@ module.exports = function(grunt) {
                 files: {
                     'frontend/express/public/stylesheets/main.min.css': [
                         'frontend/express/public/stylesheets/main.css',
-                        'frontend/express/public/stylesheets/vue/element-ui.css',
                         'frontend/express/public/stylesheets/vue/clyvue.css',
                         'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
