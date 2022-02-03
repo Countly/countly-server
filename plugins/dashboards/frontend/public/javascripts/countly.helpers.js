@@ -746,6 +746,52 @@
         }
     });
 
+
+    var PeriodComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/period.html'),
+        props: {
+            value: {
+                type: String,
+                default: ""
+            }
+        },
+        data: function() {
+            return {
+                titleCheckbox: null
+            };
+        },
+        computed: {
+            custom_period: {
+                get: function() {
+                    return this.value || "30days";
+                },
+                set: function(t) {
+                    this.$emit("input", t);
+                }
+            },
+            checkbox: {
+                get: function() {
+                    if (this.titleCheckbox !== null) {
+                        return this.titleCheckbox;
+                    }
+
+                    if (this.value) {
+                        return true;
+                    }
+
+                    return false;
+                },
+                set: function(v) {
+                    if (v === false && this.value && this.value.length) {
+                        this.$emit("input", "");
+                    }
+
+                    this.titleCheckbox = v;
+                }
+            }
+        }
+    });
+
     var ColorsComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/colors.html'),
         props: {
@@ -847,6 +893,7 @@
     Vue.component("clyd-sourceapps", SourceAppsComponent);
     Vue.component("clyd-visualization", VisualizationComponent);
     Vue.component("clyd-title", TitleComponent);
+    Vue.component("clyd-period", PeriodComponent);
     Vue.component("clyd-colors", ColorsComponent);
 
     /**
