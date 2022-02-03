@@ -14,6 +14,11 @@
         data: function() {
             return {};
         },
+        computed: {
+            title: function() {
+                return "Geo";
+            }
+        }
     });
 
     var DrawerComponent = countlyVue.views.create({

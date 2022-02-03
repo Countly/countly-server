@@ -35,11 +35,9 @@
                 </el-radio-group>
             </cly-form-field>
             <component
-                v-for="(item) in widgetTypes"
-                v-if="drawerScope.editedObject.widget_type === item.type"
-                :is="item.drawer.component"
+                v-if="widgetSettingsGetter(drawerScope.editedObject)"
+                :is="widgetSettingsGetter(drawerScope.editedObject).drawer.component"
                 @reset="reset"
-                :key="item.type"
                 :scope="drawerScope">
             </component>
         </cly-form-step>

@@ -26,19 +26,42 @@
         },
         methods: {
             onReset: function(widgetType) {
-                var defaultEmpty = this.__widgets[widgetType].drawer.getEmpty();
+                var widget = {
+                    widget_type: widgetType
+                };
 
-                this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
+                /**
+                 * First we will get widget settings based on getter function.
+                 * If nothing is returned, we will resort to getting primary widget settings.
+                 */
+                var widgetSettings = this.widgetSettingsGetter(widget);
+
+                if (!widgetSettings) {
+                    widgetSettings = this.widgetSettingsPrimary(widget);
+                }
+
+                if (widgetSettings) {
+                    var defaultEmpty = widgetSettings.drawer.getEmpty();
+                    this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
+                }
             },
-            getWidgetSettings: function(widget) {
+            widgetSettingsGetter: function(widget) {
                 var widgets = this.__widgets;
 
                 if (!widget.widget_type) {
                     countlyDashboards.factory.log("Widget type is not defined");
-                    return;
+                    return false;
                 }
 
                 var registrations = widgets[widget.widget_type];
+
+                if (!registrations) {
+                    countlyDashboards.factory.log("Soooo, unfortunately, we don't have any widget settings for " + widget.widget_type);
+                    countlyDashboards.factory.log("Possible reason is - The widget wasn't registered correctly in the UI.");
+                    countlyDashboards.factory.log("Please check the widget registration. Thanks :)");
+
+                    return false;
+                }
 
                 var setting = registrations.find(function(registration) {
                     return registration.getter(widget);
@@ -49,6 +72,40 @@
                 }
 
                 return false;
+            },
+            widgetSettingsPrimary: function(widget) {
+                /**
+                 * We should only call this function when we are switching between widget types.
+                 * Or we need the list of all primary widget settings.
+                 * For other cases call the widgetSettingsGetter function.
+                 */
+
+                var widgets = this.__widgets;
+
+                if (!widget.widget_type) {
+                    countlyDashboards.factory.log("Widget type is not defined");
+                    return;
+                }
+
+                var registrations = widgets[widget.widget_type];
+
+                if (!registrations) {
+                    countlyDashboards.factory.log("Soooo, unfortunately, we don't have any widget settings for " + widget.widget_type);
+                    countlyDashboards.factory.log("Possible reason is - The widget wasn't registered correctly in the UI.");
+                    countlyDashboards.factory.log("Please check the widget registration. Thanks :)");
+
+                    return false;
+                }
+
+                var setting = registrations.find(function(registration) {
+                    return registration.primary;
+                });
+
+                if (!setting) {
+                    countlyDashboards.factory.log("No primary widget found for " + widget.widget_type + " !. Please set primary to true in the widget registration.");
+                }
+
+                return setting;
             }
         }
     };
@@ -117,7 +174,11 @@
                  */
                 var w = width;
 
-                if (w < this.MIN_WIDTH) {
+                if (!w || w < this.MIN_WIDTH) {
+                    /**
+                     * We should return minimum width mentioned in the widgets settings.
+                     * Lets do this later.
+                     */
                     w = this.MIN_WIDTH;
                     countlyDashboards.factory.log("Width should be atleast equal to " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
                 }
@@ -141,7 +202,11 @@
             },
             calculateHeight: function(height) {
                 var h = height;
-                if (h < this.MIN_HEIGHT) {
+                if (!h || h < this.MIN_HEIGHT) {
+                    /**
+                     * We should return minimum width mentioned in the widgets settings.
+                     * Lets do this later.
+                     */
                     h = this.MIN_HEIGHT;
                     countlyDashboards.factory.log("Height should be atleast equal to " + this.MIN_HEIGHT + "! Old height = " + height + ", New height = " + h);
                 }
@@ -375,16 +440,9 @@
                 var widgetTypes = [];
 
                 for (var key in this.__widgets) {
-                    var registrations = this.__widgets[key];
-                    var primary = registrations.find(function(registration) {
-                        return registration.primary;
-                    });
-
-                    if (primary) {
-                        widgetTypes.push(primary);
-                    }
-                    else {
-                        countlyDashboards.factory.log("No primary widget found for " + key + " !. Please set primary to true in the widget registration.");
+                    var setting = this.widgetSettingsPrimary({widget_type: key});
+                    if (setting) {
+                        widgetTypes.push(setting);
                     }
                 }
 
@@ -406,14 +464,24 @@
                     action = "countlyDashboards/widgets/update";
                 }
 
-                if (this.__widgets[doc.widget_type].drawer.beforeSaveFn) {
-                    var returnVal = this.__widgets[doc.widget_type].drawer.beforeSaveFn(doc, isEdited);
+                var setting = this.widgetSettingsGetter(doc);
+
+                if (!setting) {
+                    countlyDashboards.factory.log("Well this is very strange.");
+                    countlyDashboards.factory.log("On widget submit, atleast one of the widget registrations should be returned.");
+                    countlyDashboards.factory.log("Kindly check your widget getter, maybe something is wrong there.");
+
+                    return;
+                }
+
+                if (setting.drawer.beforeSaveFn) {
+                    var returnVal = setting.drawer.beforeSaveFn(doc, isEdited);
                     if (returnVal) {
                         doc = returnVal;
                     }
                 }
 
-                var empty = this.__widgets[doc.widget_type].drawer.getEmpty();
+                var empty = setting.drawer.getEmpty();
                 var obj = {};
 
                 /**
@@ -448,10 +516,27 @@
                     this.saveButtonLabel = this.i18nM("dashboards.save-widget");
                 }
 
-                if (this.__widgets[doc.widget_type].drawer.beforeLoadFn) {
-                    var returnVal = this.__widgets[doc.widget_type].drawer.beforeLoadFn(doc, doc.__action === "edit");
-                    if (returnVal) {
-                        return returnVal;
+                /**
+                 * Here we first call the widgetSettingsGetter since onCopy is called
+                 * when the widget drawer is being opened.
+                 * There are two cases - Widget add and Widget update.
+                 */
+                var setting = this.widgetSettingsGetter(doc);
+
+                if (!setting) {
+                    countlyDashboards.factory.log("Well this is very strange.");
+                    countlyDashboards.factory.log("On widget onCopy, atleast one of the widget registrations should be returned.");
+                    countlyDashboards.factory.log("Kindly check your widget getter, maybe something is wrong there.");
+
+                    return;
+                }
+
+                if (setting) {
+                    if (setting.drawer.beforeLoadFn) {
+                        var returnVal = setting.drawer.beforeLoadFn(doc, doc.__action === "edit");
+                        if (returnVal) {
+                            return returnVal;
+                        }
                     }
                 }
             },
@@ -484,7 +569,17 @@
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
 
-                var empty = this.__widgets[d.widget_type].drawer.getEmpty();
+                var setting = this.widgetSettingsGetter(d);
+
+                if (!setting) {
+                    countlyDashboards.factory.log("Well this is very strange.");
+                    countlyDashboards.factory.log("On widget action, atleast one of the widget registrations should be returned.");
+                    countlyDashboards.factory.log("Kindly check your widget getter, maybe something is wrong there.");
+
+                    return;
+                }
+
+                var empty = setting.drawer.getEmpty();
 
                 switch (command) {
                 case "edit":
@@ -522,17 +617,23 @@
                  * grid will trigger "added" event
                  */
                 var id = widget.id;
-                var widgetType = widget.widget_type;
+                var setting = this.widgetSettingsGetter(widget);
+
+                if (!setting) {
+                    countlyDashboards.factory.log("This can never happen! \
+                    addWidget is called after submit. Please check the WidgetDrawer's onSubmit.");
+
+                    return;
+                }
 
                 if (id) {
-                    var settings = this.__widgets[widgetType];
                     var node = {
                         id: id,
                         autoPosition: true,
-                        w: settings.grid.dimensions().width,
-                        h: settings.grid.dimensions().height,
-                        minW: settings.grid.dimensions().minWidth,
-                        minH: settings.grid.dimensions().minHeight,
+                        w: setting.grid.dimensions().width,
+                        h: setting.grid.dimensions().height,
+                        minW: setting.grid.dimensions().minWidth,
+                        minH: setting.grid.dimensions().minHeight,
                         new: true
                     };
 
@@ -767,7 +868,9 @@
             },
             newWidget: function() {
                 var empty = {};
-                var defaultEmpty = this.__widgets.analytics.drawer.getEmpty();
+                var setting = this.widgetSettingsPrimary({widget_type: "analytics"});
+
+                var defaultEmpty = setting.drawer.getEmpty();
 
                 empty.__action = "create";
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));

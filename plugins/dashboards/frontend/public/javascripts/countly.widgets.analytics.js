@@ -90,6 +90,7 @@
      * It should be something unique for each widget registration.
      * Getter accepts the widget data object as an argument.
      * Based on the data you can decide if this registration should be returned or not.
+     * Please don't mutate the widget data object passed in the argument to the getter.
      */
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",

@@ -1510,7 +1510,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/dashboard/data", async function({widget}) {
         try {
             if (widget.widget_type === 'analytics') {
-                if (widget.data_tyep === 'geo') {
+                if (widget.data_type === 'geo') {
                     widget.dashData = {
                         isValid: true,
                         data: {}
