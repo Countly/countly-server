@@ -2270,6 +2270,9 @@
             label: CV.i18n('push-notification.title'),
             priority: 6,
             primary: true,
+            getter: function(widget) {
+                return widget.widget_type === "push";
+            },
             drawer: {
                 component: PushNotificationWidgetDrawer,
                 getEmpty: function() {

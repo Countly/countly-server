@@ -66,6 +66,9 @@
         label: CV.i18nM("dashboards.widget-type.events"),
         priority: 2,
         primary: true,
+        getter: function(widget) {
+            return widget.widget_type === "events";
+        },
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {

@@ -31,7 +31,24 @@
                 this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
             },
             getWidgetSettings: function(widget) {
+                var widgets = this.__widgets;
 
+                if (!widget.widget_type) {
+                    countlyDashboards.factory.log("Widget type is not defined");
+                    return;
+                }
+
+                var registrations = widgets[widget.widget_type];
+
+                var setting = registrations.find(function(registration) {
+                    return registration.getter(widget);
+                });
+
+                if (setting) {
+                    return setting;
+                }
+
+                return false;
             }
         }
     };

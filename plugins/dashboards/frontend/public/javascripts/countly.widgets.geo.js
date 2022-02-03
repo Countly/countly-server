@@ -33,6 +33,9 @@
         label: CV.i18nM("dashboards.widget-type.analytics"),
         priority: 1,
         primary: false,
+        getter: function(widget) {
+            return widget.widget_type === "analytics" && widget.data_type === "geo";
+        },
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
