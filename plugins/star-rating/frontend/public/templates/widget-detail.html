@@ -32,8 +32,8 @@
     </template>
   </cly-header>
   <cly-main>
-    <el-collapse v-if="cohortsEnabled" :icon = "{ position: 'left', direction: 'right'}" style="border:none" v-model="activeNames">
-      <el-collapse-item class="cly-vue-surveys-detail-collapse--padding" :title="i18n('surveys.targeting')" name="1">
+    <el-collapse class="ratings-widget-detail-view__targeting is-bordered-box" v-if="cohortsEnabled" :icon = "{ position: 'left', direction: 'right'}" v-model="activeNames">
+      <el-collapse-item :title="i18n('feedback.targeting')" name="1">
           <cly-cohort-targeting :targeting="widget.targeting">
           </cly-cohort-targeting>
       </el-collapse-item>
