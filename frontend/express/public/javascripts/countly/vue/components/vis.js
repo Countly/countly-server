@@ -1621,6 +1621,11 @@
                 type: Boolean,
                 required: false,
                 default: false
+            },
+            height: {
+                type: String,
+                required: false,
+                default: '450px'
             }
         },
         data: function() {
@@ -1699,6 +1704,9 @@
                 listeners.forEach(function(item) {
                     self.$refs.lmap.mapObject.off(item.name, item.handler);
                 });
+            },
+            invalidateSize: function() {
+                window.dispatchEvent(new Event('resize'));
             }
         },
         mounted: function() {
