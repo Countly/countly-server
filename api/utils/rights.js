@@ -969,4 +969,3 @@ exports.getAdminApps = function(member) {
         }
     }
 };
-
