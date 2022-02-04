@@ -429,12 +429,21 @@
                                 done();
                             }
                         }
+                        else if (res.length) {
+                            for (var i1 = 0; i1 < res.length; i1++) {
+                                CountlyHelpers.notify({
+                                    message: res[i1],
+                                    type: 'error'
+                                });
+                            }
+                            self.$refs.userDrawer.isSubmitPending = false;
+                        }
                         else {
                             CountlyHelpers.notify({
-                                message: res.result,
+                                message: CV.i18n('management-applications.plugins.smth'),
                                 type: 'error'
                             });
-                            done(res.result);
+                            self.$refs.userDrawer.isSubmitPending = false;
                         }
                     });
                 }
