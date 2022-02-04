@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyAuth, countlyView, simpleheat, countlyWidgets, countlySegmentation, ActionMapView, countlyCommon, countlyGlobal, countlyViews, T, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
+/*global CountlyHelpers, countlyAuth, countlyView, simpleheat, countlySegmentation, ActionMapView, countlyCommon, countlyGlobal, countlyViews, T, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
 
 (function() {
     var FEATURE_NAME = "views";
