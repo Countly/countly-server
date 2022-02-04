@@ -1,7 +1,6 @@
 /*global countlyAuth, _,$,countlyPlugins,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyVue,CV */
 
 (function() {
-    var FEATURE_PLUGIN_NAME = "global_plugins";
     var PluginsView = countlyVue.views.create({
         template: CV.T('/plugins/templates/plugins.html'),
         data: function() {
@@ -258,7 +257,6 @@
         }
     });
 
-    var FEATURE_CONFIG_NAME = "global_configurations";
     var ConfigurationsView = countlyVue.views.create({
         template: CV.T('/plugins/templates/configurations.html'),
         computed: {
@@ -993,16 +991,43 @@
     });
 
     var showInAppManagment = {};
-    if (countlyAuth.validateRead(FEATURE_PLUGIN_NAME)) {
+    if (countlyAuth.validateGlobalAdmin()) {
         if (countlyGlobal.plugins.indexOf("drill") !== -1) {
             showInAppManagment.drill = {"big_list_limit": true, "record_big_list": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_apm": true, "record_views": true};
         }
         if (countlyGlobal.plugins.includes("logger")) {
             showInAppManagment.logger = {"state": true, "limit": true};
         }
-    }
 
-    if (countlyAuth.validateUpdate(FEATURE_CONFIG_NAME)) {
+        app.route('/manage/plugins', 'plugins', function() {
+            if (countlyGlobal.COUNTLY_CONTAINER === 'frontend') {
+                app.navigate("#/", true);
+            }
+            else {
+                this.renderWhenReady(getPluginView());
+            }
+        });
+
+        app.route('/manage/configurations', 'configurations', function() {
+            var view = getConfigView();
+            view.params = {namespace: null, success: false};
+            this.renderWhenReady(view);
+        });
+
+        app.route('/manage/configurations/:namespace', 'configurations_namespace', function(namespace) {
+            var view = getConfigView();
+            view.params = {namespace: namespace, success: false};
+            this.renderWhenReady(view);
+        });
+
+        app.route('/manage/configurations/:namespace/:status', 'configurations_namespace', function(namespace, status) {
+            if (status === "success") {
+                var view = getConfigView();
+                view.params = {namespace: namespace, success: true};
+                this.renderWhenReady(view);
+            }
+        });
+
         countlyPlugins.initializeConfigs().always(function() {
             var pluginsData = countlyPlugins.getConfigsData();
             for (var key in showInAppManagment) {
@@ -1033,50 +1058,17 @@
         });
     }
 
-    if (countlyAuth.validateRead(FEATURE_PLUGIN_NAME)) {
-        app.route('/manage/plugins', 'plugins', function() {
-            if (countlyGlobal.COUNTLY_CONTAINER === 'frontend') {
-                app.navigate("#/", true);
-            }
-            else {
-                this.renderWhenReady(getPluginView());
-            }
-        });
-    }
-
-    if (countlyAuth.validateRead(FEATURE_CONFIG_NAME)) {
-        app.route('/manage/configurations', 'configurations', function() {
-            var view = getConfigView();
-            view.params = {namespace: null, success: false};
-            this.renderWhenReady(view);
-        });
-
-        app.route('/manage/configurations/:namespace', 'configurations_namespace', function(namespace) {
-            var view = getConfigView();
-            view.params = {namespace: namespace, success: false};
-            this.renderWhenReady(view);
-        });
-
-        app.route('/manage/configurations/:namespace/:status', 'configurations_namespace', function(namespace, status) {
-            if (status === "success") {
-                var view = getConfigView();
-                view.params = {namespace: namespace, success: true};
-                this.renderWhenReady(view);
-            }
-        });
-    }
-
     app.route('/account-settings', 'account-settings', function() {
         this.renderWhenReady(getAccountView());
     });
 
     $(document).ready(function() {
-        if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateRead(FEATURE_PLUGIN_NAME)) {
+        if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateGlobalAdmin()) {
             if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
                 app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 90});
             }
         }
-        if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateRead(FEATURE_CONFIG_NAME)) {
+        if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateGlobalAdmin()) {
             app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 10});
 
             var isCurrentHostnameIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(window.location.hostname);

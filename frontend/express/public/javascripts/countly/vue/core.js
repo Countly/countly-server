@@ -97,6 +97,9 @@
                 },
                 canUserDelete: function() {
                     return countlyAuth.validateDelete(featureName);
+                },
+                isUserGlobalAdmin: function() {
+                    return countlyAuth.validateGlobalAdmin();
                 }
             }
         };
