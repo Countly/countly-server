@@ -1,8 +1,16 @@
-<cly-main>
+<div>
+<div class="bu-mt-5">
+        <div class="bu-is-flex bu-my-4">
+            <div class="bu-mr-2 text-big font-weight-bold"> User Consent History </div>
+            <div>
+                <cly-tooltip-icon></cly-tooltip-icon>
+            </div>
+        </div>
+    </div>
     <cly-section>
-        <cly-datatable-n :data-source="userConsentHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}">
+        <cly-datatable-n :data-source="userConsentHistoryTableSource" :displaySearch= "false" :default-sort="{prop: 'ts', order: 'descending'}">
             <template v-slot="scope">
-                <el-table-column fixed type="expand">
+                <el-table-column type="expand">
                     <template slot-scope="props">
                         <div class="bu-level cly-vue-compliance__consent_history_expanded_column">
                             <div class="bu-level-left text-medium font-weight-bold">Device ID</div>
@@ -46,11 +54,12 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column fixed width="250" sortable="custom" prop="_id" label="ID">
+                <el-table-column width="250"sortable="custom" label="ID" prop="_id">
+
                 </el-table-column>
-                <el-table-column sortable="custom" prop="uid" label="UID">
+                <el-table-column width = "80" sortable="custom" prop="uid" label="UID">
                 </el-table-column>
-                <el-table-column sortable="custom" width="220px" label="CHANGES">
+                <el-table-column sortable="custom" width="120" label="CHANGES">
                     <template v-slot="rowScope">
                         <div>
                             <p v-if="rowScope.row.type.includes('i')">{{i18n("consent.opt-i")}}</p>
@@ -60,9 +69,9 @@
                     </template>
 
                 </el-table-column>
-                <el-table-column width="250" sortable="custom" label="CONSENT">
+                <el-table-column width="224" sortable="custom" label="CONSENT">
                     <template v-slot="rowScope">
-                        <div>
+                        <div style="overflow-wrap: break-word;">
                             <p v-if="rowScope.row.optin.length > 0">{{i18n("consent.opt-i")}} for {{rowScope.row.optin.length}} feature(s)
                             </p>
                             <p v-if="rowScope.row.optout.length > 0">{{i18n("consent.opt-o")}} from {{rowScope.row.optout.length}}
@@ -71,8 +80,6 @@
 
                     </template>
 
-                </el-table-column>
-                <el-table-column width="165" sortable="custom" prop="av" label="APP VERSION">
                 </el-table-column>
                 <el-table-column width="230" sortable="custom" prop="ts" label="TIME">
                     <template v-slot="rowScope">
@@ -84,4 +91,4 @@
         </cly-datatable-n>
 
     </cly-section>
-</cly-main>
+</div>
