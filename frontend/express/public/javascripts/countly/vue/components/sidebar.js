@@ -496,7 +496,8 @@
                         // },
                         {
                             name: "analytics",
-                            icon: "ion-stats-bars"
+                            icon: "ion-stats-bars",
+                            tooltip: "Main Menu"
                         },
                         {
                             name: "divider",
@@ -543,7 +544,8 @@
                             name: "user",
                             icon: "ion-person",
                             noSelect: true,
-                            member: this.member
+                            member: this.member,
+                            tooltip: "My Profile"
                         },
                         {
                             name: "language",

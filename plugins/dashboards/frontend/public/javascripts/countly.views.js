@@ -1009,6 +1009,7 @@
         countlyVue.container.registerData("/sidebar/menu/main", {
             name: "dashboards",
             icon: "ion-android-apps",
+            tooltip: "Dashboard",
             component: DashboardsMenu
         });
     }
