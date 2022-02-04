@@ -171,6 +171,189 @@ app.route("/analytics/users/*tab", "user-analytics-tab", function(tab) {
     ViewWrapper.params = params;
     this.renderWhenReady(ViewWrapper);
 });
+//Analytics->User analytics - overview widget
+var GridComponent = countlyVue.views.create({
+    template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
+    props: {
+        data: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        }
+    },
+    mounted: function() {
+    },
+    methods: {
+        refresh: function() {
+        },
+    },
+    computed: {
+        title: function() {
+            if (this.data.title) {
+                return this.data.title;
+            }
+            if (this.data.dashData) {
+                return CV.i18n("user-analytics.overview-title");
+            }
+            return "";
+        },
+        showBuckets: function() {
+            return false;
+        },
+        period: function() {
+            return this.data.custom_period;
+        },
+        timelineGraph: function() {
+            this.data = this.data || {};
+            this.data.dashData = this.data.dashData || {};
+            this.data.dashData.data = this.data.dashData.data || {};
+
+            var legend = {"type": "primary", data: []};
+            var series = [];
+            var appIndex = 0;
+            for (var app in this.data.dashData.data) {
+                for (var k = 0; k < this.data.metrics.length; k++) {
+                    series.push({ "data": [], "name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
+                    legend.data.push({"name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
+                }
+                for (var date in this.data.dashData.data[app]) {
+                    for (var kk = 0; kk < this.data.metrics.length; kk++) {
+                        if (this.data.metrics[kk] === 'r') {
+                            var vv = this.data.dashData.data[app][date]["u"] - this.data.dashData.data[app][date]["u"]["n"];
+                            series[appIndex * this.data.metrics.length + kk].data.push(vv);
+                        }
+                        else {
+                            series[appIndex * this.data.metrics.length + kk].data.push(this.data.dashData.data[app][date][this.data.metrics[kk]] || 0);
+                        }
+                    }
+                }
+                appIndex++;
+            }
+            return {
+                lineOptions: {"series": series},
+                lineLegend: legend
+            };
+        },
+        number: function() {
+            this.data = this.data || {};
+            this.data.dashData = this.data.dashData || {};
+            var value;
+            this.data.dashData.data = this.data.dashData.data || {};
+            for (var app in this.data.dashData.data) {
+                value = this.data.dashData.data[app];
+            }
+            return value;
+        }
+    }
+});
+
+var DrawerComponent = countlyVue.views.create({
+    template: CV.T('/core/user-analytics-overview/templates/widgetDrawer.html'),
+    data: function() {
+        return {
+        };
+    },
+    computed: {
+        metrics: function() {
+            return [
+                { label: this.i18n("common.table.total-users"), value: "u" },
+                { label: this.i18n("common.table.new-users"), value: "n" },
+                { label: this.i18n("common.table.returning-users"), value: "r" }
+            ];
+        },
+        enabledVisualizationTypes: function() {
+            if (this.scope.editedObject.app_count === 'single') {
+                return ['time-series', 'bar-chart', 'number'];
+            }
+            else if (this.scope.editedObject.app_count === 'multiple') {
+                return ['time-series', 'bar-chart'];
+            }
+            else {
+                return [];
+            }
+        },
+        isMultipleMetric: function() {
+            var multiple = false;
+            var appCount = this.scope.editedObject.app_count;
+            var visualization = this.scope.editedObject.visualization;
+
+            if (appCount === 'single') {
+                if (visualization === 'table' || visualization === 'time-series') {
+                    multiple = true;
+                }
+            }
+
+            return multiple;
+        },
+    },
+    mounted: function() {
+        if (this.scope.editedObject.breakdowns.length === 0) {
+            this.scope.editedObject.breakdowns = ['overview'];
+        }
+    },
+    methods: {
+    },
+    watch: {
+
+    },
+    props: {
+        scope: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        }
+    }
+});
+
+countlyVue.container.registerData("/custom/dashboards/widget", {
+    type: "analytics",
+    label: CV.i18n("user-analytics.overview-title"),
+    priority: 1,
+    primary: false,
+    getter: function(widget) {
+        var kk = widget.breakdowns || [];
+        if (widget.widget_type === "analytics" && widget.data_type === "user-analytics" && (kk.length == 0 || kk[0] == 'overview')) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    },
+    drawer: {
+        component: DrawerComponent,
+        getEmpty: function() {
+            return {
+                title: "",
+                widget_type: "analytics",
+                data_type: "user-analytics",
+                app_count: 'single',
+                metrics: [],
+                apps: [],
+                visualization: "",
+                breakdowns: ['overview']
+            };
+        },
+        beforeLoadFn: function(/*doc, isEdited*/) {
+        },
+        beforeSaveFn: function(/*doc*/) {
+        }
+    },
+    grid: {
+        component: GridComponent,
+        dimensions: function() {
+            return {
+                minWidth: 6,
+                minHeight: 4,
+                width: 6,
+                height: 4
+            };
+        }
+    }
+
+});
+
 
 countlyVue.container.registerTab("/analytics/users", {
     priority: 1,
