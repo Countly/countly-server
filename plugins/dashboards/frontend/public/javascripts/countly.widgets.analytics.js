@@ -21,6 +21,9 @@
                 var autoTitle = "Analytics";
                 return this.data.title || autoTitle;
             },
+            showBuckets: function() {
+                return false;
+            },
             apps: function() {
                 var apps = this.data.apps;
                 var appData = [];
@@ -32,6 +35,37 @@
                         name: this.getAppName(appId)
                     });
                 }
+            },
+            timelineGraph: function() {
+                this.data = this.data || {};
+                this.data.dashData = this.data.dashData || {};
+                this.data.dashData.data = this.data.dashData.data || {};
+
+                var legend = {"type": "primary", data: []};
+                var series = [];
+                var appIndex = 0;
+                for (var app in this.data.dashData.data) {
+                    for (var k = 0; k < this.data.metrics.length; k++) {
+                        series.push({ "data": [], "name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
+                        legend.data.push({"name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
+                    }
+                    for (var date in this.data.dashData.data[app]) {
+                        for (var kk = 0; kk < this.data.metrics.length; kk++) {
+                            series[appIndex * this.data.metrics.length + kk].data.push(this.data.dashData.data[app][date][this.data.metrics[kk]] || 0);
+                        }
+                    }
+                    appIndex++;
+                }
+                return {
+                    lineOptions: {"series": series},
+                    lineLegend: legend
+                };
+            }
+
+        },
+        methods: {
+            beforeCopy: function(data) {
+                return data;
             }
         }
     });
@@ -45,6 +79,18 @@
         },
         data: function() {
             return {
+                metricLists: {
+                    "session": [
+                        { label: this.i18n("common.total-sessions"), value: "t" },
+                        { label: this.i18n("common.unique-sessions"), value: "u" },
+                        { label: this.i18n("common.new-sessions"), value: "n" }
+                    ],
+                    "user-analytics": [
+                        { label: this.i18n("common.table.total-users"), value: "t" },
+                        { label: this.i18n("common.table.new-users"), value: "u" },
+                        { label: this.i18n("common.table.returning-users"), value: "n" }
+                    ]
+                },
                 sessionMetrics: [
                     { label: this.i18n("sidebar.analytics.sessions"), value: "t" },
                     { label: this.i18n("sidebar.analytics.users"), value: "u" },
@@ -54,11 +100,15 @@
         },
         computed: {
             enabledVisualizationTypes: function() {
-                if (this.scope.editedObject.app_count === 'multiple') {
-                    return ['time-series'];
+                if (this.scope.editedObject.app_count === 'single') {
+                    return ['time-series', 'bar-chart', 'number'];
                 }
-
-                return [];
+                else if (this.scope.editedObject.app_count === 'multiple') {
+                    return ['time-series', 'bar-chart'];
+                }
+                else {
+                    return [];
+                }
             },
             isMultipleMetric: function() {
                 var multiple = false;
@@ -73,8 +123,16 @@
 
                 return multiple;
             },
+            metrics: function() {
+                return this.metricLists[this.scope.editedObject.data_type];
+            },
             showBreakdown: function() {
-                return ["bar-chart", "table"].indexOf(this.scope.editedObject.visualization) > -1;
+                if (this.scope.editedObject.data_type === "user-analytics") {
+                    return true;
+                }
+                else {
+                    return ["bar-chart", "table"].indexOf(this.scope.editedObject.visualization) > -1;
+                }
             }
         }
     });

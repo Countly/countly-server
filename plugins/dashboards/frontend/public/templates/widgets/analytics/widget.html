@@ -7,9 +7,15 @@
         </div>
         <div class="bu-level-right">
             <div class="bu-level-item">
-                <clyd-bucket :widget-id="data._id" v-model="selectedBucket"></clyd-bucket>
+                <clyd-bucket v-if="showBuckets" :widget-id="data._id" v-model="selectedBucket"></clyd-bucket>
             </div>
             <slot name="action"></slot>
         </div>
     </div>
+	<div class="dashboard-widget-graph" >
+		<cly-chart-time v-if="data.visualization === 'time-series'" :showZoom="false" :showDownload="false" :showToggle="false"  :option="timelineGraph.lineOptions"  :height="200" > 
+		</cly-chart-time>		
+	</div>
+	<div class="dashboard-widget-footer">
+	</div>
 </div>

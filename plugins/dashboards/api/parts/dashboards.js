@@ -110,7 +110,7 @@ function toSegment(val) {
  * @param  {Object} widget - Widget object
  */
 function mapWidget(widget) {
-    var widgetType, visualization, dataType, appcount;
+    var widgetType, visualization, dataType, appcount, breakdowns;
 
     switch (widget.widget_type) {
     case "time-series":
@@ -144,6 +144,16 @@ function mapWidget(widget) {
         visualization = "table";
         appcount = "single";
 
+        break;
+    case "concurrent_users":
+        widgetType = "analytics";
+        dataType = "user-analytics";
+        breakdowns = ["online"];
+        break;
+    case "active_users":
+        widgetType = "analytics";
+        dataType = "user-analytics";
+        breakdowns = ["active"];
         break;
     case "views":
         widgetType = "analytics";
@@ -204,6 +214,10 @@ function mapWidget(widget) {
 
     if (appcount) {
         widget.app_count = appcount;
+    }
+
+    if (breakdowns) {
+        widget.breakdowns = breakdowns;
     }
 }
 
