@@ -8,6 +8,6 @@
 					</div>
 			</template>
 	</cly-header>
-	<data-table @refresh-table="refresh" @edit-user="onEditUser" :rows="users"></data-table>
+	<data-table :loading="loading" @refresh-table="refresh" @edit-user="onEditUser" :rows="users"></data-table>
 	<drawer @refresh-table="refresh" :user="user" :features="features" :settings="drawerSettings" :controls="drawers.user"></drawer>
 </div>

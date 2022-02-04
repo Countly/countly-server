@@ -4,7 +4,8 @@
         template: CV.T("/core/user-management/templates/data-table.html"),
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
-            rows: Array
+            rows: Array,
+            loading: Boolean
         },
         data: function() {
             return {
@@ -546,7 +547,8 @@
                     createButtonLabel: CV.i18n('management-users.create-user'),
                     editMode: false
                 },
-                features: []
+                features: [],
+                loading: true
             };
         },
         methods: {
@@ -583,6 +585,7 @@
                 for (var user in usersObj) {
                     self.users.push(usersObj[user]);
                 }
+                self.loading = false;
                 self.features = countlyUserManagement.getFeatures().sort();
             });
         }
