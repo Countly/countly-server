@@ -579,12 +579,14 @@ dashboard.fetchAllWidgetsData = function(params, widgets, callback) {
 
 dashboard.fetchAnalyticsData = async function(params, apps, widget) {
     var dashData = {};
+    var widgetApps;
+    var widgetData;
 
     switch (widget.data_type) {
     case "session":
         try {
-            var widgetApps = widget.apps || [];
-            var widgetData = {};
+            widgetApps = widget.apps || [];
+            widgetData = {};
 
             for (let i = 0; i < widgetApps.length; i++) {
                 var appId = widgetApps[i];
@@ -608,6 +610,40 @@ dashboard.fetchAnalyticsData = async function(params, apps, widget) {
             return widget;
         }
 
+        break;
+    case "user-analytics":
+        if (widget.breakdowns && Array.isArray(widget.breakdowns) && widget.breakdowns[0] === "overview") {
+
+            try {
+                widgetApps = widget.apps || [];
+                widgetData = {};
+                var metrics = [];
+                for (var k = 0;k < widget.metrics.length; k++) {
+                    metrics.push(widget.metrics[k]);
+                }
+                widget.metrics = ['u', 'n'];
+                for (let i = 0; i < widgetApps.length; i++) {
+                    var appId2 = widgetApps[i];
+                    widgetData[appId2] = await getAnalyticsSessionDataForApp(params, apps, appId2, widget);
+                }
+                widget.metrics = metrics;
+                dashData.isValid = true;
+                dashData.data = widgetData;
+
+                widget.dashData = dashData;
+            }
+            catch (e) {
+                log.d("Error while fetching analytics widget data for - ", widget);
+                log.d("Error is - ", e);
+
+                dashData.isValid = false;
+                dashData.data = undefined;
+
+                widget.dashData = dashData;
+
+                return widget;
+            }
+        }
         break;
     default:
         break;

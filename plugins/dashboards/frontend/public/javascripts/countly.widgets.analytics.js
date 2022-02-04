@@ -1,4 +1,4 @@
-/*global countlyVue, CV */
+/*global countlyVue, CV, countlyGlobal */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
@@ -20,6 +20,9 @@
             title: function() {
                 var autoTitle = "Analytics";
                 return this.data.title || autoTitle;
+            },
+            period: function() {
+                return this.data.custom_period || "";
             },
             showBuckets: function() {
                 return false;
@@ -45,9 +48,11 @@
                 var series = [];
                 var appIndex = 0;
                 for (var app in this.data.dashData.data) {
+                    var name = countlyGlobal.apps[app].name || "";
                     for (var k = 0; k < this.data.metrics.length; k++) {
-                        series.push({ "data": [], "name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
-                        legend.data.push({"name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
+
+                        series.push({ "data": [], "name": this.data.metrics[k] + " " + name, "app": app, "metric": this.data.metrics[k]});
+                        legend.data.push({"name": this.data.metrics[k] + " " + name, "app": app, "metric": this.data.metrics[k]});
                     }
                     for (var date in this.data.dashData.data[app]) {
                         for (var kk = 0; kk < this.data.metrics.length; kk++) {
@@ -60,6 +65,16 @@
                     lineOptions: {"series": series},
                     lineLegend: legend
                 };
+            },
+            number: function() {
+                this.data = this.data || {};
+                this.data.dashData = this.data.dashData || {};
+                var value;
+                this.data.dashData.data = this.data.dashData.data || {};
+                for (var app in this.data.dashData.data) {
+                    value = this.data.dashData.data[app];
+                }
+                return value;
             }
 
         },
@@ -84,18 +99,8 @@
                         { label: this.i18n("common.total-sessions"), value: "t" },
                         { label: this.i18n("common.unique-sessions"), value: "u" },
                         { label: this.i18n("common.new-sessions"), value: "n" }
-                    ],
-                    "user-analytics": [
-                        { label: this.i18n("common.table.total-users"), value: "t" },
-                        { label: this.i18n("common.table.new-users"), value: "u" },
-                        { label: this.i18n("common.table.returning-users"), value: "n" }
                     ]
-                },
-                sessionMetrics: [
-                    { label: this.i18n("sidebar.analytics.sessions"), value: "t" },
-                    { label: this.i18n("sidebar.analytics.users"), value: "u" },
-                    { label: this.i18n("common.table.new-users"), value: "n" }
-                ]
+                }
             };
         },
         computed: {
@@ -116,7 +121,7 @@
                 var visualization = this.scope.editedObject.visualization;
 
                 if (appCount === 'single') {
-                    if (visualization === 'table' || visualization === 'time-series') {
+                    if (visualization === 'bar-chart' || visualization === 'time-series') {
                         multiple = true;
                     }
                 }
@@ -127,12 +132,15 @@
                 return this.metricLists[this.scope.editedObject.data_type];
             },
             showBreakdown: function() {
-                if (this.scope.editedObject.data_type === "user-analytics") {
+                if (this.scope.editedObject.visualization === 'bar-chart') {
                     return true;
                 }
                 else {
-                    return ["bar-chart", "table"].indexOf(this.scope.editedObject.visualization) > -1;
+                    return false;
                 }
+            },
+            showPeriod: function() {
+                return true;
             }
         }
     });
@@ -170,6 +178,7 @@
                     apps: [],
                     visualization: "",
                     breakdowns: [],
+                    custom_period: null
                 };
             },
             beforeSaveFn: function(doc) {

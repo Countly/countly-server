@@ -14,7 +14,18 @@
     </div>
 	<div class="dashboard-widget-graph" >
 		<cly-chart-time v-if="data.visualization === 'time-series'" :showZoom="false" :showDownload="false" :showToggle="false"  :option="timelineGraph.lineOptions"  :height="200" > 
-		</cly-chart-time>		
+		</cly-chart-time>
+		<div v-else-if="data.visualization === 'number'">	
+			<p>{{number.total}}</p>
+			<p>{{number.change}}</p>
+			<p>{{number.trend}}</p>
+		</div>
+		<cly-datatable-n v-else-if="data.visualization === 'table'" :rows="getTableData" :hideTop="true" :height="maxTableHeight" >
+		<template v-slot="scope">	
+			<el-table-column  v-for="(item, index) in tableStructure" :sortable="false" :prop="item.prop" :label="item.title">
+			</el-table-column>
+		</template>
+	</cly-datatable-n>
 	</div>
 	<div class="dashboard-widget-footer">
 	</div>

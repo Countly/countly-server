@@ -259,7 +259,6 @@
                 },
                 set: function(item) {
                     var i = [item];
-
                     this.$emit("input", i);
                 }
             },
