@@ -1,4 +1,4 @@
-/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, Promise, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
 var FEATURE_NAME = 'star_rating';
 
 var Drawer = countlyVue.views.create({
@@ -696,8 +696,14 @@ var WidgetDetail = countlyVue.views.create({
             });
         },
         editWidget: function() {
-            if (this.cohortsEnabled && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
+            if (this.cohortsEnabled && this.widget.targeting && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
                 this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
+            }
+            else {
+                this.widget.targeting = {
+                    user_segmentation: null,
+                    steps: null
+                };
             }
             this.widget.target_page = this.widget.target_page === "selected";
             this.openDrawer('widget', this.widget);
@@ -895,45 +901,13 @@ countlyVue.container.registerTab("/users/tabs", {
         methods: {},
         created: function() {
             this.uid = this.$route.params.uid;
-            /*
             var self = this;
-            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "12months"})
+            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})
                 .then(function() {
                     self.ratingsData = starRatingPlugin.getFeedbackData().aaData;
                     self.ratingsData.map(function(rating) {
                         rating.ts = countlyCommon.formatTimeAgo(rating.ts);
-                        starRatingPlugin.requestSingleWidget(rating.widget_id, function(widget) {
-                            if (widget) {
-                                rating.widgetTitle = widget.popup_header_text;
-                            }
-                            else {
-                                rating.widgetTitle = "Widget not exist";
-                            }
-                            return rating;
-                        });
                     });
-                });
-            */
-            var self = this;
-            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})
-                .then(function() {
-                    return Promise.all(starRatingPlugin.getFeedbackData().aaData.map(function(rating) {
-                        return new Promise(function(resolve) {
-                            rating.ts = countlyCommon.formatTimeAgo(rating.ts);
-                            starRatingPlugin.requestSingleWidget(rating.widget_id, function(widget) {
-                                if (widget) {
-                                    rating.widgetTitle = widget.popup_header_text;
-                                }
-                                else {
-                                    rating.widgetTitle = "Widget not exist";
-                                }
-                                resolve(rating);
-                            });
-                        });
-                    }));
-                })
-                .then(function(data) {
-                    self.ratingsData = data;
                 });
         }
     })
@@ -947,7 +921,10 @@ var RatingsMainView = new countlyVue.views.BackboneWrapper({
 });
 
 var WidgetDetailView = new countlyVue.views.BackboneWrapper({
-    component: WidgetDetail
+    component: WidgetDetail,
+    templates: [
+        "/drill/templates/query.builder.v2.html"
+    ]
 });
 
 app.ratingsMainView = RatingsMainView;
