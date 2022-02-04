@@ -553,7 +553,7 @@
             compare: function(editedObject, selectedApp) {
                 var differences = [];
                 if (this.selectedApp === "new") {
-                    return;
+                    return differences;
                 }
                 else {
                     ["name", "category", "type", "key", "country", "timezone", "salt", "_id"].forEach(function(currentKey) {
