@@ -105,6 +105,10 @@
     .cell > .el-radio {
         overflow: unset;
     }
+
+    .el-table__only-options-fixed-right {
+        right: 10px;
+    }
 }
 
 .el-radio {
