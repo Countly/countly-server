@@ -942,6 +942,7 @@
 
         var GridComponent = countlyVue.views.create({
             template: CV.T('/views/templates/widget.html'),
+            mixins: [countlyVue.mixins.commonFormatters],
             props: {
                 data: {
                     type: Object,
@@ -967,9 +968,10 @@
                     return "";
                 },
                 period: function() {
-                    var pp = countlyWidgets.formatPeriod(this.data.custom_period);
+                    /* var pp = countlyWidgets.formatPeriod(this.data.custom_period);
                     pp = pp || {};
-                    return pp.longName || "";
+                    return pp.longName || "";*/
+                    return this.data.custom_period;
                 },
                 maxTableHeight: function() {
                     return 200;
@@ -988,6 +990,24 @@
                     this.data = this.data || {};
                     this.data.dashData = this.data.dashData || {};
                     this.data.dashData.data = this.data.dashData.data || {};
+
+
+                    this.data.dashData.data.chartData = this.data.dashData.data.chartData || [];
+                    for (var k = 0; k < this.data.dashData.data.chartData.length; k++) {
+                        if (this.data.dashData.data.chartData[k].t > 0) {
+                            this.data.dashData.data.chartData[k].dCalc = countlyCommon.timeString((this.data.dashData.data.chartData[k].d / this.data.dashData.data.chartData[k].t) / 60);
+                            var vv = parseFloat(this.data.dashData.data.chartData[k].scr) / parseFloat(this.data.dashData.data.chartData[k].t);
+                            if (vv > 100) {
+                                vv = 100;
+                            }
+                            this.data.dashData.data.chartData[k].scrCalc = countlyCommon.formatNumber(vv) + "%";
+                        }
+                        else {
+                            this.data.dashData.data.chartData[k].dCalc = 0;
+                            this.data.dashData.data.chartData[k].scrCalc = 0;
+                        }
+                    }
+
                     return this.data.dashData.data.chartData;
 
                 }

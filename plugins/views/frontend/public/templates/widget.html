@@ -13,7 +13,22 @@
 
    <cly-datatable-n :rows="getTableData" :hideTop="true" :height="maxTableHeight" >
 		<template v-slot="scope">	
-			<el-table-column  v-for="(item, index) in tableStructure" :sortable="false" :prop="item.prop" :label="item.title"></el-table-column>
+			<el-table-column  v-for="(item, index) in tableStructure" :sortable="false" :prop="item.prop" :label="item.title">
+				<template slot-scope="scope">
+					<span v-if="item.prop === 'view'">
+						{{scope.row[item.prop] || ""}}
+					</span>
+					<span v-else-if="item.prop === 'd'">
+						{{scope.row.dCalc}}
+					</span>
+					<span v-else-if="item.prop === 'scr'">
+						{{scope.row.scrCalc}}
+					</span>
+					<span v-else>
+						{{formatNumber(scope.row[item.prop] || 0)}}
+					</span>
+                </template>
+			</el-table-column>
 		</template>
 	</cly-datatable-n>
 </div>
