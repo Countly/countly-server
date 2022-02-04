@@ -2123,7 +2123,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
             if (data.widget_type === "analytics" && data.data_type === "views") {
                 var appId = data.apps[0];
-
                 var paramsObj = {
                     app_id: appId,
                     app: allApps[appId],
