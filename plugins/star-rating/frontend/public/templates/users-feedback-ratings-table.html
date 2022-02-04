@@ -3,11 +3,7 @@
         <el-table-column prop="widget" :label="i18n('feedback.widget-id')">
             <template v-slot="rowScope">
               <div class="text-medium">
-                {{ rowScope.row.widgetTitle }}
-              </div>
-              <div>
-                <span style="color:#A7AEB8" class="text-small bu-has-text-weight-semibold"> {{ i18n('feedback.widget-id') }} </span>
-                <span style="color:#A7AEB8" class="text-small">{{ rowScope.row.widget_id }}</span>
+                {{ rowScope.row.widget_id }}
               </div>
             </template>
         </el-table-column>
