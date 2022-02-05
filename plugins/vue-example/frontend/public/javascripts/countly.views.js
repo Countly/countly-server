@@ -9,7 +9,10 @@
             },
             rTableData: function() {
                 return this.tableStore.getters.tooManyRecords;
-            }
+            },
+            remoteTableDataSource: function() {
+                return countlyVue.vuex.getServerDataSource(this.tableStore, "tooManyRecords");
+            },
         },
         data: function() {
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("tooManyRecords", {
@@ -57,7 +60,6 @@
                     default: true
                 }],
                 localTableTrackedFields: ['status'],
-                remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "tooManyRecords"),
                 tablePersistKey: "vueExample_localTable_" + countlyCommon.ACTIVE_APP_ID,
                 remoteTablePersistKey: "vueExample_remoteTable_" + countlyCommon.ACTIVE_APP_ID,
             };
@@ -361,7 +363,7 @@
                         }
                     ]
                 },
-                lineOptions: {
+                lineOpts: {
                     // xAxis: {
                     //     data: [10, 11, 13, 14, 15, 16, 17]
                     // },
@@ -571,6 +573,9 @@
             },
             lineData: function() {
                 return this.$store.getters["countlyVueExample/lineData"];
+            },
+            lineOptions: function() {
+                return this.lineOpts;
             }
         },
         beforeCreate: function() {
@@ -591,6 +596,8 @@
             },
             refresh: function() {
                 this.$store.dispatch("countlyVueExample/fetchGraphPoints");
+                var obj = JSON.parse(JSON.stringify(this.lineOpts));
+                this.lineOpts = obj;
             }
         }
     });

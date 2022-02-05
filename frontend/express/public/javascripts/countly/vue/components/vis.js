@@ -130,7 +130,8 @@
                                 show: false
                             },
                             dataZoom: {
-                                show: true
+                                show: true,
+                                yAxisIndex: false
                             },
                             magicType: {
                                 show: false,
@@ -249,28 +250,11 @@
                     },
                     dataZoom: [
                         {
-                            type: 'slider',
-                            show: false,
-                            xAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'slider',
-                            show: false,
-                            yAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
                             type: 'inside',
-                            xAxisIndex: 0,
                             filterMode: 'none',
-                            zoomLock: true
-                        },
-                        {
-                            type: 'inside',
-                            yAxisIndex: 0,
-                            filterMode: 'none',
-                            zoomLock: true
+                            zoomLock: true,
+                            start: 0,
+                            end: 100
                         }
                     ],
                     color: countlyCommon.GRAPH_COLORS,
@@ -321,8 +305,38 @@
                 this.seriesOptions.type = v;
                 this.$emit("series-toggle", v);
             },
-            onZoomFinished: function() {
-                this.$refs.header.$refs.zoom.onZoomFinished();
+            onDataZoom: function(event) {
+                this.$refs.header.$refs.zoom.onZoomFinished(event);
+            },
+            patchZoom: function(chartOpt) {
+                var echartRef = this.$refs.echarts;
+                var header = this.$refs.header;
+
+                if (echartRef && header) {
+                    var oldChartOpt = echartRef.getOption();
+                    if (Array.isArray(oldChartOpt.dataZoom)) {
+                        var dataZoom = oldChartOpt.dataZoom[0];
+
+                        /**
+                         * Since patchZoom depends on the headers isZoom state,
+                         * therefore, the computed property calling patchZoom function,
+                         * will be re-computed after the headers isZoom state is updated.
+                         */
+                        if (dataZoom && header.isZoom) {
+                            chartOpt.dataZoom[0].start = dataZoom.start;
+                            chartOpt.dataZoom[0].end = dataZoom.end;
+
+                            var self = this;
+                            this.$nextTick(function() {
+                                self.$nextTick(function() {
+                                    header.$refs.zoom.patchZoom(false);
+                                });
+                            });
+                        }
+                    }
+                }
+
+                return chartOpt;
             }
         },
         computed: {
@@ -758,11 +772,11 @@
         },
         data: function() {
             return {
-                zoomStatus: "reset"
+                zoomStatus: "reset",
             };
         },
         methods: {
-            onZoomTrigger: function() {
+            onZoomTrigger: function(e) {
                 this.echartRef.setOption({tooltip: {show: false}}, {notMerge: false});
 
                 this.echartRef.dispatchAction({
@@ -772,7 +786,9 @@
                 });
 
                 this.zoomStatus = "triggered";
-                this.$parent.onZoomTrigger();
+                if (e) {
+                    this.$parent.onZoomTrigger();
+                }
             },
             onZoomReset: function() {
                 this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
@@ -806,6 +822,11 @@
                 });
 
                 this.zoomStatus = "done";
+            },
+            patchZoom: function() {
+                if (this.zoomStatus === "triggered") {
+                    this.onZoomTrigger(false);
+                }
             }
         },
         template: '<div>\
@@ -1061,7 +1082,6 @@
         }
     */
     var CustomLegend = countlyBaseComponent.extend({
-        mixins: [EchartRefMixin],
         props: {
             chartOptions: {
                 type: Object,
@@ -1198,7 +1218,10 @@
         },
         computed: {
             chartOptions: function() {
-                return _merge({}, this.baseOptions, this.option);
+                var opt = _merge({}, this.baseOptions, this.option);
+                opt = this.patchZoom(opt);
+
+                return opt;
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
@@ -1217,7 +1240,7 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
-                                    @datazoom="onZoomFinished">\
+                                    @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                     <cly-empty-chart></cly-empty-chart>\
@@ -1266,6 +1289,9 @@
                 delete ops.grid;
                 delete ops.xAxis;
                 delete ops.yAxis; //remove not needed to don;t get grey line at bottom
+
+                ops = this.patchZoom(ops);
+
                 return ops;
             }
         },
@@ -1288,7 +1314,7 @@
 											v-on="$listeners"\
 											:option="chartOptions"\
 											:autoresize="autoresize"\
-											@datazoom="onZoomFinished">\
+											@datazoom="onDataZoom">\
 										</echarts>\
                                        <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                         <cly-empty-chart></cly-empty-chart>\
@@ -1319,6 +1345,9 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
+
+                opt = this.patchZoom(opt);
+
                 return opt;
             }
         },
@@ -1338,7 +1367,7 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
-                                    @datazoom="onZoomFinished">\
+                                    @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                     <cly-empty-chart></cly-empty-chart>\
@@ -1435,6 +1464,8 @@
                     //Adding dummy data end
                 }
 
+                opt = this.patchZoom(opt);
+
                 return opt;
             }
         },
@@ -1454,7 +1485,7 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
-                                    @datazoom="onZoomFinished">\
+                                    @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                     <cly-empty-chart></cly-empty-chart>\
@@ -1483,6 +1514,7 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
+                opt = this.patchZoom(opt);
                 return opt;
             }
         },
@@ -1502,7 +1534,7 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
-                                    @datazoom="onZoomFinished">\
+                                    @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                     <cly-empty-chart></cly-empty-chart>\
@@ -1531,6 +1563,7 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
+                opt = this.patchZoom(opt);
                 return opt;
             },
             classes: function() {
@@ -1576,7 +1609,7 @@
                                         v-on="$listeners"\
                                         :option="chartOptions"\
                                         :autoresize="autoresize"\
-                                        @datazoom="onZoomFinished">\
+                                        @datazoom="onDataZoom">\
                                     </echarts>\
                                     <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                         <cly-empty-chart></cly-empty-chart>\
