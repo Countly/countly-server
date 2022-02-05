@@ -772,7 +772,7 @@
         },
         data: function() {
             return {
-                zoomStatus: "reset",
+                zoomStatus: "reset"
             };
         },
         methods: {
@@ -1082,6 +1082,7 @@
         }
     */
     var CustomLegend = countlyBaseComponent.extend({
+        mixins: [EchartRefMixin],
         props: {
             chartOptions: {
                 type: Object,
