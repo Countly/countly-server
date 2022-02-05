@@ -1,4 +1,4 @@
-/*global countlyVue, CV, Vue, countlyCommon */
+/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal, countlyDashboards */
 
 (function() {
 
@@ -9,12 +9,11 @@
     var MetricComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/metric.html'),
         props: {
-            dataType: {
-                type: String
-            },
-            multiple: {
-                type: Boolean,
-                default: false
+            metrics: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
             },
             multipleLimit: {
                 type: Number,
@@ -24,39 +23,23 @@
                 type: String
             },
             value: {
-                type: Array
+                type: Array,
+                required: true,
+                default: function() {
+                    return [];
+                }
+            },
+            multiple: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
             return {
-                metrics: {
-                    session: [
-                        { label: this.i18n("sidebar.analytics.sessions"), value: "t" },
-                        { label: this.i18n("sidebar.analytics.users"), value: "u" },
-                        { label: this.i18n("common.table.new-users"), value: "n" }
-                    ],
-                    event: [
-                        { label: this.i18n("events.table.count"), value: "c" },
-                        { label: this.i18n("events.table.sum"), value: "s" },
-                        { label: this.i18n("events.table.dur"), value: "dur" }
-                    ],
-                    push: [
-                        { label: this.i18n("dashboards.sent"), value: "sent" },
-                        { label: this.i18n("dashboards.actioned"), value: "actioned" }
-                    ],
-                    crash: [
-                        { label: this.i18n("dashboards.crf"), value: "crf" },
-                        { label: this.i18n("dashboards.crnf"), value: "crnf" },
-                        { label: this.i18n("dashboards.cruf"), value: "cruf" },
-                        { label: this.i18n("dashboards.crunf"), value: "crunf" }
-                    ]
-                }
+                rerender: "_id_" + this.multiple
             };
         },
         computed: {
-            selectedMetrics: function() {
-                return this.metrics[this.dataType];
-            },
             placeholderText: function() {
                 if (this.placeholder) {
                     return this.placeholder;
@@ -69,24 +52,367 @@
                     return this.i18n("placeholder.dashboards.select-metric-single");
                 }
             },
-            val: function() {
-                if (!this.multiple) {
-                    return this.value && this.value[0] || "";
-                }
+            selectedMetrics: {
+                get: function() {
+                    if (!this.multiple) {
+                        return this.value && this.value[0] || "";
+                    }
 
-                return this.value;
+                    return this.value;
+                },
+                set: function(item) {
+                    var i = item;
+                    if (!this.multiple) {
+                        i = [item];
+                    }
+
+                    this.$emit("input", i);
+                }
+            },
+            allListeners: function() {
+                return Object.assign({},
+                    this.$listeners,
+                    {
+                        input: function() {
+                            /**
+                             * Overwrite the input listener passed from parent,
+                             * Since all parent listeners are passed to the children,
+                             * we want to overwrite this input listener so that the value
+                             * is not updated in the parent directly from the children.
+                             * We want to intercept the child value and return as array to parent
+                             * with the help of the selectedApps computed property
+                             */
+                        }
+                    }
+                );
             }
         },
-        methods: {
-            change: function(item) {
-                var i = item;
+        watch: {
+            multiple: {
+                handler: function(newVal, oldVal) {
+                    /**
+                     * Everytime multiple changes we want to reset the selected value of
+                     * the component because the value depends on the multiple value.
+                     *
+                     * We also want to rerender the component to update the selected value.
+                     * We want to do this because el-select has a bug where even if the model
+                     * value changes, the input value is not updated.
+                     */
+                    if (newVal !== oldVal) {
+                        this.rerender = "_id_" + this.multiple;
+                        this.$emit("input", []);
+                    }
+                }
+            }
+        }
+    });
 
-                if (!this.multiple) {
-                    i = [item];
+    var BreakdownComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/breakdown.html'),
+        props: {
+            appId: {
+                type: String,
+                default: ""
+            },
+            type: {
+                type: String,
+                validator: function(value) {
+                    return (["session", "events"].indexOf(value) > -1) ? true : false;
+                },
+                required: true
+            },
+            value: {
+                type: Array,
+                required: true,
+                default: function() {
+                    return [];
+                }
+            },
+            event: {
+                type: String,
+                default: ""
+            }
+        },
+        data: function() {
+            return {
+                store: null
+            };
+        },
+        computed: {
+            breakdowns: function() {
+                var breakdowns = [];
+                var event = this.event;
+                var appId = this.appId;
+
+                switch (this.type) {
+                case "session":
+
+                    var app = countlyGlobal.apps[appId];
+
+                    if (app && app.type) {
+
+                        breakdowns.push(
+                            { label: "Countries", value: "countries"},
+                            { label: "Devices", value: "devices"},
+                            { label: "App Versions", value: "versions"},
+                            { label: "Platforms", value: "platforms"}
+                        );
+
+                        switch (app.type) {
+                        case "web":
+
+                            breakdowns.push({ label: "Resolutions", value: "resolutions"});
+
+                            if (typeof countlyDensity !== "undefined") {
+                                breakdowns.push({ label: "Densities", value: "density"});
+                            }
+
+                            if (typeof countlyBrowser !== "undefined") {
+                                breakdowns.push({ label: "Browsers", value: "browser"});
+                            }
+
+                            if (typeof countlyLanguage !== "undefined") {
+                                breakdowns.push({ label: "Languages", value: "langs"});
+                            }
+
+                            if (typeof countlySources !== "undefined") {
+                                breakdowns.push({ label: "Sources", value: "sources"});
+                            }
+
+                            break;
+                        case "mobile":
+
+                            breakdowns.push({ label: "Carriers", value: "carriers"});
+                            breakdowns.push({ label: "Resolutions", value: "resolutions"});
+
+                            if (typeof countlyDensity !== "undefined") {
+                                breakdowns.push({ label: "Densities", value: "density"});
+                            }
+
+                            if (typeof countlyLanguage !== "undefined") {
+                                breakdowns.push({ label: "Languages", value: "langs"});
+                            }
+
+                            if (typeof countlySources !== "undefined") {
+                                breakdowns.push({ label: "Sources", value: "sources"});
+                            }
+
+                            break;
+                        case "desktop":
+
+                            breakdowns.push({ label: "Resolutions", value: "resolutions"});
+
+                            if (typeof countlyDensity !== "undefined") {
+                                breakdowns.push({ label: "Densities", value: "density"});
+                            }
+
+                            if (typeof countlyLanguage !== "undefined") {
+                                breakdowns.push({ label: "Languages", value: "langs"});
+                            }
+
+                            break;
+                        }
+                    }
+
+                    break;
+                case "events":
+                    if (event && event.length) {
+                        var eventKey = event.split(countlyDashboards.factory.events.separator)[1];
+                        appId = event.split(countlyDashboards.factory.events.separator)[0];
+
+                        var allSegments = this.store.getters["countlyDashboards/allSegments"]([appId]);
+
+                        var eventSegments = allSegments[eventKey] || [];
+
+                        if (eventSegments && eventSegments.length) {
+                            for (var i = 0; i < eventSegments.length; i++) {
+                                if (eventSegments[i]) {
+                                    breakdowns.push({
+                                        value: eventSegments[i],
+                                        name: eventSegments[i]
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    break;
                 }
 
-                this.$emit("input", i);
+                return breakdowns;
+            },
+            selectedBreakdown: {
+                get: function() {
+                    return this.value && this.value[0] || "";
+                },
+                set: function(item) {
+                    var i = [item];
+
+                    this.$emit("input", i);
+                }
+            },
+            allListeners: function() {
+                return Object.assign({},
+                    this.$listeners,
+                    {
+                        input: function() {
+                            /**
+                             * Overwrite the input listener passed from parent,
+                             * Since all parent listeners are passed to the children,
+                             * we want to overwrite this input listener so that the value
+                             * is not updated in the parent directly from the children.
+                             * We want to intercept the child value and return as array to parent
+                             * with the help of the selectedApps computed property
+                             */
+                        }
+                    }
+                );
             }
+        },
+        watch: {
+            event: {
+                immediate: true,
+                handler: function(newVal) {
+                    var event = newVal;
+
+                    if (this.type !== "events") {
+                        return;
+                    }
+
+                    if (this.store && event && event.length) {
+                        var appId = event.split(countlyDashboards.factory.events.separator)[0];
+
+                        this.store.dispatch("countlyDashboards/getEvents", {appIds: [appId]});
+                    }
+
+                    this.$emit("input", []);
+                }
+            }
+        },
+        beforeMount: function() {
+            this.store = countlyVue.vuex.getGlobalStore();
+        }
+    });
+
+    var EventComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/events.html'),
+        props: {
+            appIds: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            multipleLimit: {
+                type: Number,
+                default: 3
+            },
+            placeholder: {
+                type: String
+            },
+            value: {
+                type: Array,
+                required: true,
+                default: function() {
+                    return [];
+                }
+            },
+            multiple: {
+                type: Boolean,
+                default: false
+            }
+        },
+        data: function() {
+            return {
+                store: null,
+                rerender: "_id_" + this.multiple + "_" + this.appIds
+            };
+        },
+        computed: {
+            placeholderText: function() {
+                if (this.placeholder) {
+                    return this.placeholder;
+                }
+
+                if (this.multiple) {
+                    return this.i18n("placeholder.dashboards.select-event-multi", this.multipleLimit);
+                }
+                else {
+                    return this.i18n("placeholder.dashboards.select-event-single");
+                }
+            },
+            allEvents: function() {
+                var appIds = this.appIds;
+                return this.store.getters["countlyDashboards/allEvents"](appIds);
+            },
+            selectedEvents: {
+                get: function() {
+                    if (!this.multiple) {
+                        return this.value && this.value[0] || "";
+                    }
+
+                    return this.value;
+                },
+                set: function(item) {
+                    var i = item;
+                    if (!this.multiple) {
+                        i = [item];
+                    }
+
+                    this.$emit("input", i);
+                }
+            },
+            allListeners: function() {
+                return Object.assign({},
+                    this.$listeners,
+                    {
+                        input: function() {
+                            /**
+                             * Overwrite the input listener passed from parent,
+                             * Since all parent listeners are passed to the children,
+                             * we want to overwrite this input listener so that the value
+                             * is not updated in the parent directly from the children.
+                             * We want to intercept the child value and return as array to parent
+                             * with the help of the selectedApps computed property
+                             */
+                        }
+                    }
+                );
+            }
+        },
+        watch: {
+            appIds: {
+                immediate: true,
+                handler: function(newVal) {
+                    var appIds = newVal;
+
+                    if (this.store && Array.isArray(appIds) && appIds.length) {
+                        this.store.dispatch("countlyDashboards/getEvents", {appIds: appIds});
+                    }
+
+                    this.rerender = "_id_" + this.multiple + "_" + this.appIds;
+                    this.$emit("input", []);
+                }
+            },
+            multiple: {
+                handler: function(newVal, oldVal) {
+                    /**
+                     * Everytime multiple changes we want to reset the selected value of
+                     * the component because the value depends on the multiple value and appIds.
+                     *
+                     * We also want to rerender the component to update the selected value.
+                     * We want to do this because el-select has a bug where even if the model
+                     * value changes, the input value is not updated.
+                     */
+                    if (newVal !== oldVal) {
+                        this.rerender = "_id_" + this.multiple + "_" + this.appIds;
+                        this.$emit("input", []);
+                    }
+                }
+            }
+        },
+        beforeMount: function() {
+            this.store = countlyVue.vuex.getGlobalStore();
         }
     });
 
@@ -95,6 +421,12 @@
         props: {
             placeholder: {
                 type: String
+            },
+            extraTypes: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
             },
             enabledTypes: {
                 type: Array,
@@ -108,20 +440,28 @@
                 allTypes: [
                     {
                         value: "session",
-                        label: this.i18n("dashboards.session")
+                        label: this.i18n("dashboards.data-type.session")
                     },
                     {
-                        value: "event",
-                        label: this.i18n("dashboards.event")
+                        value: "user-analytics",
+                        label: this.i18n("dashboards.data-type.user-analytics")
                     },
                     {
-                        value: "push",
-                        label: this.i18n("dashboards.push")
+                        value: "technology",
+                        label: this.i18n("dashboards.data-type.technology")
                     },
                     {
-                        value: "crash",
-                        label: this.i18n("dashboards.crash")
+                        value: "geo",
+                        label: this.i18n("dashboards.data-type.geo")
                     },
+                    {
+                        value: "views",
+                        label: this.i18n("dashboards.data-type.views")
+                    },
+                    {
+                        value: "sources",
+                        label: this.i18n("dashboards.data-type.sources")
+                    }
                 ]
             };
         },
@@ -133,15 +473,20 @@
                 return this.i18n("placeholder.dashbaords.select-data-type");
             },
             types: function() {
-                var self = this;
-                if (this.enabledTypes && !this.enabledTypes.length) {
-                    return this.allTypes;
-                }
-                return this.allTypes.filter(function(item) {
-                    return self.enabledTypes.some(function(enabledItem) {
-                        return enabledItem === item.value;
-                    });
+                var fullList = this.allTypes.concat(this.extraTypes);
+
+                fullList.sort(function(a, b) {
+                    return (a.priority || 0) - (b.priority || 0);
                 });
+
+                if (this.enabledTypes && this.enabledTypes.length) {
+                    var self = this;
+                    return fullList.filter(function(item) {
+                        return self.enabledTypes.includes(item.value);
+                    });
+                }
+
+                return fullList;
             }
         }
     });
@@ -173,10 +518,6 @@
     var SourceAppsComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/source-apps.html'),
         props: {
-            multiple: {
-                type: Boolean,
-                default: false
-            },
             multipleLimit: {
                 type: Number,
                 default: 4
@@ -185,11 +526,21 @@
                 type: String
             },
             value: {
-                type: Array
+                type: Array,
+                required: true,
+                default: function() {
+                    return [];
+                }
+            },
+            multiple: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
-            return {};
+            return {
+                rerender: "_id_" + this.multiple
+            };
         },
         computed: {
             placeholderText: function() {
@@ -220,6 +571,41 @@
 
                     this.$emit("input", i);
                 }
+            },
+            allListeners: function() {
+                return Object.assign({},
+                    this.$listeners,
+                    {
+                        input: function() {
+                            /**
+                             * Overwrite the input listener passed from parent,
+                             * Since all parent listeners are passed to the children,
+                             * we want to overwrite this input listener so that the value
+                             * is not updated in the parent directly from the children.
+                             * We want to intercept the child value and return as array to parent
+                             * with the help of the selectedApps computed property
+                             */
+                        }
+                    }
+                );
+            }
+        },
+        watch: {
+            multiple: {
+                handler: function(newVal, oldVal) {
+                    /**
+                     * Everytime multiple changes we want to reset the selected value of
+                     * the component because the value depends on the multiple value.
+                     *
+                     * We also want to rerender the component to update the selected value.
+                     * We want to do this because el-select has a bug where even if the model
+                     * value changes, the input value is not updated.
+                     */
+                    if (newVal !== oldVal) {
+                        this.rerender = "_id_" + this.multiple;
+                        this.$emit("input", []);
+                    }
+                }
             }
         }
     });
@@ -235,13 +621,15 @@
             },
             enabledTypes: {
                 type: Array,
-                default: null
+                default: function() {
+                    return [];
+                }
             },
-            value: String,
             mute: {
                 type: Boolean,
                 default: false
-            }
+            },
+            value: String,
         },
         data: function() {
             return {
@@ -267,16 +655,20 @@
         },
         computed: {
             visualizationTypes: function() {
-                var fullList = this.types.concat(this.extraTypes);
+                var extraTypes = this.extraTypes;
+                var enabledTypes = this.enabledTypes;
+                var fullList = this.types.concat(extraTypes);
+
                 fullList.sort(function(a, b) {
                     return (a.priority || 0) - (b.priority || 0);
                 });
-                if (this.enabledTypes) {
-                    var self = this;
-                    return fullList.filter(function(item) {
-                        return self.enabledTypes.includes(item.value);
+
+                if (enabledTypes && enabledTypes.length) {
+                    fullList = fullList.filter(function(item) {
+                        return enabledTypes.includes(item.value);
                     });
                 }
+
                 return fullList;
             },
             selectedType: function() {
@@ -290,13 +682,32 @@
             onClick: function(item) {
                 this.$emit("input", item.value);
             }
+        },
+        watch: {
+            enabledTypes: {
+                handler: function(val, oldVal) {
+                    if (val.length !== oldVal.length) {
+                        return this.$emit("input", "");
+                    }
+
+                    for (var i = 0; i < val.length; i++) {
+                        var v = val[i];
+                        if (!oldVal.includes(v)) {
+                            return this.$emit("input", "");
+                        }
+                    }
+                }
+            }
         }
     });
 
     var TitleComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/title.html'),
         props: {
-            value: {type: String}
+            value: {
+                type: String,
+                default: ""
+            }
         },
         data: function() {
             return {
@@ -335,6 +746,71 @@
         }
     });
 
+
+    var PeriodComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/period.html'),
+        props: {
+            value: {
+                type: String,
+                default: ""
+            }
+        },
+        data: function() {
+            return {
+                titleCheckbox: null
+            };
+        },
+        computed: {
+            custom_period: {
+                get: function() {
+                    return this.value || "30days";
+                },
+                set: function(t) {
+                    this.$emit("input", t);
+                }
+            },
+            checkbox: {
+                get: function() {
+                    if (this.titleCheckbox !== null) {
+                        return this.titleCheckbox;
+                    }
+
+                    if (this.value) {
+                        return true;
+                    }
+
+                    return false;
+                },
+                set: function(v) {
+                    if (v === false && this.value && this.value.length) {
+                        this.$emit("input", "");
+                    }
+
+                    this.titleCheckbox = v;
+                }
+            }
+        }
+    });
+
+    var ColorsComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/colors.html'),
+        props: {
+            value: { default: 1 },
+            options: {
+                type: Array,
+                default: function() {
+                    return countlyCommon.GRAPH_COLORS;
+                }
+            },
+            label: {required: false, default: CV.i18n("dashboards.bar-color")}
+        },
+        methods: {
+            commitValue: function(v) {
+                this.$emit("input", v);
+            }
+        }
+    });
+
     /**
      * WIDGET HELPERS
      */
@@ -343,7 +819,7 @@
         template: CV.T('/dashboards/templates/helpers/widget/bucket.html'),
         props: {
             widgetId: {type: String, required: true},
-            value: {type: String, required: true}
+            value: {type: String, required: true, default: ""}
         },
         data: function() {
             return {
@@ -380,25 +856,6 @@
         }
     });
 
-    var ColorsComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/helpers/drawer/colors.html'),
-        props: {
-            value: { default: 1 },
-            options: {
-                type: Array,
-                default: function() {
-                    return countlyCommon.GRAPH_COLORS;
-                }
-            },
-            label: {required: false, default: CV.i18n("dashboards.bar-color")}
-        },
-        methods: {
-            commitValue: function(v) {
-                this.$emit("input", v);
-            }
-        }
-    });
-
     // var AppsMixin = {
     //     methods: {
     //         getAppname: function(appId) {
@@ -429,11 +886,14 @@
      * DRAWER HELPERS REGISTRATION
      */
     Vue.component("clyd-metric", MetricComponent);
+    Vue.component("clyd-breakdown", BreakdownComponent);
+    Vue.component("clyd-event", EventComponent);
     Vue.component("clyd-datatype", DataTypeComponent);
     Vue.component("clyd-appcount", AppCountComponent);
     Vue.component("clyd-sourceapps", SourceAppsComponent);
     Vue.component("clyd-visualization", VisualizationComponent);
     Vue.component("clyd-title", TitleComponent);
+    Vue.component("clyd-period", PeriodComponent);
     Vue.component("clyd-colors", ColorsComponent);
 
     /**

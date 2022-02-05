@@ -14,9 +14,8 @@ function db_fixture(ret, total = 1000) {
     ret.messageSaves = [];
     ret.pushDeletes = [];
     ret.bulks = {};
-    return {
+    return Object.assign({}, data.dbext, {
         ObjectID,
-        _ObjectID: ObjectID,
         collection: name => {
             if (name === 'apps') {
                 return {
@@ -25,7 +24,7 @@ function db_fixture(ret, total = 1000) {
                     }
                 };
             }
-            else if (name === 'credentials') {
+            else if (name === 'creds') {
                 return {
                     async findOne() {
                         return data.credentials;
@@ -114,7 +113,7 @@ function db_fixture(ret, total = 1000) {
                 throw new Error('Wrong collection');
             }
         }
-    };
+    });
 }
 
 describe('PUSH WORKER', () => {
@@ -223,11 +222,14 @@ describe('PUSH WORKER', () => {
                 should.equal(sets.length, 5);
                 should.equal(users.length, total - 3 - 4 - 2); // connection error + expired + invalid
                 should.equal(dbdata.messageSaves.length, 2);
-                should.equal(dbdata.messageSaves[1].result.errors.t['Connection error'], 3);
-                should.equal(dbdata.messageSaves[1].result.errors.t['Token expired'], 4);
-                should.equal(dbdata.messageSaves[1].result.errors.t['Token invalid'], 2);
+                should.equal(dbdata.messageSaves[1].result.errors['Connection error'], 3);
+                should.equal(dbdata.messageSaves[1].result.errors['Token expired'], 4);
+                should.equal(dbdata.messageSaves[1].result.errors['Token invalid'], 2);
                 should.equal(dbdata.messageSaves[1].result.processed, total);
                 should.equal(dbdata.messageSaves[1].result.sent, total - 3 - 4 - 2);
+                should.equal(dbdata.messageSaves[1].result.subs.t.errors['Connection error'], 3);
+                should.equal(dbdata.messageSaves[1].result.subs.t.errors['Token expired'], 4);
+                should.equal(dbdata.messageSaves[1].result.subs.t.errors['Token invalid'], 2);
                 // connector.synAndDestroy();
                 // resultor.destroy();
                 // batcher.destroy();

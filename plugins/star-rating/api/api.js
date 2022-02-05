@@ -136,18 +136,7 @@ const widgetPropertyPreprocessors = {
             return JSON.parse(targeting);
         }
         catch (jsonParseError) {
-            if ((targeting !== null) && (typeof targeting === "object")) {
-                return targeting;
-            }
-            else {
-                return {
-                    user_segmentation: JSON.stringify({
-                        query: "",
-                        queryText: ""
-                    }),
-                    steps: JSON.stringify([])
-                };
-            }
+            return null;
         }
     },
     ratings_texts: function(ratingsTexts) {
@@ -332,6 +321,7 @@ function uploadFile(myfile, id, callback) {
                     return widget;
                 });
 
+
                 if (widgets && widgets.length > 0) {
                     //filter out based on cohorts
                     if (cohortsEnabled) {
@@ -388,7 +378,6 @@ function uploadFile(myfile, id, callback) {
         widget.appearance = {};
 
         //widget.created_by = common.db.ObjectID(obParams.member._id);
-
         validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
@@ -513,8 +502,9 @@ function uploadFile(myfile, id, callback) {
                                 //changes.targeting.app_id = widget.app_id + "";
                                 changes.targeting.steps = JSON.parse(changes.targeting.steps);
                                 changes.targeting.user_segmentation = JSON.parse(changes.targeting.user_segmentation);
+                                //changes.targeting = JSON.parse(changes.targeting);
                                 common.db.collection('cohorts').findAndModify({ _id: widget.cohortID }, {}, { $set: changes.targeting }, { new: true }, function(err2, res) {
-                                    if (err2 || !res || !res.value) {
+                                    if (err2) {
                                         common.returnMessage(params, 400, "widget updated. Error to update cohort");
                                     }
                                     else {
@@ -587,20 +577,20 @@ function uploadFile(myfile, id, callback) {
 
         common.db.collection("feedback_widgets").update({"_id": common.db.ObjectID(widgetId)}, { $inc: { timesShown: 1 } }, function(err, widget) {
             if (!err && widget) {
-                common.returnMessage(obParams, 200, 'Success');
                 return true;
             }
             else if (err) {
-                common.returnMessage(obParams, 500, err.message);
+                log.e('increaseWidgetShowCount: ' + err);
                 return false;
             }
             else {
-                common.returnMessage(obParams, 404, "Widget not found");
+                log.e('increaseWidgetShowCount: widget not found');
                 return false;
             }
         });
         return true;
     };
+
     var nonChecksumHandler = function(ob) {
         try {
             var events = JSON.parse(ob.params.qstring.events);
@@ -653,7 +643,6 @@ function uploadFile(myfile, id, callback) {
         return true;
     });
 
-    plugins.register("/i/feedback/show-popup", increaseWidgetShowCount);
     plugins.register("/i/feedback/input", nonChecksumHandler);
     plugins.register("/i", function(ob) {
         var params = ob.params;
@@ -672,26 +661,25 @@ function uploadFile(myfile, id, callback) {
                     currEvent.segmentation.app_version = currEvent.segmentation.app_version || "undefined";
                     currEvent.segmentation.platform_version_rate = currEvent.segmentation.platform + "**" + currEvent.segmentation.app_version + "**" + currEvent.segmentation.rating + "**" + currEvent.segmentation.widget_id + "**";
                     // is provided email & comment fields
-                    if ((currEvent.segmentation.email && currEvent.segmentation.email.length > 0) || (currEvent.segmentation.comment && currEvent.segmentation.comment.length > 0)) {
-                        var collectionName = 'feedback' + ob.params.app._id;
-                        common.db.collection(collectionName).insert({
-                            "email": currEvent.segmentation.email,
-                            "comment": currEvent.segmentation.comment,
-                            "ts": (currEvent.timestamp) ? common.initTimeObj(params.appTimezone, currEvent.timestamp).timestamp : params.time.timestamp,
-                            "device_id": params.qstring.device_id,
-                            "cd": new Date(),
-                            "uid": params.app_user.uid,
-                            "contact_me": currEvent.segmentation.contactMe,
-                            "rating": currEvent.segmentation.rating,
-                            "platform": currEvent.segmentation.platform,
-                            "app_version": currEvent.segmentation.app_version,
-                            "widget_id": currEvent.segmentation.widget_id
-                        }, function(err) {
-                            if (err) {
-                                return false;
-                            }
-                        });
-                    }
+
+                    var collectionName = 'feedback' + ob.params.app._id;
+                    common.db.collection(collectionName).insert({
+                        "email": currEvent.segmentation.email || "No email provided",
+                        "comment": currEvent.segmentation.comment || "No comment provided",
+                        "ts": (currEvent.timestamp) ? common.initTimeObj(params.appTimezone, currEvent.timestamp).timestamp : params.time.timestamp,
+                        "device_id": params.qstring.device_id,
+                        "cd": new Date(),
+                        "uid": params.app_user.uid,
+                        "contact_me": currEvent.segmentation.contactMe,
+                        "rating": currEvent.segmentation.rating,
+                        "platform": currEvent.segmentation.platform,
+                        "app_version": currEvent.segmentation.app_version,
+                        "widget_id": currEvent.segmentation.widget_id
+                    }, function(err) {
+                        if (err) {
+                            return false;
+                        }
+                    });
                     // increment ratings count for widget
                     common.db.collection('feedback_widgets').update({
                         _id: common.db.ObjectID(currEvent.segmentation.widget_id)
@@ -950,6 +938,10 @@ function uploadFile(myfile, id, callback) {
                 common.returnMessage(params, 404, 'Widget not found.');
             }
             else {
+                // not from dashboard
+                if (params.qstring.nfd) {
+                    increaseWidgetShowCount(ob);
+                }
                 common.returnOutput(params, doc);
             }
         });

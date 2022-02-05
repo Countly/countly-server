@@ -14,7 +14,8 @@
                 <el-radio-group
                     class="bu-columns bu-is-multiline bu-m-0"
                     v-model="drawerScope.editedObject.widget_type"
-                    @change="onReset">
+                    :disabled="drawerScope.editedObject.__action === 'edit'"
+                    @change="reset">
                     <div
                         v-for="(item, index) in widgetTypes"
                         style="box-sizing: border-box;"
@@ -34,10 +35,9 @@
                 </el-radio-group>
             </cly-form-field>
             <component
-                v-for="(item) in widgetTypes"
-                v-if="drawerScope.editedObject.widget_type === item.type"
-                :is="item.drawer.component"
-                :key="item.type"
+                v-if="widgetSettingsGetter(drawerScope.editedObject)"
+                :is="widgetSettingsGetter(drawerScope.editedObject).drawer.component"
+                @reset="reset"
                 :scope="drawerScope">
             </component>
         </cly-form-step>

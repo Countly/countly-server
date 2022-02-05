@@ -5,6 +5,7 @@
     <el-select
         v-bind="$attrs"
         v-on="$listeners"
+        :collapse-tags="false"
         :placeholder="placeholderText">
         <el-option
             v-for="metric in types"

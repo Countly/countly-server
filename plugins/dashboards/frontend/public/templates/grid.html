@@ -2,10 +2,10 @@
     <div class="grid-stack">
         <widget
             v-for="(widget, index) in allWidgets"
-            v-if="__widgets[widget.widget_type]"
+            v-if="widgetSettingsGetter(widget)"
             :key="widget._id"
             :widget="widget"
-            :settings="__widgets[widget.widget_type]"
+            :settings="widgetSettingsGetter(widget)"
             @ready="onReady"
             @command="onWidgetAction">
         </widget>

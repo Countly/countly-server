@@ -37,18 +37,23 @@
 				<cly-multi-select ref="selectSegmentValue" @change="segmentChosen" :dependantFields="true" v-model="filter" :fields="filterFields"></cly-multi-select>
 			</div>
         </div>
-		
 		<cly-section>
-            <cly-chart-time :option="lineOptions" :legend="{position: 'right'}" ref="viewsGraph">
-            </cly-chart-time>
+			<div v-if="lineOptions.series.length < 3">
+				<cly-chart-time :option="lineOptions" :legend="{position: 'bottom'}" ref="viewsGraph">
+				</cly-chart-time>
+			</div>
+            <div v-else>
+				<cly-chart-time :option="lineOptions" :legend="{position: 'right'}" ref="viewsGraph">
+				</cly-chart-time>
+			</div>
         </cly-section>
 		<cly-section>
-			<cly-datatable-n :default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols"  :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
+			<cly-datatable-n :default-sort="{prop: 'selected', order: 'descending'}" :available-dynamic-cols="tableDynamicCols"  :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
 				<template v-slot:header-left>
 					<a href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
 				</template>
 				<template v-slot="scope">
-					<el-table-column width="65"  fixed="left">
+					<el-table-column width="65"  fixed="left" prop="selected">
 						<template slot-scope="scope">
 						<el-checkbox :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
 						</template>
@@ -72,16 +77,6 @@
 						</el-table-column>
 						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>
 					</template>
-					<el-table-column min-width="150"  v-if="showActionMapColumn"  prop="actionLink" :label="i18n('views.action-map')">
-						<template slot-scope="scope">
-								<cly-more-options  v-if="scope.row.useDropdown" :text="i18n('views.table.view')">
-									<el-dropdown-item :key="idx" v-for="(item, idx) in domains">
-									  <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value)" class="bu-ml-1 ">{{item.label}}</div>
-									</el-dropdown-item>
-								</cly-more-options>
-								<div v-else class="go-to-actions-link" @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" >{{i18n("views.table.view")}}</div>
-						</template>
-					</el-table-column>
 				</template>
 			</cly-datatable-n>
 		</cly-section>

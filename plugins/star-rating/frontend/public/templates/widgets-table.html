@@ -4,6 +4,7 @@
           <el-table-column width="100" fixed type="switch" sortable="true" prop="status" :label="i18n('feedback.status')">
               <template v-slot="rowScope">
                 <el-switch :value="rowScope.row.status"
+                  :disabled="!canUserUpdate"
                   @input="scope.patch(rowScope.row, { status: !rowScope.row.status})"
                   @change="$emit('set-status', rowScope.row, !rowScope.row.status)">
                 </el-switch>

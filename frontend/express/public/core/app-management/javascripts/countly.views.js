@@ -1,7 +1,5 @@
 /*global countlyAuth, ELEMENT, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment, sdks, countlyPlugins, countlySession, countlyLocation, countlyCity, countlyDevice, countlyCarrier, countlyDeviceDetails, countlyAppVersion, countlyEvent, _ ,*/
 (function() {
-    var FEATURE_NAME = "global_applications";
-
     var ManageAppsView = countlyVue.views.create({
         mixins: [ELEMENT.utils.Emitter],
         template: CV.T('/core/app-management/templates/app-management.html'),
@@ -692,7 +690,7 @@
         });
     };
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
+    if (countlyAuth.validateGlobalAdmin()) {
         app.route("/manage/apps", "manage-apps", function() {
             var view = getMainView();
             view.params = {app_id: countlyCommon.ACTIVE_APP_ID};

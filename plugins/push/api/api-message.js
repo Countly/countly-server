@@ -121,9 +121,10 @@ async function validate(args, draft = false) {
 
 module.exports.test = async params => {
     let msg = await validate(params.qstring),
-        cfg = params.app.plugins.push || {},
+        cfg = params.app.plugins && params.app.plugins.push || {},
         test_uids = cfg && cfg.test && cfg.test.uids ? cfg.test.uids.split(',') : undefined,
-        test_cohorts = cfg && cfg.test && cfg.test.cohorts ? cfg.test.cohorts.split(',') : undefined;
+        test_cohorts = cfg && cfg.test && cfg.test.cohorts ? cfg.test.cohorts.split(',') : undefined,
+        error;
 
     if (test_uids) {
         msg.filter = new Filter({user: JSON.stringify({uid: {$in: test_uids}})});
@@ -155,14 +156,14 @@ module.exports.test = async params => {
 
         let start = Date.now();
         while (start > 0) {
-            if ((Date.now() - start) > 5000) { // 5 seconds
-                msg.result.processed = msg.result.total; // TODO: remove
-                await msg.save();
-                break;
-            }
-            // if ((Date.now() - start) > 100000) { // 1.5 minutes
+            // if ((Date.now() - start) > 5000) { // 5 seconds
+            //     msg.result.processed = msg.result.total; // TODO: remove
+            //     await msg.save();
             //     break;
             // }
+            if ((Date.now() - start) > 90000) { // 1.5 minutes
+                break;
+            }
             msg = await Message.findOne(msg._id);
             if (!msg) {
                 break;
@@ -176,47 +177,31 @@ module.exports.test = async params => {
 
             await new Promise(res => setTimeout(res, 1000));
         }
-
-        if (msg) {
-            let ok = await msg.updateAtomically(
-                {_id: msg._id, state: msg.state},
-                {
-                    $bit: {state: {or: State.Deleted}},
-                    $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
-                });
-
-            if (ok) {
-                common.returnOutput(params, {result: msg.result.json});
-            }
-            else {
-                common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
-            }
-
-            msg = undefined;
-        }
-        else {
-            common.returnMessage(params, 400, {errors: ['Message disappeared']}, null, true);
-        }
     }
     catch (e) {
-        log.e('Error while sending test message', e);
-        common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
+        error = e;
     }
-    finally {
-        if (msg) {
-            let ok = await msg.updateAtomically(
-                {_id: msg._id, state: msg.state},
-                {
-                    $bit: {state: {or: State.Deleted}},
-                    $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
-                });
-            if (ok) {
-                common.returnOutput(params, {result: msg.result.json});
-            }
-            else {
-                common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
-            }
+
+    if (msg) {
+        let ok = await msg.updateAtomically(
+            {_id: msg._id, state: msg.state},
+            {
+                $bit: {state: {or: State.Deleted}},
+                $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
+            });
+        if (error) {
+            log.e('Error while sending test message', error);
+            common.returnMessage(params, 400, {errors: error.errors || [error.message || 'Unknown error']}, null, true);
         }
+        else if (ok) {
+            common.returnOutput(params, {result: msg.result.json});
+        }
+        else {
+            common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
+        }
+    }
+    else {
+        common.returnMessage(params, 400, {errors: ['Failed to send test message']}, null, true);
     }
 };
 

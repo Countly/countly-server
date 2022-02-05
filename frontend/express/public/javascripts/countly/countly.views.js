@@ -752,7 +752,7 @@ window.ManageUsersView = countlyView.extend({
                 },
                 {
                     "mData": function(row) {
-                        if (!countlyAuth.validateUpdate("global_users")) {
+                        if (!countlyAuth.validateGlobalAdmin()) {
                             return '';
                         }
                         else {

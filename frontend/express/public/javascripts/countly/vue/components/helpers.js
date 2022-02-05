@@ -1013,4 +1013,22 @@
                         </div>\
                     </div>"
     }));
+
+
+    Vue.component("cly-multiplex", {
+        props: {
+            children: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+        },
+        template: '<div>\
+                        <component :is="comp" v-for="comp in children">\
+                            v-bind="$attrs"\
+                            v-on="$listeners">\
+                        </component>\
+                    </div>'
+    });
 }(window.countlyVue = window.countlyVue || {}));

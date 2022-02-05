@@ -179,9 +179,9 @@
                                     template += '<div class="chart-tooltip__body">\
                                                         <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
-                                                            <span class="text-small">' + params[i].seriesName + '</span>\
+                                                            <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
                                                         <div class="chart-tooltip__value">\
-                                                            <span class="text-big">' + countlyCommon.getShortNumber(params[i].value) + '</span>\
+                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? countlyCommon.getShortNumber(params[i].value[1]) : countlyCommon.getShortNumber(params[i].value)) + '</span>\
                                                         </div>\
                                                     </div>\
                                                 </div>';
@@ -570,9 +570,8 @@
                     tooltip: {
                         trigger: 'item',
                         position: function(point, params, dom, rect, size) {
-                            size.contentSize[1].height = 54 ;
-                            if (size.contentSize[0] + 30 >= size.viewSize[0]) {
-                                return [point[0] + 20, point[1] + 20];
+                            if (size.contentSize[0] + 110 >= size.viewSize[0]) {
+                                return [point[0] + 30, point[1] + 30];
                             }
                         }
                     },
@@ -610,7 +609,13 @@
                 var series = opt.series || [];
 
                 var legendData = [];
+                var sumOfOthers;
+                var seriesArr;
+
                 for (var i = 0; i < series.length; i++) {
+                    seriesArr = [];
+                    sumOfOthers = 0;
+
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                     var seriesData = series[i].data;
 
@@ -622,6 +627,15 @@
                     seriesData.sort(function(a, b) {
                         return b.value - a.value;
                     });
+
+                    if (seriesData.length > 12) {
+                        for (var k = 12; k < seriesData.length; k++) {
+                            sumOfOthers += seriesData[k].value;
+                        }
+                        seriesArr = seriesData.slice(0, 12);
+                        seriesArr.push({value: sumOfOthers, name: 'Others'});
+                        series[i].data = seriesData = seriesArr;
+                    }
 
                     /*
                         Legend data in series comes from within series data names
@@ -1577,6 +1591,138 @@
                             </div>\
                         </div>\
                     </div>'
+    }));
+
+    Vue.component("cly-map-picker", countlyVue.components.create({
+        components: {
+            'l-map': Vue2Leaflet.LMap,
+            'l-tile-layer': Vue2Leaflet.LTileLayer,
+            'l-marker': Vue2Leaflet.LMarker,
+            'l-circle': Vue2Leaflet.LCircle,
+        },
+        props: {
+            value: {
+                type: [Object],
+                required: false,
+                validator: function(item) {
+                    return item && item.lng && item.lat;
+                },
+                default: null
+            },
+            radius: {
+                type: Object,
+                required: false,
+                validator: function(value) {
+                    return value && (value.unit === 'km' || value.unit === 'mi') && value.value;
+                },
+                default: null
+            },
+            isEnabled: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
+            height: {
+                type: String,
+                required: false,
+                default: '450px'
+            }
+        },
+        data: function() {
+            return {
+                defaultCenterCoordinates: {lat: 48.66194284607008, lng: 8.964843750000002}, // Note: arbitrary coordinates used for map center when user location is not found
+                userCenterCoordinates: null,
+                tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+                MI_TO_KM_RATIO: 1.60934,
+                KM_TO_M_RATIO: 1000,
+                RadiusUnitEnum: {
+                    KM: 'km',
+                    MI: 'mi'
+                }
+            };
+        },
+        computed: {
+            radiusInMeters: function() {
+                if (this.radius && this.radius.unit === this.RadiusUnitEnum.KM) {
+                    return this.radius.value * this.KM_TO_M_RATIO;
+                }
+                if (this.radius && this.radius.unit === this.RadiusUnitEnum.MI) {
+                    return this.radius.value * this.MI_TO_KM_RATIO * this.KM_TO_M_RATIO;
+                }
+                return 0;
+            },
+            centerCoordinates: function() {
+                if (this.value) {
+                    return this.value;
+                }
+                if (this.userCenterCoordinates) {
+                    return this.userCenterCoordinates;
+                }
+                return this.defaultCenterCoordinates;
+            },
+            dynamicZoom: function() {
+                if (this.value) {
+                    return 8;
+                }
+                if (this.userCenterCoordinates) {
+                    return 12;
+                }
+                return 6;
+            },
+        },
+        methods: {
+            onLocationClick: function(event) {
+                this.$emit('input', event.latlng);
+            },
+            onLocationFound: function(event) {
+                this.userCenterCoordinates = event.latlng;
+            },
+            locateUserWhenMarkerNotFound: function() {
+                if (!this.value) {
+                    this.$nextTick(function() {
+                        this.$refs.lmap.mapObject.locate({setView: true});
+                    });
+                }
+            },
+            registerEventListenersWhenEnabled: function(listeners) {
+                var self = this;
+                if (!this.isEnabled) {
+                    return;
+                }
+                this.$nextTick(function() {
+                    listeners.forEach(function(item) {
+                        self.$refs.lmap.mapObject.on(item.name, item.handler);
+                    });
+                });
+            },
+            unregisterEventListenersWhenEnabled: function(listeners) {
+                var self = this;
+                if (!this.isEnabled) {
+                    return;
+                }
+                listeners.forEach(function(item) {
+                    self.$refs.lmap.mapObject.off(item.name, item.handler);
+                });
+            },
+            invalidateSize: function() {
+                window.dispatchEvent(new Event('resize'));
+            }
+        },
+        mounted: function() {
+            this.registerEventListenersWhenEnabled([
+                {name: 'click', handler: this.onLocationClick},
+                {name: 'locationfound', handler: this.onLocationFound}
+            ]);
+            this.locateUserWhenMarkerNotFound();
+        },
+        beforeDestroy: function() {
+            this.unregisterEventListenersWhenEnabled([
+                {name: 'click', handler: this.onLocationClick},
+                {name: 'locationfound', handler: this.onLocationFound}
+            ]);
+        },
+        template: CV.T('/javascripts/countly/vue/templates/mappicker.html')
     }));
 
     Vue.component("cly-worldmap", countlyVue.components.create({

@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyAuth, countlyView, simpleheat, countlyWidgets, countlySegmentation, ActionMapView, countlyCommon, countlyGlobal, countlyViews, T, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
+/*global CountlyHelpers, countlyAuth, countlyView, simpleheat, countlySegmentation, ActionMapView, countlyCommon, countlyGlobal, countlyViews, T, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
 
 (function() {
     var FEATURE_NAME = "views";
@@ -942,6 +942,7 @@
 
         var GridComponent = countlyVue.views.create({
             template: CV.T('/views/templates/widget.html'),
+            mixins: [countlyVue.mixins.commonFormatters],
             props: {
                 data: {
                     type: Object,
@@ -967,9 +968,10 @@
                     return "";
                 },
                 period: function() {
-                    var pp = countlyWidgets.formatPeriod(this.data.custom_period);
+                    /* var pp = countlyWidgets.formatPeriod(this.data.custom_period);
                     pp = pp || {};
-                    return pp.longName || "";
+                    return pp.longName || "";*/
+                    return this.data.custom_period;
                 },
                 maxTableHeight: function() {
                     return 200;
@@ -978,9 +980,9 @@
                     var columns = [{prop: "view", "title": CV.i18n("views.widget-type")}];
 
                     this.data = this.data || {};
-                    this.data.views = this.data.views || [];
-                    for (var k = 0; k < this.data.views.length; k++) {
-                        columns.push({"prop": this.data.views[k], "title": CV.i18n("views." + this.data.views[k])});
+                    this.data.metrics = this.data.metrics || [];
+                    for (var k = 0; k < this.data.metrics.length; k++) {
+                        columns.push({"prop": this.data.metrics[k], "title": CV.i18n("views." + this.data.metrics[k])});
                     }
                     return columns;
                 },
@@ -988,6 +990,24 @@
                     this.data = this.data || {};
                     this.data.dashData = this.data.dashData || {};
                     this.data.dashData.data = this.data.dashData.data || {};
+
+
+                    this.data.dashData.data.chartData = this.data.dashData.data.chartData || [];
+                    for (var k = 0; k < this.data.dashData.data.chartData.length; k++) {
+                        if (this.data.dashData.data.chartData[k].t > 0) {
+                            this.data.dashData.data.chartData[k].dCalc = countlyCommon.timeString((this.data.dashData.data.chartData[k].d / this.data.dashData.data.chartData[k].t) / 60);
+                            var vv = parseFloat(this.data.dashData.data.chartData[k].scr) / parseFloat(this.data.dashData.data.chartData[k].t);
+                            if (vv > 100) {
+                                vv = 100;
+                            }
+                            this.data.dashData.data.chartData[k].scrCalc = countlyCommon.formatNumber(vv) + "%";
+                        }
+                        else {
+                            this.data.dashData.data.chartData[k].dCalc = 0;
+                            this.data.dashData.data.chartData[k].scrCalc = 0;
+                        }
+                    }
+
                     return this.data.dashData.data.chartData;
 
                 }
@@ -1002,15 +1022,15 @@
                     useCustomTitle: false,
                     useCustomPeriod: false,
                     availableStatsMetric: [
-                        { name: CV.i18n("views.u"), value: "u" },
-                        { name: CV.i18n("views.n"), value: "n" },
-                        { name: CV.i18n("views.t"), value: "t" },
-                        { name: CV.i18n("views.d"), value: "d" },
-                        { name: CV.i18n("views.s"), value: "s" },
-                        { name: CV.i18n("views.e"), value: "e" },
-                        { name: CV.i18n("views.b"), value: "b" },
-                        { name: CV.i18n("views.br"), value: "br" },
-                        { name: CV.i18n("views.uvc"), value: "uvc" }
+                        { label: CV.i18n("views.u"), value: "u" },
+                        { label: CV.i18n("views.n"), value: "n" },
+                        { label: CV.i18n("views.t"), value: "t" },
+                        { label: CV.i18n("views.d"), value: "d" },
+                        { label: CV.i18n("views.s"), value: "s" },
+                        { label: CV.i18n("views.e"), value: "e" },
+                        { label: CV.i18n("views.b"), value: "b" },
+                        { label: CV.i18n("views.br"), value: "br" },
+                        { label: CV.i18n("views.uvc"), value: "uvc" }
                     ]
                 };
             },
@@ -1021,45 +1041,34 @@
             methods: {
             },
             watch: {
-                useCustomTitle: function(newVal) {
-                    if (!newVal) {
-                        this.scope.editedObject.title = '';
-                    }
-                },
-                useCustomPeriod: function(newVal) {
-                    if (!newVal) {
-                        this.scope.editedObject.period = '';
-                    }
-                },
                 'scope.editedObject.selectedApp': function(newVal) {
                     if (countlyGlobal.apps[newVal] && countlyGlobal.apps[newVal].type === "web") {
                         this.availableStatsMetric = [
-                            { name: CV.i18n("web.common.table.total-users"), value: "u" },
-                            { name: CV.i18n("web.common.table.new-users"), value: "n" },
-                            { name: CV.i18n("views.t"), value: "t" },
-                            { name: CV.i18n("views.d"), value: "d" },
-                            { name: CV.i18n("views.s"), value: "s" },
-                            { name: CV.i18n("views.e"), value: "e" },
-                            { name: CV.i18n("views.b"), value: "b" },
-                            { name: CV.i18n("views.br"), value: "br" },
-                            { name: CV.i18n("views.uvc"), value: "uvc" },
-                            { name: CV.i18n("views.scr"), value: "scr" }
+                            { label: CV.i18n("web.common.table.total-users"), value: "u" },
+                            { label: CV.i18n("web.common.table.new-users"), value: "n" },
+                            { label: CV.i18n("views.t"), value: "t" },
+                            { label: CV.i18n("views.d"), value: "d" },
+                            { label: CV.i18n("views.s"), value: "s" },
+                            { label: CV.i18n("views.e"), value: "e" },
+                            { label: CV.i18n("views.b"), value: "b" },
+                            { label: CV.i18n("views.br"), value: "br" },
+                            { label: CV.i18n("views.uvc"), value: "uvc" },
+                            { label: CV.i18n("views.scr"), value: "scr" }
                         ];
                     }
                     else {
                         this.availableStatsMetric = [
-                            { name: CV.i18n("views.u"), value: "u" },
-                            { name: CV.i18n("views.n"), value: "n" },
-                            { name: CV.i18n("views.t"), value: "t" },
-                            { name: CV.i18n("views.d"), value: "d" },
-                            { name: CV.i18n("views.s"), value: "s" },
-                            { name: CV.i18n("views.e"), value: "e" },
-                            { name: CV.i18n("views.b"), value: "b" },
-                            { name: CV.i18n("views.br"), value: "br" },
-                            { name: CV.i18n("views.uvc"), value: "uvc" }
+                            { label: CV.i18n("views.u"), value: "u" },
+                            { label: CV.i18n("views.n"), value: "n" },
+                            { label: CV.i18n("views.t"), value: "t" },
+                            { label: CV.i18n("views.d"), value: "d" },
+                            { label: CV.i18n("views.s"), value: "s" },
+                            { label: CV.i18n("views.e"), value: "e" },
+                            { label: CV.i18n("views.b"), value: "b" },
+                            { label: CV.i18n("views.br"), value: "br" },
+                            { label: CV.i18n("views.uvc"), value: "uvc" }
                         ];
                     }
-                    this.scope.editedObject.views = [];
                 },
             },
             props: {
@@ -1073,32 +1082,31 @@
         });
 
         countlyVue.container.registerData("/custom/dashboards/widget", {
-            type: "views",
+            type: "analytics",
             label: CV.i18n("views.widget-type"),
-            priority: 5,
+            priority: 1,
+            primary: false,
+            getter: function(widget) {
+                return widget.widget_type === "analytics" && widget.data_type === "views";
+            },
             drawer: {
                 component: DrawerComponent,
                 getEmpty: function() {
                     return {
-                        apps: [], // Only present in backend
-                        cmetric_refs: [], // Only present in backend
-                        widget_type: "views",
-                        selectedApp: null,
                         title: "",
+                        widget_type: "analytics",
+                        data_type: "views",
+                        app_count: 'single',
+                        metrics: [],
+                        apps: [],
                         custom_period: "30days",
-                        isPluginWidget: true,
-                        views: []
+                        visualization: "",
+                        breakdowns: []
                     };
                 },
-                beforeLoadFn: function(doc, isEdited) {
-                    if (isEdited) {
-                        doc.selectedApp = doc.apps[0];
-                        delete doc.apps;
-                    }
+                beforeLoadFn: function(/*doc, isEdited*/) {
                 },
-                beforeSaveFn: function(doc) {
-
-                    doc.apps = [doc.selectedApp];
+                beforeSaveFn: function(/*doc*/) {
 
                 }
             },
@@ -1106,10 +1114,10 @@
                 component: GridComponent,
                 dimensions: function() {
                     return {
-                        minWidth: 4,
-                        minHeight: 3,
-                        width: 4,
-                        height: 3
+                        minWidth: 6,
+                        minHeight: 6,
+                        width: 6,
+                        height: 4
                     };
                 }
             }

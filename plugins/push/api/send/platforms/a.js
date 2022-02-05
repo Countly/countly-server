@@ -81,7 +81,7 @@ class FCM extends Splitter {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let content = this.template(pushes[0].m).compile(pushes[0]),
-                one = Math.floor(pushes.length / bytes);
+                one = Math.floor(bytes / pushes.length);
 
             content.registration_ids = pushes.map(p => p.t);
 
@@ -216,7 +216,7 @@ function flattenObject(ob) {
  * @returns {object} empty payload object
  */
 function empty(msg) {
-    return {data: {}, c: {i: msg.id}};
+    return {data: {'c.i': msg.id}};
 }
 
 /**

@@ -5,6 +5,10 @@
     font-weight: 400;
   }
 
+  &__edit-widget {
+    float: none !important;
+  }
+
   &__ID {
     font-size: 14px;
     font-weight: 500;
@@ -49,14 +53,12 @@
   }
 
   &__targeting {
-    display: flex;
-    justify-content: flex-start;
-    border: 1px solid #ececec !important;
-    border-radius: 4px;
-  }
+    .el-collapse-item__wrap {
+      padding-top: 1rem !important;
+    }
 
-  &__cards {
-    border-top: 1px solid #ececec !important;
-    border-bottom: 1px solid #ececec !important;
+    .el-collapse-item__header {
+      text-transform: uppercase;
+    }
   }
 }

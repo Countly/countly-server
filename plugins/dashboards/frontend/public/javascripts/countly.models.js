@@ -1,4 +1,4 @@
-/*global jQuery, countlyCommon, CV, countlyVue, _, CountlyHelpers */
+/*global jQuery, countlyCommon, CV, countlyVue, _, CountlyHelpers, countlyGlobal, Promise */
 
 (function(countlyDashboards) {
 
@@ -14,6 +14,25 @@
                     share_with: "all-users",
                     theme: 0
                 };
+            }
+        },
+        events: {
+            getEventLongName: function(eventKey, eventMap) {
+                var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+                if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
+                    return eventMap[mapKey].name;
+                }
+                else {
+                    return eventKey;
+                }
+            },
+            separator: "***"
+        },
+        log: function(e) {
+            var DEBUG = true;
+            if (DEBUG) {
+                // eslint-disable-next-line no-console
+                console.log(e);
             }
         }
     };
@@ -80,6 +99,32 @@
                     url: countlyCommon.API_PARTS.data.w + "/dashboards/delete",
                     data: {
                         "dashboard_id": dashboardId
+                    },
+                    dataType: "json"
+                }, {disableAutoCatch: true});
+            },
+
+            getEvents: function(appId) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "app_id": appId,
+                        "method": "get_events",
+                        "timestamp": +new Date()
+                    },
+                    dataType: "json"
+                }, {disableAutoCatch: true});
+            },
+            getEventGroups: function(appId) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "app_id": appId,
+                        "method": "get_event_groups",
+                        "preventRequestAbort": true,
+                        "timestamp": +new Date()
                     },
                     dataType: "json"
                 }, {disableAutoCatch: true});
@@ -164,7 +209,12 @@
                         state.all.splice(index, 1, widget);
                     }
                     else if (widget._id) {
-                        state.all.push(widget);
+                        if (widget.size && widget.position) {
+                            state.all.push(widget);
+                        }
+                        else {
+                            log("Widgets position or size not available - ", widget);
+                        }
                     }
                 },
                 remove: function(state, widgetId) {
@@ -266,7 +316,8 @@
                 selected: {
                     id: null,
                     data: null
-                }
+                },
+                events: {}
             };
         };
 
@@ -294,6 +345,57 @@
                         {name: jQuery.i18n.map["common.30days"], value: "30days"},
                         {name: jQuery.i18n.map["common.60days"], value: "60days"}
                     ]
+                };
+            },
+            allEvents: function(state) {
+                var eventsObj = state.events;
+
+                return function(appIds) {
+                    var allEvents = [];
+
+                    for (var i = 0; i < appIds.length; i++) {
+                        var appId = appIds[i];
+
+                        if (eventsObj[appId]) {
+                            var events = eventsObj[appId];
+
+                            if (events && events.list) {
+                                for (var k = 0; k < events.list.length; k++) {
+                                    var isGroupEvent = false;
+                                    var eventName = events.list[k];
+
+                                    var eventNamePostfix = (appIds.length > 1) ? " (" + ((countlyGlobal.apps[events._id] && countlyGlobal.apps[events._id].name) || "Unknown") + ")" : "";
+
+                                    if (events.map && events.map[eventName] && events.map[eventName].is_group_event) {
+                                        isGroupEvent = true;
+                                    }
+
+                                    var value = events._id + countlyDashboards.factory.events.separator + eventName;
+                                    var name = countlyDashboards.factory.events.getEventLongName(eventName, events.map) + eventNamePostfix;
+
+                                    allEvents.push({
+                                        value: value,
+                                        label: name,
+                                        isGroupEvent: isGroupEvent
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    return allEvents;
+                };
+            },
+            allSegments: function(state) {
+                var eventsObj = state.events;
+
+                return function(appId) {
+                    var segments = {};
+                    if (eventsObj[appId]) {
+                        segments = eventsObj[appId].segments || {};
+                    }
+
+                    return segments;
                 };
             }
         };
@@ -336,6 +438,11 @@
                 if (index > -1) {
                     state.all.splice(index, 1);
                 }
+            },
+            setEvents: function(state, events) {
+                var eventsObj = state.events;
+                eventsObj[events._id] = events;
+                state.events = JSON.parse(JSON.stringify(eventsObj));
             }
         };
 
@@ -503,6 +610,67 @@
 
                     return false;
                 });
+            },
+            getEvents: function(context, params) {
+                var appIds = params.appIds;
+                var allEvents = context.state.events || {};
+
+                var allPromises = [];
+
+                for (var i = 0; i < appIds.length; i++) {
+                    var appId = appIds[i];
+
+                    if (!allEvents[appId]) {
+                        allPromises.push(Promise.all(
+                            [
+                                countlyDashboards.service.dashboards.getEvents(appId),
+                                countlyDashboards.service.dashboards.getEventGroups(appId)
+                            ]
+                        ));
+                    }
+                }
+
+                return Promise.all(allPromises)
+                    .then(function(res) {
+                        for (var j = 0; j < res.length; j++) {
+                            var data = res[j];
+                            var events = data[0];
+                            var eventGroups = data[1];
+
+                            if (eventGroups) {
+                                for (var group in eventGroups) {
+                                    if (eventGroups[group].status) {
+                                        events.list = events.list || [];
+                                        events.list.push(eventGroups[group]._id);
+
+                                        events.segments = events.segments || {};
+                                        events.segments[eventGroups[group]._id] = eventGroups[group].source_events;
+
+                                        events.map = events.map || {};
+                                        events.map[eventGroups[group]._id] = {
+                                            name: eventGroups[group].name,
+                                            count: eventGroups[group].display_map.c,
+                                            sum: eventGroups[group].display_map.s,
+                                            dur: eventGroups[group].display_map.d,
+                                            is_group_event: true
+                                        };
+                                    }
+                                }
+                            }
+
+                            context.commit("setEvents", events);
+                        }
+
+                        return true;
+                    }).catch(function(e) {
+                        log(e);
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while fetching the events!",
+                            type: "error"
+                        });
+
+                        return false;
+                    });
             }
         };
 
@@ -520,11 +688,7 @@
      * @param  {Object} e - error object
      */
     function log(e) {
-        var DEBUG = true;
-        if (DEBUG) {
-            // eslint-disable-next-line no-console
-            console.log(e);
-        }
+        countlyDashboards.factory.log(e);
     }
 
 })(window.countlyDashboards = window.countlyDashboards || {});

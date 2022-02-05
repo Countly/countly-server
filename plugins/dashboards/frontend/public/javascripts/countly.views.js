@@ -13,7 +13,11 @@
                 w = w.data().widgets;
 
                 w = w.reduce(function(acc, component) {
-                    acc[component.type] = component;
+                    if (!acc[component.type]) {
+                        acc[component.type] = [];
+                    }
+
+                    acc[component.type].push(component);
                     return acc;
                 }, {});
 
@@ -22,9 +26,193 @@
         },
         methods: {
             onReset: function(widgetType) {
-                var defaultEmpty = this.__widgets[widgetType].drawer.getEmpty();
+                var widget = {
+                    widget_type: widgetType
+                };
 
-                this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
+                /**
+                 * First we will get widget settings based on getter function.
+                 * If nothing is returned, we will resort to getting primary widget settings.
+                 */
+                var widgetSettings = this.widgetSettingsGetter(widget);
+
+                if (!widgetSettings) {
+                    widgetSettings = this.widgetSettingsPrimary(widget);
+                }
+
+                if (widgetSettings) {
+                    var defaultEmpty = widgetSettings.drawer.getEmpty();
+                    this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
+                }
+            },
+            widgetSettingsGetter: function(widget) {
+                var widgets = this.__widgets;
+
+                if (!widget.widget_type) {
+                    countlyDashboards.factory.log("Widget type is not defined");
+                    return false;
+                }
+
+                var registrations = widgets[widget.widget_type];
+
+                if (!registrations) {
+                    countlyDashboards.factory.log("Soooo, unfortunately, we don't have any widget settings for " + widget.widget_type);
+                    countlyDashboards.factory.log("Possible reason is - The widget wasn't registered correctly in the UI.");
+                    countlyDashboards.factory.log("Please check the widget registration. Thanks :)");
+
+                    return false;
+                }
+
+                var setting = registrations.find(function(registration) {
+                    return registration.getter(widget);
+                });
+
+                if (!setting) {
+                    countlyDashboards.factory.log("No setting found for the " + widget.widget_type + " widget type based on the widget getter. Please register the widget settings correctly.");
+                }
+
+
+                return setting;
+            },
+            widgetSettingsPrimary: function(widget) {
+                /**
+                 * We should only call this function when we are switching between widget types.
+                 * Or we need the list of all primary widget settings.
+                 * For other cases call the widgetSettingsGetter function.
+                 */
+
+                var widgets = this.__widgets;
+
+                if (!widget.widget_type) {
+                    countlyDashboards.factory.log("Widget type is not defined");
+                    return;
+                }
+
+                var registrations = widgets[widget.widget_type];
+
+                if (!registrations) {
+                    countlyDashboards.factory.log("Soooo, unfortunately, we don't have any widget settings for " + widget.widget_type);
+                    countlyDashboards.factory.log("Possible reason is - The widget wasn't registered correctly in the UI.");
+                    countlyDashboards.factory.log("Please check the widget registration. Thanks :)");
+
+                    return false;
+                }
+
+                var setting = registrations.find(function(registration) {
+                    return registration.primary;
+                });
+
+                if (!setting) {
+                    countlyDashboards.factory.log("No primary widget found for " + widget.widget_type + " !. Please set primary to true in the widget registration.");
+                }
+
+                return setting;
+            }
+        }
+    };
+
+    var DimensionsValidationMixin = {
+        data: function() {
+            return {
+                MIN_WIDTH: 3,
+                MIN_HEIGHT: 3
+            };
+        },
+        methods: {
+            validateWidgetPosition: function(widget, axis) {
+                var pos;
+
+                switch (axis) {
+                case "x":
+                    pos = widget.position && widget.position[0];
+                    break;
+                case "y":
+                    pos = widget.position && widget.position[1];
+                    break;
+                }
+
+                return pos;
+            },
+            validateWidgetSize: function(widget, dimension) {
+                var size;
+
+                switch (dimension) {
+                case "w":
+                    size = widget.size && widget.size[0];
+                    size = this.calculateWidth(size);
+
+                    break;
+                case "h":
+                    size = widget.size && widget.size[1];
+                    size = this.calculateHeight(size);
+                    break;
+                }
+
+                return size;
+            },
+            validateWidgetDimension: function(settings, dimension) {
+                var dimensions = settings.grid.dimensions();
+                var dim;
+
+                switch (dimension) {
+                case "w":
+                    dim = dimensions.minWidth;
+                    dim = this.calculateWidth(dim);
+
+                    break;
+                case "h":
+                    dim = dimensions.minHeight;
+                    dim = this.calculateHeight(dim);
+
+                    break;
+                }
+
+                return dim;
+            },
+            calculateWidth: function(width) {
+                /**
+                 * This function returns the width that is a multiple of 3 and closest to the old width.
+                 */
+                var w = width;
+
+                if (!w || w < this.MIN_WIDTH) {
+                    /**
+                     * We should return minimum width mentioned in the widgets settings.
+                     * Lets do this later.
+                     */
+                    w = this.MIN_WIDTH;
+                    countlyDashboards.factory.log("Width should be atleast equal to " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
+                }
+
+                var rem = w % this.MIN_WIDTH;
+                if (rem !== 0) {
+                    var quo = parseInt(w / 3);
+                    var prevNum = quo * 3;
+                    var nextNum = (quo + 1) * 3;
+                    if (((w - prevNum) - (nextNum - w)) > 0) {
+                        w = nextNum;
+                    }
+                    else {
+                        w = prevNum;
+                    }
+
+                    countlyDashboards.factory.log("Width should be a multiple of " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
+                }
+
+                return w;
+            },
+            calculateHeight: function(height) {
+                var h = height;
+                if (!h || h < this.MIN_HEIGHT) {
+                    /**
+                     * We should return minimum width mentioned in the widgets settings.
+                     * Lets do this later.
+                     */
+                    h = this.MIN_HEIGHT;
+                    countlyDashboards.factory.log("Height should be atleast equal to " + this.MIN_HEIGHT + "! Old height = " + height + ", New height = " + h);
+                }
+
+                return h;
             }
         }
     };
@@ -42,7 +230,7 @@
     var DisabledWidget = countlyVue.views.BaseView.extend({
         template: '#dashboards-disabled',
         props: {
-            data: {
+            widget: {
                 type: Object,
                 default: function() {
                     return {};
@@ -54,7 +242,7 @@
     var InvalidWidget = countlyVue.views.BaseView.extend({
         template: '#dashboards-invalid',
         props: {
-            data: {
+            widget: {
                 type: Object,
                 default: function() {
                     return {};
@@ -167,6 +355,7 @@
 
     var WidgetComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-widget',
+        mixins: [DimensionsValidationMixin],
         props: {
             widget: {
                 type: Object,
@@ -207,12 +396,27 @@
                 return widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
             },
             isWidgetInvalid: function(widget) {
-                return widget.isPluginWidget && (widget.dashData && (widget.dashData.isValid === false));
+                var invalid = true;
+
+                var dashData = widget.dashData;
+
+                if (dashData) {
+                    invalid = dashData.isValid === false ? true : false;
+                    invalid = dashData.isProcessing ? false : invalid;
+                }
+
+                if (widget.client_fetch) {
+                    invalid = false;
+                }
+
+                return invalid;
             }
         },
         mounted: function() {
             /**
-             * Emitting ready event is useful when we are creating new widgets.
+             * Emitting ready event tells the grid to make this widget.
+             * Making a widget means that it is now a part of the grid
+             * and ready for user interaction.
              */
             this.$emit("ready", this.widget._id);
         }
@@ -237,7 +441,10 @@
                 var widgetTypes = [];
 
                 for (var key in this.__widgets) {
-                    widgetTypes.push(this.__widgets[key]);
+                    var setting = this.widgetSettingsPrimary({widget_type: key});
+                    if (setting) {
+                        widgetTypes.push(setting);
+                    }
                 }
 
                 widgetTypes.sort(function(a, b) {
@@ -258,25 +465,46 @@
                     action = "countlyDashboards/widgets/update";
                 }
 
-                if (this.__widgets[doc.widget_type].drawer.beforeSaveFn) {
-                    var returnVal = this.__widgets[doc.widget_type].drawer.beforeSaveFn(doc, isEdited);
+                var setting = this.widgetSettingsGetter(doc);
+
+                if (!setting) {
+                    countlyDashboards.factory.log("Well this is very strange.");
+                    countlyDashboards.factory.log("On widget submit, atleast one of the widget registrations should be returned.");
+                    countlyDashboards.factory.log("Kindly check your widget getter, maybe something is wrong there.");
+
+                    return;
+                }
+
+                if (setting.drawer.beforeSaveFn) {
+                    var returnVal = setting.drawer.beforeSaveFn(doc, isEdited);
                     if (returnVal) {
                         doc = returnVal;
                     }
                 }
 
-                var empty = this.__widgets[doc.widget_type].drawer.getEmpty();
+                var empty = setting.drawer.getEmpty();
                 var obj = {};
 
-                //Don't send all widget properties to the server.
-                //Send only the ones specified in the widget's drawer settings (getEmpty)
+                /**
+                 * Don't send all widget properties to the server.
+                 * Send only the ones specified in the widget's drawer settings (getEmpty)
+                 */
+
                 for (var key in empty) {
                     obj[key] = doc[key];
                 }
 
+                obj = JSON.parse(JSON.stringify(obj));
+
                 this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(id) {
-                    if (!isEdited && id) {
-                        self.$emit("add-widget", {id: id, widget_type: doc.widget_type});
+                    if (id) {
+                        if (isEdited) {
+                            self.$store.dispatch("countlyDashboards/widgets/get", doc._id);
+                        }
+                        else {
+                            obj.id = id;
+                            self.$emit("add-widget", obj);
+                        }
                     }
                 });
             },
@@ -289,14 +517,31 @@
                     this.saveButtonLabel = this.i18nM("dashboards.save-widget");
                 }
 
-                if (this.__widgets[doc.widget_type].drawer.beforeLoadFn) {
-                    var returnVal = this.__widgets[doc.widget_type].drawer.beforeLoadFn(doc, doc.__action === "edit");
-                    if (returnVal) {
-                        return returnVal;
+                /**
+                 * Here we first call the widgetSettingsGetter since onCopy is called
+                 * when the widget drawer is being opened.
+                 * There are two cases - Widget add and Widget update.
+                 */
+                var setting = this.widgetSettingsGetter(doc);
+
+                if (!setting) {
+                    countlyDashboards.factory.log("Well this is very strange.");
+                    countlyDashboards.factory.log("On widget onCopy, atleast one of the widget registrations should be returned.");
+                    countlyDashboards.factory.log("Kindly check your widget getter, maybe something is wrong there.");
+
+                    return;
+                }
+
+                if (setting) {
+                    if (setting.drawer.beforeLoadFn) {
+                        var returnVal = setting.drawer.beforeLoadFn(doc, doc.__action === "edit");
+                        if (returnVal) {
+                            return returnVal;
+                        }
                     }
                 }
             },
-            onReset: function(v) {
+            reset: function(v) {
                 this.$emit("reset", v);
             }
         }
@@ -304,7 +549,7 @@
 
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
-        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
+        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, DimensionsValidationMixin],
         components: {
             "widgets-drawer": WidgetDrawer,
             "widget": WidgetComponent
@@ -325,7 +570,17 @@
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
 
-                var empty = this.__widgets[d.widget_type].drawer.getEmpty();
+                var setting = this.widgetSettingsGetter(d);
+
+                if (!setting) {
+                    countlyDashboards.factory.log("Well this is very strange.");
+                    countlyDashboards.factory.log("On widget action, atleast one of the widget registrations should be returned.");
+                    countlyDashboards.factory.log("Kindly check your widget getter, maybe something is wrong there.");
+
+                    return;
+                }
+
+                var empty = setting.drawer.getEmpty();
 
                 switch (command) {
                 case "edit":
@@ -343,7 +598,7 @@
                         self.$store.dispatch("countlyDashboards/widgets/delete", d._id).then(function(res) {
                             if (res) {
                                 var node = document.getElementById(d._id);
-                                self.grid.removeWidget(node);
+                                self.removeGridWidget(node);
                                 self.$store.dispatch("countlyDashboards/widgets/remove", d._id);
                             }
                         });
@@ -351,6 +606,43 @@
                     }, [this.i18nM("common.no-dont-delete"), this.i18nM("dashboards.delete-widget")], {title: this.i18nM("dashboards.delete-widget-title")});
                     break;
                 }
+            },
+            addWidget: function(widget) {
+                /**
+                 * So widget has been created on the server.
+                 * Now we want to add it to the grid.
+                 * Since there is no direct way to communicate between vue and gridstack,
+                 * we need to add it to the grid manually.
+                 *
+                 * After the widget is added to the grid manually,
+                 * grid will trigger "added" event
+                 */
+                var id = widget.id;
+                var setting = this.widgetSettingsGetter(widget);
+
+                if (!setting) {
+                    countlyDashboards.factory.log("This can never happen! \
+                    addWidget is called after submit. Please check the WidgetDrawer's onSubmit.");
+
+                    return;
+                }
+
+                if (id) {
+                    var node = {
+                        id: id,
+                        autoPosition: true,
+                        w: setting.grid.dimensions().width,
+                        h: setting.grid.dimensions().height,
+                        minW: setting.grid.dimensions().minWidth,
+                        minH: setting.grid.dimensions().minHeight,
+                        new: true
+                    };
+
+                    this.addGridWidget(node);
+                }
+            },
+            onReady: function(id) {
+                this.makeGridWidget(id);
             },
             initGrid: function() {
                 var self = this;
@@ -363,7 +655,38 @@
                 this.grid.on("resizestop", function(event, element) {
                     var node = element.gridstackNode;
                     var widgetId = node.id;
-                    var size = [node.w, node.h];
+                    var setWidth = node.w;
+                    var setHeight = node.h;
+
+                    var validatedWidth = self.calculateWidth(setWidth);
+                    var validatedHeight = self.calculateHeight(setHeight);
+
+                    var finalWidth = setWidth;
+                    var finalHeight = setHeight;
+                    var change = false;
+
+                    if (validatedWidth !== setWidth) {
+                        /**
+                         * Widths can only change as per the calculateWidth logic
+                         */
+                        finalWidth = validatedWidth;
+                        change = true;
+                    }
+
+                    if (validatedHeight !== setHeight) {
+                        /**
+                         * Heights can only change as per the calculateWidth logic
+                         */
+                        finalHeight = validatedHeight;
+                        change = true;
+                    }
+
+                    if (change) {
+                        self.grid.update(node.el, {w: finalWidth, h: finalHeight});
+                    }
+
+                    var size = [finalWidth, finalHeight];
+
                     setTimeout(function() {
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {size: size}});
                     }, 1000);
@@ -376,6 +699,13 @@
                     setTimeout(function() {
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position}});
                     }, 1000);
+                });
+
+                this.grid.on("change", function() {
+                    /**
+                     * Update the values that changed for the widget in the store
+                     * and on the server as well.
+                     */
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -392,7 +722,8 @@
                      *
                      * Next, we remove the dummy widget that we added manually to grid,
                      * since its of no use anymore. Its only use was to place the widget in the grid
-                     * in an available space.
+                     * in an available space. Vue's reactivity will create the widget
+                     * automatically in the grid once its added to vuex.
                      */
                     var node = element[0];
 
@@ -404,42 +735,19 @@
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position, size: size}}).then(function(res) {
                             if (res) {
                                 self.$store.dispatch("countlyDashboards/widgets/get", widgetId).then(function() {
-                                    self.grid.removeWidget(node.el);
+                                    self.removeGridWidget(node.el);
                                 });
                             }
                         });
                     }
                 });
             },
-            addWidget: function(payload) {
-                /**
-                 * So widget has been created on the server.
-                 * Now we want to add it to the grid.
-                 * Since there is no direct way to communicate between vue and gridstack,
-                 * we need to add it to the grid manually.
-                 *
-                 * After the widget is added to the grid manually,
-                 * grid will "added" event
-                 */
-                var id = payload.id;
-                var widgetType = payload.widget_type;
-
-                if (id) {
-                    var settings = this.__widgets[widgetType];
-                    var node = {
-                        id: id,
-                        autoPosition: true,
-                        w: settings.grid.dimensions().width,
-                        h: settings.grid.dimensions().height,
-                        minW: settings.grid.dimensions().minWidth,
-                        minH: settings.grid.dimensions().minHeight,
-                        new: true
-                    };
-
+            addGridWidget: function(node) {
+                if (this.grid) {
                     this.grid.addWidget(node);
                 }
             },
-            onReady: function(id) {
+            makeGridWidget: function(id) {
                 /**
                  * this.grid will be null on first load.
                  * Since ready event is fired by the children on mounting.
@@ -447,7 +755,8 @@
                  * Hence no grid.
                  *
                  * However, once we have grid available, and we are creating a new widget,
-                 * we have to make it.
+                 * we have to make it. Making means that the widget is now a part of the grid
+                 * and ready for user interaction.
                  *
                  * For the first load, initGrid is doing the work of makeWidget.
                  */
@@ -456,8 +765,15 @@
                     this.grid.makeWidget("#" + id);
                 }
             },
+            removeGridWidget: function(el) {
+                if (this.grid) {
+                    this.grid.removeWidget(el);
+                }
+            },
             destroyGrid: function() {
-                this.grid.destroy();
+                if (this.grid) {
+                    this.grid.destroy();
+                }
             }
         },
         mounted: function() {
@@ -501,7 +817,12 @@
         },
         methods: {
             refresh: function() {
-                this.getDashboardData(true);
+                if (!this.drawers.dashboards.isOpened && !this.drawers.widgets.isOpened) {
+                    /**
+                     * Refresh only if the drawers are not open at the moment.
+                     */
+                    this.getDashboardData(true);
+                }
             },
             dateChanged: function() {
                 this.getDashboardData(true);
@@ -548,13 +869,15 @@
             },
             newWidget: function() {
                 var empty = {};
-                var defaultEmpty = this.__widgets["time-series"].drawer.getEmpty();
+                var setting = this.widgetSettingsPrimary({widget_type: "analytics"});
+
+                var defaultEmpty = setting.drawer.getEmpty();
 
                 empty.__action = "create";
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
             },
-            addWidget: function(id) {
-                this.$refs.grid.addWidget(id);
+            addWidgetToGrid: function(widget) {
+                this.$refs.grid.addWidget(widget);
             }
         },
         beforeMount: function() {

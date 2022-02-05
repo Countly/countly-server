@@ -1,12 +1,11 @@
 /*global countlyAuth, app, countlyGlobal, $, groupsModel, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
-    var FEATURE_NAME = "global_users";
-
     var DataTable = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/data-table.html"),
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
-            rows: Array
+            rows: Array,
+            loading: Boolean
         },
         data: function() {
             return {
@@ -71,7 +70,7 @@
             handleCommand: function(command, index) {
                 switch (command) {
                 case "delete-user":
-                    CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "red", function(result) {
                         if (!result) {
                             CountlyHelpers.notify({
                                 type: 'info',
@@ -331,7 +330,10 @@
                     }
                 }
 
-                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin) {
+                // block process if no app selected
+                // and user is not admin
+                // and user doesn't have assigned to any group
+                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin && typeof this.group._id === "undefined") {
                     CountlyHelpers.notify({
                         message: CV.i18n('management-users.at-least-one-app-required'),
                         type: 'error'
@@ -346,13 +348,14 @@
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.editUser(this.user._id, submitted, function(res) {
                         if (res.result) {
-                            if (typeof self.group._id !== "undefined") {
-                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
+                            if (self.groupsInput.length) {
+                                var group_id = self.group._id ? [self.group._id] : [];
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id })
                                     .then(function() {});
                             }
                             self.$emit('refresh-table');
                             self.group = {};
-                            if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
+                            if (self.$refs.userDrawerDropzone && self.$refs.userDrawerDropzone.getAcceptedFiles() && self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
                                 self.dropzoneOptions.member = { _id: self.user._id };
                                 self.$refs.userDrawerDropzone.processQueue();
                                 var checkUploadProcess = setInterval(function() {
@@ -399,7 +402,7 @@
                             }
                             self.group = {};
                             self.$emit('refresh-table');
-                            if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
+                            if (self.$refs.userDrawerDropzone && self.$refs.userDrawerDropzone.getAcceptedFiles() && self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
                                 self.dropzoneOptions.member = { _id: res._id };
                                 self.$refs.userDrawerDropzone.processQueue();
                                 var checkUploadProcess = setInterval(function() {
@@ -425,12 +428,21 @@
                                 done();
                             }
                         }
+                        else if (res.length) {
+                            for (var i1 = 0; i1 < res.length; i1++) {
+                                CountlyHelpers.notify({
+                                    message: res[i1],
+                                    type: 'error'
+                                });
+                            }
+                            self.$refs.userDrawer.isSubmitPending = false;
+                        }
                         else {
                             CountlyHelpers.notify({
-                                message: res.result,
+                                message: CV.i18n('management-applications.plugins.smth'),
                                 type: 'error'
                             });
-                            done(res.result);
+                            self.$refs.userDrawer.isSubmitPending = false;
                         }
                     });
                 }
@@ -544,7 +556,8 @@
                     createButtonLabel: CV.i18n('management-users.create-user'),
                     editMode: false
                 },
-                features: []
+                features: [],
+                loading: true
             };
         },
         methods: {
@@ -581,6 +594,7 @@
                 for (var user in usersObj) {
                     self.users.push(usersObj[user]);
                 }
+                self.loading = false;
                 self.features = countlyUserManagement.getFeatures().sort();
             });
         }
@@ -623,7 +637,7 @@
 
     app.ManageUsersView = ManageUsersView;
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
+    if (countlyAuth.validateGlobalAdmin()) {
         app.route("/manage/users", "manage-users", function() {
             var params = {
                 tab: "users"

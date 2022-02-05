@@ -21,14 +21,14 @@
                 <div class="cly-vue-drawer__header" :class="{ 'is-full-screen': currentScreenMode === 'full'}">
                     <div class="cly-vue-drawer__title">
                         <div v-if="currentScreenMode !== 'full'">
-                            <div class="bu-is-flex bu-is-justify-content-space-between" style="width: 100%;">
-                                <h3 class="" style="margin-top: 24px; margin-left: 32px;">{{title}}</h3>
-                                <span class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose" style="margin-block: auto;">
+                            <div class="cly-vue-drawer__title-container bu-is-flex bu-is-justify-content-space-between">
+                                <h3 class="cly-vue-drawer__title-header">{{title}}</h3>
+                                <span class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose">
                                     <i class="ion-ios-close-empty"></i>
                                 </span>
                             </div>
                         </div>
-                        <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile cly-vue-drawer__subtitle" style="margin-top: 24px; margin-bottom: 24px">
+                        <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile cly-vue-drawer__subtitle">
                             <div class="bu-column bu-is-12 bu-is-flex bu-is-align-items-center bu-is-justify-content-left">
                                 <div class="cly-vue-drawer__steps-header">
                                     <template v-for="(currentContent, i) in stepContents">

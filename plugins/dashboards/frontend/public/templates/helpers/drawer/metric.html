@@ -3,15 +3,17 @@
     rules="required"
     :label="i18nM(multiple ? 'dashboards.metrics-multi': 'dashboards.metrics-single')">
     <el-select
+        :key="rerender"
         style="width: 100%;"
         v-bind="$attrs"
-        :value="val"
-        @input="change"
+        v-on="allListeners"
+        v-model="selectedMetrics"
+        :collapse-tags="false"
         :multiple="multiple"
         :multiple-limit="multipleLimit"
         :placeholder="placeholderText">
         <el-option
-            v-for="metric in selectedMetrics"
+            v-for="metric in metrics"
             :key="metric.value"
             :label="metric.label"
             :value="metric.value">

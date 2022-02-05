@@ -185,6 +185,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/geo-countries/javascripts/countly.models.js',
                     'frontend/express/public/core/user-analytics-overview/javascripts/countly.views.js',
                     'frontend/express/public/core/geo-countries/javascripts/countly.views.js',
+                    'frontend/express/public/core/geo-countries/javascripts/countly.widgets.geo.js',
                     'frontend/express/public/core/home/javascripts/countly.models.js',
                     'frontend/express/public/core/home/javascripts/countly.views.js'
                 ],

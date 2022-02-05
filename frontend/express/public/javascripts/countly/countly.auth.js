@@ -151,6 +151,14 @@
         return validateWrite('d', feature, member, app_id);
     };
 
+    /**
+     * Validate is this user global admin or not
+     * @returns {boolean} is this user global admin or not?
+     */
+    countlyAuth.validateGlobalAdmin = function() {
+        return countlyGlobal.member.global_admin;
+    };
+
     countlyAuth.renderFeatureTemplate = function(featureName, index) {
         var odd = countlyAuth.odd;
         countlyAuth.odd = !countlyAuth.odd;

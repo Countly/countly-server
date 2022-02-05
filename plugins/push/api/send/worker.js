@@ -3,13 +3,14 @@ const {Worker, isMainThread, parentPort, workerData} = require('worker_threads')
     {FRAME, FRAME_NAME, encode, decode, frame_type, frame_length} = require('./proto'),
     Measurement = require('./measure'),
     { PushError } = require('./data/error'),
+    { Creds } = require('./data/creds'),
     logger = require('../../../../api/utils/log.js');
 
 /**
  * Connection factory
  * @param {string} log logger name
  * @param {string} type type of connection: ap, at, id, ia, ip, ht, hp
- * @param {Creds} creds credentials
+ * @param {object} creds credentials
  * @param {Object[]} messages array of initial messages
  * @param {Object} options stream options
  * @returns {Object} connection instance for the type given
@@ -19,6 +20,10 @@ function factory(log, type, creds, messages, options) {
         Constr = PLATFORM[type.substr(0, 1)].connection;
     if (!Constr) {
         throw new Error(`Invalid type ${type}`);
+    }
+    creds = Creds.from(creds);
+    if (!Constr) {
+        throw new Error(`Failed to construct Creds instance`);
     }
     return new Constr(log, type, creds, messages, options);
 }
@@ -37,7 +42,7 @@ if (isMainThread) {
             this.out = new Measurement();
             this.processing = 0;
             this.bytes = opts.options.bytes;
-            this.worker = new Worker(__filename, {workerData: opts});
+            this.worker = new Worker(__filename, {workerData: {json: JSON.stringify(opts)}});
             this.worker.unref();
             this.log = logger(opts.log).sub(`wrk-m`);
             this.init = new Promise((res, rej) => {
@@ -245,7 +250,7 @@ if (isMainThread) {
 else {
     let processing = 0;
 
-    const {id: wrkid, log: logid, type, creds, messages, options} = workerData,
+    const {id: wrkid, log: logid, type, creds, messages, options} = JSON.parse(workerData.json),
         id = `wrk-${wrkid}-w`,
         connection = factory(logid, type, creds, messages, options),
         log = logger(logid).sub(id),

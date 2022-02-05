@@ -190,7 +190,7 @@ usersApi.createUser = function(params) {
 
     var createUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(newMember = createUserValidation.obj)) {
-        common.returnMessage(params, 400, 'Error: ' + createUserValidation.errors);
+        common.returnMessage(params, 400, createUserValidation.errors);
         return false;
     }
 

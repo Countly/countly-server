@@ -1,6 +1,7 @@
 <div class="manage-users-table">
   <cly-datatable-n
     :rows="filteredRows"
+    :force-loading="loading"
     :available-dynamic-cols="tableDynamicCols">
       <template v-slot:header-left="selectScope">
         <el-select placement="bottom-start" v-model="tableFilter" :placeholder="i18n('management-users.all-roles')">

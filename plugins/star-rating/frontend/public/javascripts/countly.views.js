@@ -1,4 +1,4 @@
-/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, Promise, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
 var FEATURE_NAME = 'star_rating';
 
 var Drawer = countlyVue.views.create({
@@ -130,6 +130,9 @@ var RatingsTable = countlyVue.views.create({
 
 var WidgetsTable = countlyVue.views.create({
     template: CV.T("/star-rating/templates/widgets-table.html"),
+    mixins: [
+        countlyVue.mixins.auth(FEATURE_NAME)
+    ],
     props: {
         rows: {
             type: Array,
@@ -403,7 +406,8 @@ var WidgetsTab = countlyVue.views.create({
         'drawer': Drawer
     },
     mixins: [
-        countlyVue.mixins.hasDrawers("widget")
+        countlyVue.mixins.hasDrawers("widget"),
+        countlyVue.mixins.auth(FEATURE_NAME)
     ],
     data: function() {
         return {
@@ -551,7 +555,8 @@ var WidgetDetail = countlyVue.views.create({
         'drawer': Drawer
     },
     mixins: [
-        countlyVue.mixins.hasDrawers("widget")
+        countlyVue.mixins.hasDrawers("widget"),
+        countlyVue.mixins.auth(FEATURE_NAME)
     ],
     data: function() {
         return {
@@ -691,8 +696,14 @@ var WidgetDetail = countlyVue.views.create({
             });
         },
         editWidget: function() {
-            if (this.cohortsEnabled && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
+            if (this.cohortsEnabled && this.widget.targeting && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
                 this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
+            }
+            else {
+                this.widget.targeting = {
+                    user_segmentation: null,
+                    steps: null
+                };
             }
             this.widget.target_page = this.widget.target_page === "selected";
             this.openDrawer('widget', this.widget);
@@ -701,7 +712,7 @@ var WidgetDetail = countlyVue.views.create({
             var self = this;
             switch (command) {
             case 'delete-widget':
-                CountlyHelpers.confirm(CV.i18n('feedback.delete-a-widget-description'), "popStyleGreen", function(result) {
+                CountlyHelpers.confirm(CV.i18n('feedback.delete-a-widget-description'), "red", function(result) {
                     if (!result) {
                         return true;
                     }
@@ -773,11 +784,27 @@ var WidgetDetail = countlyVue.views.create({
             }
         },
         parseTargeting: function(widget) {
-            if (typeof widget.targeting.steps === "string") {
-                widget.targeting.steps = JSON.parse(widget.targeting.steps);
-            }
-            if (typeof widget.targeting.user_segmentation === "string") {
-                widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            if (widget.targeting) {
+                try {
+                    if (typeof widget.targeting.user_segmentation === "string") {
+                        widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+                    }
+                }
+                catch (e) {
+                    widget.targeting.user_segmentation = {};
+                }
+
+                try {
+                    if (typeof widget.targeting.steps === "string") {
+                        widget.targeting.steps = JSON.parse(widget.targeting.steps);
+                    }
+                }
+                catch (e) {
+                    widget.targeting.steps = [];
+                }
+
+                widget.targeting.user_segmentation = widget.targeting.user_segmentation || {};
+                widget.targeting.steps = widget.targeting.steps || [];
             }
             return widget;
         }
@@ -807,7 +834,8 @@ var WidgetDetail = countlyVue.views.create({
             ];
         },
         ratingRate: function() {
-            return parseFloat(((this.count / this.widget.timesShown) * 100).toFixed(2)) || 0;
+            var timesShown = this.widget.timesShown === 0 ? 1 : this.widget.timesShown;
+            return parseFloat(((this.widget.ratingsCount / timesShown) * 100).toFixed(2)) || 0;
         }
     },
     mounted: function() {
@@ -873,45 +901,13 @@ countlyVue.container.registerTab("/users/tabs", {
         methods: {},
         created: function() {
             this.uid = this.$route.params.uid;
-            /*
             var self = this;
-            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "12months"})
+            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})
                 .then(function() {
                     self.ratingsData = starRatingPlugin.getFeedbackData().aaData;
                     self.ratingsData.map(function(rating) {
                         rating.ts = countlyCommon.formatTimeAgo(rating.ts);
-                        starRatingPlugin.requestSingleWidget(rating.widget_id, function(widget) {
-                            if (widget) {
-                                rating.widgetTitle = widget.popup_header_text;
-                            }
-                            else {
-                                rating.widgetTitle = "Widget not exist";
-                            }
-                            return rating;
-                        });
                     });
-                });
-            */
-            var self = this;
-            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})
-                .then(function() {
-                    return Promise.all(starRatingPlugin.getFeedbackData().aaData.map(function(rating) {
-                        return new Promise(function(resolve) {
-                            rating.ts = countlyCommon.formatTimeAgo(rating.ts);
-                            starRatingPlugin.requestSingleWidget(rating.widget_id, function(widget) {
-                                if (widget) {
-                                    rating.widgetTitle = widget.popup_header_text;
-                                }
-                                else {
-                                    rating.widgetTitle = "Widget not exist";
-                                }
-                                resolve(rating);
-                            });
-                        });
-                    }));
-                })
-                .then(function(data) {
-                    self.ratingsData = data;
                 });
         }
     })
@@ -925,7 +921,10 @@ var RatingsMainView = new countlyVue.views.BackboneWrapper({
 });
 
 var WidgetDetailView = new countlyVue.views.BackboneWrapper({
-    component: WidgetDetail
+    component: WidgetDetail,
+    templates: [
+        "/drill/templates/query.builder.v2.html"
+    ]
 });
 
 app.ratingsMainView = RatingsMainView;

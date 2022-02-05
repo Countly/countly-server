@@ -13,14 +13,13 @@ class Pool extends Duplex {
      * 
      * @param {string} id name of the pool
      * @param {string} type type of connection: ap, at, id, ia, ip, ht, hp
-     * @param {string} key authorization key: server key for FCM/HW, P8/P12 for APN
-     * @param {string} secret passphrase for P12
+     * @param {Creds} creds credentials instance
      * @param {Object[]} messages array of initial messages
      * @param {Object} options streaming options
      * @param {integer} options.bytes how much bytes can be processed simultaniously by a single connection
      * @param {integer} options.workers how much connections (workers) can be used in parallel
      */
-    constructor(id, type, key, secret, messages, options) {
+    constructor(id, type, creds, messages, options) {
         super({
             // writableHighWaterMark: options.bytes * options.workers,
             readableObjectMode: true,
@@ -45,14 +44,13 @@ class Pool extends Duplex {
             id: '' + ++this.workerCounter,
             log: this.log.id(),
             type,
-            key,
-            secret,
+            creds: creds.json,
             messages: this.messages,
             meta: this.meta,
             options
         }, options.workers);
 
-        this.log.i('initialized (%s)', key.toString().substr(0, 100));
+        this.log.i('initialized (%s)', creds.id);
         this.booting = true;
     }
 
@@ -212,7 +210,7 @@ class Pool extends Duplex {
      * How much notifications all our connections can accept
      */
     get free() {
-        return this.connections.map(c => c.free).reduce((a, b) => a + b, 0) + Math.max(0, (this.workers - this.connections.length) * this.bytes);
+        return this.connections ? this.connections.map(c => c.free).reduce((a, b) => a + b, 0) + Math.max(0, (this.workers - this.connections.length) * this.bytes) : 0;
     }
 
     /**

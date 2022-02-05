@@ -131,7 +131,7 @@ plugins.setConfigs("dashboards", {
                                 return callback(null, {widgets: widgets, apps: apps});
                             }
 
-                            customDashboards.fetchWidgetData(params, widgets, function(data) {
+                            customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
                                 var output = { widgets: data || [], apps: apps || [] };
                                 return callback(null, output);
                             });
@@ -216,7 +216,7 @@ plugins.setConfigs("dashboards", {
                         }
 
                         common.db.collection("widgets").findOne({_id: common.db.ObjectID(widgetId)}, function(error, widget) {
-                            customDashboards.fetchWidgetData(params, [widget], function(data) {
+                            customDashboards.fetchAllWidgetsData(params, [widget], function(data) {
                                 common.returnOutput(params, data);
                             });
                         });
@@ -242,7 +242,7 @@ plugins.setConfigs("dashboards", {
             //Error
         }
 
-        customDashboards.fetchWidgetData(params, widgets, function(data) {
+        customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
             common.returnOutput(params, data);
         });
 
@@ -1477,6 +1477,51 @@ plugins.setConfigs("dashboards", {
             return true;
         }
         return false;
+    });
+
+    plugins.register("/dashboard/data", async function({params, apps, widget}) {
+        try {
+            switch (widget.widget_type) {
+            case 'analytics':
+                await customDashboards.fetchAnalyticsData(params, apps, widget);
+                break;
+            case 'events':
+                await customDashboards.fetchEventsData(params, apps, widget);
+                break;
+            case 'push':
+                await customDashboards.fetchPushData(params, apps, widget);
+                break;
+            case 'crash':
+                await customDashboards.fetchCrashData(params, apps, widget);
+                break;
+            case 'note':
+                await customDashboards.fetchNoteData(params, apps, widget);
+                break;
+            default:
+                break;
+            }
+        }
+        catch (e) {
+            log.d("Error while fetching data for widget - ", widget);
+            log.d("Error - ", e);
+        }
+    });
+
+    plugins.register("/dashboard/data", async function({widget}) {
+        try {
+            if (widget.widget_type === 'analytics') {
+                if (widget.data_type === 'geo') {
+                    widget.dashData = {
+                        isValid: true,
+                        data: {}
+                    };
+                }
+            }
+        }
+        catch (e) {
+            log.d("Error while fetching data for widget - ", widget);
+            log.d("Error - ", e);
+        }
     });
 
     /**
