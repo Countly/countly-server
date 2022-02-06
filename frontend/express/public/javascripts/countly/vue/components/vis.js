@@ -10,6 +10,11 @@
     var FONT_FAMILY = "Inter";
     var CHART_HEADER_HEIGHT = 32;
 
+    /**
+     * legendOptions depends on internalLegend and legend
+     * mergedOptions depends on legendOptions
+     * chartOptions depends on mergedOptions
+     */
     var EchartRefMixin = {
         data: function() {
             return {
@@ -18,6 +23,165 @@
         },
         mounted: function() {
             this.echartRef = this.$parent.$refs.echarts;
+        }
+    };
+
+    var LegendMixin = {
+        data: function() {
+            return {
+                internalLegend: {
+                    show: true,
+                    type: "secondary",
+                    data: [],
+                    position: "bottom"
+                },
+            };
+        },
+        computed: {
+            legendOptions: function() {
+                var options = _merge({}, this.internalLegend, this.legend || {});
+
+                if (this.legend && this.legend.data && this.legend.data.length) {
+                    options.data = JSON.parse(JSON.stringify(this.legend.data));
+                }
+                else {
+                    options.data = JSON.parse(JSON.stringify(this.internalLegend.data));
+                }
+
+                if (this.internalLegend.data.length !== options.data.length) {
+                    options.data = [];
+                }
+
+                for (var i = 0; i < options.data.length; i++) {
+                    options.data[i].color = this.internalLegend.data[i].color;
+                    options.data[i].displayColor = options.data[i].color;
+                }
+
+                return options;
+            }
+        },
+        methods: {
+            setInternalLegendData: function(opt, series) {
+                var data = [];
+                var colorIndex = 0;
+                var obj = {}, color;
+                var colors = opt.color;
+
+                for (var i = 0; i < series.length; i++) {
+                    var seriesData = series[i];
+                    var dataSum = 0;
+
+                    if (seriesData.type === "pie") {
+                        seriesData = seriesData.data;
+
+                        dataSum = seriesData.reduce(function(acc, val) {
+                            acc += val.value;
+                            return acc;
+                        }, 0);
+
+                        for (var j = 0; j < seriesData.length; j++) {
+                            color = seriesData[j].color;
+
+                            if (!color) {
+                                color = colors[colorIndex];
+                                colorIndex++;
+                            }
+
+                            obj = {
+                                name: seriesData[j].name,
+                                color: color,
+                                percentage: ((seriesData[j].value / dataSum) * 100).toFixed(1)
+                            };
+
+                            data.push(obj);
+                        }
+                    }
+                    else {
+                        color = seriesData.color;
+
+                        if (!color) {
+                            color = colors[colorIndex];
+                            colorIndex++;
+                        }
+
+                        obj = {
+                            name: seriesData.name,
+                            color: color
+                        };
+
+                        data.push(obj);
+                    }
+                }
+
+                this.internalLegend.data = data;
+
+                //Set default legend show to false
+                opt.legend.show = false;
+
+                return data;
+            }
+        }
+    };
+
+    var ZoomMixin = {
+        methods: {
+            onDataZoom: function(event) {
+                this.$refs.header.$refs.zoom.onZoomFinished(event);
+            },
+            patchZoom: function(chartOpt) {
+                var echartRef = this.$refs.echarts;
+                var header = this.$refs.header;
+
+                if (echartRef && header) {
+                    var oldChartOpt = echartRef.getOption();
+                    if (Array.isArray(oldChartOpt.dataZoom)) {
+                        var dataZoom = oldChartOpt.dataZoom[0];
+
+                        /**
+                         * Since patchZoom depends on the headers isZoom state,
+                         * therefore, the computed property calling patchZoom function,
+                         * will be re-computed after the headers isZoom state is updated.
+                         */
+                        if (dataZoom && header.isZoom) {
+                            chartOpt.dataZoom[0].start = dataZoom.start;
+                            chartOpt.dataZoom[0].end = dataZoom.end;
+
+                            var self = this;
+                            this.$nextTick(function() {
+                                self.$nextTick(function() {
+                                    header.$refs.zoom.patchZoom(false);
+                                });
+                            });
+                        }
+                    }
+                }
+
+                return chartOpt;
+            }
+        }
+    };
+
+    var UpdateOptionsMixin = {
+        data: function() {
+            return {
+                internalUpdateOptions: {
+                    notMerge: true
+                }
+            };
+        },
+        computed: {
+            echartUpdateOptions: function() {
+                return _merge({}, this.internalUpdateOptions, this.updateOptions || {});
+            }
+        }
+    };
+
+    var EventsMixin = {
+        methods: {
+            onSeriesChange: function(v) {
+                this.seriesOptions.type = v;
+                this.$emit("series-toggle", v);
+            }
         }
     };
 
@@ -47,6 +211,7 @@
     */
 
     var BaseChart = _mixins.BaseContent.extend({
+        mixins: [LegendMixin, ZoomMixin, UpdateOptionsMixin, EventsMixin],
         props: {
             height: {
                 type: Number,
@@ -288,69 +453,10 @@
                     emphasis: {
                         focus: 'series'
                     }
-                },
-                internalLegend: {
-                    show: true,
-                    type: "secondary",
-                    data: [],
-                    position: "bottom"
-                },
-                internalUpdateOptions: {
-                    notMerge: true
                 }
             };
         },
-        methods: {
-            onSeriesChange: function(v) {
-                this.seriesOptions.type = v;
-                this.$emit("series-toggle", v);
-            },
-            onDataZoom: function(event) {
-                this.$refs.header.$refs.zoom.onZoomFinished(event);
-            },
-            patchZoom: function(chartOpt) {
-                var echartRef = this.$refs.echarts;
-                var header = this.$refs.header;
-
-                if (echartRef && header) {
-                    var oldChartOpt = echartRef.getOption();
-                    if (Array.isArray(oldChartOpt.dataZoom)) {
-                        var dataZoom = oldChartOpt.dataZoom[0];
-
-                        /**
-                         * Since patchZoom depends on the headers isZoom state,
-                         * therefore, the computed property calling patchZoom function,
-                         * will be re-computed after the headers isZoom state is updated.
-                         */
-                        if (dataZoom && header.isZoom) {
-                            chartOpt.dataZoom[0].start = dataZoom.start;
-                            chartOpt.dataZoom[0].end = dataZoom.end;
-
-                            var self = this;
-                            this.$nextTick(function() {
-                                self.$nextTick(function() {
-                                    header.$refs.zoom.patchZoom(false);
-                                });
-                            });
-                        }
-                    }
-                }
-
-                return chartOpt;
-            }
-        },
         computed: {
-            legendOptions: function() {
-                var options = _merge({}, this.internalLegend, this.legend || {});
-                if (this.legend && this.legend.data && this.legend.data.length) {
-                    options.data = JSON.parse(JSON.stringify(this.legend.data));
-                }
-                else {
-                    options.data = JSON.parse(JSON.stringify(this.internalLegend.data));
-                }
-
-                return options;
-            },
             chartClasses: function() {
                 var classes = {};
 
@@ -393,9 +499,6 @@
             isShowingHeader: function() {
                 return this.showZoom || this.showDownload || this.showToggle;
             },
-            echartUpdateOptions: function() {
-                return _merge({}, this.internalUpdateOptions, this.updateOptions || {});
-            },
             isChartEmpty: function() {
                 var isEmpty = true;
                 var options = _merge({}, this.option);
@@ -434,6 +537,9 @@
                 else {
                     return false;
                 }
+            },
+            seriesType: function() {
+                return this.chartOptions.series && this.chartOptions.series[0] && this.chartOptions.series[0].type;
             }
         }
     });
@@ -481,17 +587,12 @@
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
-                var legendData = [];
 
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push({name: series[i].name});
                 }
 
-                this.internalLegend.data = legendData;
-
-                //Set default legend show to false
-                opt.legend.show = false;
+                this.setInternalLegendData(opt, series);
 
                 opt.series = series;
 
@@ -529,17 +630,12 @@
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
-                var legendData = [];
 
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push({name: series[i].name});
                 }
 
-                this.internalLegend.data = legendData;
-
-                //Set default legend show to false
-                opt.legend.show = false;
+                this.setInternalLegendData(opt, series);
 
                 opt.series = series;
 
@@ -622,7 +718,6 @@
 
                 var series = opt.series || [];
 
-                var legendData = [];
                 var sumOfOthers;
                 var seriesArr;
 
@@ -632,11 +727,6 @@
 
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                     var seriesData = series[i].data;
-
-                    var dataSum = seriesData.reduce(function(acc, val) {
-                        acc += val.value;
-                        return acc;
-                    }, 0);
 
                     seriesData.sort(function(a, b) {
                         return b.value - a.value;
@@ -650,24 +740,12 @@
                         seriesArr.push({value: sumOfOthers, name: 'Others'});
                         series[i].data = seriesData = seriesArr;
                     }
-
-                    /*
-                        Legend data in series comes from within series data names
-                    */
-                    for (var j = 0; j < seriesData.length; j++) {
-                        legendData.push({
-                            name: seriesData[j].name,
-                            percentage: ((seriesData[j].value / dataSum) * 100).toFixed(1)
-                        });
-                    }
                 }
 
-                this.internalLegend.data = legendData;
-
-                //Set default legend show to false
-                opt.legend.show = false;
+                this.setInternalLegendData(opt, series);
 
                 opt.series = series;
+
                 return opt;
             }
         }
@@ -1084,17 +1162,15 @@
     var CustomLegend = countlyBaseComponent.extend({
         mixins: [EchartRefMixin],
         props: {
-            chartOptions: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            },
             options: {
                 type: Object,
                 default: function() {
                     return {};
                 }
+            },
+            seriesType: {
+                type: String,
+                default: ""
             }
         },
         data: function() {
@@ -1103,9 +1179,6 @@
             };
         },
         computed: {
-            seriesType: function() {
-                return this.chartOptions.series && this.chartOptions.series[0] && this.chartOptions.series[0].type;
-            },
             legendClasses: function() {
                 var classes = {};
                 classes['cly-vue-chart-legend__' + this.options.position] = true;
@@ -1153,39 +1226,9 @@
         },
         watch: {
             'options': {
-                deep: true,
                 immediate: true,
                 handler: function() {
                     var data = JSON.parse(JSON.stringify(this.options.data || []));
-
-                    var series = this.chartOptions.series || [];
-
-                    if (this.seriesType === "pie") {
-                        series = series[0].data;
-                    }
-
-                    if (series.length !== data.length) {
-                        // eslint-disable-next-line no-console
-                        console.log("Series length and legend length should be same");
-                        return [];
-                    }
-
-                    var colors = this.chartOptions.color || [];
-                    var colorIndex = 0;
-                    for (var k = 0; k < series.length; k++) {
-                        var serie = series[k];
-
-                        if (serie.color) {
-                            data[k].color = serie.color;
-                        }
-                        else {
-                            data[k].color = colors[colorIndex];
-                            colorIndex++;
-                        }
-
-                        data[k].displayColor = data[k].color;
-                    }
-
                     this.legendData = data;
                 }
             }
@@ -1251,8 +1294,8 @@
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
+                            :seriesType="seriesType"\
                             v-if="legendOptions.show && !isChartEmpty"\
-                            :chartOptions="chartOptions">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1327,8 +1370,8 @@
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
-                            v-if="legendOptions.show && !isChartEmpty"\
-                            :chartOptions="chartOptions">\
+                            :seriesType="seriesType"\
+                            v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1378,8 +1421,8 @@
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
-                            v-if="legendOptions.show && !isChartEmpty"\
-                            :chartOptions="chartOptions">\
+                            :seriesType="seriesType"\
+                            v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1496,8 +1539,8 @@
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
-                            v-if="legendOptions.show && !isChartEmpty"\
-                            :chartOptions="chartOptions">\
+                            :seriesType="seriesType"\
+                            v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1545,8 +1588,8 @@
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
-                            v-if="legendOptions.show && !isChartEmpty"\
-                            :chartOptions="chartOptions">\
+                            :seriesType="seriesType"\
+                            v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1618,8 +1661,8 @@
                                 </div>\
                                 <custom-legend\
                                     :options="pieLegendOptions"\
+                                    :seriesType="seriesType"\
                                     v-if="pieLegendOptions.show && !isChartEmpty"\
-                                    :chartOptions="chartOptions"\
                                     :class="classes" class="shadow-container">\
                                 </custom-legend>\
                             </div>\
