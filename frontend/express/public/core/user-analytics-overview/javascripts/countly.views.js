@@ -220,7 +220,7 @@ var GridComponent = countlyVue.views.create({
                 for (var date in this.data.dashData.data[app]) {
                     for (var kk = 0; kk < this.data.metrics.length; kk++) {
                         if (this.data.metrics[kk] === 'r') {
-                            var vv = this.data.dashData.data[app][date]["u"] - this.data.dashData.data[app][date]["u"]["n"];
+                            var vv = this.data.dashData.data[app][date].u - this.data.dashData.data[app][date].n;
                             series[appIndex * this.data.metrics.length + kk].data.push(vv);
                         }
                         else {
@@ -314,7 +314,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
     primary: false,
     getter: function(widget) {
         var kk = widget.breakdowns || [];
-        if (widget.widget_type === "analytics" && widget.data_type === "user-analytics" && (kk.length == 0 || kk[0] == 'overview')) {
+        if (widget.widget_type === "analytics" && widget.data_type === "user-analytics" && (kk.length === 0 || kk[0] === 'overview')) {
             return true;
         }
         else {
