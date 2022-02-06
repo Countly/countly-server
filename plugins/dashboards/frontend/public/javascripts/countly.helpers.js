@@ -117,7 +117,7 @@
             type: {
                 type: String,
                 validator: function(value) {
-                    return (["session", "events"].indexOf(value) > -1) ? true : false;
+                    return (["session", "events", "user-analytics"].indexOf(value) > -1) ? true : false;
                 },
                 required: true
             },
@@ -237,6 +237,18 @@
                     }
 
                     break;
+                case "user-analytics":
+                    breakdowns.push({ label: this.i18n("user-analytics.overview-title"), value: "overview"});
+
+                    if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("active_users") > -1) {
+                        breakdowns.push({ label: this.i18n("active_users.title"), value: "active"});
+                    }
+                    if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("concurrent_users") > -1) {
+                        breakdowns.push({ label: this.i18n("concurrent-users.title"), value: "online"});
+                    }
+
+
+                    break;
                 }
 
                 return breakdowns;
@@ -247,7 +259,6 @@
                 },
                 set: function(item) {
                     var i = [item];
-
                     this.$emit("input", i);
                 }
             },
