@@ -14,6 +14,9 @@
      * legendOptions depends on internalLegend and legend
      * mergedOptions depends on legendOptions
      * chartOptions depends on mergedOptions
+     * chartOptions also calls patchChart which intern calls patchZoom and patchLegend
+     * patchZoom internally calls patchZoom of Zoom component
+     * patchLegend depends on legendOptions
      */
     var EchartRefMixin = {
         data: function() {
@@ -119,6 +122,32 @@
                 opt.legend.show = false;
 
                 return data;
+            },
+            patchLegend: function(chartOpt) {
+                var echartRef = this.$refs.echarts;
+                var legend = this.$refs.legend;
+
+                if (echartRef && legend) {
+                    var oldChartOpt = echartRef.getOption();
+
+                    if (Array.isArray(oldChartOpt.legend)) {
+                        var oldSelected = oldChartOpt.legend.find(function(item) {
+                            return item.id === "__chartLegend";
+                        });
+
+                        if (oldSelected && oldSelected.selected) {
+                            var legendOptions = this.legendOptions;
+                            for (var i = 0; i < legendOptions.data.length; i++) {
+                                var leg = legendOptions.data[i];
+                                if (oldSelected.selected[leg.name] === false) {
+                                    chartOpt.legend.selected[leg.name] = false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return chartOpt;
             }
         }
     };
@@ -265,6 +294,7 @@
                         containLabel: true
                     },
                     legend: {
+                        id: "__chartLegend",
                         show: false,
                         type: 'scroll',
                         bottom: 10,
@@ -280,7 +310,8 @@
                         },
                         icon: "roundRect",
                         itemHeight: 6,
-                        itemWidth: 12
+                        itemWidth: 12,
+                        selected: {}
                     },
                     toolbox: {
                         id: "toolbox",
@@ -540,6 +571,14 @@
             },
             seriesType: function() {
                 return this.chartOptions.series && this.chartOptions.series[0] && this.chartOptions.series[0].type;
+            }
+        },
+        methods: {
+            patchChart: function(options) {
+                this.patchZoom(options);
+                this.patchLegend(options);
+
+                return options;
             }
         }
     });
@@ -1201,24 +1240,29 @@
                     return;
                 }
 
-                this.echartRef.dispatchAction({
-                    type: "legendToggleSelect",
-                    name: item.name
-                });
-
                 var obj = JSON.parse(JSON.stringify(this.legendData[index]));
 
                 //For the first time, item.status does not exist
                 //So we set it to off
-                //On subsequent click we toggle between on and off
+                //On subsequent clicks we toggle between on and off
 
                 if (obj.status === "off") {
                     obj.status = "on";
                     obj.displayColor = obj.color;
+
+                    this.echartRef.dispatchAction({
+                        type: "legendSelect",
+                        name: item.name
+                    });
                 }
                 else {
                     obj.status = "off";
                     obj.displayColor = "transparent";
+
+                    this.echartRef.dispatchAction({
+                        type: "legendUnSelect",
+                        name: item.name
+                    });
                 }
 
                 this.$set(this.legendData, index, obj);
@@ -1229,6 +1273,22 @@
                 immediate: true,
                 handler: function() {
                     var data = JSON.parse(JSON.stringify(this.options.data || []));
+
+                    if (this.legendData) {
+                        for (var i = 0; i < data.length; i++) {
+                            var legend = data[i];
+
+                            var existingLegend = this.legendData.find(function(o) {
+                                return o.name === legend.name;
+                            });
+
+                            if (existingLegend) {
+                                legend.status = existingLegend.status;
+                                legend.displayColor = existingLegend.displayColor;
+                            }
+                        }
+                    }
+
                     this.legendData = data;
                 }
             }
@@ -1263,7 +1323,7 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.option);
-                opt = this.patchZoom(opt);
+                opt = this.patchChart(opt);
 
                 return opt;
             }
@@ -1292,6 +1352,7 @@
                             </div>\
                         </div>\
                         <custom-legend\
+                            ref="legend"\
                             :style="legendStyle"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
@@ -1334,7 +1395,7 @@
                 delete ops.xAxis;
                 delete ops.yAxis; //remove not needed to don;t get grey line at bottom
 
-                ops = this.patchZoom(ops);
+                ops = this.patchChart(ops);
 
                 return ops;
             }
@@ -1368,6 +1429,7 @@
 							</div>\
                         </div>\
                         <custom-legend\
+                            ref="legend"\
                             :style="legendStyle"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
@@ -1390,7 +1452,7 @@
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
 
-                opt = this.patchZoom(opt);
+                opt = this.patchChart(opt);
 
                 return opt;
             }
@@ -1419,6 +1481,7 @@
                             </div>\
                         </div>\
                         <custom-legend\
+                            ref="legend"\
                             :style="legendStyle"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
@@ -1508,7 +1571,7 @@
                     //Adding dummy data end
                 }
 
-                opt = this.patchZoom(opt);
+                opt = this.patchChart(opt);
 
                 return opt;
             }
@@ -1537,6 +1600,7 @@
                             </div>\
                         </div>\
                         <custom-legend\
+                            ref="legend"\
                             :style="legendStyle"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
@@ -1558,7 +1622,7 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
-                opt = this.patchZoom(opt);
+                opt = this.patchChart(opt);
                 return opt;
             }
         },
@@ -1586,6 +1650,7 @@
                             </div>\
                         </div>\
                         <custom-legend\
+                            ref="legend"\
                             :style="legendStyle"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
@@ -1607,7 +1672,7 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
-                opt = this.patchZoom(opt);
+                opt = this.patchChart(opt);
                 return opt;
             },
             classes: function() {
@@ -1660,6 +1725,7 @@
                                     </div>\
                                 </div>\
                                 <custom-legend\
+                                    ref="legend"\
                                     :options="pieLegendOptions"\
                                     :seriesType="seriesType"\
                                     v-if="pieLegendOptions.show && !isChartEmpty"\
