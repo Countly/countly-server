@@ -202,8 +202,8 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     if (config.test !== undefined) {
         let uids = [], cohorts = [];
         if (config.test && config.test.uids) {
-            uids = await common.db.collection(`app_users${params.app_id}`).find({uid: {$in: config.test.uids.split(',')}}, {_id: 1}).toArray();
-            uids = uids.map(u => u._id).join(',');
+            uids = await common.db.collection(`app_users${params.app_id}`).find({uid: {$in: config.test.uids.split(',')}}, {uid: 1}).toArray();
+            uids = uids.map(u => u.uid).join(',');
         }
 
         if (config.test && config.test.cohorts) {
