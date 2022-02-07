@@ -158,9 +158,12 @@
             width="720px"
             autoCentered
             :visible.sync="isDialogVisible">
-            <cly-datatable-n :rows="testUsersRows" v-loading="areRowsLoading" :force-loading="areRowsLoading" :hideTop="true">
+            <el-select v-model="selectedTestUsersListOption">
+                <el-option v-for="item in testUsersListOptions" :key="item.label" :value="item.value" :label="item.label"></el-option>
+            </el-select>
+            <cly-datatable-n :rows="selectedTestUsersRows" v-loading="areRowsLoading" :force-loading="areRowsLoading" :hideTop="true">
                 <template v-slot="scope">
-                    <el-table-column label="Username" >
+                    <el-table-column label="Username" v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID">
                         <template slot-scope="rowScope">
                             <div class="bu-is-flex bu-is-align-items-center">
                                 <img :src="rowScope.row.picture" width="16px" height="16px" class="bu-mr-2" style="border-radius: 50%;" />
@@ -168,7 +171,12 @@
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column label="User ID" prop="_id"></el-table-column>
+                    <el-table-column label="User ID" prop="_id"  v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID" ></el-table-column>
+                    <el-table-column label="Cohort Name" prop="cohort" v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.COHORT">
+                        <template v-slot="rowScope">
+                            <span class="has-ellipsis">{{rowScope.row.name}}</span>
+                        </template>
+                    </el-table-column>
                 </template>
             </cly-datatable-n>
         </cly-dialog>

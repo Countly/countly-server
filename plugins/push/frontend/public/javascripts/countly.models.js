@@ -2030,12 +2030,9 @@
         },
         fetchTestUsers: function(options) {
             var self = this;
-            var queries = [];
+            var usersQuery = null;
             if (options.uids && options.uids.length) {
-                queries.push({uid: {$in: options.uids}});
-            }
-            if (options.cohorts && options.cohorts.length) {
-                queries.push({chr: {$in: options.cohorts}});
+                usersQuery = {uid: {$in: options.uids}};
             }
             return new Promise(function(resolve, reject) {
                 if (!self.isDrillPluginEnabled()) {
@@ -2046,19 +2043,16 @@
                     reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
                     return;
                 }
-                Promise.all(queries.map(function(testUserQuery) {
-                    return countlyPushNotification.api.searchUsers(testUserQuery);
-                }))
+                Promise.all([usersQuery ? countlyPushNotification.api.searchUsers(usersQuery) : Promise.resolve([]), self.fetchCohorts(options.cohorts || [], false)])
                     .then(function(responses) {
-                        var testUsersArraysList = responses.map(function(queryResponse) {
-                            return queryResponse.aaData;
-                        });
-                        var allTestUsers = testUsersArraysList.reduce(function(addedTestUsersList, currentArray) {
-                            return addedTestUsersList.concat(currentArray);
-                        }, []).map(function(user) {
-                            return {_id: user._id, username: user.name || '', picture: user.picture};
-                        });
-                        resolve(allTestUsers);
+                        var usersList = responses[0];
+                        var cohortsList = responses[1];
+
+                        var users = usersList.aaData;
+                        var result = {};
+                        result[AddTestUserDefinitionTypeEnum.USER_ID] = users;
+                        result[AddTestUserDefinitionTypeEnum.COHORT] = cohortsList;
+                        resolve(result);
                     }).catch(function(error) {
                     // TODO: log error;
                         reject(error);

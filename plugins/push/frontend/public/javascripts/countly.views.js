@@ -1612,6 +1612,10 @@
 
     var keyFileReader = new FileReader();
 
+    var initialTestUsersRows = {};
+    initialTestUsersRows[countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID] = [];
+    initialTestUsersRows[countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT] = [];
+
     var PushNotificationAppConfigView = countlyVue.views.create({
         componentName: "AppSettingsContainerObservable",
         template: CV.T("/push/templates/push-notification-app-config.html"),
@@ -1636,8 +1640,13 @@
                 isAddTestUsersLoading: false,
                 isDialogVisible: false,
                 areRowsLoading: false,
-                testUsersRows: [],
+                testUsersRows: initialTestUsersRows,
                 selectedKeyToDelete: null,
+                selectedTestUsersListOption: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID,
+                testUsersListOptions: [
+                    {label: 'User ID', value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID},
+                    {label: 'Cohort', value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT}
+                ]
             };
         },
         computed: {
@@ -1647,6 +1656,9 @@
             isIOSConfigRequired: function() {
                 return this.isIOSConfigTouched;
             },
+            selectedTestUsersRows: function() {
+                return this.testUsersRows[this.selectedTestUsersListOption];
+            }
         },
         methods: {
             setModel: function(newModel) {
@@ -1934,12 +1946,13 @@
                         self.updateTestUsersAppConfig(editedObject);
                         done();
                         CountlyHelpers.notify({message: 'Test users have been successfully added.'});
-                    }).catch(function() {
+                    }).catch(function(error) {
                         // TODO: log error
-                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.'});
+
+                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.', type: 'error'});
+                        done(error);
                     }).finally(function() {
                         self.isAddTestUsersLoading = false;
-                        done(false);
                     });
             },
             onSearchUsers: function(query) {
