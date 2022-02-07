@@ -7,13 +7,15 @@
                 <span>New</span>
             </el-button>
         </span>
-        <el-input
-            class="bu-mt-5 cly-vue-sidebar__header-search"
-            autocomplete="off"
-            v-model="searchQuery"
-            placeholder="Search in Dashboards">
-            <i slot="prefix" class="el-input__icon el-icon-search"></i>
-        </el-input>
+        <form>
+            <el-input
+                class="bu-mt-5 cly-vue-sidebar__header-search"
+                autocomplete="off"
+                v-model="searchQuery"
+                placeholder="Search in Dashboards">
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+            </el-input>
+        </form>
     </div>
     <div class="cly-vue-sidebar__main-menu">
         <ul>
