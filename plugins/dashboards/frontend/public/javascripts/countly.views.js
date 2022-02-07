@@ -1,4 +1,4 @@
-/*global $, app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, Backbone, GridStack, CountlyHelpers */
+/*global $, app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers */
 
 (function() {
     var FEATURE_NAME = "dashboards";
@@ -644,6 +644,108 @@
             onReady: function(id) {
                 this.makeGridWidget(id);
             },
+            redrawRowWigets: function() {
+                var self = this;
+
+                var allGridElements = this.grid.save(false);
+
+                allGridElements = _.sortBy(allGridElements, function(a) {
+                    return (a.y * 10) + a.x;
+                });
+
+                var Y;
+                var rowMaxH;
+                var rowUpdateRequired = false;
+                var updateIndex = 0;
+                var widgetId;
+                var nodeEl;
+
+                /**
+                 * Starting batch update.
+                 */
+                self.grid.batchUpdate();
+
+                for (var i = 0; i < allGridElements.length; i++) {
+                    var node = allGridElements[i];
+                    var y = node.y;
+                    var h = node.h;
+
+                    if (!Number.isInteger(Y)) {
+                        Y = y;
+                    }
+
+                    if (!Number.isInteger(rowMaxH)) {
+                        rowMaxH = h;
+                    }
+
+                    if (y !== Y) {
+                        /**
+                         * Since the allGridElements is sorted by x and y,
+                         * we can assume that all the widgets are in the same row
+                         * as long as y === Y.
+                         *
+                         * They are different, we need to check if we need to update
+                         * heights for the widgets in the row.
+                         */
+
+                        if (rowUpdateRequired) {
+                            while (updateIndex < i) {
+                                widgetId = allGridElements[updateIndex].id;
+                                nodeEl = document.getElementById(widgetId);
+
+                                /**
+                                 * This update will only be applied after we call the
+                                 * grid commit method.
+                                 */
+                                self.updateGridWidget(nodeEl, {h: rowMaxH});
+                                updateIndex++;
+                            }
+                        }
+
+                        /**
+                         * At last we will update the variables for this new row.
+                         */
+
+                        Y = y;
+                        rowMaxH = h;
+                        rowUpdateRequired = false;
+                        updateIndex = i;
+                    }
+
+                    if (rowMaxH !== h) {
+                        if (rowMaxH < h) {
+                            rowMaxH = h;
+                        }
+
+                        rowUpdateRequired = true;
+                    }
+
+                    if (i === (allGridElements.length - 1)) {
+                        /**
+                         * For the last item, we need to run update explicitly.
+                         * Since the above update block will never be executed.
+                         */
+                        if (rowUpdateRequired) {
+                            while (updateIndex < allGridElements.length) {
+                                widgetId = allGridElements[updateIndex].id;
+                                nodeEl = document.getElementById(widgetId);
+
+                                /**
+                                 * This update will only be applied after we call the
+                                 * grid commit method.
+                                 */
+                                self.updateGridWidget(nodeEl, {h: rowMaxH});
+                                updateIndex++;
+                            }
+                        }
+                    }
+                }
+
+                /**
+                 * Committing batch update.
+                 */
+                self.grid.commit();
+            },
             initGrid: function() {
                 var self = this;
                 this.grid = GridStack.init({
@@ -687,14 +789,21 @@
                             /**
                              * Widget width should be set to the validated width and height
                              */
-                            self.grid.update(node.el, {w: finalWidth, h: finalHeight});
+                            self.updateGridWidget(node.el, {w: finalWidth, h: finalHeight});
                         }
 
                         var size = [finalWidth, finalHeight];
                         var position = [node.x, node.y];
 
-                        self.updateWidgetGeography(widgetId, size, position);
+                        /**
+                         * You can even check if the widget position is a multiple of 3.
+                         * Lets do this later.
+                         */
+
+                        self.updateWidget(widgetId, {size: size, position: position});
                     }
+
+                    self.redrawRowWigets();
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -731,11 +840,15 @@
                     }
                 });
             },
-            updateWidgetGeography: function(widgetId, size, position) {
+            updateWidget: function(widgetId, settings) {
                 var self = this;
+
                 setTimeout(function() {
-                    self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {size: size, position: position}});
+                    self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
                 }, 100);
+            },
+            updateGridWidget: function(el, settings) {
+                this.grid.update(el, settings);
             },
             addGridWidget: function(node) {
                 if (this.grid) {
@@ -988,8 +1101,7 @@
                     });
 
                     if (!currMenu) {
-                        // eslint-disable-next-line no-console
-                        console.log("Dashboard not found - ", id, dashboards);
+                        countlyDashboards.factory.log("Dashboard not found - " + id + ", Dashboards = " + dashboards);
                     }
 
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
