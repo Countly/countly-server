@@ -423,7 +423,7 @@ usersApi.updateUser = async function(params) {
 
     var updateUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(updatedMember = updateUserValidation.obj)) {
-        common.returnMessage(params, 400, 'Error: ' + updateUserValidation.errors);
+        common.returnMessage(params, 400, updateUserValidation.errors);
         return false;
     }
 

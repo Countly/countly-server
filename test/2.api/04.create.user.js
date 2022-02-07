@@ -17,7 +17,9 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Error: Missing \'args\' parameter');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Missing \'args\' parameter');
                     done();
                 });
         });
@@ -33,7 +35,9 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Error: Missing full_name argument');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Missing full_name argument');
                     done();
                 });
         });
@@ -49,7 +53,9 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Error: Missing username argument');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Missing username argument');
                     done();
                 });
         });
@@ -65,7 +71,9 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Error: Missing password argument');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Missing password argument');
                     done();
                 });
         });
@@ -81,7 +89,9 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Error: Missing email argument');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Missing email argument');
                     done();
                 });
         });
@@ -97,7 +107,9 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Email or username already exists');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Email or username already exists');
                     done();
                 });
         });
@@ -113,7 +125,9 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Email or username already exists');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Email or username already exists');
                     done();
                 });
         });

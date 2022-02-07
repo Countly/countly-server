@@ -348,7 +348,7 @@
                 if (this.settings.editMode) {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.editUser(this.user._id, submitted, function(res) {
-                        if (res.result) {
+                        if (res.result && typeof res.result === "string") {
                             if (self.groupsInput.length) {
                                 var group_id = self.group._id ? [self.group._id] : [];
                                 groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id })
@@ -384,12 +384,21 @@
                                 done();
                             }
                         }
+                        else if (typeof res === "object") {
+                            for (var i2 = 0; i2 < res.length; i2++) {
+                                CountlyHelpers.notify({
+                                    message: res[i2],
+                                    type: 'error'
+                                });
+                            }
+                            self.$refs.userDrawer.isSubmitPending = false;
+                        }
                         else {
                             CountlyHelpers.notify({
-                                message: res.result,
+                                message: CV.i18n('management-applications.plugins.smth'),
                                 type: 'error'
                             });
-                            done(res.result);
+                            self.$refs.userDrawer.isSubmitPending = false;
                         }
                     });
                 }
