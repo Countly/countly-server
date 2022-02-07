@@ -1278,6 +1278,7 @@
                         for (var i = 0; i < data.length; i++) {
                             var legend = data[i];
 
+                            // eslint-disable-next-line no-loop-func
                             var existingLegend = this.legendData.find(function(o) {
                                 return o.name === legend.name;
                             });
