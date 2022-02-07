@@ -52,12 +52,22 @@
         <cly-datatable-n :default-sort="{prop: 'name', order: 'descending'}" :available-dynamic-cols="remoteTableDynamicCols" :data-source="remoteTableDataSource"
             :resizable="true" :persist-key="remoteTablePersistKey" :paused="isTablePaused">
             <template v-slot="scope">
-                <el-table-column sortable="custom" prop="_id" label="ID">
+                <el-table-column fixed type="selection">
                 </el-table-column>
-                <el-table-column sortable="custom" prop="name" label="Name">
+                <el-table-column width="400" sortable="custom" prop="_id" label="ID">
                 </el-table-column>
-                <el-table-column v-for="(col,idx) in scope.dynamicCols" :key="idx" sortable="custom"
+                <el-table-column width="400" sortable="custom" prop="name" label="Name">
+                </el-table-column>
+                <el-table-column width="400" v-for="(col,idx) in scope.dynamicCols" :key="idx" sortable="custom"
                     :prop="col.value" :label="col.label">
+                </el-table-column>
+                <el-table-column type="options">
+                    <template v-slot="rowScope">
+                        <cly-more-options v-if="rowScope.row.hover">
+                            <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                            <el-dropdown-item command="remove">{{i18n('common.delete')}}</el-dropdown-item>
+                        </cly-more-options>
+                    </template>
                 </el-table-column>
             </template>
         </cly-datatable-n>
