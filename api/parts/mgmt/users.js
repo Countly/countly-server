@@ -224,7 +224,7 @@ usersApi.createUser = function(params) {
 
     common.db.collection('members').findOne({ $or: [{ email: newMember.email }, { username: newMember.username }] }, function(err, member) {
         if (member || err) {
-            common.returnMessage(params, 200, 'Email or username already exists');
+            common.returnMessage(params, 400, ['Email or username already exists']);
             return false;
         }
         else {
@@ -276,7 +276,7 @@ usersApi.createUser = function(params) {
                     common.returnOutput(params, member[0]);
                 }
                 else {
-                    common.returnMessage(params, 500, 'Error creating user');
+                    common.returnMessage(params, 400, ['Error creating user']);
                 }
             });
         });
@@ -475,7 +475,6 @@ usersApi.updateUser = async function(params) {
         delete updatedMember.user_of;
     }
 
-
     common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err, memberBefore) {
         common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function() {
             common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err2, member) {
@@ -500,7 +499,7 @@ usersApi.updateUser = async function(params) {
                     common.returnMessage(params, 200, 'Success');
                 }
                 else {
-                    common.returnMessage(params, 500, 'Error updating user');
+                    common.returnMessage(params, 400, ['Error updating user']);
                 }
             });
         });
