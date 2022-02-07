@@ -1894,10 +1894,13 @@
                         self.isFetchCohortsLoading = false;
                     });
             },
-            fetchTestUsers: function(options) {
+            fetchTestUsers: function() {
                 var self = this;
+                var testUsers = this.getTestUsersFromAppConfig();
+                var options = {};
+                options.appId = this.selectedAppId;
                 this.areRowsLoading = true;
-                countlyPushNotification.service.fetchTestUsers(options)
+                countlyPushNotification.service.fetchTestUsers(testUsers, options)
                     .then(function(testUserRows) {
                         self.setTestUserRows(testUserRows);
                     }).catch(function(error) {
@@ -1927,7 +1930,7 @@
             },
             onShowTestUserList: function() {
                 this.openTestUsersDialog();
-                this.fetchTestUsers(this.getTestUsersFromAppConfig());
+                this.fetchTestUsers();
             },
             onOpen: function() {
                 this.fetchCohortsIfNotFound();
@@ -1958,7 +1961,9 @@
             onSearchUsers: function(query) {
                 var self = this;
                 this.isSearchUsersLoading = true;
-                countlyPushNotification.service.searchUsersById(query)
+                var options = {};
+                options.appId = this.selectedAppId;
+                countlyPushNotification.service.searchUsersById(query, options)
                     .then(function(userIds) {
                         self.setUserIdOptions(userIds);
                     }).catch(function(error) {

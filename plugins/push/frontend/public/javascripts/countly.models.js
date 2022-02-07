@@ -669,13 +669,13 @@
                 return Promise.resolve(countlySegmentation.getFilters());
             });
         },
-        searchUsers: function(query) {
+        searchUsers: function(query, options) {
             var data = {
                 query: JSON.stringify(query)
             };
             return CV.$.ajax({
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_details",
+                url: countlyCommon.API_PARTS.data.r + "?app_id=" + options.appId + "&method=user_details",
                 contentType: "application/json",
                 data: JSON.stringify(data)
             }, {disableAutoCatch: true});
@@ -2028,11 +2028,11 @@
                 return Promise.resolve([]);
             });
         },
-        fetchTestUsers: function(options) {
+        fetchTestUsers: function(testUsers, options) {
             var self = this;
             var usersQuery = null;
-            if (options.uids && options.uids.length) {
-                usersQuery = {uid: {$in: options.uids}};
+            if (testUsers.uids && testUsers.uids.length) {
+                usersQuery = {uid: {$in: testUsers.uids}};
             }
             return new Promise(function(resolve, reject) {
                 if (!self.isDrillPluginEnabled()) {
@@ -2043,7 +2043,7 @@
                     reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
                     return;
                 }
-                Promise.all([usersQuery ? countlyPushNotification.api.searchUsers(usersQuery) : Promise.resolve([]), self.fetchCohorts(options.cohorts || [], false)])
+                Promise.all([usersQuery ? countlyPushNotification.api.searchUsers(usersQuery, options) : Promise.resolve([]), self.fetchCohorts(testUsers.cohorts || [], false)])
                     .then(function(responses) {
                         var usersList = responses[0];
                         var cohortsList = responses[1];
@@ -2059,7 +2059,7 @@
                     });
             });
         },
-        searchUsersById: function(idQuery) {
+        searchUsersById: function(idQuery, options) {
             var self = this;
             return new Promise(function(resolve, reject) {
                 if (!self.isDrillPluginEnabled()) {
@@ -2071,7 +2071,7 @@
                     return;
                 }
                 var drillQuery = {did: {rgxcn: [idQuery]}};
-                countlyPushNotification.api.searchUsers(drillQuery)
+                countlyPushNotification.api.searchUsers(drillQuery, options)
                     .then(function(response) {
                         if (response && response.aaData) {
                             resolve(response.aaData.map(function(user) {
