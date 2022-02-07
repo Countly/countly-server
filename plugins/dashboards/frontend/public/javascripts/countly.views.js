@@ -650,62 +650,51 @@
                     cellHeight: 100,
                     margin: 10,
                     animate: true,
+                    float: false
                 });
 
-                this.grid.on("resizestop", function(event, element) {
-                    var node = element.gridstackNode;
-                    var widgetId = node.id;
-                    var setWidth = node.w;
-                    var setHeight = node.h;
+                this.grid.on("change", function(event, items) {
+                    for (var i = 0; i < items.length; i++) {
+                        var node = items[i];
+                        var widgetId = node.id;
+                        var setWidth = node.w;
+                        var setHeight = node.h;
 
-                    var validatedWidth = self.calculateWidth(setWidth);
-                    var validatedHeight = self.calculateHeight(setHeight);
+                        var validatedWidth = self.calculateWidth(setWidth);
+                        var validatedHeight = self.calculateHeight(setHeight);
 
-                    var finalWidth = setWidth;
-                    var finalHeight = setHeight;
-                    var change = false;
+                        var finalWidth = setWidth;
+                        var finalHeight = setHeight;
+                        var updateUi = false;
 
-                    if (validatedWidth !== setWidth) {
-                        /**
-                         * Widths can only change as per the calculateWidth logic
-                         */
-                        finalWidth = validatedWidth;
-                        change = true;
+                        if (validatedWidth !== setWidth) {
+                            /**
+                             * Widths can only change as per the calculateWidth logic
+                             */
+                            finalWidth = validatedWidth;
+                            updateUi = true;
+                        }
+
+                        if (validatedHeight !== setHeight) {
+                            /**
+                             * Heights can only change as per the calculateWidth logic
+                             */
+                            finalHeight = validatedHeight;
+                            updateUi = true;
+                        }
+
+                        if (updateUi) {
+                            /**
+                             * Widget width should be set to the validated width and height
+                             */
+                            self.grid.update(node.el, {w: finalWidth, h: finalHeight});
+                        }
+
+                        var size = [finalWidth, finalHeight];
+                        var position = [node.x, node.y];
+
+                        self.updateWidgetGeography(widgetId, size, position);
                     }
-
-                    if (validatedHeight !== setHeight) {
-                        /**
-                         * Heights can only change as per the calculateWidth logic
-                         */
-                        finalHeight = validatedHeight;
-                        change = true;
-                    }
-
-                    if (change) {
-                        self.grid.update(node.el, {w: finalWidth, h: finalHeight});
-                    }
-
-                    var size = [finalWidth, finalHeight];
-
-                    setTimeout(function() {
-                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {size: size}});
-                    }, 1000);
-                });
-
-                this.grid.on("dragstop", function(event, element) {
-                    var node = element.gridstackNode;
-                    var widgetId = node.id;
-                    var position = [node.x, node.y];
-                    setTimeout(function() {
-                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position}});
-                    }, 1000);
-                });
-
-                this.grid.on("change", function() {
-                    /**
-                     * Update the values that changed for the widget in the store
-                     * and on the server as well.
-                     */
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -742,6 +731,12 @@
                     }
                 });
             },
+            updateWidgetGeography: function(widgetId, size, position) {
+                var self = this;
+                setTimeout(function() {
+                    self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {size: size, position: position}});
+                }, 100);
+            },
             addGridWidget: function(node) {
                 if (this.grid) {
                     this.grid.addWidget(node);
@@ -764,6 +759,9 @@
                 if (this.grid) {
                     this.grid.makeWidget("#" + id);
                 }
+            },
+            compactGrid: function() {
+                this.grid.compact();
             },
             removeGridWidget: function(el) {
                 if (this.grid) {
