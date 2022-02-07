@@ -1878,6 +1878,7 @@
             'l-control': Vue2Leaflet.LControl,
             'l-tooltip': Vue2Leaflet.LTooltip
         },
+        mixins: [countlyVue.mixins.commonFormatters],
         props: {
             showNavigation: {
                 type: Boolean,
