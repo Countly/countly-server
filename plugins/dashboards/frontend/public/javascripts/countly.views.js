@@ -649,6 +649,10 @@
 
                 var allGridElements = this.grid.save(false);
 
+                /**
+                 * We want to sort the grid elements by their x and y coordinates in
+                 * ascending order.
+                 */
                 allGridElements = _.sortBy(allGridElements, function(a) {
                     return (a.y * 10) + a.x;
                 });
