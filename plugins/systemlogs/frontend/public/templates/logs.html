@@ -41,12 +41,20 @@
                     </el-table-column>
                 </template>
                 <template v-slot:header-left>
-                    <el-select v-model="selectAction" v-on:change="changeAction">
-                        <el-option :key="index" :value="index" :label="item" v-for="(item, index) in allActions"></el-option>
-                    </el-select>
-                    <el-select v-model="selectUser" v-on:change="changeUser" class="bu-ml-4">
-                        <el-option :key="index" :value="index" :label="item" v-for="(item, index) in allUsers"></el-option>
-                    </el-select>
+                    <cly-select-x
+                        :search-placeholder="i18n('common.search')"
+                        placeholder="" 
+                        v-model="selectAction"
+                        v-on:change="changeAction"
+                        :options="allActions">
+                    </cly-select-x>
+                    <cly-select-x
+                        :search-placeholder="i18n('common.search')"
+                        placeholder="" 
+                        v-model="selectUser"
+                        v-on:change="changeUser"
+                        :options="allUsers" class="bu-ml-4">
+                    </cly-select-x>
                 </template>
             </cly-datatable-n>
 		</cly-section>
