@@ -807,7 +807,7 @@
                         self.updateWidget(widgetId, {size: size, position: position});
                     }
 
-                    self.redrawRowWigets();
+                    //self.redrawRowWigets();
                 });
 
                 this.grid.on("added", function(event, element) {
