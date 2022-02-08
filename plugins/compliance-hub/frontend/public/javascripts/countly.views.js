@@ -397,14 +397,6 @@
 
         },
         methods: {
-            formatTableNumber: function(data) {
-                if (Math.abs(data) >= 10000) {
-                    return this.getShortNumber(data);
-                }
-                else {
-                    return this.formatNumber(data);
-                }
-            },
             initializeStoreData: function() {
                 this.chartLoading = false;
                 var newValue = this.selectedfilter0;
