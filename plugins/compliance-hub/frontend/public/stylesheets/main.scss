@@ -1,6 +1,7 @@
 .cly-vue-compliance__user_chart {
     min-width: 50%;
     max-width: 50%;
+    border-top: 1px solid #ececec;
 }
 .cly-vue-complaince__hub {
     .cly-vue-tabs {
@@ -8,5 +9,8 @@
     }
     .el-table__row {
         height: 120px !important;
+    }
+    .cly-vue-chart-legend__line {
+        margin-top: 32px;
     }
 }
