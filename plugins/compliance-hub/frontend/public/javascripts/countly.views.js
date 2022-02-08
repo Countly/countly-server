@@ -195,6 +195,7 @@
         template: CV.T("/compliance-hub/templates/metrics.html"),
         data: function() {
             return {
+                chartLoading: false,
                 filter0: [
                     {
                         value: 'all',
@@ -296,11 +297,11 @@
                 var _bigNumberData = this.$store.getters["countlyConsentManager/_bigNumberData"];
                 var legendData = {
                     show: true,
-                    type: "primary",
+                    type: "secondary",
                     data: [{
                         name: "opt-in",
                         label: this.i18n("consent.opt-i"),
-                        value: _bigNumberData.i.total,
+                        value: this.formatNumber(_bigNumberData.i.total),
                         percentage: _bigNumberData.i.change,
                         trend: _bigNumberData.i.trend === 'u' ? "up" : "down",
                     },
@@ -308,7 +309,7 @@
 
                         name: "opt-out",
                         label: this.i18n("consent.opt-o"),
-                        value: _bigNumberData.o.total,
+                        value: this.formatNumber(_bigNumberData.o.total),
                         percentage: _bigNumberData.o.change,
                         trend: _bigNumberData.o.trend === 'u' ? "up" : "down",
                     }
@@ -396,7 +397,16 @@
 
         },
         methods: {
+            formatTableNumber: function(data) {
+                if (Math.abs(data) >= 10000) {
+                    return this.getShortNumber(data);
+                }
+                else {
+                    return this.formatNumber(data);
+                }
+            },
             initializeStoreData: function() {
+                this.chartLoading = false;
                 var newValue = this.selectedfilter0;
                 if (this.selectedfilter0 === 'all') {
                     newValue = "";
@@ -409,7 +419,7 @@
                 this.$store.dispatch("countlyConsentManager/_consentDP", payload);
                 this.$store.dispatch("countlyConsentManager/_exportDP", payload);
                 this.$store.dispatch("countlyConsentManager/_purgeDP");
-                this.$store.dispatch("ountlyConsentManager/_ePData");
+                this.$store.dispatch("countlyConsentManager/_ePData");
             },
         }
 
