@@ -467,6 +467,18 @@
              * Emitting ready event tells the grid to make this widget.
              * Making a widget means that it is now a part of the grid
              * and ready for user interaction.
+             *
+             * CASE - While creating a new widget.
+             * There is a dummy widget added to the grid while creating
+             * the widget. We do this to place it in the available space.
+             * We should remove it before making the widget since its nomore required.
+             * Currently we are removing it after the widget has been mounted
+             * and this is finished making.
+             * Maybe we should do that before mounting and making since after making
+             * the added event is fired by the grid which inturn fires change event
+             * and that contains the extra dummy widget that we added while creating
+             * the widget.
+             * Lets think about this and do this later.
              */
             this.$emit("ready", this.widget._id);
         }
@@ -689,14 +701,20 @@
                     return;
                 }
 
+                var dimensions = setting.grid.dimensions();
+                var validatedWidth = this.calculateWidth(setting, dimensions.width);
+                var validatedHeight = this.calculateHeight(setting, dimensions.height);
+                var validatedMinWidth = this.calculateWidth(setting, dimensions.minWidth);
+                var validatedMinHeight = this.calculateWidth(setting, dimensions.minHeight);
+
                 if (id) {
                     var node = {
                         id: id,
                         autoPosition: true,
-                        w: setting.grid.dimensions().width,
-                        h: setting.grid.dimensions().height,
-                        minW: setting.grid.dimensions().minWidth,
-                        minH: setting.grid.dimensions().minHeight,
+                        w: validatedWidth,
+                        h: validatedHeight,
+                        minW: validatedMinWidth,
+                        minH: validatedMinHeight,
                         new: true
                     };
 
@@ -704,7 +722,6 @@
                 }
             },
             onReady: function(id) {
-                this.removeGridWidget(document.getElementById(id));
                 this.makeGridWidget(id);
             },
             redrawRowWigets: function() {
@@ -911,6 +928,7 @@
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position, size: size}}).then(function(res) {
                             if (res) {
                                 self.$store.dispatch("countlyDashboards/widgets/get", widgetId).then(function() {
+                                    self.removeGridWidget(node.el);
                                     self.$emit("widget-added", widgetId);
                                 });
                             }
@@ -927,6 +945,9 @@
             },
             validateWidgets: function(allWidgets) {
                 if (this.grid) {
+
+                    this.grid.batchUpdate();
+
                     for (var i = 0; i < allWidgets.length; i++) {
                         var widget = allWidgets[i];
                         var widgetId = widget._id;
@@ -945,6 +966,8 @@
 
                         this.updateGridWidget(nodeEl, setting);
                     }
+
+                    self.grid.commit();
                 }
             },
             updateGridWidget: function(el, settings) {
