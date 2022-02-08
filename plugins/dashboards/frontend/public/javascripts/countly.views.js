@@ -111,7 +111,7 @@
         }
     };
 
-    var DimensionsValidationMixin = {
+    var WidgetValidationMixin = {
         data: function() {
             return {
                 MIN_WIDTH: 3,
@@ -213,6 +213,72 @@
                 }
 
                 return h;
+            },
+            isWidgetLocked: function(widget) {
+                var disabled = this.isWidgetDisabled(widget);
+
+                if (disabled) {
+                    return true;
+                }
+
+                var invalid = this.isWidgetInvalid(widget);
+
+                if (invalid) {
+                    return true;
+                }
+
+                return false;
+            },
+            widgetResizeNotAllowed: function(widget) {
+                var disabled = this.isWidgetDisabled(widget);
+
+                if (disabled) {
+                    return true;
+                }
+
+                var invalid = this.isWidgetInvalid(widget);
+
+                if (invalid) {
+                    return true;
+                }
+
+                return false;
+            },
+            widgetMoveNotAllowed: function(widget) {
+                var disabled = this.isWidgetDisabled(widget);
+
+                if (disabled) {
+                    return true;
+                }
+
+                var invalid = this.isWidgetInvalid(widget);
+
+                if (invalid) {
+                    return true;
+                }
+
+                return false;
+            },
+            isWidgetDisabled: function(widget) {
+                var disabled = widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
+                disabled = !!disabled;
+                return disabled;
+            },
+            isWidgetInvalid: function(widget) {
+                var invalid = true;
+
+                var dashData = widget.dashData;
+
+                if (dashData) {
+                    invalid = dashData.isValid === false ? true : false;
+                    invalid = dashData.isProcessing ? false : invalid;
+                }
+
+                if (widget.client_fetch) {
+                    invalid = false;
+                }
+
+                return invalid;
             }
         }
     };
@@ -355,7 +421,7 @@
 
     var WidgetComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-widget',
-        mixins: [DimensionsValidationMixin],
+        mixins: [WidgetValidationMixin],
         props: {
             widget: {
                 type: Object,
@@ -389,27 +455,6 @@
             canUpdate: function() {
                 var dashboard = this.$store.getters["countlyDashboards/selected"];
                 return dashboard.data && dashboard.data.is_editable;
-            }
-        },
-        methods: {
-            isWidgetDisabled: function(widget) {
-                return widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
-            },
-            isWidgetInvalid: function(widget) {
-                var invalid = true;
-
-                var dashData = widget.dashData;
-
-                if (dashData) {
-                    invalid = dashData.isValid === false ? true : false;
-                    invalid = dashData.isProcessing ? false : invalid;
-                }
-
-                if (widget.client_fetch) {
-                    invalid = false;
-                }
-
-                return invalid;
             }
         },
         mounted: function() {
@@ -549,7 +594,7 @@
 
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
-        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, DimensionsValidationMixin],
+        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, WidgetValidationMixin],
         components: {
             "widgets-drawer": WidgetDrawer,
             "widget": WidgetComponent
@@ -562,6 +607,15 @@
         computed: {
             allWidgets: function() {
                 var allWidgets = JSON.parse(JSON.stringify(this.$store.getters["countlyDashboards/widgets/all"]));
+
+                /**
+                 * This validation should have been carried out in the
+                 * WidgetComponent when settings change, but we are doing it here
+                 * so that we don't have to watch for setting changes in the
+                 * WidgetComponent as that would been a performance hit.
+                 */
+                this.validateWidgets(allWidgets);
+
                 return allWidgets;
             }
         },
@@ -807,7 +861,7 @@
                         self.updateWidget(widgetId, {size: size, position: position});
                     }
 
-                    //self.redrawRowWigets();
+                    self.redrawRowWigets();
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -838,6 +892,7 @@
                             if (res) {
                                 self.$store.dispatch("countlyDashboards/widgets/get", widgetId).then(function() {
                                     self.removeGridWidget(node.el);
+                                    self.$emit("widget-added", widgetId);
                                 });
                             }
                         });
@@ -850,6 +905,28 @@
                 setTimeout(function() {
                     self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
                 }, 100);
+            },
+            validateWidgets: function(allWidgets) {
+                if (this.grid) {
+                    for (var i = 0; i < allWidgets.length; i++) {
+                        var widget = allWidgets[i];
+                        var widgetId = widget._id;
+
+                        var locked = this.isWidgetLocked(widget);
+                        var noResize = this.widgetResizeNotAllowed(widget);
+                        var noMove = this.widgetMoveNotAllowed(widget);
+
+                        var nodeEl = document.getElementById(widgetId);
+
+                        var setting = {
+                            locked: locked,
+                            noMove: noMove,
+                            noResize: noResize
+                        };
+
+                        this.updateGridWidget(nodeEl, setting);
+                    }
+                }
             },
             updateGridWidget: function(el, settings) {
                 this.grid.update(el, settings);
@@ -874,6 +951,9 @@
                  */
 
                 if (this.grid) {
+                    /**
+                     * On making the widget "added" event is fired by the grid.
+                     */
                     this.grid.makeWidget("#" + id);
                 }
             },
@@ -911,7 +991,8 @@
         },
         data: function() {
             return {
-                dashboardId: this.$route.params && this.$route.params.dashboardId
+                dashboardId: this.$route.params && this.$route.params.dashboardId,
+                ADDING_WIDGET: false,
             };
         },
         computed: {
@@ -932,6 +1013,10 @@
         },
         methods: {
             refresh: function() {
+                if (this.ADDING_WIDGET) {
+                    return;
+                }
+
                 if (!this.drawers.dashboards.isOpened && !this.drawers.widgets.isOpened) {
                     /**
                      * Refresh only if the drawers are not open at the moment.
@@ -992,7 +1077,11 @@
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
             },
             addWidgetToGrid: function(widget) {
+                this.ADDING_WIDGET = true;
                 this.$refs.grid.addWidget(widget);
+            },
+            onWidgetAdded: function() {
+                this.ADDING_WIDGET = false;
             }
         },
         beforeMount: function() {
