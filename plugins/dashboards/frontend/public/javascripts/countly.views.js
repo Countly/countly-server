@@ -114,12 +114,11 @@
     var WidgetValidationMixin = {
         data: function() {
             return {
-                MIN_WIDTH: 3,
-                MIN_HEIGHT: 3
+                WIDTH_MULTIPLIER: 3
             };
         },
         methods: {
-            validateWidgetPosition: function(widget, axis) {
+            validateWidgetPosition: function(settings, widget, axis) {
                 var pos;
 
                 switch (axis) {
@@ -133,18 +132,18 @@
 
                 return pos;
             },
-            validateWidgetSize: function(widget, dimension) {
+            validateWidgetSize: function(settings, widget, dimension) {
                 var size;
 
                 switch (dimension) {
                 case "w":
                     size = widget.size && widget.size[0];
-                    size = this.calculateWidth(size);
+                    size = this.calculateWidth(settings, size);
 
                     break;
                 case "h":
                     size = widget.size && widget.size[1];
-                    size = this.calculateHeight(size);
+                    size = this.calculateHeight(settings, size);
                     break;
                 }
 
@@ -157,34 +156,37 @@
                 switch (dimension) {
                 case "w":
                     dim = dimensions.minWidth;
-                    dim = this.calculateWidth(dim);
+                    dim = this.calculateWidth(settings, dim);
 
                     break;
                 case "h":
                     dim = dimensions.minHeight;
-                    dim = this.calculateHeight(dim);
+                    dim = this.calculateHeight(settings, dim);
 
                     break;
                 }
 
                 return dim;
             },
-            calculateWidth: function(width) {
+            calculateWidth: function(settings, width) {
+                var dimensions = settings.grid.dimensions();
+                var minWidth = dimensions.minWidth;
+
                 /**
                  * This function returns the width that is a multiple of 3 and closest to the old width.
                  */
                 var w = width;
 
-                if (!w || w < this.MIN_WIDTH) {
+                if (!w || w < minWidth) {
                     /**
-                     * We should return minimum width mentioned in the widgets settings.
-                     * Lets do this later.
+                     * Minimum width of the widget should be equal to whats mentioned
+                     * in its settings while registering the widget.
                      */
-                    w = this.MIN_WIDTH;
-                    countlyDashboards.factory.log("Width should be atleast equal to " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
+                    w = minWidth;
+                    countlyDashboards.factory.log("Width should be atleast equal to " + minWidth + "! Old width = " + width + ", New width = " + w);
                 }
 
-                var rem = w % this.MIN_WIDTH;
+                var rem = w % this.WIDTH_MULTIPLIER;
                 if (rem !== 0) {
                     var quo = parseInt(w / 3);
                     var prevNum = quo * 3;
@@ -196,20 +198,23 @@
                         w = prevNum;
                     }
 
-                    countlyDashboards.factory.log("Width should be a multiple of " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
+                    countlyDashboards.factory.log("Width should be a multiple of " + this.WIDTH_MULTIPLIER + "! New width = " + w);
                 }
 
                 return w;
             },
-            calculateHeight: function(height) {
+            calculateHeight: function(settings, height) {
+                var dimensions = settings.grid.dimensions();
+                var minHeight = dimensions.minHeight;
+
                 var h = height;
-                if (!h || h < this.MIN_HEIGHT) {
+                if (!h || h < minHeight) {
                     /**
-                     * We should return minimum width mentioned in the widgets settings.
-                     * Lets do this later.
+                     * Minimum height of the widget should be equal to whats mentioned
+                     * in its settings while registering the widget.
                      */
-                    h = this.MIN_HEIGHT;
-                    countlyDashboards.factory.log("Height should be atleast equal to " + this.MIN_HEIGHT + "! Old height = " + height + ", New height = " + h);
+                    h = minHeight;
+                    countlyDashboards.factory.log("Height should be atleast equal to " + minHeight + "! Old height = " + height + ", New height = " + h);
                 }
 
                 return h;
@@ -620,6 +625,9 @@
             }
         },
         methods: {
+            getAllWidgets: function() {
+                return JSON.parse(JSON.stringify(this.$store.getters["countlyDashboards/widgets/all"]));
+            },
             onWidgetAction: function(command, data) {
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
@@ -696,6 +704,7 @@
                 }
             },
             onReady: function(id) {
+                this.removeGridWidget(document.getElementById(id));
                 this.makeGridWidget(id);
             },
             redrawRowWigets: function() {
@@ -814,14 +823,25 @@
                 });
 
                 this.grid.on("change", function(event, items) {
+                    /**
+                     * We don't need computed property here.
+                     * Lets get all widget via the method.
+                     */
+                    var allWidgets = self.getAllWidgets();
+
                     for (var i = 0; i < items.length; i++) {
                         var node = items[i];
                         var widgetId = node.id;
                         var setWidth = node.w;
                         var setHeight = node.h;
 
-                        var validatedWidth = self.calculateWidth(setWidth);
-                        var validatedHeight = self.calculateHeight(setHeight);
+                        var widget = allWidgets.find(function(w) {
+                            return w._id === widgetId;
+                        });
+
+                        var setting = self.widgetSettingsGetter(widget);
+                        var validatedWidth = self.calculateWidth(setting, setWidth);
+                        var validatedHeight = self.calculateHeight(setting, setHeight);
 
                         var finalWidth = setWidth;
                         var finalHeight = setHeight;
@@ -891,7 +911,6 @@
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position, size: size}}).then(function(res) {
                             if (res) {
                                 self.$store.dispatch("countlyDashboards/widgets/get", widgetId).then(function() {
-                                    self.removeGridWidget(node.el);
                                     self.$emit("widget-added", widgetId);
                                 });
                             }
@@ -1194,7 +1213,7 @@
                     });
 
                     if (!currMenu) {
-                        countlyDashboards.factory.log("Dashboard not found - " + id + ", Dashboards = " + dashboards);
+                        countlyDashboards.factory.log("Dashboard not found - " + id + ", Dashboards = " + JSON.stringify(dashboards));
                     }
 
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
