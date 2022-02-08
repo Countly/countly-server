@@ -195,7 +195,7 @@ class InternalEventTrigger {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
                 this.process(ob, e);
-                console.log("mmmm", e);
+                //console.log("mmmm", e);
             });
         });
     }
