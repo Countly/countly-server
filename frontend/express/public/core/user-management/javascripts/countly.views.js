@@ -457,6 +457,7 @@
                 }
             },
             onOpen: function() {
+                this.changePasswordFlag = false;
                 // types
                 var types = ['c', 'r', 'u', 'd'];
 
