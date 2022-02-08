@@ -967,7 +967,7 @@
                         this.updateGridWidget(nodeEl, setting);
                     }
 
-                    self.grid.commit();
+                    this.grid.commit();
                 }
             },
             updateGridWidget: function(el, settings) {
