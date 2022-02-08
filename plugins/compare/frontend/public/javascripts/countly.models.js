@@ -306,7 +306,12 @@
                             context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
                             context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, context.state.selectedEvents)));
                             context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, context.state.selectedEvents), context.state.groupData, context.state.allEventsData.map));
+                            context.dispatch('setTableLoading', false);
+                            context.dispatch('setChartLoading', false);
                         }
+                    }).catch(function() {
+                        context.dispatch('setTableLoading', false);
+                        context.dispatch('setChartLoading', false);
                     });
             },
             fetchRefreshCompareEventsData: function(context) {
@@ -328,6 +333,8 @@
             },
             fetchLineChartData: function(context, selectedEvents) {
                 context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, selectedEvents)));
+                context.dispatch('setTableLoading', false);
+                context.dispatch('setChartLoading', false);
             },
             fetchSelectedGraphMetric: function(context, metric) {
                 context.commit("setSelectedGraphMetric", metric);
