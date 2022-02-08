@@ -613,6 +613,8 @@
                                                             if (resp) {
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
                                                                 context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                                context.dispatch('setTableLoading', false);
+                                                                context.dispatch('setChartLoading', false);
                                                             }
                                                         });
                                                 }
@@ -620,6 +622,9 @@
                                     }
                                 });
                         }
+                    }).catch(function() {
+                        context.dispatch('setTableLoading', false);
+                        context.dispatch('setChartLoading', false);
                     });
             },
             fetchAllEventsGroupData: function(context) {
@@ -637,7 +642,12 @@
                             context.commit("setSelectedEventsData", res);
                             context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, res) || []);
                             context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
+                            context.dispatch('setTableLoading', false);
+                            context.dispatch('setChartLoading', false);
                         }
+                    }).catch(function() {
+                        context.dispatch('setTableLoading', false);
+                        context.dispatch('setChartLoading', false);
                     });
             },
             fetchSelectedDatePeriod: function(context, period) {
