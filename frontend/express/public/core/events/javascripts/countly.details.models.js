@@ -336,7 +336,7 @@
         getAllEventsList: function(eventsList, groupList) {
             var map = eventsList.map || {};
             var allEvents = [];
-            if (eventsList) {
+            if (eventsList && eventsList.list) {
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
                         var obj = {
@@ -469,7 +469,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchAllEventsGroupData: function() {
             return CV.$.ajax({
@@ -481,7 +481,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchSelectedEventsData: function(context) {
             return CV.$.ajax({
@@ -496,7 +496,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchSelectedEventsOverview: function(context) {
             return CV.$.ajax({
@@ -511,7 +511,7 @@
                     "overview": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchCategories: function() {
             return CV.$.ajax({
@@ -522,7 +522,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchSegmentMap: function() {
             return CV.$.ajax({
@@ -533,7 +533,7 @@
                     "preventRequestAbort": true,
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchRefreshSelectedEventsData: function(context) {
             return CV.$.ajax({
@@ -547,7 +547,7 @@
                     "action": "refresh"
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         }
     };
 
