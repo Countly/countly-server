@@ -332,7 +332,7 @@ var getGeoAnalyticsView = function() {
     return new countlyVue.views.BackboneWrapper({
         component: GeoAnalyticsView,
         vuex: tabsVuex,
-        templates: []
+        templates: countlyVue.container.templates(['/geo/external/templates'])
     });
 };
 app.route("/analytics/geo", "analytics-geo", function() {
