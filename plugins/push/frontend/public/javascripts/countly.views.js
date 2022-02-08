@@ -1637,7 +1637,7 @@
                 cohortOptions: [],
                 isSearchUsersLoading: false,
                 isFetchCohortsLoading: false,
-                isAddTestUsersLoading: false,
+                isUpdateTestUsersLoading: false,
                 isDialogVisible: false,
                 areRowsLoading: false,
                 testUsersRows: initialTestUsersRows,
@@ -1939,23 +1939,64 @@
                 var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(editedObject);
                 countlyGlobal.apps[this.selectedAppId].plugins.push.test = testDto;
             },
-            onSubmit: function(editedObject, done) {
+            onDeleteTestUser: function(row) {
                 var self = this;
-                this.isAddTestUsersLoading = true;
+                var actualTestUsers = this.getTestUsersFromAppConfig();
+                if (this.selectedTestUsersListOption === this.AddTestUserDefinitionTypeEnum.USER_ID) {
+                    actualTestUsers.uids = actualTestUsers.uids.filter(function(uid) {
+                        return uid !== row.uid && Boolean(uid);
+                    });
+                }
+                if (this.selectedTestUsersListOption === this.AddTestUserDefinitionTypeEnum.COHORT) {
+                    actualTestUsers.cohorts = actualTestUsers.cohorts.filter(function(cohortId) {
+                        return cohortId !== row._id && Boolean(cohortId);
+                    });
+                }
+                var newTestUsersModel = {
+                    definitionType: this.selectedTestUsersListOption,
+                    cohorts: actualTestUsers.cohorts,
+                    userIds: actualTestUsers.uids,
+                };
                 var options = {};
                 options.app_id = this.selectedAppId;
-                countlyPushNotification.service.addTestUsers(editedObject, options)
-                    .then(function() {
+                this.isUpdateTestUsersLoading = true;
+                countlyPushNotification.service.updateTestUsers(newTestUsersModel, options).
+                    then(function() {
+                        self.updateTestUsersAppConfig(newTestUsersModel);
+                        CountlyHelpers.notify({message: 'Test users have been successfully removed.'});
+                        self.fetchTestUsers();
+                    }).catch(function() {
+                        // TODO: log error
+                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.', type: 'error'});
+                    }).finally(function() {
+                        self.isUpdateTestUsersLoading = false;
+                    });
+            },
+            onSubmit: function(editedObject, done) {
+                var self = this;
+                var actualTestUsersConfig = this.getTestUsersFromAppConfig();
+                if (editedObject.definitionType === this.AddTestUserDefinitionTypeEnum.USER_ID) {
+                    editedObject.cohorts = actualTestUsersConfig.cohorts;
+                    editedObject.userIds = editedObject.userIds.concat(actualTestUsersConfig.uids);
+                }
+                if (editedObject.definitionType === this.AddTestUserDefinitionTypeEnum.COHORT) {
+                    editedObject.cohorts = editedObject.cohorts.concat(actualTestUsersConfig.cohorts);
+                    editedObject.userIds = actualTestUsersConfig.uids;
+                }
+                var options = {};
+                options.app_id = this.selectedAppId;
+                this.isUpdateTestUsersLoading = true;
+                countlyPushNotification.service.updateTestUsers(editedObject, options).
+                    then(function() {
                         self.updateTestUsersAppConfig(editedObject);
                         done();
                         CountlyHelpers.notify({message: 'Test users have been successfully added.'});
                     }).catch(function(error) {
                         // TODO: log error
-
                         CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.', type: 'error'});
                         done(error);
                     }).finally(function() {
-                        self.isAddTestUsersLoading = false;
+                        self.isUpdateTestUsersLoading = false;
                     });
             },
             onSearchUsers: function(query) {

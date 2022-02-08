@@ -1795,10 +1795,10 @@
             },
             mapTestUsersEditedModelToDto: function(editedModel) {
                 var testUsersDto = {};
-                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.USER_ID) {
+                if (editedModel.userIds && editedModel.userIds.length) {
                     Object.assign(testUsersDto, {uids: editedModel.userIds.join(',')});
                 }
-                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.COHORT) {
+                if (editedModel.cohorts && editedModel.cohorts.length) {
                     Object.assign(testUsersDto, {cohorts: editedModel.cohorts.join(',')});
                 }
                 return testUsersDto;
@@ -2179,7 +2179,7 @@
             }
             return countlyPushNotificationApprover.service.approve(messageId);
         },
-        addTestUsers: function(testUsersModel, options) {
+        updateTestUsers: function(testUsersModel, options) {
             try {
                 var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(testUsersModel);
                 var appConfig = {push: {test: {}}};
