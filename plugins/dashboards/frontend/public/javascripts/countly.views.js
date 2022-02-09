@@ -962,6 +962,7 @@
                         var setWidth = node.w;
                         var setHeight = node.h;
 
+                        // eslint-disable-next-line no-loop-func
                         var widget = allWidgets.find(function(w) {
                             return w._id === widgetId;
                         });
