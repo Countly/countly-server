@@ -193,6 +193,23 @@
                 periods: {daily: []},
             };
         },
+        getInitialModelDashboardPlatform: function() {
+            return {
+                sent: 0,
+                actioned: 0,
+                errored: 0,
+                processed: 0,
+                total: 0,
+                locales: {}
+            };
+        },
+        getInitialModelDashboard: function() {
+            var result = {};
+            result[PlatformEnum.ANDROID] = this.getInitialModelDashboardPlatform();
+            result[PlatformEnum.IOS] = this.getInitialModelDashboardPlatform();
+            result[PlatformEnum.ALL] = this.getInitialModelDashboardPlatform();
+            return result;
+        },
         getInitialBaseModel: function() {
             return {
                 _id: null,
@@ -253,6 +270,7 @@
                     days: 7,
                     hours: 0
                 },
+                dashboard: this.getInitialModelDashboard()
             };
         },
         getInitialOneTimeModel: function() {
@@ -505,6 +523,9 @@
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
     countlyPushNotification.api = {
         findById: function(id) {
+            // return new Promise(function(resolve) {
+            //     resolve({"_id": "620113711341c2cd73978476", "app": "61d429edc7cb1805216df3cd", "platforms": ["a"], "state": 32, "status": "sent", "filter": {}, "triggers": [{"kind": "plain", "start": "2022-02-07T12:40:58.082Z", "tz": false}], "contents": [{"title": "Background", "message": "Background Msg", "expiration": 604800000}, {"p": "a", "sound": "default"}], "result": {"total": 1, "processed": 1, "sent": 1, "actioned": 1, "next": "2022-02-07T12:40:58.000Z", "subs": {"a": {"total": 1, "processed": 1, "sent": 1, "next": "2022-02-07T12:40:58.000Z", "subs": {"en": {"total": 1, "processed": 1, "sent": 1}}}}}, "info": {"title": "Background Test", "appName": "Mobile App - Demo", "silent": false, "scheduled": false, "locales": {"default": 0, "count": 1}, "created": "2022-02-07T12:41:21.742Z", "createdBy": "614b3c44ffadf8d52b7eca78", "createdByName": "Junaid Akram"}});
+            // });
             return CV.$.ajax({
                 type: "GET",
                 url: window.countlyCommon.API_URL + "/o/push/message/GET",
@@ -1095,7 +1116,7 @@
                 result[TypeEnum.TRANSACTIONAL] = dto.sent_tx.total;
                 return result;
             },
-            mapDashboard: function(dashboardDto, type) {
+            mapMainDashboard: function(dashboardDto, type) {
                 return {
                     series: this.mapSeries(dashboardDto, type),
                     periods: this.mapPeriods(dashboardDto, type),
@@ -1104,6 +1125,71 @@
                     totalActions: this.mapTotalActions(dashboardDto),
                     totalSent: this.mapTotalSent(dashboardDto)
                 };
+            },
+            mapAndroidDashboard: function(dto) {
+                return {
+                    sent: dto.result.subs[PlatformDtoEnum.ANDROID].sent || 0,
+                    actioned: dto.result.subs[PlatformDtoEnum.ANDROID].actioned || 0,
+                    errored: dto.result.subs[PlatformDtoEnum.ANDROID].errored || 0,
+                    processed: dto.result.subs[PlatformDtoEnum.ANDROID].processed || 0,
+                    total: dto.result.subs[PlatformDtoEnum.ANDROID].total || 0,
+                    locales: dto.result.subs[PlatformDtoEnum.ANDROID].subs || {},
+                };
+            },
+            mapIosDashboard: function(dto) {
+                return {
+                    sent: dto.result.subs[PlatformDtoEnum.IOS].sent || 0,
+                    actioned: dto.result.subs[PlatformDtoEnum.IOS].actioned || 0,
+                    errored: dto.result.subs[PlatformDtoEnum.IOS].errored || 0,
+                    processed: dto.result.subs[PlatformDtoEnum.IOS].processed || 0,
+                    total: dto.result.subs[PlatformDtoEnum.IOS].total || 0,
+                    locales: dto.result.subs[PlatformDtoEnum.IOS].subs || {},
+                };
+            },
+            mapAllDashboardLocales: function(locales, dto, platformDto, platform) {
+                var allLocales = Object.assign({}, locales);
+                Object.keys(dto.result.subs[platformDto].subs).forEach(function(key) {
+                    if (!allLocales[platform]) {
+                        allLocales[key] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
+                    }
+                    allLocales[key].sent = allLocales[key].sent + dto.result.subs[platformDto].subs[key].sent || 0;
+                    allLocales[key].actioned = allLocales[key].actioned + dto.result.subs[platformDto].subs[key].actioned || 0;
+                    allLocales[key].errored = allLocales[key].failed + dto.result.subs[platformDto].subs[key].errored || 0;
+                    allLocales[key].processed = allLocales[key].processed + dto.result.subs[platformDto].subs[key].processed || 0;
+                    allLocales[key].total = allLocales[key].total + dto.result.subs[platformDto].subs[key].total || 0;
+                });
+                return allLocales;
+            },
+            mapAllDashboard: function(dto) {
+                var allLocales = {};
+                if (dto.result.subs && dto.result.subs[PlatformDtoEnum.IOS]) {
+                    allLocales = this.mapAllDashboardLocales(allLocales, dto, PlatformDtoEnum.IOS, PlatformEnum.IOS);
+                }
+                if (dto.result.subs && dto.result.subs[PlatformDtoEnum.ANDROID]) {
+                    allLocales = this.mapAllDashboardLocales(allLocales, dto, PlatformDtoEnum.ANDROID, PlatformEnum.ANDROID);
+                }
+                return {
+                    sent: dto.result.sent || 0,
+                    actioned: dto.result.actioned || 0,
+                    errored: dto.result.errored || 0,
+                    processed: dto.result.processed || 0,
+                    total: dto.result.total || 0,
+                    locales: allLocales,
+                };
+            },
+            mapDashboard: function(dto) {
+                var model = {};
+                model[PlatformEnum.ANDROID] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
+                model[PlatformEnum.IOS] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
+                model[PlatformEnum.ALL] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
+                if (dto.result.subs && dto.result.subs[PlatformDtoEnum.ANDROID]) {
+                    model[PlatformEnum.ANDROID] = this.mapAndroidDashboard(dto);
+                }
+                if (dto.result.subs && dto.result.subs[PlatformDtoEnum.IOS]) {
+                    model[PlatformEnum.IOS] = this.mapIosDashboard(dto);
+                }
+                model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
+                return model;
             },
             mapDtoToBaseModel: function(dto) {
                 var localizations = this.mapLocalizations(dto.info && dto.info.locales || []);
@@ -1115,11 +1201,6 @@
                         time: moment(dto.created).format("H:mm")
                     },
                     name: dto.info && dto.info.title || "-",
-                    sent: dto.result.sent,
-                    actioned: dto.result.actioned,
-                    failed: dto.result.errors,
-                    processed: dto.result.processed,
-                    total: dto.result.total,
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
                     localizations: localizations,
@@ -1133,6 +1214,7 @@
                     user: dto.filter && dto.filter.user,
                     drill: dto.filter && dto.filter.drill,
                     expiration: countlyPushNotification.helper.convertMSToDaysAndHours(this.findDefaultLocaleItem(dto.contents).expiration),
+                    dashboard: this.mapDashboard(dto),
                 };
             },
             mapDtoToOneTimeModel: function(dto) {
@@ -2004,7 +2086,7 @@
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.getDashboard(data)
                     .then(function(response) {
-                        resolve(countlyPushNotification.mapper.incoming.mapDashboard(response, type));
+                        resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));
                     }).catch(function(error) {
                         reject(error);
                     });
@@ -2207,7 +2289,8 @@
         return {
             pushNotification: countlyPushNotification.helper.getInitialModel(TypeEnum.ONE_TIME),
             platformFilter: PlatformEnum.ALL,
-            localFilter: "default",
+            localeFilter: null,
+            messageLocaleFilter: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
             userCommand: {
                 type: null,
                 pushNotificationId: null
@@ -2265,12 +2348,15 @@
                     });
             });
         },
-        onSetLocalFilter: function(context, value) {
-            context.commit('setLocalFilter', value);
+        onSetLocaleFilter: function(context, value) {
+            context.commit('setLocaleFilter', value);
         },
         onSetPlatformFilter: function(context, value) {
             context.commit('setPlatformFilter', value);
         },
+        onSetMessageLocaleFilter: function(context, value) {
+            context.commit('setMessageLocaleFilter', value);
+        }
     };
 
     var detailsMutations = {
@@ -2283,11 +2369,14 @@
         setIsDrawerOpen: function(state, value) {
             state.isDrawerOpen = value;
         },
-        setLocalFilter: function(state, value) {
-            state.localFilter = value;
+        setLocaleFilter: function(state, value) {
+            state.localeFilter = value;
         },
         setPlatformFilter: function(state, value) {
             state.platformFilter = value;
+        },
+        setMessageLocaleFilter: function(state, value) {
+            state.messageLocaleFilter = value;
         },
     };
 

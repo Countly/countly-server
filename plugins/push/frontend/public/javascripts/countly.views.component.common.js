@@ -813,7 +813,6 @@
         template: '#details-message-tab',
         data: function() {
             return {
-                selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 MessageTypeEnum: countlyPushNotification.service.MessageTypeEnum,
             };
@@ -822,8 +821,16 @@
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
+            selectedMessageLocale: {
+                get: function() {
+                    return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
+                },
+                set: function(value) {
+                    this.$store.dispatch("countlyPushNotification/details/onSetMessageLocaleFilter", value);
+                }
+            },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
+                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocale];
             },
             localizations: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
