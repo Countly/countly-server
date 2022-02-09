@@ -105,11 +105,7 @@ function toSegment(val) {
     return val;
 }
 
-/**
- * Function to map the old widget structure to the new one
- * @param  {Object} widget - Widget object
- */
-function mapWidget(widget) {
+dashboard.mapWidget = function(widget) {
     var widgetType, visualization, dataType, appcount, breakdowns;
 
     switch (widget.widget_type) {
@@ -219,7 +215,9 @@ function mapWidget(widget) {
     if (breakdowns) {
         widget.breakdowns = breakdowns;
     }
-}
+
+    return widget;
+};
 
 dashboard.fetchWidgetDataOld = function(params, my_widgets, callback) {
     if (my_widgets) {
@@ -521,13 +519,11 @@ dashboard.fetchWidgetDataOld = function(params, my_widgets, callback) {
     }
 };
 
-dashboard.fetchAllWidgetsData = function(params, widgets, callback) {
+dashboard.fetchWidgetApps = function(params, widgets, callback) {
     if (widgets && widgets.length) {
         var appIds = [];
         for (var i = 0; i < widgets.length; i++) {
             var widget = widgets[i];
-
-            mapWidget(widget);
 
             var widgetApps = widget.apps || [];
 
@@ -548,7 +544,18 @@ dashboard.fetchAllWidgetsData = function(params, widgets, callback) {
                 }
             }
 
-            async.map(widgets, function(wget, done) {
+            return callback(null, apps);
+        });
+    }
+    else {
+        return callback(null, {});
+    }
+};
+
+dashboard.fetchAllWidgetsData = function(params, widgets, callback) {
+    if (widgets && widgets.length) {
+        dashboard.fetchWidgetApps(params, widgets, function(err, apps) {
+            async.forEach(widgets, function(wget, done) {
 
                 if (wget.client_fetch) {
                     return done();

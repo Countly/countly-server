@@ -1,4 +1,7 @@
-<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI"
+<cly-datatable-n
+    :data-source="remoteTableDataSource"
+    :export-api="getExportAPI"
+    :max-height="maxHeight"
     :default-sort="{prop: 'start', order: 'descending'}">
     <template v-slot:header-left>
         <el-select v-if="!fixedOrigin" class="bu-mr-2" v-model="selectedOrigin" style="width: 140px" :placeholder="i18n('taskmanager.select-origin')">

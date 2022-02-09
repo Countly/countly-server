@@ -268,18 +268,23 @@ var RatingsTab = countlyVue.views.create({
             self.sum = 0;
             // reset cumulative data
             self.cumulativeData = [{
+                rating: 0,
                 count: 0,
                 percent: 0
             }, {
+                rating: 1,
                 count: 0,
                 percent: 0
             }, {
+                rating: 2,
                 count: 0,
                 percent: 0
             }, {
+                rating: 3,
                 count: 0,
                 percent: 0
             }, {
+                rating: 4,
                 count: 0,
                 percent: 0
             }];

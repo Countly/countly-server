@@ -129,10 +129,15 @@
                             context.commit('setLineLegend', countlyCompareApps.helpers.getLegendData(context, countlyCompareApps.helpers.filterSelectedApps(context.state.tableStateMap, context.state.selectedApps)));
                             context.commit("setTableRows", countlyCompareApps.helpers.getTableRows(context));
                         }
+                    }).catch(function() {
+                        context.dispatch('setTableLoading', false);
+                        context.dispatch('setChartLoading', false);
                     });
             },
             fetchLineChartData: function(context, selectedApps) {
                 context.commit("setLineChartData", countlyCompareApps.helpers.getLineChartData(context, countlyCompareApps.helpers.filterSelectedApps(context.state.tableStateMap, selectedApps)));
+                context.dispatch('setTableLoading', false);
+                context.dispatch('setChartLoading', false);
             },
             setSelectedApps: function(context, apps) {
                 context.commit('setSelectedApps', apps);
