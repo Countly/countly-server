@@ -13,7 +13,12 @@
         },
         data: function() {
             return {
-                selectedBucket: "daily"
+                selectedBucket: "daily",
+				map:{
+						"t":this.i18n("common.total-sessions"),
+						"u": this.i18n("common.unique-sessions"),
+						"n": this.i18n("common.new-sessions")
+				}
             };
         },
         computed: {
@@ -22,22 +27,15 @@
                 return this.data.title || autoTitle;
             },
             period: function() {
-                return this.data.custom_period || "";
+				if(this.data.custom_period){
+					return this.data.custom_period;
+				}
+				else {
+					return "";
+				}
             },
             showBuckets: function() {
                 return false;
-            },
-            apps: function() {
-                var apps = this.data.apps;
-                var appData = [];
-
-                for (var i = 0; i < apps.length; i++) {
-                    var appId = apps[i];
-                    appData.push({
-                        id: appId,
-                        name: this.getAppName(appId)
-                    });
-                }
             },
             timelineGraph: function() {
                 this.data = this.data || {};
@@ -47,12 +45,26 @@
                 var legend = {"type": "primary", data: []};
                 var series = [];
                 var appIndex = 0;
+				var multipApps = false;
+				if (Object.keys(this.data.dashData.data).length>0){
+					multiApps = true;
+				}
                 for (var app in this.data.dashData.data) {
-                    var name = countlyGlobal.apps[app].name || "";
+                    var name;
                     for (var k = 0; k < this.data.metrics.length; k++) {
-
-                        series.push({ "data": [], "name": this.data.metrics[k] + " " + name, "app": app, "metric": this.data.metrics[k]});
-                        legend.data.push({"name": this.data.metrics[k] + " " + name, "app": app, "metric": this.data.metrics[k]});
+						if(multiApps){
+							if(this.data.metrics.length>1) {
+								name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+							}
+							else {
+								name = (countlyGlobal.apps[app].name || "");
+							}
+						}
+						else {
+							name = (this.map[this.data.metrics[k]] || this.data.metrics[k]);
+						}
+                        series.push({ "data": [], "name":  name, "app": app, "metric": this.data.metrics[k]});
+                        legend.data.push({"name": name, "app": app, "metric": this.data.metrics[k]});
                     }
                     for (var date in this.data.dashData.data[app]) {
                         for (var kk = 0; kk < this.data.metrics.length; kk++) {
@@ -66,6 +78,9 @@
                     lineLegend: legend
                 };
             },
+			stackedBarOptions: function(){
+				return this.calculateStackedBarOptionsFromWidget(this.data);
+			},
             number: function() {
                 this.data = this.data || {};
                 this.data.dashData = this.data.dashData || {};
@@ -75,8 +90,16 @@
                     value = this.data.dashData.data[app];
                 }
                 return value;
-            }
-
+            },
+			metricLabels: function (){
+				this.data = this.data || {};
+				var listed = [];
+				
+				for(var k=0; k<this.data.metrics.length; k++){
+					listed.push(this.map[this.data.metrics[k]] || this.data.metrics[k]);
+				}
+				return listed;
+			}
         },
         methods: {
             beforeCopy: function(data) {

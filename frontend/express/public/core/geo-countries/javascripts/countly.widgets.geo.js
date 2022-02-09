@@ -2,7 +2,8 @@
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
-        template: CV.T('/core/geo-countries/templates/dashboard-widget/widget.html'),
+        template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
         props: {
             data: {
                 type: Object,
@@ -12,11 +13,47 @@
             }
         },
         data: function() {
-            return {};
+            return {
+                map: {
+                    "countries": this.i18n("countries.title"),
+                    "langs": this.i18n("languages.title")
+                },
+                tableMap: {
+                    "u": this.i18n("common.table.total-users"),
+                    "t": this.i18n("common.total-sessions"),
+                    "n": this.i18n("common.table.new-users"),
+                    "countries": this.i18n("countries.title"),
+                    "langs": this.i18n("languages.table.language")
+                }
+            };
         },
         computed: {
             title: function() {
-                return "Geo";
+                if (this.data.title) {
+                    return this.data.title;
+                }
+                if (this.data.dashData) {
+                    return CV.i18n("dashboards.data-type.geo") + " (" + (this.map[this.data.breakdowns[0]] || this.data.breakdowns[0]) + ")";
+                }
+                return "";
+            },
+            showBuckets: function() {
+                return false;
+            },
+            metricLabels: function() {
+                return [];
+            },
+            getTableData: function() {
+                return this.calculateTableDataFromWidget(this.data);
+            },
+            tableStructure: function() {
+                return this.calculateTableColsFromWidget(this.data, this.tableMap);
+            },
+            stackedBarOptions: function() {
+                return this.calculateStackedBarOptionsFromWidget(this.data);
+            },
+            pieGraph: function() {
+                return this.calculatePieGraphFromWidget(this.data, this.tableMap);
             }
         }
     });
@@ -30,6 +67,27 @@
         },
         data: function() {
             return {};
+        },
+        computed: {
+            metrics: function() {
+                return [
+                    { label: this.i18n("common.table.total-users"), value: "u" },
+                    { label: this.i18n("common.table.new-users"), value: "n" },
+                    { label: this.i18n("common.total-sessions"), value: "t" }
+                ];
+            },
+            enabledVisualizationTypes: function() {
+                return ['pie-chart', 'bar-chart', 'table'];
+            },
+            isMultipleMetric: function() {
+                var multiple = false;
+                var visualization = this.scope.editedObject.visualization;
+                if (visualization === 'table') {
+                    multiple = true;
+                }
+
+                return multiple;
+            }
         }
     });
 
@@ -51,7 +109,12 @@
                     data_type: "geo",
                     apps: [],
                     visualization: "",
+                    custom_period: "30days",
+                    metrics: ["t"],
+                    breakdowns: ["countries"]
                 };
+            },
+            beforeSaveFn: function(doc) {
             }
         },
         grid: {

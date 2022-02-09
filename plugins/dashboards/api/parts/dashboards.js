@@ -61,6 +61,7 @@ function toCollection(val) {
         versions: "device_details",
         app_versions: "device_details",
         resolutions: "device_details",
+		device_type: "device_details",
         countries: "users"
     };
 
@@ -595,7 +596,6 @@ dashboard.fetchAnalyticsData = async function(params, apps, widget) {
 
             dashData.isValid = true;
             dashData.data = widgetData;
-
             widget.dashData = dashData;
         }
         catch (e) {
@@ -604,13 +604,36 @@ dashboard.fetchAnalyticsData = async function(params, apps, widget) {
 
             dashData.isValid = false;
             dashData.data = undefined;
-
             widget.dashData = dashData;
 
             return widget;
         }
 
         break;
+	case "technology":
+	case "geo":
+		try {
+            widgetApps = widget.apps || [];
+            widgetData = {};
+            
+            for (let i = 0; i < widgetApps.length; i++) {
+                var appId2 = widgetApps[i];
+                widgetData[appId2] = await getAnalyticsTechnologyDataForApp(params, apps, appId2, widget);
+            }
+            dashData.isValid = true;
+            dashData.data = widgetData;
+			widget.dashData = dashData;
+        }
+        catch (e) {
+            log.d("Error while fetching analytics widget data for - ", widget);
+            log.d("Error is - ", e);
+
+            dashData.isValid = false;
+            dashData.data = undefined;
+            widget.dashData = dashData;
+            return widget;
+        }
+		break;
     case "user-analytics":
         if (widget.breakdowns && Array.isArray(widget.breakdowns) && widget.breakdowns[0] === "overview") {
 
@@ -750,6 +773,57 @@ dashboard.fetchNoteData = async function(params, apps, widget) {
     return widget;
 };
 
+
+/**
+ * Function to fetch technology analytics data for app
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {Object} widget - widget object
+ */
+async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
+    var visualization = widget.visualization;
+    var breakdowns = widget.breakdowns;
+    var widgetData = {};
+
+	if(widget.custom_period && widget.custom_period!== ""){
+		params.qstring.period = widget.custom_period;
+	}
+	//bar-chart, pie-chart, table
+    var collection, segment;
+    switch (visualization) {
+		case 'bar-chart':
+		case 'pie-chart':
+		case 'table':
+			if (!breakdowns || !breakdowns.length) {
+				throw new Error("Breakdowns are required for bar chart and table");
+			}
+
+			collection = toCollection(breakdowns[0]);
+			segment = toSegment(breakdowns[0]);
+
+			break;
+		default:
+			throw new Error("Invalid visualization!");
+    }
+    var model = await getSessionModel(params, apps, appId, collection, segment, widget);
+
+    switch (visualization) {
+		case 'bar-chart':
+		case 'pie-chart':
+			widgetData = {"total":model.getNumber(), "graph":model.getBars(segment, 10)};
+
+			break;
+		case 'table':
+			widgetData = model.getTableData(segment, 10);
+			break;
+		default:
+			break;
+    }
+
+    return widgetData;
+}
+
 /**
  * Function to fetch sessions analytics data for app
  * @param  {Object} params - params object
@@ -762,6 +836,9 @@ async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
     var breakdowns = widget.breakdowns;
     var widgetData = {};
 
+	if(widget.custom_period && widget.custom_period!== ""){
+		params.qstring.period = widget.custom_period;
+	}
     var collection, segment;
 
     switch (visualization) {
