@@ -114,7 +114,7 @@
                     breakdowns: ["countries"]
                 };
             },
-            beforeSaveFn: function(doc) {
+            beforeSaveFn: function(/*doc*/) {
             }
         },
         grid: {

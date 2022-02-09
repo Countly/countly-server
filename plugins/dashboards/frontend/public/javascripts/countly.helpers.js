@@ -1,7 +1,6 @@
 /*global countlyVue, CV, Vue, countlyCommon, countlyGlobal, countlyDashboards */
 
 (function() {
-
     /**
      * DRAWER HELPERS
      */
@@ -249,42 +248,39 @@
 
 
                     break;
-				case "geo":
-					breakdowns.push(
-						{ label: this.i18n("languages.title"), value: "langs"},
-						{ label: this.i18n("countries.title"), value: "countries"},
-					);
-					break;
-				case "technology":
-					breakdowns.push(
-                        { label: this.i18n("platforms.title"), value: "platforms"},
-						{ label: this.i18n("device_type.devices"), value: "devices"},
-						{ label: this.i18n("device_type.table.device_type"), value: "device_type"},
-						{ label: this.i18n("resolutions.table.resolution"), value: "resolutions"},
-						{ label: this.i18n("app-versions.title"), value: "app_versions"},
+                case "geo":
+                    breakdowns.push(
+                        { label: this.i18n("languages.title"), value: "langs"},
+                        { label: this.i18n("countries.title"), value: "countries"}
                     );
-						
-					if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("density") > -1) {
+                    break;
+                case "technology":
+                    breakdowns.push(
+                        { label: this.i18n("platforms.title"), value: "platforms"},
+                        { label: this.i18n("device_type.devices"), value: "devices"},
+                        { label: this.i18n("device_type.table.device_type"), value: "device_type"},
+                        { label: this.i18n("resolutions.table.resolution"), value: "resolutions"},
+                        { label: this.i18n("app-versions.title"), value: "app_versions"},
+                    );
+
+                    if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("density") > -1) {
                         breakdowns.push({ label: this.i18n("density.title"), value: "density"});
-                    }	
-					
-					var app = countlyGlobal.apps[appId];
-					if(app && app.type){
-						if(app.type ==="web"){
-							if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("browser") > -1) {
-								breakdowns.push({ label: this.i18n("browser.title"), value: "browser"});
-							}
-						}
-						else {
-							breakdowns.push({ label: this.i18n("carriers.title"), value: "carriers"});
-						}
-					}
-					else {
-						
-					}
-					break;
+                    }
+
+                    var app1 = countlyGlobal.apps[appId];
+                    if (app1 && app1.type) {
+                        if (app1.type === "web") {
+                            if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("browser") > -1) {
+                                breakdowns.push({ label: this.i18n("browser.title"), value: "browser"});
+                            }
+                        }
+                        else {
+                            breakdowns.push({ label: this.i18n("carriers.title"), value: "carriers"});
+                        }
+                    }
+                    break;
                 }
-				
+
 
                 return breakdowns;
             },
@@ -692,7 +688,7 @@
                         value: "number",
                         label: this.i18n("dashboards.visualization.number")
                     },
-					{
+                    {
                         value: "pie-chart",
                         label: this.i18n("dashboards.visualization.pie-chart")
                     },
@@ -905,60 +901,60 @@
             }
         }
     });
-	
-	
-	var AppPeriodLineComponent = countlyVue.views.create({
+
+
+    var AppPeriodLineComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/widget/appPeriod.html'),
         props: {
             widgetData: {type: Object, required: true},
             showApps: {type: Boolean, required: false, default: true},
-			showPeriod: {type: Boolean, required: false, default: true}
+            showPeriod: {type: Boolean, required: false, default: true}
         },
         data: function() {
             return {};
         },
         computed: {
-            apps: function(){
-				this.widgetData = this.widgetData || {};
-				this.widgetData.apps = this.widgetData.apps || [];
-				var appData = [];
+            apps: function() {
+                this.widgetData = this.widgetData || {};
+                this.widgetData.apps = this.widgetData.apps || [];
+                var appData = [];
                 for (var i = 0; i < this.widgetData.apps.length; i++) {
                     var appId = this.widgetData.apps[i];
                     appData.push({
                         id: appId,
                         name: this.getAppName(appId),
-						image: 'background-image: url("'+this.getAppLogo(appId)+'")'
+                        image: 'background-image: url("' + this.getAppLogo(appId) + '")'
                     });
                 }
-				return appData;
-			},
-			period: function(){
-				this.widgetData = this.widgetData || {};
-				if(this.widgetData.custom_period){
-					return this.widgetData.custom_period;
-				}
-				else {
-					return "";
-				}
-			}
+                return appData;
+            },
+            period: function() {
+                this.widgetData = this.widgetData || {};
+                if (this.widgetData.custom_period) {
+                    return this.widgetData.custom_period;
+                }
+                else {
+                    return "";
+                }
+            }
         },
         methods: {
-			getAppName: function(appId){
-				if(countlyGlobal.apps && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].name){
-					return countlyGlobal.apps[appId].name;
-				}
-				else {
-					return appId;
-				}
-			},
-			getAppLogo: function(appId){
-				if(countlyGlobal.apps && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].image){
-					return countlyGlobal.apps[appId].image;
-				}
-				else {
-					return 'appimages/'+appId+'.png';
-				}
-			}
+            getAppName: function(appId) {
+                if (countlyGlobal.apps && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].name) {
+                    return countlyGlobal.apps[appId].name;
+                }
+                else {
+                    return appId;
+                }
+            },
+            getAppLogo: function(appId) {
+                if (countlyGlobal.apps && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].image) {
+                    return countlyGlobal.apps[appId].image;
+                }
+                else {
+                    return 'appimages/' + appId + '.png';
+                }
+            }
         }
     });
 
@@ -1006,6 +1002,6 @@
      * WIDGET HELPERS REGISTRATION
      */
     Vue.component("clyd-bucket", BucketComponent);
-	Vue.component("clyd-app-period", AppPeriodLineComponent);
+    Vue.component("clyd-app-period", AppPeriodLineComponent);
 
 })();
