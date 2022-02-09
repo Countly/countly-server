@@ -898,7 +898,7 @@
                         self.updateWidget(widgetId, {size: size, position: position});
                     }
 
-                    self.redrawRowWigets();
+                    //self.redrawRowWigets();
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -945,29 +945,42 @@
             },
             validateWidgets: function(allWidgets) {
                 if (this.grid) {
+                    var self = this;
+                    this.$nextTick(function() {
+                        /**
+                         * Lets execute the following code on the nextTick.
+                         * If we execute it on the same tick, the event loop is
+                         * blocked and the grid becomes very laggy and unresponsive.
+                         *
+                         * Following code mainly fixes the issue when the grid is in
+                         * loading state with some placeholder widgets in the grid,
+                         * that are locked and cannot move and resize themselves.
+                         * We need to update them when the widgets data arrive so that
+                         * users can interact with them (i.e. move or resize them).
+                         */
+                        self.grid.batchUpdate();
 
-                    this.grid.batchUpdate();
+                        for (var i = 0; i < allWidgets.length; i++) {
+                            var widget = allWidgets[i];
+                            var widgetId = widget._id;
 
-                    for (var i = 0; i < allWidgets.length; i++) {
-                        var widget = allWidgets[i];
-                        var widgetId = widget._id;
+                            var locked = self.isWidgetLocked(widget);
+                            var noResize = self.widgetResizeNotAllowed(widget);
+                            var noMove = self.widgetMoveNotAllowed(widget);
 
-                        var locked = this.isWidgetLocked(widget);
-                        var noResize = this.widgetResizeNotAllowed(widget);
-                        var noMove = this.widgetMoveNotAllowed(widget);
+                            var nodeEl = document.getElementById(widgetId);
 
-                        var nodeEl = document.getElementById(widgetId);
+                            var setting = {
+                                locked: locked,
+                                noMove: noMove,
+                                noResize: noResize
+                            };
 
-                        var setting = {
-                            locked: locked,
-                            noMove: noMove,
-                            noResize: noResize
-                        };
+                            self.updateGridWidget(nodeEl, setting);
+                        }
 
-                        this.updateGridWidget(nodeEl, setting);
-                    }
-
-                    this.grid.commit();
+                        self.grid.commit();
+                    });
                 }
             },
             updateGridWidget: function(el, settings) {
