@@ -15,7 +15,7 @@
             </cly-form-field>
 
             <cly-form-field class="bu-pt-1" label="Segmentation Type">
-                <el-select v-model="segment.type" placeholder="Select Segmentation Type">
+                <el-select style="width: 280px;" v-model="segment.type" placeholder="Select Segmentation Type">
                     <el-option
                       class="bu-pt-1"
                       v-for="item in dataTypes"
@@ -29,7 +29,7 @@
 
             <div class="bu-mt-3">
                 <el-checkbox v-model="segment.required" size="medium">
-                    <span class="text-smallish color-cool-gray-100">Segmentation Required?</span>
+                    <span class="text-smallish color-cool-gray-100">Required segmentation</span>
                 </el-checkbox>
             </div>
 
