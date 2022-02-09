@@ -1,5 +1,5 @@
     <cly-main>
-        <div class="bu-level bu-mb-4">
+        <div class="bu-level bu-my-4">
             <div class="bu-level-left">
                 Consent Requests for
                 <cly-select-x
@@ -33,8 +33,8 @@
                             <cly-tooltip-icon></cly-tooltip-icon>
                         </div>
                         <div class="cly-vue-chart-legend__second-row bu-is-flex">
-                            <div class="cly-vue-chart-legend__p-number"> {{userDatalegend.value}}</div>
-                            <div class="cly-vue-chart-legend__p-trend bu-is-flex bu-is-align-items-center" v-bind:class="userDatalegend.class">
+                            <div class="cly-vue-chart-legend__p-number"> {{formatTableNumber(userDatalegend.value)}}</div>
+                            <div class="cly-vue-chart-legend__p-trend bu-is-flex bu-is-align-items-center bu-ml-2" v-bind:class="userDatalegend.class">
                                 <i v-if="userDatalegend.trend === 'u'" class="fas fa-arrow-circle-up bu-mx-1"></i>
                                 <i v-else class="fas fa-arrow-circle-down bu-mx-1"></i>
                                 <div>{{userDatalegend.percentage}}</div>
@@ -51,8 +51,8 @@
                                 <cly-tooltip-icon></cly-tooltip-icon>
                             </div>
                             <div class="cly-vue-chart-legend__second-row bu-is-flex">
-                                <div class="cly-vue-chart-legend__p-number"> {{purgeDatalegend.value}}</div>
-                                <div class="cly-vue-chart-legend__p-trend bu-is-flex bu-is-align-items-center" v-bind:class="purgeDatalegend.class">
+                                <div class="cly-vue-chart-legend__p-number"> {{formatTableNumber(purgeDatalegend.value)}}</div>
+                                <div class="cly-vue-chart-legend__p-trend bu-is-flex bu-is-align-items-center bu-ml-2" v-bind:class="purgeDatalegend.class">
                                     <i v-if="purgeDatalegend.trend === 'u'" class="fas fa-arrow-circle-up bu-mx-1"></i>
                                     <i v-else class="fas fa-arrow-circle-down bu-mx-1"></i>
                                     <div>{{purgeDatalegend.percentage}}</div>
