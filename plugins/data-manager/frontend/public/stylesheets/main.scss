@@ -169,6 +169,9 @@
             .dz-filename{
                 margin-bottom: 8px;
             }
+            .dz-remove{
+                margin-bottom: 10px;
+            }
             .dz-filename::before{
                 content: url('/data-manager/images/upload-icon.svg');
                 vertical-align: middle;
