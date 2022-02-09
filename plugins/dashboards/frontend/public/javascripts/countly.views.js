@@ -111,40 +111,27 @@
         }
     };
 
-    var DimensionsValidationMixin = {
+    var WidgetValidationMixin = {
         data: function() {
             return {
-                MIN_WIDTH: 3,
-                MIN_HEIGHT: 3
+                GRID_COLUMNS: 4,
+                DEFAULT_MIN_WIDTH: 2,
+                MAX_ROW_X_SUM: 6
             };
         },
         methods: {
-            validateWidgetPosition: function(widget, axis) {
-                var pos;
-
-                switch (axis) {
-                case "x":
-                    pos = widget.position && widget.position[0];
-                    break;
-                case "y":
-                    pos = widget.position && widget.position[1];
-                    break;
-                }
-
-                return pos;
-            },
-            validateWidgetSize: function(widget, dimension) {
+            validateWidgetSize: function(settings, widget, dimension) {
                 var size;
 
                 switch (dimension) {
                 case "w":
                     size = widget.size && widget.size[0];
-                    size = this.calculateWidth(size);
+                    size = this.calculateWidth(settings, size);
 
                     break;
                 case "h":
                     size = widget.size && widget.size[1];
-                    size = this.calculateHeight(size);
+                    size = this.calculateHeight(settings, size);
                     break;
                 }
 
@@ -157,62 +144,152 @@
                 switch (dimension) {
                 case "w":
                     dim = dimensions.minWidth;
-                    dim = this.calculateWidth(dim);
+                    dim = this.calculateWidth(settings, dim);
 
                     break;
                 case "h":
                     dim = dimensions.minHeight;
-                    dim = this.calculateHeight(dim);
+                    dim = this.calculateHeight(settings, dim);
 
                     break;
                 }
 
                 return dim;
             },
-            calculateWidth: function(width) {
-                /**
-                 * This function returns the width that is a multiple of 3 and closest to the old width.
-                 */
+            calculateWidth: function(settings, width) {
+                var dimensions = settings.grid.dimensions();
+                var minWidth = dimensions.minWidth;
+
                 var w = width;
 
-                if (!w || w < this.MIN_WIDTH) {
+                if (minWidth > this.GRID_COLUMNS) {
+                    minWidth = this.DEFAULT_MIN_WIDTH;
+                    countlyDashboards.factory.log("With the new dashboards, we have " + this.GRID_COLUMNS + " column grid system. So min width cannot be greater than " + this.GRID_COLUMNS + "! Old min width = " + dimensions.minWidth + ", New min width (set to default) = " + minWidth);
+                }
+
+                if (!w || w < minWidth) {
                     /**
-                     * We should return minimum width mentioned in the widgets settings.
-                     * Lets do this later.
+                     * Minimum width of the widget should be equal to whats mentioned
+                     * in its settings while registering the widget.
                      */
-                    w = this.MIN_WIDTH;
-                    countlyDashboards.factory.log("Width should be atleast equal to " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
+                    w = minWidth;
+                    countlyDashboards.factory.log("Width should be atleast equal to " + minWidth + "! Old width = " + width + ", New width = " + w);
                 }
 
-                var rem = w % this.MIN_WIDTH;
-                if (rem !== 0) {
-                    var quo = parseInt(w / 3);
-                    var prevNum = quo * 3;
-                    var nextNum = (quo + 1) * 3;
-                    if (((w - prevNum) - (nextNum - w)) > 0) {
-                        w = nextNum;
-                    }
-                    else {
-                        w = prevNum;
-                    }
-
-                    countlyDashboards.factory.log("Width should be a multiple of " + this.MIN_WIDTH + "! Old width = " + width + ", New width = " + w);
+                if (w > this.GRID_COLUMNS) {
+                    /**
+                     * If the width is greater than the allowed GRID Columns, lets
+                     * reset it to the minimum width of the widget.
+                     */
+                    w = minWidth;
+                    countlyDashboards.factory.log("Width cannot be greater than " + this.GRID_COLUMNS + "! Old width = " + width + ", New width = " + w);
                 }
+
+                /**
+                    Following code is nomore required.
+                    It would have been required if grid stack didn't allow setting
+                    custom columns.
+
+                    var widthMultiplier = 4;
+                    var rem = w % widthMultiplier;
+                    if (rem !== 0) {
+                        var quo = parseInt(w / widthMultiplier);
+                        var prevNum = quo * widthMultiplier;
+                        var nextNum = (quo + 1) * widthMultiplier;
+                        if (((w - prevNum) - (nextNum - w)) > 0) {
+                            w = nextNum;
+                        }
+                        else {
+                            w = prevNum;
+                        }
+
+                        countlyDashboards.factory.log("Width should be a multiple of " + widthMultiplier + "! New width = " + w);
+                    }
+                */
 
                 return w;
             },
-            calculateHeight: function(height) {
+            calculateHeight: function(settings, height) {
+                var dimensions = settings.grid.dimensions();
+                var minHeight = dimensions.minHeight;
+
                 var h = height;
-                if (!h || h < this.MIN_HEIGHT) {
+                if (!h || h < minHeight) {
                     /**
-                     * We should return minimum width mentioned in the widgets settings.
-                     * Lets do this later.
+                     * Minimum height of the widget should be equal to whats mentioned
+                     * in its settings while registering the widget.
                      */
-                    h = this.MIN_HEIGHT;
-                    countlyDashboards.factory.log("Height should be atleast equal to " + this.MIN_HEIGHT + "! Old height = " + height + ", New height = " + h);
+                    h = minHeight;
+                    countlyDashboards.factory.log("Height should be atleast equal to " + minHeight + "! Old height = " + height + ", New height = " + h);
                 }
 
                 return h;
+            },
+            isWidgetLocked: function(widget) {
+                var disabled = this.isWidgetDisabled(widget);
+
+                if (disabled) {
+                    return true;
+                }
+
+                var invalid = this.isWidgetInvalid(widget);
+
+                if (invalid) {
+                    return true;
+                }
+
+                return false;
+            },
+            widgetResizeNotAllowed: function(widget) {
+                var disabled = this.isWidgetDisabled(widget);
+
+                if (disabled) {
+                    return true;
+                }
+
+                var invalid = this.isWidgetInvalid(widget);
+
+                if (invalid) {
+                    return true;
+                }
+
+                return false;
+            },
+            widgetMoveNotAllowed: function(widget) {
+                var disabled = this.isWidgetDisabled(widget);
+
+                if (disabled) {
+                    return true;
+                }
+
+                var invalid = this.isWidgetInvalid(widget);
+
+                if (invalid) {
+                    return true;
+                }
+
+                return false;
+            },
+            isWidgetDisabled: function(widget) {
+                var disabled = widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
+                disabled = !!disabled;
+                return disabled;
+            },
+            isWidgetInvalid: function(widget) {
+                var invalid = true;
+
+                var dashData = widget.dashData;
+
+                if (dashData) {
+                    invalid = dashData.isValid === false ? true : false;
+                    invalid = dashData.isProcessing ? false : invalid;
+                }
+
+                if (widget.client_fetch) {
+                    invalid = false;
+                }
+
+                return invalid;
             }
         }
     };
@@ -355,7 +432,7 @@
 
     var WidgetComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-widget',
-        mixins: [DimensionsValidationMixin],
+        mixins: [WidgetValidationMixin],
         props: {
             widget: {
                 type: Object,
@@ -379,6 +456,10 @@
                         }
                     };
                 }
+            },
+            autoPosition: {
+                type: Boolean,
+                default: false
             }
         },
         components: {
@@ -391,32 +472,23 @@
                 return dashboard.data && dashboard.data.is_editable;
             }
         },
-        methods: {
-            isWidgetDisabled: function(widget) {
-                return widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
-            },
-            isWidgetInvalid: function(widget) {
-                var invalid = true;
-
-                var dashData = widget.dashData;
-
-                if (dashData) {
-                    invalid = dashData.isValid === false ? true : false;
-                    invalid = dashData.isProcessing ? false : invalid;
-                }
-
-                if (widget.client_fetch) {
-                    invalid = false;
-                }
-
-                return invalid;
-            }
-        },
         mounted: function() {
             /**
              * Emitting ready event tells the grid to make this widget.
              * Making a widget means that it is now a part of the grid
              * and ready for user interaction.
+             *
+             * CASE - While creating a new widget.
+             * There is a dummy widget added to the grid while creating
+             * the widget. We do this to place it in the available space.
+             * We should remove it before making the widget since its nomore required.
+             * Currently we are removing it after the widget has been mounted
+             * and this is finished making.
+             * Maybe we should do that before mounting and making since after making
+             * the added event is fired by the grid which inturn fires change event
+             * and that contains the extra dummy widget that we added while creating
+             * the widget.
+             * Lets think about this and do this later.
              */
             this.$emit("ready", this.widget._id);
         }
@@ -549,7 +621,7 @@
 
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
-        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, DimensionsValidationMixin],
+        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, WidgetValidationMixin],
         components: {
             "widgets-drawer": WidgetDrawer,
             "widget": WidgetComponent
@@ -562,10 +634,100 @@
         computed: {
             allWidgets: function() {
                 var allWidgets = JSON.parse(JSON.stringify(this.$store.getters["countlyDashboards/widgets/all"]));
+
+                /**
+                 * This validation should have been carried out in the
+                 * WidgetComponent when settings change, but we are doing it here
+                 * so that we don't have to watch for setting changes in the
+                 * WidgetComponent as that would been a performance hit.
+                 */
+                this.validateWidgets(allWidgets);
+
                 return allWidgets;
+            },
+            autoPosition: function() {
+                /**
+                 * This computed property is created for backward compatibility of
+                 * the grid system.
+                 * In the older dashborads, we used 12 column grid system, but in
+                 * new dashboard we are using 4 column grid system.
+                 * In the 4 column grid system, total sum of x coordinates of all
+                 * widgets can be maximum 6. If the sum is greater than that, it means
+                 * the widget is still following the old grid structure.
+                 *
+                 * Widget can be positioned at x = 0, 1, 2, 3. Total sum = 6
+                 *
+                 * We should remove this computed property after all customers are
+                 * moved to the new dashboards and are following the new grid system.
+                 */
+                var allGeography = this.$store.getters["countlyDashboards/widgets/allGeography"];
+                var autoPosition = false;
+
+                var positions = allGeography.map(function(w) {
+                    var position = w.position;
+
+                    if (!Array.isArray(position) || (position.length !== 2)) {
+                        autoPosition = true;
+                        return;
+                    }
+
+                    if (!Number.isInteger(position[0]) || !Number.isInteger(position[1])) {
+                        autoPosition = true;
+                        return;
+                    }
+
+                    return {
+                        x: position[0],
+                        y: position[1],
+                    };
+                });
+
+                if (autoPosition) {
+                    return autoPosition;
+                }
+
+                var sortedGeography = this.sortWidgetByGeography(positions);
+
+                var rowXSum = 0;
+                var Y;
+
+                for (var i = 0; i < sortedGeography.length; i++) {
+                    var node = sortedGeography[i];
+                    var y = node.y;
+                    var x = node.x;
+
+                    if (x > this.GRID_COLUMNS) {
+                        autoPosition = true;
+                        break;
+                    }
+
+                    if (!Number.isInteger(Y)) {
+                        Y = y;
+                    }
+
+                    if (Y !== y) {
+                        /**
+                         * Means its a new row now.
+                         */
+                        Y = y;
+                        rowXSum = 0;
+                    }
+
+                    rowXSum += x;
+
+                    if (rowXSum > this.MAX_ROW_X_SUM) {
+                        autoPosition = true;
+                        break;
+                    }
+                }
+
+                return autoPosition;
             }
         },
         methods: {
+            getAllWidgets: function() {
+                return JSON.parse(JSON.stringify(this.$store.getters["countlyDashboards/widgets/all"]));
+            },
             onWidgetAction: function(command, data) {
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
@@ -627,14 +789,20 @@
                     return;
                 }
 
+                var dimensions = setting.grid.dimensions();
+                var validatedWidth = this.calculateWidth(setting, dimensions.width);
+                var validatedHeight = this.calculateHeight(setting, dimensions.height);
+                var validatedMinWidth = this.calculateWidth(setting, dimensions.minWidth);
+                var validatedMinHeight = this.calculateHeight(setting, dimensions.minHeight);
+
                 if (id) {
                     var node = {
                         id: id,
                         autoPosition: true,
-                        w: setting.grid.dimensions().width,
-                        h: setting.grid.dimensions().height,
-                        minW: setting.grid.dimensions().minWidth,
-                        minH: setting.grid.dimensions().minHeight,
+                        w: validatedWidth,
+                        h: validatedHeight,
+                        minW: validatedMinWidth,
+                        minH: validatedMinHeight,
                         new: true
                     };
 
@@ -644,18 +812,25 @@
             onReady: function(id) {
                 this.makeGridWidget(id);
             },
+            sortWidgetByGeography: function(widgets) {
+                /**
+                 * We want to sort the grid elements by their x and y coordinates in
+                 * ascending order.
+                 */
+
+                var w = _.sortBy(widgets, function(a) {
+                    return (a.y * 10) + a.x;
+                });
+
+                return w;
+            },
             redrawRowWigets: function() {
                 var self = this;
 
                 var allGridElements = this.grid.save(false);
 
-                /**
-                 * We want to sort the grid elements by their x and y coordinates in
-                 * ascending order.
-                 */
-                allGridElements = _.sortBy(allGridElements, function(a) {
-                    return (a.y * 10) + a.x;
-                });
+
+                allGridElements = this.sortWidgetByGeography(allGridElements);
 
                 var Y;
                 var rowMaxH;
@@ -752,22 +927,49 @@
             },
             initGrid: function() {
                 var self = this;
+                var node, i, size, position, widgetId;
+
                 this.grid = GridStack.init({
                     cellHeight: 100,
                     margin: 10,
                     animate: true,
-                    float: false
+                    float: false,
+                    column: 4
                 });
 
+                var allGridWidgets = this.grid.save(false);
+
+                for (i = 0; i < allGridWidgets.length; i++) {
+                    node = allGridWidgets[i];
+                    widgetId = node.id;
+                    size = [node.w, node.h];
+                    position = [node.x, node.y];
+
+                    this.updateWidgetGeography(widgetId, {size: size, position: position});
+                }
+
+
                 this.grid.on("change", function(event, items) {
-                    for (var i = 0; i < items.length; i++) {
-                        var node = items[i];
-                        var widgetId = node.id;
+                    /**
+                     * We don't need computed property here.
+                     * Lets get all widget via the method.
+                     */
+                    var allWidgets = self.getAllWidgets();
+
+                    for (i = 0; i < items.length; i++) {
+                        node = items[i];
+                        widgetId = node.id;
                         var setWidth = node.w;
                         var setHeight = node.h;
 
-                        var validatedWidth = self.calculateWidth(setWidth);
-                        var validatedHeight = self.calculateHeight(setHeight);
+                        // eslint-disable-next-line no-loop-func
+                        var widget = allWidgets.find(function(w) {
+                            return w._id === widgetId;
+                        });
+
+                        var setting = self.widgetSettingsGetter(widget);
+                        var validatedWidth = self.calculateWidth(setting, setWidth);
+                        var validatedHeight = self.calculateHeight(setting, setHeight);
 
                         var finalWidth = setWidth;
                         var finalHeight = setHeight;
@@ -796,15 +998,15 @@
                             self.updateGridWidget(node.el, {w: finalWidth, h: finalHeight});
                         }
 
-                        var size = [finalWidth, finalHeight];
-                        var position = [node.x, node.y];
+                        size = [finalWidth, finalHeight];
+                        position = [node.x, node.y];
 
                         /**
                          * You can even check if the widget position is a multiple of 3.
                          * Lets do this later.
                          */
 
-                        self.updateWidget(widgetId, {size: size, position: position});
+                        self.updateWidgetGeography(widgetId, {size: size, position: position});
                     }
 
                     //self.redrawRowWigets();
@@ -827,29 +1029,77 @@
                      * in an available space. Vue's reactivity will create the widget
                      * automatically in the grid once its added to vuex.
                      */
-                    var node = element[0];
+                    node = element[0];
 
                     if (node && node.new) {
-                        var widgetId = node.id;
-                        var position = [node.x, node.y];
-                        var size = [node.w, node.h];
+                        widgetId = node.id;
+                        position = [node.x, node.y];
+                        size = [node.w, node.h];
 
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position, size: size}}).then(function(res) {
                             if (res) {
                                 self.$store.dispatch("countlyDashboards/widgets/get", widgetId).then(function() {
                                     self.removeGridWidget(node.el);
+                                    self.$emit("widget-added", widgetId);
                                 });
                             }
                         });
                     }
                 });
+
+                //self.redrawRowWigets();
             },
-            updateWidget: function(widgetId, settings) {
+            updateWidgetGeography: function(widgetId, settings) {
                 var self = this;
+
+                this.syncWidgetGeography({_id: widgetId, size: settings.size, position: settings.position});
 
                 setTimeout(function() {
                     self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
-                }, 100);
+                }, 50);
+            },
+            syncWidgetGeography: function(widget) {
+                this.$store.dispatch("countlyDashboards/widgets/syncGeography", widget);
+            },
+            validateWidgets: function(allWidgets) {
+                if (this.grid) {
+                    var self = this;
+                    this.$nextTick(function() {
+                        /**
+                         * Lets execute the following code on the nextTick.
+                         * If we execute it on the same tick, the event loop is
+                         * blocked and the grid becomes very laggy and unresponsive.
+                         *
+                         * Following code mainly fixes the issue when the grid is in
+                         * loading state with some placeholder widgets in the grid,
+                         * that are locked and cannot move and resize themselves.
+                         * We need to update them when the widgets data arrive so that
+                         * users can interact with them (i.e. move or resize them).
+                         */
+                        self.grid.batchUpdate();
+
+                        for (var i = 0; i < allWidgets.length; i++) {
+                            var widget = allWidgets[i];
+                            var widgetId = widget._id;
+
+                            var locked = self.isWidgetLocked(widget);
+                            var noResize = self.widgetResizeNotAllowed(widget);
+                            var noMove = self.widgetMoveNotAllowed(widget);
+
+                            var nodeEl = document.getElementById(widgetId);
+
+                            var setting = {
+                                locked: locked,
+                                noMove: noMove,
+                                noResize: noResize
+                            };
+
+                            self.updateGridWidget(nodeEl, setting);
+                        }
+
+                        self.grid.commit();
+                    });
+                }
             },
             updateGridWidget: function(el, settings) {
                 this.grid.update(el, settings);
@@ -874,6 +1124,9 @@
                  */
 
                 if (this.grid) {
+                    /**
+                     * On making the widget "added" event is fired by the grid.
+                     */
                     this.grid.makeWidget("#" + id);
                 }
             },
@@ -911,7 +1164,8 @@
         },
         data: function() {
             return {
-                dashboardId: this.$route.params && this.$route.params.dashboardId
+                dashboardId: this.$route.params && this.$route.params.dashboardId,
+                ADDING_WIDGET: false,
             };
         },
         computed: {
@@ -932,18 +1186,22 @@
         },
         methods: {
             refresh: function() {
+                if (this.ADDING_WIDGET) {
+                    return;
+                }
+
                 if (!this.drawers.dashboards.isOpened && !this.drawers.widgets.isOpened) {
                     /**
                      * Refresh only if the drawers are not open at the moment.
                      */
-                    this.getDashboardData(true);
+                    this.dateChanged(true);
                 }
             },
-            dateChanged: function() {
-                this.getDashboardData(true);
+            dateChanged: function(isRefresh) {
+                this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh});
             },
-            getDashboardData: function(isRefresh) {
-                this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: isRefresh});
+            getDashboardData: function() {
+                this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false});
             },
             onDashboardAction: function(command, data) {
                 var self = this;
@@ -992,7 +1250,11 @@
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
             },
             addWidgetToGrid: function(widget) {
+                this.ADDING_WIDGET = true;
                 this.$refs.grid.addWidget(widget);
+            },
+            onWidgetAdded: function() {
+                this.ADDING_WIDGET = false;
             }
         },
         beforeMount: function() {
@@ -1105,7 +1367,7 @@
                     });
 
                     if (!currMenu) {
-                        countlyDashboards.factory.log("Dashboard not found - " + id + ", Dashboards = " + dashboards);
+                        countlyDashboards.factory.log("Dashboard not found - " + id + ", Dashboards = " + JSON.stringify(dashboards));
                     }
 
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
