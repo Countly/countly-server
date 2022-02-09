@@ -582,12 +582,16 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            hasExport: {
+                type: Boolean,
+                default: true,
+                required: false
             }
         },
         data: function() {
             return {
                 selectedExportColumns: null,
-                hasExport: true,
                 selectedExportType: 'csv',
                 availableExportTypes: [
                     {'name': '.CSV', value: 'csv'},

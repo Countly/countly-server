@@ -10,6 +10,8 @@
             <cly-dynamic-tabs :no-history=true v-model="currentSecondaryTab" :tabs="secondaryTabs" skin="secondary"></cly-dynamic-tabs>
       </template>
       <template v-slot:header-right>
+
+        <cly-report-manager-dialog class="bu-mr-2" origin="data-manager"></cly-report-manager-dialog>
           <div v-if="isDrill && currentSecondaryTab !== 'validations'">
             <cly-more-options size="small" text="Create new" type="success" icon="el-icon-circle-plus" @command="handleCreateCommand($event, currentSecondaryTab)">
                 <el-dropdown-item v-if="currentSecondaryTab === 'events' || currentSecondaryTab === 'segmentation' " command="create-transform">
