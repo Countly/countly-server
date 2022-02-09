@@ -115,39 +115,11 @@
         data: function() {
             return {
                 GRID_COLUMNS: 4,
-                DEFAULT_MIN_WIDTH: 2
+                DEFAULT_MIN_WIDTH: 2,
+                MAX_ROW_X_SUM: 6
             };
         },
         methods: {
-            validateWidgetPosition: function(settings, widget, axis) {
-                var pos;
-
-                switch (axis) {
-                case "x":
-                    pos = widget.position && widget.position[0];
-
-                    var width = widget.size && widget.size[0];
-
-                    if (pos > this.GRID_COLUMNS) {
-                        pos = undefined;
-                    }
-
-                    if (Number.isInteger(width) && Number.isInteger(pos)) {
-                        var newPos = pos + width;
-
-                        if (newPos > this.GRID_COLUMNS) {
-                            pos = undefined;
-                        }
-                    }
-
-                    break;
-                case "y":
-                    pos = widget.position && widget.position[1];
-                    break;
-                }
-
-                return pos;
-            },
             validateWidgetSize: function(settings, widget, dimension) {
                 var size;
 
@@ -484,6 +456,10 @@
                         }
                     };
                 }
+            },
+            autoPosition: {
+                type: Boolean,
+                default: false
             }
         },
         components: {
@@ -668,6 +644,84 @@
                 this.validateWidgets(allWidgets);
 
                 return allWidgets;
+            },
+            autoPosition: function() {
+                /**
+                 * This computed property is created for backward compatibility of
+                 * the grid system.
+                 * In the older dashborads, we used 12 column grid system, but in
+                 * new dashboard we are using 4 column grid system.
+                 * In the 4 column grid system, total sum of x coordinates of all
+                 * widgets can be maximum 6. If the sum is greater than that, it means
+                 * the widget is still following the old grid structure.
+                 *
+                 * Widget can be positioned at x = 0, 1, 2, 3. Total sum = 6
+                 *
+                 * We should remove this computed property after all customers are
+                 * moved to the new dashboards and are following the new grid system.
+                 */
+                var allGeography = this.$store.getters["countlyDashboards/widgets/allGeography"];
+                var autoPosition = false;
+
+                var positions = allGeography.map(function(w) {
+                    var position = w.position;
+
+                    if (!Array.isArray(position) || (position.length !== 2)) {
+                        autoPosition = true;
+                        return;
+                    }
+
+                    if (!Number.isInteger(position[0]) || !Number.isInteger(position[1])) {
+                        autoPosition = true;
+                        return;
+                    }
+
+                    return {
+                        x: position[0],
+                        y: position[1],
+                    };
+                });
+
+                if (autoPosition) {
+                    return autoPosition;
+                }
+
+                var sortedGeography = this.sortWidgetByGeography(positions);
+
+                var rowXSum = 0;
+                var Y;
+
+                for (var i = 0; i < sortedGeography.length; i++) {
+                    var node = sortedGeography[i];
+                    var y = node.y;
+                    var x = node.x;
+
+                    if (x > this.GRID_COLUMNS) {
+                        autoPosition = true;
+                        break;
+                    }
+
+                    if (!Number.isInteger(Y)) {
+                        Y = y;
+                    }
+
+                    if (Y !== y) {
+                        /**
+                         * Means its a new row now.
+                         */
+                        Y = y;
+                        rowXSum = 0;
+                    }
+
+                    rowXSum += x;
+
+                    if (rowXSum > this.MAX_ROW_X_SUM) {
+                        autoPosition = true;
+                        break;
+                    }
+                }
+
+                return autoPosition;
             }
         },
         methods: {
@@ -758,18 +812,25 @@
             onReady: function(id) {
                 this.makeGridWidget(id);
             },
+            sortWidgetByGeography: function(widgets) {
+                /**
+                 * We want to sort the grid elements by their x and y coordinates in
+                 * ascending order.
+                 */
+
+                var w = _.sortBy(widgets, function(a) {
+                    return (a.y * 10) + a.x;
+                });
+
+                return w;
+            },
             redrawRowWigets: function() {
                 var self = this;
 
                 var allGridElements = this.grid.save(false);
 
-                /**
-                 * We want to sort the grid elements by their x and y coordinates in
-                 * ascending order.
-                 */
-                allGridElements = _.sortBy(allGridElements, function(a) {
-                    return (a.y * 10) + a.x;
-                });
+
+                allGridElements = this.sortWidgetByGeography(allGridElements);
 
                 var Y;
                 var rowMaxH;
@@ -884,7 +945,7 @@
                     size = [node.w, node.h];
                     position = [node.x, node.y];
 
-                    this.updateWidget(widgetId, {size: size, position: position});
+                    this.updateWidgetGeography(widgetId, {size: size, position: position});
                 }
 
 
@@ -944,7 +1005,7 @@
                          * Lets do this later.
                          */
 
-                        self.updateWidget(widgetId, {size: size, position: position});
+                        self.updateWidgetGeography(widgetId, {size: size, position: position});
                     }
 
                     //self.redrawRowWigets();
@@ -987,7 +1048,7 @@
 
                 //self.redrawRowWigets();
             },
-            updateWidget: function(widgetId, settings) {
+            updateWidgetGeography: function(widgetId, settings) {
                 var self = this;
 
                 this.syncWidgetGeography({_id: widgetId, size: settings.size, position: settings.position});

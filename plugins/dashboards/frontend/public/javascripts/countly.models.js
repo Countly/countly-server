@@ -188,6 +188,15 @@
             getters: {
                 all: function(state) {
                     return state.all;
+                },
+                allGeography: function(state) {
+                    return state.all.map(function(w) {
+                        return {
+                            _id: w._id,
+                            size: w.size,
+                            position: w.position
+                        };
+                    });
                 }
             },
             mutations: {
