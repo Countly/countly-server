@@ -230,6 +230,30 @@
                     if (index > -1) {
                         state.all.splice(index, 1);
                     }
+                },
+                syncGeography: function(state, widget) {
+                    var index = -1;
+
+                    for (var i = 0; i < state.all.length; i++) {
+                        if (state.all[i]._id === widget._id) {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    if ((index > -1) && (widget.size || widget.position)) {
+                        var obj = JSON.parse(JSON.stringify(state.all[index]));
+
+                        if (widget.size) {
+                            obj.size = widget.size;
+                        }
+
+                        if (widget.position) {
+                            obj.position = widget.position;
+                        }
+
+                        state.all.splice(index, 1, obj);
+                    }
                 }
             },
             actions: {
@@ -306,6 +330,9 @@
 
                         return false;
                     });
+                },
+                syncGeography: function(context, widget) {
+                    context.commit("syncGeography", widget);
                 }
             }
         });

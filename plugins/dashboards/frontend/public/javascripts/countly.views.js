@@ -114,7 +114,8 @@
     var WidgetValidationMixin = {
         data: function() {
             return {
-                WIDTH_MULTIPLIER: 3
+                GRID_COLUMNS: 4,
+                DEFAULT_MIN_WIDTH: 2
             };
         },
         methods: {
@@ -124,6 +125,21 @@
                 switch (axis) {
                 case "x":
                     pos = widget.position && widget.position[0];
+
+                    var width = widget.size && widget.size[0];
+
+                    if (pos > this.GRID_COLUMNS) {
+                        pos = undefined;
+                    }
+
+                    if (Number.isInteger(width) && Number.isInteger(pos)) {
+                        var newPos = pos + width;
+
+                        if (newPos > this.GRID_COLUMNS) {
+                            pos = undefined;
+                        }
+                    }
+
                     break;
                 case "y":
                     pos = widget.position && widget.position[1];
@@ -172,10 +188,12 @@
                 var dimensions = settings.grid.dimensions();
                 var minWidth = dimensions.minWidth;
 
-                /**
-                 * This function returns the width that is a multiple of 3 and closest to the old width.
-                 */
                 var w = width;
+
+                if (minWidth > this.GRID_COLUMNS) {
+                    minWidth = this.DEFAULT_MIN_WIDTH;
+                    countlyDashboards.factory.log("With the new dashboards, we have " + this.GRID_COLUMNS + " column grid system. So min width cannot be greater than " + this.GRID_COLUMNS + "! Old min width = " + dimensions.minWidth + ", New min width (set to default) = " + minWidth);
+                }
 
                 if (!w || w < minWidth) {
                     /**
@@ -186,20 +204,36 @@
                     countlyDashboards.factory.log("Width should be atleast equal to " + minWidth + "! Old width = " + width + ", New width = " + w);
                 }
 
-                var rem = w % this.WIDTH_MULTIPLIER;
-                if (rem !== 0) {
-                    var quo = parseInt(w / 3);
-                    var prevNum = quo * 3;
-                    var nextNum = (quo + 1) * 3;
-                    if (((w - prevNum) - (nextNum - w)) > 0) {
-                        w = nextNum;
-                    }
-                    else {
-                        w = prevNum;
-                    }
-
-                    countlyDashboards.factory.log("Width should be a multiple of " + this.WIDTH_MULTIPLIER + "! New width = " + w);
+                if (w > this.GRID_COLUMNS) {
+                    /**
+                     * If the width is greater than the allowed GRID Columns, lets
+                     * reset it to the minimum width of the widget.
+                     */
+                    w = minWidth;
+                    countlyDashboards.factory.log("Width cannot be greater than " + this.GRID_COLUMNS + "! Old width = " + width + ", New width = " + w);
                 }
+
+                /**
+                    Following code is nomore required.
+                    It would have been required if grid stack didn't allow setting
+                    custom columns.
+
+                    var widthMultiplier = 4;
+                    var rem = w % widthMultiplier;
+                    if (rem !== 0) {
+                        var quo = parseInt(w / widthMultiplier);
+                        var prevNum = quo * widthMultiplier;
+                        var nextNum = (quo + 1) * widthMultiplier;
+                        if (((w - prevNum) - (nextNum - w)) > 0) {
+                            w = nextNum;
+                        }
+                        else {
+                            w = prevNum;
+                        }
+
+                        countlyDashboards.factory.log("Width should be a multiple of " + widthMultiplier + "! New width = " + w);
+                    }
+                */
 
                 return w;
             },
@@ -705,7 +739,7 @@
                 var validatedWidth = this.calculateWidth(setting, dimensions.width);
                 var validatedHeight = this.calculateHeight(setting, dimensions.height);
                 var validatedMinWidth = this.calculateWidth(setting, dimensions.minWidth);
-                var validatedMinHeight = this.calculateWidth(setting, dimensions.minHeight);
+                var validatedMinHeight = this.calculateHeight(setting, dimensions.minHeight);
 
                 if (id) {
                     var node = {
@@ -832,12 +866,27 @@
             },
             initGrid: function() {
                 var self = this;
+                var node, i, size, position, widgetId;
+
                 this.grid = GridStack.init({
                     cellHeight: 100,
                     margin: 10,
                     animate: true,
-                    float: false
+                    float: false,
+                    column: 4
                 });
+
+                var allGridWidgets = this.grid.save(false);
+
+                for (i = 0; i < allGridWidgets.length; i++) {
+                    node = allGridWidgets[i];
+                    widgetId = node.id;
+                    size = [node.w, node.h];
+                    position = [node.x, node.y];
+
+                    this.updateWidget(widgetId, {size: size, position: position});
+                }
+
 
                 this.grid.on("change", function(event, items) {
                     /**
@@ -846,9 +895,9 @@
                      */
                     var allWidgets = self.getAllWidgets();
 
-                    for (var i = 0; i < items.length; i++) {
-                        var node = items[i];
-                        var widgetId = node.id;
+                    for (i = 0; i < items.length; i++) {
+                        node = items[i];
+                        widgetId = node.id;
                         var setWidth = node.w;
                         var setHeight = node.h;
 
@@ -887,8 +936,8 @@
                             self.updateGridWidget(node.el, {w: finalWidth, h: finalHeight});
                         }
 
-                        var size = [finalWidth, finalHeight];
-                        var position = [node.x, node.y];
+                        size = [finalWidth, finalHeight];
+                        position = [node.x, node.y];
 
                         /**
                          * You can even check if the widget position is a multiple of 3.
@@ -918,12 +967,12 @@
                      * in an available space. Vue's reactivity will create the widget
                      * automatically in the grid once its added to vuex.
                      */
-                    var node = element[0];
+                    node = element[0];
 
                     if (node && node.new) {
-                        var widgetId = node.id;
-                        var position = [node.x, node.y];
-                        var size = [node.w, node.h];
+                        widgetId = node.id;
+                        position = [node.x, node.y];
+                        size = [node.w, node.h];
 
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position, size: size}}).then(function(res) {
                             if (res) {
@@ -935,13 +984,20 @@
                         });
                     }
                 });
+
+                //self.redrawRowWigets();
             },
             updateWidget: function(widgetId, settings) {
                 var self = this;
 
+                this.syncWidgetGeography({_id: widgetId, size: settings.size, position: settings.position});
+
                 setTimeout(function() {
                     self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
-                }, 100);
+                }, 50);
+            },
+            syncWidgetGeography: function(widget) {
+                this.$store.dispatch("countlyDashboards/widgets/syncGeography", widget);
             },
             validateWidgets: function(allWidgets) {
                 if (this.grid) {
@@ -1076,14 +1132,14 @@
                     /**
                      * Refresh only if the drawers are not open at the moment.
                      */
-                    this.getDashboardData(true);
+                    this.dateChanged(true);
                 }
             },
-            dateChanged: function() {
-                this.getDashboardData(true);
+            dateChanged: function(isRefresh) {
+                this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh});
             },
-            getDashboardData: function(isRefresh) {
-                this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: isRefresh});
+            getDashboardData: function() {
+                this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false});
             },
             onDashboardAction: function(command, data) {
                 var self = this;
