@@ -1,0 +1,8 @@
+<div>
+    <clyd-sourceapps v-model="scope.editedObject.apps" :multiple="false"></clyd-sourceapps>
+    <clyd-datatype v-model="scope.editedObject.data_type"></clyd-datatype>
+    <clyd-visualization v-model="scope.editedObject.visualization" :enabled-types="enabledVisualizationTypes"></clyd-visualization>
+    <clyd-metric v-model="scope.editedObject.metrics" :metrics="metrics" :multiple="isMultipleMetric"></clyd-metric>
+    <clyd-title v-model="scope.editedObject.title"></clyd-title>
+	<clyd-period v-model="scope.editedObject.custom_period"></clyd-period>
+</div>
