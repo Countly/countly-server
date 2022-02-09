@@ -67,9 +67,9 @@
             component: WidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 6,
+                    minWidth: 1,
                     minHeight: 3,
-                    width: 6,
+                    width: 1,
                     height: 3
                 };
             }

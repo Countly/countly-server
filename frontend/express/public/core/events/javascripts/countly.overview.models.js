@@ -102,7 +102,7 @@
         getOverviewConfigureList: function(eventsList, groupList) {
             var map = eventsList.map || {};
             var allEvents = [];
-            if (eventsList) {
+            if (eventsList && eventsList.list) {
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
                         var obj = {
@@ -129,7 +129,7 @@
         getEventMapping: function(eventsList, groupList) {
             var map = eventsList.map || {};
             var mapping = {};
-            if (eventsList) {
+            if (eventsList && eventsList.list) {
                 eventsList.list.forEach(function(item) {
                     var obj = {
                         "eventKey": item,

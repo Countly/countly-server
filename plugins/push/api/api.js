@@ -154,8 +154,8 @@ plugins.register('/i', async ob => {
                         upd = updates[msg.id] = {$inc: {'result.actioned': count}};
                     }
 
-                    if (!p && params.headers && params.headers['user-agent']) {
-                        p = guess(params.headers['user-agent']);
+                    if (!p && params.req.headers['user-agent']) {
+                        p = guess(params.req.headers['user-agent']);
                     }
 
                     event.segmentation.a = msg.triggers.filter(t => t.kind === TriggerKind.Cohort || t.kind === TriggerKind.Event).length > 0;

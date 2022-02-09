@@ -109,6 +109,10 @@
             disableAutoNavigationToTask: {
                 type: Boolean,
                 default: false
+            },
+            maxHeight: {
+                type: String,
+                default: null
             }
         },
         computed: {
