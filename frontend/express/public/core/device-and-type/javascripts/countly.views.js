@@ -352,6 +352,177 @@ var TechnologyHomeWidget = countlyVue.views.create({
     }
 });
 
+
+var GridComponent = countlyVue.views.create({
+    template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
+    mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+    props: {
+        data: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        }
+    },
+    mounted: function() {
+    },
+    data: function() {
+        return {
+            showBuckets: false,
+            map: {
+                "platforms": this.i18n("platforms.title"),
+                "app_versions": this.i18n("app-versions.title"),
+                "resolutions": this.i18n("resolutions.title"),
+                "density": this.i18n("density.title"),
+                "carriers": this.i18n("carriers.title"),
+                "devices": this.i18n("devices.title"),
+                "browser": this.i18n("browser.title"),
+                "device_type": this.i18n("device_type.device_types"),
+            },
+            tableMap: {
+                "u": this.i18n("common.table.total-users"),
+                "t": this.i18n("common.total-sessions"),
+                "n": this.i18n("common.table.new-users"),
+                "resolutions": this.i18n("resolutions.table.resolution"),
+                "app_versions": this.i18n("app-versions.table.app-version"),
+                "os": this.i18n("platforms.table.platform"),
+                "devices": this.i18n("devices.table.device"),
+                "density": this.i18n("density.table.density"),
+                "carriers": this.i18n("carriers.table.carrier"),
+                "browser": this.i18n("browser.table.browser"),
+                "device_type": this.i18n("device_type.table.device_type"),
+            }
+        };
+    },
+    methods: {
+        refresh: function() {
+
+        },
+    },
+    computed: {
+        title: function() {
+            if (this.data.title) {
+                return this.data.title;
+            }
+            if (this.data.dashData) {
+                return CV.i18n("sidebar.analytics.technology") + " (" + (this.map[this.data.breakdowns[0]] || this.data.breakdowns[0]) + ")";
+            }
+            return "";
+        },
+        metricLabels: function() {
+            return [];
+        },
+        getTableData: function() {
+            return this.calculateTableDataFromWidget(this.data);
+        },
+        tableStructure: function() {
+            return this.calculateTableColsFromWidget(this.data, this.tableMap);
+        },
+        stackedBarOptions: function() {
+            return this.calculateStackedBarOptionsFromWidget(this.data);
+        },
+        pieGraph: function() {
+            return this.calculatePieGraphFromWidget(this.data, this.tableMap);
+        }
+    }
+});
+
+var DrawerComponent = countlyVue.views.create({
+    template: CV.T('/core/device-and-type/templates/widgetDrawer.html'),
+    data: function() {
+        return {
+
+        };
+    },
+    computed: {
+        metrics: function() {
+            return [
+                { label: this.i18n("common.table.total-users"), value: "u" },
+                { label: this.i18n("common.table.new-users"), value: "n" },
+                { label: this.i18n("common.total-sessions"), value: "t" }
+            ];
+        },
+        enabledVisualizationTypes: function() {
+            return ['pie-chart', 'bar-chart', 'table'];
+        },
+        isMultipleMetric: function() {
+            var multiple = false;
+            var visualization = this.scope.editedObject.visualization;
+            if (visualization === 'table') {
+                multiple = true;
+            }
+
+            return multiple;
+        },
+    },
+    mounted: function() {
+        if (this.scope.editedObject.breakdowns.length === 0) {
+            this.scope.editedObject.breakdowns = ['devices'];
+        }
+    },
+    methods: {
+    },
+    watch: {
+
+    },
+    props: {
+        scope: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        }
+    }
+});
+
+countlyVue.container.registerData("/custom/dashboards/widget", {
+    type: "analytics",
+    label: CV.i18n("user-analytics.overview-title"),
+    priority: 1,
+    primary: false,
+    getter: function(widget) {
+        if (widget.widget_type === "analytics" && widget.data_type === "technology") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    },
+    drawer: {
+        component: DrawerComponent,
+        getEmpty: function() {
+            return {
+                title: "",
+                widget_type: "analytics",
+                data_type: "technology",
+                app_count: 'single',
+                metrics: [],
+                apps: [],
+                visualization: "",
+                breakdowns: ['devices'],
+                custom_period: "30days",
+            };
+        },
+        beforeLoadFn: function(/*doc, isEdited*/) {
+        },
+        beforeSaveFn: function(/*doc*/) {
+        }
+    },
+    grid: {
+        component: GridComponent,
+        dimensions: function() {
+            return {
+                minWidth: 4,
+                minHeight: 3,
+                width: 6,
+                height: 4
+            };
+        }
+    }
+
+});
+
+
 countlyVue.container.registerData("/home/widgets", {
     _id: "technology-dashboard-widget",
     label: CV.i18n('sidebar.analytics.technology'),
