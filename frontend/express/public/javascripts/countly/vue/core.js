@@ -163,8 +163,8 @@
     var DashboardsHelpersMixin = {
         methods: {
             calculateTableDataFromWidget: function(widgetData) {
-                var dd = widgetData || {};
-                dd = dd.dashData || {};
+                widgetData = widgetData || {};
+                var dd = widgetData.dashData || {};
                 dd = dd.data || {};
 
                 if (widgetData.apps && widgetData.apps[0]) {
@@ -181,8 +181,10 @@
                 return tableData;
             },
             calculateTableColsFromWidget: function(widgetData, namingMap) {
-                var dd = widgetData || {};
-                dd = dd.dashData || {};
+                widgetData = widgetData || {};
+                widgetData.metrics = widgetData.metrics || [];
+
+                var dd = widgetData.dashData || {};
                 dd = dd.data || {};
 
                 if (widgetData.apps && widgetData.apps[0]) {
@@ -217,8 +219,9 @@
                 return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], "data": series, stack: "A"}]};
             },
             calculatePieGraphFromWidget: function(widgetData, namingMap) {
-                var dd = widgetData || {};
-                dd = dd.dashData || {};
+                widgetData = widgetData || {};
+                widgetData.metrics = widgetData.metrics || [];
+                var dd = widgetData.dashData || {};
                 dd = dd.data || {};
 
                 if (widgetData.apps && widgetData.apps[0]) {
