@@ -166,6 +166,21 @@
             .dz-preview{
                 margin-top: 24px;
             }
+            .dz-filename{
+                margin-bottom: 8px;
+            }
+            .dz-remove{
+                margin-bottom: 10px;
+            }
+            .dz-filename::before{
+                content: url('/data-manager/images/upload-icon.svg');
+                vertical-align: middle;
+                display: inline-block;
+                margin-right: 8px;
+            }
         }
+    }
+    .cly-vue-diff-helper{
+        z-index: 2000 !important;
     }
 }

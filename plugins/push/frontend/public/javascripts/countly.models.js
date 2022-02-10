@@ -193,6 +193,23 @@
                 periods: {daily: []},
             };
         },
+        getInitialModelDashboardPlatform: function() {
+            return {
+                sent: 0,
+                actioned: 0,
+                errored: 0,
+                processed: 0,
+                total: 0,
+                locales: {}
+            };
+        },
+        getInitialModelDashboard: function() {
+            var result = {};
+            result[PlatformEnum.ANDROID] = this.getInitialModelDashboardPlatform();
+            result[PlatformEnum.IOS] = this.getInitialModelDashboardPlatform();
+            result[PlatformEnum.ALL] = this.getInitialModelDashboardPlatform();
+            return result;
+        },
         getInitialBaseModel: function() {
             return {
                 _id: null,
@@ -253,6 +270,7 @@
                     days: 7,
                     hours: 0
                 },
+                dashboard: this.getInitialModelDashboard()
             };
         },
         getInitialOneTimeModel: function() {
@@ -669,13 +687,13 @@
                 return Promise.resolve(countlySegmentation.getFilters());
             });
         },
-        searchUsers: function(query) {
+        searchUsers: function(query, options) {
             var data = {
                 query: JSON.stringify(query)
             };
             return CV.$.ajax({
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_details",
+                url: countlyCommon.API_PARTS.data.r + "?app_id=" + options.appId + "&method=user_details",
                 contentType: "application/json",
                 data: JSON.stringify(data)
             }, {disableAutoCatch: true});
@@ -896,7 +914,7 @@
                     code: CV.i18n('push-notification.error-code.' + errorKey),
                     codePostfix: '',
                     affectedUsers: errorsDto[errorKey],
-                    description: CV.i18n('push-notification.error-code.' + errorKey + '.desc', '<a target="blank" href="https://support.count.ly/hc/en-us/articles/360037270012-Push-notifications#troubleshooting">Troubleshooting</a>'),
+                    description: CV.i18n('push-notification.error-code.' + errorKey + '.desc', errorsDto[errorKey]),
                 };
             },
             mapErrorWithCode: function(errorsDto, errorKey) {
@@ -915,8 +933,22 @@
                 }
                 return result;
             },
+            getExpiredTokenErrorIfFound: function(dto) {
+                if (dto.result && (dto.result.processed > (dto.result.sent + dto.result.errored))) {
+                    var affectedUsers = dto.result.processed - (dto.result.sent + dto.result.errored);
+                    return {'expired': affectedUsers};
+                }
+                return null;
+            },
             mapErrors: function(dto) {
                 var self = this;
+                var expiredTokenError = this.getExpiredTokenErrorIfFound(dto);
+                if (expiredTokenError) {
+                    if (!dto.errors) {
+                        dto.errors = {};
+                    }
+                    Object.assign(dto.errors, expiredTokenError);
+                }
                 if (!dto.errors) {
                     return [];
                 }
@@ -1095,7 +1127,7 @@
                 result[TypeEnum.TRANSACTIONAL] = dto.sent_tx.total;
                 return result;
             },
-            mapDashboard: function(dashboardDto, type) {
+            mapMainDashboard: function(dashboardDto, type) {
                 return {
                     series: this.mapSeries(dashboardDto, type),
                     periods: this.mapPeriods(dashboardDto, type),
@@ -1104,6 +1136,71 @@
                     totalActions: this.mapTotalActions(dashboardDto),
                     totalSent: this.mapTotalSent(dashboardDto)
                 };
+            },
+            mapAndroidDashboard: function(dto) {
+                return {
+                    sent: dto.result.subs[PlatformDtoEnum.ANDROID].sent || 0,
+                    actioned: dto.result.subs[PlatformDtoEnum.ANDROID].actioned || 0,
+                    errored: dto.result.subs[PlatformDtoEnum.ANDROID].errored || 0,
+                    processed: dto.result.subs[PlatformDtoEnum.ANDROID].processed || 0,
+                    total: dto.result.subs[PlatformDtoEnum.ANDROID].total || 0,
+                    locales: dto.result.subs[PlatformDtoEnum.ANDROID].subs || {},
+                };
+            },
+            mapIosDashboard: function(dto) {
+                return {
+                    sent: dto.result.subs[PlatformDtoEnum.IOS].sent || 0,
+                    actioned: dto.result.subs[PlatformDtoEnum.IOS].actioned || 0,
+                    errored: dto.result.subs[PlatformDtoEnum.IOS].errored || 0,
+                    processed: dto.result.subs[PlatformDtoEnum.IOS].processed || 0,
+                    total: dto.result.subs[PlatformDtoEnum.IOS].total || 0,
+                    locales: dto.result.subs[PlatformDtoEnum.IOS].subs || {},
+                };
+            },
+            mapAllDashboardLocales: function(locales, dto, platformDto, platform) {
+                var allLocales = Object.assign({}, locales);
+                Object.keys(dto.result.subs[platformDto].subs).forEach(function(key) {
+                    if (!allLocales[platform]) {
+                        allLocales[key] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
+                    }
+                    allLocales[key].sent = allLocales[key].sent + dto.result.subs[platformDto].subs[key].sent || 0;
+                    allLocales[key].actioned = allLocales[key].actioned + dto.result.subs[platformDto].subs[key].actioned || 0;
+                    allLocales[key].errored = allLocales[key].failed + dto.result.subs[platformDto].subs[key].errored || 0;
+                    allLocales[key].processed = allLocales[key].processed + dto.result.subs[platformDto].subs[key].processed || 0;
+                    allLocales[key].total = allLocales[key].total + dto.result.subs[platformDto].subs[key].total || 0;
+                });
+                return allLocales;
+            },
+            mapAllDashboard: function(dto) {
+                var allLocales = {};
+                if (dto.result.subs && dto.result.subs[PlatformDtoEnum.IOS]) {
+                    allLocales = this.mapAllDashboardLocales(allLocales, dto, PlatformDtoEnum.IOS, PlatformEnum.IOS);
+                }
+                if (dto.result.subs && dto.result.subs[PlatformDtoEnum.ANDROID]) {
+                    allLocales = this.mapAllDashboardLocales(allLocales, dto, PlatformDtoEnum.ANDROID, PlatformEnum.ANDROID);
+                }
+                return {
+                    sent: dto.result.sent || 0,
+                    actioned: dto.result.actioned || 0,
+                    errored: dto.result.errored || 0,
+                    processed: dto.result.processed || 0,
+                    total: dto.result.total || 0,
+                    locales: allLocales,
+                };
+            },
+            mapDashboard: function(dto) {
+                var model = {};
+                model[PlatformEnum.ANDROID] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
+                model[PlatformEnum.IOS] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
+                model[PlatformEnum.ALL] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
+                if (dto.result.subs && dto.result.subs[PlatformDtoEnum.ANDROID]) {
+                    model[PlatformEnum.ANDROID] = this.mapAndroidDashboard(dto);
+                }
+                if (dto.result.subs && dto.result.subs[PlatformDtoEnum.IOS]) {
+                    model[PlatformEnum.IOS] = this.mapIosDashboard(dto);
+                }
+                model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
+                return model;
             },
             mapDtoToBaseModel: function(dto) {
                 var localizations = this.mapLocalizations(dto.info && dto.info.locales || []);
@@ -1115,11 +1212,6 @@
                         time: moment(dto.created).format("H:mm")
                     },
                     name: dto.info && dto.info.title || "-",
-                    sent: dto.result.sent,
-                    actioned: dto.result.actioned,
-                    failed: dto.result.errors,
-                    processed: dto.result.processed,
-                    total: dto.result.total,
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
                     localizations: localizations,
@@ -1133,6 +1225,7 @@
                     user: dto.filter && dto.filter.user,
                     drill: dto.filter && dto.filter.drill,
                     expiration: countlyPushNotification.helper.convertMSToDaysAndHours(this.findDefaultLocaleItem(dto.contents).expiration),
+                    dashboard: this.mapDashboard(dto),
                 };
             },
             mapDtoToOneTimeModel: function(dto) {
@@ -1795,10 +1888,10 @@
             },
             mapTestUsersEditedModelToDto: function(editedModel) {
                 var testUsersDto = {};
-                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.USER_ID) {
+                if (editedModel.userIds && editedModel.userIds.length) {
                     Object.assign(testUsersDto, {uids: editedModel.userIds.join(',')});
                 }
-                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.COHORT) {
+                if (editedModel.cohorts && editedModel.cohorts.length) {
                     Object.assign(testUsersDto, {cohorts: editedModel.cohorts.join(',')});
                 }
                 return testUsersDto;
@@ -2004,7 +2097,7 @@
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.getDashboard(data)
                     .then(function(response) {
-                        resolve(countlyPushNotification.mapper.incoming.mapDashboard(response, type));
+                        resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));
                     }).catch(function(error) {
                         reject(error);
                     });
@@ -2028,14 +2121,11 @@
                 return Promise.resolve([]);
             });
         },
-        fetchTestUsers: function(options) {
+        fetchTestUsers: function(testUsers, options) {
             var self = this;
-            var queries = [];
-            if (options.uids && options.uids.length) {
-                queries.push({uid: {$in: options.uids}});
-            }
-            if (options.cohorts && options.cohorts.length) {
-                queries.push({chr: {$in: options.cohorts}});
+            var usersQuery = null;
+            if (testUsers.uids && testUsers.uids.length) {
+                usersQuery = {uid: {$in: testUsers.uids}};
             }
             return new Promise(function(resolve, reject) {
                 if (!self.isDrillPluginEnabled()) {
@@ -2046,26 +2136,23 @@
                     reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
                     return;
                 }
-                Promise.all(queries.map(function(testUserQuery) {
-                    return countlyPushNotification.api.searchUsers(testUserQuery);
-                }))
+                Promise.all([usersQuery ? countlyPushNotification.api.searchUsers(usersQuery, options) : Promise.resolve([]), self.fetchCohorts(testUsers.cohorts || [], false)])
                     .then(function(responses) {
-                        var testUsersArraysList = responses.map(function(queryResponse) {
-                            return queryResponse.aaData;
-                        });
-                        var allTestUsers = testUsersArraysList.reduce(function(addedTestUsersList, currentArray) {
-                            return addedTestUsersList.concat(currentArray);
-                        }, []).map(function(user) {
-                            return {_id: user._id, username: user.name || '', picture: user.picture};
-                        });
-                        resolve(allTestUsers);
+                        var usersList = responses[0];
+                        var cohortsList = responses[1];
+
+                        var users = usersList.aaData;
+                        var result = {};
+                        result[AddTestUserDefinitionTypeEnum.USER_ID] = users;
+                        result[AddTestUserDefinitionTypeEnum.COHORT] = cohortsList;
+                        resolve(result);
                     }).catch(function(error) {
                     // TODO: log error;
                         reject(error);
                     });
             });
         },
-        searchUsersById: function(idQuery) {
+        searchUsersById: function(idQuery, options) {
             var self = this;
             return new Promise(function(resolve, reject) {
                 if (!self.isDrillPluginEnabled()) {
@@ -2077,7 +2164,7 @@
                     return;
                 }
                 var drillQuery = {did: {rgxcn: [idQuery]}};
-                countlyPushNotification.api.searchUsers(drillQuery)
+                countlyPushNotification.api.searchUsers(drillQuery, options)
                     .then(function(response) {
                         if (response && response.aaData) {
                             resolve(response.aaData.map(function(user) {
@@ -2185,7 +2272,7 @@
             }
             return countlyPushNotificationApprover.service.approve(messageId);
         },
-        addTestUsers: function(testUsersModel, options) {
+        updateTestUsers: function(testUsersModel, options) {
             try {
                 var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(testUsersModel);
                 var appConfig = {push: {test: {}}};
@@ -2207,7 +2294,8 @@
         return {
             pushNotification: countlyPushNotification.helper.getInitialModel(TypeEnum.ONE_TIME),
             platformFilter: PlatformEnum.ALL,
-            localFilter: "default",
+            localeFilter: null,
+            messageLocaleFilter: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
             userCommand: {
                 type: null,
                 pushNotificationId: null
@@ -2265,12 +2353,15 @@
                     });
             });
         },
-        onSetLocalFilter: function(context, value) {
-            context.commit('setLocalFilter', value);
+        onSetLocaleFilter: function(context, value) {
+            context.commit('setLocaleFilter', value);
         },
         onSetPlatformFilter: function(context, value) {
             context.commit('setPlatformFilter', value);
         },
+        onSetMessageLocaleFilter: function(context, value) {
+            context.commit('setMessageLocaleFilter', value);
+        }
     };
 
     var detailsMutations = {
@@ -2283,11 +2374,14 @@
         setIsDrawerOpen: function(state, value) {
             state.isDrawerOpen = value;
         },
-        setLocalFilter: function(state, value) {
-            state.localFilter = value;
+        setLocaleFilter: function(state, value) {
+            state.localeFilter = value;
         },
         setPlatformFilter: function(state, value) {
             state.platformFilter = value;
+        },
+        setMessageLocaleFilter: function(state, value) {
+            state.messageLocaleFilter = value;
         },
     };
 

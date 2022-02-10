@@ -120,6 +120,14 @@
                 }
             },
         },
+        data: function() {
+            return {
+                isMounted: false
+            };
+        },
+        mounted: function() {
+            this.isMounted = true;
+        },
         computed: {
             levelClass: function() {
                 return {
@@ -133,7 +141,7 @@
                 return classes;
             },
             isConfigSlotUsed: function() {
-                return !!this.$slots.config && !this.hideConfig;
+                return this.isMounted && !!this.$slots.config && !this.hideConfig;
             },
         },
         template: '<div class="cly-vue-section" :class="topClasses">\

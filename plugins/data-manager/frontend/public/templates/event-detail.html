@@ -131,7 +131,7 @@
                 </el-table-column>
                 <el-table-column type="options" width="90px" align="center">
                     <template v-slot="rowScope">
-                        <el-button @click="handleEditSegment(rowScope.row)" size="small">Edit</el-button>
+                        <el-button v-if="rowScope.row.hover" @click="handleEditSegment(rowScope.row)" size="small">Edit</el-button>
                     </template>
                 </el-table-column>
             </template>
