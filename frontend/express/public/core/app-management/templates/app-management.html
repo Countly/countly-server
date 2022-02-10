@@ -276,7 +276,7 @@
                         <cly-diff-helper :diff="changeKeys" @discard="onDiscard" @save="saveSettings" :disabled="v.invalid" :emitSaveWhenDisabled="true"></cly-diff-helper>
                     </validation-observer>
                 </cly-section>
-                <el-card class="box-card color-cool-gray-100" v-if="!newApp" >
+                <el-card class="box-card color-cool-gray-100" v-if="!newApp && isCode" >
                     <p>{{i18n('common.integrate-sdks')}}</p>
                     <p><a href='https://code.count.ly' target='_blank'>Countly Code Generator </a>{{i18n('common.integrate-sdks-text')}}</p>
                     <p class="select-platforms">{{i18n('common.integrate-sdks-platforms')}}</p>

@@ -21,6 +21,14 @@
                     app.navigate("#/manage/apps/" + value);
                 }
             },
+            isCode: function() {
+                if (countlyGlobal.config && countlyGlobal.config.code) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
         },
         data: function() {
             var countries = [];
