@@ -81,13 +81,6 @@
         methods: {
             beforeCopy: function(data) {
                 return data;
-            },
-            onWidgetCommand: function(event) {
-                if (event === 'clear') {
-                    return;
-                }
-
-                return this.$emit('command', event);
             }
         }
     });
