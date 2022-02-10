@@ -1418,9 +1418,6 @@
                     show: false
                 };
             },
-            totalAppUsers: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.total;
-            },
             isLoading: function() {
                 return this.$store.getters['countlyPushNotification/details/isLoading'];
             },
@@ -1444,9 +1441,6 @@
             },
             userCommand: function() {
                 return this.$store.state.countlyPushNotification.details.userCommand;
-            },
-            dashboard: function() {
-                return this.pushNotification.dashboard;
             },
             selectedLocaleFilter: {
                 get: function() {
