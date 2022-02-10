@@ -26,12 +26,12 @@
     <cly-section class="bu-mx-5 cly-vue-data-manager__box-container--boxed">
         <div class="bu-columns bu-is-gapless">
             <div class="bu-column">
-                <div class="bu-mx-5 bu-my-5">
+                <div class="bu-mx-5 bu-mt-5">
                     <div class="bu-mt-5">
                         <span class="text-medium font-weight-bold text-uppercase">
                             Event Group Details
                         </span>
-                        <table class="bu-mt-5 cly-vue-data-manager__box-container__table text-medium">
+                        <table class="bu-mt-1 cly-vue-data-manager__box-container__table text-medium">
                             <colgroup>
                                 <col width="30%" />
                                 <col width="70%" />
@@ -47,7 +47,7 @@
                                         <span>Included Events</span>
                                     </td>
                                     <td>
-                                        <div v-for="e in eventGroup.source_events">{{e}}</div>
+                                        <div class="bu-mb-2" v-for="e in eventGroup.source_events">{{e}}</div>
                                     </td>
                                 </tr>
                             </tbody>
