@@ -32,7 +32,7 @@
                 </div>
             </template>
         </widget-invalid>
-        <component v-else :is="settings.grid.component" :data="widget">
+        <component v-else :is="settings.grid.component" @command="$emit('command', $event, widget)" :data="widget">
             <template v-slot:action v-if="canUpdate">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">

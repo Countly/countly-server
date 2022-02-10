@@ -9,7 +9,12 @@
             <div class="bu-level-item">
                 <clyd-bucket v-if="showBuckets" :widget-id="data._id" v-model="selectedBucket"></clyd-bucket>
             </div>
-            <slot name="action"></slot>
+            <div class="bu-level-item">
+                <cly-more-options @command="onWidgetCommand">
+                    <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                    <el-dropdown-item command="clear">Clear</el-dropdown-item>
+                </cly-more-options>
+            </div>
         </div>
     </div>
 	<div class="dashboard-widget-graph" >
