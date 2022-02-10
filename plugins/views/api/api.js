@@ -656,7 +656,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     var settingsList = [ 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'scr', "uvc"];
                     columns = ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'scr', "uvc"];
                     selOptions = {app_id: params.qstring.app_id, sortby: sortby, sortcol: sortcol, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "scr", "br", "uvc"], monthly: ["u", "t", "s", "b", "e", "d", "n", "scr", "br", "uvc"]}};
-                    sortby = {$sort: {"t": 1}};
+                    sortby = {$sort: {"t": -1}};
                     if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
                         sortby.$sort = {};
                         sortcol = columns[parseInt(params.qstring.iSortCol_0, 10)];
@@ -745,7 +745,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 if (params.qstring.action === 'getTable') {
                     colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
                     columns = ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'uvc', 'scr'];
-                    sortby = {$sort: {"t": 1}};
+                    sortby = {$sort: {"t": -1}};
                     if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
                         sortby.$sort = {};
                         sortcol = columns[parseInt(params.qstring.iSortCol_0, 10)];

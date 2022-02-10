@@ -19,6 +19,9 @@
                     app.navigate("#/manage/apps/" + value);
                 }
             },
+            isCode: function() {
+                return countlyGlobal.config && countlyGlobal.config.code;
+            }
         },
         data: function() {
             var countries = [];
@@ -70,6 +73,7 @@
                 apps: countlyGlobal.apps,
                 adminApps: countlyGlobal.admin_apps || {},
                 appList: appList,
+                appListCount: "",
                 diff: [],
                 sdks: [],
                 server: "",
@@ -94,7 +98,8 @@
                 ],
                 loadingDetails: false,
                 appSettings: {},
-                appManagementViews: app.appManagementViews
+                appManagementViews: app.appManagementViews,
+                edited: true
             };
         },
         watch: {
@@ -103,6 +108,12 @@
                     this.unpatch();
                 },
                 deep: true
+            },
+            appList: {
+                handler: function() {
+                    this.appListCount = CV.i18n('common.search') + " in " + this.appList.length + (this.appList.length > 1 ? " Apps" : " App");
+                },
+                immediate: true
             }
         },
         beforeCreate: function() {
@@ -129,6 +140,9 @@
                 });
         },
         methods: {
+            edit: function() {
+                this.edited = false;
+            },
             checkIfFirst: function() {
                 var isFirst = !Object.keys(countlyGlobal.apps).length;
                 if (isFirst && !this.newApp) {
@@ -137,6 +151,7 @@
                 return isFirst;
             },
             createNewApp: function() {
+                this.edited = false;
                 this.selectedApp = "new";
                 this.newApp = {};
                 if (Intl && Intl.DateTimeFormat) {
@@ -308,6 +323,7 @@
             },
             save: function(doc) {
                 var self = this;
+                self.edited = true;
                 if (this.newApp) {
                     $.ajax({
                         type: "GET",
@@ -534,6 +550,24 @@
                 if (!this.isChangeKeyFound(key)) {
                     self.changeKeys.push(key);
                 }
+            },
+            compare: function(editedObject, selectedApp) {
+                var differences = [];
+                if (this.selectedApp === "new") {
+                    return differences;
+                }
+                else {
+                    ["name", "category", "type", "key", "country", "timezone", "salt", "_id"].forEach(function(currentKey) {
+                        if (editedObject[currentKey] !== selectedApp[currentKey]) {
+                            differences.push(currentKey);
+                        }
+                    });
+                    return differences;
+                }
+            },
+            discardForm: function() {
+                this.edited = true;
+                this.$refs.appForm.reload();
             },
             updateChangeByLevel: function(value, parts, change, currentLevel) {
                 if (!currentLevel) {

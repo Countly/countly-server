@@ -187,13 +187,15 @@
                 showViewCountWarning: false,
                 tableDynamicCols: dynamicCols,
                 showActionMapColumn: showActionMapColumn, //for action map
-                domains: [] //for action map
+                domains: [], //for action map
+                persistentSettings: [],
             };
         },
         mounted: function() {
             var self = this;
-            var persistentSettings = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
-            this.$store.dispatch('countlyViews/onSetSelectedViews', persistentSettings);
+            // var persistentSettings = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
+            self.persistentSettings = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
+            this.$store.dispatch('countlyViews/onSetSelectedViews', self.persistentSettings);
             this.$store.dispatch('countlyViews/fetchData').then(function() {
                 self.calculateGraphSeries();
                 self.showActionsMapColumn(); //for action map
@@ -290,6 +292,7 @@
                     }
                 }
 
+                this.persistentSettings = selected;
                 this.$store.dispatch('countlyViews/onSetSelectedViews', selected).then();
                 this.refresh();
                 return true;
@@ -364,7 +367,19 @@
                         countlyCommon.setPersistentSettings(persistData);
                         self.$store.dispatch('countlyViews/onSetSelectedViews', good_ones);
                     }
-                    self.lineOptions = {series: data2};
+                    self.lineOptions = {
+                        series: data2,
+                        tooltip: {
+                            position: function(point, params, dom, rect, size) {
+                                if (size.viewSize[0] <= point[0] + 180) {
+                                    return [point[0] - 180, point[1] + 10];
+                                }
+                                else {
+                                    return [point[0], point[1] + 10];
+                                }
+                            },
+                        }
+                    };
                 });
             },
             getExportQuery: function() {
