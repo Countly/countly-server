@@ -3,6 +3,7 @@
   font-family: 'Inter';
   font-style: normal;
   font-weight: 300;
+  font-display: swap;
   src: url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.eot'); /* IE9 Compat Modes */
   src: local(''),
        url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
@@ -16,6 +17,7 @@
   font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
+  font-display: swap;
   src: url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.eot'); /* IE9 Compat Modes */
   src: local(''),
        url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
@@ -29,6 +31,7 @@
   font-family: 'Inter';
   font-style: normal;
   font-weight: 500;
+  font-display: swap;
   src: url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.eot'); /* IE9 Compat Modes */
   src: local(''),
        url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
