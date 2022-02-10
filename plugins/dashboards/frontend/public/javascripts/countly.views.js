@@ -1147,9 +1147,6 @@
                                 noResize: noResize,
                             };
 
-                            /**
-                            We shouldn't probably do this.
-
                             var w = widget.size && widget.size[0];
                             var h = widget.size && widget.size[1];
 
@@ -1157,8 +1154,6 @@
                                 setting.w = w;
                                 setting.h = h;
                             }
-
-                             */
 
                             self.updateGridWidget(nodeEl, setting);
                         }
