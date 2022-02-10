@@ -14,6 +14,7 @@
     <meta http-equiv="Expires" content="0" />
     <meta name="referrer" content="no-referrer">
 	<link href='stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="stylesheets/vue/clyvue.css" type='text/css'>
 	<link rel="icon" type="image/png" href="<%- countlyFavicon %>">
     <% if (themeFiles && themeFiles.css) { %>
         <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
@@ -27,59 +28,79 @@
 	<% } %>
 </head>
 <body>
-	 <% if (message){ %>
-		<div id="message"></div>
-	 <% } %>
-	<div id="top-container">
-		<% if (countlyPage){ %>
-		<a class="top-button" href="<%- countlyPage %>"><%- countlyTitle %></a>
-        <% } %>
-		<div class="top-button" id="select-lang">
-			<div id="active-lang">EN</div>
-			<div id="langs">
-				<div class="group">
-					<% for(var i=0, l=(languages.length/2); i<l; i++) {%>
-    				<a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
-        	<% } %>
+	<div class="wrapper">
+		<div id="top-container">
+			<div class="top-button" id="select-lang">
+				<div id="active-lang">EN</div>
+				<div id="langs">
+					<div class="group">
+						<% for(var i=0, l=(languages.length/2); i<l; i++) {%>
+						<a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
+				<% } %>
+					</div>
+					<div class="group">
+						<% for(var i=(parseInt(languages.length/2) + 1), l=languages.length; i<l; i++) {%>
+						<a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
+				<% } %>
+					</div>
 				</div>
-				<div class="group">
-					<% for(var i=(parseInt(languages.length/2) + 1), l=languages.length; i<l; i++) {%>
-    				<a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
-        	<% } %>
+			</div>
+			<div id="login-logo"></div>
+		</div>
+		<% if (message){ %>
+			<div class="cly-vue-notification__alert-box cly-vue-notification__alert-box__alert-text--light-destructive" style="display: none; min-width: 300px; max-width: fit-content; margin:auto;">
+				<div style="display: flex;justify-content: space-between; margin:8px; overflow: hidden;">
+					<div style="display: flex;">
+						<img src="images/icons/notification-toast-destructive.svg" class="cly-vue-notification__alert-box-alert-image"/>
+						<span style="margin-block: auto; margin-left: 16px; white-space:nowrap" id ="message">
+						</span>
+					</div>
+				</div>
+			</div>
+		<% } %>
+		<div id="login-form">
+			<div>
+				<!--
+				Community Edition license doesn't include the right to remove Countly branding.
+				If you wish to implement your own branding (e.g. your own logo, colors, etc.), you must license Countly Enterprise Edition.
+				-->
+				<form method="POST" id="formRegister" style="width:300px; margin:auto;">
+					<h1 style="font-weight: 500;" id="header">Sign In</h1>
+					<p>or Sign In With Your Email</p>
+					<div>
+						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px">Email Address</p>
+						<input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
+						</div>
+					<div>
+						<div style="display: flex; justify-content: space-between;"><p style="color: #333C48;font-weight: 500;margin-bottom: 8px;">Password</p><p style="margin-bottom: 8px;"><a id="forgot-password" href="./forgot" >Forgot password?</a></p></div>
+						<input name="password" type="password" placeholder="Enter your password" data-localize="placeholder.password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
+					</div>
+					<% if (typeof inject_template.form != "undefined") { %>
+						<%- inject_template.form %>
+					<% } %>
+					<div>
+						<input type="hidden" value="<%= csrf %>" name="_csrf" />
+						<input type="hidden" value="en" name="lang" id="form-lang" />
+						<input id="login-button" value="Login" type="submit" data-localize="login.button"/>
+					</div>
+				</form>
+			</div>
+			<% if (typeof inject_template.html != "undefined") { %>
+				<%- inject_template.html %>
+			<% } %>
+		</div>
+		<div class="footer">
+			<div>
+				<p style="margin: 0px;">© 2021 Countly Ltd.</p>
+				<div style="margin: 0px; color: #0166D6;">
+					<a href="https://count.ly/">Countly</a>
+					<a href="https://count.ly/legal/terms-of-service">Terms</a>
+					<a href="https://count.ly/legal/privacy-policy">Privacy</a>
+					<a href="https://resources.count.ly/">Documentation</a>
+					<a href="https://support.count.ly/hc/">Help Center</a>
 				</div>
 			</div>
 		</div>
-	</div>
-	<div id="login-form">
-		<div style="overflow:auto;">
-			<!--
-			Community Edition license doesn't include the right to remove Countly branding.
-			If you wish to implement your own branding (e.g. your own logo, colors, etc.), you must license Countly Enterprise Edition.
-			-->
-            <div id="login-logo" style="margin-bottom:30px;"></div>
-            <form method="POST">
-                <div>
-                    <input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
-                </div>
-                <div>
-                    <input name="password" type="password" placeholder="Password" data-localize="placeholder.password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
-                </div>
-                <% if (typeof inject_template.form != "undefined") { %>
-                    <%- inject_template.form %>
-                <% } %>
-                <div>
-                    <input type="hidden" value="<%= csrf %>" name="_csrf" />
-                    <input type="hidden" value="en" name="lang" id="form-lang" />
-                    <input id="login-button" value="Login" type="submit" data-localize="login.button"/>
-                </div>
-                <div style="margin-top:30px;">
-                    <a id="forgot-password" href="./forgot"  data-localize="login.forgot"></a>
-                </div>
-            </form>
-		</div>
-        <% if (typeof inject_template.html != "undefined") { %>
-            <%- inject_template.html %>
-        <% } %>
 	</div>
 	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
@@ -87,21 +108,58 @@
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
+	<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+	<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
 		$(document).ready(function() {
-			<% if (message && message.length > 0){ %>
+			$('.cly-vue-notification__alert-box').show();
+			<% if (message && message.length >0 ){ %>
 				showMessage("<%= message %>");
+			<% } 
+			else{ %>
+				$(".cly-vue-notification__alert-box").css('display','none');
 			<% } %>
             if (jQuery.i18n.map["login.title"]) {
                 document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
             }
 		});
-		
 		$(document).bind('clyLangChange', function() {
             if (jQuery.i18n.map["login.title"]) {
                 document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
             }
+		});
+		$(document).ready(function() {
+			$("*").click(function(event){
+				if ($(".top-button").hasClass("active") && !$(event.target).is(".top-button") && !$(event.target).is("#active-lang")) {
+					$('.top-button').removeClass('active');
+				}
+			});
+		});
+		$(document).ready(function() {
+			$("*").click(function(event){
+				if ($(event.target).is(".top-button") || $(event.target).is("#active-lang")) {
+					$('#active-lang').css('border','1px solid #81868D');
+				}
+				else{
+					$('#active-lang').css('border','');
+				}
+			});
+		});
+		$(document).ready(function(){
+			$("#formRegister").validate({
+				rules: {
+					username: {
+						required: true,
+						email: true,
+					}
+				},
+				messages: {
+					email: {
+						email: "Please enter a valid email address."
+					}
+				}
+			});
 		});
 	</script>
 	<% if (typeof inject_template.js != 'undefined') { %>
