@@ -669,13 +669,13 @@
                 return Promise.resolve(countlySegmentation.getFilters());
             });
         },
-        searchUsers: function(query) {
+        searchUsers: function(query, options) {
             var data = {
                 query: JSON.stringify(query)
             };
             return CV.$.ajax({
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_details",
+                url: countlyCommon.API_PARTS.data.r + "?app_id=" + options.appId + "&method=user_details",
                 contentType: "application/json",
                 data: JSON.stringify(data)
             }, {disableAutoCatch: true});
@@ -1795,10 +1795,10 @@
             },
             mapTestUsersEditedModelToDto: function(editedModel) {
                 var testUsersDto = {};
-                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.USER_ID) {
+                if (editedModel.userIds && editedModel.userIds.length) {
                     Object.assign(testUsersDto, {uids: editedModel.userIds.join(',')});
                 }
-                if (editedModel.definitionType === AddTestUserDefinitionTypeEnum.COHORT) {
+                if (editedModel.cohorts && editedModel.cohorts.length) {
                     Object.assign(testUsersDto, {cohorts: editedModel.cohorts.join(',')});
                 }
                 return testUsersDto;
@@ -2028,14 +2028,11 @@
                 return Promise.resolve([]);
             });
         },
-        fetchTestUsers: function(options) {
+        fetchTestUsers: function(testUsers, options) {
             var self = this;
-            var queries = [];
-            if (options.uids && options.uids.length) {
-                queries.push({uid: {$in: options.uids}});
-            }
-            if (options.cohorts && options.cohorts.length) {
-                queries.push({chr: {$in: options.cohorts}});
+            var usersQuery = null;
+            if (testUsers.uids && testUsers.uids.length) {
+                usersQuery = {uid: {$in: testUsers.uids}};
             }
             return new Promise(function(resolve, reject) {
                 if (!self.isDrillPluginEnabled()) {
@@ -2046,26 +2043,23 @@
                     reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
                     return;
                 }
-                Promise.all(queries.map(function(testUserQuery) {
-                    return countlyPushNotification.api.searchUsers(testUserQuery);
-                }))
+                Promise.all([usersQuery ? countlyPushNotification.api.searchUsers(usersQuery, options) : Promise.resolve([]), self.fetchCohorts(testUsers.cohorts || [], false)])
                     .then(function(responses) {
-                        var testUsersArraysList = responses.map(function(queryResponse) {
-                            return queryResponse.aaData;
-                        });
-                        var allTestUsers = testUsersArraysList.reduce(function(addedTestUsersList, currentArray) {
-                            return addedTestUsersList.concat(currentArray);
-                        }, []).map(function(user) {
-                            return {_id: user._id, username: user.name || '', picture: user.picture};
-                        });
-                        resolve(allTestUsers);
+                        var usersList = responses[0];
+                        var cohortsList = responses[1];
+
+                        var users = usersList.aaData;
+                        var result = {};
+                        result[AddTestUserDefinitionTypeEnum.USER_ID] = users;
+                        result[AddTestUserDefinitionTypeEnum.COHORT] = cohortsList;
+                        resolve(result);
                     }).catch(function(error) {
                     // TODO: log error;
                         reject(error);
                     });
             });
         },
-        searchUsersById: function(idQuery) {
+        searchUsersById: function(idQuery, options) {
             var self = this;
             return new Promise(function(resolve, reject) {
                 if (!self.isDrillPluginEnabled()) {
@@ -2077,7 +2071,7 @@
                     return;
                 }
                 var drillQuery = {did: {rgxcn: [idQuery]}};
-                countlyPushNotification.api.searchUsers(drillQuery)
+                countlyPushNotification.api.searchUsers(drillQuery, options)
                     .then(function(response) {
                         if (response && response.aaData) {
                             resolve(response.aaData.map(function(user) {
@@ -2185,7 +2179,7 @@
             }
             return countlyPushNotificationApprover.service.approve(messageId);
         },
-        addTestUsers: function(testUsersModel, options) {
+        updateTestUsers: function(testUsersModel, options) {
             try {
                 var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(testUsersModel);
                 var appConfig = {push: {test: {}}};

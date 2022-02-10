@@ -1612,6 +1612,10 @@
 
     var keyFileReader = new FileReader();
 
+    var initialTestUsersRows = {};
+    initialTestUsersRows[countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID] = [];
+    initialTestUsersRows[countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT] = [];
+
     var PushNotificationAppConfigView = countlyVue.views.create({
         componentName: "AppSettingsContainerObservable",
         template: CV.T("/push/templates/push-notification-app-config.html"),
@@ -1633,11 +1637,16 @@
                 cohortOptions: [],
                 isSearchUsersLoading: false,
                 isFetchCohortsLoading: false,
-                isAddTestUsersLoading: false,
+                isUpdateTestUsersLoading: false,
                 isDialogVisible: false,
                 areRowsLoading: false,
-                testUsersRows: [],
+                testUsersRows: initialTestUsersRows,
                 selectedKeyToDelete: null,
+                selectedTestUsersListOption: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID,
+                testUsersListOptions: [
+                    {label: 'User ID', value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID},
+                    {label: 'Cohort', value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT}
+                ]
             };
         },
         computed: {
@@ -1647,6 +1656,9 @@
             isIOSConfigRequired: function() {
                 return this.isIOSConfigTouched;
             },
+            selectedTestUsersRows: function() {
+                return this.testUsersRows[this.selectedTestUsersListOption];
+            }
         },
         methods: {
             setModel: function(newModel) {
@@ -1882,10 +1894,13 @@
                         self.isFetchCohortsLoading = false;
                     });
             },
-            fetchTestUsers: function(options) {
+            fetchTestUsers: function() {
                 var self = this;
+                var testUsers = this.getTestUsersFromAppConfig();
+                var options = {};
+                options.appId = this.selectedAppId;
                 this.areRowsLoading = true;
-                countlyPushNotification.service.fetchTestUsers(options)
+                countlyPushNotification.service.fetchTestUsers(testUsers, options)
                     .then(function(testUserRows) {
                         self.setTestUserRows(testUserRows);
                     }).catch(function(error) {
@@ -1915,7 +1930,7 @@
             },
             onShowTestUserList: function() {
                 this.openTestUsersDialog();
-                this.fetchTestUsers(this.getTestUsersFromAppConfig());
+                this.fetchTestUsers();
             },
             onOpen: function() {
                 this.fetchCohortsIfNotFound();
@@ -1924,28 +1939,72 @@
                 var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(editedObject);
                 countlyGlobal.apps[this.selectedAppId].plugins.push.test = testDto;
             },
-            onSubmit: function(editedObject, done) {
+            onDeleteTestUser: function(row) {
                 var self = this;
-                this.isAddTestUsersLoading = true;
+                var actualTestUsers = this.getTestUsersFromAppConfig();
+                if (this.selectedTestUsersListOption === this.AddTestUserDefinitionTypeEnum.USER_ID) {
+                    actualTestUsers.uids = actualTestUsers.uids.filter(function(uid) {
+                        return uid !== row.uid && Boolean(uid);
+                    });
+                }
+                if (this.selectedTestUsersListOption === this.AddTestUserDefinitionTypeEnum.COHORT) {
+                    actualTestUsers.cohorts = actualTestUsers.cohorts.filter(function(cohortId) {
+                        return cohortId !== row._id && Boolean(cohortId);
+                    });
+                }
+                var newTestUsersModel = {
+                    definitionType: this.selectedTestUsersListOption,
+                    cohorts: actualTestUsers.cohorts,
+                    userIds: actualTestUsers.uids,
+                };
                 var options = {};
                 options.app_id = this.selectedAppId;
-                countlyPushNotification.service.addTestUsers(editedObject, options)
-                    .then(function() {
+                this.isUpdateTestUsersLoading = true;
+                countlyPushNotification.service.updateTestUsers(newTestUsersModel, options).
+                    then(function() {
+                        self.updateTestUsersAppConfig(newTestUsersModel);
+                        CountlyHelpers.notify({message: 'Test users have been successfully removed.'});
+                        self.fetchTestUsers();
+                    }).catch(function() {
+                        // TODO: log error
+                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.', type: 'error'});
+                    }).finally(function() {
+                        self.isUpdateTestUsersLoading = false;
+                    });
+            },
+            onSubmit: function(editedObject, done) {
+                var self = this;
+                var actualTestUsersConfig = this.getTestUsersFromAppConfig();
+                if (editedObject.definitionType === this.AddTestUserDefinitionTypeEnum.USER_ID) {
+                    editedObject.cohorts = actualTestUsersConfig.cohorts;
+                    editedObject.userIds = editedObject.userIds.concat(actualTestUsersConfig.uids);
+                }
+                if (editedObject.definitionType === this.AddTestUserDefinitionTypeEnum.COHORT) {
+                    editedObject.cohorts = editedObject.cohorts.concat(actualTestUsersConfig.cohorts);
+                    editedObject.userIds = actualTestUsersConfig.uids;
+                }
+                var options = {};
+                options.app_id = this.selectedAppId;
+                this.isUpdateTestUsersLoading = true;
+                countlyPushNotification.service.updateTestUsers(editedObject, options).
+                    then(function() {
                         self.updateTestUsersAppConfig(editedObject);
                         done();
                         CountlyHelpers.notify({message: 'Test users have been successfully added.'});
-                    }).catch(function() {
+                    }).catch(function(error) {
                         // TODO: log error
-                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.'});
+                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.', type: 'error'});
+                        done(error);
                     }).finally(function() {
-                        self.isAddTestUsersLoading = false;
-                        done(false);
+                        self.isUpdateTestUsersLoading = false;
                     });
             },
             onSearchUsers: function(query) {
                 var self = this;
                 this.isSearchUsersLoading = true;
-                countlyPushNotification.service.searchUsersById(query)
+                var options = {};
+                options.appId = this.selectedAppId;
+                countlyPushNotification.service.searchUsersById(query, options)
                     .then(function(userIds) {
                         self.setUserIdOptions(userIds);
                     }).catch(function(error) {
