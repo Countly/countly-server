@@ -879,7 +879,7 @@
                              * This update will only be applied after we call the
                              * grid commit method.
                              */
-                            self.updateGridWidget(nodeEl, {h: rowMaxH, minH: rowMaxMinH});
+                            self.updateGridWidget(nodeEl, {h: rowMaxH});
                             updateIndex++;
                         }
 
@@ -916,7 +916,7 @@
                              * This update will only be applied after we call the
                              * grid commit method.
                              */
-                            self.updateGridWidget(nodeEl, {h: rowMaxH, minH: rowMaxMinH});
+                            self.updateGridWidget(nodeEl, {h: rowMaxH});
                             updateIndex++;
                         }
                     }
@@ -1055,7 +1055,7 @@
 
                         var nodeEl = document.getElementById(widgetId);
 
-                        self.updateGridWidget(nodeEl, {h: finalRowH, minH: maxRowMinH});
+                        self.updateGridWidget(nodeEl, {h: finalRowH});
                     }
 
                     /**
