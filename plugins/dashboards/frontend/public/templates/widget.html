@@ -13,6 +13,15 @@
     :gs-min-h="validateWidgetDimension(settings, 'h')"
     @click="settings.grid.onClick && settings.grid.onClick(widget)">
 
+    <!--
+        These properties set here to the grid stack item are added during the first
+        load. The are not updated even if the values change from the subsequent refreshes.
+        To update them we need to run updateGridWidget method i.e. update them via grid
+        instance.
+
+        For this we use the validateWidgets method.
+    -->
+
     <div class="grid-stack-item-content bu-p-4">
         <widget-disabled v-if="isWidgetDisabled(widget)" :widget="widget">
             <template v-slot:action v-if="canUpdate">

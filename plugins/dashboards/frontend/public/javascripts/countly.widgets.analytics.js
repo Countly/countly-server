@@ -194,10 +194,10 @@
             component: WidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 6,
-                    minHeight: 3,
-                    width: 6,
-                    height: 3
+                    minWidth: 2,
+                    minHeight: 4,
+                    width: 2,
+                    height: 4
                 };
             },
             onClick: function() {}

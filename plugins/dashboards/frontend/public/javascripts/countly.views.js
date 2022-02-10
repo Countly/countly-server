@@ -832,8 +832,8 @@
                 allGridElements = this.sortWidgetByGeography(allGridElements);
 
                 var Y;
-                var rowMaxH;
-                var rowUpdateRequired = false;
+                var rowMaxH; // Maximum height of the row
+                var rowMaxMinH; // Maximum min height of the row (Max(minH))
                 var updateIndex = 0;
                 var widgetId;
                 var nodeEl;
@@ -847,6 +847,7 @@
                     var node = allGridElements[i];
                     var y = node.y;
                     var h = node.h;
+                    var minH = node.minH;
 
                     if (!Number.isInteger(Y)) {
                         Y = y;
@@ -854,6 +855,10 @@
 
                     if (!Number.isInteger(rowMaxH)) {
                         rowMaxH = h;
+                    }
+
+                    if (!Number.isInteger(rowMaxMinH)) {
+                        rowMaxMinH = minH;
                     }
 
                     if (y !== Y) {
@@ -866,18 +871,16 @@
                          * heights for the widgets in the row.
                          */
 
-                        if (rowUpdateRequired) {
-                            while (updateIndex < i) {
-                                widgetId = allGridElements[updateIndex].id;
-                                nodeEl = document.getElementById(widgetId);
+                        while (updateIndex < i) {
+                            widgetId = allGridElements[updateIndex].id;
+                            nodeEl = document.getElementById(widgetId);
 
-                                /**
-                                 * This update will only be applied after we call the
-                                 * grid commit method.
-                                 */
-                                self.updateGridWidget(nodeEl, {h: rowMaxH});
-                                updateIndex++;
-                            }
+                            /**
+                             * This update will only be applied after we call the
+                             * grid commit method.
+                             */
+                            self.updateGridWidget(nodeEl, {h: rowMaxH, minH: rowMaxMinH});
+                            updateIndex++;
                         }
 
                         /**
@@ -886,7 +889,7 @@
 
                         Y = y;
                         rowMaxH = h;
-                        rowUpdateRequired = false;
+                        rowMaxMinH = minH;
                         updateIndex = i;
                     }
 
@@ -894,8 +897,10 @@
                         if (rowMaxH < h) {
                             rowMaxH = h;
                         }
+                    }
 
-                        rowUpdateRequired = true;
+                    if (rowMaxMinH < minH) {
+                        rowMaxMinH = minH;
                     }
 
                     if (i === (allGridElements.length - 1)) {
@@ -903,18 +908,16 @@
                          * For the last item, we need to run update explicitly.
                          * Since the above update block will never be executed.
                          */
-                        if (rowUpdateRequired) {
-                            while (updateIndex < allGridElements.length) {
-                                widgetId = allGridElements[updateIndex].id;
-                                nodeEl = document.getElementById(widgetId);
+                        while (updateIndex < allGridElements.length) {
+                            widgetId = allGridElements[updateIndex].id;
+                            nodeEl = document.getElementById(widgetId);
 
-                                /**
-                                 * This update will only be applied after we call the
-                                 * grid commit method.
-                                 */
-                                self.updateGridWidget(nodeEl, {h: rowMaxH});
-                                updateIndex++;
-                            }
+                            /**
+                             * This update will only be applied after we call the
+                             * grid commit method.
+                             */
+                            self.updateGridWidget(nodeEl, {h: rowMaxH, minH: rowMaxMinH});
+                            updateIndex++;
                         }
                     }
                 }
@@ -935,6 +938,8 @@
                     float: false,
                     column: 4
                 });
+
+                self.redrawRowWigets();
 
                 var allGridWidgets = this.savedGrid();
 
@@ -1007,7 +1012,7 @@
                         self.updateWidgetGeography(widgetId, {size: size, position: position});
                     }
 
-                    //self.redrawRowWigets();
+                    self.redrawRowWigets();
                 });
 
                 this.grid.on("resizestop", function(event, element) {
@@ -1050,9 +1055,7 @@
 
                         var nodeEl = document.getElementById(widgetId);
 
-                        /** Update minimum heights of all the widgets aswell */
-                        self.updateGridWidget(nodeEl, {h: finalRowH});
-
+                        self.updateGridWidget(nodeEl, {h: finalRowH, minH: maxRowMinH});
                     }
 
                     /**
@@ -1095,8 +1098,6 @@
                         });
                     }
                 });
-
-                //self.redrawRowWigets();
             },
             updateWidgetGeography: function(widgetId, settings) {
                 var self = this;
@@ -1143,8 +1144,21 @@
                             var setting = {
                                 locked: locked,
                                 noMove: noMove,
-                                noResize: noResize
+                                noResize: noResize,
                             };
+
+                            /**
+                            We shouldn't probably do this.
+
+                            var w = widget.size && widget.size[0];
+                            var h = widget.size && widget.size[1];
+
+                            if (Number.isInteger(w) && Number.isInteger(h)) {
+                                setting.w = w;
+                                setting.h = h;
+                            }
+
+                             */
 
                             self.updateGridWidget(nodeEl, setting);
                         }
