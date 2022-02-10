@@ -1,7 +1,8 @@
 .cly-vue-compliance__user_chart {
-    min-width: 50%;
-    max-width: 50%;
+    min-width: 45% !important;
     border-top: 1px solid #ececec;
+    border-bottom: 2px solid #ececec;
+    max-height: 327px;
 }
 .cly-vue-complaince__hub {
     .cly-vue-tabs {
@@ -11,6 +12,9 @@
         height: 120px !important;
     }
     .cly-vue-chart-legend__line {
-        margin-top: 32px;
+        margin-top: 12px;
     }
+}
+.cly-vue-compliance__consent_history_expanded_column {
+    height: 16px;
 }

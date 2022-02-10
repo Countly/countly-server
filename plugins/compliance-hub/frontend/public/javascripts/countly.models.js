@@ -108,6 +108,9 @@
                 rows[k].optin = [];
                 rows[k].optout = [];
                 rows[k].time = countlyCommon.formatTimeAgoText(rows[k].lac || 0).text;
+                if (rows[k].time === 'Invalid date') {
+                    rows[k].time = "-"
+                }
                 if (rows[k].consent) {
                     for (var i in rows[k].consent) {
                         if (rows[k].consent[i]) {
