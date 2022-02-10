@@ -833,7 +833,6 @@
 
                 var Y;
                 var rowMaxH; // Maximum height of the row
-                var rowMaxMinH; // Maximum min height of the row (Max(minH))
                 var updateIndex = 0;
                 var widgetId;
                 var nodeEl;
@@ -847,7 +846,6 @@
                     var node = allGridElements[i];
                     var y = node.y;
                     var h = node.h;
-                    var minH = node.minH;
 
                     if (!Number.isInteger(Y)) {
                         Y = y;
@@ -855,10 +853,6 @@
 
                     if (!Number.isInteger(rowMaxH)) {
                         rowMaxH = h;
-                    }
-
-                    if (!Number.isInteger(rowMaxMinH)) {
-                        rowMaxMinH = minH;
                     }
 
                     if (y !== Y) {
@@ -889,7 +883,6 @@
 
                         Y = y;
                         rowMaxH = h;
-                        rowMaxMinH = minH;
                         updateIndex = i;
                     }
 
@@ -897,10 +890,6 @@
                         if (rowMaxH < h) {
                             rowMaxH = h;
                         }
-                    }
-
-                    if (rowMaxMinH < minH) {
-                        rowMaxMinH = minH;
                     }
 
                     if (i === (allGridElements.length - 1)) {
