@@ -1064,7 +1064,7 @@
                 if (!this.totalAppUsers) {
                     return 0;
                 }
-                return Math.ceil(this.enabledUsers / this.totalAppUsers);
+                return parseInt(this.formatPercentage(this.enabledUsers / this.totalAppUsers));
             },
             xAxisPushNotificationPeriods: function() {
                 return this.$store.state.countlyPushNotification.main.dashboard.periods[this.selectedPeriodFilter];
