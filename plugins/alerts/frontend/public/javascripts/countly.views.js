@@ -8,7 +8,6 @@
     app,
     countlyCommon,
     countlyEvent,
-    alertDefine,
     countlyAuth,
     CV,
  */
@@ -58,74 +57,101 @@
                 }
                 return alertDataTypeOptions;
             },
-            alertDefine: function() {
-                var alertDefine = {
-                    metric: {
-                        target: [
-                            { value: 'Total users', label: 'Total users' },
-                            { value: 'New users', label: 'New users' },
-                            { value: 'Total sessions', label: 'Total sessions' },
-                            { value: 'Average session duration', label: 'Average session duration' },
-                            { value: 'Bounce rate', label: 'Bounce rate (%)' },
-                            { value: 'Number of page views', label: 'Number of page views' },
-                            { value: 'Purchases', label: 'Purchases' },
-                        ],
-                        condition: [
-                            { value: 'increased by at least', label: 'increased by at least' },
-                            { value: 'decreased by at least', label: 'decreased by at least' },
-                        ]
-                    },
-                    event: {
-                        target: [],
-                        condition: [
-                            { value: 'increased by at least', label: 'increased by at least' },
-                            { value: 'decreased by at least', label: 'decreased by at least' },
-                        ]
-                    },
-                    crash: {
-                        target: [
-                            { value: 'Total crashes', label: 'Total crashes' },
-                            { value: 'New crash occurence', label: 'New crash occurence' },
-                            { value: 'None fatal crash per session', label: 'None fatal crash per session' },
-                            { value: 'Fatal crash per session', label: 'Fatal crash per session' },
-                        ],
-                        condition: [
-                            { value: 'increased by at least', label: 'increased by at least' },
-                            { value: 'decreased by at least', label: 'decreased by at least' },
-                        ]
-                    },
-                    rating: {
-                        target: [
-                            { value: 'Number of ratings', label: 'Number of ratings' },
-                        ],
-                        condition: [
-                            { value: 'increased by at least', label: 'increased by at least' },
-                            { value: 'decreased by at least', label: 'decreased by at least' },
-                        ]
-                    },
-                    dataPoint: {
-                        target: [
-                            { value: 'Number of daily DP', label: 'Daily data points' },
-                            { value: 'Hourly data points', label: 'Hourly data points' },
-                            { value: 'Monthly data points', label: 'Monthly data points' }
-                        ],
-                        condition: [
-                            { value: 'increased by at least', label: 'increased by at least' },
-                            { value: 'decreased by at least', label: 'decreased by at least' },
-                        ]
-                    },
-                };
-                var self = this;
-                this.externalAlertDefine.forEach(function(define) {
-                    self.alertDefine = Object.assign(alertDefine, define);
-                });
-                return alertDefine;
+            alertDefine: {
+                get: function() {
+                    var alertDefine = {
+                        metric: {
+                            target: [
+                                { value: 'Total users', label: 'Total users' },
+                                { value: 'New users', label: 'New users' },
+                                { value: 'Total sessions', label: 'Total sessions' },
+                                { value: 'Average session duration', label: 'Average session duration' },
+                                { value: 'Purchases', label: 'Purchases' },
+                                { value: 'Bounce rate', label: 'Bounce rate (%)' },
+                                { value: 'Number of page views', label: 'Number of page views' },
+                            ],
+                            condition: [
+                                { value: 'increased by at least', label: 'increased by at least' },
+                                { value: 'decreased by at least', label: 'decreased by at least' },
+                            ]
+                        },
+                        event: {
+                            target: [],
+                            condition: [
+                                { value: 'increased by at least', label: 'increased by at least' },
+                                { value: 'decreased by at least', label: 'decreased by at least' },
+                            ]
+                        },
+                        crash: {
+                            target: [
+                                { value: 'Total crashes', label: 'Total crashes' },
+                                { value: 'New crash occurence', label: 'New crash occurence' },
+                                { value: 'None fatal crash per session', label: 'None fatal crash per session' },
+                                { value: 'Fatal crash per session', label: 'Fatal crash per session' },
+                            ],
+                            condition: [
+                                { value: 'increased by at least', label: 'increased by at least' },
+                                { value: 'decreased by at least', label: 'decreased by at least' },
+                            ]
+                        },
+                        rating: {
+                            target: [
+                                { value: 'Number of ratings', label: 'Number of ratings' },
+                            ],
+                            condition: [
+                                { value: 'increased by at least', label: 'increased by at least' },
+                                { value: 'decreased by at least', label: 'decreased by at least' },
+                            ]
+                        },
+                        dataPoint: {
+                            target: [
+                                { value: 'Number of daily DP', label: 'Daily data points' },
+                                { value: 'Hourly data points', label: 'Hourly data points' },
+                                { value: 'Monthly data points', label: 'Monthly data points' }
+                            ],
+                            condition: [
+                                { value: 'increased by at least', label: 'increased by at least' },
+                                { value: 'decreased by at least', label: 'decreased by at least' },
+                            ]
+                        },
+                    };
+                    var self = this;
+                    this.externalAlertDefine.forEach(function(define) {
+                        self.alertDefine = Object.assign(alertDefine, define);
+                    });
+                    return alertDefine;
+                },
+                set: function(val) {
+                    return val;
+                }
+
             },
-            subDataTypeOptions: function() {
-                return alertDefine;
-            }
+
         },
         watch: {
+            apps: function() {
+                var app = this.apps[0];
+                var self = this;
+                countlyAlerts.getViewForApp(app, function(viewList) {
+                    var target = [
+                        { value: 'Total users', label: 'Total users' },
+                        { value: 'New users', label: 'New users' },
+                        { value: 'Total sessions', label: 'Total sessions' },
+                        { value: 'Average session duration', label: 'Average session duration' },
+                        { value: 'Purchases', label: 'Purchases' },
+                    ];
+                    self.alertDefine.metric.target = Object.assign([], target);
+                    if (viewList.length !== 0) {
+                        self.alertDefine.metric.target.push({ value: 'Bounce rate', label: 'Bounce rate (%)' });
+                        self.alertDefine.metric.target.push({ value: 'Number of page views', label: 'Number of page views' });
+                        self.alertDataSubType2Options = viewList.map(function(v) {
+                            return {value: v.value, label: v.name};
+                        });
+                    }
+                    self.alertDefine = JSON.parse(JSON.stringify(self.alertDefine));
+                    self.$forceUpdate();
+                });
+            }
         },
         props: {
             controls: {
@@ -178,6 +204,7 @@
                 this.showConditionValue = true;
             },
             alertDataSubTypeSelected: function(alertDataSubType, notReset) {
+                this.resetAlertConditionShow();
                 switch (alertDataSubType) {
                 case 'New crash occurence':
                     this.showSubType2 = false;

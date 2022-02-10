@@ -167,16 +167,18 @@
                 </div>
                 <div class="cly-vue-alert-drawer__line">
                 </div>
-       
+ 
                 <div class="bu-is-flex bu-mx-2 bu-mt-4 bu-mb-2 bu-px-1" v-if="showSubType1">
                     <div class="bu-is-flex-grow-1 bu-mx-1">
                         <validation-provider name="alertDataSubType" rules="required" v-slot="v">
                             <cly-select-x
+                                :searchable="false"
                                :placeholder="i18n('alert.select-metric')"
                                mode="single-list"
                                v-on:change="alertDataSubTypeSelected"
                                v-model="drawerScope.editedObject.alertDataSubType"
-                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true, }"
+                               :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true, }"
+                               :key="drawerScope.editedObject.alertDataType && alertDefine[drawerScope.editedObject.alertDataType].target || []"
                                :options="drawerScope.editedObject.alertDataType && alertDefine[drawerScope.editedObject.alertDataType].target || []">
                             </cly-select-x>
                         </validation-provider>
