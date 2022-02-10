@@ -605,6 +605,8 @@
 
                     }, [this.i18nM("common.no-dont-delete"), this.i18nM("dashboards.delete-widget")], {title: this.i18nM("dashboards.delete-widget-title")});
                     break;
+                default:
+                    this.$emit("command", command);
                 }
             },
             addWidget: function(widget) {

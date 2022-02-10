@@ -260,7 +260,7 @@
                         { label: this.i18n("device_type.devices"), value: "devices"},
                         { label: this.i18n("device_type.table.device_type"), value: "device_type"},
                         { label: this.i18n("resolutions.table.resolution"), value: "resolutions"},
-                        { label: this.i18n("app-versions.title"), value: "app_versions"},
+                        { label: this.i18n("app-versions.title"), value: "app_versions"}
                     );
 
                     if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("density") > -1) {
@@ -478,33 +478,34 @@
             }
         },
         data: function() {
+            var allTypes = [
+                {
+                    value: "session",
+                    label: this.i18n("dashboards.data-type.session")
+                },
+                {
+                    value: "user-analytics",
+                    label: this.i18n("dashboards.data-type.user-analytics")
+                },
+                {
+                    value: "technology",
+                    label: this.i18n("dashboards.data-type.technology")
+                },
+                {
+                    value: "geo",
+                    label: this.i18n("dashboards.data-type.geo")
+                }
+            ];
+            if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("views") > -1) {
+                allTypes.push({ label: this.i18n("dashboards.data-type.views"), value: "views"});
+            }
+
+            if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("sources") > -1) {
+                allTypes.push({ label: this.i18n("dashboards.data-type.sources"), value: "sources"});
+            }
+
             return {
-                allTypes: [
-                    {
-                        value: "session",
-                        label: this.i18n("dashboards.data-type.session")
-                    },
-                    {
-                        value: "user-analytics",
-                        label: this.i18n("dashboards.data-type.user-analytics")
-                    },
-                    {
-                        value: "technology",
-                        label: this.i18n("dashboards.data-type.technology")
-                    },
-                    {
-                        value: "geo",
-                        label: this.i18n("dashboards.data-type.geo")
-                    },
-                    {
-                        value: "views",
-                        label: this.i18n("dashboards.data-type.views")
-                    },
-                    {
-                        value: "sources",
-                        label: this.i18n("dashboards.data-type.sources")
-                    }
-                ]
+                allTypes: allTypes
             };
         },
         computed: {
@@ -931,10 +932,10 @@
             period: function() {
                 this.widgetData = this.widgetData || {};
                 if (this.widgetData.custom_period) {
-                    return this.widgetData.custom_period;
+                    return this.formatPeriodString(this.widgetData.custom_period);
                 }
                 else {
-                    return "";
+                    return this.formatPeriodString(countlyCommon.getPeriod());
                 }
             }
         },
@@ -953,6 +954,23 @@
                 }
                 else {
                     return 'appimages/' + appId + '.png';
+                }
+            },
+            formatPeriodString: function(period) {
+                if (Array.isArray(period)) {
+                    var effectiveRange = [moment(period[0]), moment(period[1])];
+                    if (effectiveRange[0].isSame(effectiveRange[1])) { // single point
+                        return effectiveRange[0].format("lll");
+                    }
+                    else if (effectiveRange[1] - effectiveRange[0] > 86400000) {
+                        return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
+                    }
+                    else {
+                        return effectiveRange[0].format("lll") + " - " + effectiveRange[1].format("lll");
+                    }
+                }
+                else {
+                    return period;
                 }
             }
         }
