@@ -113,8 +113,8 @@
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
 		$(document).ready(function() {
-			$('.cly-vue-notification__alert-box').show();
 			<% if (message && message.length >0 ){ %>
+				$('.cly-vue-notification__alert-box').show();
 				showMessage("<%= message %>");
 			<% } 
 			else{ %>
@@ -156,7 +156,7 @@
 				},
 				messages: {
 					email: {
-						email: "Please enter a valid email address."
+						email: jQuery.i18n.map["login.error-message"]
 					}
 				}
 			});
