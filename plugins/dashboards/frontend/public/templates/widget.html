@@ -31,13 +31,12 @@
                 </div>
             </template>
         </widget-invalid>
-        <component v-else :is="settings.grid.component" :data="widget">
+        <component v-else :is="settings.grid.component" @command="$emit('command', $event, widget)" :data="widget">
             <template v-slot:action v-if="canUpdate">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">
                         <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
                         <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
-						<el-dropdown-item :command="item.command" v-for="(item, index) in settings.grid.moreActions">{{item.label}}</el-dropdown-item >
                     </cly-more-options>
                 </div>
             </template>
