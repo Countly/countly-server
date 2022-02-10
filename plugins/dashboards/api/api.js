@@ -215,8 +215,9 @@ plugins.setConfigs("dashboards", {
                             return common.returnOutput(params, {error: true, dashboard_access_denied: true});
                         }
 
-                        common.db.collection("widgets").findOne({_id: common.db.ObjectID(widgetId)}, function(error, widget) {
-                            customDashboards.fetchAllWidgetsData(params, [widget], function(data) {
+                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], function(e, meta) {
+                            var widgets = meta[0] || [];
+                            customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
                                 common.returnOutput(params, data);
                             });
                         });
@@ -1214,30 +1215,20 @@ plugins.setConfigs("dashboards", {
     function fetchWidgetsMeta(params, widgetIds = [], callback) {
         common.db.collection("widgets").find({_id: {$in: widgetIds}}).toArray(function(e, widgets = []) {
             if (e) {
-                log.d("Could not fetch widgets", e, widgetIds);
+                log.e("Could not fetch widgets", e, widgetIds);
             }
 
-            var appIds = [],
-                appObjIds = [];
-
-            for (let i = 0; i < widgets.length; i++) {
-                for (var j = 0; j < widgets[i].apps.length; j++) {
-                    if (appIds.indexOf(widgets[i].apps[j]) === -1) {
-                        appIds.push(widgets[i].apps[j]);
-                    }
-                }
+            for (var i = 0; i < widgets.length; i++) {
+                customDashboards.mapWidget(widgets[i]);
             }
 
-            for (let i = 0; i < appIds.length; i++) {
-                appObjIds.push(common.db.ObjectID(appIds[i]));
-            }
-
-            common.db.collection("apps").find({_id: {$in: appObjIds}}, {name: 1}).toArray(function(er, apps = []) {
-                if (er) {
-                    return callback(er);
+            customDashboards.fetchWidgetApps(params, widgets, function(err, apps = {}) {
+                var allApps = [];
+                for (var appId in apps) {
+                    allApps.push({_id: apps[appId]._id, name: apps[appId].name});
                 }
 
-                return callback(null, [widgets, apps]);
+                return callback(null, [widgets, allApps]);
             });
         });
     }

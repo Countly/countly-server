@@ -113,7 +113,7 @@
             emitSaveWhenDisabled: {
                 type: Boolean,
                 required: false,
-                defualt: false
+                default: false
             }
         },
         computed: {

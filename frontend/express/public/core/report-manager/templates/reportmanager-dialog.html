@@ -11,6 +11,6 @@
         width="1120px"
         autoCentered
         :visible.sync="isDialogVisible">
-        <cly-report-manager-table @view-task="onViewTask" :disableAutoNavigationToTask="disableAutoNavigationToTask" report-type="auto" :fixed-origin="origin" compact></cly-report-manager-table>
+        <cly-report-manager-table maxHeight="400px" @view-task="onViewTask" :disableAutoNavigationToTask="disableAutoNavigationToTask" report-type="auto" :fixed-origin="origin" compact></cly-report-manager-table>
     </cly-dialog>
 </div>

@@ -53,23 +53,15 @@
         },
         methods: {
             compareApps: function() {
-                var self = this;
                 this.$store.dispatch('countlyCompareApps/setTableLoading', true);
                 this.$store.dispatch('countlyCompareApps/setChartLoading', true);
                 this.$store.dispatch('countlyCompareApps/setSelectedApps', this.value);
-                this.$store.dispatch('countlyCompareApps/fetchCompareAppsData').then(function() {
-                    self.$store.dispatch('countlyCompareApps/setTableLoading', false);
-                    self.$store.dispatch('countlyCompareApps/setChartLoading', false);
-                });
+                this.$store.dispatch('countlyCompareApps/fetchCompareAppsData');
             },
             dateChanged: function() {
-                var self = this;
                 this.$store.dispatch('countlyCompareApps/setTableLoading', true);
                 this.$store.dispatch('countlyCompareApps/setChartLoading', true);
-                this.$store.dispatch('countlyCompareApps/fetchCompareAppsData').then(function() {
-                    self.$store.dispatch('countlyCompareApps/setTableLoading', false);
-                    self.$store.dispatch('countlyCompareApps/setChartLoading', false);
-                });
+                this.$store.dispatch('countlyCompareApps/fetchCompareAppsData');
             }
         },
         computed: {
@@ -107,42 +99,27 @@
                     if (selectedItem === "totalSessions") {
                         self.selectedMetric = "totalSessions";
                         this.$store.dispatch('countlyCompareApps/setSelectedGraphMetric', "total-sessions");
-                        this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps).then(function() {
-                            self.$store.dispatch('countlyCompareApps/setTableLoading', false);
-                            self.$store.dispatch('countlyCompareApps/setChartLoading', false);
-                        });
+                        this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps);
                     }
                     else if (selectedItem === "totalVisitors") {
                         self.selectedMetric = "totalVisitors";
                         this.$store.dispatch('countlyCompareApps/setSelectedGraphMetric', "total-users");
-                        this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps).then(function() {
-                            self.$store.dispatch('countlyCompareApps/setTableLoading', false);
-                            self.$store.dispatch('countlyCompareApps/setChartLoading', false);
-                        });
+                        this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps);
                     }
                     else if (selectedItem === "newVisitors") {
                         self.selectedMetric = "newVisitors";
                         this.$store.dispatch('countlyCompareApps/setSelectedGraphMetric', "new-users");
-                        this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps).then(function() {
-                            self.$store.dispatch('countlyCompareApps/setTableLoading', false);
-                            self.$store.dispatch('countlyCompareApps/setChartLoading', false);
-                        });
+                        this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps);
                     }
                     else if (selectedItem === "timeSpent") {
                         self.selectedMetric = "timeSpent";
                         this.$store.dispatch('countlyCompareApps/setSelectedGraphMetric', "total-time-spent");
-                        this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps).then(function() {
-                            self.$store.dispatch('countlyCompareApps/setTableLoading', false);
-                            self.$store.dispatch('countlyCompareApps/setChartLoading', false);
-                        });
+                        this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps);
                     }
                     else {
                         self.selectedMetric = "avgSessionDuration";
                         this.$store.dispatch('countlyCompareApps/setSelectedGraphMetric', "time-spent");
-                        this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps).then(function() {
-                            self.$store.dispatch('countlyCompareApps/setTableLoading', false);
-                            self.$store.dispatch('countlyCompareApps/setChartLoading', false);
-                        });
+                        this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps);
                     }
                 }
             },

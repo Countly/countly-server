@@ -336,7 +336,7 @@
         getAllEventsList: function(eventsList, groupList) {
             var map = eventsList.map || {};
             var allEvents = [];
-            if (eventsList) {
+            if (eventsList && eventsList.list) {
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
                         var obj = {
@@ -469,7 +469,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchAllEventsGroupData: function() {
             return CV.$.ajax({
@@ -481,7 +481,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchSelectedEventsData: function(context) {
             return CV.$.ajax({
@@ -496,7 +496,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchSelectedEventsOverview: function(context) {
             return CV.$.ajax({
@@ -511,7 +511,7 @@
                     "overview": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchCategories: function() {
             return CV.$.ajax({
@@ -522,7 +522,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchSegmentMap: function() {
             return CV.$.ajax({
@@ -533,7 +533,7 @@
                     "preventRequestAbort": true,
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchRefreshSelectedEventsData: function(context) {
             return CV.$.ajax({
@@ -547,7 +547,7 @@
                     "action": "refresh"
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         }
     };
 
@@ -613,6 +613,8 @@
                                                             if (resp) {
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
                                                                 context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                                context.dispatch('setTableLoading', false);
+                                                                context.dispatch('setChartLoading', false);
                                                             }
                                                         });
                                                 }
@@ -620,6 +622,9 @@
                                     }
                                 });
                         }
+                    }).catch(function() {
+                        context.dispatch('setTableLoading', false);
+                        context.dispatch('setChartLoading', false);
                     });
             },
             fetchAllEventsGroupData: function(context) {
@@ -637,7 +642,12 @@
                             context.commit("setSelectedEventsData", res);
                             context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, res) || []);
                             context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
+                            context.dispatch('setTableLoading', false);
+                            context.dispatch('setChartLoading', false);
                         }
+                    }).catch(function() {
+                        context.dispatch('setTableLoading', false);
+                        context.dispatch('setChartLoading', false);
                     });
             },
             fetchSelectedDatePeriod: function(context, period) {

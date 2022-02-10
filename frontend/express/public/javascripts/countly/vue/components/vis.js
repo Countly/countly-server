@@ -278,9 +278,15 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            valFormatter: {
+                type: Function,
+                default: countlyCommon.getShortNumber,
+                required: false
             }
         },
         data: function() {
+            var self = this;
             return {
                 baseOptions: {
                     title: {
@@ -360,7 +366,7 @@
                                                         <div>\
                                                             <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
                                                             <div class="text-small"> ' + params.data.name + '</div>\
-                                                            <div class="text-big">' + countlyCommon.getShortNumber(params.data.value) + '</div>\
+                                                            <div class="text-big">' + self.valFormatter(params.data.value) + '</div>\
                                                         </div>\
                                                   </div>';
 
@@ -378,7 +384,7 @@
                                                     <div class="chart-tooltip__series">\
                                                             <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
                                                         <div class="chart-tooltip__value">\
-                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? countlyCommon.getShortNumber(params[i].value[1]) : countlyCommon.getShortNumber(params[i].value)) + '</span>\
+                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter(params[i].value[1], params[i].value, i) : self.valFormatter(params[i].value, null, i)) + '</span>\
                                                         </div>\
                                                     </div>\
                                                 </div>';
@@ -1878,7 +1884,7 @@
             'l-control': Vue2Leaflet.LControl,
             'l-tooltip': Vue2Leaflet.LTooltip
         },
-        mixins: [countlyVue.mixins.commonFormatters],
+        mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.i18n],
         props: {
             showNavigation: {
                 type: Boolean,

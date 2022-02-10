@@ -95,7 +95,7 @@
 
             <div v-if="drawerScope.editedObject.isEditMode">
                 <cly-form-field label="Omit Segments" 
-                subheading="It allows to delete segmentations from aggregated data only, and keep recording to granular data as string. Omitted segments will not be saved in the future and past data for these segments will be purged immediately after you save these settings. Data for omitted segments will still be stored in Drill.">
+                tooltip="It allows to delete segmentations from aggregated data only, and keep recording to granular data as string. Omitted segments will not be saved in the future and past data for these segments will be purged immediately after you save these settings. Data for omitted segments will still be stored in Drill.">
                     <el-select multiple v-model="omitList" >
                         <el-option v-for="item in drawerScope.editedObject.segments" :key="item.name" :value="item.name">
                         </el-option>

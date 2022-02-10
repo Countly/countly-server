@@ -90,8 +90,8 @@
                 detailData: {},
                 back: false,
                 tableStore: tableStore,
-                allActions: {"all": jQuery.i18n.map["systemlogs.all-actions"]},
-                allUsers: {"all": jQuery.i18n.map["systemlogs.all-users"]},
+                allActions: [{"label": jQuery.i18n.map["systemlogs.all-actions"], value: "all"}],
+                allUsers: [{"label": jQuery.i18n.map["systemlogs.all-users"], value: "all"}],
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "systemLogsTable")
             };
         },
@@ -134,20 +134,16 @@
                     var meta = countlySystemLogs.getMetaData();
                     if (meta.action) {
                         for (var i = 0; i < meta.action.length; i++) {
-                            self.allActions[meta.action[i]] = jQuery.i18n.map["systemlogs.action." + meta.action[i]] || meta.action[i];
+                            self.allActions.push({label: jQuery.i18n.map["systemlogs.action." + meta.action[i]] || meta.action[i], value: meta.action[i]});
                         }
                     }
                     if (meta.users) {
                         for (var j = 0; j < meta.users.length; j++) {
-                            self.allUsers[meta.users[j]._id] = meta.users[j].full_name || meta.users[j].email;
+                            self.allUsers.push({label: meta.users[j].full_name || meta.users[j].email, value: meta.users[j]._id});
                         }
                     }
-
-                    var finalObj = {};
-                    for (i = 0; i < self.sortProperties(self.allActions).length; i++) {
-                        finalObj[self.sortProperties(self.allActions)[i][0]] = self.sortProperties(self.allActions)[i][1];
-                    }
-                    self.allActions = finalObj;
+                    self.allUsers = self.sortProperties(self.allUsers);
+                    self.allActions = self.sortProperties(self.allActions);
 
                 });
         },
@@ -201,21 +197,19 @@
                 };
                 return apiQueryData;
             },
-            sortProperties: function(obj) {
-
-                var sortable = [];
-                for (var key in obj) {
-                    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                        sortable.push([key, obj[key]]);
+            sortProperties: function(arr) {
+                arr.sort(function(a, b) {
+                    if (a.value === "all") {
+                        return -1;
                     }
-                }
-
-                sortable.sort(function(a, b) {
-                    var x = a[1].toLowerCase(),
-                        y = b[1].toLowerCase();
+                    if (b.value === "all") {
+                        return 1;
+                    }
+                    var x = a.label.toLowerCase(),
+                        y = b.label.toLowerCase();
                     return x < y ? -1 : x > y ? 1 : 0;
                 });
-                return sortable;
+                return arr;
             }
         }
     });
