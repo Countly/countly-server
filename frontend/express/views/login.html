@@ -65,14 +65,14 @@
 				If you wish to implement your own branding (e.g. your own logo, colors, etc.), you must license Countly Enterprise Edition.
 				-->
 				<form method="POST" id="formRegister" style="width:300px; margin:auto;">
-					<h1 style="font-weight: 500;" id="header">Sign In</h1>
-					<p>or Sign In With Your Email</p>
+					<h1 style="font-weight: 500;" id="header" data-localize="login.form-header"></h1>
+					<p data-localize="login.sign-in"></p>
 					<div>
-						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px">Email Address</p>
+						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress"></p>
 						<input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
 						</div>
 					<div>
-						<div style="display: flex; justify-content: space-between;"><p style="color: #333C48;font-weight: 500;margin-bottom: 8px;">Password</p><p style="margin-bottom: 8px;"><a id="forgot-password" href="./forgot" >Forgot password?</a></p></div>
+						<div style="display: flex; justify-content: space-between;"><p style="color: #333C48;font-weight: 500;margin-bottom: 8px;" data-localize="login.password"></p><p style="margin-bottom: 8px;"><a id="forgot-password" href="./forgot" data-localize="login.forgot"></a></p></div>
 						<input name="password" type="password" placeholder="Enter your password" data-localize="placeholder.password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
 					</div>
 					<% if (typeof inject_template.form != "undefined") { %>
