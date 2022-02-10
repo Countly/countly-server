@@ -1325,10 +1325,8 @@
             return {
                 StatusEnum: countlyPushNotification.service.StatusEnum,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
-                selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
                 platformFilters: platformFilterOptions,
                 statusOptions: countlyPushNotification.service.statusOptions,
-                selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
                 currentSummaryTab: "message",
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
@@ -1370,15 +1368,49 @@
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
+            selectedMessageLocaleFilter: function() {
+                return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
+            },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
+                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocaleFilter];
+            },
+            selectedDashboard: function() {
+                var selectedDashboard = this.pushNotification.dashboard[this.selectedPlatformFilter];
+                if (this.selectedLocaleFilter) {
+                    selectedDashboard = selectedDashboard.locales[this.selectedLocaleFilter];
+                }
+                return selectedDashboard;
+            },
+            targetedUsers: function() {
+                if (!this.selectedDashboard.processed) {
+                    return 0;
+                }
+                return CountlyHelpers.formatPercentage(this.selectedDashboard.processed / this.selectedDashboard.total);
+            },
+            sentPushNotifications: function() {
+                if (!this.selectedDashboard.sent) {
+                    return 0;
+                }
+                return CountlyHelpers.formatPercentage(this.selectedDashboard.sent / this.selectedDashboard.processed);
+            },
+            clickedPushNotifications: function() {
+                if (!this.selectedDashboard.actioned) {
+                    return 0;
+                }
+                return CountlyHelpers.formatPercentage(this.selectedDashboard.actioned / this.selectedDashboard.sent);
+            },
+            failedPushNotifications: function() {
+                if (!this.selectedDashboard.errored) {
+                    return 0;
+                }
+                return CountlyHelpers.formatPercentage(this.selectedDashboard.errored / this.selectedDashboard.processed);
             },
             pushNotificationChartBars: function() {
                 return {
-                    targetedUsers: this.getDetailsBaseChartOptions(this.findTargetedUsers()),
-                    sentPushNotifications: this.getDetailsBaseChartOptions(this.findSentPushNotifications()),
-                    clickedPushNotifications: this.getDetailsBaseChartOptions(this.findClickedPushNotifications()),
-                    failedPushNotifications: this.getDetailsBaseChartOptions(this.findFailedPushNotifications())
+                    targetedUsers: this.getDetailsBaseChartOptions(this.targetedUsers),
+                    sentPushNotifications: this.getDetailsBaseChartOptions(this.sentPushNotifications),
+                    clickedPushNotifications: this.getDetailsBaseChartOptions(this.clickedPushNotifications),
+                    failedPushNotifications: this.getDetailsBaseChartOptions(this.failedPushNotifications)
                 };
             },
             chartBarLegend: function() {
@@ -1393,7 +1425,9 @@
                 return this.$store.getters['countlyPushNotification/details/isLoading'];
             },
             localizations: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+                return Object.keys(this.pushNotification.dashboard[this.selectedPlatformFilter].locales).map(function(localeKey) {
+                    return countlyPushNotification.mapper.incoming.mapLocalizationByKey(localeKey);
+                });
             },
             hasApproverPermission: function() {
                 return countlyPushNotification.service.hasApproverPermission();
@@ -1410,7 +1444,27 @@
             },
             userCommand: function() {
                 return this.$store.state.countlyPushNotification.details.userCommand;
-            }
+            },
+            dashboard: function() {
+                return this.pushNotification.dashboard;
+            },
+            selectedLocaleFilter: {
+                get: function() {
+                    return this.$store.state.countlyPushNotification.details.localeFilter;
+                },
+                set: function(value) {
+                    this.$store.dispatch("countlyPushNotification/details/onSetLocaleFilter", value);
+                }
+            },
+            selectedPlatformFilter: {
+                get: function() {
+                    return this.$store.state.countlyPushNotification.details.platformFilter;
+                },
+                set: function(value) {
+                    this.$store.dispatch("countlyPushNotification/details/onSetPlatformFilter", value);
+                    this.$store.dispatch("countlyPushNotification/details/onSetLocaleFilter", null);
+                }
+            },
         },
         watch: {
             isDrawerOpen: function(value) {
@@ -1538,19 +1592,7 @@
             getRemainingStackBar: function(value) {
                 return {data: [100 - value], itemStyle: {color: "#E2E4E8"}, silent: true};
             },
-            findTargetedUsers: function() {
-                //TODO-LA: find how to calculate the targeted users;
-                return CountlyHelpers.formatPercentage(1);
-            },
-            findSentPushNotifications: function() {
-                return CountlyHelpers.formatPercentage(this.pushNotification.sent / this.pushNotification.total);
-            },
-            findClickedPushNotifications: function() {
-                return CountlyHelpers.formatPercentage(this.pushNotification.actioned / this.pushNotification.sent);
-            },
-            findFailedPushNotifications: function() {
-                return CountlyHelpers.formatPercentage(this.pushNotification.failed / this.pushNotification.total);
-            },
+
             onDrawerClose: function() {
                 this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', false);
             }
