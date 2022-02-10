@@ -20,12 +20,7 @@
                 }
             },
             isCode: function() {
-                if (countlyGlobal.config && countlyGlobal.config.code) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
+                return countlyGlobal.config && countlyGlobal.config.code;
             }
         },
         data: function() {
