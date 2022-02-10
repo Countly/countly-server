@@ -497,7 +497,7 @@
                         {
                             name: "analytics",
                             icon: "ion-stats-bars",
-                            tooltip: "Main Menu"
+                            tooltip: CV.i18n("sidebar.main-menu")
                         },
                         {
                             name: "divider",
@@ -545,7 +545,7 @@
                             icon: "ion-person",
                             noSelect: true,
                             member: this.member,
-                            tooltip: "My Profile"
+                            tooltip: CV.i18n("sidebar.my-profile")
                         },
                         {
                             name: "language",
