@@ -247,6 +247,16 @@
                         }
                     ]
                 };
+            },
+            calculateNumberFromWidget: function(widgetData) {
+                widgetData = widgetData || {};
+                widgetData.dashData = widgetData.dashData || {};
+                var value;
+                widgetData.dashData.data = widgetData.dashData.data || {};
+                for (var app in widgetData.dashData.data) {
+                    value = widgetData.dashData.data[app];
+                }
+                return value;
             }
         }
 

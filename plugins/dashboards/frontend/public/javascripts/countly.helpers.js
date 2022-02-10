@@ -1,4 +1,4 @@
-/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal, countlyDashboards */
+/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal, countlyDashboards, moment*/
 
 (function() {
     /**

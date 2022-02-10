@@ -93,14 +93,7 @@
                 return this.calculateStackedBarOptionsFromWidget(this.data);
             },
             number: function() {
-                this.data = this.data || {};
-                this.data.dashData = this.data.dashData || {};
-                var value;
-                this.data.dashData.data = this.data.dashData.data || {};
-                for (var app in this.data.dashData.data) {
-                    value = this.data.dashData.data[app];
-                }
-                return value;
+                return this.calculateNumberFromWidget(this.data);
             },
             metricLabels: function() {
                 this.data = this.data || {};
