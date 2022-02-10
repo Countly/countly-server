@@ -827,8 +827,7 @@
             redrawRowWigets: function() {
                 var self = this;
 
-                var allGridElements = this.grid.save(false);
-
+                var allGridElements = this.savedGrid();
 
                 allGridElements = this.sortWidgetByGeography(allGridElements);
 
@@ -937,7 +936,7 @@
                     column: 4
                 });
 
-                var allGridWidgets = this.grid.save(false);
+                var allGridWidgets = this.savedGrid();
 
                 for (i = 0; i < allGridWidgets.length; i++) {
                     node = allGridWidgets[i];
@@ -947,7 +946,6 @@
 
                     this.updateWidgetGeography(widgetId, {size: size, position: position});
                 }
-
 
                 this.grid.on("change", function(event, items) {
                     /**
@@ -1012,6 +1010,57 @@
                     //self.redrawRowWigets();
                 });
 
+                this.grid.on("resizestop", function(event, element) {
+                    node = element.gridstackNode;
+                    var y = node.y;
+                    var h = node.h;
+
+                    var allGridElements = self.savedGrid();
+
+                    allGridElements = self.sortWidgetByGeography(allGridElements);
+
+                    /** Get all the widgets in the same row */
+                    var rowWidgets = allGridElements.filter(function(item) {
+                        return item.y === y;
+                    });
+
+                    /** Finding the maximum minimum row height max(minH) */
+                    var maxRowMinH = rowWidgets.reduce(function(acc, item) {
+                        if (acc < item.minH) {
+                            acc = item.minH;
+                        }
+
+                        return acc;
+                    }, 0);
+
+                    /**
+                     * Final height should be atleast equal to the maximum minimum
+                     * row height max(minH)
+                     */
+                    var finalRowH = h < maxRowMinH ? maxRowMinH : h;
+
+                    /**
+                     * Starting batch update.
+                     */
+                    self.grid.batchUpdate();
+
+                    for (i = 0; i < rowWidgets.length; i++) {
+                        node = rowWidgets[i];
+                        widgetId = node.id;
+
+                        var nodeEl = document.getElementById(widgetId);
+
+                        /** Update minimum heights of all the widgets aswell */
+                        self.updateGridWidget(nodeEl, {h: finalRowH});
+
+                    }
+
+                    /**
+                     * Committing batch update.
+                     */
+                    self.grid.commit();
+                });
+
                 this.grid.on("added", function(event, element) {
                     /**
                      * This event is emitted when the widget is added to the grid.
@@ -1060,6 +1109,9 @@
             },
             syncWidgetGeography: function(widget) {
                 this.$store.dispatch("countlyDashboards/widgets/syncGeography", widget);
+            },
+            savedGrid: function() {
+                return this.grid.save(false);
             },
             validateWidgets: function(allWidgets) {
                 if (this.grid) {
