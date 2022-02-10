@@ -87,7 +87,7 @@ async function validate(args, draft = false) {
     }
 
     if (msg.filter.cohorts.length) {
-        let cohorts = await common.db.collection('cohorts').find({_id: msg.filter.cohorts}).toArray();
+        let cohorts = await common.db.collection('cohorts').find({_id: {$in: msg.filter.cohorts}}).toArray();
         if (cohorts.length !== msg.filter.cohorts.length) {
             throw new ValidationError('No such cohort');
         }
