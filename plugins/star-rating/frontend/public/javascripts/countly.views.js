@@ -1,6 +1,15 @@
 /*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
 var FEATURE_NAME = 'star_rating';
 
+/**
+ * Replace escaped characters
+ * @param {string} val - string to replace
+ * @returns {string} - replaced escaped characters
+ */
+function replaceEscapes(val) {
+    return val.replace("&#39;", "'");
+}
+
 var Drawer = countlyVue.views.create({
     template: CV.T("/star-rating/templates/drawer.html"),
     props: {
@@ -152,6 +161,7 @@ var WidgetsTable = countlyVue.views.create({
                     ratingScore = (this.rows[i].ratingsSum / this.rows[i].ratingsCount).toFixed(1);
                 }
                 this.rows[i].ratingScore = ratingScore;
+                this.rows[i].popup_header_text = replaceEscapes(this.rows[i].popup_header_text);
                 if (this.cohortsEnabled) {
                     this.rows[i] = this.parseTargeting(this.rows[i]);
                 }
@@ -760,6 +770,7 @@ var WidgetDetail = countlyVue.views.create({
 
             starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
                 self.widget = widget;
+                self.widget.popup_header_text = replaceEscapes(self.widget.popup_header_text);
                 self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
                 if (self.cohortsEnabled) {
                     self.widget = self.parseTargeting(widget);
