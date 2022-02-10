@@ -1808,6 +1808,23 @@
                 this.resetConfig();
                 this.reconcilate();
             },
+            isKeyEmpty: function(platform) {
+                if (platform === this.PlatformEnum.ANDROID) {
+                    return !this.viewModel[platform].firebaseKey;
+                }
+                if (platform === this.PlatformEnum.IOS) {
+                    if (this.iosAuthConfigType === countlyPushNotification.service.IOSAuthConfigTypeEnum.P8) {
+                        return !(this.viewModel[platform].p8KeyFile || this.viewModel[platform].keyId || this.viewModel[platform].teamId || this.viewModel[platform].bundleId);
+                    }
+                    if (this.iosAuthConfigType === countlyPushNotification.service.IOSAuthConfigTypeEnum.P12) {
+                        return !(this.viewModel[platform].p12KeyFile || this.viewModel[platform].passphrase);
+                    }
+                }
+                if (platform === this.PlatformEnum.HUAWEI) {
+                    return !(this.viewModel[platform].appId || this.viewModel[platform].appSecret);
+                }
+                throw new Error('Unknown platform type,', platform);
+            },
             onDeleteKey: function(platformKey) {
                 this.selectedKeyToDelete = platformKey;
                 CountlyHelpers.confirm('', 'danger', this.onConfirmCallback, ['Cancel', 'I understand, delete this key'], {title: 'Delete key'});
@@ -1835,6 +1852,7 @@
                 this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.$emit('change', 'push' + '.' + platformDto, null);
+                this.isHuaweiConfigTouched = false;
             },
             deleteKeyOnCofirm: function() {
                 if (this.selectedKeyToDelete === this.PlatformEnum.ANDROID) {
