@@ -102,37 +102,6 @@
           }
         }  
       }
-      #push-notification-app-level-config{
-        div + div{
-          font-size: 16px;
-          line-height: 24px;
-          font-weight: 500;
-          color: #333C48;
-        }
-        div + div p{
-          font-size: 14px;
-          line-height: 14px;
-        }
-        .cly-vue-form-step__section{
-          div:first-child{
-            font-size: 16px;
-            line-height: 24px;
-          }
-          div:nth-child(2){
-            .el-form-item__content {
-              float: right;
-              max-width: 232px;
-              line-height: 0;
-            }
-          }  
-        }
-      }
-      #push-notification-app-level-config:first-child {
-        font-size: 16px;
-        line-height: 24px;
-        font-weight: 500;
-        color: #333C48;
-      }
       
     }
 
