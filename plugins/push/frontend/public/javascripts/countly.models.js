@@ -523,9 +523,6 @@
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
     countlyPushNotification.api = {
         findById: function(id) {
-            // return new Promise(function(resolve) {
-            //     resolve({"_id": "620113711341c2cd73978476", "app": "61d429edc7cb1805216df3cd", "platforms": ["a"], "state": 32, "status": "sent", "filter": {}, "triggers": [{"kind": "plain", "start": "2022-02-07T12:40:58.082Z", "tz": false}], "contents": [{"title": "Background", "message": "Background Msg", "expiration": 604800000}, {"p": "a", "sound": "default"}], "result": {"total": 1, "processed": 1, "sent": 1, "actioned": 1, "next": "2022-02-07T12:40:58.000Z", "subs": {"a": {"total": 1, "processed": 1, "sent": 1, "next": "2022-02-07T12:40:58.000Z", "subs": {"en": {"total": 1, "processed": 1, "sent": 1}}}}}, "info": {"title": "Background Test", "appName": "Mobile App - Demo", "silent": false, "scheduled": false, "locales": {"default": 0, "count": 1}, "created": "2022-02-07T12:41:21.742Z", "createdBy": "614b3c44ffadf8d52b7eca78", "createdByName": "Junaid Akram"}});
-            // });
             return CV.$.ajax({
                 type: "GET",
                 url: window.countlyCommon.API_URL + "/o/push/message/GET",
@@ -917,7 +914,7 @@
                     code: CV.i18n('push-notification.error-code.' + errorKey),
                     codePostfix: '',
                     affectedUsers: errorsDto[errorKey],
-                    description: CV.i18n('push-notification.error-code.' + errorKey + '.desc', '<a target="blank" href="https://support.count.ly/hc/en-us/articles/360037270012-Push-notifications#troubleshooting">Troubleshooting</a>'),
+                    description: CV.i18n('push-notification.error-code.' + errorKey + '.desc', errorsDto[errorKey]),
                 };
             },
             mapErrorWithCode: function(errorsDto, errorKey) {
@@ -936,8 +933,22 @@
                 }
                 return result;
             },
+            getExpiredTokenErrorIfFound: function(dto) {
+                if (dto.result && (dto.result.processed > (dto.result.sent + dto.result.errored))) {
+                    var affectedUsers = dto.result.processed - (dto.result.sent + dto.result.errored);
+                    return {'expired': affectedUsers};
+                }
+                return null;
+            },
             mapErrors: function(dto) {
                 var self = this;
+                var expiredTokenError = this.getExpiredTokenErrorIfFound(dto);
+                if (expiredTokenError) {
+                    if (!dto.errors) {
+                        dto.errors = {};
+                    }
+                    Object.assign(dto.errors, expiredTokenError);
+                }
                 if (!dto.errors) {
                     return [];
                 }
