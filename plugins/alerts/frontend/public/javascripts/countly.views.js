@@ -8,7 +8,6 @@
     app,
     countlyCommon,
     countlyEvent,
-    alertDefine,
     countlyAuth,
     CV,
  */
@@ -26,48 +25,25 @@
         components: {
         },
         data: function() {
-            var appsSelectorOption = [];
-            for (var appId in countlyGlobal.apps) {
-                appsSelectorOption.push({label: countlyGlobal.apps[appId].name, value: appId});
-            }
-            var defaultAppsSelectorOption = Object.assign([], appsSelectorOption);
             return {
                 title: "",
                 saveButtonLabel: "",
                 apps: [""],
-                defaultAppsSelectorOption: defaultAppsSelectorOption,
-                appsSelectorOption: appsSelectorOption,
+                allowAll: false,
                 showSubType1: true,
                 showSubType2: false,
                 showCondition: true,
                 showConditionValue: true,
                 alertDataSubType2Options: [],
-            };
-        },
-        computed: {
-            alertDataTypeOptions: function() {
-                var alertDataTypeOptions = [
-                    {label: jQuery.i18n.map["alert.Metric"], value: 'metric'},
-                    {label: jQuery.i18n.map["alert.Event"], value: 'event'},
-                    {label: jQuery.i18n.map["alert.Crash"], value: 'crash'},
-                    {label: jQuery.i18n.map["alert.rating"], value: 'rating'},
-                    {label: jQuery.i18n.map["alert.data-point"], value: 'dataPoint'},
-                ];
-                if (this.externalDataTypeOptions) {
-                    alertDataTypeOptions = alertDataTypeOptions.concat(this.externalDataTypeOptions);
-                }
-                return alertDataTypeOptions;
-            },
-            alertDefine: function() {
-                var alertDefine = {
+                eventTargets: [],
+                metricTargets: [],
+                defaultAlertDefine: {
                     metric: {
                         target: [
                             { value: 'Total users', label: 'Total users' },
                             { value: 'New users', label: 'New users' },
                             { value: 'Total sessions', label: 'Total sessions' },
                             { value: 'Average session duration', label: 'Average session duration' },
-                            { value: 'Bounce rate', label: 'Bounce rate (%)' },
-                            { value: 'Number of page views', label: 'Number of page views' },
                             { value: 'Purchases', label: 'Purchases' },
                         ],
                         condition: [
@@ -114,18 +90,42 @@
                             { value: 'decreased by at least', label: 'decreased by at least' },
                         ]
                     },
-                };
-                var self = this;
-                this.externalAlertDefine.forEach(function(define) {
-                    self.alertDefine = Object.assign(alertDefine, define);
-                });
-                return alertDefine;
-            },
-            subDataTypeOptions: function() {
-                return alertDefine;
-            }
+                }
+            };
         },
-        watch: {
+        computed: {
+            alertDataTypeOptions: function() {
+                var alertDataTypeOptions = [
+                    {label: jQuery.i18n.map["alert.Metric"], value: 'metric'},
+                    {label: jQuery.i18n.map["alert.Event"], value: 'event'},
+                    {label: jQuery.i18n.map["alert.Crash"], value: 'crash'},
+                    {label: jQuery.i18n.map["alert.rating"], value: 'rating'},
+                    {label: jQuery.i18n.map["alert.data-point"], value: 'dataPoint'},
+                ];
+                if (this.externalDataTypeOptions) {
+                    alertDataTypeOptions = alertDataTypeOptions.concat(this.externalDataTypeOptions);
+                }
+                return alertDataTypeOptions;
+            },
+            alertDefine: function() {
+                var allOptions = JSON.parse(JSON.stringify(this.defaultAlertDefine));
+                var eventTargets = this.eventTargets;
+                var metricTargets = this.metricTargets;
+
+                this.externalAlertDefine.forEach(function(define) {
+                    allOptions = Object.assign(allOptions, define);
+                });
+
+                if (eventTargets && eventTargets.length) {
+                    allOptions.event.target = eventTargets;
+                }
+
+                if (metricTargets && metricTargets.length) {
+                    allOptions.metric.target = allOptions.metric.target.concat(metricTargets);
+                }
+
+                return allOptions;
+            }
         },
         props: {
             controls: {
@@ -135,25 +135,48 @@
         mounted: function() {
         },
         methods: {
-            appSelected: function(val, notReset) {
+            onAppChange: function(val, notReset) {
                 var self = this;
                 this.apps = [val];
                 if (val) {
                     countlyEvent.getEventsForApps([val], function(eventData) {
-                        var eventOptions = eventData.map(function(e) {
+                        var eventTargets = eventData.map(function(e) {
                             return {value: e.value, label: e.name};
                         });
-                        self.alertDefine.event.target = eventOptions;
+
+                        self.eventTargets = eventTargets;
+                    });
+
+                    countlyAlerts.getViewForApp(val, function(viewList) {
+                        if (viewList.length !== 0) {
+                            var viewTargets = [
+                                { value: 'Bounce rate', label: 'Bounce rate (%)' },
+                                { value: 'Number of page views', label: 'Number of page views' }
+                            ];
+
+                            self.metricTargets = viewTargets;
+                            self.alertDataSubType2Options = viewList.map(function(v) {
+                                return {value: v.value, label: v.name};
+                            });
+                        }
+                        else {
+                            self.metricTargets = [];
+                        }
                     });
                 }
+                else {
+                    this.eventTargets = [];
+                    this.metricTargets = [];
+                    this.alertDataSubType2Options = [];
+                }
+
                 if (!notReset) {
                     this.resetAlertCondition();
                 }
             },
             dataTypeSelected: function(val, notRest) {
-                this.appsSelectorOption = Object.assign([], this.defaultAppsSelectorOption);
                 if (val === 'dataPoint') {
-                    this.appsSelectorOption.unshift({value: "all-apps", label: "All apps"});
+                    this.allowAll = true;
                 }
                 if (val === 'online-users') {
                     this.showSubType2 = false;
@@ -178,6 +201,7 @@
                 this.showConditionValue = true;
             },
             alertDataSubTypeSelected: function(alertDataSubType, notReset) {
+                this.resetAlertConditionShow();
                 switch (alertDataSubType) {
                 case 'New crash occurence':
                     this.showSubType2 = false;
@@ -222,6 +246,7 @@
                 }
             },
             onSubmit: function(settings) {
+                settings.selectedApps = [settings.selectedApps];
                 if (settings._id) {
                     var rows = this.$store.getters["countlyAlerts/table/all"];
                     for (var i = 0; i < rows.length; i++) {
@@ -322,8 +347,9 @@
                 this.showSubType2 = false;
                 this.showCondition = false;
                 this.showConditionValue = false;
+                newState.selectedApps = newState.selectedApps[0];
 
-                this.appSelected(newState.selectedApps[0], true);
+                this.onAppChange(newState.selectedApps, true);
                 this.alertDataSubTypeSelected(newState.alertDataSubType, true);
 
                 if (newState._id !== null) {
@@ -480,7 +506,8 @@
         },
         methods: {
             createAlert: function() {
-                this.openDrawer("home", countlyAlerts.defaultDrawerConfigValue());
+                var config = countlyAlerts.defaultDrawerConfigValue();
+                this.openDrawer("home", config);
             },
         },
     });

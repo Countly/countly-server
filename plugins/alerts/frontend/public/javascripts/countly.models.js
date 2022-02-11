@@ -122,8 +122,10 @@
                             name: res.aaData[i].view
                         });
                     }
-                    callback(data);
+                    return callback(data);
                 }
+
+                return callback([]);
             }
         });
     };
