@@ -111,7 +111,8 @@
                     visualization: "",
                     custom_period: "30days",
                     metrics: ["t"],
-                    breakdowns: ["countries"]
+                    breakdowns: ["countries"],
+                    bar_color: 1
                 };
             },
             beforeSaveFn: function(/*doc*/) {
