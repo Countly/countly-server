@@ -818,7 +818,7 @@
                 dailySendData[PlatformEnum.ANDROID] = dto.sent_automated.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
                 dailySendData[PlatformEnum.IOS] = dto.sent_automated.platforms[PlatformDtoEnum.IOS].daily.data || [];
                 var dailyActionsData = {};
-                dailyActionsData[PlatformEnum.ALL] = dto.actions_automated.monthly.data || [];
+                dailyActionsData[PlatformEnum.ALL] = dto.actions_automated.daily.data || [];
                 dailyActionsData[PlatformEnum.ANDROID] = dto.actions_automated.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
                 dailyActionsData[PlatformEnum.IOS] = dto.actions_automated.platforms[PlatformDtoEnum.IOS].daily.data || [];
                 return {
@@ -831,7 +831,7 @@
                 dailySendData[PlatformEnum.ANDROID] = dto.sent_tx.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
                 dailySendData[PlatformEnum.IOS] = dto.sent_tx.platforms[PlatformDtoEnum.IOS].daily.data || [];
                 var dailyActionsData = {};
-                dailyActionsData[PlatformEnum.ALL] = dto.actions_tx.monthly.data || [];
+                dailyActionsData[PlatformEnum.ALL] = dto.actions_tx.daily.data || [];
                 dailyActionsData[PlatformEnum.ANDROID] = dto.actions_tx.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
                 dailyActionsData[PlatformEnum.IOS] = dto.actions_tx.platforms[PlatformDtoEnum.IOS].daily.data || [];
                 return {
@@ -852,14 +852,22 @@
             },
             mapPeriods: function(dto, type) {
                 if (type === TypeEnum.ONE_TIME) {
-                    return {weekly: dto.actions.weekly.keys, monthly: dto.actions.monthly.keys};
+                    return {
+                        weekly: dto.actions.weekly.keys.sort(function(weekA, weekB) {
+                            var weekANumber = weekA.split('W')[1];
+                            var weekBNumber = weekB.split('W')[1];
+                            return weekANumber - weekBNumber;
+                        }),
+                        monthly: dto.actions.monthly.keys
+                    };
                 }
-                else if (type === TypeEnum.AUTOMATIC) {
-                    return {weekly: dto.actions_automated.daily.keys};
+                if (type === TypeEnum.AUTOMATIC) {
+                    return { daily: dto.actions_automated.daily.keys};
                 }
-                else {
-                    return {weekly: dto.actions_tx.daily.keys};
+                if (type === TypeEnum.TRANSACTIONAL) {
+                    return {daily: dto.actions_tx.daily.keys};
                 }
+                throw new Error('Unknown push notification type:' + type);
             },
             mapPlatforms: function(dto) {
                 return dto.reduce(function(allPlatformItems, currentPlatformItem) {
@@ -874,7 +882,7 @@
             },
             mapStatus: function(dto) {
                 if (dto.status === 'inactive') {
-                    return statusOptions[StatusEnum.PENDING_APPROVAL];
+                    return StatusEnum.PENDING_APPROVAL;
                 }
                 return dto.status;
             },
