@@ -66,7 +66,6 @@ a:active { color:inherit; }
 #forgot-form { width:420px; height:218px; margin-left:-210px; left:50%; top:50%; margin-top:-109px; position:absolute; }
 #forgot-left { margin-bottom:28px; }
 #reset-form { width:704px; height:174px; margin-left:-352px; left:50%; top:50%; margin-top:-87px; position:absolute; }
-#header + div #oidc-login-button{display: flex!important;}
 #login-button { line-height:14px !important; font-size:14px; border:none; border-radius:3px; padding: 11px 26px 12px 26px; background-color:#2FA732; color:#FFF; font-weight:400; cursor:pointer; width:300px; margin-top:32px; }
 	#login-button:hover { background-color: #2f9732; }
 	#login-button:active { }
@@ -74,21 +73,6 @@ a:active { color:inherit; }
 .wrapper {
   position:relative;padding-top:120px;min-height:640px;
 }    
-#oidc-login-button {    
-  line-height: 14px !important;
-  font-size: 14px;
-  border: none;
-  border-radius: 3px;
-  padding: 11px 26px 12px 26px;
-  background-color: #0166D6;
-  color: #FFF;
-  font-weight: 400;
-  cursor: pointer;
-  width: 300px;
-  margin-top: 10px;
-  display: none;
-  justify-content: center;
-}
 #login-form > div > form > p:first-of-type{
   position: relative;
   display: inline-block;
