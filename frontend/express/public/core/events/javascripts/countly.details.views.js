@@ -1,4 +1,4 @@
-/* global countlyVue, countlyGlobal, countlyAllEvents, CV,app*/
+/* global countlyVue, countlyGlobal, countlyAllEvents, countlyCommon, CV,app*/
 (function() {
     var EventsTable = countlyVue.views.create({
         template: CV.T("/core/events/templates/eventsTable.html"),
@@ -50,6 +50,9 @@
                     return true;
                 }
                 return false;
+            },
+            formatNumber: function(val) {
+                return countlyCommon.formatNumber(val);
             }
         },
     });

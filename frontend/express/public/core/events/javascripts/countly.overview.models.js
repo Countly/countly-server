@@ -206,9 +206,9 @@
             if (data && data.length > 0) {
                 return data.map(function(item) {
                     return {
-                        "count": countlyCommon.formatNumber(item.count),
-                        "sum": countlyCommon.formatNumber(item.sum),
-                        "duration": countlyCommon.formatNumber(item.duration),
+                        "count": item.count,
+                        "sum": item.sum,
+                        "duration": item.duration,
                         "name": countlyEventsOverview.helpers.getEventLongName(item.name, map)
                     };
                 });

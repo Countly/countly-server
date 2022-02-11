@@ -13,6 +13,9 @@
         methods: {
             onRowClick: function(params) {
                 app.navigate("#/analytics/events/key/" + params.name, true);
+            },
+            formatNumber: function(val) {
+                return countlyCommon.formatNumber(val);
             }
         },
         computed: {
