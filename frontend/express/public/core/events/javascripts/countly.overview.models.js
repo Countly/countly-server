@@ -396,11 +396,13 @@
                                         context.commit("setDetailEvents", response || {});
                                         context.commit("setEventOverview", countlyEventsOverview.helpers.getEventOverview(response) || []);
                                         context.commit("setTableRows", countlyEventsOverview.helpers.getTableRows(response.data, res.map) || []);
+                                        context.dispatch("setTableLoading", false);
                                         return;
                                     }
                                 });
                         }
                     }).catch(function(/*error*/) {
+                        context.dispatch("setTableLoading", false);
                         context.dispatch("setMonitorEventsLoading", false);
                         //catched error. Could be duplicate warning.
                         //return Promise.reject(error);
