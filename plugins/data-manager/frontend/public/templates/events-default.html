@@ -8,6 +8,7 @@
     :row-class-name="function() {return 'bu-is-clickable'}"
     :indent=0
     :height=550
+    :force-loading="isLoading"
     :tracked-fields="trackedFields"
     @select-all="handleAllChange"
     @select="handleCurrentChange"
@@ -35,7 +36,7 @@
             <el-table-column fixed="left" type="selection" :reserve-selection="true" width="55" prop="isSelected">
             </el-table-column>
 
-            <el-table-column fixed="left" min-width="330" sortable="custom" prop="name" label="Event Name">
+            <el-table-column fixed="left" min-width="330" sortable="custom" prop="name" :label="i18n('data-manager.event-name')">
                 <template v-slot="rowScope">
                     <div>{{rowScope.row.name || rowScope.row.key || rowScope.row.e}}</div>
                     <div v-if="rowScope.row.audit && rowScope.row.audit.userName" class="text-small color-cool-gray-50">Last modified by {{rowScope.row.audit.userName}}</div>
@@ -67,31 +68,39 @@
                 </template>
             </el-table-column>
 
-            <el-table-column min-width="350" prop="description" label="Description">
-            </el-table-column>
+            <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
 
-            <el-table-column min-width="250" sortable="custom" prop="category" label="Category">
-                <template v-slot="rowScope">
-                    {{rowScope.row.categoryName || 'Uncategorized'}}
-                </template>
-            </el-table-column>
+                <el-table-column v-if="col.value === 'category'"
+                    min-width="250" sortable="custom" prop="category" label="Category">
+                    <template v-slot="rowScope">
+                        {{rowScope.row.categoryName || 'Uncategorized'}}
+                    </template>
+                </el-table-column>
 
-            <el-table-column prop="lastModifiedts" sortable="custom" min-width="275" label="Last Modified">
-                <template v-slot="rowScope">
-                    <div v-if="rowScope.row && rowScope.row.lastModifiedts">
-                        <div>{{rowScope.row.lastModifiedDate}}</div>
-                        <span class="text-small color-cool-gray-50">{{rowScope.row.lastModifiedTime}}</span>
-                    </div>
-                </template>
-            </el-table-column>
+                <el-table-column v-else-if="col.value === 'lastModifiedts'"
+                    prop="lastModifiedts" sortable="custom" min-width="275" label="Last Modified">
+                    <template v-slot="rowScope">
+                        <div v-if="rowScope.row && rowScope.row.lastModifiedts">
+                            <div>{{rowScope.row.lastModifiedDate}}</div>
+                            <span class="text-small color-cool-gray-50">{{rowScope.row.lastModifiedTime}}</span>
+                        </div>
+                    </template>
+                </el-table-column>
 
-            <el-table-column v-if="isDrill" sortable="custom" min-width="250" prop="lts" label="Last Triggered">
-                <template v-slot="rowScope">
-                    <div v-if="rowScope.row && rowScope.row.lts">
-                        <div>{{rowScope.row.lastTriggerDate}}</div>
-                    </div>
-                </template>
-            </el-table-column>
+                <el-table-column v-else-if="col.value === 'lts' && isDrill" sortable="custom" min-width="250" prop="lts" label="Last Triggered">
+                    <template v-slot="rowScope">
+                        <div v-if="rowScope.row && rowScope.row.lts">
+                            <div>{{rowScope.row.lastTriggerDate}}</div>
+                        </div>
+                    </template>
+                </el-table-column>
+
+                <el-table-column v-else v-bind:sortable="col.sortable ? 'custom' : false" :key="idx" min-width="300" :prop="col.value" :label="col.label">
+                    <template v-slot="rowScope">
+                        {{rowScope.row[col.value]}}
+                    </template>
+                </el-table-column>
+            </template>  
 
             <el-table-column type="options" align="center">
                 <template v-slot="rowScope">
@@ -101,14 +110,6 @@
                     </cly-more-options>
                 </template>
             </el-table-column>
-
-            <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
-                <el-table-column min-width="300" :prop="col.value" :label="col.label">
-                    <template v-slot="rowScope">
-                        {{rowScope.row[col.value]}}
-                    </template>
-                </el-table-column>
-            </template>  
 
         </template>
         <template v-slot:bottomline="scope">

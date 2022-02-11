@@ -178,6 +178,7 @@
 
         var getEmptyState = function() {
             return Object.assign({}, {
+                isLoading: true,
                 events: [],
                 eventsMap: {},
                 eventGroups: [],
@@ -202,6 +203,9 @@
             categoriesMap: function(state) {
                 return state.categoriesMap;
             },
+            isLoading: function(state) {
+                return state.isLoading;
+            }
         };
 
         var mutations = {
@@ -220,6 +224,9 @@
             setCategoriesMap: function(state, val) {
                 state.categoriesMap = val;
             },
+            setIsLoading: function(state, val) {
+                state.isLoading = val;
+            }
         };
 
         var actions = {
@@ -238,6 +245,9 @@
                         eventsMap[event.key] = event;
                     });
                     context.commit('setEventsMap', eventsMap);
+                    setTimeout(function() {
+                        context.commit('setIsLoading', false);
+                    }, 0);
                 });
             },
             loadEventGroups: function(context) {

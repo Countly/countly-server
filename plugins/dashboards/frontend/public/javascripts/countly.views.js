@@ -731,14 +731,12 @@
             onWidgetAction: function(command, data) {
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
-
                 var setting = this.widgetSettingsGetter(d);
 
                 if (!setting) {
                     countlyDashboards.factory.log("Well this is very strange.");
                     countlyDashboards.factory.log("On widget action, atleast one of the widget registrations should be returned.");
                     countlyDashboards.factory.log("Kindly check your widget getter, maybe something is wrong there.");
-
                     return;
                 }
 
@@ -827,14 +825,12 @@
             redrawRowWigets: function() {
                 var self = this;
 
-                var allGridElements = this.grid.save(false);
-
+                var allGridElements = this.savedGrid();
 
                 allGridElements = this.sortWidgetByGeography(allGridElements);
 
                 var Y;
-                var rowMaxH;
-                var rowUpdateRequired = false;
+                var rowMaxH; // Maximum height of the row
                 var updateIndex = 0;
                 var widgetId;
                 var nodeEl;
@@ -867,18 +863,16 @@
                          * heights for the widgets in the row.
                          */
 
-                        if (rowUpdateRequired) {
-                            while (updateIndex < i) {
-                                widgetId = allGridElements[updateIndex].id;
-                                nodeEl = document.getElementById(widgetId);
+                        while (updateIndex < i) {
+                            widgetId = allGridElements[updateIndex].id;
+                            nodeEl = document.getElementById(widgetId);
 
-                                /**
-                                 * This update will only be applied after we call the
-                                 * grid commit method.
-                                 */
-                                self.updateGridWidget(nodeEl, {h: rowMaxH});
-                                updateIndex++;
-                            }
+                            /**
+                             * This update will only be applied after we call the
+                             * grid commit method.
+                             */
+                            self.updateGridWidget(nodeEl, {h: rowMaxH});
+                            updateIndex++;
                         }
 
                         /**
@@ -887,7 +881,6 @@
 
                         Y = y;
                         rowMaxH = h;
-                        rowUpdateRequired = false;
                         updateIndex = i;
                     }
 
@@ -895,8 +888,6 @@
                         if (rowMaxH < h) {
                             rowMaxH = h;
                         }
-
-                        rowUpdateRequired = true;
                     }
 
                     if (i === (allGridElements.length - 1)) {
@@ -904,18 +895,16 @@
                          * For the last item, we need to run update explicitly.
                          * Since the above update block will never be executed.
                          */
-                        if (rowUpdateRequired) {
-                            while (updateIndex < allGridElements.length) {
-                                widgetId = allGridElements[updateIndex].id;
-                                nodeEl = document.getElementById(widgetId);
+                        while (updateIndex < allGridElements.length) {
+                            widgetId = allGridElements[updateIndex].id;
+                            nodeEl = document.getElementById(widgetId);
 
-                                /**
-                                 * This update will only be applied after we call the
-                                 * grid commit method.
-                                 */
-                                self.updateGridWidget(nodeEl, {h: rowMaxH});
-                                updateIndex++;
-                            }
+                            /**
+                             * This update will only be applied after we call the
+                             * grid commit method.
+                             */
+                            self.updateGridWidget(nodeEl, {h: rowMaxH});
+                            updateIndex++;
                         }
                     }
                 }
@@ -937,7 +926,9 @@
                     column: 4
                 });
 
-                var allGridWidgets = this.grid.save(false);
+                self.redrawRowWigets();
+
+                var allGridWidgets = this.savedGrid();
 
                 for (i = 0; i < allGridWidgets.length; i++) {
                     node = allGridWidgets[i];
@@ -947,7 +938,6 @@
 
                     this.updateWidgetGeography(widgetId, {size: size, position: position});
                 }
-
 
                 this.grid.on("change", function(event, items) {
                     /**
@@ -1009,7 +999,56 @@
                         self.updateWidgetGeography(widgetId, {size: size, position: position});
                     }
 
-                    //self.redrawRowWigets();
+                    self.redrawRowWigets();
+                });
+
+                this.grid.on("resizestop", function(event, element) {
+                    node = element.gridstackNode;
+                    var y = node.y;
+                    var h = node.h;
+
+                    var allGridElements = self.savedGrid();
+
+                    allGridElements = self.sortWidgetByGeography(allGridElements);
+
+                    /** Get all the widgets in the same row */
+                    var rowWidgets = allGridElements.filter(function(item) {
+                        return item.y === y;
+                    });
+
+                    /** Finding the maximum minimum row height max(minH) */
+                    var maxRowMinH = rowWidgets.reduce(function(acc, item) {
+                        if (acc < item.minH) {
+                            acc = item.minH;
+                        }
+
+                        return acc;
+                    }, 0);
+
+                    /**
+                     * Final height should be atleast equal to the maximum minimum
+                     * row height max(minH)
+                     */
+                    var finalRowH = h < maxRowMinH ? maxRowMinH : h;
+
+                    /**
+                     * Starting batch update.
+                     */
+                    self.grid.batchUpdate();
+
+                    for (i = 0; i < rowWidgets.length; i++) {
+                        node = rowWidgets[i];
+                        widgetId = node.id;
+
+                        var nodeEl = document.getElementById(widgetId);
+
+                        self.updateGridWidget(nodeEl, {h: finalRowH});
+                    }
+
+                    /**
+                     * Committing batch update.
+                     */
+                    self.grid.commit();
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -1046,8 +1085,6 @@
                         });
                     }
                 });
-
-                //self.redrawRowWigets();
             },
             updateWidgetGeography: function(widgetId, settings) {
                 var self = this;
@@ -1060,6 +1097,9 @@
             },
             syncWidgetGeography: function(widget) {
                 this.$store.dispatch("countlyDashboards/widgets/syncGeography", widget);
+            },
+            savedGrid: function() {
+                return this.grid.save(false);
             },
             validateWidgets: function(allWidgets) {
                 if (this.grid) {
@@ -1091,8 +1131,16 @@
                             var setting = {
                                 locked: locked,
                                 noMove: noMove,
-                                noResize: noResize
+                                noResize: noResize,
                             };
+
+                            var w = widget.size && widget.size[0];
+                            var h = widget.size && widget.size[1];
+
+                            if (Number.isInteger(w) && Number.isInteger(h)) {
+                                setting.w = w;
+                                setting.h = h;
+                            }
 
                             self.updateGridWidget(nodeEl, setting);
                         }

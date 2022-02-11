@@ -184,9 +184,17 @@ var GridComponent = countlyVue.views.create({
     },
     mounted: function() {
     },
+    data: function() {
+        return {
+            showBuckets: false,
+            map: {
+                "u": this.i18n("common.table.total-users"),
+                "r": this.i18n("common.table.returning-users"),
+                "n": this.i18n("common.table.new-users")
+            }
+        };
+    },
     methods: {
-        refresh: function() {
-        },
     },
     computed: {
         title: function() {
@@ -198,11 +206,14 @@ var GridComponent = countlyVue.views.create({
             }
             return "";
         },
-        showBuckets: function() {
-            return false;
-        },
-        period: function() {
-            return this.data.custom_period;
+        metricLabels: function() {
+            this.data = this.data || {};
+            var listed = [];
+
+            for (var k = 0; k < this.data.metrics.length; k++) {
+                listed.push(this.map[this.data.metrics[k]] || this.data.metrics[k]);
+            }
+            return listed;
         },
         timelineGraph: function() {
             this.data = this.data || {};
@@ -235,15 +246,11 @@ var GridComponent = countlyVue.views.create({
                 lineLegend: legend
             };
         },
+        stackedBarOptions: function() {
+            return this.calculateStackedBarOptionsFromWidget(this.data);
+        },
         number: function() {
-            this.data = this.data || {};
-            this.data.dashData = this.data.dashData || {};
-            var value;
-            this.data.dashData.data = this.data.dashData.data || {};
-            for (var app in this.data.dashData.data) {
-                value = this.data.dashData.data[app];
-            }
-            return value;
+            return this.calculateNumberFromWidget(this.data);
         }
     }
 });

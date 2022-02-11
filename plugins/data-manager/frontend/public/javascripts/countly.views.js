@@ -378,13 +378,45 @@
                 deletedCategories: [],
                 baseColumns: [
                     {
+                        label: "Description",
+                        value: 'description',
+                        default: true,
+                        sort: false
+                    },
+                    {
+                        label: "Category",
+                        value: 'category',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
+                        label: CV.i18n("data-manager.last-modified"),
+                        value: 'lastModifiedts',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
+                        label: CV.i18n("data-manager.last-triggered"),
+                        value: 'lts',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
                         label: 'Event key',
                         value: 'e',
+                        default: false,
+                        sort: 'custom'
                     },
                 ]
             };
         },
         computed: {
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyDataManager/isLoading"];
+                },
+                cache: false
+            },
             dynamicEventCols: function() {
                 var cols = this.baseColumns;
                 var colMap = {};
@@ -690,6 +722,12 @@
             };
         },
         computed: {
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyDataManager/isLoading"];
+                },
+                cache: false
+            },
             eventGroups: function() {
                 var self = this;
                 var eventGroup = this.$store.getters["countlyDataManager/eventGroups"];

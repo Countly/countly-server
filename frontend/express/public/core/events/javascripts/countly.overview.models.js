@@ -206,9 +206,9 @@
             if (data && data.length > 0) {
                 return data.map(function(item) {
                     return {
-                        "count": countlyCommon.formatNumber(item.count),
-                        "sum": countlyCommon.formatNumber(item.sum),
-                        "duration": countlyCommon.formatNumber(item.duration),
+                        "count": item.count,
+                        "sum": item.sum,
+                        "duration": item.duration,
                         "name": countlyEventsOverview.helpers.getEventLongName(item.name, map)
                     };
                 });
@@ -275,20 +275,20 @@
                 dataType: "json",
             }, {"disableAutoCatch": true});//to be able to see if discarded
         },
-        fetchMonitorEvents: function(context) {
+        fetchMonitorEvents: function(context, period) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_events",
-                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
             }, {"disableAutoCatch": true});//to be able to see if discarded
         },
-        fetchMonitorEventsData: function(my_events, context) {
+        fetchMonitorEventsData: function(my_events, context, period) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -296,7 +296,7 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "events",
                     "events": JSON.stringify(my_events),
-                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "timestamp": new Date().getTime(),
                     "overview": true
                 },
@@ -328,7 +328,6 @@
                 topEvents: [],
                 monitorEvents: {},
                 monitorEventsData: [],
-                selectedDatePeriod: countlyCommon.getPeriod(),
                 configureEventsList: [],
                 overviewGroupData: [],
                 configureOverview: [],
@@ -354,7 +353,8 @@
 
         var eventsOverviewActions = {
             fetchEventsOverview: function(context) {
-                return countlyEventsOverview.service.fetchMonitorEvents(context)
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyEventsOverview.service.fetchMonitorEvents(context, period)
                     .then(function(res) {
                         if (res) {
                             context.commit("setMonitorEvents", res || {});
@@ -371,7 +371,7 @@
                                         context.commit("setOverviewGroupData", result);
                                         context.commit("setConfigureEventsList", countlyEventsOverview.helpers.getOverviewConfigureList(res, result));
                                         context.commit("setEventMapping", countlyEventsOverview.helpers.getEventMapping(res, result));
-                                        countlyEventsOverview.service.fetchMonitorEventsData(events, context)
+                                        countlyEventsOverview.service.fetchMonitorEventsData(events, context, period)
                                             .then(function(response) {
                                                 context.dispatch("setMonitorEventsLoading", false);
                                                 if (response) {
@@ -407,7 +407,8 @@
                     });
             },
             fetchTopEvents: function(context, count) {
-                return countlyEventsOverview.service.fetchMonitorEvents(context).then(function(res) {
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyEventsOverview.service.fetchMonitorEvents(context, period).then(function(res) {
                     if (res) {
                         return countlyEventsOverview.service.fetchTopEvents("count", count).then(function(resp) {
                             if (resp) {
@@ -422,7 +423,8 @@
                 });
             },
             fetchMonitorEvents: function(context) {
-                return countlyEventsOverview.service.fetchMonitorEvents(context)
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyEventsOverview.service.fetchMonitorEvents(context, period)
                     .then(function(res) {
                         if (res) {
                             context.commit("setMonitorEvents", res || {});
@@ -439,7 +441,7 @@
                                         context.commit("setOverviewGroupData", result);
                                         context.commit("setConfigureEventsList", countlyEventsOverview.helpers.getOverviewConfigureList(res, result));
                                         context.commit("setEventMapping", countlyEventsOverview.helpers.getEventMapping(res, result));
-                                        countlyEventsOverview.service.fetchMonitorEventsData(events, context)
+                                        countlyEventsOverview.service.fetchMonitorEventsData(events, context, period)
                                             .then(function(response) {
                                                 context.dispatch("setMonitorEventsLoading", false);
 
@@ -454,9 +456,6 @@
                         context.dispatch("setMonitorEventsLoading", false);
                         return Promise.reject(error);
                     });
-            },
-            fetchSelectedDatePeriod: function(context, period) {
-                context.commit('setSelectedDatePeriod', period);
             },
             fetchEventProperties: function(context, selectedEvent) {
                 context.commit("setEventProperties", countlyEventsOverview.helpers.getEventProperties(context, selectedEvent));
@@ -503,9 +502,6 @@
             setMonitorEventsData: function(state, value) {
                 state.monitorEventsData = value;
             },
-            setSelectedDatePeriod: function(state, value) {
-                state.selectedDatePeriod = value;
-            },
             setOverviewGroupData: function(state, value) {
                 state.overviewGroupData = value;
             },
@@ -540,9 +536,6 @@
             },
             monitorEventsData: function(_state) {
                 return _state.monitorEventsData;
-            },
-            selectedDatePeriod: function(_state) {
-                return _state.selectedDatePeriod;
             },
             configureEventsList: function(_state) {
                 return _state.configureEventsList;
