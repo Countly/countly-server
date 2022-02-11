@@ -832,6 +832,18 @@
 
                 return maxMinRowH;
             },
+            getRowWidgets: function(y) {
+                var allGridElements = this.savedGrid();
+
+                allGridElements = this.sortWidgetByGeography(allGridElements);
+
+                /** Get all the widgets in the same row */
+                var rowWidgets = allGridElements.filter(function(item) {
+                    return item.y === y;
+                });
+
+                return rowWidgets;
+            },
             updateRowHeight: function(widgets, h) {
                 var maxMinRowH = this.maxMinRowHeight(widgets);
 
@@ -969,14 +981,7 @@
                 this.grid.on("resizestop", function(event, element) {
                     var node = element.gridstackNode;
 
-                    var allGridElements = self.savedGrid();
-
-                    allGridElements = self.sortWidgetByGeography(allGridElements);
-
-                    /** Get all the widgets in the same row */
-                    var rowWidgets = allGridElements.filter(function(item) {
-                        return item.y === node.y;
-                    });
+                    var rowWidgets = self.getRowWidgets(node.y);
 
                     /**
                      * Starting batch update.
@@ -1012,20 +1017,7 @@
                 this.grid.on("dragstop", function(event, element) {
                     var node = element.gridstackNode;
 
-                    /**
-                     * In this case, rather than changing the heights of the other widgets
-                     * immediately, lets check if we can reduce dragged widgets height to match
-                     * the heights of the other widgets in this row.
-                     */
-
-                    var allGridElements = self.savedGrid();
-
-                    allGridElements = self.sortWidgetByGeography(allGridElements);
-
-                    /** Get all the widgets in the same row */
-                    var rowWidgets = allGridElements.filter(function(item) {
-                        return item.y === node.y;
-                    });
+                    var rowWidgets = self.getRowWidgets(node.y);
 
                     var setHeight = node.h;
 
@@ -1033,10 +1025,14 @@
                         /**
                          * Since all widgets in the row should have same heights,
                          * row height equals to the height of any widget in the row.
+                         *
+                         * Rather than changing the heights of the other widgets immediately,
+                         * lets check if we can change added widgets height to match
+                         * the heights of the other widgets in this row.
                          */
                         var currentRowHeight = rowWidgets[0].h;
 
-                        if (node.h > currentRowHeight) {
+                        if (setHeight !== currentRowHeight) {
                             setHeight = currentRowHeight;
                         }
                     }
@@ -1080,8 +1076,45 @@
 
                     if (node && node.new) {
                         var widgetId = node.id;
+
+                        var rowWidgets = self.getRowWidgets(node.y);
+
+                        var setHeight = node.h;
+
+                        if (rowWidgets.length) {
+                        /**
+                         * Since all widgets in the row should have same heights,
+                         * row height equals to the height of any widget in the row.
+                         *
+                         * Rather than changing the heights of the other widgets immediately,
+                         * lets check if we can change added widgets height to match
+                         * the heights of the other widgets in this row.
+                         */
+                            var currentRowHeight = rowWidgets[0].h;
+
+                            if (setHeight !== currentRowHeight) {
+                                setHeight = currentRowHeight;
+                            }
+                        }
+
+                        /**
+                         * Starting batch update.
+                         */
+                        self.grid.batchUpdate();
+
+                        var finalRowH = self.updateRowHeight(rowWidgets, setHeight);
+                        /**
+                         * Since its nomore a new widget, we can set new to false.
+                         */
+                        self.updateGridWidget(node.el, {new: false});
+
+                        /**
+                         * Committing batch update.
+                         */
+                        self.grid.commit();
+
+                        var s = [node.w, finalRowH];
                         var p = [node.x, node.y];
-                        var s = [node.w, node.h];
 
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: p, size: s}}).then(function(res) {
                             if (res) {
