@@ -3,7 +3,7 @@
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-		 mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
         props: {
             data: {
                 type: Object,
@@ -69,8 +69,11 @@
                         series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k]});
                         legend.data.push({"name": name, "app": app, "metric": this.data.metrics[k]});
                     }
+
                     for (var date in this.data.dashData.data[app]) {
-                        dates.push(date);
+                        if (appIndex === 0) {
+                            dates.push(date);
+                        }
                         for (var kk = 0; kk < this.data.metrics.length; kk++) {
                             series[appIndex * this.data.metrics.length + kk].data.push(this.data.dashData.data[app][date][this.data.metrics[kk]] || 0);
                         }
