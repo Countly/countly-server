@@ -1823,7 +1823,7 @@
                 if (platform === this.PlatformEnum.HUAWEI) {
                     return !(this.viewModel[platform].appId || this.viewModel[platform].appSecret);
                 }
-                throw new Error('Unknown platform type,', platform);
+                throw new Error('Unknown key platform, received:' + platform);
             },
             onDeleteKey: function(platformKey) {
                 this.selectedKeyToDelete = platformKey;
@@ -1871,7 +1871,7 @@
                 if (!this.selectedKeyToDelete) {
                     return;
                 }
-                throw new Error('Unknown platform key, ' + this.selectedKeyToDelete);
+                throw new Error('Unknown key platform to delete, received:' + this.selectedKeyToDelete);
             },
             onConfirmCallback: function(isConfirmed) {
                 if (isConfirmed) {
