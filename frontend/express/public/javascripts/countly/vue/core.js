@@ -224,7 +224,13 @@
                         }
                     }
                 }
-                return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], "data": series, stack: "A"}]};
+
+                if (widgetData.bar_color && widgetData.bar_color > 0) {
+                    return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], color: countlyCommon.GRAPH_COLORS[this.data.bar_color - 1], "data": series, stack: "A"}]};
+                }
+                else {
+                    return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], "data": series, stack: "A"}]};
+                }
             },
             calculatePieGraphFromWidget: function(widgetData, namingMap) {
                 widgetData = widgetData || {};

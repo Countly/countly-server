@@ -501,6 +501,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
                 visualization: "",
                 breakdowns: ['devices'],
                 custom_period: "30days",
+                bar_color: 1
             };
         },
         beforeLoadFn: function(/*doc, isEdited*/) {
