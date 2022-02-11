@@ -41,37 +41,23 @@
             var labels = context.state.labels;
             if (eventData.tableColumns.indexOf(labels.sum) !== -1 && eventData.tableColumns.indexOf(labels.dur) !== -1) {
                 tableRows.forEach(function(row) {
-                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : countlyCommon.formatNumber(row.s / row.c);
-                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : countlyCommon.formatNumber(row.dur / row.c);
-                    row.c = countlyCommon.formatNumber(row.c);
-                    row.s = countlyCommon.formatNumber(row.s);
-                    row.dur = countlyCommon.formatNumber(row.dur);
+                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : (row.s / row.c);
+                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : (row.dur / row.c);
                 });
                 eventData.tableColumns.push("AvgSum");
                 eventData.tableColumns.push("AvgDur");
             }
             else if (eventData.tableColumns.indexOf(labels.sum) !== -1) {
                 tableRows.forEach(function(row) {
-                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : countlyCommon.formatNumber(row.s / row.c);
-                    row.c = countlyCommon.formatNumber(row.c);
-                    row.s = countlyCommon.formatNumber(row.s);
-                    row.dur = countlyCommon.formatNumber(row.dur);
+                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : (row.s / row.c);
                 });
                 eventData.tableColumns.push("AvgSum");
             }
             else if (eventData.tableColumns.indexOf(labels.dur) !== -1) {
                 tableRows.forEach(function(row) {
-                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : countlyCommon.formatNumber(row.dur / row.c);
-                    row.c = countlyCommon.formatNumber(row.c);
-                    row.s = countlyCommon.formatNumber(row.s);
-                    row.dur = countlyCommon.formatNumber(row.dur);
+                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : (row.dur / row.c);
                 });
                 eventData.tableColumns.push("AvgDur");
-            }
-            else {
-                tableRows.forEach(function(row) {
-                    row.c = countlyCommon.formatNumber(row.c);
-                });
             }
             return tableRows;
         },
@@ -496,7 +482,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchSelectedEventsOverview: function(context, period) {
             return CV.$.ajax({
