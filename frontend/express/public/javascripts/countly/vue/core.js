@@ -211,9 +211,17 @@
                 var labels = [];
                 var series = [];
                 for (var app in widgetData.dashData.data) {
-                    for (var k = 0; k < widgetData.dashData.data[app].graph.length; k++) {
-                        labels.push(widgetData.dashData.data[app].graph[k].name);
-                        series.push(widgetData.dashData.data[app].graph[k].value);
+                    if (widgetData.dashData.data[app].graph) {
+                        for (var k = 0; k < widgetData.dashData.data[app].graph.length; k++) {
+                            labels.push(widgetData.dashData.data[app].graph[k].name);
+                            series.push(widgetData.dashData.data[app].graph[k].value);
+                        }
+                    }
+                    else {
+                        for (var kz = 0; kz < widgetData.dashData.data[app].length; kz++) {
+                            labels.push(widgetData.dashData.data[app][kz].name);
+                            series.push(widgetData.dashData.data[app][kz].value);
+                        }
                     }
                 }
                 return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], "data": series, stack: "A"}]};
