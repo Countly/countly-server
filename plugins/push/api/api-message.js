@@ -232,6 +232,10 @@ module.exports.update = async params => {
     msg.info.updated = new Date();
     msg.info.updatedBy = params.member._id;
     msg.info.updatedByName = params.member.full_name;
+    msg.info.rejected = undefined;
+    msg.info.rejectedAt = undefined;
+    msg.info.rejectedBy = undefined;
+    msg.info.rejectedByName = undefined;
 
     if (msg.is(State.Done)) {
         if (msg.triggerAutoOrApi()) {
