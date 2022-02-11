@@ -874,7 +874,7 @@
             },
             mapStatus: function(dto) {
                 if (dto.status === 'inactive') {
-                    return statusOptions[StatusEnum.PENDING_APPROVAL];
+                    return StatusEnum.PENDING_APPROVAL;
                 }
                 return dto.status;
             },
@@ -2272,6 +2272,12 @@
             }
             return countlyPushNotificationApprover.service.approve(messageId);
         },
+        reject: function(messageId) {
+            if (!this.isPushNotificationApproverPluginEnabled()) {
+                throw new Error('Push approver plugin is not enabled');
+            }
+            return countlyPushNotificationApprover.service.reject(messageId);
+        },
         updateTestUsers: function(testUsersModel, options) {
             try {
                 var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(testUsersModel);
@@ -2326,7 +2332,19 @@
             context.dispatch('onFetchInit', {useLoader: false});
             countlyPushNotification.service.approve(id).then(function() {
                 context.dispatch('onFetchSuccess', {useLoader: false});
-                CountlyHelpers.notify({message: "Push notification has been successfully sent for approval."});
+                context.dispatch('fetchById', id);
+                CountlyHelpers.notify({message: "Push notification has been successfully approved."});
+            }).catch(function(error) {
+                // TODO:log error
+                context.dispatch('onFetchError', {error: error, useLoader: false});
+                CountlyHelpers.notify({message: error.message, type: "error"});
+            });
+        },
+        onReject: function(context, id) {
+            context.dispatch('onFetchInit', {useLoader: false});
+            countlyPushNotification.service.reject(id).then(function() {
+                context.dispatch('onFetchSuccess', {useLoader: false});
+                CountlyHelpers.notify({message: "Push notification has been successfully rejected."});
             }).catch(function(error) {
                 // TODO:log error
                 context.dispatch('onFetchError', {error: error, useLoader: false});
@@ -2482,18 +2500,23 @@
             countlyPushNotification.service.approve(id).then(function() {
                 context.dispatch('fetchAll', false);
                 context.dispatch('onFetchSuccess', {useLoader: true});
-                CountlyHelpers.notify({
-                    title: "Push notification approver",
-                    message: "Push notification has been successfully sent for approval.",
-                });
+                CountlyHelpers.notify({message: "Push notification has been successfully approved."});
             }).catch(function(error) {
                 // TODO:log error
                 context.dispatch('onFetchError', {error: error, useLoader: true});
-                CountlyHelpers.notify({
-                    title: "Push notification approver error",
-                    message: error.message,
-                    type: "error"
-                });
+                CountlyHelpers.notify({message: error.message, type: "error"});
+            });
+        },
+        onReject: function(context, id) {
+            context.dispatch('onFetchInit', {useLoader: true});
+            countlyPushNotification.service.reject(id).then(function() {
+                context.dispatch('fetchAll', false);
+                context.dispatch('onFetchSuccess', {useLoader: true});
+                CountlyHelpers.notify({message: "Push notification has been successfully rejected."});
+            }).catch(function(error) {
+                // TODO:log error
+                context.dispatch('onFetchError', {error: error, useLoader: true});
+                CountlyHelpers.notify({message: error.message, type: "error"});
             });
         },
         onUserCommand: function(context, payload) {
