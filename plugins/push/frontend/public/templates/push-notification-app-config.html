@@ -9,24 +9,27 @@
                 <el-option :key="iosAuthType.value" :value="iosAuthType.value" :label="iosAuthType.label" v-for="iosAuthType in iosAuthConfigTypeOptions"></el-option>
             </el-select>
         </cly-inline-form-field>
-            <cly-inline-form-field :label="iosAuthConfigType === IOSAuthConfigTypeEnum.P8 ? 'Key file (P8)' : 'Sandbox + Production certificate (P12)'" :rules="{required:!viewModel[PlatformEnum.IOS].hasUploadedKeyFile}">
-                <div class="bu-is-flex bu-is-flex-direction-column">
-                    <div class="bu-is-flex">
-                            <el-upload 
-                                ref="keyFileUploader"
-                                action=""
-                                :multiple="false"
-                                :on-change="onKeyFileChange"
-                                :auto-upload="false"
-                                :show-file-list="false"
-                                accept="p8, p12">
-                                    <el-button size="small" type="text" class="bu-p-0">Choose File</el-button>
-                            </el-upload>
-                        <div class="bu-ml-5">{{uploadedIOSKeyFilename}}</div>
-                    </div>
-                    <div v-if="viewModel[PlatformEnum.IOS].hasKeyFile"> Key file ({{viewModel[PlatformEnum.IOS].authType}}) is already uploaded </div>
+        <cly-inline-form-field :label="iosAuthConfigType === IOSAuthConfigTypeEnum.P8 ? 'Key file (P8)' : 'Sandbox + Production certificate (P12)'">
+            <div class="bu-is-flex bu-is-flex-direction-column">
+                <div class="bu-is-flex">
+                    <validation-provider :rules="{required:isIOSConfigRequired}">
+                        <el-input v-model="uploadedIOSKeyFilename" style="display:none"></el-input>
+                        <el-upload
+                            ref="keyFileUploader"
+                            action=""
+                            :multiple="false"
+                            :on-change="onKeyFileChange"
+                            :auto-upload="false"
+                            :show-file-list="false"
+                            accept="p8, p12">
+                            <el-button size="small" type="text" class="bu-p-0">Choose File</el-button>
+                        </el-upload>
+                    </validation-provider>
+                    <div class="bu-ml-5">{{uploadedIOSKeyFilename}}</div>
                 </div>
-            </cly-inline-form-field>
+                <div v-if="viewModel[PlatformEnum.IOS].hasKeyFile"> Key file ({{viewModel[PlatformEnum.IOS].authType}}) is already uploaded </div>
+            </div>
+        </cly-inline-form-field>
         <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P8"> 
             <cly-inline-form-field label="Key ID" :rules="{required:isIOSConfigRequired}">
                 <el-input :value="viewModel[PlatformEnum.IOS].keyId" @input="onInput('keyId', $event, PlatformEnum.IOS)"></el-input>

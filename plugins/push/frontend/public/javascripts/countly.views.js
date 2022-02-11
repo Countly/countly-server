@@ -1845,6 +1845,7 @@
                 this.viewModel[platform].authType = this.iosAuthConfigType;
                 this.$emit('change', 'push' + '.' + platformDto, null);
                 this.isIOSConfigTouched = false;
+                this.uploadedIOSKeyFilename = "";
             },
             deleteHuaweiKey: function() {
                 var platform = this.PlatformEnum.HUAWEI;
