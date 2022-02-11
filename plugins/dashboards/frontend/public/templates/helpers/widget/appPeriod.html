@@ -1,0 +1,7 @@
+<div class="bu-level">
+	<div class="bu-level-left">
+		<div class="bu-level-left" v-if="showApps" v-for="(item, idx) in apps"><div :style="item.image" class="app-logo bu-pr-1"></div><span class="bu-pr-2 text-small">{{item.name}}</span></div>
+		<i v-if="showPeriod && showApps" class="fas fa-circle color-cool-gray-50 bu-px-2" style="font-size: 4px;"></i>
+		<span v-if="showPeriod">{{period}}</span>
+	</div>
+</div>

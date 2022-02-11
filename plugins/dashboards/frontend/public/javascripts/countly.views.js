@@ -731,14 +731,12 @@
             onWidgetAction: function(command, data) {
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
-
                 var setting = this.widgetSettingsGetter(d);
 
                 if (!setting) {
                     countlyDashboards.factory.log("Well this is very strange.");
                     countlyDashboards.factory.log("On widget action, atleast one of the widget registrations should be returned.");
                     countlyDashboards.factory.log("Kindly check your widget getter, maybe something is wrong there.");
-
                     return;
                 }
 
