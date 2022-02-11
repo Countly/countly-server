@@ -138,7 +138,7 @@
 		});
 		$(document).ready(function() {
 			$("*").click(function(event){
-				if ($(event.target).is(".top-button") || $(event.target).is("#active-lang")) {
+				if ($(event.target).is(".top-button") || $(event.target).is("#active-lang") && $(".top-button").hasClass("active")) {
 					$('#active-lang').css('border','1px solid #81868D');
 				}
 				else{
