@@ -924,7 +924,7 @@
                          * For the last item, we need to run update explicitly.
                          * Since the above update block will never be executed.
                          */
-                        rowWidgets = allGridElements.slice(updateIndex, i);
+                        rowWidgets = allGridElements.slice(updateIndex, (i + 1));
                         this.updateRowHeight(rowWidgets, rowMaxH);
 
                         Y = node.y;
