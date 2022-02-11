@@ -129,7 +129,7 @@ var HomeViewView = countlyVue.views.create({
                 else {
                     forOrdering[z].classes = "";
                 }
-                if (z == 0) {
+                if (z === 0) {
                     forOrdering[z].topGapClasses = "bu-pt-4";
                 }
                 else {
