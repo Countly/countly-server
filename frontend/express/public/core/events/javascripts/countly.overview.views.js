@@ -210,6 +210,10 @@
             configureOverview: function() {
                 this.$store.dispatch('countlyEventsOverview/fetchConfigureOverview');
                 this.openDrawer("configureDrawer", {});
+            },
+            dateChanged: function() {
+                this.$store.dispatch("countlyEventsOverview/setMonitorEventsLoading", true);
+                this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
             }
         },
         computed: {
@@ -224,17 +228,6 @@
             },
             monitorEventsData: function() {
                 return this.$store.getters["countlyEventsOverview/monitorEventsData"];
-            },
-            selectedDatePeriod: {
-                get: function() {
-                    return this.$store.getters["countlyEventsOverview/selectedDatePeriod"];
-                },
-                set: function(value) {
-                    this.$store.dispatch("countlyEventsOverview/setMonitorEventsLoading", true);
-                    countlyCommon.setPeriod(value);
-                    this.$store.dispatch('countlyEventsOverview/fetchSelectedDatePeriod', value);
-                    this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
-                }
             },
             updatedAt: function() {
                 var deatilEvents = this.$store.getters["countlyEventsOverview/detailEvents"];

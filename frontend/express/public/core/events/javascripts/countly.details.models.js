@@ -458,14 +458,14 @@
     };
 
     countlyAllEvents.service = {
-        fetchAllEventsData: function(context) {
+        fetchAllEventsData: function(context, period) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_events",
-                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
@@ -483,7 +483,7 @@
                 dataType: "json",
             }, {"disableAutoCatch": true});
         },
-        fetchSelectedEventsData: function(context) {
+        fetchSelectedEventsData: function(context, period) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -492,13 +492,13 @@
                     "method": "events",
                     "event": context.state.selectedEventName,
                     "segmentation": context.state.currentActiveSegmentation === "segment" ? "" : context.state.currentActiveSegmentation,
-                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            }, {"disableAutoCatch": true});
+            });
         },
-        fetchSelectedEventsOverview: function(context) {
+        fetchSelectedEventsOverview: function(context, period) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -506,7 +506,7 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "events",
                     "events": JSON.stringify([context.state.selectedEventName]),
-                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "timestamp": new Date().getTime(),
                     "overview": true
                 },
@@ -557,7 +557,6 @@
                 allEventsData: {},
                 allEventsGroupData: [],
                 selectedEventsData: {},
-                selectedDatePeriod: countlyCommon.getPeriod(),
                 selectedEventName: undefined,
                 groupData: {},
                 currentActiveSegmentation: "segment",
@@ -583,7 +582,8 @@
 
         var allEventsActions = {
             fetchAllEventsData: function(context) {
-                return countlyAllEvents.service.fetchAllEventsData(context)
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyAllEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsData", res);
@@ -600,7 +600,7 @@
                                         context.commit("setAllEventsList", countlyAllEvents.helpers.getAllEventsList(res, result));
                                         context.commit("setGroupData", countlyAllEvents.helpers.getGroupData(result, context.state.selectedEventName));
                                         context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
-                                        countlyAllEvents.service.fetchSelectedEventsData(context)
+                                        countlyAllEvents.service.fetchSelectedEventsData(context, period)
                                             .then(function(response) {
                                                 if (response) {
                                                     context.commit("setSelectedEventsData", response);
@@ -608,7 +608,7 @@
                                                     context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
                                                     context.commit("setLimitAlerts", countlyAllEvents.helpers.getLimitAlerts(context) || []);
 
-                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context)
+                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context, period)
                                                         .then(function(resp) {
                                                             if (resp) {
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
@@ -618,6 +618,20 @@
                                                             }
                                                         });
                                                 }
+                                            }).catch(function() {
+                                                context.dispatch('setTableLoading', false);
+                                                context.dispatch('setChartLoading', false);
+                                                context.commit("setSelectedEventsData", {});
+                                                context.commit("setAvailableSegments", []);
+                                                context.commit("setTableRows", []);
+                                                context.commit("setLimitAlerts", []);
+                                                context.commit("setSelectedEventsOverview", {});
+                                                context.commit("setLegendData", {});
+                                                CountlyHelpers.notify({
+                                                    title: CV.i18n("common.error"),
+                                                    message: CV.i18n("events.all.error"),
+                                                    type: "error"
+                                                });
                                             });
                                     }
                                 });
@@ -636,7 +650,8 @@
                     });
             },
             fetchSelectedEventsData: function(context) {
-                return countlyAllEvents.service.fetchSelectedEventsData(context)
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyAllEvents.service.fetchSelectedEventsData(context, period)
                     .then(function(res) {
                         if (res) {
                             context.commit("setSelectedEventsData", res);
@@ -649,9 +664,6 @@
                         context.dispatch('setTableLoading', false);
                         context.dispatch('setChartLoading', false);
                     });
-            },
-            fetchSelectedDatePeriod: function(context, period) {
-                context.commit('setSelectedDatePeriod', period);
             },
             fetchSelectedEventName: function(context, name) {
                 localStorage.setItem("eventKey", name);
@@ -707,7 +719,8 @@
                 context.commit("setChartLoading", value);
             },
             fetchRefreshAllEventsData: function(context) {
-                return countlyAllEvents.service.fetchAllEventsData(context)
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyAllEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsData", res);
@@ -732,7 +745,7 @@
                                                     context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
                                                     context.commit("setLimitAlerts", countlyAllEvents.helpers.getLimitAlerts(context) || []);
 
-                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context)
+                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context, period)
                                                         .then(function(resp) {
                                                             if (resp) {
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
@@ -761,9 +774,6 @@
             },
             setSelectedEventsData: function(state, value) {
                 state.selectedEventsData = value;
-            },
-            setSelectedDatePeriod: function(state, value) {
-                state.selectedDatePeriod = value;
             },
             setSelectedEventName: function(state, value) {
                 state.selectedEventName = value;
@@ -835,9 +845,6 @@
             },
             selectedEvent: function(_state) {
                 return _state.selectedEventsData;
-            },
-            selectedDatePeriod: function(_state) {
-                return _state.selectedDatePeriod;
             },
             selectedEventName: function(_state) {
                 return _state.selectedEventName;
