@@ -27,8 +27,11 @@
                     moment(this.timestamp * 1000).format("HH:mm:ss") :
                     moment(this.timestamp).format("HH:mm:ss");
             },
+            reqId: function() {
+                return this.timestamp;
+            }
         },
-        template: "<div>{{date}}<p class='text-small'>{{time}}</p></div>"
+        template: "<div>{{date}}<p class='text-small' style='color: #81868D;'>{{time}}</p><p>{{reqId}}</p></div>"
     });
 
     var DetailsComponent = countlyVue.components.BaseComponent.extend({
@@ -44,11 +47,11 @@
                     country: this.location.cc,
                     city: this.location.cty && this.location.cty !== 'Unknown' ? ' (' + this.location.cty + ')' : '',
                     flagCss: 'flag ' + flag,
-                    flagBg: 'margin-top:2px; margin-right:6px; background-image: url(images/flags/' + flag + '.png);'
+                    flagBg: 'display: inline-block; float: none; margin-top:2px; margin-right:6px; background-image: url(images/flags/' + flag + '.png);'
                 };
             },
         },
-        template: '<div><p>{{log.deviceInfo}} <pre class="oval"></pre> {{log.version}}</p><p class="text-small">ID {{log.id}}</p>{{log.sdkInfo}}<span :class="log.flagCss" :style="log.flagBg"></span><span class="oval"></span>{{log.country}}{{log.city}}</div>'
+        template: '<div><p>{{log.deviceInfo}} <span class="oval"></span> {{log.version}} <span v-if="log.country" class="oval"></span> <span v-if="log.country" :class="log.flagCss" :style="log.flagBg"></span>{{log.country}}</p><p>ID {{log.id}}</p><p>{{log.sdkInfo}}</p></div>'
     });
 
     var InfoComponent = countlyVue.components.BaseComponent.extend({
@@ -64,8 +67,11 @@
                     return typeof value === 'string' ? JSON.stringify(JSON.parse(value), null, 2) : JSON.stringify(value, null, 2);
                 }
             },
+            showCodeBlock: function() {
+                return this.filter !== 'all'
+            }
         },
-        template: "<pre>{{logInfo}}</pre>"
+        template: "<pre v-if='showCodeBlock'><code style='display:block; white-space:pre-wrap; background-color: #F6F6F6; overflow: scroll !important; max-height: 178px;'>{{logInfo}}</code></pre><pre v-else>{{logInfo}}</pre>"
     });
 
     var LoggerView = countlyVue.views.BaseView.extend({
@@ -78,6 +84,8 @@
                 logsData: [],
                 autoRefresh: false,
                 isLoading: false,
+                isTurnedOff: false,
+                appId: countlyCommon.ACTIVE_APP_ID,
                 collectionInfo: '',
                 tablePersistKey: 'requestLogsTable_' + countlyCommon.ACTIVE_APP_ID,
                 tableDynamicCols: [{
@@ -88,7 +96,7 @@
                 {
                     value: "timestamp",
                     label: CV.i18n('logger.timestamp'),
-                    default: true
+                    default: false
                 },
                 {
                     value: "details",
@@ -128,6 +136,9 @@
         computed: {
             filterOptions: function() {
                 return this.defaultFilters.concat(this.externalFilters);
+            },
+            showTurnedOff: function() {
+                return this.isTurnedOff;
             }
         },
         mixins: [
@@ -156,6 +167,7 @@
                 countlyLogger.getRequestLogs()
                     .then(function(data) {
                         vm.isLoading = false;
+                        vm.isTurnedOff = data.state === 'off';
                         vm.logsData = filterLogs(data.logs || data, vm.loggerFilter);
                     });
             },
