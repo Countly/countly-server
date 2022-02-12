@@ -189,6 +189,11 @@
                 showActionMapColumn: showActionMapColumn, //for action map
                 domains: [], //for action map
                 persistentSettings: [],
+                tableMode: "all",
+                tableModes: [
+                    {"key": "all", "label": CV.i18n('common.all')},
+                    {"key": "selected", "label": CV.i18n('views.selected-views')}
+                ]
             };
         },
         mounted: function() {
@@ -283,15 +288,16 @@
                 persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = selected;
                 countlyCommon.setPersistentSettings(persistData);
 
-                for (var k = 0; k < this.$refs.viewsTable.sourceRows.length; k++) {
-                    if (selected.indexOf(this.$refs.viewsTable.sourceRows[k]._id) > -1) {
-                        this.$refs.viewsTable.sourceRows[k].selected = true;
-                    }
-                    else {
-                        this.$refs.viewsTable.sourceRows[k].selected = false;
+                if (this.$refs.viewsTable) {
+                    for (var k = 0; k < this.$refs.viewsTable.sourceRows.length; k++) {
+                        if (selected.indexOf(this.$refs.viewsTable.sourceRows[k]._id) > -1) {
+                            this.$refs.viewsTable.sourceRows[k].selected = true;
+                        }
+                        else {
+                            this.$refs.viewsTable.sourceRows[k].selected = false;
+                        }
                     }
                 }
-
                 this.persistentSettings = selected;
                 this.$store.dispatch('countlyViews/onSetSelectedViews', selected).then();
                 this.refresh();
@@ -422,8 +428,8 @@
             data: function() {
                 return this.$store.state.countlyViews.appData;
             },
-            appRows: function() {
-                return this.data.table || [];
+            selectedTableRows: function() {
+                return this.$store.getters["countlyViews/selectedTableRows"];
             },
             filterFields: function() {
                 return [
@@ -464,7 +470,6 @@
                 }
                 links.push({"icon": "", "label": CV.i18n('plugins.configs'), "value": "#/manage/configurations/views"}); //to settings
                 return links;
-
             },
             chooseSegment: function() {
                 var segments = this.$store.state.countlyViews.segments || {};
@@ -473,17 +478,14 @@
                     listed.push({"value": key, "label": key});
                 }
                 return listed;
-
             },
             chooseSegmentValue: function() {
                 var segments = this.$store.state.countlyViews.segments || {};
-
                 var key;
                 if (this.$refs && this.$refs.selectSegmentValue && this.$refs.selectSegmentValue.unsavedValue && this.$refs.selectSegmentValue.unsavedValue.segment) {
                     key = this.$refs.selectSegmentValue.unsavedValue.segment;
                 }
                 var listed = [{"value": "all", "label": CV.i18n('common.all')}];
-
                 if (!key) {
                     return listed;
                 }
