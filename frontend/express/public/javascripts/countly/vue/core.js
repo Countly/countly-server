@@ -276,7 +276,6 @@
                 return value;
             }
         }
-
     };
     _mixins.DashboardsHelpersMixin = DashboardsHelpersMixin;
 

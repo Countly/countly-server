@@ -255,6 +255,51 @@
                 return path;
             }
         },
+        getTableData: function(dataObj, path, metric, name, segment, segmentVal) {
+            if (segment === "") {
+                segment = "no-segment";
+            }
+            var dbObj = {};
+            if (dataObj && dataObj[path] && dataObj[path][segment]) {
+                dbObj = dataObj[path][segment];
+                if (Object.keys(dbObj).length === 0) {
+                    return false;
+                }
+            }
+
+            var chartData = [];
+            var propData = [];
+            var clearObject = countlyViews.clearObject();
+            for (var key in clearObject) {
+                chartData.push({"data": [], label: key});
+                propData.push({"name": key});
+            }
+
+            var rr = countlyCommon.extractChartData(dbObj, countlyViews.clearObject, chartData, propData, segmentVal);
+
+            var totals = {"t": 0, "u": 0, "s": 0, "b": 0, "e": 0, "d": 0, "n": 0, "uvc": 0, "scr": 0};
+            for (var z = 0; z < rr.chartData.length; z++) {
+                for (var key2 in clearObject) {
+                    totals[key2] += (rr.chartData[z][key2] || 0);
+                }
+            }
+
+            if (totals.t > 0) {
+                totals.dCalc = countlyCommon.timeString((totals.d / totals.t) / 60);
+                var vv = parseFloat(totals.scr) / parseFloat(totals.t);
+                if (vv > 100) {
+                    vv = 100;
+                }
+                totals.scrCalc = countlyCommon.formatNumber(vv) + "%";
+                totals.br = Math.round(totals.b * 100 / totals.s);
+            }
+            else {
+                totals.dCalc = 0;
+                totals.scrCalc = 0;
+                totals.br = 0;
+            }
+            return totals;
+        },
         getChartData: function(dataObj, path, metric, name, segment, segmentVal) {
             if (segment === "") {
                 segment = "no-segment";
@@ -477,6 +522,31 @@
         return countlyVue.vuex.Module("countlyViews", {
             state: getInitialState,
             actions: ViewsActions,
+            getters: {
+                selectedTableRows: function(context) {
+                    var rows = [];
+
+                    for (var p = 0; p < context.selectedViews.length; p++) {
+                        var chart = countlyViews.helpers.getTableData(context.data || {}, context.selectedViews[p], context.selectedProperty, "name", context.selectedSegment, context.selectedSegmentValue);
+                        if (chart) {
+                            chart.view = countlyViews.helpers.getChartLineName(context.data, context.selectedViews[p]);
+                            chart.name = countlyViews.helpers.getChartLineName(context.data, context.selectedViews[p]);
+                            chart._id = context.selectedViews[p];
+                            chart.selected = true;
+                            rows.push(chart);
+                        }
+                        else {
+                            var obj = countlyViews.clearObject();
+                            obj.view = context.selectedViews[p];
+                            obj.name = context.selectedViews[p];
+                            obj._id = context.selectedViews[p];
+                            obj.selected = true;
+                            rows.push(obj);
+                        }
+                    }
+                    return rows;
+                }
+            },
             mutations: ViewsMutations,
             submodules: [viewsTableResource, editTableResource]
         });
