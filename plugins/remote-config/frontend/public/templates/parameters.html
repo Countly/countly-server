@@ -16,7 +16,7 @@
       <cly-notification class="bu-mb-5" :text="i18n('remote-config.maximum_parameters_added')" color="light-warning">
       </cly-notification>
     </div>
-    <cly-datatable-n :rows="tableRows" class="cly-vue-remote-config-home-table">
+    <cly-datatable-n :rows="tableRows" :force-loading="isTableLoading" class="cly-vue-remote-config-home-table">
       <template v-slot:default="scope">
         <el-table-column type="expand" min-width="50">
           <template v-slot="props">
@@ -50,7 +50,7 @@
             {{rowScope.row.description || "-"}}
           </template>
         </el-table-column>
-        <el-table-column min-width="160" prop="created" :label="i18n('remote-config.parameter.created')" sortable="custom">
+        <el-table-column min-width="160" prop="ts" :label="i18n('remote-config.parameter.created')" sortable="custom">
           <template v-slot:default="rowScope">
             <div>
               <div class="cly-vue-remote-config-conditions-drawer__margin-bottom"> {{getDate(rowScope.row.ts)}}</div>

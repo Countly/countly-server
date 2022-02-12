@@ -184,9 +184,17 @@ var GridComponent = countlyVue.views.create({
     },
     mounted: function() {
     },
+    data: function() {
+        return {
+            showBuckets: false,
+            map: {
+                "u": this.i18n("common.table.total-users"),
+                "r": this.i18n("common.table.returning-users"),
+                "n": this.i18n("common.table.new-users")
+            }
+        };
+    },
     methods: {
-        refresh: function() {
-        },
     },
     computed: {
         title: function() {
@@ -198,11 +206,14 @@ var GridComponent = countlyVue.views.create({
             }
             return "";
         },
-        showBuckets: function() {
-            return false;
-        },
-        period: function() {
-            return this.data.custom_period;
+        metricLabels: function() {
+            this.data = this.data || {};
+            var listed = [];
+
+            for (var k = 0; k < this.data.metrics.length; k++) {
+                listed.push(this.map[this.data.metrics[k]] || this.data.metrics[k]);
+            }
+            return listed;
         },
         timelineGraph: function() {
             this.data = this.data || {};
@@ -211,6 +222,7 @@ var GridComponent = countlyVue.views.create({
 
             var legend = {"type": "primary", data: []};
             var series = [];
+            var dates = [];
             var appIndex = 0;
             for (var app in this.data.dashData.data) {
                 for (var k = 0; k < this.data.metrics.length; k++) {
@@ -218,6 +230,9 @@ var GridComponent = countlyVue.views.create({
                     legend.data.push({"name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
                 }
                 for (var date in this.data.dashData.data[app]) {
+                    if (appIndex === 0) {
+                        dates.push(date);
+                    }
                     for (var kk = 0; kk < this.data.metrics.length; kk++) {
                         if (this.data.metrics[kk] === 'r') {
                             var vv = this.data.dashData.data[app][date].u - this.data.dashData.data[app][date].n;
@@ -230,20 +245,24 @@ var GridComponent = countlyVue.views.create({
                 }
                 appIndex++;
             }
-            return {
-                lineOptions: {"series": series},
-                lineLegend: legend
-            };
+            if (this.data.custom_period) {
+                return {
+                    lineOptions: {xAxis: { data: dates}, "series": series},
+                    lineLegend: legend
+                };
+            }
+            else {
+                return {
+                    lineOptions: {"series": series},
+                    lineLegend: legend
+                };
+            }
+        },
+        stackedBarOptions: function() {
+            return this.calculateStackedBarOptionsFromWidget(this.data);
         },
         number: function() {
-            this.data = this.data || {};
-            this.data.dashData = this.data.dashData || {};
-            var value;
-            this.data.dashData.data = this.data.dashData.data || {};
-            for (var app in this.data.dashData.data) {
-                value = this.data.dashData.data[app];
-            }
-            return value;
+            return this.calculateNumberFromWidget(this.data);
         }
     }
 });
@@ -332,7 +351,8 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
                 metrics: [],
                 apps: [],
                 visualization: "",
-                breakdowns: ['overview']
+                breakdowns: ['overview'],
+                custom_period: "30days"
             };
         },
         beforeLoadFn: function(/*doc, isEdited*/) {

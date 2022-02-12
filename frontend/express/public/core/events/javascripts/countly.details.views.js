@@ -50,6 +50,9 @@
                     return true;
                 }
                 return false;
+            },
+            formatNumber: function(val) {
+                return countlyCommon.formatNumber(val);
             }
         },
     });
@@ -78,19 +81,14 @@
         components: {
             "detail-tables": EventsTable,
         },
+        methods: {
+            dateChanged: function() {
+                this.$store.dispatch('countlyAllEvents/setTableLoading', true);
+                this.$store.dispatch('countlyAllEvents/setChartLoading', true);
+                this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+            }
+        },
         computed: {
-            selectedDatePeriod: {
-                get: function() {
-                    return this.$store.getters["countlyAllEvents/selectedDatePeriod"];
-                },
-                set: function(value) {
-                    this.$store.dispatch('countlyAllEvents/fetchSelectedDatePeriod', value);
-                    this.$store.dispatch('countlyAllEvents/setTableLoading', true);
-                    this.$store.dispatch('countlyAllEvents/setChartLoading', true);
-                    countlyCommon.setPeriod(value);
-                    this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
-                }
-            },
             selectedEventFromSearchBar: {
                 get: function() {
                     return this.$store.getters["countlyAllEvents/selectedEventName"];
@@ -221,11 +219,6 @@
                 this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
             }
 
-        },
-        methods: {
-            refresh: function() {
-                this.$store.dispatch("countlyAllEvents/fetchRefreshAllEventsData");
-            }
         }
     });
     var getAllEventsView = function() {

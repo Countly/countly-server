@@ -115,18 +115,18 @@
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="custom" prop="sent" :label="i18n('push-notification.table-sent')" class="cly-vue-push-notification-table-column">
+                        <el-table-column sortable="custom":label="i18n('push-notification.table-sent')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <span class="cly-vue-push-notification-table-column__numbers-only"> {{scope.row.sent}} </span>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')" class="cly-vue-push-notification-table-column">
+                        <el-table-column width="100" sortable="custom" :label="i18n('push-notification.table-actioned')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-level">
                                     <div class="bu-level-left cly-vue-push-notification-table-column__numbers-only">
                                         <span class="bu-mr-1">{{formatNumber(scope.row.actioned)}}</span>
                                         <span class="bu-mr-1">|</span>
-                                        <span>{{formatPercentage(scope.row.actioned/totalAppUsers)}} %</span>
+                                        <span>{{formatPercentage(scope.row.actioned/scope.row.sent)}} %</span>
                                     </div>
                                 </div>
                             </template>
