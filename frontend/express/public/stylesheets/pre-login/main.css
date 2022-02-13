@@ -72,27 +72,6 @@ a:active { color:inherit; }
     #forgot-form #login-button { margin-top:0; width: 123px;}
 .wrapper {
   position:relative;padding-top:120px;min-height:640px;
-}    
-#login-form > div > form > p:first-of-type{
-  position: relative;
-  display: inline-block;
-  color: #333C48;
-  margin-top: 32px;
-  margin-bottom: 16px;
-}
-#login-form > div > form > p:first-of-type::before{
-  position: absolute;
-  content: "______";
-  top: -6px;
-  left: -58px;
-  color: #E2E4E8;
-}
-#login-form > div > form > p:first-of-type::after{
-  position: absolute;
-  content: "______";
-  top: -6px;
-  right: -58px;
-  color: #E2E4E8;
 }
 input.error{
   background: #FFF4CE;
