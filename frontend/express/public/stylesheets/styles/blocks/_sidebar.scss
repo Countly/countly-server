@@ -106,11 +106,6 @@ $bg-color: #24292e;
         margin-top: 24px;
         font-size: t.$text-2xl-size;
         cursor: pointer;
-
-        i:hover,
-        &--selected {
-            color: map.get(c.$colors, "primary-green");
-        }
     }
 
     &__menu-option-toggle {
@@ -380,57 +375,63 @@ $bg-color: #24292e;
         background-color: #24292e;
     }
 
-    .cly-icon- {
-        &sidebar-{
-            &app {
-                background-image: url("../../../images/sidebar/app.svg");
+    .cly-icon {
+        &-sidebar{
+            &-app {
+                background-image: url("../../../images/sidebar/default/app.svg");
                 height: 24px;
                 width: 24px;
             }
 
-            &analytics {
-                background-image: url("../../../images/sidebar/analytics-icon.svg");
+            &-analytics {
+                background-image: url("../../../images/sidebar/default/analytics-icon.svg");
+                height: 20px;
+                width: 20px;
+
+                &:hover,
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/analytics-icon.svg");
+                }
+            }
+
+            &-dashboards {
+                background-image: url("../../../images/sidebar/default/dashboards-icon.svg");
                 height: 20px;
                 width: 20px;
             }
 
-            &dashboards {
-                background-image: url("../../../images/sidebar/dashboards-icon.svg");
-                height: 20px;
-                width: 20px;
-            }
-
-            &divider {
-                background-image: url("../../../images/sidebar/divider.svg");
+            &-divider {
+                background-image: url("../../../images/sidebar/default/divider.svg");
                 width: 32px;
+                height: 1px;
             }
 
-            &management {
-                background-image: url("../../../images/sidebar/management.svg");
+            &-management {
+                background-image: url("../../../images/sidebar/default/management.svg");
                 height: 20px;
                 width: 20px;
             }
 
-            &report-manager {
-                background-image: url("../../../images/sidebar/report-manager.svg");
+            &-report-manager {
+                background-image: url("../../../images/sidebar/default/report-manager.svg");
                 height: 18px;
                 width: 20px;
             }
 
-            &help-center {
-                background-image: url("../../../images/sidebar/help-center.svg");
+            &-help-center {
+                background-image: url("../../../images/sidebar/default/help-center.svg");
                 height: 25px;
                 width: 20px;
             }
 
-            &notifications {
-                background-image: url("../../../images/sidebar/notifications.svg");
+            &-notifications {
+                background-image: url("../../../images/sidebar/default/notifications.svg");
                 height: 23px;
                 width: 20px;
             }
 
-            &toggle-left {
-                background-image: url("../../../images/sidebar/toggle-left.svg");
+            &-toggle-left {
+                background-image: url("../../../images/sidebar/default/toggle-left.svg");
                 height: 15px;
                 width: 11px;
             }
