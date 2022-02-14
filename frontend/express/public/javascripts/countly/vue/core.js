@@ -150,6 +150,7 @@
         }
     };
 
+
     var _mixins = {
         'autoRefresh': autoRefreshMixin,
         'refreshOnParentActive': refreshOnParentActiveMixin,
@@ -158,6 +159,127 @@
         'auth': authMixin,
         'basicComponentUtils': basicComponentUtilsMixin
     };
+
+    var DashboardsHelpersMixin = {
+        methods: {
+            calculateTableDataFromWidget: function(widgetData) {
+                widgetData = widgetData || {};
+                var dd = widgetData.dashData || {};
+                dd = dd.data || {};
+
+                if (widgetData.apps && widgetData.apps[0]) {
+                    dd = dd[widgetData.apps[0]] || {};
+                }
+                var tableData = [];
+                for (var k = 0; k < dd.rows.length; k++) {
+                    var ob = {};
+                    for (var z = 0; z < dd.cols.length; z++) {
+                        ob[dd.cols[z]] = dd.rows[k][z];
+                    }
+                    tableData.push(ob);
+                }
+                return tableData;
+            },
+            calculateTableColsFromWidget: function(widgetData, namingMap) {
+                widgetData = widgetData || {};
+                widgetData.metrics = widgetData.metrics || [];
+
+                var dd = widgetData.dashData || {};
+                dd = dd.data || {};
+
+                if (widgetData.apps && widgetData.apps[0]) {
+                    dd = dd[widgetData.apps[0]] || {};
+                }
+                var fields = [];
+                for (var k = 0; k < dd.cols.length; k++) {
+                    if (k > 0) {
+                        if (widgetData.metrics.indexOf(dd.cols[k]) > -1) {
+                            fields.push({"prop": dd.cols[k], "title": namingMap[dd.cols[k]], "type": "number"});
+                        }
+                    }
+                    else {
+                        fields.push({"prop": dd.cols[k], "title": namingMap[dd.cols[k]] || "name"}); //first one in "name"
+                    }
+                }
+                return fields;
+            },
+            calculateStackedBarOptionsFromWidget: function(widgetData) {
+                widgetData = widgetData || {};
+                widgetData.dashData = widgetData.dashData || {};
+                widgetData.dashData.data = widgetData.dashData.data || {};
+
+                var labels = [];
+                var series = [];
+                for (var app in widgetData.dashData.data) {
+                    if (widgetData.dashData.data[app].graph) {
+                        for (var k = 0; k < widgetData.dashData.data[app].graph.length; k++) {
+                            labels.push(widgetData.dashData.data[app].graph[k].name);
+                            series.push(widgetData.dashData.data[app].graph[k].value);
+                        }
+                    }
+                    else {
+                        for (var kz = 0; kz < widgetData.dashData.data[app].length; kz++) {
+                            labels.push(widgetData.dashData.data[app][kz].name);
+                            series.push(widgetData.dashData.data[app][kz].value);
+                        }
+                    }
+                }
+
+                if (widgetData.bar_color && widgetData.bar_color > 0) {
+                    return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], color: countlyCommon.GRAPH_COLORS[this.data.bar_color - 1], "data": series, stack: "A"}]};
+                }
+                else {
+                    return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], "data": series, stack: "A"}]};
+                }
+            },
+            calculatePieGraphFromWidget: function(widgetData, namingMap) {
+                widgetData = widgetData || {};
+                widgetData.metrics = widgetData.metrics || [];
+                var dd = widgetData.dashData || {};
+                dd = dd.data || {};
+
+                if (widgetData.apps && widgetData.apps[0]) {
+                    dd = dd[widgetData.apps[0]] || {};
+                }
+                var metric = widgetData.metrics[0];
+                return {
+                    series: [
+                        {
+                            name: namingMap[metric],
+                            data: dd.graph,
+                            label: {
+                                formatter: "{a|" + namingMap[metric] + "}\n" + (countlyCommon.getShortNumber(dd) || 0),
+                                fontWeight: 500,
+                                fontSize: 16,
+                                fontFamily: "Inter",
+                                lineHeight: 24,
+                                rich: {
+                                    a: {
+                                        fontWeight: "normal",
+                                        fontSize: 14,
+                                        lineHeight: 16
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                };
+            },
+            calculateNumberFromWidget: function(widgetData) {
+                widgetData = widgetData || {};
+                widgetData.dashData = widgetData.dashData || {};
+                var value;
+                widgetData.dashData.data = widgetData.dashData.data || {};
+                for (var app in widgetData.dashData.data) {
+                    value = widgetData.dashData.data[app];
+                }
+                return value;
+            }
+        }
+    };
+    _mixins.DashboardsHelpersMixin = DashboardsHelpersMixin;
+
+
 
     var _globalVuexStore = new Vuex.Store({
         modules: {

@@ -18,38 +18,38 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-if="isColumnAllowed('count')" sortable="true" prop="count" :label="labels.count">
+        <el-table-column v-if="isColumnAllowed('count')" sortable="true" prop="c" :label="labels.count">
           <template v-slot="rowScope">
             <div>
-              {{rowScope.row.c}}
+              {{formatNumber(rowScope.row.c)}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-if="isColumnAllowed('sum')" sortable="true" prop="sum" :label="labels.sum">
+        <el-table-column v-if="isColumnAllowed('sum')" sortable="true" prop="s" :label="labels.sum">
           <template v-slot="rowScope">
             <div>
-              {{rowScope.row.s}}
+              {{formatNumber(rowScope.row.s)}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-if="isColumnAllowed('dur')" sortable="true" prop="duration" :label="labels.dur">
+        <el-table-column v-if="isColumnAllowed('dur')" sortable="true" prop="dur" :label="labels.dur">
           <template v-slot="rowScope">
             <div>
-              {{rowScope.row.dur}}
+              {{formatNumber(rowScope.row.dur)}}
             </div>
           </template>
         </el-table-column>
         <el-table-column v-if="isColumnAllowed('AvgSum')" sortable="true" prop="avgSum" :label="i18n('events.table.avg-sum')">
           <template v-slot="rowScope">
             <div>
-              {{rowScope.row.avgSum}}
+              {{formatNumber(rowScope.row.avgSum)}}
             </div>
           </template>
         </el-table-column>
         <el-table-column v-if="isColumnAllowed('AvgDur')" sortable="true" prop="avgDur" :label="i18n('events.table.avg-dur')">
           <template v-slot="rowScope">
             <div>
-              {{rowScope.row.avgDur}}
+              {{formatNumber(rowScope.row.avgDur)}}
             </div>
           </template>
         </el-table-column>

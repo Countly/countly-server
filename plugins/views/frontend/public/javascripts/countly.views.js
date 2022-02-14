@@ -187,13 +187,20 @@
                 showViewCountWarning: false,
                 tableDynamicCols: dynamicCols,
                 showActionMapColumn: showActionMapColumn, //for action map
-                domains: [] //for action map
+                domains: [], //for action map
+                persistentSettings: [],
+                tableMode: "all",
+                tableModes: [
+                    {"key": "all", "label": CV.i18n('common.all')},
+                    {"key": "selected", "label": CV.i18n('views.selected-views')}
+                ]
             };
         },
         mounted: function() {
             var self = this;
-            var persistentSettings = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
-            this.$store.dispatch('countlyViews/onSetSelectedViews', persistentSettings);
+            // var persistentSettings = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
+            self.persistentSettings = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
+            this.$store.dispatch('countlyViews/onSetSelectedViews', self.persistentSettings);
             this.$store.dispatch('countlyViews/fetchData').then(function() {
                 self.calculateGraphSeries();
                 self.showActionsMapColumn(); //for action map
@@ -281,15 +288,17 @@
                 persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = selected;
                 countlyCommon.setPersistentSettings(persistData);
 
-                for (var k = 0; k < this.$refs.viewsTable.sourceRows.length; k++) {
-                    if (selected.indexOf(this.$refs.viewsTable.sourceRows[k]._id) > -1) {
-                        this.$refs.viewsTable.sourceRows[k].selected = true;
-                    }
-                    else {
-                        this.$refs.viewsTable.sourceRows[k].selected = false;
+                if (this.$refs.viewsTable) {
+                    for (var k = 0; k < this.$refs.viewsTable.sourceRows.length; k++) {
+                        if (selected.indexOf(this.$refs.viewsTable.sourceRows[k]._id) > -1) {
+                            this.$refs.viewsTable.sourceRows[k].selected = true;
+                        }
+                        else {
+                            this.$refs.viewsTable.sourceRows[k].selected = false;
+                        }
                     }
                 }
-
+                this.persistentSettings = selected;
                 this.$store.dispatch('countlyViews/onSetSelectedViews', selected).then();
                 this.refresh();
                 return true;
@@ -364,7 +373,19 @@
                         countlyCommon.setPersistentSettings(persistData);
                         self.$store.dispatch('countlyViews/onSetSelectedViews', good_ones);
                     }
-                    self.lineOptions = {series: data2};
+                    self.lineOptions = {
+                        series: data2,
+                        tooltip: {
+                            position: function(point, params, dom, rect, size) {
+                                if (size.viewSize[0] <= point[0] + 180) {
+                                    return [point[0] - 180, point[1] + 10];
+                                }
+                                else {
+                                    return [point[0], point[1] + 10];
+                                }
+                            },
+                        }
+                    };
                 });
             },
             getExportQuery: function() {
@@ -407,8 +428,8 @@
             data: function() {
                 return this.$store.state.countlyViews.appData;
             },
-            appRows: function() {
-                return this.data.table || [];
+            selectedTableRows: function() {
+                return this.$store.getters["countlyViews/selectedTableRows"];
             },
             filterFields: function() {
                 return [
@@ -449,7 +470,6 @@
                 }
                 links.push({"icon": "", "label": CV.i18n('plugins.configs'), "value": "#/manage/configurations/views"}); //to settings
                 return links;
-
             },
             chooseSegment: function() {
                 var segments = this.$store.state.countlyViews.segments || {};
@@ -458,17 +478,14 @@
                     listed.push({"value": key, "label": key});
                 }
                 return listed;
-
             },
             chooseSegmentValue: function() {
                 var segments = this.$store.state.countlyViews.segments || {};
-
                 var key;
                 if (this.$refs && this.$refs.selectSegmentValue && this.$refs.selectSegmentValue.unsavedValue && this.$refs.selectSegmentValue.unsavedValue.segment) {
                     key = this.$refs.selectSegmentValue.unsavedValue.segment;
                 }
                 var listed = [{"value": "all", "label": CV.i18n('common.all')}];
-
                 if (!key) {
                     return listed;
                 }
@@ -941,7 +958,7 @@
         });
 
         var GridComponent = countlyVue.views.create({
-            template: CV.T('/views/templates/widget.html'),
+            template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
             mixins: [countlyVue.mixins.commonFormatters],
             props: {
                 data: {
@@ -967,14 +984,11 @@
                     }
                     return "";
                 },
-                period: function() {
-                    /* var pp = countlyWidgets.formatPeriod(this.data.custom_period);
-                    pp = pp || {};
-                    return pp.longName || "";*/
-                    return this.data.custom_period;
+                showBuckets: function() {
+                    return false;
                 },
-                maxTableHeight: function() {
-                    return 200;
+                metricLabels: function() {
+                    return [];
                 },
                 tableStructure: function() {
                     var columns = [{prop: "view", "title": CV.i18n("views.widget-type")}];
@@ -982,7 +996,12 @@
                     this.data = this.data || {};
                     this.data.metrics = this.data.metrics || [];
                     for (var k = 0; k < this.data.metrics.length; k++) {
-                        columns.push({"prop": this.data.metrics[k], "title": CV.i18n("views." + this.data.metrics[k])});
+                        if (this.data.metrics[k] === "d" || this.data.metrics[k] === "src") {
+                            columns.push({"prop": this.data.metrics[k], "title": CV.i18n("views." + this.data.metrics[k])});
+                        }
+                        else {
+                            columns.push({"prop": this.data.metrics[k], "title": CV.i18n("views." + this.data.metrics[k]), "type": "number"});
+                        }
                     }
                     return columns;
                 },
@@ -990,26 +1009,40 @@
                     this.data = this.data || {};
                     this.data.dashData = this.data.dashData || {};
                     this.data.dashData.data = this.data.dashData.data || {};
-
-
                     this.data.dashData.data.chartData = this.data.dashData.data.chartData || [];
-                    for (var k = 0; k < this.data.dashData.data.chartData.length; k++) {
-                        if (this.data.dashData.data.chartData[k].t > 0) {
-                            this.data.dashData.data.chartData[k].dCalc = countlyCommon.timeString((this.data.dashData.data.chartData[k].d / this.data.dashData.data.chartData[k].t) / 60);
-                            var vv = parseFloat(this.data.dashData.data.chartData[k].scr) / parseFloat(this.data.dashData.data.chartData[k].t);
-                            if (vv > 100) {
-                                vv = 100;
+
+                    var tableData = [];
+                    for (var z = 0; z < this.data.dashData.data.chartData.length; z++) {
+                        var ob = {"view": this.data.dashData.data.chartData[z].view};
+                        for (var k = 0; k < this.data.metrics.length; k++) {
+                            if (this.data.metrics[k] === "d") {
+                                if (this.data.dashData.data.chartData[z].t > 0) {
+                                    ob[this.data.metrics[k]] = countlyCommon.timeString((this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t) / 60);
+                                }
+                                else {
+                                    ob[this.data.metrics[k]] = 0;
+                                }
                             }
-                            this.data.dashData.data.chartData[k].scrCalc = countlyCommon.formatNumber(vv) + "%";
+                            else if (this.data.metrics[k] === "scr") {
+                                if (this.data.dashData.data.chartData[k].t > 0) {
+                                    var vv = parseFloat(this.data.dashData.data.chartData[z].scr) / parseFloat(this.data.dashData.data.chartData[z].t);
+                                    if (vv > 100) {
+                                        vv = 100;
+                                    }
+                                    ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + "%";
+                                }
+                                else {
+                                    ob[this.data.metrics[k]] = 0;
+                                }
+                            }
+                            else {
+                                ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]];
+                            }
                         }
-                        else {
-                            this.data.dashData.data.chartData[k].dCalc = 0;
-                            this.data.dashData.data.chartData[k].scrCalc = 0;
-                        }
+                        tableData.push(ob);
+
                     }
-
-                    return this.data.dashData.data.chartData;
-
+                    return tableData;
                 }
             }
 
@@ -1020,8 +1053,13 @@
             data: function() {
                 return {
                     useCustomTitle: false,
-                    useCustomPeriod: false,
-                    availableStatsMetric: [
+                    useCustomPeriod: false
+                };
+            },
+            computed: {
+                availableStatsMetric: function() {
+                    var app = this.scope.editedObject.apps[0];
+                    var metrics = [
                         { label: CV.i18n("views.u"), value: "u" },
                         { label: CV.i18n("views.n"), value: "n" },
                         { label: CV.i18n("views.t"), value: "t" },
@@ -1031,45 +1069,16 @@
                         { label: CV.i18n("views.b"), value: "b" },
                         { label: CV.i18n("views.br"), value: "br" },
                         { label: CV.i18n("views.uvc"), value: "uvc" }
-                    ]
-                };
-            },
-            computed: {
+                    ];
+                    if (app && countlyGlobal.apps[app] && countlyGlobal.apps[app].type === "web") {
+                        metrics.push({ label: CV.i18n("views.scr"), value: "scr" });
+                    }
+                    return metrics;
+                }
             },
             mounted: function() {
             },
             methods: {
-            },
-            watch: {
-                'scope.editedObject.selectedApp': function(newVal) {
-                    if (countlyGlobal.apps[newVal] && countlyGlobal.apps[newVal].type === "web") {
-                        this.availableStatsMetric = [
-                            { label: CV.i18n("web.common.table.total-users"), value: "u" },
-                            { label: CV.i18n("web.common.table.new-users"), value: "n" },
-                            { label: CV.i18n("views.t"), value: "t" },
-                            { label: CV.i18n("views.d"), value: "d" },
-                            { label: CV.i18n("views.s"), value: "s" },
-                            { label: CV.i18n("views.e"), value: "e" },
-                            { label: CV.i18n("views.b"), value: "b" },
-                            { label: CV.i18n("views.br"), value: "br" },
-                            { label: CV.i18n("views.uvc"), value: "uvc" },
-                            { label: CV.i18n("views.scr"), value: "scr" }
-                        ];
-                    }
-                    else {
-                        this.availableStatsMetric = [
-                            { label: CV.i18n("views.u"), value: "u" },
-                            { label: CV.i18n("views.n"), value: "n" },
-                            { label: CV.i18n("views.t"), value: "t" },
-                            { label: CV.i18n("views.d"), value: "d" },
-                            { label: CV.i18n("views.s"), value: "s" },
-                            { label: CV.i18n("views.e"), value: "e" },
-                            { label: CV.i18n("views.b"), value: "b" },
-                            { label: CV.i18n("views.br"), value: "br" },
-                            { label: CV.i18n("views.uvc"), value: "uvc" }
-                        ];
-                    }
-                },
             },
             props: {
                 scope: {
@@ -1100,8 +1109,7 @@
                         metrics: [],
                         apps: [],
                         custom_period: "30days",
-                        visualization: "",
-                        breakdowns: []
+                        visualization: "table"
                     };
                 },
                 beforeLoadFn: function(/*doc, isEdited*/) {
@@ -1115,7 +1123,7 @@
                 dimensions: function() {
                     return {
                         minWidth: 6,
-                        minHeight: 6,
+                        minHeight: 4,
                         width: 6,
                         height: 4
                     };

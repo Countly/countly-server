@@ -134,7 +134,8 @@
                     all: [],
                     showJsonEditor: false,
                     showJsonEditorForCondition: false,
-                    showConditionDialog: false
+                    showConditionDialog: false,
+                    isTableLoading: true
                 };
             },
             getters: {
@@ -149,6 +150,9 @@
                 },
                 showConditionDialog: function(state) {
                     return state.showConditionDialog;
+                },
+                isTableLoading: function(_state) {
+                    return _state.isTableLoading;
                 }
             },
             mutations: {
@@ -163,6 +167,9 @@
                 },
                 setConditionDialog: function(state, val) {
                     state.showConditionDialog = val;
+                },
+                setTableLoading: function(state, value) {
+                    state.isTableLoading = value;
                 }
             },
             actions: {
@@ -198,6 +205,9 @@
                 },
                 remove: function(context, parameter) {
                     return countlyRemoteConfig.service.removeParameter(parameter._id);
+                },
+                setTableLoading: function(context, value) {
+                    context.commit("setTableLoading", value);
                 }
             }
         });
@@ -205,17 +215,24 @@
         var conditionsResource = countlyVue.vuex.Module("conditions", {
             state: function() {
                 return {
-                    all: []
+                    all: [],
+                    isTableLoading: true
                 };
             },
             getters: {
                 all: function(state) {
                     return state.all;
+                },
+                isTableLoading: function(_state) {
+                    return _state.isTableLoading;
                 }
             },
             mutations: {
                 setAll: function(state, val) {
                     state.all = val;
+                },
+                setTableLoading: function(state, value) {
+                    state.isTableLoading = value;
                 }
             },
             actions: {
@@ -234,6 +251,9 @@
                 },
                 remove: function(context, condition) {
                     return countlyRemoteConfig.service.removeCondition(condition._id);
+                },
+                setTableLoading: function(context, value) {
+                    context.commit("setTableLoading", value);
                 }
             }
         });

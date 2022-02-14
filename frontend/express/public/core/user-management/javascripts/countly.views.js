@@ -54,10 +54,10 @@
                             return row.global_admin;
                         }
                         else if (self.tableFilter === 'admin') {
-                            return !row.global_admin && row.permission._.a.length > 0;
+                            return !row.global_admin && (row.permission && row.permission._.a.length > 0);
                         }
                         else {
-                            return !row.global_admin && row.permission._.a.length === 0;
+                            return !row.global_admin && (row.permission && row.permission._.a.length === 0);
                         }
                     });
                 }

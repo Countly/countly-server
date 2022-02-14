@@ -316,7 +316,7 @@
                     if (loadedState) {
                         var parsed = JSON.parse(loadedState);
                         // disable loading of persisted searchQuery
-                        delete parsed.searchQuery;
+                        parsed.searchQuery = ""; // but we still need the field to be present for reactivity
                         return parsed;
                     }
                     return defaultState;

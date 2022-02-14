@@ -50,7 +50,7 @@
 			</div>
 
 			<cly-date-picker-g class="bu-mt-2"></cly-date-picker-g>
-			<div  v-for="(item, idx) in ordered" class="bu-pt-5 bu-mt-3" >
+			<div  v-for="(item, idx) in ordered" :class="item.topGapClasses" >
 				<div v-if="item.itemgroup">
 					<div class="bu-columns bu-is-gapless">
 						<div  v-for="(item0, idx0) in item.data" v-if="registredComponents[item0._id]" class="bu-column bu-is-6">

@@ -672,6 +672,9 @@
             },
             hasDeleteRight: function() {
                 return countlyAuth.validateDelete(FEATURE_NAME);
+            },
+            isTableLoading: function() {
+                return this.$store.getters["countlyRemoteConfig/parameters/isTableLoading"];
             }
         },
         methods: {
@@ -757,6 +760,9 @@
             },
             hasDeleteRight: function() {
                 return countlyAuth.validateDelete(FEATURE_NAME);
+            },
+            isTableLoading: function() {
+                return this.$store.getters["countlyRemoteConfig/conditions/isTableLoading"];
             }
         },
         methods: {
@@ -835,7 +841,11 @@
             };
         },
         beforeCreate: function() {
-            this.$store.dispatch("countlyRemoteConfig/initialize");
+            var self = this;
+            this.$store.dispatch("countlyRemoteConfig/initialize").then(function() {
+                self.$store.dispatch("countlyRemoteConfig/parameters/setTableLoading", false);
+                self.$store.dispatch("countlyRemoteConfig/conditions/setTableLoading", false);
+            });
         },
         methods: {
             refresh: function() {

@@ -3,6 +3,7 @@
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
         props: {
             data: {
                 type: Object,
@@ -13,7 +14,12 @@
         },
         data: function() {
             return {
-                selectedBucket: "daily"
+                selectedBucket: "daily",
+                map: {
+                    "t": this.i18n("common.total-sessions"),
+                    "u": this.i18n("common.unique-sessions"),
+                    "n": this.i18n("common.new-sessions")
+                }
             };
         },
         computed: {
@@ -22,22 +28,15 @@
                 return this.data.title || autoTitle;
             },
             period: function() {
-                return this.data.custom_period || "";
+                if (this.data.custom_period) {
+                    return this.data.custom_period;
+                }
+                else {
+                    return "";
+                }
             },
             showBuckets: function() {
                 return false;
-            },
-            apps: function() {
-                var apps = this.data.apps;
-                var appData = [];
-
-                for (var i = 0; i < apps.length; i++) {
-                    var appId = apps[i];
-                    appData.push({
-                        id: appId,
-                        name: this.getAppName(appId)
-                    });
-                }
             },
             timelineGraph: function() {
                 this.data = this.data || {};
@@ -47,36 +46,68 @@
                 var legend = {"type": "primary", data: []};
                 var series = [];
                 var appIndex = 0;
-                for (var app in this.data.dashData.data) {
-                    var name = countlyGlobal.apps[app].name || "";
-                    for (var k = 0; k < this.data.metrics.length; k++) {
+                var multiApps = false;
 
-                        series.push({ "data": [], "name": this.data.metrics[k] + " " + name, "app": app, "metric": this.data.metrics[k]});
-                        legend.data.push({"name": this.data.metrics[k] + " " + name, "app": app, "metric": this.data.metrics[k]});
+                var dates = [];
+                if (Object.keys(this.data.dashData.data).length > 0) {
+                    multiApps = true;
+                }
+                for (var app in this.data.dashData.data) {
+                    var name;
+                    for (var k = 0; k < this.data.metrics.length; k++) {
+                        if (multiApps) {
+                            if (this.data.metrics.length > 1) {
+                                name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+                            }
+                            else {
+                                name = (countlyGlobal.apps[app].name || "");
+                            }
+                        }
+                        else {
+                            name = (this.map[this.data.metrics[k]] || this.data.metrics[k]);
+                        }
+                        series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k]});
+                        legend.data.push({"name": name, "app": app, "metric": this.data.metrics[k]});
                     }
+
                     for (var date in this.data.dashData.data[app]) {
+                        if (appIndex === 0) {
+                            dates.push(date);
+                        }
                         for (var kk = 0; kk < this.data.metrics.length; kk++) {
                             series[appIndex * this.data.metrics.length + kk].data.push(this.data.dashData.data[app][date][this.data.metrics[kk]] || 0);
                         }
                     }
                     appIndex++;
                 }
-                return {
-                    lineOptions: {"series": series},
-                    lineLegend: legend
-                };
+                if (this.data.custom_period) {
+                    return {
+                        lineOptions: {xAxis: { data: dates}, "series": series},
+                        lineLegend: legend
+                    };
+                }
+                else {
+                    return {
+                        lineOptions: {"series": series},
+                        lineLegend: legend
+                    };
+                }
+            },
+            stackedBarOptions: function() {
+                return this.calculateStackedBarOptionsFromWidget(this.data);
             },
             number: function() {
+                return this.calculateNumberFromWidget(this.data);
+            },
+            metricLabels: function() {
                 this.data = this.data || {};
-                this.data.dashData = this.data.dashData || {};
-                var value;
-                this.data.dashData.data = this.data.dashData.data || {};
-                for (var app in this.data.dashData.data) {
-                    value = this.data.dashData.data[app];
-                }
-                return value;
-            }
+                var listed = [];
 
+                for (var k = 0; k < this.data.metrics.length; k++) {
+                    listed.push(this.map[this.data.metrics[k]] || this.data.metrics[k]);
+                }
+                return listed;
+            }
         },
         methods: {
             beforeCopy: function(data) {
@@ -194,10 +225,10 @@
             component: WidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 6,
-                    minHeight: 3,
-                    width: 6,
-                    height: 3
+                    minWidth: 2,
+                    minHeight: 4,
+                    width: 2,
+                    height: 4
                 };
             },
             onClick: function() {}
