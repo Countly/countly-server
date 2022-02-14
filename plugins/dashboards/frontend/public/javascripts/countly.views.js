@@ -1,4 +1,4 @@
-/*global $, app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers */
+/*global $, app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers, countlyCommon */
 
 (function() {
     var FEATURE_NAME = "dashboards";
@@ -1273,7 +1273,20 @@
             },
             dashboard: function() {
                 var selected = this.$store.getters["countlyDashboards/selected"];
-                return selected.data || {};
+                var dashboard = selected.data || {};
+
+                dashboard.creation = {};
+
+                if (dashboard.created_at) {
+                    var formattedTime = this.parseTimeAgo(dashboard.created_at) || {};
+                    dashboard.creation.time = formattedTime.text;
+                }
+
+                if (dashboard.owner && dashboard.owner.full_name) {
+                    dashboard.creation.by = dashboard.owner.full_name;
+                }
+
+                return dashboard;
             },
             canUpdate: function() {
                 return this.dashboard.is_editable;
