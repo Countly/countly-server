@@ -390,6 +390,10 @@
 
 .cly-vue-push-notification-drawer {
 
+    __section {
+        padding: 32px 0px;
+    }
+
     &__input-label {
         font-size: typography.$text-button-size;
         line-height: 13px;
@@ -407,7 +411,7 @@
 
     &__input-suffix {
         height:100%;
-        color: map.get(colors.$colors,"text-custom-1-active");
+        color: map.get(colors.$colors,"cool-gray-50");
     }
 
     //platform only
@@ -529,6 +533,14 @@
 .cly-vue-push-notification-large-radio-button-with-description {
     &__container {
         flex-basis: 0;
+        height: 87px;
+
+        label {
+            .el-radio__input {
+                vertical-align: top;
+                margin-top: 8px;
+            }
+        }
     }
 
     &__button {
@@ -539,7 +551,7 @@
     &__title {
         display: inline-block;
         color: map.get(colors.$colors,"text-primary");
-        white-space: pre-wrap;
+        white-space: break-spaces;
     }
 
     &__content {

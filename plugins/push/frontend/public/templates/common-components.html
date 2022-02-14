@@ -1,8 +1,8 @@
 <script type="text/x-template" id="large-radio-button-with-description">
-    <div v-bind:class="['bu-level-item','cly-vue-push-notification-large-radio-button-with-description__container','bu-pr-1', hasTopMargin?'bu-mt-1':null]">
+    <div v-bind:class="['bu-level-item','cly-vue-push-notification-large-radio-button-with-description__container','bu-pr-1']">
         <el-radio :label="label"  border class="cly-vue-push-notification-large-radio-button-with-description__button" v-model="innerValue"> 
-            <div class="cly-vue-push-notification-large-radio-button-with-description__title">{{title}}</div>
-            <div class="cly-vue-push-notification-large-radio-button-with-description__content bu-level bu-ml-5 bu-mt-3"> 
+            <div class="cly-vue-push-notification-large-radio-button-with-description__title bu-mt-2">{{title}}</div>
+            <div class="cly-vue-push-notification-large-radio-button-with-description__content bu-level bu-ml-5 bu-mt-2"> 
                 <slot v-if="hasDefaultSlot"></slot>      
                 <template v-if="description">{{description}}</template>               
             </div>
@@ -11,7 +11,7 @@
 </script>
 
 <script type="text/x-template" id="line-radio-button-with-description">
-    <el-radio :label="label"  :border="border" v-bind:class="['bu-py-1','bu-my-1','bu-is-flex','bu-is-align-items-center', border?'cly-vue-push-notification-line-radio-button-with-description__border':'cly-vue-push-notification-line-radio-button-with-description__no-border']" v-model="innerValue">
+    <el-radio :label="label"  :border="border" v-bind:class="['bu-my-1','bu-is-flex','bu-is-align-items-center', border?'cly-vue-push-notification-line-radio-button-with-description__border':'cly-vue-push-notification-line-radio-button-with-description__no-border']" v-model="innerValue">
         <div class="bu-is-flex bu-is-justify-content-space-between">
             <div class="cly-vue-push-notification-line-radio-button-with-description__title">{{title}}</div>
             <div v-if="description" class="cly-vue-push-notification-line-radio-button-with-description__content"> {{description}}</div> 

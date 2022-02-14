@@ -41,7 +41,7 @@
             @remove="onRemoveUserProperty"
             @close="closeAddUserPropertyPopover">
         </add-user-property-popover>
-        <div class="bu-column bu-is-10 bu-is-offset-1">
+            <div class="bu-column bu-is-10 bu-is-offset-1">
             <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')" v-loading="isLoading">
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Notification Name</div>
@@ -70,17 +70,16 @@
                                 :label="TargetingEnum.ALL"  
                                 v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting"
                                 title="All push-enabled users">   
-                                <div class="bu-is-flex bu-is-justify-content-flex-start bu-is-align-items-center">
+                                <div class="bu-is-flex bu-is-justify-content-flex-start bu-is-align-items-baseline">
                                     <span class="cly-vue-push-notification-large-radio-button-with-description__content-header">{{totalEnabledUsers}}</span> 
-                                    <span class="bu-ml-1">Push-enabled users</span>
+                                    <span class="bu-ml-2">Push-enabled users</span>
                                 </div>
                             </large-radio-button-with-description>
                             <large-radio-button-with-description
                                 :label="TargetingEnum.SEGMENTED" 
                                 v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting"
                                 title="Use segmentation"
-                                description="Some description for option goes here"
-                                :hasTopMargin="true">                        
+                                description="Some description for option goes here">                        
                             </large-radio-button-with-description>
                         </div>
                     </div>
@@ -130,7 +129,7 @@
                             </validation-provider>
                         </div>
                         <div class="cly-vue-drawer-step__section">
-                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                            <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
                                 When to determine the uses?
                                 <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-targeting-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             </div>
@@ -185,22 +184,22 @@
                             <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-triggers-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
                         <div class="bu-is-flex bu-is-flex-direction-column">
-                            <line-radio-button-with-description 
-                                :label="TriggerEnum.COHORT_ENTRY" 
+                            <line-radio-button-with-description
+                                :label="TriggerEnum.COHORT_ENTRY"
                                 v-model="pushNotificationUnderEdit.automatic.trigger"
                                 title="Cohort(s) Entry"
                                 description="Some description for option goes here"
                                 border>
                             </line-radio-button-with-description>
-                            <line-radio-button-with-description 
-                                :label="TriggerEnum.COHORT_EXIT" 
+                            <line-radio-button-with-description
+                                :label="TriggerEnum.COHORT_EXIT"
                                 v-model="pushNotificationUnderEdit.automatic.trigger"
                                 title="Cohort(s) Exit"
                                 description="Some description for option goes here"
                                 border>
                             </line-radio-button-with-description>
-                            <line-radio-button-with-description 
-                                :label="TriggerEnum.EVENT" 
+                            <line-radio-button-with-description
+                                :label="TriggerEnum.EVENT"
                                 v-model="pushNotificationUnderEdit.automatic.trigger"
                                 title="Performed Event(s)"
                                 description="Some description for option goes here"
@@ -228,7 +227,7 @@
                                         :label="item.label"
                                         :value="item.value">
                                     </el-option>
-                                </el-select> 
+                                </el-select>
                             </validation-provider>
                         </div>
                     </template>
@@ -257,7 +256,7 @@
                         </div>
                     </template>
                     <div class="cly-vue-drawer-step__section">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                        <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
                             Delivery date calculation
                             <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-delivery-date-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
@@ -276,7 +275,7 @@
                     </div>
                     <template v-if="pushNotificationUnderEdit.automatic.trigger !== TriggerEnum.EVENT">
                         <div class="cly-vue-drawer-step__section">
-                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                            <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
                                 Behavior when trigger condition is no longer met
                                 <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-when-not-met-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             </div>
@@ -312,8 +311,7 @@
                         <large-radio-button-with-description
                             :label="SendEnum.LATER"
                             v-model="pushNotificationUnderEdit.delivery.type"
-                            title="Schedule for later"
-                            :hasTopMargin="true">    
+                            title="Schedule for later">    
                             <cly-date-picker v-bind:disabled="pushNotificationUnderEdit.delivery.type === SendEnum.NOW" v-model="pushNotificationUnderEdit.delivery.startDate" timestampFormat="ms" type="date" :select-time="true" :is-future="true"></cly-date-picker>
                         </large-radio-button-with-description>
                     </div>
@@ -369,7 +367,7 @@
                         </div>
                     </div>
                     <div class="cly-vue-drawer-step__section">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                        <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
                             What if the user is past the scheduled time?
                             <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-past-schedule-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
@@ -400,9 +398,8 @@
                         <large-radio-button-with-description
                             :label="DeliveryMethodEnum.DELAYED"
                             v-model="pushNotificationUnderEdit.automatic.deliveryMethod"
-                            title="Delayed"
-                            :hasTopMargin="true">    
-                            <validation-provider v-slot="validation" rules="required|integer">
+                            title="Delayed">    
+                            <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
                                 <el-input 
                                     :disabled="pushNotificationUnderEdit.automatic.deliveryMethod !== DeliveryMethodEnum.DELAYED" 
                                     v-model="pushNotificationUnderEdit.automatic.delayed.days" 
@@ -415,7 +412,7 @@
                                     </template>
                                 </el-input>
                             </validation-provider>
-                            <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23|min:1|max:2">
+                            <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23|min:1|max:2" class="bu-ml-1">
                                 <el-input 
                                     :disabled="pushNotificationUnderEdit.automatic.deliveryMethod !== DeliveryMethodEnum.DELAYED" 
                                     v-model="pushNotificationUnderEdit.automatic.delayed.hours" 
@@ -449,8 +446,7 @@
                                 :label="true"
                                 v-model="pushNotificationUnderEdit.automatic.capping"
                                 title="Capping"
-                                description="Message is sent whenever user entered to or exited from the cohort"
-                                :hasTopMargin="true">                           
+                                description="Message is sent whenever user entered to or exited from the cohort">                           
                             </large-radio-button-with-description>
                         </div>
                     </div>
@@ -496,16 +492,17 @@
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                         Expiration Time
                         <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-expiration-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        <div class="cly-vue-push-notification-drawer__input-description">Set expiration time for message sending</div>
                     </div>
                     <div class="bu-is-flex is-justify-content-flex-start">
-                        <validation-provider v-slot="validation" rules="required|integer">
+                        <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
                             <el-input v-model="pushNotificationUnderEdit.expiration.days" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
                                 <template slot="suffix">
                                     <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">Days</span>
                                 </template>
                             </el-input>
                         </validation-provider>
-                        <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23">
+                        <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23" class="bu-ml-1">
                             <el-input v-model="pushNotificationUnderEdit.expiration.hours" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
                                 <template slot="suffix">
                                     <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">Hours</span>
