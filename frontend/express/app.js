@@ -601,7 +601,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             next();
         }
     });
-    var convertLink = function convertLink(val, defaultVal) {
+    var convertLink = function(val, defaultVal) {
         if (typeof val === "undefined" || val === true) {
             return defaultVal;
         }
