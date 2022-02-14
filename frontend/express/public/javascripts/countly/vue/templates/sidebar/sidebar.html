@@ -6,10 +6,10 @@
                 <div v-if="item.name === 'divider'" class="cly-vue-sidebar__menu-option-divider"></div>
                 <div v-if="item.name === 'last-queries'">
                     <cly-report-manager-dialog :disableAutoNavigationToTask="false" :disableRunningCount="true">
-                            <template v-slot:trigger="scope">
-                                <i :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]" @click="scope.showDialog"></i>
-                            </template>
-                    </cly-report-manager-dialog>  
+                        <template v-slot:trigger="scope">
+                            <i :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]" @click="scope.showDialog"></i>
+                        </template>
+                    </cly-report-manager-dialog>
                 </div>
                 <i v-else :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
             </li>

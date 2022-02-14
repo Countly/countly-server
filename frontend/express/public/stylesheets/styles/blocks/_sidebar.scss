@@ -160,6 +160,12 @@ $bg-color: #24292e;
         position: relative;
     }
 
+    a, a:visited, a:active {
+        color: inherit;
+        background-color: transparent;
+        text-decoration: none;
+    }
+
     &__menu-items,
     &__submenu-items,
     .el-collapse-item__header {
@@ -193,6 +199,16 @@ $bg-color: #24292e;
                 background-color: map.get(c.$colors, "primary-green");
                 border-radius: 4px;
             }
+        }
+    }
+
+    &--margin-between {
+        margin: 4px 0px;
+    }
+
+    .el-collapse-item {
+        .cly-vue-sidebar__submenu-items {
+            padding-left: 32px;
         }
     }
 
