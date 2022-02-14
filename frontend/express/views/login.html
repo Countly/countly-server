@@ -66,7 +66,6 @@
 				-->
 				<form method="POST" id="formRegister" style="width:300px; margin:auto;">
 					<h1 style="font-weight: 500;" id="header" data-localize="login.form-header"></h1>
-					<p data-localize="login.sign-in"></p>
 					<div>
 						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress"></p>
 						<input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
@@ -91,13 +90,13 @@
 		</div>
 		<div class="footer">
 			<div>
-				<p style="margin: 0px;">© <%= new Date().getFullYear() %> Countly Ltd.</p>
+				<p style="margin: 0px;">© <%= new Date().getFullYear() %> <%- countlyTitle %></p>
 				<div style="margin: 0px; color: #0166D6;">
-					<a href="https://count.ly/">Countly</a>
-					<a href="https://count.ly/legal/terms-of-service">Terms</a>
-					<a href="https://count.ly/legal/privacy-policy">Privacy</a>
-					<a href="https://resources.count.ly/">Documentation</a>
-					<a href="https://support.count.ly/hc/">Help Center</a>
+					<% if (countlyPage) { %> <a href="<%- countlyPage %>"> <%- countlyTitle %> </a> <% }%>
+					<% if (featureRequestLink) { %> <a href="<%- featureRequestLink %>">Terms</a> <% }%>
+					<% if (feedbackLink) { %> <a href="<%- feedbackLink %>">Privacy</a> <% }%>
+					<% if (documentationLink) { %> <a href="<%- documentationLink %>">Documentation</a> <% }%>
+					<% if (helpCenterLink) { %> <a href="<%- helpCenterLink %>">Help Center</a> <% }%>
 				</div>
 			</div>
 		</div>
@@ -108,8 +107,8 @@
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
-	<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
-	<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.validate.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/additional-methods.min.js"></script>
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
 		$(document).ready(function() {
