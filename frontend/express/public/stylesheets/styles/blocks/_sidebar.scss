@@ -160,12 +160,6 @@ $bg-color: #24292e;
         position: relative;
     }
 
-    a, a:visited, a:active {
-        color: inherit;
-        background-color: transparent;
-        text-decoration: none;
-    }
-
     &__menu-items,
     &__submenu-items,
     .el-collapse-item__header {
@@ -202,8 +196,8 @@ $bg-color: #24292e;
         }
     }
 
-    &--margin-between {
-        margin: 4px 0px;
+    .el-collapse-item__header.focusing:focus:not(:hover) {
+        color: map.get(c.$colors, "warm-gray-40");
     }
 
     .el-collapse-item {
