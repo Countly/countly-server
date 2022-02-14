@@ -1,6 +1,41 @@
 var pluginManager = require('../../../../plugins/pluginManager.js'),
     async = require('async'),
-    drillBookmarks = require('../../../../plugins/drill/api/parts/data/bookmarks.js');
+    hash = require('object-hash');
+
+/**
+ * The function creates a hash of the object disregarding
+ * the order of constituents (arrays, objects)
+ * @param {Object} obj Bookmark signature parts
+ * @returns {String} sha1 hash
+ */
+function getBookmarkSignature(obj) {
+    var signObj = {
+        app_id: obj.app_id,
+        namespace: obj.namespace,
+        event_key: obj.event_key,
+        creator: obj.creator
+    };
+
+    ["query_obj", "by_val"].forEach((fieldKey) => {
+        if (fieldKey in obj) {
+            if (typeof obj[fieldKey] === 'string') {
+                signObj[fieldKey] = JSON.parse(obj[fieldKey]);
+            }
+            else {
+                signObj[fieldKey] = obj[fieldKey];
+            }
+        }
+    });
+
+    signObj.namespace = signObj.namespace || "";
+    signObj.query_obj = signObj.query_obj || {};
+    signObj.by_val = signObj.by_val || [];
+
+    return hash(signObj, {
+        unorderedArrays: true,
+        unorderedObjects: true
+    });
+}
 
 function processBookmark(obj) {
 
@@ -19,7 +54,7 @@ function processBookmark(obj) {
         obj.query_text = "";
     }
 
-    obj.sign = drillBookmarks.getBookmarkSignature({
+    obj.sign = getBookmarkSignature({
         app_id: obj.app_id,
         event_key: obj.event_key,
         query_obj: obj.query_obj,
