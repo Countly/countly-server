@@ -29,4 +29,54 @@
     &arrow-up {
         background-image: url("../../../images/icons/arrow_drop_up.svg");
     }
+
+    &sidebar-{
+        &app {
+            background-image: url("../../../images/sidebar/app.svg");
+            height: 24px;
+            width: 24px;
+        }
+
+        &analytics {
+            background-image: url("../../../images/sidebar/analytics-icon.svg");
+            height: 20px;
+            width: 20px;
+        }
+
+        &dashboards {
+            background-image: url("../../../images/sidebar/dashboards-icon.svg");
+            height: 20px;
+            width: 20px;
+        }
+
+        &divider {
+            background-image: url("../../../images/sidebar/divider.svg");
+            height: 20px;
+            width: 32px;
+        }
+
+        &management {
+            background-image: url("../../../images/sidebar/management.svg");
+            height: 20px;
+            width: 20px;
+        }
+
+        &report-manager {
+            background-image: url("../../../images/sidebar/report-manager.svg");
+            height: 18px;
+            width: 20px;
+        }
+
+        &help-center {
+            background-image: url("../../../images/sidebar/help-center.svg");
+            height: 25px;
+            width: 20px;
+        }
+
+        &notifications {
+            background-image: url("../../../images/sidebar/notifications.svg");
+            height: 23px;
+            width: 20px;
+        }
+    }
 }

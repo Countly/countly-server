@@ -2,16 +2,15 @@
     <div class="cly-vue-sidebar__menu-options bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-space-between">
         <ul class="bu-is-flex bu-is-flex-direction-column bu-is-flex-align-items-center bu-is-flex-justify-content-center">
             <li v-for="item in mainMenuOptions" v-tooltip.right="{content: item.tooltip, container: false}" :key="item.name" @click="onClick(item)" class="cly-vue-sidebar__menu-option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
-                <div v-if="item.name === 'app'" class="cly-vue-sidebar__menu-option-app"></div>
-                <div v-if="item.name === 'divider'" class="cly-vue-sidebar__menu-option-divider"></div>
-                <div v-if="item.name === 'last-queries'">
+                <div v-if="item.name === 'app'" :class="['cly-icon-btn', item.icon]" style="margin-bottom: 32px;"></div>
+                <div v-else-if="item.name === 'last-queries'">
                     <cly-report-manager-dialog :disableAutoNavigationToTask="false" :disableRunningCount="true">
                         <template v-slot:trigger="scope">
-                            <i :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]" @click="scope.showDialog"></i>
+                            <i :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]" @click="scope.showDialog"></i>
                         </template>
                     </cly-report-manager-dialog>
                 </div>
-                <i v-else :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
+                <i v-else :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
             </li>
         </ul>
         <ul class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">
@@ -27,12 +26,12 @@
                 <users-menu v-if="item.name === 'user'" :item="item"></users-menu>
                 <language-menu v-else-if="item.name === 'language'" :item="item"></language-menu>
                 <i v-else-if="item.name === 'toggle'"
-                    :class="[item.icon, {
+                    :class="['cly-icon-btn', item.icon, {
                         'cly-vue-sidebar__menu-option-toggle--rotate-left': showMainMenu,
                         'cly-vue-sidebar__menu-option-toggle--rotate-right': !showMainMenu
                     }]"></i>
-                <a v-else-if="item.name === 'help-center'" href="https://support.count.ly/" target="_blank"><i :class="[item.icon]"></i></a>
-                <i v-else :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
+                <a v-else-if="item.name === 'help-center'" href="https://support.count.ly/" target="_blank"><i :class="['cly-icon-btn', item.icon]"></i></a>
+                <i v-else :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
             </li>
         </ul>
     </div>
