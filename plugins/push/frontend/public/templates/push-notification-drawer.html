@@ -41,7 +41,6 @@
             @remove="onRemoveUserProperty"
             @close="closeAddUserPropertyPopover">
         </add-user-property-popover>
-            <div class="bu-column bu-is-10 bu-is-offset-1">
             <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')" v-loading="isLoading">
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Notification Name</div>
@@ -953,6 +952,5 @@
                     </div>
                 </div>
             </cly-form-step>
-        </div>
     </template>
 </cly-drawer>
