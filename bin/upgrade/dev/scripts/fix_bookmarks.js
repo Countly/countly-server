@@ -114,7 +114,7 @@ pluginManager.dbConnection("countly_drill").then((db) => {
         var signsLookup = {};
 
         result.forEach(function(bookmark) {
-            if (bookmark.sign) {
+            if (bookmark.sign || bookmark.namespace) {
                 return warn(`Bookmark ${bookmark._id} is already processed, skipping...`);
             }
             processBookmark(bookmark);
@@ -171,7 +171,7 @@ New format:
     "by_val": "[]",
     "by_val_text": "",
     //
-    "namespace": "activity-map",
+    "namespace": "activity-map", (doesn't exist if drill)
     "sign": "7fc7db14f548337cfc34088d48f30ed8d3c50c05",
     //
     "_id": "ObjectId(6138534e135e969971377436)", // ObjectId
