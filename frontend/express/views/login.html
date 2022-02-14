@@ -87,6 +87,7 @@
 			<% if (typeof inject_template.html != "undefined") { %>
 				<%- inject_template.html %>
 			<% } %>
+			<div style="height: 100px;"></div>
 		</div>
 		<div class="footer">
 			<div>
@@ -114,9 +115,11 @@
 		$(document).ready(function() {
 			<% if (message && message.length >0 ){ %>
 				$('.cly-vue-notification__alert-box').show();
+				$('#header').css("margin-top","18px");
 				showMessage("<%= message %>");
 			<% } 
 			else{ %>
+				$('#header').css("margin-top","72px");
 				$(".cly-vue-notification__alert-box").css('display','none');
 			<% } %>
             if (jQuery.i18n.map["login.title"]) {

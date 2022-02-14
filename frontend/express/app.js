@@ -1200,7 +1200,22 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
             res.header('Expires', '0');
             res.header('Pragma', 'no-cache');
-            res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "message": req.query.message || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+            res.render('forgot', {
+                documentationLink: req.countly.documentationLink,
+                helpCenterLink: req.countly.helpCenterLink,
+                feedbackLink: req.countly.feedbackLink,
+                featureRequestLink: req.countly.featureRequestLink,
+                languages: languages,
+                countlyFavicon: req.countly.favicon,
+                countlyTitle: req.countly.title,
+                countlyPage: req.countly.page,
+                "csrf": req.csrfToken(),
+                "message": req.query.message || "",
+                path: countlyConfig.path || "",
+                cdn: countlyConfig.cdn || "",
+                themeFiles: req.themeFiles,
+                inject_template: req.template
+            });
         }
     });
 
