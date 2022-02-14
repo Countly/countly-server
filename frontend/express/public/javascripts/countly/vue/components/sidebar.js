@@ -552,7 +552,7 @@
                         },
                         {
                             name: "toggle",
-                            icon: "ion-chevron-left",
+                            icon: "cly-icon-sidebar-toggle-left",
                             noSelect: true
                         }
                     ];
