@@ -66,7 +66,7 @@ a:active { color:inherit; }
 #forgot-form { text-align:center; width:480px; height:270px; margin-left:-240px; left:50%;}
 #forgot-left { margin-bottom:28px; }
 #reset-form { width:704px; height:174px; margin-left:-352px; left:50%; top:50%; margin-top:-87px; position:absolute; }
-#login-button { line-height:14px !important; font-size:14px; border:none; border-radius:3px; padding: 11px 26px 12px 26px; background-color:#2FA732; color:#FFF; font-weight:400; cursor:pointer; width:300px; margin-top:32px; }
+#login-button { line-height:14px !important; font-size:14px; border:none; border-radius:3px; padding: 11px 26px 12px 26px; background-color:#2FA732; color:#FFF; font-weight:500; cursor:pointer; width:300px; margin-top:32px;font-family:inter; }
 	#login-button:hover { background-color: #2f9732; }
 	#login-button:active { }
     #forgot-form #login-button {}
