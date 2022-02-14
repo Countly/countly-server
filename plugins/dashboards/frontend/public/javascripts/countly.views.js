@@ -942,8 +942,8 @@
                 var i;
 
                 this.grid = GridStack.init({
-                    cellHeight: 100,
-                    margin: 10,
+                    cellHeight: 80,
+                    margin: 8,
                     animate: true,
                     float: false,
                     column: 4
