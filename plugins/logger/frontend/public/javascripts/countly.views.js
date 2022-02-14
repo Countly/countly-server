@@ -68,7 +68,7 @@
                 }
             },
             showCodeBlock: function() {
-                return this.filter !== 'all'
+                return this.filter !== 'all';
             }
         },
         template: "<pre v-if='showCodeBlock'><code style='display:block; white-space:pre-wrap; background-color: #F6F6F6; overflow: scroll !important; max-height: 178px;'>{{logInfo}}</code></pre><pre v-else>{{logInfo}}</pre>"
