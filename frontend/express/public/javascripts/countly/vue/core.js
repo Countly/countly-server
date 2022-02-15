@@ -242,13 +242,17 @@
                     dd = dd[widgetData.apps[0]] || {};
                 }
                 var metric = widgetData.metrics[0];
+                var total = 0;
+                if (dd.total && dd.total[metric]) {
+                    total = dd.total[metric];
+                }
                 return {
                     series: [
                         {
                             name: namingMap[metric],
                             data: dd.graph,
                             label: {
-                                formatter: "{a|" + namingMap[metric] + "}\n" + (countlyCommon.getShortNumber(dd) || 0),
+                                formatter: "{a|" + namingMap[metric] + "}\n" + (countlyCommon.getShortNumber(total) || 0),
                                 fontWeight: 500,
                                 fontSize: 16,
                                 fontFamily: "Inter",

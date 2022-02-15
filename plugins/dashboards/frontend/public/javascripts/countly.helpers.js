@@ -280,8 +280,6 @@
                     }
                     break;
                 }
-
-
                 return breakdowns;
             },
             selectedBreakdown: {
