@@ -641,6 +641,9 @@
             }
         },
         watch: {
+            value: function() {
+                this.determineActiveTabId();
+            },
             hasAllOptionsTab: function() {
                 this.determineActiveTabId();
             },
