@@ -363,47 +363,47 @@
         hasNoUsersToSendPushNotification: function(infoDto) {
             return infoDto.count === 0;
         },
-        isNoPushCredentialsError: function(error) {
-            if (error && error.responseJSON) {
-                return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
-                    return message === 'No push credentials in db';
-                });
-            }
-            return false;
-        },
-        hasNoAndroidCredentialsError: function(error) {
-            if (error && error.responseJSON) {
-                return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
-                    return message === 'No push credentials for platform a';
-                });
-            }
-            return false;
-        },
-        hasNoIosCredentialsError: function(error) {
-            if (error && error.responseJSON) {
-                return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
-                    return message === 'No push credentials for platform i';
-                });
-            }
-            return false;
-        },
-        isServerError: function(error) {
-            if (error && error.responseJSON) {
-                return error.responseJSON.kind === 'ServerError';
-            }
-            return false;
-        },
-        isNoUsersFoundError: function(error) {
-            return error.message === 'No users were found from selected configuration';
-        },
-        getFirstErrorMessageIfFound: function(response) {
+        isServerError: function(response) {
             if (response && response.responseJSON) {
-                if (response.responseJSON.errors && response.responseJSON.errors.length) {
-                    return response.responseJSON.errors[0];
-                }
-                return null;
+                return response.responseJSON.kind === 'ServerError';
+            }
+            return false;
+        },
+        isValidationError: function(response) {
+            if (response && response.responseJSON) {
+                return response.responseJSON.errors && response.responseJSON.errors.length && response.responseJSON.kind === 'ValidationError';
+            }
+            return false;
+        },
+        isCommonError: function(response) {
+            if (response && response.responseJSON) {
+                return response.responseJSON && response.responseJSON.result;
+            }
+            return false;
+        },
+        getFirstValidationErrorMessageIfFound: function(response) {
+            if (this.isValidationError(response)) {
+                return response.responseJSON.errors[0];
             }
             return null;
+        },
+        getCommonErrorMessageIfFound: function(response) {
+            if (this.isCommonError(response)) {
+                return response.responseJSON.result;
+            }
+            return null;
+        },
+        getErrorMessage: function(error) {
+            if (this.isServerError(error)) {
+                return 'Server error occured. Please try again later.';
+            }
+            if (this.isValidationError(error)) {
+                return this.getFirstValidationErrorMessageIfFound(error);
+            }
+            if (this.isCommonError(error)) {
+                return this.getCommonErrorMessageIfFound(error);
+            }
+            return 'Unknown error occurred. Please try again later.';
         },
         convertDateTimeToMS: function(datetime) {
             var result = 0;
@@ -523,24 +523,30 @@
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
     countlyPushNotification.api = {
         findById: function(id) {
+            var data = {
+                _id: id,
+                app_id: countlyCommon.ACTIVE_APP_ID
+            };
             return CV.$.ajax({
                 type: "GET",
                 url: window.countlyCommon.API_URL + "/o/push/message/GET",
-                data: {
-                    _id: id,
-                },
+                data: data,
                 contentType: "application/json",
             }, {disableAutoCatch: true});
         },
         findAll: function(data) {
+            data.app_id = countlyCommon.ACTIVE_APP_ID;
             return CV.$.ajax({
-                type: "POST",
+                type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/push/message/all",
                 data: data,
                 dataType: "json"
             }, {disableAutoCatch: true});
         },
-        getDashboard: function(data) {
+        getDashboard: function() {
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID
+            };
             return CV.$.ajax({
                 type: "GET",
                 url: window.countlyCommon.API_URL + '/o/push/dashboard',
@@ -549,6 +555,7 @@
             }, {disableAutoCatch: true});
         },
         delete: function(data) {
+            data.app_id = countlyCommon.ACTIVE_APP_ID;
             return CV.$.ajax({
                 method: 'GET',
                 url: window.countlyCommon.API_URL + '/i/push/message/remove',
@@ -560,7 +567,7 @@
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "POST",
-                    url: window.countlyCommon.API_URL + '/i/push/message/create',
+                    url: window.countlyCommon.API_URL + '/i/push/message/create?app_id=' + countlyCommon.ACTIVE_APP_ID,
                     data: JSON.stringify(dto),
                     contentType: "application/json",
                     success: function(response) {
@@ -568,15 +575,11 @@
                             reject(new Error(response.error));
                             return;
                         }
-                        if (response.result.errors) {
-                            reject(response.result.errors);
-                            return;
-                        }
                         resolve();
                     },
-                    error: function() {
-                        // TODO:log error
-                        reject(new Error('Unknown error occurred.Please try again later.'));
+                    error: function(error) {
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
                     }
                 }, {disableAutoCatch: true});
             });
@@ -593,20 +596,11 @@
                             reject(new Error(response.error));
                             return;
                         }
-                        if (response.result.errors) {
-                            reject(response.result.errors);
-                            return;
-                        }
                         resolve();
                     },
-                    error: function(errorResponse) {
-                        // TODO:log error
-                        var firstErrorMessage = countlyPushNotification.helper.getFirstErrorMessageIfFound(errorResponse);
-                        if (firstErrorMessage) {
-                            reject(new Error(firstErrorMessage));
-                            return;
-                        }
-                        reject(new Error('Unknown error occurred.Please try again later.'));
+                    error: function(error) {
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
                     }
                 }, {disableAutoCatch: true});
             });
@@ -615,7 +609,7 @@
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "POST",
-                    url: window.countlyCommon.API_URL + '/i/push/message/update',
+                    url: window.countlyCommon.API_URL + '/i/push/message/update?app_id=' + countlyCommon.ACTIVE_APP_ID,
                     data: JSON.stringify(dto),
                     contentType: "application/json",
                     success: function(response) {
@@ -623,15 +617,11 @@
                             reject(new Error(response.error));
                             return;
                         }
-                        if (response.result.errors) {
-                            reject(response.result.errors);
-                            return;
-                        }
                         resolve();
                     },
-                    error: function() {
-                        // TODO:log error
-                        reject(new Error('Unknown error occurred.Please try again later.'));
+                    error: function(error) {
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
                     }
                 }, {disableAutoCatch: true});
             });
@@ -640,46 +630,35 @@
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "POST",
-                    url: window.countlyCommon.API_URL + '/o/push/message/estimate',
+                    url: window.countlyCommon.API_URL + '/o/push/message/estimate?app_id=' + countlyCommon.ACTIVE_APP_ID,
                     data: JSON.stringify(data),
                     contentType: "application/json",
                     success: function(response) {
                         if (countlyPushNotification.helper.hasNoUsersToSendPushNotification(response)) {
-                            reject(new Error('No users were found from selected configuration'));
+                            reject(new Error('No users were found from selected configuration.'));
                             return;
                         }
                         if (response.error) {
-                            reject(new Error('Unknown error occurred.Please try again later.'));
-                            return;
+                            reject(new Error(response.error));
                         }
                         resolve(response);
                     },
                     error: function(error) {
-                        // TODO:log error
-                        if (countlyPushNotification.helper.hasNoAndroidCredentialsError(error)) {
-                            reject(new Error('No push notification credentials were found for Android'));
-                            return;
-                        }
-                        if (countlyPushNotification.helper.hasNoIosCredentialsError(error)) {
-                            reject(new Error('No push notification credentials were found for IOS'));
-                            return;
-                        }
-                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
-                            reject(new Error('No push notification credentials were found'));
-                            return;
-                        }
-                        reject(new Error('Unknown error occurred. Please try again later.'));
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
                     }
                 }, {disableAutoCatch: true});
             });
         },
         getMime: function(url) {
+            var data = {
+                url: url,
+                app_id: countlyCommon.ACTIVE_APP_ID
+            };
             return CV.$.ajax({
                 method: 'GET',
                 url: window.countlyCommon.API_URL + '/o/push/mime',
-                data: {
-                    url: url
-                },
+                data: data,
             }, {disableAutoCatch: true});
         },
         findAllUserProperties: function() {
@@ -701,7 +680,7 @@
         updateAppConfig: function(config, options) {
             return CV.$.ajax({
                 type: "POST",
-                url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
+                url: countlyCommon.API_PARTS.apps.w + '/update/plugins?app_id=' + options.app_id,
                 data: {
                     args: JSON.stringify(config),
                     app_id: options.app_id
@@ -2046,12 +2025,9 @@
             });
         },
         fetchAll: function(type) {
-            var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-            };
-            Object.assign(data, this.getTypeUrlParameter(type));
+            var self = this;
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.findAll(data)
+                countlyPushNotification.api.findAll(self.getTypeUrlParameter(type))
                     .then(function(response) {
                         resolve(countlyPushNotification.mapper.incoming.mapRows(response));
                     })
@@ -2095,11 +2071,8 @@
             });
         },
         fetchDashboard: function(type) {
-            var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-            };
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.getDashboard(data)
+                countlyPushNotification.api.getDashboard()
                     .then(function(response) {
                         resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));
                     }).catch(function(error) {
