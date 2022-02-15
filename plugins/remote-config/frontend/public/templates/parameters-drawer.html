@@ -7,11 +7,14 @@
   <template v-slot:default="drawerScope">
     <cly-form-step id="parameters-drawer">
       <div class="cly-vue-drawer-step__section">
-        <cly-form-field name="parameter-key" :subheading="i18n('remote-config.parameter-key.description')" :label="i18n('remote-config.parameter-key')" rules="required">
+        <cly-form-field name="parameter-key" v-slot="validation" :subheading="i18n('remote-config.parameter-key.description')" :label="i18n('remote-config.parameter-key')" rules="required|regex:^[a-zA-Z_][a-zA-Z0-9_]*$">
           <el-input
             v-model="drawerScope.editedObject.parameter_key"
             :placeholder="i18n('remote-config.parameter-key.placeholder')">
           </el-input>
+          <div v-if="validation.errors.length > 0" class="text-small color-red-100 bu-pt-1">
+            {{i18n('remote-config.param-key-error')}}
+          </div>
         </cly-form-field>
         <div class="bu-pt-3 bu-mt-2 bu-pb-1">
           <el-checkbox class="text-smallish"
