@@ -602,6 +602,8 @@
     &__border {
         width: 100%;
         margin-left: 0px !important;
+        padding: 12px !important;
+        
         .el-radio__label {
             font-size: typography.$text-button-size;
             line-height: 16px;
