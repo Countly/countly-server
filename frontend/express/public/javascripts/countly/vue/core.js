@@ -699,11 +699,13 @@
                 },
                 methods: {
                     handleClyError: function(payload) {
-                        CountlyHelpers.notify({
-                            title: _i18n("common.error"),
-                            message: payload.message,
-                            type: "error"
-                        });
+                        if (countlyCommon.DEBUG) {
+                            CountlyHelpers.notify({
+                                title: _i18n("common.error"),
+                                message: payload.message,
+                                type: "error"
+                            });
+                        }
                     },
                     handleClyRefresh: function() {
                         this.$root.$emit("cly-refresh", {reason: "dateChange"});
