@@ -390,12 +390,21 @@
 
 .cly-vue-push-notification-drawer {
 
+    &__section {
+        padding: 16px 0px;
+    }
+
     &__input-label {
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
         color: map.get(colors.$colors,"cool-gray-100");
     }
+
+    // &__link--button:hover {
+    //     border-color: inherit;
+    //     background-color: inherit;
+    // }
 
     &__input-description {
         font-size: typography.$text-small-size;
@@ -407,7 +416,7 @@
 
     &__input-suffix {
         height:100%;
-        color: map.get(colors.$colors,"text-custom-1-active");
+        color: map.get(colors.$colors,"cool-gray-50");
     }
 
     //platform only
@@ -452,28 +461,31 @@
     }
 
     &__subsection-left {
-        background: #F8FAFD; 
+        background: #FFFFFF; 
         border-bottom-right-radius: 0px;
         border-top-right-radius: 0px;  
         border-bottom-left-radius: 6px;
         border-top-left-radius: 6px;
         border: 1px solid #E2E4E8;
         min-width: 200px;
-        height: 329px;
         overflow-y: auto;
     }
 
     &__subsection-left-row-active {
-        background:#e1e1e1;
+        background:#F6F6F6;
     }
 
     &__subsection-left-row:hover {
-        background:darkgrey;
+        background:#cecece;
     }
 
     &__subsection-left-list-item {
         list-style: none;
         width: 100%;
+        font-size: 13px;
+        line-height: 16px;
+        font-weight: normal;
+        color: #333C48;
 
         &:hover {
             cursor: pointer;
@@ -487,12 +499,20 @@
         border-top-left-radius: 0px;  
         border-bottom-right-radius: 6px;
         border-top-right-radius: 6px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     &__subsection-border {
         border: 1px solid #E2E4E8;
         background: #F8FAFD;
         border-radius: 6px; 
+        padding-top: 12px;
+        padding-bottom: 12px;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     &__review-header {
@@ -519,8 +539,9 @@
 
     &__section-group {
         border-radius: 6px;
-        border: 1px solid #E2E4E8;
-        background: #F8FAFD;
+        background: map.get(colors.$colors,"cool-gray-10");
+        padding-left: 16px !important;
+        padding-right: 16px !important;
     }
 }
 
@@ -529,6 +550,14 @@
 .cly-vue-push-notification-large-radio-button-with-description {
     &__container {
         flex-basis: 0;
+        height: 100px;
+
+        label {
+            .el-radio__input {
+                vertical-align: top;
+                margin-top: 8px;
+            }
+        }
     }
 
     &__button {
@@ -539,7 +568,7 @@
     &__title {
         display: inline-block;
         color: map.get(colors.$colors,"text-primary");
-        white-space: pre-wrap;
+        white-space: break-spaces;
     }
 
     &__content {
@@ -573,6 +602,8 @@
     &__border {
         width: 100%;
         margin-left: 0px !important;
+        padding: 12px !important;
+        
         .el-radio__label {
             font-size: typography.$text-button-size;
             line-height: 16px;

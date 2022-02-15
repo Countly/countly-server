@@ -17,11 +17,6 @@
             description: {
                 type: String,
                 required: false,
-            },
-            hasTopMargin: {
-                type: Boolean,
-                required: false,
-                default: false,
             }
         },
         data: function() {
