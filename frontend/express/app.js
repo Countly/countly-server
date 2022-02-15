@@ -1238,7 +1238,25 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         res.header('Expires', '0');
                         res.header('Pragma', 'no-cache');
                         var config = plugins.getConfig("security");
-                        res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false, password_min: config.password_min}});
+                        res.render('reset', {
+                            documentationLink: req.countly.documentationLink,
+                            helpCenterLink: req.countly.helpCenterLink,
+                            feedbackLink: req.countly.feedbackLink,
+                            featureRequestLink: req.countly.featureRequestLink,
+                            languages: languages,
+                            countlyFavicon: req.countly.favicon,
+                            countlyTitle: req.countly.title,
+                            countlyPage: req.countly.page,
+                            "csrf": req.csrfToken(),
+                            "prid": req.params.prid,
+                            "message": req.query.message || "",
+                            path: countlyConfig.path || "",
+                            cdn: countlyConfig.cdn || "",
+                            "newinvite": passwordReset.newInvite,
+                            themeFiles: req.themeFiles,
+                            inject_template: req.template,
+                            security: {autocomplete: config.password_autocomplete || false, password_min: config.password_min}
+                        });
                     }
                 }
                 else {
