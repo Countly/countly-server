@@ -1278,7 +1278,7 @@
         watch: {
             isDrawerOpen: function(value) {
                 if (value) {
-                    this.openDrawer("pushNotificationDrawer");
+                    this.openDrawer("pushNotificationDrawer", {});
                 }
             }
         },
@@ -1463,7 +1463,7 @@
         watch: {
             isDrawerOpen: function(value) {
                 if (value) {
-                    this.openDrawer("pushNotificationDrawer");
+                    this.openDrawer("pushNotificationDrawer", {});
                 }
             }
         },
@@ -2339,7 +2339,7 @@
             command: "CREATE_PUSH_NOTIFICATION",
             component: CreateMessageDropdownItemWrapper,
             click: function() {
-                this.openDrawer("pushNotificationDrawer");
+                this.openDrawer("pushNotificationDrawer", {});
             }
         };
     }
