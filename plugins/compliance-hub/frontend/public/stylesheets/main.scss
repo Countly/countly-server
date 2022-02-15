@@ -14,7 +14,16 @@
     .cly-vue-chart-legend__line {
         margin-top: 12px;
     }
+    
 }
 .cly-vue-compliance__consent_history_expanded_column {
     height: 16px;
+}
+.cly-vue-compliance__consent_history {
+    .el-table__expanded-cell {
+        padding-left: 68px !important;
+        padding-top: 32px !important;
+        padding-bottom: 32px !important;
+    }
+
 }
