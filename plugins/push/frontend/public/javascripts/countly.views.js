@@ -537,6 +537,9 @@
                 if (this.userCommand === this.UserCommandEnum.EDIT) {
                     promiseMethod = this.update;
                 }
+                if (this.userCommand === this.UserCommandEnum.EDIT_REJECT) {
+                    promiseMethod = this.save;
+                }
                 if (this.userCommand === this.UserCommandEnum.CREATE) {
                     promiseMethod = this.save;
                 }
@@ -1173,6 +1176,10 @@
                     this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
                 }
+                case this.UserCommandEnum.EDIT_REJECT: {
+                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    break;
+                }
                 case this.UserCommandEnum.CREATE: {
                     this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
@@ -1193,6 +1200,9 @@
             },
             shouldShowEditDraftUserCommand: function(status) {
                 return status === this.StatusEnum.DRAFT;
+            },
+            shouldShowEditRejectUserCommand: function(status) {
+                return status === this.StatusEnum.REJECT;
             },
             shouldShowApproveUserCommand: function(status) {
                 return status === this.StatusEnum.PENDING_APPROVAL;
@@ -1228,6 +1238,9 @@
                 }
                 case this.StatusEnum.FAILED: {
                     return "red";
+                }
+                case this.StatusEnum.REJECT: {
+                    return "yellow";
                 }
                 default: {
                     return "#FFFFFF";
@@ -1508,6 +1521,10 @@
                     this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
                 }
+                case this.UserCommandEnum.EDIT_REJECT: {
+                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    break;
+                }
                 case this.UserCommandEnum.CREATE: {
                     this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
@@ -1528,6 +1545,9 @@
             },
             shouldShowEditDraftUserCommand: function(status) {
                 return status === this.StatusEnum.DRAFT;
+            },
+            shouldShowEditRejectUserCommand: function(status) {
+                return status === this.StatusEnum.REJECT;
             },
             shouldShowApproveUserCommand: function(status) {
                 return status === this.StatusEnum.PENDING_APPROVAL;
@@ -1563,6 +1583,9 @@
                 }
                 case this.StatusEnum.FAILED: {
                     return "red";
+                }
+                case this.StatusEnum.REJECT: {
+                    return "yellow";
                 }
                 default: {
                     return "#FFFFFF";

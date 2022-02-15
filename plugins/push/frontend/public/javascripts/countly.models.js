@@ -48,7 +48,8 @@
         APPROVE: 'approve',
         EDIT_DRAFT: 'edit_draft',
         CREATE: 'create',
-        EDIT: 'edit'
+        EDIT: 'edit',
+        EDIT_REJECT: 'edit_reject',
     });
     var MediaTypeEnum = Object.freeze({
         IMAGE: 'image',
@@ -147,6 +148,7 @@
     var statusOptions = {};
     statusOptions[StatusEnum.CREATED] = {label: "Created", value: StatusEnum.CREATED};
     statusOptions[StatusEnum.PENDING_APPROVAL] = {label: "Waiting for approval", value: StatusEnum.PENDING_APPROVAL};
+    statusOptions[StatusEnum.REJECT] = {label: "Rejected", value: StatusEnum.REJECT};
     statusOptions[StatusEnum.DRAFT] = {label: "Draft", value: StatusEnum.DRAFT};
     statusOptions[StatusEnum.SCHEDULED] = {label: "Scheduled", value: StatusEnum.SCHEDULED};
     statusOptions[StatusEnum.SENDING] = {label: "Sending", value: StatusEnum.SENDING};
@@ -881,6 +883,9 @@
                 }, []);
             },
             mapStatus: function(dto) {
+                if (dto.status === 'inactive' && dto.info.rejected) {
+                    return StatusEnum.REJECT;
+                }
                 if (dto.status === 'inactive') {
                     return StatusEnum.PENDING_APPROVAL;
                 }
