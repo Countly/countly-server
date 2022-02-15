@@ -116,7 +116,7 @@
             type: {
                 type: String,
                 validator: function(value) {
-                    return (["session", "events", "user-analytics"].indexOf(value) > -1) ? true : false;
+                    return (["session", "events", "user-analytics", "technology", "geo"].indexOf(value) > -1) ? true : false;
                 },
                 required: true
             },
@@ -280,8 +280,6 @@
                     }
                     break;
                 }
-
-
                 return breakdowns;
             },
             selectedBreakdown: {

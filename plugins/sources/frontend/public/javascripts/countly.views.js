@@ -401,7 +401,8 @@
                     apps: [],
                     visualization: "table",
                     custom_period: "30days",
-                    metrics: ["t"]
+                    metrics: ["t"],
+                    bar_color: 1
                 };
             },
             beforeSaveFn: function() {

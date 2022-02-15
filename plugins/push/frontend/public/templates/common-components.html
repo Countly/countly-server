@@ -337,25 +337,27 @@
             </div>
             <div>
                 <template v-if="pushNotification.type === TypeEnum.ONE_TIME">
-                    <details-tab-row :label="i18n('push-notification-details.targeted-users')"> 
-                        <template v-if="pushNotification[TypeEnum.ONE_TIME].targeting === TargetingEnum.ALL">
+                    <template v-if="pushNotification[TypeEnum.ONE_TIME].targeting === TargetingEnum.ALL">
+                        <details-tab-row :label="i18n('push-notification-details.targeted-users')"> 
                             {{targetingOptions[pushNotification[TypeEnum.ONE_TIME].targeting].label}}
-                        </template>
-                        <template v-else>
+                        </details-tab-row>
+                    </template>
+                    <template v-else>
+                        <details-tab-row :label="i18n('push-notification-details.targeted-users')"> 
                             <div class="bu-is-flex bu-is-flex-direction-column">
                                 <div class="bu-level" v-for="cohortName in previewCohorts">
                                     {{cohortName}}
                                 </div>
                             </div>
-                        </template>
-                    </details-tab-row>
-                    <details-tab-row :label="i18n('push-notification-details.geolocation')"> 
-                        <div class="bu-is-flex bu-is-flex-direction-column">
-                            <div class="bu-level" v-for="locationName in pushNotification.locations">
-                                {{locationName}}
+                        </details-tab-row>
+                        <details-tab-row :label="i18n('push-notification-details.geolocation')"> 
+                            <div class="bu-is-flex bu-is-flex-direction-column">
+                                <div class="bu-level" v-for="locationName in pushNotification.locations">
+                                    {{locationName}}
+                                </div>
                             </div>
-                        </div>
-                    </details-tab-row>
+                        </details-tab-row>
+                    </template>
                     <details-tab-row :label="i18n('push-notification-details.when-to-determine')" :value="audienceSelectionOptions[pushNotification.audienceSelection].label"> </details-tab-row>
                 </template>
                 <template v-if="pushNotification.type === TypeEnum.AUTOMATIC">

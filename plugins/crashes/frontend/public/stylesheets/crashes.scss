@@ -354,4 +354,17 @@
 	.crash-icon-color-gray {
 		color: #A7AEB8;
 	}
+
+	.cly-vue-header {
+		&__level {
+			align-items: flex-start !important;
+		}
+	}
+
+	.el-table {
+		&__expanded-cell {
+			padding-left: 20px !important;
+			padding-right: 20px !important;
+		}
+	}
 }

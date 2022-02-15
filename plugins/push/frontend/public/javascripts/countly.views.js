@@ -1064,7 +1064,7 @@
                 if (!this.totalAppUsers) {
                     return 0;
                 }
-                return Math.ceil(this.enabledUsers / this.totalAppUsers);
+                return parseInt(this.formatPercentage(this.enabledUsers / this.totalAppUsers));
             },
             xAxisPushNotificationPeriods: function() {
                 return this.$store.state.countlyPushNotification.main.dashboard.periods[this.selectedPeriodFilter];
@@ -1418,9 +1418,6 @@
                     show: false
                 };
             },
-            totalAppUsers: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.total;
-            },
             isLoading: function() {
                 return this.$store.getters['countlyPushNotification/details/isLoading'];
             },
@@ -1444,9 +1441,6 @@
             },
             userCommand: function() {
                 return this.$store.state.countlyPushNotification.details.userCommand;
-            },
-            dashboard: function() {
-                return this.pushNotification.dashboard;
             },
             selectedLocaleFilter: {
                 get: function() {
@@ -1814,6 +1808,23 @@
                 this.resetConfig();
                 this.reconcilate();
             },
+            isKeyEmpty: function(platform) {
+                if (platform === this.PlatformEnum.ANDROID) {
+                    return !this.viewModel[platform].firebaseKey;
+                }
+                if (platform === this.PlatformEnum.IOS) {
+                    if (this.iosAuthConfigType === countlyPushNotification.service.IOSAuthConfigTypeEnum.P8) {
+                        return !(this.viewModel[platform].p8KeyFile || this.viewModel[platform].keyId || this.viewModel[platform].teamId || this.viewModel[platform].bundleId);
+                    }
+                    if (this.iosAuthConfigType === countlyPushNotification.service.IOSAuthConfigTypeEnum.P12) {
+                        return !(this.viewModel[platform].p12KeyFile || this.viewModel[platform].passphrase);
+                    }
+                }
+                if (platform === this.PlatformEnum.HUAWEI) {
+                    return !(this.viewModel[platform].appId || this.viewModel[platform].appSecret);
+                }
+                throw new Error('Unknown key platform, received:' + platform);
+            },
             onDeleteKey: function(platformKey) {
                 this.selectedKeyToDelete = platformKey;
                 CountlyHelpers.confirm('', 'danger', this.onConfirmCallback, ['Cancel', 'I understand, delete this key'], {title: 'Delete key'});
@@ -1834,6 +1845,7 @@
                 this.viewModel[platform].authType = this.iosAuthConfigType;
                 this.$emit('change', 'push' + '.' + platformDto, null);
                 this.isIOSConfigTouched = false;
+                this.uploadedIOSKeyFilename = "";
             },
             deleteHuaweiKey: function() {
                 var platform = this.PlatformEnum.HUAWEI;
@@ -1841,6 +1853,7 @@
                 this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.$emit('change', 'push' + '.' + platformDto, null);
+                this.isHuaweiConfigTouched = false;
             },
             deleteKeyOnCofirm: function() {
                 if (this.selectedKeyToDelete === this.PlatformEnum.ANDROID) {
@@ -1858,7 +1871,7 @@
                 if (!this.selectedKeyToDelete) {
                     return;
                 }
-                throw new Error('Unknown platform key, ' + this.selectedKeyToDelete);
+                throw new Error('Unknown key platform to delete, received:' + this.selectedKeyToDelete);
             },
             onConfirmCallback: function(isConfirmed) {
                 if (isConfirmed) {

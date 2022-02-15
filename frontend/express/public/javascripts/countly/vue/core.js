@@ -224,7 +224,13 @@
                         }
                     }
                 }
-                return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], "data": series, stack: "A"}]};
+
+                if (widgetData.bar_color && widgetData.bar_color > 0) {
+                    return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], color: countlyCommon.GRAPH_COLORS[this.data.bar_color - 1], "data": series, stack: "A"}]};
+                }
+                else {
+                    return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], "data": series, stack: "A"}]};
+                }
             },
             calculatePieGraphFromWidget: function(widgetData, namingMap) {
                 widgetData = widgetData || {};
@@ -236,13 +242,17 @@
                     dd = dd[widgetData.apps[0]] || {};
                 }
                 var metric = widgetData.metrics[0];
+                var total = 0;
+                if (dd.total && dd.total[metric]) {
+                    total = dd.total[metric];
+                }
                 return {
                     series: [
                         {
                             name: namingMap[metric],
                             data: dd.graph,
                             label: {
-                                formatter: "{a|" + namingMap[metric] + "}\n" + (countlyCommon.getShortNumber(dd) || 0),
+                                formatter: "{a|" + namingMap[metric] + "}\n" + (countlyCommon.getShortNumber(total) || 0),
                                 fontWeight: 500,
                                 fontSize: 16,
                                 fontFamily: "Inter",
@@ -270,7 +280,6 @@
                 return value;
             }
         }
-
     };
     _mixins.DashboardsHelpersMixin = DashboardsHelpersMixin;
 
@@ -694,11 +703,13 @@
                 },
                 methods: {
                     handleClyError: function(payload) {
-                        CountlyHelpers.notify({
-                            title: _i18n("common.error"),
-                            message: payload.message,
-                            type: "error"
-                        });
+                        if (countlyCommon.DEBUG) {
+                            CountlyHelpers.notify({
+                                title: _i18n("common.error"),
+                                message: payload.message,
+                                type: "error"
+                            });
+                        }
                     },
                     handleClyRefresh: function() {
                         this.$root.$emit("cly-refresh", {reason: "dateChange"});

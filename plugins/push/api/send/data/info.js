@@ -23,6 +23,10 @@ class Info extends Validatable {
      * @param {string}      data.removedByName  full name of a user who deleted this mesage
      * @param {Date}        data.approved       date of approval (push_approver plugin)
      * @param {string}      data.approvedBy     user who approved (push_approver plugin)
+     * @param {string}      data.approvedByName name of the user who approved (push_approver plugin)
+     * @param {Date}        data.rejectedAt     date of rejection (push_approver plugin)
+     * @param {string}      data.rejectedBy     user who rejected (push_approver plugin)
+     * @param {string}      data.rejectedByName name of the user who rejected (push_approver plugin)
      * @param {Date}        data.started        date of first sending start
      * @param {Date}        data.startedLast    date of last sending start
      * @param {Date}        data.finished       date of state being set to Done
@@ -53,6 +57,10 @@ class Info extends Validatable {
             approved: {type: 'Date', required: false},
             approvedBy: {type: 'ObjectID', required: false},
             approvedByName: {type: 'String', required: false},
+            rejected: {type: 'Boolean', required: false},
+            rejectedAt: {type: 'Date', required: false},
+            rejectedBy: {type: 'ObjectID', required: false},
+            rejectedByName: {type: 'String', required: false},
             started: {type: 'Date', required: false},
             startedLast: {type: 'Date', required: false},
             finished: {type: 'Date', required: false},
@@ -447,6 +455,98 @@ class Info extends Validatable {
         }
         else {
             delete this._data.approvedByName;
+        }
+    }
+
+    /**
+     * Getter for rejected
+     * 
+     * @returns {boolean|undefined} message rejected
+     */
+    get rejected() {
+        return this._data.rejected;
+    }
+
+    /**
+     * Setter for rejected
+     * 
+     * @param {boolean|undefined} rejected message rejected
+     */
+    set rejected(rejected) {
+        if (typeof rejected === 'boolean') {
+            this._data.rejected = rejected;
+        }
+        else {
+            delete this._data.rejected;
+        }
+    }
+
+    /**
+     * Getter for rejected
+     * 
+     * @returns {Date|undefined} date of approval (push_approver plugin)
+     */
+    get rejectedAt() {
+        return this._data.rejectedAt;
+    }
+
+    /**
+     * Setter for rejected
+     * 
+     * @param {Date|number|string|undefined} rejectedAt date of approval (push_approver plugin)
+     */
+    set rejectedAt(rejectedAt) {
+        if (rejectedAt !== null && rejectedAt !== undefined) {
+            this._data.rejectedAt = toDate(rejectedAt);
+        }
+        else {
+            delete this._data.rejectedAt;
+        }
+    }
+
+    /**
+     * Getter for rejectedBy
+     * 
+     * @returns {string|undefined} user who rejected (push_approver plugin)
+     */
+    get rejectedBy() {
+        return this._data.rejectedBy;
+    }
+
+    /**
+     * Setter for rejectedBy
+     * 
+     * @param {string|undefined} rejectedBy user who rejected (push_approver plugin)
+     */
+    set rejectedBy(rejectedBy) {
+        if (rejectedBy !== null && rejectedBy !== undefined) {
+            this._data.rejectedBy = rejectedBy;
+        }
+        else {
+            delete this._data.rejectedBy;
+        }
+    }
+
+    /**
+     * Getter for rejectedByName
+     * 
+     * @returns {string|undefined} user who rejected (push_approver plugin)
+     */
+    get rejectedByName() {
+        return this._data.rejectedByName;
+    }
+
+    /**
+     * Setter for rejectedByName
+     * 
+     * @param {string|undefined} rejectedByName user who rejected (push_approver plugin)
+     */
+    set rejectedByName(rejectedByName) {
+        if (rejectedByName !== null && rejectedByName !== undefined) {
+            this._data.rejectedByName = rejectedByName;
+        }
+        else {
+            delete this._data.rejectedByName;
         }
     }
 

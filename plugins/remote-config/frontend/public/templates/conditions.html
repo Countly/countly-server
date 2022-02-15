@@ -28,6 +28,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="condition_definition" :label="i18n('remote-config.definition')">
+          <template v-slot:default="rowScope">
+            <div v-html="rowScope.row.condition_definition"></div>
+          </template>
         </el-table-column>
         <el-table-column prop="seed_value" :label="i18n('remote-config.seed-value')">
           <template v-slot:default="rowScope">
