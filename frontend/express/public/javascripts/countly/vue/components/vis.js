@@ -2274,14 +2274,14 @@
                 }
                 return Math.max(this.minMarkerRadius, (value / this.largestMarkerValue) * this.maxMarkerRadius);
             },
-			getMarkerFlag:function(code){
-				if(this.detailMode === "cities"){
-					return false;
-				}
-				else {
-					return "/images/flags/"+code.toLowerCase()+".png";
-				}
-			},
+            getMarkerFlag: function(code) {
+                if (this.detailMode === "cities") {
+                    return false;
+                }
+                else {
+                    return "/images/flags/" + code.toLowerCase() + ".png";
+                }
+            },
             getMarkerTooltipTitle: function(code) {
                 switch (this.currentViewType) {
                 case "main":
