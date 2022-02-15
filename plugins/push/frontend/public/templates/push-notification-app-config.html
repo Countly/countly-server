@@ -2,30 +2,34 @@
     <div>
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>iOS Settings </h3>
-            <el-button type="danger" @click="onDeleteKey(PlatformEnum.IOS)">Delete</el-button>
+            <el-button type="danger" @click="onDeleteKey(PlatformEnum.IOS)" :disabled="isKeyEmpty(PlatformEnum.IOS)">Delete</el-button>
         </div>        
         <cly-inline-form-field label="Authentication type">
             <el-select  :value="iosAuthConfigType" @change="onIOSAuthTypeChange">
                 <el-option :key="iosAuthType.value" :value="iosAuthType.value" :label="iosAuthType.label" v-for="iosAuthType in iosAuthConfigTypeOptions"></el-option>
             </el-select>
         </cly-inline-form-field>
-            <cly-inline-form-field :label="iosAuthConfigType === IOSAuthConfigTypeEnum.P8 ? 'Key file (P8)' : 'Sandbox + Production certificate (P12)'">
-                <div class="bu-is-flex bu-is-flex-direction-column">
-                    <div class="bu-is-flex">
-                            <el-upload 
-                                ref="keyFileUploader"
-                                action=""
-                                :on-change="onKeyFileChange"
-                                :auto-upload="false"
-                                :show-file-list="false"
-                                accept="p8, p12">
-                                    <el-button size="small" type="text" class="bu-p-0">Choose File</el-button>
-                            </el-upload>
-                        <div class="bu-ml-5">{{uploadedIOSKeyFilename}}</div>
-                    </div>
-                    <div v-if="viewModel[PlatformEnum.IOS].hasKeyFile"> Key file ({{viewModel[PlatformEnum.IOS].authType}}) is already uploaded </div>
+        <cly-inline-form-field :label="iosAuthConfigType === IOSAuthConfigTypeEnum.P8 ? 'Key file (P8)' : 'Sandbox + Production certificate (P12)'">
+            <div class="bu-is-flex bu-is-flex-direction-column">
+                <div class="bu-is-flex">
+                    <validation-provider :rules="{required:isIOSConfigRequired}">
+                        <el-input v-model="uploadedIOSKeyFilename" style="display:none"></el-input>
+                        <el-upload
+                            ref="keyFileUploader"
+                            action=""
+                            :multiple="false"
+                            :on-change="onKeyFileChange"
+                            :auto-upload="false"
+                            :show-file-list="false"
+                            accept="p8, p12">
+                            <el-button size="small" type="text" class="bu-p-0">Choose File</el-button>
+                        </el-upload>
+                    </validation-provider>
+                    <div class="bu-ml-5">{{uploadedIOSKeyFilename}}</div>
                 </div>
-            </cly-inline-form-field>
+                <div v-if="viewModel[PlatformEnum.IOS].hasKeyFile"> Key file ({{viewModel[PlatformEnum.IOS].authType}}) is already uploaded </div>
+            </div>
+        </cly-inline-form-field>
         <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P8"> 
             <cly-inline-form-field label="Key ID" :rules="{required:isIOSConfigRequired}">
                 <el-input :value="viewModel[PlatformEnum.IOS].keyId" @input="onInput('keyId', $event, PlatformEnum.IOS)"></el-input>
@@ -47,7 +51,7 @@
 
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>Android (Google FM) </h3>
-            <el-button type="danger" @click="onDeleteKey(PlatformEnum.ANDROID)">Delete</el-button>
+            <el-button type="danger" @click="onDeleteKey(PlatformEnum.ANDROID)" :disabled="isKeyEmpty(PlatformEnum.ANDROID)">Delete</el-button>
         </div>        
         <cly-inline-form-field label="Firebase key">
             <el-input :value="viewModel[PlatformEnum.ANDROID].firebaseKey" @input="onInput('firebaseKey',$event,PlatformEnum.ANDROID)"></el-input>
@@ -55,7 +59,7 @@
 
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>Android (Huawei Push Kit) </h3>
-            <el-button type="danger" @click="onDeleteKey(PlatformEnum.HUAWEI)">Delete</el-button>
+            <el-button type="danger" @click="onDeleteKey(PlatformEnum.HUAWEI)" :disabled="isKeyEmpty(PlatformEnum.HUAWEI)">Delete</el-button>
         </div>        
         <cly-inline-form-field label="Huawei App ID" :rules="{required:isHuaweiConfigRequired}">
             <el-input :value="viewModel[PlatformEnum.HUAWEI].appId" @input="onInput('appId',$event,PlatformEnum.HUAWEI)"></el-input>

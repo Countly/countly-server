@@ -12,7 +12,7 @@
     </template>
   </cly-header>
   <cly-main>
-    <cly-datatable-n :rows="tableRows" class="cly-vue-remote-config-conditions-table"  :row-class-name="tableRowClassName">
+    <cly-datatable-n :rows="tableRows" :force-loading="isTableLoading" class="cly-vue-remote-config-conditions-table"  :row-class-name="tableRowClassName">
       <template v-slot="scope">
         <el-table-column  prop="condition_name" :label="i18n('remote-config.condition-name')" sortable="custom">
           <template v-slot="rowScope">
@@ -28,6 +28,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="condition_definition" :label="i18n('remote-config.definition')">
+          <template v-slot:default="rowScope">
+            <div v-html="rowScope.row.condition_definition"></div>
+          </template>
         </el-table-column>
         <el-table-column prop="seed_value" :label="i18n('remote-config.seed-value')">
           <template v-slot:default="rowScope">

@@ -140,18 +140,16 @@
 
             <cly-form-field name="dataType" :label="i18n('alert.Data_type')" rules="required">
                 <el-radio-group v-on:change="dataTypeSelected" v-model="drawerScope.editedObject.alertDataType" class="bu-is-flex alert-data-type-block">
-                    <el-radio-button v-for="(item, idx) in alertDataTypeOptions" :label="item.value" :disabled="drawerScope.editedObject._id && drawerScope.editedObject.alertDataType !== item.value">{{item.label}}</el-radio-button>
+                    <el-radio-button v-for="(item, idx) in alertDataTypeOptions" :key="idx" :label="item.value" :disabled="drawerScope.editedObject._id && drawerScope.editedObject.alertDataType !== item.value">{{item.label}}</el-radio-button>
                 </el-radio-group>
             </cly-form-field>
 
             <cly-form-field name="apps" :label="i18n('alert.For_Applications')" rules="required">
                 <cly-app-select 
                         class="bu-is-flex"
-                        v-on:input="appSelected"
-                        v-model="drawerScope.editedObject.selectedApps[idx]"
-                        v-for="(app, idx) in drawerScope.editedObject.selectedApps"
-                        :key="idx"
-                        :options="appsSelectorOption"
+                        @change="onAppChange"
+                        v-model="drawerScope.editedObject.selectedApps"
+                        :allowAll="allowAll"
                         >
                 </cly-app-select>
             </cly-form-field> 
@@ -172,11 +170,12 @@
                     <div class="bu-is-flex-grow-1 bu-mx-1">
                         <validation-provider name="alertDataSubType" rules="required" v-slot="v">
                             <cly-select-x
+                                :searchable="false"
                                :placeholder="i18n('alert.select-metric')"
                                mode="single-list"
                                v-on:change="alertDataSubTypeSelected"
                                v-model="drawerScope.editedObject.alertDataSubType"
-                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true, }"
+                               :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true, }"
                                :options="drawerScope.editedObject.alertDataType && alertDefine[drawerScope.editedObject.alertDataType].target || []">
                             </cly-select-x>
                         </validation-provider>

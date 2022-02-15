@@ -248,10 +248,7 @@
             };
         },
         beforeCreate: function() {
-            var self = this;
-            this.$store.dispatch('countlyEventsOverview/fetchEventsOverview').then(function() {
-                self.$store.dispatch("countlyEventsOverview/setTableLoading", false);
-            });
+            this.$store.dispatch('countlyEventsOverview/fetchEventsOverview');
         }
     });
 

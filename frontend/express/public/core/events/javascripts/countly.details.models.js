@@ -613,6 +613,10 @@
                                                 context.commit("setLimitAlerts", []);
                                                 context.commit("setSelectedEventsOverview", {});
                                                 context.commit("setLegendData", {});
+                                                context.commit('setLineChartData', {});
+                                                context.commit('setBarData', {});
+                                                context.commit('setAllEventsProcessed', {});
+                                                context.commit('setHasSegments', false);
                                                 CountlyHelpers.notify({
                                                     title: CV.i18n("common.error"),
                                                     message: CV.i18n("events.all.error"),

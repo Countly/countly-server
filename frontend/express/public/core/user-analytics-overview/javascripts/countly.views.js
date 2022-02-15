@@ -222,6 +222,7 @@ var GridComponent = countlyVue.views.create({
 
             var legend = {"type": "primary", data: []};
             var series = [];
+            var dates = [];
             var appIndex = 0;
             for (var app in this.data.dashData.data) {
                 for (var k = 0; k < this.data.metrics.length; k++) {
@@ -229,6 +230,9 @@ var GridComponent = countlyVue.views.create({
                     legend.data.push({"name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
                 }
                 for (var date in this.data.dashData.data[app]) {
+                    if (appIndex === 0) {
+                        dates.push(date);
+                    }
                     for (var kk = 0; kk < this.data.metrics.length; kk++) {
                         if (this.data.metrics[kk] === 'r') {
                             var vv = this.data.dashData.data[app][date].u - this.data.dashData.data[app][date].n;
@@ -241,10 +245,18 @@ var GridComponent = countlyVue.views.create({
                 }
                 appIndex++;
             }
-            return {
-                lineOptions: {"series": series},
-                lineLegend: legend
-            };
+            if (this.data.custom_period) {
+                return {
+                    lineOptions: {xAxis: { data: dates}, "series": series},
+                    lineLegend: legend
+                };
+            }
+            else {
+                return {
+                    lineOptions: {"series": series},
+                    lineLegend: legend
+                };
+            }
         },
         stackedBarOptions: function() {
             return this.calculateStackedBarOptionsFromWidget(this.data);
@@ -339,7 +351,8 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
                 metrics: [],
                 apps: [],
                 visualization: "",
-                breakdowns: ['overview']
+                breakdowns: ['overview'],
+                custom_period: "30days"
             };
         },
         beforeLoadFn: function(/*doc, isEdited*/) {
