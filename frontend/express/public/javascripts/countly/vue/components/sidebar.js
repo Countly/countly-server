@@ -510,7 +510,7 @@
                         },
                         {
                             name: "last-queries",
-                            icon: "fas fa-file-contract",
+                            icon: '<img src="images/icons/report-manager.svg"/>',
                             noSelect: true,
                             tooltip: "Report Manager"
                         }
