@@ -281,6 +281,10 @@
 	}
 }
 
+.el-tabs--top.el-tabs--card>.el-tabs__header .el-tabs__item:nth-child(2) {
+	padding: 0px;
+}
+
 .el-radio-group {
     &.is-full {
         display: flex;
