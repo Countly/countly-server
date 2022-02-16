@@ -219,7 +219,7 @@
                     "retention": CV.i18n("retention.retention") || "Retention",
                     "formulas": CV.i18n("calculated-metrics.formulas") || "Formulas",
                     "dbviewer": CV.i18n("dbviewer.title") || "DBViewer",
-                    "data-manager": jQuery.i18n.map["data-manager.plugin-title"] || "Data Manager",
+                    "data-manager": CV.i18n("data-manager.plugin-title") || "Data Manager",
                 },
                 availableRunTimeTypes: {
                     "all": CV.i18n("report-manager.all-types"),
