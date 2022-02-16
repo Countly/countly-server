@@ -700,6 +700,7 @@
                         resolve(response);
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     }
