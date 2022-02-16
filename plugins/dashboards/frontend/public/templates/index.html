@@ -16,8 +16,8 @@
                             <cly-date-picker-g class="bu-mr-3"></cly-date-picker-g>
                         </div>
                         <div class="bu-level-item">
-                            <a href="#/manage/reports/create/dashboard/dashboard._id">
-                                <el-button v-if="canUpdate" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
+                            <a :href="'#/manage/reports/create/dashboard/' + dashboard._id">
+                                <el-button v-if="canUpdate" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.create-email-reports')}}</el-button>
                             </a>
                         </div>
                         <div class="bu-level-item">
