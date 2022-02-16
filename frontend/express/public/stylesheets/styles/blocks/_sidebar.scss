@@ -106,6 +106,12 @@ $bg-color: #24292e;
         margin-top: 24px;
         font-size: t.$text-2xl-size;
         cursor: pointer;
+
+        .el-popover__reference {
+            &:hover {
+                color: map.get(c.$colors, "white") !important;
+            }
+        }
     }
 
     &__menu-option-toggle {
@@ -388,7 +394,10 @@ $bg-color: #24292e;
                 height: 20px;
                 width: 20px;
 
-                &:hover,
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/analytics-icon.svg");
+                }
+
                 &.cly-vue-sidebar__menu-option--selected {
                     background-image: url("../../../images/sidebar/selected/analytics-icon.svg");
                 }
@@ -399,7 +408,10 @@ $bg-color: #24292e;
                 height: 20px;
                 width: 20px;
 
-                &:hover,
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/dashboards-icon.svg");
+                }
+
                 &.cly-vue-sidebar__menu-option--selected {
                     background-image: url("../../../images/sidebar/selected/dashboards-icon.svg");
                 }
@@ -416,7 +428,10 @@ $bg-color: #24292e;
                 height: 20px;
                 width: 20px;
 
-                &:hover,
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/management.svg");
+                }
+
                 &.cly-vue-sidebar__menu-option--selected {
                     background-image: url("../../../images/sidebar/selected/management.svg");
                 }
@@ -427,7 +442,10 @@ $bg-color: #24292e;
                 height: 18px;
                 width: 20px;
 
-                &:hover,
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/report-manager.svg");
+                }
+
                 &.cly-vue-sidebar__menu-option--selected {
                     background-image: url("../../../images/sidebar/selected/report-manager.svg");
                 }
@@ -437,12 +455,28 @@ $bg-color: #24292e;
                 background-image: url("../../../images/sidebar/default/help-center.svg");
                 height: 25px;
                 width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/help-center.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/help-center.svg");
+                }
             }
 
             &-notifications {
                 background-image: url("../../../images/sidebar/default/notifications.svg");
                 height: 23px;
                 width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/notifications.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/notifications.svg");
+                }
             }
 
             &-toggle-left {
