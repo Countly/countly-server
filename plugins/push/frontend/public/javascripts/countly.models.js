@@ -2044,15 +2044,21 @@
                     },
                     dataType: "json",
                     success: function(response) {
-                        var result = response.aaData;
-                        if (cohortIdsList && cohortIdsList.length) {
-                            result = response.aaData.filter(function(cohort) {
-                                return cohortIdsList.some(function(cohortId) {
-                                    return cohort._id === cohortId;
+                        try {
+                            var result = response.aaData;
+                            if (cohortIdsList && cohortIdsList.length) {
+                                result = response.aaData.filter(function(cohort) {
+                                    return cohortIdsList.some(function(cohortId) {
+                                        return cohort._id === cohortId;
+                                    });
                                 });
-                            });
+                            }
+                            resolve(result);
                         }
-                        resolve(result);
+                        catch (error) {
+                            // TODO: log error
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                     },
                     error: function(error) {
                         reject(error);
@@ -2075,15 +2081,21 @@
                     },
                     dataType: "json",
                     success: function(response) {
-                        var targetLocations = countlyPushNotification.mapper.incoming.mapLocationTarget(response);
-                        if (locationIdsList && locationIdsList.length) {
-                            targetLocations = targetLocations.filter(function(targetLocationItem) {
-                                return locationIdsList.some(function(locationId) {
-                                    return targetLocationItem.id === locationId;
+                        try {
+                            var targetLocations = countlyPushNotification.mapper.incoming.mapLocationTarget(response);
+                            if (locationIdsList && locationIdsList.length) {
+                                targetLocations = targetLocations.filter(function(targetLocationItem) {
+                                    return locationIdsList.some(function(locationId) {
+                                        return targetLocationItem.id === locationId;
+                                    });
                                 });
-                            });
+                            }
+                            resolve(targetLocations);
                         }
-                        resolve(targetLocations);
+                        catch (error) {
+                            // TODO: log error
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                     },
                     error: function(error) {
                         reject(error);
@@ -2095,7 +2107,13 @@
             return new Promise(function(resolve, reject) {
                 countlyEventsOverview.service.fetchAllEvents()
                     .then(function(events) {
-                        resolve(countlyPushNotification.mapper.incoming.mapEvents(events.list));
+                        try {
+                            resolve(countlyPushNotification.mapper.incoming.mapEvents(events.list));
+                        }
+                        catch (error) {
+                            // TODO: log error
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                     }).catch(function(error) {
                         reject(error);
                     });
@@ -2106,7 +2124,13 @@
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.findAll(self.getTypeUrlParameter(type))
                     .then(function(response) {
-                        resolve(countlyPushNotification.mapper.incoming.mapRows(response));
+                        try {
+                            resolve(countlyPushNotification.mapper.incoming.mapRows(response));
+                        }
+                        catch (error) {
+                            // TODO: log error                            
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                     })
                     .catch(function(error) {
                         reject(error);
@@ -2119,7 +2143,14 @@
                 self.fetchUserProperties().then(function(userProperties) {
                     countlyPushNotification.api.findById(id).then(function(response) {
                         response.userProperties = userProperties;
-                        var model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
+                        var model = null;
+                        try {
+                            model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
+                        }
+                        catch (error) {
+                            // TODO: log error
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                         // TODO: do not add cohort and locations in the model, instead fetch when only it is needed (e.g. targeting tab, or drawer)
                         var cohorts = [];
                         if (model.type === TypeEnum.ONE_TIME) {
@@ -2152,7 +2183,13 @@
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.getDashboard()
                     .then(function(response) {
-                        resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));
+                        try {
+                            resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));
+                        }
+                        catch (error) {
+                            // TODO: log error
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                     }).catch(function(error) {
                         reject(error);
                     });
@@ -2161,7 +2198,13 @@
         fetchMediaMetadata: function(url) {
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.getMime(url).then(function(response) {
-                    resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(response));
+                    try {
+                        resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(response));
+                    }
+                    catch (error) {
+                        // TODO: log error
+                        reject(new Error(CV.i18n('push-notification.unknown-error')));
+                    }
                 }).catch(function(error) {
                     reject(error);
                 });
@@ -2193,14 +2236,20 @@
                 }
                 Promise.all([usersQuery ? countlyPushNotification.api.searchUsers(usersQuery, options) : Promise.resolve([]), self.fetchCohorts(testUsers.cohorts || [], false)])
                     .then(function(responses) {
-                        var usersList = responses[0];
-                        var cohortsList = responses[1];
+                        try {
+                            var usersList = responses[0];
+                            var cohortsList = responses[1];
 
-                        var users = usersList.aaData;
-                        var result = {};
-                        result[AddTestUserDefinitionTypeEnum.USER_ID] = users;
-                        result[AddTestUserDefinitionTypeEnum.COHORT] = cohortsList;
-                        resolve(result);
+                            var users = usersList.aaData;
+                            var result = {};
+                            result[AddTestUserDefinitionTypeEnum.USER_ID] = users;
+                            result[AddTestUserDefinitionTypeEnum.COHORT] = cohortsList;
+                            resolve(result);
+                        }
+                        catch (error) {
+                            // TODO: log error
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                     }).catch(function(error) {
                     // TODO: log error;
                         reject(error);
@@ -2244,10 +2293,17 @@
             }
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.estimate(data).then(function(response) {
-                    var localesDto = response.locales;
-                    localesDto.count = response.count;
-                    var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
-                    resolve({localizations: localizations, total: response.count, _id: response._id});
+                    try {
+                        var localesDto = response.locales;
+                        localesDto.count = response.count;
+                        var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
+                        resolve({localizations: localizations, total: response.count, _id: response._id});
+                    }
+                    catch (error) {
+                        // TODO: log error
+                        reject(new Error(CV.i18n('push-notification.unknown-error')));
+                    }
+
                 }).catch(function(error) {
                     // TODO:log error
                     reject(error);
