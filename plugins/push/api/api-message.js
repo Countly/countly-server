@@ -232,10 +232,6 @@ module.exports.update = async params => {
     msg.info.updated = new Date();
     msg.info.updatedBy = params.member._id;
     msg.info.updatedByName = params.member.full_name;
-    msg.info.rejected = undefined;
-    msg.info.rejectedAt = undefined;
-    msg.info.rejectedBy = undefined;
-    msg.info.rejectedByName = undefined;
 
     if (msg.is(State.Done)) {
         if (msg.triggerAutoOrApi()) {
@@ -255,6 +251,10 @@ module.exports.update = async params => {
         if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
             msg.status = Status.Created;
             msg.state = State.Created;
+            msg.info.rejected = null;
+            msg.info.rejectedAt = null;
+            msg.info.rejectedBy = null;
+            msg.info.rejectedByName = null;
             await msg.save();
             await msg.schedule(log, params);
         }
