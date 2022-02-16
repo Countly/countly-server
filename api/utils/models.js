@@ -273,7 +273,7 @@ class Mongoable extends Validatable {
      */
     async save() {
         let json = this.json;
-        await require('./common').db.collection(this.constructor.collection).save(json);
+        await require('./common').db.collection(this.constructor.collection).updateOne({_id: this._id}, {$set: json}, {upsert: true});
     }
 
     /**
