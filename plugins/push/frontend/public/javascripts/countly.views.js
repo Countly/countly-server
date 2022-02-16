@@ -419,10 +419,7 @@
                     }).catch(function(error) {
                         console.error(error);
                         self.setLocalizationOptions([]);
-                        CountlyHelpers.notify({
-                            message: error.message,
-                            type: "error"
-                        });
+                        CountlyHelpers.notify({ message: error.message, type: "error"});
                         resolve(false);
                     }).finally(function() {
                         self.setIsLoading(false);
@@ -512,16 +509,11 @@
                 }
                 promiseMethod().then(function() {
                     self.$refs.drawer.doClose();
-                    CountlyHelpers.notify({
-                        message: "Push notification message was successfully saved."
-                    });
+                    CountlyHelpers.notify({message: "Push notification message was successfully saved."});
                     self.$emit('save');
                 }).catch(function(error) {
                     console.error(error);
-                    CountlyHelpers.notify({
-                        message: error.message,
-                        type: "error"
-                    });
+                    CountlyHelpers.notify({message: error.message, type: "error"});
                 });
             },
             onSubmit: function(_, done) {
@@ -547,16 +539,11 @@
                 }
                 promiseMethod().then(function() {
                     done();
-                    CountlyHelpers.notify({
-                        message: "Push notification message was successfully saved."
-                    });
+                    CountlyHelpers.notify({ message: "Push notification message was successfully saved."});
                     self.$emit('save');
                 }).catch(function(error) {
                     console.error(error);
-                    CountlyHelpers.notify({
-                        message: error.message,
-                        type: "error"
-                    });
+                    CountlyHelpers.notify({ message: error.message, type: "error"});
                     done(true);
                 });
             },
@@ -564,15 +551,10 @@
                 var self = this;
                 this.isLoading = true;
                 this.sendToTestUsers().then(function() {
-                    CountlyHelpers.notify({
-                        message: "Push notification message was successfully sent to test users."
-                    });
+                    CountlyHelpers.notify({message: "Push notification message was successfully sent to test users."});
                 }).catch(function(error) {
                     console.error(error);
-                    CountlyHelpers.notify({
-                        message: error.message,
-                        type: "error"
-                    });
+                    CountlyHelpers.notify({ message: error.message, type: "error"});
                 }).finally(function() {
                     self.isLoading = false;
                 });
