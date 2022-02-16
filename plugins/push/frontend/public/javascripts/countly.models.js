@@ -417,7 +417,7 @@
             if (this.hasErrors(error)) {
                 return this.getFirstErrorMessageIfFound(error);
             }
-            return 'Unknown error occurred. Please try again later.';
+            return CV.i18n('push-notification.unknown-error');
         },
         convertDateTimeToMS: function(datetime) {
             var result = 0;
@@ -2120,6 +2120,7 @@
                     countlyPushNotification.api.findById(id).then(function(response) {
                         response.userProperties = userProperties;
                         var model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
+                        // TODO: do not add cohort and locations in the model, instead fetch when only it is needed (e.g. targeting tab, or drawer)
                         var cohorts = [];
                         if (model.type === TypeEnum.ONE_TIME) {
                             cohorts = model.cohorts;
@@ -2220,30 +2221,28 @@
                 var drillQuery = {did: {rgxcn: [idQuery]}};
                 countlyPushNotification.api.searchUsers(drillQuery, options)
                     .then(function(response) {
-                        if (response && response.aaData) {
-                            resolve(response.aaData.map(function(user) {
-                                return {_id: user._id, uid: user.uid};
-                            }));
-                            return;
-                        }
-                        reject('Unknown error occurred. Please try again later');
-                        // TODO:log error
+                        resolve(response.aaData);
                     }).catch(function(error) {
                         reject(error);
                     });
             });
         },
         estimate: function(pushNotificationModel, options) {
-            return new Promise(function(resolve, reject) {
+            var data = {
+                app: countlyCommon.ACTIVE_APP_ID,
+            };
+            try {
                 var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
-                var data = {
-                    app: countlyCommon.ACTIVE_APP_ID,
-                    platforms: platformsDto,
-                };
+                data.platforms = platformsDto;
                 var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel, options);
                 if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel, options) && filtersDto) {
                     data.filter = filtersDto;
                 }
+            }
+            catch (error) {
+                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
+            }
+            return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.estimate(data).then(function(response) {
                     var localesDto = response.locales;
                     localesDto.count = response.count;
@@ -2263,60 +2262,64 @@
             return countlyPushNotification.api.delete(data);
         },
         save: function(model, options) {
+            var dto = null;
             try {
-                var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+                dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
                 // TODO:log error
-                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
+                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.save(dto);
         },
         update: function(model, options) {
+            var dto = null;
             try {
-                var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+                dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
                 // TODO:log error
-                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
+                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.update(dto);
         },
         sendToTestUsers: function(model, options) {
+            var dto = null;
             try {
-                var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+                dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
                 // TODO:log error
-                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
+                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.sendToTestUsers(dto);
         },
         resend: function(model, options) {
+            var dto = null;
             try {
-                var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+                dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+                var resendUserFilter = {message: {$nin: [model._id]}};
+                if (!dto.filter) {
+                    dto.filter = {};
+                }
+                if (!dto.filter.user) {
+                    dto.filter.user = resendUserFilter;
+                }
+                else {
+                    if (typeof dto.filter.user === 'string') {
+                        dto.filter.user = JSON.parse(dto.filter.user);
+                    }
+                    if (dto.filter.user.$and) {
+                        dto.filter.user.push(resendUserFilter);
+                    }
+                    else {
+                        dto.filter.user.message = resendUserFilter.message;
+                    }
+                }
             }
             catch (error) {
                 // TODO:log error
-                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
-            }
-            var resendUserFilter = {message: {$nin: [model._id]}};
-            if (!dto.filter) {
-                dto.filter = {};
-            }
-            if (!dto.filter.user) {
-                dto.filter.user = resendUserFilter;
-            }
-            else {
-                if (typeof dto.filter.user === 'string') {
-                    dto.filter.user = JSON.parse(dto.filter.user);
-                }
-                if (dto.filter.user.$and) {
-                    dto.filter.user.push(resendUserFilter);
-                }
-                else {
-                    dto.filter.user.message = resendUserFilter.message;
-                }
+                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.save(dto);
         },
@@ -2327,14 +2330,14 @@
             return countlyPushNotificationApprover.service.approve(messageId);
         },
         updateTestUsers: function(testUsersModel, options) {
+            var appConfig = {push: {test: {}}};
             try {
                 var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(testUsersModel);
-                var appConfig = {push: {test: {}}};
                 appConfig.push.test = testDto;
             }
             catch (error) {
                 // TODO:log error
-                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
+                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.updateAppConfig(appConfig, options);
         }

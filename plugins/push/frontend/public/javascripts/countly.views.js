@@ -387,13 +387,6 @@
             setIsLoading: function(value) {
                 this.isLoading = value;
             },
-            dispatchUnknownErrorNotification: function() {
-                CountlyHelpers.notify({
-                    title: "Push Notification Error",
-                    message: "Unknown error occurred. Please try again later.",
-                    type: "error"
-                });
-            },
             getQueryFilter: function() {
                 if (!this.queryFilter) {
                     return {};
@@ -1327,7 +1320,6 @@
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 platformFilters: platformFilterOptions,
                 statusOptions: countlyPushNotification.service.statusOptions,
-                DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
                 currentSummaryTab: "message",
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
                 summaryTabs: [
@@ -2020,9 +2012,9 @@
                         self.updateTestUsersAppConfig(newTestUsersModel);
                         CountlyHelpers.notify({message: 'Test users have been successfully removed.'});
                         self.fetchTestUsers();
-                    }).catch(function() {
+                    }).catch(function(error) {
                         // TODO: log error
-                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.', type: 'error'});
+                        CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
                         self.isUpdateTestUsersLoading = false;
                     });
@@ -2048,7 +2040,7 @@
                         CountlyHelpers.notify({message: 'Test users have been successfully added.'});
                     }).catch(function(error) {
                         // TODO: log error
-                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.', type: 'error'});
+                        CountlyHelpers.notify({message: error.message, type: 'error'});
                         done(error);
                     }).finally(function() {
                         self.isUpdateTestUsersLoading = false;
