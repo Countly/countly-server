@@ -538,7 +538,7 @@
                     promiseMethod = this.update;
                 }
                 if (this.userCommand === this.UserCommandEnum.EDIT_REJECT) {
-                    promiseMethod = this.save;
+                    promiseMethod = this.saveFromDraft;
                 }
                 if (this.userCommand === this.UserCommandEnum.CREATE) {
                     promiseMethod = this.save;
