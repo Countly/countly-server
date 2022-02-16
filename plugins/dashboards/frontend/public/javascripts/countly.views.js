@@ -942,8 +942,8 @@
                 var i;
 
                 this.grid = GridStack.init({
-                    cellHeight: 100,
-                    margin: 10,
+                    cellHeight: 80,
+                    margin: 8,
                     animate: true,
                     float: false,
                     column: 4
@@ -1273,7 +1273,20 @@
             },
             dashboard: function() {
                 var selected = this.$store.getters["countlyDashboards/selected"];
-                return selected.data || {};
+                var dashboard = selected.data || {};
+
+                dashboard.creation = {};
+
+                if (dashboard.created_at) {
+                    var formattedTime = this.parseTimeAgo(dashboard.created_at) || {};
+                    dashboard.creation.time = formattedTime.text;
+                }
+
+                if (dashboard.owner && dashboard.owner.full_name) {
+                    dashboard.creation.by = dashboard.owner.full_name;
+                }
+
+                return dashboard;
             },
             canUpdate: function() {
                 return this.dashboard.is_editable;
@@ -1479,7 +1492,7 @@
 
         countlyVue.container.registerData("/sidebar/menu/main", {
             name: "dashboards",
-            icon: "ion-android-apps",
+            icon: "cly-icon-sidebar-dashboards",
             tooltip: CV.i18n("sidebar.dashboard-tooltip"),
             component: DashboardsMenu
         });

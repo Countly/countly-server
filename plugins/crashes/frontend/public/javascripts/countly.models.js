@@ -1002,6 +1002,25 @@
         });
     };
 
+    countlyCrashes.userCrashes = function(userId) {
+        return new Promise(function(resolve) {
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "uid": userId,
+                    "fromExportAPI": true,
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "user_crashes"
+                },
+                dataType: "json",
+                success: function(response) {
+                    resolve(response);
+                }
+            });
+        });
+    };
+
     if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0) {
         countlyCrashes.loadList(countlyCommon.ACTIVE_APP_ID);
     }

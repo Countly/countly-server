@@ -297,7 +297,7 @@
                 var _bigNumberData = this.$store.getters["countlyConsentManager/_bigNumberData"];
                 var legendData = {
                     show: true,
-                    type: "secondary",
+                    type: "primary",
                     data: [{
                         name: "opt-in",
                         label: this.i18n("consent.opt-i"),
