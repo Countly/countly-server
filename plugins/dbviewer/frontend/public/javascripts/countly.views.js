@@ -61,6 +61,7 @@ var DBViewerTab = countlyVue.views.create({
                     self.expandKeysHolder = [];
                 }
                 for (var i = 0; i < response.aaData.length; i++) {
+                    response.aaData[i]._view = JSON.stringify(response.aaData[i]);
                     if (!self.refresh) {
                         self.expandKeysHolder.push(response.aaData[i]._id);
                     }

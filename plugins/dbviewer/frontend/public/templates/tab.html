@@ -55,7 +55,7 @@
                             <el-table-column fixed type="expand">
                                 <template v-slot="rowScope">
                                     <pre>
-                                        <code class="language-json hljs dbviewer-tab__code">{{ rowScope.row }}</code>
+                                        <code class="language-json hljs dbviewer-tab__code">{{ JSON.parse(rowScope.row._view) }}</code>
                                     </pre>
                                 </template>
                             </el-table-column>
