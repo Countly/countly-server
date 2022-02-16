@@ -1,4 +1,4 @@
-/*global countlyVue, CV */
+/*global countlyVue, CV, countlyCommon */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({

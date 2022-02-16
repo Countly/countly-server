@@ -1,4 +1,4 @@
-/*global countlyVue, CV */
+/*global countlyVue,countlyGlobal, CV */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
@@ -32,6 +32,7 @@
                 return false;
             },
             getTableData: function() {
+                this.data = this.data || {};
                 var data = {"apps": [], dashData: {"data": {}}, "metrics": this.data.metrics, bar_color: this.data.bar_color};
                 if (this.data && this.data.dashData && this.data.dashData.data) { //Single app 
                     for (var app in this.data.dashData.data) {
@@ -44,6 +45,7 @@
                 return this.calculateTableDataFromWidget(data);
             },
             tableStructure: function() {
+                this.data = this.data || {};
                 var data = {"apps": [], dashData: {"data": {}}, "metrics": this.data.metrics, bar_color: this.data.bar_color};
                 if (this.data && this.data.dashData && this.data.dashData.data) { //Single app 
                     for (var app in this.data.dashData.data) {
@@ -128,6 +130,7 @@
                 }
             },
             stackedBarOptions: function() {
+                this.data = this.data || {};
                 var data = {dashData: {"data": {}}, "metrics": this.data.metrics, bar_color: this.data.bar_color};
                 if (this.data && this.data.dashData && this.data.dashData.data) { //Single app 
                     for (var app in this.data.dashData.data) {
