@@ -853,11 +853,7 @@
             mapPeriods: function(dto, type) {
                 if (type === TypeEnum.ONE_TIME) {
                     return {
-                        weekly: dto.actions.weekly.keys.sort(function(weekA, weekB) {
-                            var weekANumber = weekA.split('W')[1];
-                            var weekBNumber = weekB.split('W')[1];
-                            return weekANumber - weekBNumber;
-                        }),
+                        weekly: dto.actions.weekly.keys,
                         monthly: dto.actions.monthly.keys
                     };
                 }

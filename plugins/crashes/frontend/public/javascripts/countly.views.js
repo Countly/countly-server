@@ -1135,6 +1135,50 @@
         component: CrashesDashboardWidget
     });
 
+    countlyVue.container.registerTab("/users/tabs", {
+        priority: 5,
+        title: 'Crashes',
+        name: 'crashes',
+        component: countlyVue.components.create({
+            mixins: [countlyVue.mixins.i18n],
+            template: CV.T("/crashes/templates/user-crashes.html"),
+            methods: {
+                getDateAndTime: function(ts) {
+                    if (!ts) {
+                        return "-";
+                    }
+                    var d = new Date(ts);
+                    if (d.getFullYear() <= 1970) {
+                        ts = ts * 1000;
+                        d = new Date(ts);
+                    }
+                    var date = moment(d).utc().format("MMM Do, YYYY");
+                    var time = moment(d).utc().format("H:mm:ss");
+                    return date + " " + time;
+                },
+            },
+            data: function() {
+                return {
+                    uid: '',
+                    userCrashesData: [],
+                    title: CV.i18n('crashes.unresolved-crashes')
+                };
+            },
+            beforeCreate: function() {
+                var self = this;
+                this.uid = this.$route.params.uid;
+                countlyCrashes.userCrashes(this.uid)
+                    .then(function(res) {
+                        if (res) {
+                            self.userCrashesData = res.aaData.map(function(data) {
+                                return Object.assign(data, { link: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/crashes/' + data.id});
+                            });
+                        }
+                    });
+            }
+        })
+    });
+
 })();
 
 jQuery(document).ready(function() {
