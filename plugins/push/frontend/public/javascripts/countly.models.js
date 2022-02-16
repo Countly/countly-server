@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
@@ -551,6 +552,7 @@
                         resolve(response);
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     },
@@ -569,6 +571,7 @@
                         resolve(response);
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     },
@@ -589,6 +592,7 @@
                         resolve(response);
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     },
@@ -607,6 +611,7 @@
                         resolve(response);
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     },
@@ -628,6 +633,7 @@
                         resolve();
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     }
@@ -649,6 +655,7 @@
                         resolve();
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     }
@@ -670,6 +677,7 @@
                         resolve();
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     }
@@ -685,11 +693,9 @@
                     contentType: "application/json",
                     success: function(response) {
                         if (countlyPushNotification.helper.hasNoUsersToSendPushNotification(response)) {
+                            console.log(response);
                             reject(new Error('No users were found from selected configuration.'));
                             return;
-                        }
-                        if (response.error) {
-                            reject(new Error(response.error));
                         }
                         resolve(response);
                     },
@@ -714,6 +720,7 @@
                         resolve(response);
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     },
@@ -739,6 +746,7 @@
                         resolve(response);
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     },
@@ -759,6 +767,7 @@
                         resolve(response);
                     },
                     error: function(error) {
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     },
@@ -2056,11 +2065,12 @@
                             resolve(result);
                         }
                         catch (error) {
-                            // TODO: log error
+                            console.error(error);
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
                     },
                     error: function(error) {
+                        console.error(error);
                         reject(error);
                     }
                 }, {disableAutoCatch: true});
@@ -2093,11 +2103,12 @@
                             resolve(targetLocations);
                         }
                         catch (error) {
-                            // TODO: log error
+                            console.error(error);
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
                     },
                     error: function(error) {
+                        console.error(error);
                         reject(error);
                     }
                 }, {disableAutoCatch: true});
@@ -2111,10 +2122,11 @@
                             resolve(countlyPushNotification.mapper.incoming.mapEvents(events.list));
                         }
                         catch (error) {
-                            // TODO: log error
+                            console.error(error);
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
                     }).catch(function(error) {
+                        console.error(error);
                         reject(error);
                     });
             });
@@ -2128,11 +2140,12 @@
                             resolve(countlyPushNotification.mapper.incoming.mapRows(response));
                         }
                         catch (error) {
-                            // TODO: log error                            
+                            console.error(error);
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
                     })
                     .catch(function(error) {
+                        console.error(error);
                         reject(error);
                     });
             });
@@ -2149,11 +2162,11 @@
                             resolve(model);
                         }
                         catch (error) {
-                            // TODO: log error
+                            console.error(error);
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
                     }).catch(function(error) {
-                        // TODO:log error
+                        console.error(error);
                         reject(error);
                     });
                 });
@@ -2167,10 +2180,11 @@
                             resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));
                         }
                         catch (error) {
-                            // TODO: log error
+                            console.error(error);
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
                     }).catch(function(error) {
+                        console.error(error);
                         reject(error);
                     });
             });
@@ -2182,10 +2196,11 @@
                         resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(response));
                     }
                     catch (error) {
-                        // TODO: log error
+                        console.error(error);
                         reject(new Error(CV.i18n('push-notification.unknown-error')));
                     }
                 }).catch(function(error) {
+                    console.error(error);
                     reject(error);
                 });
             });
@@ -2194,8 +2209,8 @@
             this.fetchMediaMetadata(url).then(resolveCallback).catch(rejectCallback);
         }, DEBOUNCE_TIME_IN_MS),
         fetchUserProperties: function() {
-            return countlyPushNotification.api.findAllUserProperties().catch(function() {
-                // TODO:log error
+            return countlyPushNotification.api.findAllUserProperties().catch(function(error) {
+                console.error(error);
                 return Promise.resolve([]);
             });
         },
@@ -2227,11 +2242,11 @@
                             resolve(result);
                         }
                         catch (error) {
-                            // TODO: log error
+                            console.error(error);
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
                     }).catch(function(error) {
-                    // TODO: log error;
+                        console.error(error);
                         reject(error);
                     });
             });
@@ -2252,6 +2267,7 @@
                     .then(function(response) {
                         resolve(response.aaData);
                     }).catch(function(error) {
+                        console.error(error);
                         reject(error);
                     });
             });
@@ -2280,12 +2296,12 @@
                         resolve({localizations: localizations, total: response.count, _id: response._id});
                     }
                     catch (error) {
-                        // TODO: log error
+                        console.error(error);
                         reject(new Error(CV.i18n('push-notification.unknown-error')));
                     }
 
                 }).catch(function(error) {
-                    // TODO:log error
+                    console.error(error);
                     reject(error);
                 });
             });
@@ -2303,7 +2319,7 @@
                 dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
-                // TODO:log error
+                console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.save(dto);
@@ -2314,7 +2330,7 @@
                 dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
-                // TODO:log error
+                console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.update(dto);
@@ -2325,7 +2341,7 @@
                 dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
-                // TODO:log error
+                console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.sendToTestUsers(dto);
@@ -2354,7 +2370,7 @@
                 }
             }
             catch (error) {
-                // TODO:log error
+                console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.save(dto);
@@ -2372,7 +2388,7 @@
                 appConfig.push.test = testDto;
             }
             catch (error) {
-                // TODO:log error
+                console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.updateAppConfig(appConfig, options);
@@ -2405,8 +2421,8 @@
                     context.commit('setPushNotification', model);
                     context.dispatch('onFetchSuccess', {useLoader: true});
                 }).catch(function(error) {
+                    console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
-                    // TODO:log error
                 });
         },
         onUserCommand: function(context, payload) {
@@ -2421,7 +2437,7 @@
                 context.dispatch('onFetchSuccess', {useLoader: false});
                 CountlyHelpers.notify({message: "Push notification has been successfully sent for approval."});
             }).catch(function(error) {
-                // TODO:log error
+                console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
                 CountlyHelpers.notify({message: error.message, type: "error"});
             });
@@ -2435,7 +2451,7 @@
                         CountlyHelpers.notify({message: "Push notification was successfully deleted."});
                         resolve();
                     }).catch(function(error) {
-                        // TODO:log error
+                        console.error(error);
                         context.dispatch('onFetchError', {error: error, useLoader: true});
                         reject(error);
                         CountlyHelpers.notify({message: error.message, type: "error"});
@@ -2532,8 +2548,8 @@
             countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType)
                 .then(function(response) {
                     context.commit('setRows', response);
-                }).catch(function() {
-                    // TODO:log error
+                }).catch(function(error) {
+                    console.error(error);
                 }).finally(function() {
                     context.dispatch('onSetAreRowsLoading', false);
                 });
@@ -2543,8 +2559,8 @@
             countlyPushNotification.service.fetchDashboard(context.state.selectedPushNotificationType)
                 .then(function(response) {
                     context.commit('setDashboard', response);
-                }).catch(function() {
-                    // TODO:log error
+                }).catch(function(error) {
+                    console.error(error);
                 }).finally(function() {
                     context.dispatch('onSetIsDashboardLoading', false);
                 });
@@ -2557,7 +2573,7 @@
                     context.dispatch('onFetchSuccess', {useLoader: true});
                     CountlyHelpers.notify({message: "Push notification was successfully deleted."});
                 }).catch(function(error) {
-                    // TODO:log error
+                    console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                     CountlyHelpers.notify({message: error.message, type: "error"});
                 });
@@ -2572,7 +2588,7 @@
                     message: "Push notification has been successfully sent for approval.",
                 });
             }).catch(function(error) {
-                // TODO:log error
+                console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: true});
                 CountlyHelpers.notify({
                     title: "Push notification approver error",

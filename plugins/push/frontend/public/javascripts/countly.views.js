@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
 
 (function() {
@@ -416,6 +417,7 @@
                         self.setCurrentNumberOfUsers(response.total);
                         resolve(true);
                     }).catch(function(error) {
+                        console.error(error);
                         self.setLocalizationOptions([]);
                         CountlyHelpers.notify({
                             message: error.message,
@@ -515,6 +517,7 @@
                     });
                     self.$emit('save');
                 }).catch(function(error) {
+                    console.error(error);
                     CountlyHelpers.notify({
                         message: error.message,
                         type: "error"
@@ -549,6 +552,7 @@
                     });
                     self.$emit('save');
                 }).catch(function(error) {
+                    console.error(error);
                     CountlyHelpers.notify({
                         message: error.message,
                         type: "error"
@@ -564,6 +568,7 @@
                         message: "Push notification message was successfully sent to test users."
                     });
                 }).catch(function(error) {
+                    console.error(error);
                     CountlyHelpers.notify({
                         message: error.message,
                         type: "error"
@@ -875,7 +880,8 @@
                 countlyPushNotification.service.fetchCohorts()
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setCohortOptions([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
@@ -890,7 +896,8 @@
                 countlyPushNotification.service.fetchLocations()
                     .then(function(locations) {
                         self.setLocationOptions(locations);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setLocationOptions([]);
                     }).finally(function() {
                         self.isFetchLocationsLoading = false;
@@ -905,7 +912,8 @@
                 countlyPushNotification.service.fetchEvents()
                     .then(function(events) {
                         self.setEventOptions(events);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setEventOptions([]);
                     }).finally(function() {
                         self.isFetchEventsLoading = false;
@@ -924,10 +932,10 @@
                         self.setTotalAppUsers(response.totalAppUsers);
                         self.setEnabledUsers(response.enabledUsers);
                     })
-                    .catch(function() {
+                    .catch(function(error) {
+                        console.error(error);
                         self.setTotalAppUsers(0);
                         self.setEnabledUsers(JSON.parse(JSON.stringify(InitialEnabledUsers)));
-                        //TODO: log error;
                     });
             },
             setPushNotificationUnderEdit: function(value) {
@@ -944,11 +952,11 @@
                         }
                         self.resetMessageInHTMLToActiveLocalization();
                     })
-                    .catch(function() {
-                        var initialModel = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
+                    .catch(function(error) {
+                        console.error(error);
+                        var initialModel = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(self.type)));
                         initialModel.type = self.type;
                         self.setPushNotificationUnderEdit(initialModel);
-                        //TODO: log error;
                     })
                     .finally(function() {
                         self.setIsLoading(false);
@@ -1934,8 +1942,8 @@
                 countlyPushNotification.service.fetchCohorts()
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
-                    }).catch(function() {
-                        // TODO:log error;
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setCohortOptions([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
@@ -1951,7 +1959,7 @@
                     .then(function(testUserRows) {
                         self.setTestUserRows(testUserRows);
                     }).catch(function(error) {
-                        // TODO:log error;
+                        console.error(error);
                         self.setTestUserRows([]);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
@@ -2013,7 +2021,7 @@
                         CountlyHelpers.notify({message: 'Test users have been successfully removed.'});
                         self.fetchTestUsers();
                     }).catch(function(error) {
-                        // TODO: log error
+                        console.error(error);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
                         self.isUpdateTestUsersLoading = false;
@@ -2039,7 +2047,7 @@
                         done();
                         CountlyHelpers.notify({message: 'Test users have been successfully added.'});
                     }).catch(function(error) {
-                        // TODO: log error
+                        console.error(error);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                         done(error);
                     }).finally(function() {
@@ -2055,7 +2063,7 @@
                     .then(function(userIds) {
                         self.setUserIdOptions(userIds);
                     }).catch(function(error) {
-                        // TODO:log error;
+                        console.error(error);
                         self.setUserIdOptions([]);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
