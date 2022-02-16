@@ -162,4 +162,15 @@
 }
 .cly-vue-remote-config-condition-dialog {
   background: rgba(0,0,0,.5);
+    .el-dialog__header{
+        padding: 16px !important;
+        text-align: left;
+		    color: map.get(c.$colors, "white");
+    }
+    .el-dialog__body {
+        padding: 8px 32px 20px !important;
+        border-top: 1px solid map.get(c.$colors, "warm-gray-30");
+        border-bottom: 1px solid map.get(c.$colors, "warm-gray-30");
+        background-color: map.get(c.$colors, "warm-gray-10");
+    }
 }

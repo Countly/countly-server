@@ -26,6 +26,7 @@ frontend/express/public/images/*/
 !frontend/express/public/images/screenshots
 !frontend/express/public/images/heatmap-demos/
 !frontend/express/public/images/icons/
+!frontend/express/public/images/sidebar/
 frontend/express/public/stylesheets/styles/manifest.css
 frontend/express/public/stylesheets/vue/clyvue.css
 frontend/express/public/stylesheets/styles/manifest.css.map
