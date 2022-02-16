@@ -1171,7 +1171,7 @@
                     .then(function(res) {
                         if (res) {
                             self.userCrashesData = res.aaData.map(function(data) {
-                                return Object.assign(data, { link: `/dashboard#/${countlyCommon.ACTIVE_APP_ID}/crashes/${data.id}`});
+                                return Object.assign(data, { link: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/crashes/' + data.id});
                             });
                         }
                     });
