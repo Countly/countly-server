@@ -103,9 +103,9 @@
         box-sizing: border-box;
         outline: none;
         border: none;
-        border-top: 1px solid #81868D;
-        border-bottom: 1px solid #81868D;
-        background-color: map.get(c.$colors, "cool-gray-10");
+        border-top: 1px solid map.get(c.$colors, "warm-gray-30");
+        border-bottom: 1px solid map.get(c.$colors, "warm-gray-30");
+        background-color: map.get(c.$colors, "warm-gray-10");
     }
 }
 
