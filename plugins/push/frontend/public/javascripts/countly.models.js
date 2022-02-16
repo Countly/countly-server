@@ -879,7 +879,7 @@
                 }, []);
             },
             mapStatus: function(dto) {
-                if (dto.status === 'inactive' && dto.info.rejected) {
+                if (dto.status === 'draft' && dto.info.rejected) {
                     return StatusEnum.REJECT;
                 }
                 if (dto.status === 'inactive') {
