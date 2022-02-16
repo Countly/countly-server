@@ -375,7 +375,13 @@
             }
             return false;
         },
-        isCommonError: function(response) {
+        hasErrors: function(response) {
+            if (response && response.responseJSON) {
+                return response.responseJSON.errors && response.responseJSON.errors.length;
+            }
+            return false;
+        },
+        isResultError: function(response) {
             if (response && response.responseJSON) {
                 return response.responseJSON && response.responseJSON.result;
             }
@@ -387,11 +393,16 @@
             }
             return null;
         },
-        getCommonErrorMessageIfFound: function(response) {
-            if (this.isCommonError(response)) {
+        getResultErrorMessageIfFound: function(response) {
+            if (this.isResultError(response)) {
                 return response.responseJSON.result;
             }
             return null;
+        },
+        getFirstErrorMessageIfFound: function(response) {
+            if (this.hasErrors(response)) {
+                return response.responseJSON.errors[0];
+            }
         },
         getErrorMessage: function(error) {
             if (this.isServerError(error)) {
@@ -400,8 +411,11 @@
             if (this.isValidationError(error)) {
                 return this.getFirstValidationErrorMessageIfFound(error);
             }
-            if (this.isCommonError(error)) {
-                return this.getCommonErrorMessageIfFound(error);
+            if (this.isResultError(error)) {
+                return this.getResultErrorMessageIfFound(error);
+            }
+            if (this.hasErrors(error)) {
+                return this.getFirstErrorMessageIfFound(error);
             }
             return 'Unknown error occurred. Please try again later.';
         },
@@ -527,41 +541,77 @@
                 _id: id,
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
-            return CV.$.ajax({
-                type: "GET",
-                url: window.countlyCommon.API_URL + "/o/push/message/GET",
-                data: data,
-                contentType: "application/json",
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: window.countlyCommon.API_URL + "/o/push/message/GET",
+                    data: data,
+                    contentType: "application/json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         findAll: function(data) {
             data.app_id = countlyCommon.ACTIVE_APP_ID;
-            return CV.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r + "/push/message/all",
-                data: data,
-                dataType: "json"
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + "/push/message/all",
+                    data: data,
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         getDashboard: function() {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
-            return CV.$.ajax({
-                type: "GET",
-                url: window.countlyCommon.API_URL + '/o/push/dashboard',
-                data: data,
-                dataType: "json"
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: window.countlyCommon.API_URL + '/o/push/dashboard',
+                    data: data,
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         delete: function(data) {
             data.app_id = countlyCommon.ACTIVE_APP_ID;
-            return CV.$.ajax({
-                method: 'GET',
-                url: window.countlyCommon.API_URL + '/i/push/message/remove',
-                data: data,
-                dataType: "json"
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                return CV.$.ajax({
+                    method: 'GET',
+                    url: window.countlyCommon.API_URL + '/i/push/message/remove',
+                    data: data,
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         save: function(dto) {
             return new Promise(function(resolve, reject) {
@@ -655,11 +705,20 @@
                 url: url,
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
-            return CV.$.ajax({
-                method: 'GET',
-                url: window.countlyCommon.API_URL + '/o/push/mime',
-                data: data,
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    method: 'GET',
+                    url: window.countlyCommon.API_URL + '/o/push/mime',
+                    data: data,
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         findAllUserProperties: function() {
             return countlySegmentation.initialize("").then(function() {
@@ -670,23 +729,41 @@
             var data = {
                 query: JSON.stringify(query)
             };
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.data.r + "?app_id=" + options.appId + "&method=user_details",
-                contentType: "application/json",
-                data: JSON.stringify(data)
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.data.r + "?app_id=" + options.appId + "&method=user_details",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         updateAppConfig: function(config, options) {
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.apps.w + '/update/plugins?app_id=' + options.app_id,
-                data: {
-                    args: JSON.stringify(config),
-                    app_id: options.app_id
-                },
-                dataType: "json",
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.apps.w + '/update/plugins?app_id=' + options.app_id,
+                    data: {
+                        args: JSON.stringify(config),
+                        app_id: options.app_id
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         }
     };
 
@@ -2321,12 +2398,8 @@
                     }).catch(function(error) {
                         // TODO:log error
                         context.dispatch('onFetchError', {error: error, useLoader: true});
-                        reject();
-                        if (countlyPushNotification.helper.isServerError(error)) {
-                            CountlyHelpers.notify({message: "Server error occurred. Please try again later.", type: "error"});
-                            return;
-                        }
-                        CountlyHelpers.notify({message: "Unknown error occurred. Please try again later.", type: "error"});
+                        reject(error);
+                        CountlyHelpers.notify({message: error.message, type: "error"});
                     });
             });
         },
@@ -2447,11 +2520,7 @@
                 }).catch(function(error) {
                     // TODO:log error
                     context.dispatch('onFetchError', {error: error, useLoader: true});
-                    if (countlyPushNotification.helper.isServerError(error)) {
-                        CountlyHelpers.notify({message: "Server error occurred. Please try again later.", type: "error"});
-                        return;
-                    }
-                    CountlyHelpers.notify({message: "Unknown error occurred. Please try again later.", type: "error"});
+                    CountlyHelpers.notify({message: error.message, type: "error"});
                 });
         },
         onApprove: function(context, id) {
