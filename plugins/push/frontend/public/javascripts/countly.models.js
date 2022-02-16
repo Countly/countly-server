@@ -2146,32 +2146,12 @@
                         var model = null;
                         try {
                             model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
+                            resolve(model);
                         }
                         catch (error) {
                             // TODO: log error
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
-                        // TODO: do not add cohort and locations in the model, instead fetch when only it is needed (e.g. targeting tab, or drawer)
-                        var cohorts = [];
-                        if (model.type === TypeEnum.ONE_TIME) {
-                            cohorts = model.cohorts;
-                        }
-                        if (model.type === TypeEnum.AUTOMATIC) {
-                            cohorts = model.automatic.cohorts;
-                        }
-                        Promise.all(
-                            [countlyPushNotification.service.fetchCohorts(cohorts, false),
-                                countlyPushNotification.service.fetchLocations(model.locations, false)]
-                        ).then(function(responses) {
-                            if (model.type === TypeEnum.ONE_TIME) {
-                                model.cohorts = responses[0];
-                            }
-                            if (model.type === TypeEnum.AUTOMATIC) {
-                                model.automatic.cohorts = responses[0];
-                            }
-                            model.locations = responses[1];
-                            resolve(model);
-                        });
                     }).catch(function(error) {
                         // TODO:log error
                         reject(error);
