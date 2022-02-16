@@ -1064,10 +1064,10 @@ plugins.setConfigs("crashes", {
                                     if (groups) {
                                         for (let i = 0; i < groups.length; i++) {
                                             groups[i].name = (groups[i].name + "").split("\n")[0].trim();
-                                            res.forEach((eachCrash)=>{
-                                                groups[i].groups = groups[i].groups || [];
-                                                if (groups[i].groups.indexOf(eachCrash.group) !== -1) {
+                                            res.forEach(function(eachCrash) {
+                                                if (groups[i]._id === eachCrash.group) {
                                                     eachCrash.group = groups[i].name;
+                                                    eachCrash.id = groups[i]._id;
                                                 }
                                             });
                                         }

@@ -67,8 +67,8 @@
 				<form method="POST" id="formRegister" style="width:300px; margin:auto;">
 					<h1 style="font-weight: 500;" id="header" data-localize="login.form-header"></h1>
 					<div>
-						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress"></p>
-						<input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
+						<p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress-or-username"></p>
+						<input type="text" autocapitalize="off" name="username" placeholder="Enter your username or email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
 						</div>
 					<div>
 						<div style="display: flex; justify-content: space-between;"><p style="color: #333C48;font-weight: 500;margin-bottom: 8px;" data-localize="login.password"></p><p style="margin-bottom: 8px;"><a id="forgot-password" href="./forgot" data-localize="login.forgot"></a></p></div>
@@ -87,6 +87,7 @@
 			<% if (typeof inject_template.html != "undefined") { %>
 				<%- inject_template.html %>
 			<% } %>
+			<div style="height: 100px;"></div>
 		</div>
 		<div class="footer">
 			<div>
@@ -114,9 +115,11 @@
 		$(document).ready(function() {
 			<% if (message && message.length >0 ){ %>
 				$('.cly-vue-notification__alert-box').show();
+				$('#header').css("margin-top","18px");
 				showMessage("<%= message %>");
 			<% } 
 			else{ %>
+				$('#header').css("margin-top","72px");
 				$(".cly-vue-notification__alert-box").css('display','none');
 			<% } %>
             if (jQuery.i18n.map["login.title"]) {
@@ -150,12 +153,11 @@
 				rules: {
 					username: {
 						required: true,
-						email: true,
 					}
 				},
 				messages: {
-					email: {
-						email: jQuery.i18n.map["login.error-message"]
+					username: {
+						required: jQuery.i18n.map["login.error-message"]
 					}
 				}
 			});
