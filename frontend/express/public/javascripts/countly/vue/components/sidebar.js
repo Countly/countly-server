@@ -488,29 +488,28 @@
                     var menuOptions = [
                         {
                             name: "app",
+                            icon: "cly-icon-sidebar-app",
                             noSelect: true
                         },
-                        // {
-                        //     name: "search",
-                        //     icon: "ion-ios-search-strong"
-                        // },
                         {
                             name: "analytics",
-                            icon: "ion-stats-bars",
+                            icon: "cly-icon-sidebar-analytics",
                             tooltip: CV.i18n("sidebar.main-menu")
                         },
                         {
                             name: "divider",
+                            icon: "cly-icon-sidebar-divider",
                             noSelect: true
                         },
                         {
                             name: "management",
-                            icon: "ion-wrench",
-                            tooltip: "Management"
+                            icon: "cly-icon-sidebar-management",
+                            tooltip: "Management",
+                            svg: ""
                         },
                         {
                             name: "last-queries",
-                            icon: "fas fa-file-contract",
+                            icon: "cly-icon-sidebar-report-manager",
                             noSelect: true,
                             tooltip: "Report Manager"
                         }
@@ -530,19 +529,18 @@
                     var menuOptions = [
                         {
                             name: "help-center",
-                            icon: "ion-clipboard",
+                            icon: "cly-icon-sidebar-help-center",
                             noSelect: true,
                             tooltip: "Help Center"
                         },
                         {
                             name: "notifications",
-                            icon: "ion-android-notifications",
+                            icon: "cly-icon-sidebar-notifications",
                             noSelect: true,
                             tooltip: "Assistant"
                         },
                         {
                             name: "user",
-                            icon: "ion-person",
                             noSelect: true,
                             member: this.member,
                             tooltip: CV.i18n("sidebar.my-profile")
@@ -554,7 +552,7 @@
                         },
                         {
                             name: "toggle",
-                            icon: "ion-chevron-left",
+                            icon: "cly-icon-sidebar-toggle-left",
                             noSelect: true
                         }
                     ];

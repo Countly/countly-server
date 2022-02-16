@@ -45,10 +45,12 @@ plugins.setConfigs("dashboards", {
                     if (!err && dashboard) {
                         async.parallel([
                             hasViewAccessToDashboard.bind(null, params.member, dashboard),
-                            hasEditAccessToDashboard.bind(null, params.member, dashboard)
+                            hasEditAccessToDashboard.bind(null, params.member, dashboard),
+                            fetchMembersData.bind(null, [dashboard.owner_id], [])
                         ], function(er, res) {
                             var hasViewAccess = res[0];
                             var hasEditAccess = res[1];
+                            var ownerData = res[2];
 
                             if (er || !hasViewAccess) {
                                 return common.returnOutput(params, {error: true, dashboard_access_denied: true});
@@ -60,6 +62,10 @@ plugins.setConfigs("dashboards", {
 
                             if (hasEditAccess) {
                                 dashboard.is_editable = true;
+                            }
+
+                            if (ownerData && ownerData.length) {
+                                dashboard.owner = ownerData[0];
                             }
 
                             var parallelTasks = [
@@ -150,8 +156,8 @@ plugins.setConfigs("dashboards", {
                         var sharedEditEmails = dash.shared_email_edit || [];
 
                         async.parallel([
-                            fetchSharedMembers.bind(null, sharedViewIds, sharedViewEmails), //View users
-                            fetchSharedMembers.bind(null, sharedEditIds, sharedEditEmails) //Edit users
+                            fetchMembersData.bind(null, sharedViewIds, sharedViewEmails), //View users
+                            fetchMembersData.bind(null, sharedEditIds, sharedEditEmails) //Edit users
                         ], function(er, result) {
                             var totalViewUsers = result[0] || [];
                             var totalEditUsers = result[1] || [];
@@ -287,7 +293,8 @@ plugins.setConfigs("dashboards", {
                 async.forEach(dashboards, function(dashboard, done) {
                     async.parallel([
                         hasEditAccessToDashboard.bind(null, member, dashboard),
-                        fetchWidgetsMeta.bind(null, params, dashboard.widgets)
+                        fetchWidgetsMeta.bind(null, params, dashboard.widgets),
+                        fetchMembersData.bind(null, [dashboard.owner_id], [])
                     ], function(perr, result) {
                         if (perr) {
                             return done(perr);
@@ -295,6 +302,7 @@ plugins.setConfigs("dashboards", {
 
                         var hasEditAccess = result[0];
                         var widgetsMeta = result[1] || [];
+                        var ownerData = result[2];
 
                         if (dashboard.owner_id === memberId || member.global_admin) {
                             dashboard.is_owner = true;
@@ -302,6 +310,10 @@ plugins.setConfigs("dashboards", {
 
                         if (hasEditAccess) {
                             dashboard.is_editable = true;
+                        }
+
+                        if (ownerData && ownerData.length) {
+                            dashboard.owner = ownerData[0];
                         }
 
                         if (!dashboard.share_with) {
@@ -486,7 +498,8 @@ plugins.setConfigs("dashboards", {
                     shared_email_view: sharedEmailView,
                     shared_user_groups_edit: sharedUserGroupEdit,
                     shared_user_groups_view: sharedUserGroupView,
-                    theme: theme
+                    theme: theme,
+                    created_at: new Date().getTime()
                 };
 
                 var widgets = dataObj.newWidgetIds;
@@ -1238,13 +1251,13 @@ plugins.setConfigs("dashboards", {
      * @param  {Array} emails - emails array
      * @param  {Function} callback - callback function
      */
-    function fetchSharedMembers(ids, emails, callback) {
+    function fetchMembersData(ids, emails, callback) {
         var dashboardUserIds = [];
         for (var i = 0; i < ids.length; i++) {
             dashboardUserIds.push(common.db.ObjectID(ids[i]));
         }
 
-        common.db.collection("members").find({$or: [{_id: { $in: dashboardUserIds }}, {email: { $in: emails }} ]}, {_id: 1, full_name: 1, email: 1}).toArray(function(err, users) {
+        common.db.collection("members").find({$or: [{_id: { $in: dashboardUserIds }}, {email: { $in: emails }} ]}, {_id: 1, full_name: 1, email: 1, username: 1}).toArray(function(err, users) {
             return callback(null, users);
         });
     }
