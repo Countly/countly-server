@@ -113,6 +113,11 @@
     font-size: 13px;
     margin-left: 24px;
     margin-top: 16px;
+    cursor: pointer;
+}
+
+#cly-heatmap-topbar .cly-heatmap-block:hover {
+    border-color: #81868D;
 }
 
 /* #cly-heatmap-topbar .cly-heatmap-block:hover {
@@ -141,7 +146,8 @@
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-selected {
-    font-size: 14px;
+    font-size: 13px;
+    line-height: 16px;
     color: #474747;
     width: 200px;
     height: 32px;
@@ -152,6 +158,11 @@
     box-shadow: 0px 1px 4px rgb(0 0 0 / 8%);
     border-radius: 4px;
     padding: 7px 10px 7px 10px;
+    cursor: pointer;
+}
+
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-selected:hover {
+    border-color: #81868D;
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-title {
@@ -300,7 +311,7 @@
     margin: 0px;
     font-size: 13px;
     cursor: pointer;
-    vertical-align: top;
+    vertical-align: middle;
 }
 
 #cly-heatmap-topbar .cly-heatmap-checkmark {
