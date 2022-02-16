@@ -14,7 +14,18 @@
         background-color: map.get(c.$colors, "white");
         border: 1px solid #E2E4E8;
         border-radius: 4px;
+		
+		>div {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+		}
+		.dashboard-widget-graph {
+			flex:1;
+		}
     }
+	
+	
 
     .clyd-visualization {
         &__item {
@@ -87,4 +98,44 @@
 	.dashboard-widget-graph .cly-vue-eldatatable {
 		margin: 0 -20px;
 	}
+	.dashboard-widget-graph.dashboard-widget-number {
+		text-align: center;
+		h1{
+			font-size:40px;
+			line-height:40px;
+			padding:0;
+			margin:0;
+		}
+		.trend-up {
+			color: #12af51;
+		}
+		.trend-down {
+			color:#d23f00;
+		}
+		div {
+			margin: 0;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			-ms-transform: translate(-50%, -50%);
+			transform: translate(-50%, -50%);
+		}
+	}
+	.notes-widget-graph {
+		text-align: center;
+		position:relative;
+		>div {
+			margin: 0;
+			position: absolute;
+			top: 50%;
+			width:100%;
+			-ms-transform: translate(0%, -50%);
+			transform: translate(0%, -50%);
+		}
+		a {
+		    cursor: pointer;
+			color: #32659D;
+		}
+	}
+	
 }
