@@ -14,7 +14,7 @@
     });
 
     var DrawerComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/note/drawer.html'),
+        template: "#note-drawer",
         props: {
             scope: {
                 type: Object,
@@ -53,6 +53,14 @@
         getter: function(widget) {
             return widget.widget_type === "note";
         },
+        templates: [
+            {
+                namespace: "note",
+                mapping: {
+                    "drawer": "/dashboards/templates/widgets/note/drawer.html"
+                }
+            }
+        ],
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
