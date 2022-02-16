@@ -2,7 +2,7 @@
     <cly-section class="bu-pt-4">
         <cly-datatable-n :data-source="userTableDataSource" :default-sort="{prop: 'lac', order: 'descending'}">
             <template v-slot="scope">
-                <el-table-column fixed="left" width="310" sortable="custom" prop="_id" label="ID">
+                <el-table-column fixed="left" width="365" sortable="custom" prop="_id" label="ID">
                 </el-table-column>
                 <el-table-column width="180" sortable="custom" prop="d" label="DEVICE">
                     <template v-slot="rowScope">
@@ -14,12 +14,12 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column width="200" sortable prop="av" label="APP VERSION">
+                <el-table-column width="150" sortable prop="av" label="APP VERSION">
                 </el-table-column>
                 <el-table-column width="400" prop="consent" label="consent">
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row.consent">
-                            <p class="color-primary-green text-smaller font-weight-bold text-uppercase bu-mb-1">{{i18n("consent.opt-i")}}</p>
+                            <p class="color-primary-green text-smaller font-weight-bold text-uppercase bu-mb-1" style="margin-top: 0px;">{{i18n("consent.opt-i")}}</p>
                             <span class="text-small bu-mb-4" v-html="rowScope.row.optin.join(',')"></span>
                             <p class="color-red-100 text-smaller font-weight-bold text-uppercase bu-mb-1">{{i18n("consent.opt-o")}}</p>
                             <span class="text-small" v-html="rowScope.row.optout.join(',')"></span>
