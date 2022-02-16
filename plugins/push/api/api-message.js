@@ -248,13 +248,13 @@ module.exports.update = async params => {
         }
     }
     else {
+        msg.info.rejected = null;
+        msg.info.rejectedAt = null;
+        msg.info.rejectedBy = null;
+        msg.info.rejectedByName = null;
         if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
             msg.status = Status.Created;
             msg.state = State.Created;
-            msg.info.rejected = null;
-            msg.info.rejectedAt = null;
-            msg.info.rejectedBy = null;
-            msg.info.rejectedByName = null;
             await msg.save();
             await msg.schedule(log, params);
         }
