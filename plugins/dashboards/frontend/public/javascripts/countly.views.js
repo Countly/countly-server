@@ -1,4 +1,4 @@
-/*global $, app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers, countlyCommon */
+/*global $, app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers */
 
 (function() {
     var FEATURE_NAME = "dashboards";
