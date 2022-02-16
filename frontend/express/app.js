@@ -601,7 +601,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             next();
         }
     });
-
+    var convertLink = function(val, defaultVal) {
+        if (typeof val === "undefined" || val === true) {
+            return defaultVal;
+        }
+        return val;
+    };
     app.use(flash());
     app.use(function(req, res, next) {
         req.template = {};
@@ -615,7 +620,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             type: COUNTLY_TYPE,
             page: COUNTLY_PAGE,
             title: COUNTLY_NAME,
-            favicon: "images/favicon.png"
+            favicon: "images/favicon.png",
+            documentationLink: convertLink(versionInfo.documentationLink, "https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base"),
+            helpCenterLink: convertLink(versionInfo.helpCenterLink, "https://support.count.ly/hc/en-us"),
+            featureRequestLink: convertLink(versionInfo.featureRequestLink, "https://support.count.ly/hc/en-us/community/topics/360001464272-Feature-Requests"),
+            feedbackLink: convertLink(versionInfo.feedbackLink, "https://count.ly/legal/privacy-policy"),
         };
         plugins.loadConfigs(countlyDb, function() {
             var securityConf = plugins.getConfig("security");
@@ -1155,7 +1164,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     res.header('Expires', '0');
                     res.header('Pragma', 'no-cache');
                     var config = plugins.getConfig("security");
-                    res.render('login', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": req.flash('info'), "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false}});
+                    res.render('login', {
+                        documentationLink: req.countly.documentationLink,
+                        helpCenterLink: req.countly.helpCenterLink,
+                        feedbackLink: req.countly.feedbackLink,
+                        featureRequestLink: req.countly.featureRequestLink,
+                        languages: languages,
+                        countlyFavicon: req.countly.favicon,
+                        countlyTitle: req.countly.title,
+                        countlyPage: req.countly.page,
+                        "message": req.flash('info'),
+                        "csrf": req.csrfToken(),
+                        path: countlyConfig.path || "",
+                        cdn: countlyConfig.cdn || "",
+                        themeFiles: req.themeFiles,
+                        inject_template: req.template,
+                        security: {autocomplete: config.password_autocomplete || false}
+                    });
                 }
                 else {
                     res.redirect(countlyConfig.path + '/setup');
@@ -1175,7 +1200,22 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
             res.header('Expires', '0');
             res.header('Pragma', 'no-cache');
-            res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "message": req.query.message || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+            res.render('forgot', {
+                documentationLink: req.countly.documentationLink,
+                helpCenterLink: req.countly.helpCenterLink,
+                feedbackLink: req.countly.feedbackLink,
+                featureRequestLink: req.countly.featureRequestLink,
+                languages: languages,
+                countlyFavicon: req.countly.favicon,
+                countlyTitle: req.countly.title,
+                countlyPage: req.countly.page,
+                "csrf": req.csrfToken(),
+                "message": req.query.message || "",
+                path: countlyConfig.path || "",
+                cdn: countlyConfig.cdn || "",
+                themeFiles: req.themeFiles,
+                inject_template: req.template
+            });
         }
     });
 
@@ -1198,7 +1238,25 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         res.header('Expires', '0');
                         res.header('Pragma', 'no-cache');
                         var config = plugins.getConfig("security");
-                        res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false, password_min: config.password_min}});
+                        res.render('reset', {
+                            documentationLink: req.countly.documentationLink,
+                            helpCenterLink: req.countly.helpCenterLink,
+                            feedbackLink: req.countly.feedbackLink,
+                            featureRequestLink: req.countly.featureRequestLink,
+                            languages: languages,
+                            countlyFavicon: req.countly.favicon,
+                            countlyTitle: req.countly.title,
+                            countlyPage: req.countly.page,
+                            "csrf": req.csrfToken(),
+                            "prid": req.params.prid,
+                            "message": req.query.message || "",
+                            path: countlyConfig.path || "",
+                            cdn: countlyConfig.cdn || "",
+                            "newinvite": passwordReset.newInvite,
+                            themeFiles: req.themeFiles,
+                            inject_template: req.template,
+                            security: {autocomplete: config.password_autocomplete || false, password_min: config.password_min}
+                        });
                     }
                 }
                 else {

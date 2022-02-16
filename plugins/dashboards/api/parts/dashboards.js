@@ -817,15 +817,20 @@ async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
     default:
         throw new Error("Invalid visualization!");
     }
-    log.d(collection);
-    log.d(segment);
 
     var model = await getSessionModel(params, apps, appId, collection, segment, widget);
 
     switch (visualization) {
     case 'bar-chart':
     case 'pie-chart':
-        widgetData = {"total": model.getNumber(), "graph": model.getBars(segment, 10)};
+        var totals = {};
+        totals[widget.metrics[0]] = 0;
+        var graph = model.getBars(segment, -1);
+        for (var z in graph) {
+            totals[widget.metrics[0]] += graph[z].value;
+        }
+
+        widgetData = {"total": totals, "graph": model.getBars(segment, 10)};
 
         break;
     case 'table':
@@ -928,7 +933,6 @@ async function getEventsDataForApp(params, apps, appId, widget) {
         }
 
         segment = toSegment(breakdowns[0]);
-
         break;
     default:
         throw new Error("Invalid visualization!");

@@ -25,8 +25,7 @@
                     </el-table-column>
                     <el-table-column prop="desc" :label="i18n('plugins.description')">
                         <template v-slot="rowScope">
-                            <div style="white-space: normal;"> 
-                                {{ rowScope.row.description }}
+                            <div style="white-space: normal;" v-html="rowScope.row.description"> 
                             </div>
                         </template>
                     </el-table-column>
