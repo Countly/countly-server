@@ -352,12 +352,12 @@
                         if (appObj) {
                             delete state.allApps[appToRemoveId];
                         }
-                        state.allApps = Object.assign({}, state.allApps, {})
+                        state.allApps = Object.assign({}, state.allApps, {});
 
                     },
                     deleteAllApps: function(state) {
                         state.allApps = null;
-                        state.allApps = Object.assign({}, state.allApps, {})
+                        state.allApps = Object.assign({}, state.allApps, {});
                     },
                     addNotificationToast: function(state, payload) {
                         payload.id = countlyCommon.generateId();
