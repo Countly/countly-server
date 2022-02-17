@@ -616,15 +616,20 @@
                 }
             }
         });
+        app.initSidebar = function() {
+            countlyVue.sideBarComponent = new Vue({
+                el: $('#sidebar-x').get(0),
+                store: countlyVue.vuex.getGlobalStore(),
+                components: {
+                    Sidebar: SidebarView
+                },
+                template: '<Sidebar></Sidebar>'
+            });
+        };
 
-        countlyVue.sideBarComponent = new Vue({
-            el: $('#sidebar-x').get(0),
-            store: countlyVue.vuex.getGlobalStore(),
-            components: {
-                Sidebar: SidebarView
-            },
-            template: '<Sidebar></Sidebar>'
-        });
+        if (Object.keys(countlyGlobal.apps).length) {
+            app.initSidebar();
+        }
     });
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));

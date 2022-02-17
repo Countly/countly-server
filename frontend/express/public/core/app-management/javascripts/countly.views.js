@@ -345,11 +345,13 @@
                                 label: data.name
                             });
                             self.selectedSearchBar = data._id + "";
+                            self.$store.dispatch("countlyCommon/addToAllApps", data);
                             if (self.firstApp) {
                                 countlyCommon.ACTIVE_APP_ID = data._id + "";
                                 app.onAppManagementSwitch(data._id + "", data && data.type || "mobile");
+                                self.$store.dispatch("countlyCommon/updateActiveApp", data._id + "");
+                                app.initSidebar();
                             }
-                            self.$store.dispatch("countlyCommon/addToAllApps", data);
                             self.firstApp = self.checkIfFirst();
                         },
                         error: function(xhr, status, error) {
