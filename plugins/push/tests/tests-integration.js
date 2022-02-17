@@ -1,17 +1,18 @@
 const testUtils = require('../../../test/testUtils'),
-    { PLATFORMS_TITLES, FIELDS_TITLES, platforms } = require('../api/send'),
+    { PLATFORMS_TITLES, FIELDS_TITLES } = require('../api/send'),
     plugins = require('../../pluginManager'),
     // supertest = require('supertest').agent(testUtils.url),
     supertest = require('supertest').agent('http://localhost:3001'),
     should = require('should'),
-    { onAppPluginsUpdate } = require('../api/api-push');
+    { onAppPluginsUpdate } = require('../api/api-push'),
+    platforms = ['i', 'a'];
 
 // let aid,
 //     app_key,
 //     api_key,
-let aid = '617e6cf3cd001aac73834e18',
-    app_key = '78fb16cbaa61399d0f13f9e96961bd9983a0a416',
-    api_key = '4438dfdece5eaa6b796db9baf58ecbc4',
+let aid = '620d3057e2a7ae842fb53f90',
+    app_key = '7dc8f3f75fa3c4da059e8cb5f36e64879467442d',
+    api_key = '4e170a5da90fdf5afd94f85eefdb015b',
     users = {
         did0: {device_id: 'did0', tokens: [{ios_token: 'token_id0', test_mode: 1}], events: [{key: 'push_cart'}, {key: 'push_buy', count: 1, sum: 200, segmentation: {product: 'carrot'}}]},
         did1: {device_id: 'did1', tokens: [{ios_token: 'token_ip1', test_mode: 0}], locale: 'en_US'},
@@ -183,6 +184,7 @@ describe('PUSH INTEGRATION TESTS', () => {
     it('should estimate 5-user audience', async() => {
         await supertest.post(`/o/push/message/estimate?api_key=${api_key}&app_id=${aid}`)
             .send({
+                demo: true,
                 app: aid,
                 platforms
             })
@@ -195,6 +197,7 @@ describe('PUSH INTEGRATION TESTS', () => {
     it('should estimate 3-user audience with user query', async() => {
         await supertest.post(`/o/push/message/estimate?api_key=${api_key}&app_id=${aid}`)
             .send({
+                demo: true,
                 app: aid,
                 platforms,
                 filter: {
@@ -210,6 +213,7 @@ describe('PUSH INTEGRATION TESTS', () => {
     it('should validate estimate params', async() => {
         await supertest.post(`/o/push/message/estimate?api_key=${api_key}&app_id=${aid}`)
             .send({
+                demo: true,
                 app: aid.substr(0, 10),
                 platforms: ['x'],
                 filter: {
@@ -225,6 +229,7 @@ describe('PUSH INTEGRATION TESTS', () => {
     it('should estimate 3-user audience with drill query', async() => {
         await supertest.post(`/o/push/message/estimate?api_key=${api_key}&app_id=${aid}`)
             .send({
+                demo: true,
                 app: aid,
                 platforms,
                 filter: {
@@ -415,58 +420,58 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.equal(res.body.filter.user, JSON.stringify({la: {$in: ['es']}}));
             });
     });
-    it('should send test messages', async() => {
-        // test message
-        await supertest.post(`/i/push/message/test?api_key=${api_key}&app_id=${aid}`)
-            .send({
-                demo: true,
-                app: aid,
-                platforms,
-                filter: {
-                    user: JSON.stringify({la: {$in: ['de']}})
-                },
-                contents: [
-                    {message: 'asd', title: 'asd', expiration: 120000},
-                ],
-                triggers: [
-                    {kind: 'plain', start: new Date(Date.now() + 5000)},
-                ]
-            })
-            .expect('Content-Type', /json/)
-            .expect(res => {
-                should.equal(res.status, 200);
-                should.ok(res.body.result, 1);
-                should.equal(res.body.result.total, 1);
-                should.equal(res.body.result.processed, 1);
-                should.equal(res.body.result.errored, 1);
-                should.equal(res.body.result.subs.i.total, 1);
-                should.equal(res.body.result.subs.i.errored, 1);
-                should.equal(res.body.result.subs.i.subs.en.total, 1);
-                should.equal(res.body.result.subs.i.subs.en.errored, 1);
-            });
+    // it('should send test messages', async() => {
+    //     // test message
+    //     await supertest.post(`/i/push/message/test?api_key=${api_key}&app_id=${aid}`)
+    //         .send({
+    //             demo: true,
+    //             app: aid,
+    //             platforms,
+    //             filter: {
+    //                 user: JSON.stringify({la: {$in: ['de']}})
+    //             },
+    //             contents: [
+    //                 {message: 'asd', title: 'asd', expiration: 120000},
+    //             ],
+    //             triggers: [
+    //                 {kind: 'plain', start: new Date(Date.now() + 5000)},
+    //             ]
+    //         })
+    //         .expect('Content-Type', /json/)
+    //         .expect(res => {
+    //             should.equal(res.status, 200);
+    //             should.ok(res.body.result, 1);
+    //             should.equal(res.body.result.total, 1);
+    //             should.equal(res.body.result.processed, 1);
+    //             should.equal(res.body.result.errored, 1);
+    //             should.equal(res.body.result.subs.i.total, 1);
+    //             should.equal(res.body.result.subs.i.errored, 1);
+    //             should.equal(res.body.result.subs.i.subs.en.total, 1);
+    //             should.equal(res.body.result.subs.i.subs.en.errored, 1);
+    //         });
 
-        // // test message
-        // await supertest.post(`/i/push/message/test?api_key=${api_key}&app_id=${aid}`)
-        //     .send({
-        //         demo: true,
-        //         app: aid,
-        //         platforms,
-        //         filter: {
-        //             user: JSON.stringify({la: {$in: ['de']}})
-        //         },
-        //         contents: [
-        //             {message: 'asd', title: 'asd', expiration: 120000},
-        //         ],
-        //         triggers: [
-        //             {kind: 'plain', start: new Date(Date.now() + 5000)},
-        //         ]
-        //     })
-        //     .expect('Content-Type', /json/)
-        //     .expect(res => {
-        //         should.equal(res.status, 400);
-        //         should.deepEqual(res.body.errors, ['Please define test users in Push plugin configuration']);
-        //     });
-    }).timeout(100000);
+    //     // // test message
+    //     // await supertest.post(`/i/push/message/test?api_key=${api_key}&app_id=${aid}`)
+    //     //     .send({
+    //     //         demo: true,
+    //     //         app: aid,
+    //     //         platforms,
+    //     //         filter: {
+    //     //             user: JSON.stringify({la: {$in: ['de']}})
+    //     //         },
+    //     //         contents: [
+    //     //             {message: 'asd', title: 'asd', expiration: 120000},
+    //     //         ],
+    //     //         triggers: [
+    //     //             {kind: 'plain', start: new Date(Date.now() + 5000)},
+    //     //         ]
+    //     //     })
+    //     //     .expect('Content-Type', /json/)
+    //     //     .expect(res => {
+    //     //         should.equal(res.status, 400);
+    //     //         should.deepEqual(res.body.errors, ['Please define test users in Push plugin configuration']);
+    //     //     });
+    // }).timeout(100000);
     it('should create a few simple messages', async() => {
         let now = Date.now();
 
