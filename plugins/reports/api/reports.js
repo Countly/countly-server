@@ -666,7 +666,7 @@ var metricProps = {
                             return log.d(err);
                         }
                         msg.attachments = [{filename: "Countly_Report.pdf", path: res.filename}];
-    
+
                         /**
                          * callback function after sending email to delete pdf file
                          */
@@ -686,15 +686,16 @@ var metricProps = {
                             mail.sendMail(msg, deletePDFCallback);
                         }
                     });
-                } else {
+                }
+                else {
                     if (mail.sendPoolMail) {
                         mail.sendPoolMail(msg);
                     }
                     else {
                         mail.sendMail(msg);
-                    } 
+                    }
                 }
-                
+
             }
         }
         callback();

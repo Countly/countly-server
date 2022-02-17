@@ -195,7 +195,7 @@
                 showMetrics: true,
                 showDashboards: false,
                 reportDateRangesOptions: [],
-                metricsArray:[],
+                metricsArray: [],
             };
         },
         computed: {
