@@ -131,21 +131,22 @@
                 };
             },
             computed: {
-                allApps: function() {
-                    var storedApp = this.$store.getters["countlyCommon/getAllApps"];
-                    var apps = _.sortBy(storedApp, function(app) {
-                        return (app.name + "").toLowerCase();
-                    });
-                    if (countlyGlobal.member.appSortList) {
-                        apps = this.sortBy(apps, countlyGlobal.member.appSortList);
-                    }
-                    apps = apps.map(function(a) {
-                        a.label = a.name;
-                        a.value = a._id;
-                        return a;
-                        //a.image = countlyGlobal.path + "appimages/" + active._id + ".png"
-                    });
-                    return apps;
+                allApps: {
+                    get: function() {
+                        var storedApp = this.$store.getters["countlyCommon/getAllApps"];
+                        var apps = _.sortBy(storedApp, function(app) {
+                            return (app.name + "").toLowerCase();
+                        });
+                        if (countlyGlobal.member.appSortList) {
+                            apps = this.sortBy(apps, countlyGlobal.member.appSortList);
+                        }
+                        apps = apps.map(function(a) {
+                            a.label = a.name;
+                            a.value = a._id;
+                            return a;
+                        });
+                        return apps;
+                    },
                 },
                 activeApp: function() {
                     var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"] && this.$store.getters["countlyCommon/getActiveApp"]._id;
@@ -616,15 +617,20 @@
                 }
             }
         });
+        app.initSidebar = function() {
+            countlyVue.sideBarComponent = new Vue({
+                el: $('#sidebar-x').get(0),
+                store: countlyVue.vuex.getGlobalStore(),
+                components: {
+                    Sidebar: SidebarView
+                },
+                template: '<Sidebar></Sidebar>'
+            });
+        };
 
-        countlyVue.sideBarComponent = new Vue({
-            el: $('#sidebar-x').get(0),
-            store: countlyVue.vuex.getGlobalStore(),
-            components: {
-                Sidebar: SidebarView
-            },
-            template: '<Sidebar></Sidebar>'
-        });
+        if (Object.keys(countlyGlobal.apps).length) {
+            app.initSidebar();
+        }
     });
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));

@@ -343,17 +343,21 @@
                             });
                         }
                         else {
-                            state.allApps[additionalApps._id] = additionalApps;
+                            state.allApps[additionalApps._id] = JSON.parse(JSON.stringify(additionalApps));
                         }
+                        state.allApps = Object.assign({}, state.allApps, {});
                     },
                     removeFromAllApps: function(state, appToRemoveId) {
                         var appObj = state.allApps[appToRemoveId];
                         if (appObj) {
                             delete state.allApps[appToRemoveId];
                         }
+                        state.allApps = Object.assign({}, state.allApps, {});
+
                     },
                     deleteAllApps: function(state) {
                         state.allApps = null;
+                        state.allApps = Object.assign({}, state.allApps, {});
                     },
                     addNotificationToast: function(state, payload) {
                         payload.id = countlyCommon.generateId();

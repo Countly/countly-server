@@ -149,6 +149,7 @@
                     self.dialog = {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''};
                 });
                 window.location.href = '#/home';
+                window.location.reload();
             },
             continuePopulate: function() {
                 this.finishedGenerateModal = { showDialog: false };
@@ -166,9 +167,10 @@
                 countlyPopulator.getTemplate(self.selectedTemplate, function(template) {
                     countlyPopulator.generateUsers(self.maxTime * 4, template);
                 });
+                var startTime = Math.round(Date.now() / 1000);
                 this.progressBar = setInterval(function() {
                     if (parseInt(self.percentage) < 100) {
-                        self.percentage += parseFloat(100 / self.maxTime);
+                        self.percentage = parseFloat((Math.round(Date.now() / 1000) - startTime) / self.maxTime) * 100;
                         if (self.percentage > 100) {
                             self.percentage = 100;
                         }

@@ -53,7 +53,7 @@
 					<el-select v-model="tableMode" class="bu-mr-2">
 						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
 					</el-select>
-					<a href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+					<a v-if="canUserDelete || canUserUpdate" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
 				</template>
 				<template v-slot="scope">
 					<el-table-column width="65"  fixed="left" prop="selected">
@@ -86,7 +86,7 @@
 					<el-select v-model="tableMode" class="bu-mr-2" >
 						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
 					</el-select>
-					<a href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+					<a v-if="canUserDelete || canUserUpdate" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
 				</template>
 		
 				<template v-slot="scope">
