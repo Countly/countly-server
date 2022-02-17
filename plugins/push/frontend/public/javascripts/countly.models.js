@@ -2351,12 +2351,13 @@
             var dto = null;
             try {
                 dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+                dto._id = undefined;
                 var resendUserFilter = {message: {$nin: [model._id]}};
                 if (!dto.filter) {
                     dto.filter = {};
                 }
                 if (!dto.filter.user) {
-                    dto.filter.user = resendUserFilter;
+                    dto.filter.user = JSON.stringify(resendUserFilter);
                 }
                 else {
                     if (typeof dto.filter.user === 'string') {
@@ -2368,6 +2369,7 @@
                     else {
                         dto.filter.user.message = resendUserFilter.message;
                     }
+                    dto.filter.user = JSON.stringify(dto.filter.user);
                 }
             }
             catch (error) {
