@@ -113,7 +113,7 @@
             emitSaveWhenDisabled: {
                 type: Boolean,
                 required: false,
-                defualt: false
+                default: false
             }
         },
         computed: {
@@ -819,7 +819,7 @@
     Vue.component("cly-notification", countlyBaseComponent.extend({
         template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
-                            '<div class="bu-is-flex">\n' +
+                            '<div class="bu-is-flex bu-is-align-items-center">\n' +
                                 '<img :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
                                 '<slot><span class="alert-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
