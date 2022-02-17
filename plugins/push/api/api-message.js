@@ -208,9 +208,9 @@ module.exports.test = async params => {
 module.exports.create = async params => {
     let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
     msg._id = common.db.ObjectID();
-    msg.info.created = new Date();
-    msg.info.createdBy = params.member._id;
-    msg.info.createdByName = params.member.full_name;
+    msg.info.created = msg.info.updated = new Date();
+    msg.info.createdBy = msg.info.updatedBy = params.member._id;
+    msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
 
     if (params.qstring.status === Status.Draft) {
         msg.status = params.qstring.status;
@@ -248,6 +248,10 @@ module.exports.update = async params => {
         }
     }
     else {
+        msg.info.rejected = null;
+        msg.info.rejectedAt = null;
+        msg.info.rejectedBy = null;
+        msg.info.rejectedByName = null;
         if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
             msg.status = Status.Created;
             msg.state = State.Created;

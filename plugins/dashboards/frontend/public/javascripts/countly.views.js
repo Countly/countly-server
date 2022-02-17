@@ -942,8 +942,8 @@
                 var i;
 
                 this.grid = GridStack.init({
-                    cellHeight: 100,
-                    margin: 10,
+                    cellHeight: 80,
+                    margin: 8,
                     animate: true,
                     float: false,
                     column: 4
@@ -1273,7 +1273,20 @@
             },
             dashboard: function() {
                 var selected = this.$store.getters["countlyDashboards/selected"];
-                return selected.data || {};
+                var dashboard = selected.data || {};
+
+                dashboard.creation = {};
+
+                if (dashboard.created_at) {
+                    var formattedTime = this.parseTimeAgo(dashboard.created_at) || {};
+                    dashboard.creation.time = formattedTime.text;
+                }
+
+                if (dashboard.owner && dashboard.owner.full_name) {
+                    dashboard.creation.by = dashboard.owner.full_name;
+                }
+
+                return dashboard;
             },
             canUpdate: function() {
                 return this.dashboard.is_editable;
@@ -1364,23 +1377,45 @@
             }
         ];
 
+        var templates = [
+            {
+                namespace: "dashboards",
+                mapping: {
+                    main: "/dashboards/templates/index.html",
+                    nowidget: "/dashboards/templates/transient/no-widget.html",
+                    nodashboard: "/dashboards/templates/transient/no-dashboard.html",
+                    disabled: "/dashboards/templates/transient/disabled-widget.html",
+                    invalid: "/dashboards/templates/transient/invalid-widget.html",
+                    grid: "/dashboards/templates/grid.html",
+                    widget: "/dashboards/templates/widget.html",
+                }
+            }
+        ];
+
+        var widgets = WidgetsMixin.computed.__widgets();
+
+        /**
+         * We get the templates from all the widget registrations below and load them on initial
+         * view render.
+         *
+         * The fact that dashboards plugin is loaded at the very end i.e. after all the plugins
+         * have finished loading, we can be sure that all the plugins must have registered their
+         * dashboard widgets.
+         */
+        for (var type in widgets) {
+            for (var i = 0; i < widgets[type].length; i++) {
+                var widget = widgets[type][i];
+
+                if (Array.isArray(widget.templates)) {
+                    templates = templates.concat(widget.templates);
+                }
+            }
+        }
+
         return new countlyVue.views.BackboneWrapper({
             component: HomeComponent,
             vuex: vuex,
-            templates: [
-                {
-                    namespace: "dashboards",
-                    mapping: {
-                        main: "/dashboards/templates/index.html",
-                        nowidget: "/dashboards/templates/transient/no-widget.html",
-                        nodashboard: "/dashboards/templates/transient/no-dashboard.html",
-                        disabled: "/dashboards/templates/transient/disabled-widget.html",
-                        invalid: "/dashboards/templates/transient/invalid-widget.html",
-                        grid: "/dashboards/templates/grid.html",
-                        widget: "/dashboards/templates/widget.html",
-                    }
-                }
-            ]
+            templates: templates
         });
     };
 
@@ -1479,7 +1514,7 @@
 
         countlyVue.container.registerData("/sidebar/menu/main", {
             name: "dashboards",
-            icon: "ion-android-apps",
+            icon: "cly-icon-sidebar-dashboards",
             tooltip: CV.i18n("sidebar.dashboard-tooltip"),
             component: DashboardsMenu
         });

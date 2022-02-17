@@ -167,8 +167,9 @@
                 var dd = widgetData.dashData || {};
                 dd = dd.data || {};
 
-                if (widgetData.apps && widgetData.apps[0]) {
-                    dd = dd[widgetData.apps[0]] || {};
+                var keys1 = Object.keys(dd);
+                if (keys1.length > 0) {
+                    dd = dd[keys1[0]];
                 }
                 var tableData = [];
                 for (var k = 0; k < dd.rows.length; k++) {
@@ -187,8 +188,9 @@
                 var dd = widgetData.dashData || {};
                 dd = dd.data || {};
 
-                if (widgetData.apps && widgetData.apps[0]) {
-                    dd = dd[widgetData.apps[0]] || {};
+                var keys1 = Object.keys(dd);
+                if (keys1.length > 0) {
+                    dd = dd[keys1[0]];
                 }
                 var fields = [];
                 for (var k = 0; k < dd.cols.length; k++) {
@@ -242,13 +244,17 @@
                     dd = dd[widgetData.apps[0]] || {};
                 }
                 var metric = widgetData.metrics[0];
+                var total = 0;
+                if (dd.total && dd.total[metric]) {
+                    total = dd.total[metric];
+                }
                 return {
                     series: [
                         {
                             name: namingMap[metric],
                             data: dd.graph,
                             label: {
-                                formatter: "{a|" + namingMap[metric] + "}\n" + (countlyCommon.getShortNumber(dd) || 0),
+                                formatter: "{a|" + namingMap[metric] + "}\n" + (countlyCommon.getShortNumber(total) || 0),
                                 fontWeight: 500,
                                 fontSize: 16,
                                 fontFamily: "Inter",
@@ -699,11 +705,13 @@
                 },
                 methods: {
                     handleClyError: function(payload) {
-                        CountlyHelpers.notify({
-                            title: _i18n("common.error"),
-                            message: payload.message,
-                            type: "error"
-                        });
+                        if (countlyCommon.DEBUG) {
+                            CountlyHelpers.notify({
+                                title: _i18n("common.error"),
+                                message: payload.message,
+                                type: "error"
+                            });
+                        }
                     },
                     handleClyRefresh: function() {
                         this.$root.$emit("cly-refresh", {reason: "dateChange"});

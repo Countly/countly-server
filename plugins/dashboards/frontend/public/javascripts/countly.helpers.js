@@ -145,9 +145,7 @@
 
                 switch (this.type) {
                 case "session":
-
                     var app = countlyGlobal.apps[appId];
-
                     if (app && app.type) {
 
                         breakdowns.push(
@@ -280,8 +278,6 @@
                     }
                     break;
                 }
-
-
                 return breakdowns;
             },
             selectedBreakdown: {

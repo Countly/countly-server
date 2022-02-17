@@ -444,7 +444,8 @@
             hideDefaultTabs: {type: Boolean, default: false},
             allPlaceholder: {type: String, default: 'All'},
             hideAllOptionsTab: {type: Boolean, default: false},
-            onlySelectedOptionsTab: {type: Boolean, default: false}
+            onlySelectedOptionsTab: {type: Boolean, default: false},
+            prefixLabelWithTabId: {type: Boolean, default: false}
         },
         data: function() {
             return {
@@ -522,6 +523,21 @@
                     var matching = this.flatOptions.filter(function(item) {
                         return item.value === self.value;
                     });
+                    if (this.prefixLabelWithTabId && matching.length) {
+                        var selectedTab = this.publicTabs.filter(function(tab) {
+                            return self.val2tab[self.value] === tab.name;
+                        });
+                        if (selectedTab.length) {
+                            var valueTab = selectedTab[0];
+                            var singleOption = valueTab.options && valueTab.options.length === 1 && this.singleOptionSettings.hideList;
+                            if (!singleOption) {
+                                matching = [{
+                                    label: selectedTab[0].label + ", " + matching[0].label,
+                                    value: matching[0].value
+                                }];
+                            }
+                        }
+                    }
                     return missingOptions.concat(matching);
                 }
             },
@@ -641,6 +657,9 @@
             }
         },
         watch: {
+            value: function() {
+                this.determineActiveTabId();
+            },
             hasAllOptionsTab: function() {
                 this.determineActiveTabId();
             },

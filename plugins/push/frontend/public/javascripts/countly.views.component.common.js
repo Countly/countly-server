@@ -17,11 +17,6 @@
             description: {
                 type: String,
                 required: false,
-            },
-            hasTopMargin: {
-                type: Boolean,
-                required: false,
-                default: false,
             }
         },
         data: function() {
@@ -892,6 +887,10 @@
                 triggerNotMetOptions: countlyPushNotification.service.triggerNotMetOptions,
                 deliveryDateCalculationOptions: countlyPushNotification.service.deliveryDateCalculationOptions,
                 deliveryMethodOptions: countlyPushNotification.service.deliveryMethodOptions,
+                cohorts: [],
+                locations: [],
+                isFetchLocationsLoading: false,
+                isFetchCohortsLoading: false,
             };
         },
         computed: {
@@ -899,17 +898,9 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
             previewCohorts: function() {
-                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
-                    return this.pushNotification.cohorts.map(function(cohortItem) {
-                        return cohortItem.name;
-                    });
-                }
-                if (this.pushNotification.type === this.TypeEnum.AUTOMATIC) {
-                    return this.pushNotification[this.TypeEnum.AUTOMATIC].cohorts.map(function(cohortItem) {
-                        return cohortItem.name;
-                    });
-                }
-                return [];
+                return this.cohorts.map(function(cohortItem) {
+                    return cohortItem.name;
+                });
             },
         },
         methods: {
@@ -919,6 +910,53 @@
             formatDateAndTime: function(date) {
                 return countlyPushNotification.helper.formatDateTime(date, 'MMMM Do, YYYY, h:mm a');
             },
+            setCohorts: function(cohorts) {
+                this.cohorts = cohorts;
+            },
+            setLocations: function(locations) {
+                this.locations = locations;
+            },
+            fetchCohorts: function() {
+                var self = this;
+                if (this.pushNotification.type === this.TypeEnum.TRANSACTIONAL) {
+                    return;
+                }
+                this.isFetchCohortsLoading = true;
+                var cohortsList = [];
+                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
+                    cohortsList = this.pushNotification.cohorts;
+                }
+                if (this.pushNotification.type === this.TypeEnum.AUTOMATIC) {
+                    cohortsList = this.pushNotification.automatic.cohorts;
+                }
+                countlyPushNotification.service.fetchCohorts(cohortsList, false)
+                    .then(function(cohorts) {
+                        self.setCohorts(cohorts);
+                    }).catch(function() {
+                        self.setCohorts([]);
+                    }).finally(function() {
+                        self.isFetchCohortsLoading = false;
+                    });
+            },
+            fetchLocations: function() {
+                var self = this;
+                if (this.pushNotification.type === this.TypeEnum.TRANSACTIONAL) {
+                    return;
+                }
+                this.isFetchLocationsLoading = true;
+                countlyPushNotification.service.fetchLocations(this.pushNotification.locations, false)
+                    .then(function(locations) {
+                        self.setLocations(locations);
+                    }).catch(function() {
+                        self.setLocations([]);
+                    }).finally(function() {
+                        self.isFetchLocationsLoading = false;
+                    });
+            },
+        },
+        mounted: function() {
+            this.fetchCohorts();
+            this.fetchLocations();
         },
         components: {
             'details-tab-row': countlyPushNotificationComponent.DetailsTabRow
