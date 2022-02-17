@@ -57,10 +57,6 @@
                 });
             }
             var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
-            if (!countlyGlobal.apps[app_id]) {
-                this.createNewApp();
-            }
-
             return {
                 firstApp: this.checkIfFirst(),
                 newApp: this.newApp || false,
@@ -114,6 +110,12 @@
                     this.appListCount = CV.i18n('common.search') + " in " + this.appList.length + (this.appList.length > 1 ? " Apps" : " App");
                 },
                 immediate: true
+            }
+        },
+        created: function() {
+            var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
+            if (!countlyGlobal.apps[app_id]) {
+                this.createNewApp();
             }
         },
         beforeCreate: function() {
@@ -343,6 +345,10 @@
                                 label: data.name
                             });
                             self.selectedSearchBar = data._id + "";
+                            if (self.firstApp) {
+                                countlyCommon.ACTIVE_APP_ID = data._id + "";
+                                app.onAppManagementSwitch(data._id + "", data && data.type || "mobile");
+                            }
                             self.$store.dispatch("countlyCommon/addToAllApps", data);
                             self.firstApp = self.checkIfFirst();
                         },
@@ -553,7 +559,7 @@
             },
             compare: function(editedObject, selectedApp) {
                 var differences = [];
-                if (this.selectedApp === "new") {
+                if (!this.selectedApp || this.selectedApp === "new") {
                     return differences;
                 }
                 else {
