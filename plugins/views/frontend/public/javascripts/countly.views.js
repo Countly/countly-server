@@ -1049,7 +1049,7 @@
         });
 
         var DrawerComponent = countlyVue.views.create({
-            template: CV.T('/views/templates/widgetDrawer.html'),
+            template: "#views-drawer",
             data: function() {
                 return {
                     useCustomTitle: false,
@@ -1098,6 +1098,14 @@
             getter: function(widget) {
                 return widget.widget_type === "analytics" && widget.data_type === "views";
             },
+            templates: [
+                {
+                    namespace: "views",
+                    mapping: {
+                        drawer: '/views/templates/widgetDrawer.html',
+                    }
+                }
+            ],
             drawer: {
                 component: DrawerComponent,
                 getEmpty: function() {

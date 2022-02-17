@@ -350,7 +350,7 @@
     });
 
     var DrawerComponent = countlyVue.views.create({
-        template: CV.T('/sources/templates/widgetDrawer.html'),
+        template: "#sources-drawer",
         props: {
             scope: {
                 type: Object
@@ -390,6 +390,14 @@
         getter: function(widget) {
             return widget.widget_type === "analytics" && widget.data_type === "sources";
         },
+        templates: [
+            {
+                namespace: "sources",
+                mapping: {
+                    "drawer": "/sources/templates/widgetDrawer.html"
+                }
+            }
+        ],
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
