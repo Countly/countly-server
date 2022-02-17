@@ -114,6 +114,10 @@ async function validate(args, draft = false) {
             scheduled: msg.info.scheduled,
             locales: msg.info.locales,
         }));
+
+        // state & status cannot be changed by api
+        msg.status = existing.status;
+        msg.state = existing.state;
     }
 
     return msg;
@@ -213,7 +217,7 @@ module.exports.create = async params => {
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
 
     if (params.qstring.status === Status.Draft) {
-        msg.status = params.qstring.status;
+        msg.status = Status.Draft;
         msg.state = State.Inactive;
         await msg.save();
     }
@@ -252,7 +256,7 @@ module.exports.update = async params => {
         msg.info.rejectedAt = null;
         msg.info.rejectedBy = null;
         msg.info.rejectedByName = null;
-    
+
         if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
             msg.status = Status.Created;
             msg.state = State.Created;
