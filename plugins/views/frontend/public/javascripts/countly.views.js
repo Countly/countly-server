@@ -1049,7 +1049,6 @@
         });
 
         var DrawerComponent = countlyVue.views.create({
-            template: CV.T('/views/templates/widgetDrawer.html'),
             template: "#views-drawer",
             data: function() {
                 return {

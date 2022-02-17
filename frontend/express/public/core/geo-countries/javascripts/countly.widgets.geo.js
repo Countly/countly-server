@@ -99,7 +99,7 @@
         getter: function(widget) {
             return widget.widget_type === "analytics" && widget.data_type === "geo";
         },
-		 templates: [
+		templates: [
             {
                 namespace: "geo",
                 mapping: {
