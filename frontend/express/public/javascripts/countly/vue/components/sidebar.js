@@ -248,7 +248,7 @@
 
                     if (!Object.keys(menus).length || !Object.keys(submenus).length) {
                         // eslint-disable-next-line no-console
-                        console.log("Something is terribly wrong, please contact Prikshit Tekta asap and don't clear the logs please! ", currLink, menus, submenus);
+                        console.log("Something is terribly wrong in sidebar ! ", currLink, menus, submenus);
                     }
 
                     for (var k in menus) {

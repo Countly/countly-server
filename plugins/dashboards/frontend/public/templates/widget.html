@@ -1,4 +1,5 @@
 <div class="grid-stack-item"
+	:class="'grid-stack-item-'+widget.widget_type"
     :id="widget._id"
     :gs-id="widget._id"
     :gs-x="autoPosition || widget.position && widget.position[0]"
