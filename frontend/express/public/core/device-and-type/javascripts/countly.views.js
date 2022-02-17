@@ -428,7 +428,7 @@ var GridComponent = countlyVue.views.create({
 });
 
 var DrawerComponent = countlyVue.views.create({
-    template: CV.T('/core/device-and-type/templates/widgetDrawer.html'),
+    template: "#technology-drawer",
     data: function() {
         return {
 
@@ -488,6 +488,14 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
             return false;
         }
     },
+    templates: [
+        {
+            namespace: "technology",
+            mapping: {
+                "drawer": "/core/device-and-type/templates/widgetDrawer.html"
+            }
+        }
+    ],
     drawer: {
         component: DrawerComponent,
         getEmpty: function() {

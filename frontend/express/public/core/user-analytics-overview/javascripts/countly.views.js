@@ -268,7 +268,7 @@ var GridComponent = countlyVue.views.create({
 });
 
 var DrawerComponent = countlyVue.views.create({
-    template: CV.T('/core/user-analytics-overview/templates/widgetDrawer.html'),
+    template: "#usersoverview-drawer",
     data: function() {
         return {
         };
@@ -340,6 +340,14 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
             return false;
         }
     },
+    templates: [
+        {
+            namespace: "usersoverview",
+            mapping: {
+                "drawer": "/core/user-analytics-overview/templates/widgetDrawer.html"
+            }
+        }
+    ],
     drawer: {
         component: DrawerComponent,
         getEmpty: function() {
