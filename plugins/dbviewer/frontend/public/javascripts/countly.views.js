@@ -235,7 +235,6 @@ var DBViewerTab = countlyVue.views.create({
             else {
                 this.appFilter = "all";
             }
-            
             this.db = routeHashItems[4];
         }
 
