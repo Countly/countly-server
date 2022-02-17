@@ -159,8 +159,8 @@
                 self.percentage = 0;
                 this.generateDataModal = { showDialog: true };
 
-                countlyPopulator.setStartTime(countlyCommon.getPeriod()[0] / 1000);
-                countlyPopulator.setEndTime(countlyCommon.getPeriod()[1] / 1000);
+                countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
+                countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
 
                 countlyPopulator.setSelectedTemplate(self.selectedTemplate);
                 countlyPopulator.getTemplate(self.selectedTemplate, function(template) {

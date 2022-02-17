@@ -1,4 +1,4 @@
-/*global $, countlyAuth, countlyGlobal, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, moment _*/
+/*global $, countlyAuth, countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, moment _*/
 
 var FEATURE_NAME = 'dbviewer';
 
@@ -56,6 +56,16 @@ var DBViewerTab = countlyVue.views.create({
                 response.aaData = response.collections;
                 response.iTotalRecords = response.limit;
                 response.iTotalDisplayRecords = response.total;
+                if (!self.refresh) {
+                    self.expandKeys = [];
+                    self.expandKeysHolder = [];
+                }
+                for (var i = 0; i < response.aaData.length; i++) {
+                    response.aaData[i]._view = JSON.stringify(response.aaData[i]);
+                    if (!self.refresh) {
+                        self.expandKeysHolder.push(response.aaData[i]._id);
+                    }
+                }
             },
             onError: function(context, err) {
                 throw err;
@@ -81,15 +91,29 @@ var DBViewerTab = countlyVue.views.create({
             projectionOptions: [],
             isDescentSort: false,
             isIndexRequest: false,
-            searchQuery: ""
+            searchQuery: "",
+            isExpanded: false,
+            expandKeys: [],
+            expandKeysHolder: [],
+            isRefresh: false
         };
     },
     watch: {
         selectedCollection: function(newVal) {
             window.location.hash = "#/manage/db/" + this.db + "/" + newVal;
+            store.set('dbviewer_app_filter', this.appFilter);
         }
     },
     methods: {
+        toggleExpand: function() {
+            this.isExpanded = !this.isExpanded;
+            if (this.isExpanded) {
+                this.expandKeys = this.expandKeysHolder;
+            }
+            else {
+                this.expandKeys = [];
+            }
+        },
         setSearchQuery: function(query) {
             this.searchQuery = query;
         },
@@ -132,7 +156,16 @@ var DBViewerTab = countlyVue.views.create({
             this.sort = "";
             this.fetch(true);
         },
+        clearFilters: function() {
+            this.$refs.dbviewerFilterForm.editedObject.projectionEnabled = false;
+            this.$refs.dbviewerFilterForm.editedObject.sortEnabled = false;
+            this.$refs.dbviewerFilterForm.editedObject.projection = null;
+            this.$refs.dbviewerFilterForm.editedObject.sort = null;
+            this.$refs.dbviewerFilterForm.editedObject.filter = null;
+            this.isDescentSort = false;
+        },
         fetch: function(force) {
+            this.refresh = false;
             this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force});
         },
         getExportQuery: function() {
@@ -148,6 +181,7 @@ var DBViewerTab = countlyVue.views.create({
             return apiQueryData;
         },
         refresh: function(force) {
+            this.refresh = true;
             this.fetch(force);
         }
     },
@@ -190,10 +224,17 @@ var DBViewerTab = countlyVue.views.create({
         }
     },
     created: function() {
+        this.refresh = false;
         var routeHashItems = window.location.hash.split("/");
         if (routeHashItems.length === 6) {
             this.collection = routeHashItems[5];
             this.selectedCollection = this.collection;
+            if (store.get('dbviewer_app_filter')) {
+                this.appFilter = store.get('dbviewer_app_filter');
+            }
+            else {
+                this.appFilter = "all";
+            }
             this.db = routeHashItems[4];
         }
 
@@ -304,7 +345,8 @@ var DBViewerAggregate = countlyVue.views.create({
             db: (this.$route.params && this.$route.params.db),
             collection: (this.$route.params && this.$route.params.collection),
             aggregationResult: [{'_id': 'query_not_executed_yet'}],
-            queryLoading: false
+            queryLoading: false,
+            fields: []
         };
     },
     methods: {
@@ -319,6 +361,9 @@ var DBViewerAggregate = countlyVue.views.create({
                 this.queryLoading = true;
                 countlyDBviewer.executeAggregation(this.db, this.collection, query, countlyGlobal.ACTIVE_APP_ID, null, function(res) {
                     self.aggregationResult = res.aaData;
+                    if (res.aaData.length) {
+                        self.fields = Object.keys(res.aaData[0]);
+                    }
                     self.queryLoading = false;
                 });
             }
@@ -384,4 +429,8 @@ $(document).ready(function() {
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         app.addMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 100});
     }
+
+    document.querySelectorAll('pre code').forEach(function(el) {
+        hljs.highlightElement(el);
+    });
 });
