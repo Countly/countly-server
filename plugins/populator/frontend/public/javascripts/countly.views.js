@@ -149,6 +149,7 @@
                     self.dialog = {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''};
                 });
                 window.location.href = '#/home';
+                window.location.reload();
             },
             continuePopulate: function() {
                 this.finishedGenerateModal = { showDialog: false };
