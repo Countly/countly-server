@@ -390,6 +390,9 @@
             }
             return false;
         },
+        isNetworkError: function(response) {
+            return response && !response.responseJSON && response.readyState === 0;
+        },
         getFirstValidationErrorMessageIfFound: function(response) {
             if (this.isValidationError(response)) {
                 return response.responseJSON.errors[0];
@@ -422,6 +425,9 @@
             }
             if (error && error.message) {
                 return error.message;
+            }
+            if (this.isNetworkError(error)) {
+                return 'Network error occurred.';
             }
             return CV.i18n('push-notification.unknown-error');
         },
