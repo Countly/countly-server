@@ -7,8 +7,6 @@
     border-radius: 4px;
 
     .bu-columns{
-      display: flex;
-      justify-content: space-around;
     }
 
     .el-collapse {
@@ -43,16 +41,16 @@
         }
       }
 
-      .bu-columns{
+      span div .bu-columns{
         padding: 0 !important;
         margin: 0;
-        .bu-is-4{
-          width: 50%;
-          margin-right: 48px;
-        }
-        .bu-is-8{
-          width: 37.33%;
-        }
+          .bu-is-4{
+            width: 50%;
+            margin-right: 48px;
+          }
+          .bu-is-8{
+            width: 37.33%;
+          }
       }
     } 
   }
@@ -60,6 +58,7 @@
   .account-settings-avatar-box{
     padding: 24px;
     overflow: auto;
+    flex: auto;
     .el-upload {display: block;}
   }
 
