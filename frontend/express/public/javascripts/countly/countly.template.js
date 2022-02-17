@@ -1160,9 +1160,8 @@ var AppRouter = Backbone.Router.extend({
     },
     renderWhenReady: function(viewName) { //all view renders end up here
         // If there is an active view call its destroy function to perform cleanups before a new view renders
-
-        if (this.activeView) {
-            this.activeView._removeMyRequests();
+        if (this.activeView && this.activeView.destroy) {
+            this.activeView._removeMyRequests && this.activeView._removeMyRequests();
             this.activeView.destroy();
         }
 
@@ -4283,7 +4282,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         }
         else {
             if (app.activeView) {
-                if (app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata]) {
+                if (app.activeView._myRequests && app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata]) {
                     jqXHR.abort_reason = "duplicate";
                     jqXHR.abort(); //we already have same working request
                 }
