@@ -12,6 +12,14 @@
             }
         },
         computed: {
+            linkStyling: function() {
+                if (this.data.text_align) {
+                    return "text-align: " + this.data.text_align;
+                }
+                else {
+                    return "";
+                }
+            },
             widgetStyling: function() {
                 var widgetData = this.data;
                 var style = "", fontSize, lineHeight;
@@ -23,6 +31,11 @@
                     fontSize = 15;
                     lineHeight = 22;
                 }
+
+                if (this.data.text_align) {
+                    style += "text-align: " + this.data.text_align + ";";
+                }
+
 
                 style += 'font-size: ' + fontSize + 'px;';
                 style += 'line-height: ' + lineHeight + 'px;';
@@ -95,6 +108,24 @@
                             name: CV.i18nM("dashboards.underline"),
                             value: "u"
                         }
+                    ],
+                    alignments: [
+                        {
+                            name: CV.i18nM("dashbords.align.left"),
+                            value: "left"
+                        },
+                        {
+                            name: CV.i18nM("dashbords.align.right"),
+                            value: "right"
+                        },
+                        {
+                            name: CV.i18nM("dashbords.align.center"),
+                            value: "center"
+                        },
+                        {
+                            name: CV.i18nM("dashbords.align.justify"),
+                            value: "justify"
+                        }
                     ]
                 }
             };
@@ -130,6 +161,7 @@
                     link_text: "",
                     link_path: "",
                     add_link: false,
+                    text_align: ""
                 };
             },
             beforeSaveFn: function(doc) {

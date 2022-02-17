@@ -59,7 +59,7 @@
     });
 
     var DrawerComponent = countlyVue.views.create({
-        template: CV.T('/core/geo-countries/templates/dashboard-widget/drawer.html'),
+        template: "#geo-drawer",
         props: {
             scope: {
                 type: Object
@@ -99,6 +99,14 @@
         getter: function(widget) {
             return widget.widget_type === "analytics" && widget.data_type === "geo";
         },
+        templates: [
+            {
+                namespace: "geo",
+                mapping: {
+                    "drawer": "/core/geo-countries/templates/dashboard-widget/drawer.html"
+                }
+            }
+        ],
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
