@@ -229,7 +229,13 @@ var DBViewerTab = countlyVue.views.create({
         if (routeHashItems.length === 6) {
             this.collection = routeHashItems[5];
             this.selectedCollection = this.collection;
-            this.appFilter = store.get('dbviewer_app_filter');
+            if (store.get('dbviewer_app_filter')) {
+                this.appFilter = store.get('dbviewer_app_filter');
+            }
+            else {
+                this.appFilter = "all";
+            }
+            
             this.db = routeHashItems[4];
         }
 
