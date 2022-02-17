@@ -252,7 +252,6 @@ module.exports.update = async params => {
         msg.info.rejectedAt = null;
         msg.info.rejectedBy = null;
         msg.info.rejectedByName = null;
-    
         if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
             msg.status = Status.Created;
             msg.state = State.Created;
