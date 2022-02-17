@@ -1,4 +1,4 @@
-/*global countlyVue, CV */
+/*global countlyVue, CV, countlyCommon */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
@@ -9,6 +9,62 @@
                 default: function() {
                     return {};
                 }
+            }
+        },
+        computed: {
+            widgetStyling: function() {
+                var widgetData = this.data;
+                var style = "", fontSize, lineHeight;
+                if (widgetData.font_size && !Number.isNaN(parseFloat(widgetData.font_size))) {
+                    fontSize = parseFloat(widgetData.font_size);
+                    lineHeight = fontSize + 7;
+                }
+                else {
+                    fontSize = 15;
+                    lineHeight = 22;
+                }
+
+                style += 'font-size: ' + fontSize + 'px;';
+                style += 'line-height: ' + lineHeight + 'px;';
+
+                if (widgetData.bar_color) {
+                    style += 'color: ' + countlyCommon.GRAPH_COLORS[this.data.bar_color - 1] + ';';
+                }
+
+                if (widgetData.text_decoration) {
+                    for (var i = 0 ; i < widgetData.text_decoration.length; i++) {
+                        if (widgetData.text_decoration[i] === "b") {
+                            style += 'font-weight: bold;';
+                        }
+
+                        if (widgetData.text_decoration[i] === "i") {
+                            style += 'font-style: italic;';
+                        }
+
+                        if (widgetData.text_decoration[i] === "u") {
+                            style += 'text-decoration: underline;';
+                        }
+                    }
+                }
+
+                return style;
+            },
+            mylink: function() {
+                if (this.data.add_link) {
+                    return {"link": this.data.link_path, "text": this.data.link_text};
+                }
+                else {
+                    return false;
+                }
+            },
+            widgetText: function() {
+                return this.data.content;
+            }
+
+        },
+        methods: {
+            beforeCopy: function(data) {
+                return data;
             }
         }
     });
@@ -28,15 +84,15 @@
                 constants: {
                     textDecorations: [
                         {
-                            name: this.i18nM["dashboards.bold"],
+                            name: CV.i18nM("dashboards.bold"),
                             value: "b"
                         },
                         {
-                            name: this.i18nM["dashboards.italic"],
+                            name: CV.i18nM("dashboards.italic"),
                             value: "i"
                         },
                         {
-                            name: this.i18nM["dashboards.underline"],
+                            name: CV.i18nM("dashboards.underline"),
                             value: "u"
                         }
                     ]
@@ -67,9 +123,22 @@
                 return {
                     widget_type: "note",
                     content: "",
-                    apps: "*"
+                    apps: "*",
+                    text_decoration: [],
+                    bar_color: 1,
+                    font_size: "15",
+                    link_text: "",
+                    link_path: "",
+                    add_link: false,
                 };
             },
+            beforeSaveFn: function(doc) {
+                if (!doc.add_link) {
+                    doc.link_text = "";
+                    doc.link_path = "";
+                }
+
+            }
         },
         grid: {
             component: WidgetComponent,
