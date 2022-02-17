@@ -420,6 +420,9 @@
             if (this.hasErrors(error)) {
                 return this.getFirstErrorMessageIfFound(error);
             }
+            if (error && error.message) {
+                return error.message;
+            }
             return CV.i18n('push-notification.unknown-error');
         },
         convertDateTimeToMS: function(datetime) {
@@ -2387,13 +2390,35 @@
             if (!this.isPushNotificationApproverPluginEnabled()) {
                 throw new Error('Push approver plugin is not enabled');
             }
-            return countlyPushNotificationApprover.service.approve(messageId);
+            return new Promise(function(resolve, reject) {
+                countlyPushNotificationApprover.service.approve(messageId)
+                    .then(function(response) {
+                        resolve(response);
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    });
+            });
+
         },
         reject: function(messageId) {
             if (!this.isPushNotificationApproverPluginEnabled()) {
                 throw new Error('Push approver plugin is not enabled');
             }
-            return countlyPushNotificationApprover.service.reject(messageId);
+            return new Promise(function(resolve, reject) {
+                countlyPushNotificationApprover.service.reject(messageId)
+                    .then(function(response) {
+                        resolve(response);
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    });
+            });
+
         },
         updateTestUsers: function(testUsersModel, options) {
             var appConfig = {push: {test: {}}};
@@ -2623,7 +2648,7 @@
                 context.dispatch('onFetchSuccess', {useLoader: true});
                 CountlyHelpers.notify({message: "Push notification has been successfully rejected."});
             }).catch(function(error) {
-                // TODO:log error
+                console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: true});
                 CountlyHelpers.notify({message: error.message, type: "error"});
             });
