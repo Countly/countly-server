@@ -267,10 +267,10 @@
                                         countlyEvent.reset();
                                     }
                                     if (period === "reset") {
-                                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.reset-success"], "black");
+                                        CountlyHelpers.alert("", "black", {title: jQuery.i18n.map["management-applications.reset-success"]});
                                     }
                                     else {
-                                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-success"], "black");
+                                        CountlyHelpers.alert("", "black", {title: jQuery.i18n.map["management-applications.clear-success"]});
                                     }
                                 }
                             }
