@@ -33,11 +33,11 @@
                 </template>
             </el-table-column>
            
-            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  min-width="240" :class="is-clickable">
+            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  min-width="240" class="is-clickable">
                 <template slot-scope="scope">
                     <div>
                         <div class="is-name-col bu-is-clickable" @click="onRowClick(scope.row)" >{{scope.row.name}}</div>
-                        <div class="is-desc-col">{{scope.row.description}}</div>
+                        <div v-if="scope.row.description" class="is-desc-col">{{scope.row.description}}</div>
                     </div>
                 </template>
             </el-table-column> 
