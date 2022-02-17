@@ -2477,7 +2477,7 @@
                 context.dispatch('fetchById', id);
                 CountlyHelpers.notify({message: "Push notification has been successfully approved."});
             }).catch(function(error) {
-                // TODO:log error
+                console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
                 CountlyHelpers.notify({message: error.message, type: "error"});
             });
@@ -2486,6 +2486,7 @@
             context.dispatch('onFetchInit', {useLoader: false});
             countlyPushNotification.service.reject(id).then(function() {
                 context.dispatch('onFetchSuccess', {useLoader: false});
+                context.dispatch('fetchById', id);
                 CountlyHelpers.notify({message: "Push notification has been successfully rejected."});
             }).catch(function(error) {
                 console.error(error);
