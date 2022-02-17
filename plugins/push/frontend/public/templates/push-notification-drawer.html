@@ -601,7 +601,7 @@
                                         <validation-provider v-slot="validation" :rules="{required:true, regex:urlRegex}" style="width:60%;" class="bu-pl-1 bu-pr-1">
                                             <el-input v-model="pushNotificationUnderEdit.message[activeLocalization].buttons[index].url" placeholder="Enter Button URL or Deeplink" :class="{'is-error': validation.errors.length > 0}"></el-input>
                                         </validation-provider>
-                                        <div class="ion ion-ios-close-outline bu-pl-1" @click="removeButton(index)"></div>
+                                        <div class="bu-pl-1" @click="removeButton(index)"><i class="fas fa-times"></i></div>
                                     </div>
                                 </div>
                                 <div class="cly-vue-drawer-step__section bu-pb-1">
