@@ -5,6 +5,9 @@
 
     var EditViewsView = countlyVue.views.create({
         template: CV.T("/views/templates/manageViews.html"),
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         data: function() {
             return {
                 description: CV.i18n('views.title-desc'),
@@ -517,7 +520,8 @@
         mixins: [
             countlyVue.container.dataMixin({
                 'externalLinks': '/analytics/views/links'
-            })
+            }),
+            countlyVue.mixins.auth(FEATURE_NAME)
         ]
     });
 
