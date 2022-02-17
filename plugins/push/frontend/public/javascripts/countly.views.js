@@ -1685,8 +1685,8 @@
                 selectedKeyToDelete: null,
                 selectedTestUsersListOption: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID,
                 testUsersListOptions: [
-                    {label: 'User ID', value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID},
-                    {label: 'Cohort', value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT}
+                    {label: CV.i18n('push-notification.user-id'), value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID},
+                    {label: CV.i18n('push-notification.cohort-name'), value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT}
                 ]
             };
         },
@@ -1832,7 +1832,7 @@
             },
             onDeleteKey: function(platformKey) {
                 this.selectedKeyToDelete = platformKey;
-                CountlyHelpers.confirm('', 'danger', this.onConfirmCallback, ['Cancel', 'I understand, delete this key'], {title: 'Delete key'});
+                CountlyHelpers.confirm('', 'danger', this.onConfirmCallback, [CV.i18n('push-notification.cancel'), CV.i18n('push-notification.i-understand-delete-key')], {title: CV.i18n('push-notification.delete-key')});
             },
             deleteAndroidKey: function() {
                 var platform = this.PlatformEnum.ANDROID;
