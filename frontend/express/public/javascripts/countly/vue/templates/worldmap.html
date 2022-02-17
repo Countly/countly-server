@@ -135,7 +135,7 @@
                     v-for="(item, name) in activeMarkers">
                     <l-tooltip :options="markerTooltipOptions" v-if="showTooltip">
                         <div class="bu-p-3 bu-is-flex bu-is-flex-direction-column">
-                            <span class="text-medium">{{getMarkerTooltipTitle(name)}}</span>
+                            <div class="bu-level-left"><img v-if="getMarkerFlag(name)" :src="getMarkerFlag(name)" class="bu-mr-2"  style="border-radius: 50%; width:16px; height:auto;"/><span class="text-medium">{{getMarkerTooltipTitle(name)}}</span></div>
                             <h4>{{formatNumber(item.value)}}</h4>
                             <div class="bu-pt-1">
                                 <slot name="tooltip-suffix">

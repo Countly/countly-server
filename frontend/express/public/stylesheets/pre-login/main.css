@@ -1,57 +1,149 @@
+/* inter-300 - vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic */
 @font-face {
-  font-family: 'Ubuntu';
-  font-weight: 400;
+  font-family: 'Inter';
   font-style: normal;
-  src: url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.eot');
-  src: url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.eot?#iefix') format('embedded-opentype'),
-       local('Ubuntu'),
-       local('Ubuntu-Regular'),
-       url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.woff2') format('woff2'),
-       url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.woff') format('woff'),
-       url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.ttf') format('truetype'),
-       url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.svg#Ubuntu') format('svg');
+  font-weight: 300;
+  font-display: swap;
+  src: url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.woff') format('woff'), /* Modern Browsers */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.svg#Inter') format('svg'); /* Legacy iOS */
 }
-
+/* inter-regular - vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic */
 @font-face {
-  font-family: 'Ubuntu';
-  font-weight: 500;
+  font-family: 'Inter';
   font-style: normal;
-  src: url('../../fonts/Ubuntu-500/Ubuntu-500.eot');
-  src: url('../../fonts/Ubuntu-500/Ubuntu-500.eot?#iefix') format('embedded-opentype'),
-       local('Ubuntu Medium'),
-       local('Ubuntu-500'),
-       url('../../fonts/Ubuntu-500/Ubuntu-500.woff2') format('woff2'),
-       url('../../fonts/Ubuntu-500/Ubuntu-500.woff') format('woff'),
-       url('../../fonts/Ubuntu-500/Ubuntu-500.ttf') format('truetype'),
-       url('../../fonts/Ubuntu-500/Ubuntu-500.svg#Ubuntu') format('svg');
-}
-
-@font-face {
-  font-family: 'Ubuntu';
   font-weight: 400;
-  font-style: italic;
-  src: url('../../fonts/Ubuntu-italic/Ubuntu-italic.eot');
-  src: url('../../fonts/Ubuntu-italic/Ubuntu-italic.eot?#iefix') format('embedded-opentype'),
-       local('Ubuntu Italic'),
-       local('Ubuntu-italic'),
-       url('../../fonts/Ubuntu-italic/Ubuntu-italic.woff2') format('woff2'),
-       url('../../fonts/Ubuntu-italic/Ubuntu-italic.woff') format('woff'),
-       url('../../fonts/Ubuntu-italic/Ubuntu-italic.ttf') format('truetype'),
-       url('../../fonts/Ubuntu-italic/Ubuntu-italic.svg#Ubuntu') format('svg');
+  font-display: swap;
+  src: url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.woff') format('woff'), /* Modern Browsers */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.svg#Inter') format('svg'); /* Legacy iOS */
+}
+/* inter-500 - vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.woff') format('woff'), /* Modern Browsers */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.svg#Inter') format('svg'); /* Legacy iOS */
 }
 
 @font-face {
-  font-family: 'Ubuntu';
-  font-weight: 500;
-  font-style: italic;
-  src: url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.eot');
-  src: url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.eot?#iefix') format('embedded-opentype'),
-       local('Ubuntu Medium Italic'),
-       local('Ubuntu-500italic'),
-       url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.woff2') format('woff2'),
-       url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.woff') format('woff'),
-       url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.ttf') format('truetype'),
-       url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.svg#Ubuntu') format('svg');
+font-family: 'Roboto Mono';
+font-weight: 400;
+font-style: normal;
+src: url('../../fonts/Roboto-Mono/RobotoMono-VariableFont_wght.ttf') format('truetype'),
+     local('Roboto Mono');
+}
+
+@font-face {
+font-family: 'Ubuntu';
+font-weight: 400;
+font-style: normal;
+src: url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.eot');
+src: url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.eot?#iefix') format('embedded-opentype'),
+    local('Ubuntu'),
+    local('Ubuntu-Regular'),
+    url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.woff2') format('woff2'),
+    url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.woff') format('woff'),
+    url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.ttf') format('truetype'),
+    url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.svg#Ubuntu') format('svg');
+}
+
+@font-face {
+font-family: 'Ubuntu';
+font-weight: 500;
+font-style: normal;
+src: url('../../fonts/Ubuntu-500/Ubuntu-500.eot');
+src: url('../../fonts/Ubuntu-500/Ubuntu-500.eot?#iefix') format('embedded-opentype'),
+    local('Ubuntu Medium'),
+    local('Ubuntu-500'),
+    url('../../fonts/Ubuntu-500/Ubuntu-500.woff2') format('woff2'),
+    url('../../fonts/Ubuntu-500/Ubuntu-500.woff') format('woff'),
+    url('../../fonts/Ubuntu-500/Ubuntu-500.ttf') format('truetype'),
+    url('../../fonts/Ubuntu-500/Ubuntu-500.svg#Ubuntu') format('svg');
+}
+
+@font-face {
+font-family: 'Ubuntu';
+font-weight: 400;
+font-style: italic;
+src: url('../../fonts/Ubuntu-italic/Ubuntu-italic.eot');
+src: url('../../fonts/Ubuntu-italic/Ubuntu-italic.eot?#iefix') format('embedded-opentype'),
+    local('Ubuntu Italic'),
+    local('Ubuntu-italic'),
+    url('../../fonts/Ubuntu-italic/Ubuntu-italic.woff2') format('woff2'),
+    url('../../fonts/Ubuntu-italic/Ubuntu-italic.woff') format('woff'),
+    url('../../fonts/Ubuntu-italic/Ubuntu-italic.ttf') format('truetype'),
+    url('../../fonts/Ubuntu-italic/Ubuntu-italic.svg#Ubuntu') format('svg');
+}
+
+@font-face {
+font-family: 'Ubuntu';
+font-weight: 500;
+font-style: italic;
+src: url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.eot');
+src: url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.eot?#iefix') format('embedded-opentype'),
+    local('Ubuntu Medium Italic'),
+    local('Ubuntu-500italic'),
+    url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.woff2') format('woff2'),
+    url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.woff') format('woff'),
+    url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.ttf') format('truetype'),
+    url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.svg#Ubuntu') format('svg');
+}
+@font-face {
+font-family: 'Oswald';
+font-weight: 300;
+font-style: normal;
+src: url('../../fonts/Oswald-300/Oswald-300.eot');
+src: url('../../fonts/Oswald-300/Oswald-300.eot?#iefix') format('embedded-opentype'),
+    local('Oswald Light'),
+    local('Oswald-300'),
+    url('../../fonts/Oswald-300/Oswald-300.woff2') format('woff2'),
+    url('../../fonts/Oswald-300/Oswald-300.woff') format('woff'),
+    url('../../fonts/Oswald-300/Oswald-300.ttf') format('truetype'),
+    url('../../fonts/Oswald-300/Oswald-300.svg#Oswald') format('svg');
+}
+
+@font-face {
+font-family: 'Oswald';
+font-weight: 400;
+font-style: normal;
+src: url('../../fonts/Oswald-regular/Oswald-regular.eot');
+src: url('../../fonts/Oswald-regular/Oswald-regular.eot?#iefix') format('embedded-opentype'),
+    local('Oswald Regular'),
+    local('Oswald-regular'),
+    url('../../fonts/Oswald-regular/Oswald-regular.woff2') format('woff2'),
+    url('../../fonts/Oswald-regular/Oswald-regular.woff') format('woff'),
+    url('../../fonts/Oswald-regular/Oswald-regular.ttf') format('truetype'),
+    url('../../fonts/Oswald-regular/Oswald-regular.svg#Oswald') format('svg');
+}
+
+@font-face {
+font-family: 'Oswald';
+font-weight: 700;
+font-style: normal;
+src: url('../../fonts/Oswald-700/Oswald-700.eot');
+src: url('../../fonts/Oswald-700/Oswald-700.eot?#iefix') format('embedded-opentype'),
+    local('Oswald Bold'),
+    local('Oswald-700'),
+    url('../../fonts/Oswald-700/Oswald-700.woff2') format('woff2'),
+    url('../../fonts/Oswald-700/Oswald-700.woff') format('woff'),
+    url('../../fonts/Oswald-700/Oswald-700.ttf') format('truetype'),
+    url('../../fonts/Oswald-700/Oswald-700.svg#Oswald') format('svg');
 }
 body { background-color:#FFFFFF; font-family:inter; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 input { outline:none; }
