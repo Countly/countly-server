@@ -205,10 +205,11 @@
                 }
                 return fields;
             },
-            calculateStackedBarOptionsFromWidget: function(widgetData) {
+            calculateStackedBarOptionsFromWidget: function(widgetData, map) {
                 widgetData = widgetData || {};
                 widgetData.dashData = widgetData.dashData || {};
                 widgetData.dashData.data = widgetData.dashData.data || {};
+                widgetData.metrics = widgetData.metrics || [];
 
                 var labels = [];
                 var series = [];
@@ -226,12 +227,15 @@
                         }
                     }
                 }
-
+                var metricName = widgetData.metrics[0];
+                if (map && map[widgetData.metrics[0]]) {
+                    metricName = map[widgetData.metrics[0]];
+                }
                 if (widgetData.bar_color && widgetData.bar_color > 0) {
-                    return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], color: countlyCommon.GRAPH_COLORS[this.data.bar_color - 1], "data": series, stack: "A"}]};
+                    return {xAxis: {data: labels}, series: [{"name": metricName, color: countlyCommon.GRAPH_COLORS[this.data.bar_color - 1], "data": series, stack: "A"}]};
                 }
                 else {
-                    return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], "data": series, stack: "A"}]};
+                    return {xAxis: {data: labels}, series: [{"name": metricName, "data": series, stack: "A"}]};
                 }
             },
             calculatePieGraphFromWidget: function(widgetData, namingMap) {
