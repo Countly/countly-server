@@ -974,7 +974,7 @@
 
     var PushNotificationTabView = countlyVue.views.BaseView.extend({
         template: "#push-notification-tab",
-        mixins: [countlyVue.mixins.commonFormatters],
+        mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
                 platformFilters: platformFilterOptions,
@@ -1176,34 +1176,28 @@
                 }
             },
             shouldShowDuplicateUserCommand: function() {
-                return true;
+                return this.canUserCreate;
             },
             shouldShowDeleteUserCommand: function() {
-                return true;
+                return this.canUserDelete;
             },
             shouldShowResendUserCommand: function(status) {
-                return status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED;
+                return (status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED) && this.canUserCreate;
             },
             shouldShowEditDraftUserCommand: function(status) {
-                return status === this.StatusEnum.DRAFT;
+                return status === this.StatusEnum.DRAFT && this.canUserUpdate;
             },
             shouldShowEditRejectUserCommand: function(status) {
-                return status === this.StatusEnum.REJECT;
+                return status === this.StatusEnum.REJECT && this.canUserUpdate;
             },
             shouldShowApproveUserCommand: function(status) {
-                if (this.hasApproverPermission) {
-                    return status === this.StatusEnum.PENDING_APPROVAL;
-                }
-                return false;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowRejectUserCommand: function(status) {
-                if (this.hasApproverPermission) {
-                    return status === this.StatusEnum.PENDING_APPROVAL;
-                }
-                return false;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowEditUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED;
+                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED) && this.canUserUpdate;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
@@ -1251,7 +1245,7 @@
 
     var PushNotificationView = countlyVue.views.BaseView.extend({
         template: "#push-notification",
-        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer")],
+        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer"), countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
                 pushNotificationTabs: [
@@ -1325,7 +1319,7 @@
 
     var PushNotificationDetailsView = countlyVue.views.BaseView.extend({
         template: "#push-notification-details",
-        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer")],
+        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer"), countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
                 StatusEnum: countlyPushNotification.service.StatusEnum,
@@ -1526,28 +1520,28 @@
                 }
             },
             shouldShowDuplicateUserCommand: function() {
-                return true;
+                return this.canUserCreate;
             },
             shouldShowDeleteUserCommand: function() {
-                return true;
+                return this.canUserDelete;
             },
             shouldShowResendUserCommand: function(status) {
-                return status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED;
+                return (status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED) && this.canUserCreate;
             },
             shouldShowEditDraftUserCommand: function(status) {
-                return status === this.StatusEnum.DRAFT;
+                return status === this.StatusEnum.DRAFT && this.canUserUpdate;
             },
             shouldShowEditRejectUserCommand: function(status) {
-                return status === this.StatusEnum.REJECT;
+                return status === this.StatusEnum.REJECT && this.canUserUpdate;
             },
             shouldShowApproveUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowRejectUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowEditUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED;
+                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED) && this.canUserUpdate;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {

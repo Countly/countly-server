@@ -8,9 +8,9 @@
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>
             </template>
             <template v-slot:header-right>
-                <template v-if="pushNotification.status === StatusEnum.PENDING_APPROVAL && hasApproverPermission">
-                    <el-button @click="onReject(pushNotification._id)" class="bu-mr-2"> <i class="ion-close-circled" ></i> {{i18n('push-notification.reject')}} </el-button>
-                    <el-button @click="onApprove(pushNotification._id)" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> {{i18n('push-notification.approve')}} </el-button>
+                <template>
+                    <el-button v-if="shouldShowRejectUserCommand(pushNotification.status)" @click="onReject(pushNotification._id)" class="bu-mr-2"> <i class="ion-close-circled" ></i> {{i18n('push-notification.reject')}} </el-button>
+                    <el-button v-if="shouldShowApproveUserCommand(pushNotification.status)" @click="onApprove(pushNotification._id)" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> {{i18n('push-notification.approve')}} </el-button>
                 </template>
                 <cly-more-options size="small" @command="handleUserCommands($event, pushNotification._id)">
                     <el-dropdown-item v-if="shouldShowDuplicateUserCommand(pushNotification.status)" :command="UserCommandEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
