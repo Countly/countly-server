@@ -77,7 +77,7 @@
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                             {{i18n('push-notification.targeting')}}
                             <cly-tooltip-icon 
-                                :tooltip="i18n('push-notification.drawer-targeting-description')" 
+                                :tooltip="i18n('push-notification.targeting-tooltip')" 
                                 icon="ion ion-help-circled"> 
                             </cly-tooltip-icon>
                         </div>
@@ -95,7 +95,7 @@
                                 :label="TargetingEnum.SEGMENTED" 
                                 v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting"
                                 :title="i18n('push-notification.use-segmentation')"
-                                :description="i18n('push-notification.use-segmetnation-description')">                        
+                                :description="i18n('push-notification.use-segmentation-description')">                        
                             </large-radio-button-with-description>
                         </div>
                     </div>
@@ -147,7 +147,7 @@
                         <div class="cly-vue-drawer-step__section">
                             <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
                                 {{i18n('push-notification.when-to-determine-users')}}
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-targeting-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.when-to-determine-users-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             </div>
                             <div class="bu-is-flex bu-is-flex-direction-column">
                                 <line-radio-button-with-description 
@@ -197,8 +197,9 @@
                     <div class="cly-vue-drawer-step__section">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                             {{i18n('push-notification.triggers')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-triggers-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            <!-- <cly-tooltip-icon :tooltip="i18n('push-notification.triggers-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon> -->
                         </div>
+                        <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.triggers-description')}}</div>
                         <div class="bu-is-flex bu-is-flex-direction-column">
                             <line-radio-button-with-description
                                 :label="TriggerEnum.COHORT_ENTRY"
@@ -274,7 +275,7 @@
                     <div class="cly-vue-drawer-step__section">
                         <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
                             {{i18n('push-notification.delivery-date-calculation')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.delivery-date-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            <!-- <cly-tooltip-icon :tooltip="i18n('push-notification.delivery-date-description')" icon="ion ion-help-circled"> </cly-tooltip-icon> -->
                         </div>
                         <div class="bu-is-flex bu-is-flex-direction-column">
                             <line-radio-button-with-description 
@@ -293,7 +294,6 @@
                         <div class="cly-vue-drawer-step__section">
                             <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
                                 {{i18n('push-notification.behavior-trigger-not-met')}}
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.behavior-trigger-not-met-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             </div>
                             <div class="bu-is-flex bu-is-flex-direction-column">
                                 <line-radio-button-with-description 
@@ -315,14 +315,14 @@
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                         <template v-if="type === TypeEnum.ONE_TIME">Delivery</template><template v-else>{{i18n('push-notification.set-start-date')}}</template>
-                        <cly-tooltip-icon :tooltip="i18n('push-notification.set-start-date-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        <cly-tooltip-icon :tooltip="i18n('push-notification.set-start-date-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                     </div>
                     <div class="bu-level bu-is-flex-wrap-wrap">
                         <large-radio-button-with-description
                             :label="SendEnum.NOW"
                             v-model="pushNotificationUnderEdit.delivery.type"
                             :title="i18n('push-notification.send-now')"
-                            description="Some description for send now option goes here">
+                            :description="i18n('push-notification.send-now-description')">
                         </large-radio-button-with-description>
                         <large-radio-button-with-description
                             :label="SendEnum.LATER"
@@ -345,7 +345,7 @@
                             <el-switch v-model="isEndDateSet" class="bu-mr-1"></el-switch>
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                                 {{i18n('push-notification.set-end-date')}}
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.set-end-date-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.set-end-date-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             </div>
                         </div>
                         <div style="width:200px">
@@ -365,8 +365,8 @@
                         <div class="bu-is-flex bu-is-align-items-center">
                             <el-switch v-model="isUsersTimezoneSet" class="bu-mr-1"></el-switch>
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
-                                {{i18n('push-notification.send-in-users-timezone')}}
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.send-in-users-timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                {{i18n('push-notification.delivery-time')}}
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.delivery-time-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             </div>
                         </div>
                         <div style="width:200px">
@@ -401,7 +401,7 @@
                     <div class="cly-vue-drawer-step__section">
                         <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
                             {{i18n('push-notification.what-if-past-scheduled')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-past-schedule-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.what-if-past-scheduled-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
                         <div class="bu-is-flex bu-is-flex-direction-column">
                             <line-radio-button-with-description 
@@ -464,8 +464,8 @@
                 <template v-if="type === TypeEnum.AUTOMATIC">
                     <div class="cly-vue-drawer-step__section">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
-                            {{i18n('push-notification.capped')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-capping-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            {{i18n('push-notification.capping')}}
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.capping-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
                         <div class="bu-level bu-is-flex-wrap-wrap">
                             <large-radio-button-with-description
@@ -477,15 +477,15 @@
                             <large-radio-button-with-description
                                 :label="true"
                                 v-model="pushNotificationUnderEdit.automatic.capping"
-                                :title="i18n('push-notification.capping')"
-                                :description="i18n('push-notification.capping-description')">                           
+                                :title="i18n('push-notification.capped')"
+                                :description="i18n('push-notification.capped-description')">                           
                             </large-radio-button-with-description>
                         </div>
                     </div>
                     <div class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.automatic.capping">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                             {{i18n('push-notification.maximum-messages-per-user')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-maximum-messages-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.maximum-messages-per-user-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
                         <div class="bu-level">
                             <validation-provider v-slot="validation" rules="required|integer">
@@ -500,7 +500,7 @@
                     <div class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.automatic.capping">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                             {{i18n('push-notification.minimum-time-between-messages')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-minimum-time-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.minimum-time-between-messages-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
                         <div class="bu-is-flex is-justify-content-flex-start">
                             <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
@@ -523,8 +523,8 @@
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                         {{i18n('push-notification.expiration-time')}}
-                        <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-expiration-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-                        <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.expiration-time-description')}}</div>
+                        <cly-tooltip-icon :tooltip="i18n('push-notification.expiration-time-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        <!-- <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.expiration-time-description')}}</div> -->
                     </div>
                     <div class="bu-is-flex is-justify-content-flex-start">
                         <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
@@ -557,7 +557,7 @@
                     <div class="cly-vue-drawer-step__section">
                         <div class="cly-vue-push-notification-drawer__radio-group-header bu-mb-4">
                             {{i18n('push-notification.compose-message')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.compose-message-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.compose-message-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
                         <div>
                             <el-checkbox :value="multipleLocalizations" @change="onMultipleLocalizationChange">
@@ -626,7 +626,7 @@
                                 <div class="cly-vue-drawer-step__section">
                                     <div class="cly-vue-push-notification-drawer__input-label bu-mb-2">
                                         {{i18n('push-notification.buttons')}}
-                                        <cly-tooltip-icon :tooltip="i18n('push-notification.buttons-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                        <cly-tooltip-icon :tooltip="i18n('push-notification.buttons-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                                     </div>
                                     <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned" 
                                         v-for="(button,index) in pushNotificationUnderEdit.message[activeLocalization].buttons">
@@ -658,7 +658,6 @@
                     <div class="cly-vue-drawer-step__section">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">
                             {{i18n('push-notification.media-url')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-media-url-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.media-url-description')}}</div>
                             <validation-provider v-slot="validation" ref="allMediaURLValidationProvider" :rules="{push_notification_message_media_url:PlatformEnum.ALL}" mode="passive">
                                 <el-input 
@@ -674,7 +673,6 @@
                 <div class="cly-vue-drawer-step__section">
                     <div class=" cly-vue-push-notification-drawer__radio-group-header">
                         {{i18n('push-notification.platform-settings')}}
-                        <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-platform-settings-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                     </div>
                     <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.platform-settings-description')}}</div>
                     <el-collapse v-if="shouldDisplayIOSSettings" v-model="expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow ">
@@ -697,7 +695,7 @@
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isMediaURLEnabled',value)}"
                                 :label="i18n('push-notification.media-url')"
                                 :placeholder="i18n('push-notification.enter-media-url')"
-                                :description="i18n('push-notification.media-url-description')">
+                                :description="i18n('push-notification.media-url-platform-description')">
                                 <validation-provider v-slot="validation" ref="iosMediaURLValidationProvider" :rules="{required:true,push_notification_message_media_url:PlatformEnum.IOS}" mode="passive">
                                     <el-input 
                                         :value="pushNotificationUnderEdit.settings.ios.mediaURL" 
@@ -795,7 +793,7 @@
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isMediaURLEnabled',value)}"
                                 :label="i18n('push-notification.media-url')"
                                 :placeholder="i18n('push-notification.enter-media-url')"
-                                :description="i18n('push-notification.media-url-description')">
+                                :description="i18n('push-notification.media-url-platform-description')">
                                 <validation-provider v-slot="validation" ref="androidMediaURLValidationProvider" :rules="{required:true,push_notification_message_media_url:PlatformEnum.ANDROID}" mode="passive">
                                     <el-input 
                                         :value="pushNotificationUnderEdit.settings.android.mediaURL" 
@@ -879,7 +877,7 @@
                 <div class="cly-vue-drawer-step__section">
                     <div class="cly-vue-push-notification-drawer__review-header bu-mb-4">
                         {{i18n('push-notification.review-message')}}
-                        <cly-tooltip-icon :tooltip="i18n('push-notification.review-message')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        <cly-tooltip-icon :tooltip="i18n('push-notification.review-message-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                     </div>
                     <div class="cly-vue-push-notification-drawer__review-section-group-header bu-my-4">
                         {{i18n('push-notification.message-content')}}
@@ -1010,7 +1008,7 @@
                             <div class="bu-level bu-is-flex-direction-column bu-is-align-items-flex-start">
                                 <div class="cly-vue-push-notification-drawer__review-section-group-subheader bu-mb-3">
                                     {{i18n('push-notification.testing')}}
-                                    <cly-tooltip-icon :tooltip="i18n('push-notification.testing-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                    <!-- <cly-tooltip-icon :tooltip="i18n('push-notification.testing-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon> -->
                                 </div>
                                 <div class="cly-vue-push-notification-review-section-row__value">{{i18n('push-notification.you-can-send-the-test-message')}}</div>
                             </div>
@@ -1023,7 +1021,7 @@
                         <div class="bu-levelbu-is-flex-direction-column bu-is-align-items-flex-start">
                             <div class="cly-vue-push-notification-drawer__review-section-group-subheader bu-mb-3">
                                 {{i18n('push-notification.confirmation-uppercase')}}
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.confirmation-uppercase-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                <!-- <cly-tooltip-icon :tooltip="i18n('push-notification.confirmation-uppercase-description')" icon="ion ion-help-circled"> </cly-tooltip-icon> -->
                             </div>
                             <div class="bu-is-flex bu-is-align-items-center">
                                 <validation-provider v-slot="validation" :rules="{required: {allowFalse: false}}">
