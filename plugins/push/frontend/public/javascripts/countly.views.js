@@ -1111,7 +1111,10 @@
                 else {
                     return this.selectedTransactionalPeriodFilter;
                 }
-            }
+            },
+            hasApproverPermission: function() {
+                return countlyPushNotification.service.hasApproverPermission();
+            },
         },
         methods: {
             refresh: function() {
@@ -1188,10 +1191,16 @@
                 return status === this.StatusEnum.REJECT;
             },
             shouldShowApproveUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                if (this.hasApproverPermission) {
+                    return status === this.StatusEnum.PENDING_APPROVAL;
+                }
+                return false;
             },
             shouldShowRejectUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                if (this.hasApproverPermission) {
+                    return status === this.StatusEnum.PENDING_APPROVAL;
+                }
+                return false;
             },
             shouldShowEditUserCommand: function(status) {
                 return status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED;
