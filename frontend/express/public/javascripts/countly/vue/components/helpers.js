@@ -784,15 +784,9 @@
                 if (this.emitClose) {
                     this.$emit("closed");
                 }
-            },
-            escKeyEvent: function() {
-                this.opened = false;
-                if (this.emitClose) {
-                    this.$emit("closed");
-                }
-            },
+            }
         },
-        template: '<div class="cly-vue-json-editor" v-show="opened" @keydown.esc="escKeyEvent">\
+        template: '<div class="cly-vue-json-editor" v-show="opened">\
                     <slot name="title"><h3 class="bu-pl-4 color-cool-gray-100">{{title}}</h3></slot>\
                     <div class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center bu-px-4 bu-pb-1">\
                     <div>\
