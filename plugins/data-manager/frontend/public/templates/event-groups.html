@@ -2,7 +2,6 @@
     <cly-datatable-n
     ref="eventGroupsTable"
     :rows="eventGroups"
-    @row-click="onRowClick"
     :indent=0
     :height=550
     :tracked-fields="trackedFields"
@@ -26,7 +25,9 @@
 
         <el-table-column fixed="left" sortable="custom" prop="name" label="Event Group Name" min-width="330px">
             <template v-slot="rowScope">
-                {{rowScope.row.name}}
+                <a v-bind:href="'#/manage/data-manager/events/event-groups/' + rowScope.row._id" @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100">
+                    {{rowScope.row.name}}
+                </a>
                 <div class="text-small color-cool-gray-50" v-if="rowScope.row.source_events">{{rowScope.row.source_events.length || 0}} Events</div>
                 <span v-if="rowScope.row.status === false" class="cly-vue-data-manager__hidden-icon"><i class="fa fa-eye-slash"></i></span>
                 <span v-else class="cly-vue-data-manager__hidden-icon"><i class="fa fa-eye"></i></ion-icon></span>
@@ -35,7 +36,7 @@
 
         <el-table-column sortable="custom"  prop="description" label="Event Group Description" min-width="330px">
             <template v-slot="rowScope">
-                {{rowScope.row.description}}
+                {{rowScope.row.description || i18n('data-manager.empty-placeholder') }}
             </template>
         </el-table-column>
 

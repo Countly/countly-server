@@ -300,6 +300,9 @@
                         CountlyHelpers.notify({message: 'Error while creating event', sticky: false, type: 'error'});
                         return err;
                     }
+                }).catch(function(err) {
+                    CountlyHelpers.notify({message: 'Error while creating event', sticky: false, type: 'error'});
+                    return err;
                 });
             },
             editEvent: function(context, event) {
@@ -348,6 +351,9 @@
                             context.dispatch('loadEventsData');
                             context.dispatch('loadValidations');
                             context.dispatch('loadSegmentsMap');
+                        }).catch(function() {
+                            CountlyHelpers.notify({message: 'Error while updating event', sticky: false, type: 'error'});
+                            return 'Error';
                         });
                     }
                     else {

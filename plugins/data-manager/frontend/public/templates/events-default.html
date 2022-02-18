@@ -1,11 +1,9 @@
 <div class="cly-vue-data-manager__events">
     <cly-datatable-n
-    @row-click="onRowClick"
     ref="eventsDefaultTable"
     searchPlaceholder="Search in Events"
     :rows="events"
     :keyFn="function(row) {return row.key}"
-    :row-class-name="function() {return 'bu-is-clickable'}"
     :indent=0
     :height=550
     :force-loading="isLoading"
@@ -38,7 +36,10 @@
 
             <el-table-column fixed="left" min-width="330" sortable="custom" prop="name" :label="i18n('data-manager.event-name')">
                 <template v-slot="rowScope">
-                    <div>{{rowScope.row.name || rowScope.row.key || rowScope.row.e}}</div>
+                    <!-- <div @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100">{{rowScope.row.name || rowScope.row.key || rowScope.row.e}}</div> -->
+                    <a v-bind:href="'#/manage/data-manager/events/events/' + rowScope.row.key" @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100">
+                        {{rowScope.row.name || rowScope.row.key || rowScope.row.e}}
+                    </a>
                     <div v-if="rowScope.row.audit && rowScope.row.audit.userName" class="text-small color-cool-gray-50">Last modified by {{rowScope.row.audit.userName}}</div>
                     <div>
                         <span v-if="isDrill" class="tag-container">
@@ -81,8 +82,11 @@
                     prop="lastModifiedts" sortable="custom" min-width="275" label="Last Modified">
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row && rowScope.row.lastModifiedts">
-                            <div>{{rowScope.row.lastModifiedDate}}</div>
+                            <div>{{rowScope.row.lastModifiedDate || i18n('data-manager.empty-placeholder') }}</div>
                             <span class="text-small color-cool-gray-50">{{rowScope.row.lastModifiedTime}}</span>
+                        </div>
+                        <div v-else>
+                            {{ i18n('data-manager.empty-placeholder') }}
                         </div>
                     </template>
                 </el-table-column>
@@ -90,14 +94,17 @@
                 <el-table-column v-else-if="col.value === 'lts' && isDrill" sortable="custom" min-width="250" prop="lts" label="Last Triggered">
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row && rowScope.row.lts">
-                            <div>{{rowScope.row.lastTriggerDate}}</div>
+                            <div>{{rowScope.row.lastTriggerDate || i18n('data-manager.empty-placeholder') }}</div>
+                        </div>
+                        <div v-else>
+                            {{ i18n('data-manager.empty-placeholder') }}
                         </div>
                     </template>
                 </el-table-column>
 
                 <el-table-column v-else v-bind:sortable="col.sortable ? 'custom' : false" :key="idx" min-width="300" :prop="col.value" :label="col.label">
                     <template v-slot="rowScope">
-                        {{rowScope.row[col.value]}}
+                        {{rowScope.row[col.value] || i18n('data-manager.empty-placeholder') }}
                     </template>
                 </el-table-column>
             </template>  
