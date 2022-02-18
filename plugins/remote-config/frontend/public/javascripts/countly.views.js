@@ -374,7 +374,7 @@
                 var activeAppId = countlyCommon.ACTIVE_APP_ID;
                 var timeZone = countlyGlobal.apps[activeAppId].timezone ? countlyGlobal.apps[activeAppId].timezone : 'UTC';
                 var utcDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'UTC' }));
-                var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone }));
+                var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: timeZone }));
                 return (tzDate.getTime() - utcDate.getTime()) / 6e4;
             },
             handleSelect: function(item) {
@@ -692,7 +692,7 @@
                 var activeAppId = countlyCommon.ACTIVE_APP_ID;
                 var timeZone = countlyGlobal.apps[activeAppId].timezone ? countlyGlobal.apps[activeAppId].timezone : 'UTC';
                 var utcDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'UTC' }));
-                var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone }));
+                var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: timeZone }));
                 return (tzDate.getTime() - utcDate.getTime()) / 6e4;
             },
             getNumberOfConditionsText: function(conditions) {
