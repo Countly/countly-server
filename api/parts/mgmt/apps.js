@@ -560,7 +560,12 @@ appsApi.updateAppPlugins = function(params) {
                 common.returnOutput(params, ret);
             }, err => {
                 log.e('Error during plugin config updates for app %s: %j %s, %d', params.qstring.app_id, err, typeof err, err.length);
-                common.returnMessage(params, 400, 'Couldn\'t update plugin: ' + (typeof err === 'string' ? err : err.message || err.code || JSON.stringify(err)));
+                if (err.errors) {
+                    common.returnMessage(params, 400, {errors: err.errors}, null, true);
+                }
+                else {
+                    common.returnMessage(params, 400, 'Couldn\'t update plugin: ' + (typeof err === 'string' ? err : err.message || err.code || JSON.stringify(err)));
+                }
             });
         }
         else {
