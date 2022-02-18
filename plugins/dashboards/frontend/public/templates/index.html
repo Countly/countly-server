@@ -4,37 +4,50 @@
     </cly-main>
     <template v-else>
         <header>
-            <div class="bu-level" style="padding: 32px;">
-                <div class="bu-level-left has-ellipsis" style="width: calc(100% - 450px)">
-                    <div class="bu-level-item">
-                        <h2>{{dashboard.name}}</h2>
+            <div style="padding: 32px;">
+                <div class="bu-level">
+                    <div class="bu-level-left has-ellipsis" style="width: calc(100% - 575px)">
+                        <div class="bu-level-item">
+                            <h2>{{dashboard.name}}</h2>
+                        </div>
                     </div>
-                    <div class="bu-level-item color-cool-gray-50 text-medium bu-ml-4">
-                        <span v-if="dashboard.creation.time || dashboard.creation.by">
-                            <i class="far fa-clock"></i>
-                            {{i18nM('dashbaords.created')}}
-                        </span>
-                        <span v-if="dashboard.creation.time" class="bu-ml-1">
-                            {{dashboard.creation.time}}
-                        </span>
-                        <span v-if="dashboard.creation.by" class="bu-ml-1">
-                            {{i18n('dashbaords.created-by', dashboard.creation.by)}}
-                        </span>
+                    <div class="bu-level-right">
+                        <div class="bu-level-item">
+                            <cly-date-picker-g class="bu-mr-3"></cly-date-picker-g>
+                        </div>
+                        <div class="bu-level-item">
+                            <a :href="'#/manage/reports/create/dashboard/' + dashboard._id">
+                                <el-button v-if="canUpdate" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.create-email-reports')}}</el-button>
+                            </a>
+                        </div>
+                        <div class="bu-level-item">
+                            <el-button v-if="canUpdate" @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
+                        </div>
+                        <div class="bu-level-item" v-if="canUpdate">
+                            <cly-more-options @command="onDashboardAction($event, dashboard)">
+                                <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                                <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
+                                <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                            </cly-more-options>
+                        </div>
                     </div>
                 </div>
-                <div class="bu-level-right">
-                    <div class="bu-level-item">
-                        <cly-date-picker-g class="bu-mr-3"></cly-date-picker-g>
-                    </div>
-                    <div class="bu-level-item">
-                        <el-button v-if="canUpdate" @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
-                    </div>
-                    <div class="bu-level-item" v-if="canUpdate">
-                        <cly-more-options @command="onDashboardAction($event, dashboard)">
-                            <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-                            <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
-                            <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
-                        </cly-more-options>
+                <div class="bu-level bu-mt-2" v-if="dashboard.creation.time || dashboard.creation.by">
+                    <div class="bu-level-left">
+                        <div class="bu-level-item">
+                            <div class="bu-level-item color-cool-gray-50 text-medium">
+                                <span>
+                                    <i class="far fa-clock"></i>
+                                    {{i18nM('dashbaords.created')}}
+                                </span>
+                                <span v-if="dashboard.creation.time" class="bu-ml-1">
+                                    {{dashboard.creation.time}}
+                                </span>
+                                <span v-if="dashboard.creation.by" class="bu-ml-1">
+                                    {{i18n('dashbaords.created-by', dashboard.creation.by)}}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

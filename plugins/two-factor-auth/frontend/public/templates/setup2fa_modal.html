@@ -1,29 +1,44 @@
-<div id="two-factor-auth-setup">
-    <div class="row title" data-localize="two-factor-auth.setup_auth"></div>
-    <div class="row">
-        <div class="step-number">1</div>
-        <div class="step-content" data-localize="two-factor-auth.install_app"></div>
-    </div>
-    <div class="row">
-        <div class="step-number">2</div>
-        <div class="step-content" data-localize="two-factor-auth.scan_qr"></div>
-    </div>
-    <div class="row secrets">
-        <div class="two-factor-auth-qr-code">
-            {{{ qrcode_html }}}
+<div>
+<cly-inline-form-field :label="i18n('two-factor-auth.plugin-title')">
+    <el-switch 
+    @change="onChange($event)"
+    :value="TFAsettings.enabled">
+    </el-switch>
+</cly-inline-form-field>
+<el-dialog :visible.sync="dataModal.showDialog"  :title="i18n('two-factor-auth.setup_auth')" width="55%" :before-close="closeDataModal">
+    <cly-main>
+        <div class="bu-columns bu-is-gapless">
+            <div class="bu-column bu-is-12">
+                <h4 class="bu-mb-4">1. <span v-html="i18n('two-factor-auth.install_app')"></span></h4>
+                <h4 class="bu-mb-4">2. {{i18n('two-factor-auth.scan_qr')}}</h4>
+            </div>
         </div>
-        <div class="secret-2fa-label" data-localize="two-factor-auth.secret_token"></div>
-        <div>{{ secret_token }}</div>
-    </div>
-    <div class="row one-time-password">
-        <div class="step-number">3</div>
-        <div class="step-content">
-            <div data-localize="two-factor-auth.enter_otp"></div>
-            <input type="text" name="2fa_code" autocomplete="off" data-localize="two-factor-auth.enter_otp_short"/>
+        <div class="bu-columns bu-is-gapless">
+            <div class="bu-column bu-is-4"></div>
+            <div class="bu-column bu-is-4">
+                <span v-html="qrcode_html"></span>
+            </div>
+            <div class="bu-column bu-is-4"></div>
         </div>
-    </div>
-    <div class="row buttons">
-        <a class="icon-button green confirm-2fa-button" data-localize="events.general.confirm"></a>
-        <a class="cancel-2fa-button" data-localize="common.cancel"></a>
-    </div>
+        <div class="bu-columns bu-is-gapless">
+            <div class="bu-column bu-is-12">
+                <h4 class="bu-mb-4">{{i18n('two-factor-auth.secret_token')}}: {{ secret_token }}</h4>
+            </div>
+        </div>
+        <div class="bu-columns bu-is-gapless">
+            <div class="bu-column bu-is-12">
+                <h4 class="bu-mb-4">{{i18n('two-factor-auth.enter_otp')}}</h4>
+                <el-input v-model="secret_code"></el-input>
+            </div>
+        </div>
+        <div class="bu-columns bu-is-gapless">
+            <div class="bu-column bu-is-12">
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="dataModal.showDialog = false">{{i18n('common.cancel')}}</el-button>
+                    <el-button type="primary" @click="confirmDialog">{{i18n('events.general.confirm')}}</el-button>
+                </span>
+            </div>
+        </div>
+    </cly-main>
+</el-dialog>
 </div>

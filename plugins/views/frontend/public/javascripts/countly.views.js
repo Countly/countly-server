@@ -5,6 +5,9 @@
 
     var EditViewsView = countlyVue.views.create({
         template: CV.T("/views/templates/manageViews.html"),
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         data: function() {
             return {
                 description: CV.i18n('views.title-desc'),
@@ -517,7 +520,8 @@
         mixins: [
             countlyVue.container.dataMixin({
                 'externalLinks': '/analytics/views/links'
-            })
+            }),
+            countlyVue.mixins.auth(FEATURE_NAME)
         ]
     });
 
@@ -1049,7 +1053,7 @@
         });
 
         var DrawerComponent = countlyVue.views.create({
-            template: CV.T('/views/templates/widgetDrawer.html'),
+            template: "#views-drawer",
             data: function() {
                 return {
                     useCustomTitle: false,
@@ -1098,6 +1102,14 @@
             getter: function(widget) {
                 return widget.widget_type === "analytics" && widget.data_type === "views";
             },
+            templates: [
+                {
+                    namespace: "views",
+                    mapping: {
+                        drawer: '/views/templates/widgetDrawer.html',
+                    }
+                }
+            ],
             drawer: {
                 component: DrawerComponent,
                 getEmpty: function() {

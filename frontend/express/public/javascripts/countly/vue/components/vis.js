@@ -1041,7 +1041,9 @@
                     This resembles to the actual download handler of echarts.
                     This does not support download in IE and older edge versions yet.
                 */
-
+                if (!this.echartRef) {
+                    this.echartRef = this.$parent.$refs.echarts;
+                }
                 var chartOptions = this.echartRef.getOption();
 
                 var aTag = document.createElement('a');
@@ -2273,6 +2275,14 @@
                     return this.minMarkerRadius;
                 }
                 return Math.max(this.minMarkerRadius, (value / this.largestMarkerValue) * this.maxMarkerRadius);
+            },
+            getMarkerFlag: function(code) {
+                if (this.detailMode === "cities") {
+                    return false;
+                }
+                else {
+                    return "/images/flags/" + code.toLowerCase() + ".png";
+                }
             },
             getMarkerTooltipTitle: function(code) {
                 switch (this.currentViewType) {

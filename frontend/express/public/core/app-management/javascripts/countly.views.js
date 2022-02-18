@@ -57,10 +57,6 @@
                 });
             }
             var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
-            if (!countlyGlobal.apps[app_id]) {
-                this.createNewApp();
-            }
-
             return {
                 firstApp: this.checkIfFirst(),
                 newApp: this.newApp || false,
@@ -114,6 +110,12 @@
                     this.appListCount = CV.i18n('common.search') + " in " + this.appList.length + (this.appList.length > 1 ? " Apps" : " App");
                 },
                 immediate: true
+            }
+        },
+        created: function() {
+            var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
+            if (!countlyGlobal.apps[app_id]) {
+                this.createNewApp();
             }
         },
         beforeCreate: function() {
@@ -265,10 +267,10 @@
                                         countlyEvent.reset();
                                     }
                                     if (period === "reset") {
-                                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.reset-success"], "black");
+                                        CountlyHelpers.alert("", "black", {title: jQuery.i18n.map["management-applications.reset-success"]});
                                     }
                                     else {
-                                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-success"], "black");
+                                        CountlyHelpers.alert("", "black", {title: jQuery.i18n.map["management-applications.clear-success"]});
                                     }
                                 }
                             }
@@ -344,6 +346,12 @@
                             });
                             self.selectedSearchBar = data._id + "";
                             self.$store.dispatch("countlyCommon/addToAllApps", data);
+                            if (self.firstApp) {
+                                countlyCommon.ACTIVE_APP_ID = data._id + "";
+                                app.onAppManagementSwitch(data._id + "", data && data.type || "mobile");
+                                self.$store.dispatch("countlyCommon/updateActiveApp", data._id + "");
+                                app.initSidebar();
+                            }
                             self.firstApp = self.checkIfFirst();
                         },
                         error: function(xhr, status, error) {
@@ -553,7 +561,7 @@
             },
             compare: function(editedObject, selectedApp) {
                 var differences = [];
-                if (this.selectedApp === "new") {
+                if (!this.selectedApp || this.selectedApp === "new") {
                     return differences;
                 }
                 else {

@@ -109,7 +109,7 @@ exports.renderView = function(options, cb) {
                 var waitForRegex = options.waitForRegex;
 
                 options.dimensions = {
-                    width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
+                    width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1800,
                     height: options.dimensions && options.dimensions.height ? options.dimensions.height : 0,
                     padding: options.dimensions && options.dimensions.padding ? options.dimensions.padding : 0,
                     scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
@@ -185,6 +185,13 @@ exports.renderView = function(options, cb) {
                             id: element.id
                         };
                     }, id);
+
+                    await page.setViewport({
+                        width: options.dimensions.width,
+                        height: parseInt(rect.height),
+                        deviceScaleFactor: options.dimensions.scale
+                    });
+
 
                     var clip = {
                         x: rect.left,

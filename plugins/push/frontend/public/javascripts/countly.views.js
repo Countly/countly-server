@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
 
 (function() {
@@ -387,13 +388,6 @@
             setIsLoading: function(value) {
                 this.isLoading = value;
             },
-            dispatchUnknownErrorNotification: function() {
-                CountlyHelpers.notify({
-                    title: "Push Notification Error",
-                    message: "Unknown error occurred. Please try again later.",
-                    type: "error"
-                });
-            },
             getQueryFilter: function() {
                 if (!this.queryFilter) {
                     return {};
@@ -423,11 +417,9 @@
                         self.setCurrentNumberOfUsers(response.total);
                         resolve(true);
                     }).catch(function(error) {
+                        console.error(error);
                         self.setLocalizationOptions([]);
-                        CountlyHelpers.notify({
-                            message: error.message,
-                            type: "error"
-                        });
+                        CountlyHelpers.notify({ message: error.message, type: "error"});
                         resolve(false);
                     }).finally(function() {
                         self.setIsLoading(false);
@@ -517,15 +509,11 @@
                 }
                 promiseMethod().then(function() {
                     self.$refs.drawer.doClose();
-                    CountlyHelpers.notify({
-                        message: "Push notification message was successfully saved."
-                    });
+                    CountlyHelpers.notify({message: "Push notification message was successfully saved."});
                     self.$emit('save');
                 }).catch(function(error) {
-                    CountlyHelpers.notify({
-                        message: error.message,
-                        type: "error"
-                    });
+                    console.error(error);
+                    CountlyHelpers.notify({message: error.message, type: "error"});
                 });
             },
             onSubmit: function(_, done) {
@@ -536,6 +524,9 @@
                 }
                 if (this.userCommand === this.UserCommandEnum.EDIT) {
                     promiseMethod = this.update;
+                }
+                if (this.userCommand === this.UserCommandEnum.EDIT_REJECT) {
+                    promiseMethod = this.saveFromDraft;
                 }
                 if (this.userCommand === this.UserCommandEnum.CREATE) {
                     promiseMethod = this.save;
@@ -551,15 +542,11 @@
                 }
                 promiseMethod().then(function() {
                     done();
-                    CountlyHelpers.notify({
-                        message: "Push notification message was successfully saved."
-                    });
+                    CountlyHelpers.notify({ message: "Push notification message was successfully saved."});
                     self.$emit('save');
                 }).catch(function(error) {
-                    CountlyHelpers.notify({
-                        message: error.message,
-                        type: "error"
-                    });
+                    console.error(error);
+                    CountlyHelpers.notify({ message: error.message, type: "error"});
                     done(true);
                 });
             },
@@ -567,14 +554,10 @@
                 var self = this;
                 this.isLoading = true;
                 this.sendToTestUsers().then(function() {
-                    CountlyHelpers.notify({
-                        message: "Push notification message was successfully sent to test users."
-                    });
+                    CountlyHelpers.notify({message: "Push notification message was successfully sent to test users."});
                 }).catch(function(error) {
-                    CountlyHelpers.notify({
-                        message: error.message,
-                        type: "error"
-                    });
+                    console.error(error);
+                    CountlyHelpers.notify({ message: error.message, type: "error"});
                 }).finally(function() {
                     self.isLoading = false;
                 });
@@ -882,7 +865,8 @@
                 countlyPushNotification.service.fetchCohorts()
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setCohortOptions([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
@@ -897,7 +881,8 @@
                 countlyPushNotification.service.fetchLocations()
                     .then(function(locations) {
                         self.setLocationOptions(locations);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setLocationOptions([]);
                     }).finally(function() {
                         self.isFetchLocationsLoading = false;
@@ -912,7 +897,8 @@
                 countlyPushNotification.service.fetchEvents()
                     .then(function(events) {
                         self.setEventOptions(events);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setEventOptions([]);
                     }).finally(function() {
                         self.isFetchEventsLoading = false;
@@ -931,10 +917,10 @@
                         self.setTotalAppUsers(response.totalAppUsers);
                         self.setEnabledUsers(response.enabledUsers);
                     })
-                    .catch(function() {
+                    .catch(function(error) {
+                        console.error(error);
                         self.setTotalAppUsers(0);
                         self.setEnabledUsers(JSON.parse(JSON.stringify(InitialEnabledUsers)));
-                        //TODO: log error;
                     });
             },
             setPushNotificationUnderEdit: function(value) {
@@ -951,11 +937,11 @@
                         }
                         self.resetMessageInHTMLToActiveLocalization();
                     })
-                    .catch(function() {
-                        var initialModel = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
+                    .catch(function(error) {
+                        console.error(error);
+                        var initialModel = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(self.type)));
                         initialModel.type = self.type;
                         self.setPushNotificationUnderEdit(initialModel);
-                        //TODO: log error;
                     })
                     .finally(function() {
                         self.setIsLoading(false);
@@ -1173,6 +1159,10 @@
                     this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
                 }
+                case this.UserCommandEnum.EDIT_REJECT: {
+                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    break;
+                }
                 case this.UserCommandEnum.CREATE: {
                     this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
@@ -1193,6 +1183,9 @@
             },
             shouldShowEditDraftUserCommand: function(status) {
                 return status === this.StatusEnum.DRAFT;
+            },
+            shouldShowEditRejectUserCommand: function(status) {
+                return status === this.StatusEnum.REJECT;
             },
             shouldShowApproveUserCommand: function(status) {
                 return status === this.StatusEnum.PENDING_APPROVAL;
@@ -1228,6 +1221,9 @@
                 }
                 case this.StatusEnum.FAILED: {
                     return "red";
+                }
+                case this.StatusEnum.REJECT: {
+                    return "yellow";
                 }
                 default: {
                     return "#FFFFFF";
@@ -1327,7 +1323,6 @@
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 platformFilters: platformFilterOptions,
                 statusOptions: countlyPushNotification.service.statusOptions,
-                DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
                 currentSummaryTab: "message",
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
                 summaryTabs: [
@@ -1508,6 +1503,10 @@
                     this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
                 }
+                case this.UserCommandEnum.EDIT_REJECT: {
+                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    break;
+                }
                 case this.UserCommandEnum.CREATE: {
                     this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
@@ -1528,6 +1527,9 @@
             },
             shouldShowEditDraftUserCommand: function(status) {
                 return status === this.StatusEnum.DRAFT;
+            },
+            shouldShowEditRejectUserCommand: function(status) {
+                return status === this.StatusEnum.REJECT;
             },
             shouldShowApproveUserCommand: function(status) {
                 return status === this.StatusEnum.PENDING_APPROVAL;
@@ -1563,6 +1565,9 @@
                 }
                 case this.StatusEnum.FAILED: {
                     return "red";
+                }
+                case this.StatusEnum.REJECT: {
+                    return "yellow";
                 }
                 default: {
                     return "#FFFFFF";
@@ -1942,8 +1947,8 @@
                 countlyPushNotification.service.fetchCohorts()
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
-                    }).catch(function() {
-                        // TODO:log error;
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setCohortOptions([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
@@ -1959,7 +1964,7 @@
                     .then(function(testUserRows) {
                         self.setTestUserRows(testUserRows);
                     }).catch(function(error) {
-                        // TODO:log error;
+                        console.error(error);
                         self.setTestUserRows([]);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
@@ -2020,9 +2025,9 @@
                         self.updateTestUsersAppConfig(newTestUsersModel);
                         CountlyHelpers.notify({message: 'Test users have been successfully removed.'});
                         self.fetchTestUsers();
-                    }).catch(function() {
-                        // TODO: log error
-                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.', type: 'error'});
+                    }).catch(function(error) {
+                        console.error(error);
+                        CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
                         self.isUpdateTestUsersLoading = false;
                     });
@@ -2047,8 +2052,8 @@
                         done();
                         CountlyHelpers.notify({message: 'Test users have been successfully added.'});
                     }).catch(function(error) {
-                        // TODO: log error
-                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.', type: 'error'});
+                        console.error(error);
+                        CountlyHelpers.notify({message: error.message, type: 'error'});
                         done(error);
                     }).finally(function() {
                         self.isUpdateTestUsersLoading = false;
@@ -2063,7 +2068,7 @@
                     .then(function(userIds) {
                         self.setUserIdOptions(userIds);
                     }).catch(function(error) {
-                        // TODO:log error;
+                        console.error(error);
                         self.setUserIdOptions([]);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {

@@ -38,8 +38,6 @@
                         </div>
                     </div>
                     <div class="bu-level-right">
-                        <el-button v-if="queryFilter" @click="removeFilters()" icon="fas fa-minus-square"> {{ i18n('dbviewer.remove-filters') }} </el-button>
-                        <el-button @click="showFilterPopup()" icon="fas fa-filter"> {{ i18n('dbviewer.filter') }}</el-button>
                         <cly-more-options class="bu-ml-2" @command="dbviewerActions($event)">
                             <el-dropdown-item command="aggregation">{{ i18n('dbviewer.aggregate') }}</el-dropdown-item>
                             <el-dropdown-item command="indexes">{{ i18n('dbviewer.indexes') }}</el-dropdown-item>
@@ -47,14 +45,21 @@
                     </div>
                 </div>
                 <cly-section class="dbviewer-tab__result-table bu-mt-3">
-                    <cly-datatable-n :hide-top="true" :show-header="false" :data-source="remoteTableDataSource" :export-query="getExportQuery" @search-query-changed="setSearchQuery">
+                    <cly-datatable-n row-key="_id" :expand-row-keys="expandKeys" :hide-top="false" :show-header="false" :data-source="remoteTableDataSource" :export-query="getExportQuery" @search-query-changed="setSearchQuery">
+                        <template slot="header-left">
+                            <el-button @click="toggleExpand()">{{ isExpanded ? i18n('dbviewer.collapse-all') : i18n('dbviewer.expand-all') }}</el-button>
+                            <el-button v-if="queryFilter" @click="removeFilters()" icon="fas fa-minus-square"> {{ i18n('dbviewer.remove-filters') }} </el-button>
+                            <el-button @click="showFilterPopup()" icon="fas fa-filter"> {{ i18n('dbviewer.filter') }}</el-button>
+                        </template>
                         <template v-slot="scope">
                             <el-table-column fixed type="expand">
                                 <template v-slot="rowScope">
-                                    {{ rowScope.row }}
+                                    <pre>
+                                        <code class="language-json hljs dbviewer-tab__code">{{ JSON.parse(rowScope.row._view) }}</code>
+                                    </pre>
                                 </template>
                             </el-table-column>
-                            <el-table-column fixed>
+                            <el-table-column prop="_id" fixed>
                                 <template v-slot="rowScope">
                                     <span v-if="!index">_id: {{ rowScope.row._id }}</span>
                                     <span v-if="index">{{ rowScope.row.name }}</span>
@@ -68,7 +73,9 @@
         <cly-form-dialog title="Filter Query"
             @submit="onExecuteFilter"
             saveButtonLabel="Apply Filter"
-            v-bind="formDialogs.queryFilter">
+            v-bind="formDialogs.queryFilter"
+            ref="dbviewerFilterForm"
+            >
             <template v-slot="formDialogScope">
                 <div class="dbviewer-tab__popup-content">
                     <div class="dbviewer-tab__filter-textarea">
@@ -76,8 +83,7 @@
                         <el-input
                             type="textarea"
                             v-model="formDialogScope.editedObject.filter"
-                            placeholder="{}"
-                        >
+                            placeholder="{}">
                     </el-input>
                     </div>
                     <div class="dbviewer-tab__projection">
@@ -153,6 +159,11 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </template>
+            <template slot="controls-left">
+                <div @click="clearFilters()" class="text-medium color-danger bu-is-clickable">
+                    Remove Filter
                 </div>
             </template>
         </cly-form-dialog>

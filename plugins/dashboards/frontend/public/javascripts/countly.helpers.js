@@ -145,9 +145,7 @@
 
                 switch (this.type) {
                 case "session":
-
                     var app = countlyGlobal.apps[appId];
-
                     if (app && app.type) {
 
                         breakdowns.push(
@@ -968,7 +966,8 @@
                     }
                 }
                 else {
-                    return period;
+                    var periodNames = countlyCommon.convertToTimePeriodObj(period);
+                    return periodNames.longName;
                 }
             }
         }

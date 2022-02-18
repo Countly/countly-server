@@ -1,8 +1,19 @@
 .dbviewer-tab {
+    height: 80vh;
+
+    &__code {
+        background-color: #FCFCFC;
+    }
+
+    .cly-vue-eldatatable__header {
+        border-bottom: 1px solid #ebebeb;
+    }
+
     &__sidebar {
         border-top-right-radius: 4px;
         border-top-left-radius: 4px;
         border: 1px solid #ECECEC;
+        height: calc(100vh - 250px);
     }
 
     &__app-selector-dropdown {

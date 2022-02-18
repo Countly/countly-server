@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]">
-    <div class="bu-level">
+    <div class="bu-level bu-level bu-pt-1 bu-pl-2 bu-pr-2">
         <div class="bu-level-left">
             <div class="bu-level-item">
                 <h4>{{title}} <span v-if="metricLabels" class="dashboard-widget-metric-labels text-small"><span class="bu-ml-1 bu-p-1" v-for="(item, idx) in metricLabels">{{item}}</span></span></h4>
@@ -13,13 +13,19 @@
         </div>
     </div>
 	<clyd-app-period :widgetData="{apps:data.apps,custom_period:data.custom_period}"></clyd-app-period>
-	<div class="dashboard-widget-graph bu-pt-4" >
+	<div class="dashboard-widget-graph bu-pt-4" :class="'dashboard-widget-'+data.visualization" >
 		<cly-chart-time v-if="data.visualization === 'time-series'" :showZoom="false" :showDownload="false" :showToggle="false"  :option="timelineGraph.lineOptions"  :height="200" > 
 		</cly-chart-time>
-		<div v-else-if="data.visualization === 'number'">	
-			<p>{{number.total}}</p>
-			<p>{{number.change}}</p>
-			<p>{{number.trend}}</p>
+		<div v-else-if="data.visualization === 'number'" >	
+			<h1 class="bu-pb-2">{{number.total}}</h1>
+			<p v-if="number.trend== 'u'" class="trend-up bu-p-0 bu-m-0">
+				<i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{number.change}}</span>
+				<span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>
+			</p>
+			<p v-if="number.trend == 'd'" class="trend-down bu-p-0 bu-m-0"> 
+				<i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2"></i><span>{{number.change}}</span>
+				<span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>
+			</p>
 		</div>
 		<cly-datatable-n v-else-if="data.visualization === 'table'" :rows="getTableData" :hideTop="true"  >
 			<template v-slot="scope">	
@@ -35,8 +41,8 @@
 				</el-table-column>
 			</template>
 		</cly-datatable-n>
-		<cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :option="stackedBarOptions" :showToggle="false"></cly-chart-bar>
-		<cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :option="pieGraph" :showToggle="false"></cly-chart-pie>
+		<cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="stackedBarOptions" ></cly-chart-bar>
+		<cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" ></cly-chart-pie>
 	</div>
 	<div class="dashboard-widget-footer">
 	</div>

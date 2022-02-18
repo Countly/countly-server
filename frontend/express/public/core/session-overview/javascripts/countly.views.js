@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlySessionOverview,app,countlyCommon, $, countlyAnalyticsAPI, countlySession,countlyTotalUsers*/
+/* global countlyVue,CV,countlySessionOverview,app,countlyCommon, $, countlySession,countlyTotalUsers*/
 var SessionOverviewView = countlyVue.views.create({
     template: CV.T("/core/session-overview/templates/session-overview.html"),
     mixins: [countlyVue.mixins.commonFormatters],
@@ -105,26 +105,32 @@ var SessionHomeWidget = countlyVue.views.create({
     },
     mounted: function() {
         var self = this;
-        $.when(countlyAnalyticsAPI.initialize(["platforms", "devices", "carriers"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
+        this.initialized = false;
+        $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
             self.calculateAllData();
         });
     },
     methods: {
         refresh: function() {
             var self = this;
-            $.when(countlyAnalyticsAPI.initialize(["platforms", "devices", "carriers"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
+            $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
                 self.calculateAllData();
+
             });
         },
         chartData: function(value) {
             return this.calculateSeries(value);
         },
         calculateAllData: function() {
+            this.initialized = true;
             this.chooseProperties = this.calculateProperties();
             this.lineOptions = this.calculateSeries();
         },
         calculateProperties: function() {
             var sessionData = countlySession.getSessionData();
+            if (!this.initialized) {
+                sessionData = {"usage": {"totals-sessions": {}}};
+            }
 
             var properties = [];
             //keep this way to allow also switching to different columns for different types later.  Supports also more or less columns.
@@ -185,13 +191,16 @@ var SessionHomeWidget = countlyVue.views.create({
         },
         calculateSeries: function(value) {
             var sessionDP = {};
-
             switch (value || this.chosenProperty) {
             case "t":
-                sessionDP = countlySession.getUserDPActive();
+                sessionDP = countlySession.getSessionDPTotal();
                 break;
             case "n":
                 sessionDP = countlySession.getUserDPNew();
+                if (sessionDP && sessionDP.chartDP && sessionDP.chartDP.length > 1) {
+                    sessionDP.chartDP[1].label = CV.i18n('common.table.new-sessions');
+                    sessionDP.chartDP[0].label = CV.i18n('common.table.new-sessions');
+                }
                 break;
             case "d":
                 sessionDP = countlySession.getDurationDPAvg();
@@ -204,9 +213,10 @@ var SessionHomeWidget = countlyVue.views.create({
                 break;
             }
             var series = [];
-
-            series.push({"name": sessionDP.chartDP[1].label, "data": sessionDP.chartDP[1].data});
-            series.push({"name": sessionDP.chartDP[0].label + "(" + CV.i18n('common.previous-period') + ")", "data": sessionDP.chartDP[0].data, "color": "#39C0C8", lineStyle: {"color": "#39C0C8"} });
+            if (this.initialized) {
+                series.push({"name": sessionDP.chartDP[1].label, "data": sessionDP.chartDP[1].data});
+                series.push({"name": sessionDP.chartDP[0].label + "(" + CV.i18n('common.previous-period') + ")", "data": sessionDP.chartDP[0].data, "color": "#39C0C8", lineStyle: {"color": "#39C0C8"} });
+            }
             return {"series": series};
         }
     },

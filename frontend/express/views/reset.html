@@ -96,10 +96,10 @@
 				<p style="margin: 0px;">© <%= new Date().getFullYear() %> <%- countlyTitle %></p>
 				<div style="margin: 0px; color: #0166D6;">
 					<% if (countlyPage) { %> <a href="<%- countlyPage %>"> <%- countlyTitle %> </a> <% }%>
-					<% if (featureRequestLink) { %> <a href="<%- featureRequestLink %>">Terms</a> <% }%>
-					<% if (feedbackLink) { %> <a href="<%- feedbackLink %>">Privacy</a> <% }%>
-					<% if (documentationLink) { %> <a href="<%- documentationLink %>">Documentation</a> <% }%>
-					<% if (helpCenterLink) { %> <a href="<%- helpCenterLink %>">Help Center</a> <% }%>
+                    <% if (featureRequestLink) { %> <a href="<%- featureRequestLink %>" data-localize="login.terms"></a> <% }%>
+                    <% if (feedbackLink) { %> <a href="<%- feedbackLink %>" data-localize="login.privacy"></a> <% }%>
+                    <% if (documentationLink) { %> <a href="<%- documentationLink %>" data-localize="login.documentation"></a> <% }%>
+                    <% if (helpCenterLink) { %> <a href="<%- helpCenterLink %>" data-localize="login.help-center"></a> <% }%>
 				</div>
 			</div>
 		</div>

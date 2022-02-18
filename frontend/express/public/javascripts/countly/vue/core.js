@@ -167,8 +167,9 @@
                 var dd = widgetData.dashData || {};
                 dd = dd.data || {};
 
-                if (widgetData.apps && widgetData.apps[0]) {
-                    dd = dd[widgetData.apps[0]] || {};
+                var keys1 = Object.keys(dd);
+                if (keys1.length > 0) {
+                    dd = dd[keys1[0]];
                 }
                 var tableData = [];
                 for (var k = 0; k < dd.rows.length; k++) {
@@ -187,8 +188,9 @@
                 var dd = widgetData.dashData || {};
                 dd = dd.data || {};
 
-                if (widgetData.apps && widgetData.apps[0]) {
-                    dd = dd[widgetData.apps[0]] || {};
+                var keys1 = Object.keys(dd);
+                if (keys1.length > 0) {
+                    dd = dd[keys1[0]];
                 }
                 var fields = [];
                 for (var k = 0; k < dd.cols.length; k++) {
@@ -203,10 +205,11 @@
                 }
                 return fields;
             },
-            calculateStackedBarOptionsFromWidget: function(widgetData) {
+            calculateStackedBarOptionsFromWidget: function(widgetData, map) {
                 widgetData = widgetData || {};
                 widgetData.dashData = widgetData.dashData || {};
                 widgetData.dashData.data = widgetData.dashData.data || {};
+                widgetData.metrics = widgetData.metrics || [];
 
                 var labels = [];
                 var series = [];
@@ -224,12 +227,15 @@
                         }
                     }
                 }
-
+                var metricName = widgetData.metrics[0];
+                if (map && map[widgetData.metrics[0]]) {
+                    metricName = map[widgetData.metrics[0]];
+                }
                 if (widgetData.bar_color && widgetData.bar_color > 0) {
-                    return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], color: countlyCommon.GRAPH_COLORS[this.data.bar_color - 1], "data": series, stack: "A"}]};
+                    return {xAxis: {data: labels}, series: [{"name": metricName, color: countlyCommon.GRAPH_COLORS[this.data.bar_color - 1], "data": series, stack: "A"}]};
                 }
                 else {
-                    return {xAxis: {data: labels}, series: [{"name": widgetData.metrics[0], "data": series, stack: "A"}]};
+                    return {xAxis: {data: labels}, series: [{"name": metricName, "data": series, stack: "A"}]};
                 }
             },
             calculatePieGraphFromWidget: function(widgetData, namingMap) {
@@ -341,17 +347,21 @@
                             });
                         }
                         else {
-                            state.allApps[additionalApps._id] = additionalApps;
+                            state.allApps[additionalApps._id] = JSON.parse(JSON.stringify(additionalApps));
                         }
+                        state.allApps = Object.assign({}, state.allApps, {});
                     },
                     removeFromAllApps: function(state, appToRemoveId) {
                         var appObj = state.allApps[appToRemoveId];
                         if (appObj) {
                             delete state.allApps[appToRemoveId];
                         }
+                        state.allApps = Object.assign({}, state.allApps, {});
+
                     },
                     deleteAllApps: function(state) {
                         state.allApps = null;
+                        state.allApps = Object.assign({}, state.allApps, {});
                     },
                     addNotificationToast: function(state, payload) {
                         payload.id = countlyCommon.generateId();
