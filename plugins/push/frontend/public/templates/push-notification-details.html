@@ -19,6 +19,8 @@
                     <el-dropdown-item v-if="shouldShowEditDraftUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowEditUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowEditRejectUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_REJECT">{{i18n('push-notification.edit')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowStartUserCommand(pushNotification.status)" :command="UserCommandEnum.START">{{i18n('push-notification.start')}} </el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowStopUserCommand(pushNotification.status)" :command="UserCommandEnum.STOP">{{i18n('push-notification.stop')}} </el-dropdown-item>
                 </cly-more-options>
             </template>
             <template v-slot:header-bottom>

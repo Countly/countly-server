@@ -1166,6 +1166,14 @@
                     this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
                 }
+                case this.UserCommandEnum.STOP: {
+                    this.$store.dispatch('countlyPushNotification/main/onToggle', {id: pushNotificationId, isActive: false});
+                    break;
+                }
+                case this.UserCommandEnum.START: {
+                    this.$store.dispatch('countlyPushNotification/main/onToggle', {id: pushNotificationId, isActive: true});
+                    break;
+                }
                 case this.UserCommandEnum.CREATE: {
                     this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
@@ -1198,6 +1206,27 @@
             },
             shouldShowEditUserCommand: function(status) {
                 return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED) && this.canUserUpdate;
+            },
+            shouldShowStartUserCommand: function(status) {
+                if (this.selectedPushNotificationType === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.CREATED
+                || status === this.StatusEnum.SENT
+                || status === this.StatusEnum.STOPPED
+                || status === this.StatusEnum.FAILED;
+            },
+            shouldShowStopUserCommand: function(status) {
+                if (this.selectedPushNotificationType === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.SCHEDULED || status === this.StatusEnum.SENDING;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
@@ -1324,6 +1353,7 @@
             return {
                 StatusEnum: countlyPushNotification.service.StatusEnum,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                TypeEnum: countlyPushNotification.service.TypeEnum,
                 platformFilters: platformFilterOptions,
                 statusOptions: countlyPushNotification.service.statusOptions,
                 currentSummaryTab: "message",
@@ -1510,6 +1540,14 @@
                     this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
                 }
+                case this.UserCommandEnum.STOP: {
+                    this.$store.dispatch('countlyPushNotification/details/onToggle', {id: pushNotificationId, isActive: false});
+                    break;
+                }
+                case this.UserCommandEnum.START: {
+                    this.$store.dispatch('countlyPushNotification/details/onToggle', {id: pushNotificationId, isActive: true});
+                    break;
+                }
                 case this.UserCommandEnum.CREATE: {
                     this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
@@ -1542,6 +1580,27 @@
             },
             shouldShowEditUserCommand: function(status) {
                 return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED) && this.canUserUpdate;
+            },
+            shouldShowStartUserCommand: function(status) {
+                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.CREATED
+                || status === this.StatusEnum.SENT
+                || status === this.StatusEnum.STOPPED
+                || status === this.StatusEnum.FAILED;
+            },
+            shouldShowStopUserCommand: function(status) {
+                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.SCHEDULED || status === this.StatusEnum.SENDING;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
