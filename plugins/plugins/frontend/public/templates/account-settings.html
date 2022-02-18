@@ -28,56 +28,61 @@
                                         <cly-inline-form-field :label="i18n('management-users.password')">
                                             <el-button @click="changePassword.showDialog = true">{{i18n('user-settings.change-password')}}</el-button>
                                         </cly-inline-form-field>
-                                        <cly-inline-form-field :key="key" :label="getLabelName(key)" v-for="(conf, key) in userConfigs.frontend">
+                                        <div :key="configKey" v-for="(userConf, configKey) in userConfigs">
+                                        <cly-inline-form-field :key="key" :label="getLabelName(configKey, key)" v-for="(conf, key) in userConfigs[configKey]">
                                             <div 
-                                                v-if="getInputType(key) === 'function'" 
-                                                v-html="predefinedInputs[selectedConfig + '.' + key](conf)">
+                                                v-if="getInputType(configKey, key) === 'function'" 
+                                                v-html="predefinedInputs[configKey + '.' + key](conf)">
                                             </div>
                                             <el-input
-                                                v-else-if="getInputType(key) === 'el-input'" 
-                                                @input="onChange(key, $event)"
+                                                v-else-if="getInputType(configKey, key) === 'el-input'" 
+                                                @input="onChange(configKey, key, $event)"
                                                 :value="conf"
-                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs"
+                                                v-bind="predefinedInputs[configKey + '.' + key].attrs"
                                                 >
                                             </el-input>
                                             <el-select 
-                                                v-else-if="getInputType(key) === 'el-select'" 
+                                                v-else-if="getInputType(configKey, key) === 'el-select'" 
                                                 :value="conf"
-                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
-                                                <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in predefinedInputs[selectedConfig + '.' + key].list"></el-option>
+                                                v-bind="predefinedInputs[configKey + '.' + key].attrs">
+                                                <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in predefinedInputs[configKey + '.' + key].list"></el-option>
                                             </el-select>
                                             <el-slider 
-                                                v-else-if="getInputType(key) === 'el-slider'" 
-                                                @change="onChange(key, $event)"
+                                                v-else-if="getInputType(configKey, key) === 'el-slider'" 
+                                                @change="onChange(configKey, key, $event)"
                                                 :value="conf"
-                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
+                                                v-bind="predefinedInputs[configKey + '.' + key].attrs">
                                             </el-slider>
                                             <el-button
-                                                v-else-if="getInputType(key) === 'el-button'" 
-                                                @click="predefinedInputs[selectedConfig + '.' + key].click()"
-                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
-                                                {{predefinedInputs[selectedConfig + '.' + key].label}}
+                                                v-else-if="getInputType(configKey, key) === 'el-button'" 
+                                                @click="predefinedInputs[configKey + '.' + key].click()"
+                                                v-bind="predefinedInputs[configKey + '.' + key].attrs">
+                                                {{predefinedInputs[configKey + '.' + key].label}}
                                             </el-button>
                                             <el-switch 
-                                                v-else-if="getInputType(key) === 'el-switch'"
-                                                @change="onChange(key, $event)"
+                                                v-else-if="getInputType(configKey, key) === 'el-switch'"
+                                                @change="onChange(configKey, key, $event)"
                                                 :value="conf"
-                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
+                                                v-bind="predefinedInputs[configKey + '.' + key].attrs">
                                             </el-switch>
                                             <el-input-number 
-                                                v-else-if="getInputType(key) === 'el-input-number'" 
-                                                @change="onChange(key, $event)"
+                                                v-else-if="getInputType(configKey, key) === 'el-input-number'" 
+                                                @change="onChange(configKey, key, $event)"
                                                 :max='2147483647' 
                                                 :min='0' 
                                                 :value="conf"
-                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
+                                                v-bind="predefinedInputs[configKey + '.' + key].attrs">
                                             </el-input-number>
                                             <el-input 
                                                 v-else
-                                                @input="onChange(key, $event)"
+                                                @input="onChange(configKey, key, $event)"
                                                 :value="conf">
                                             </el-input>
                                         </cly-inline-form-field>
+                                        </div>
+                                        <div :key="key" v-for="(value, key) in components">
+                                        <component v-if="value.component" v-bind:is="value.component" @change="onChange"></component>
+                                        </div>
                                     </cly-form-step>
                                     <div class="bu-has-text-right">
                                         <el-button :disabled="!formScope.isSubmissionAllowed" @click="formScope.submit()" type="primary">{{i18n('common.apply')}}</el-button>
