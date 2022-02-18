@@ -2,7 +2,7 @@
     <clyd-appcount v-model="scope.editedObject.app_count"></clyd-appcount>
     <clyd-sourceapps v-model="scope.editedObject.apps" :multiple="scope.editedObject.app_count === 'multiple'"></clyd-sourceapps>
     <clyd-visualization v-model="scope.editedObject.visualization" :enabled-types="enabledVisualizationTypes"></clyd-visualization>
-    <clyd-event v-model="scope.editedObject.events" :multiple="isMultipleEvents" :multiple-limit="5" :appIds="scope.editedObject.apps"></clyd-event>
+    <clyd-event :disabled="!showEventsSelector" v-model="scope.editedObject.events" :multiple="isMultipleEvents" :multiple-limit="5" :appIds="scope.editedObject.apps"></clyd-event>
     <clyd-breakdown v-model="scope.editedObject.breakdowns" type="events" v-if="showBreakdown" :event="scope.editedObject.events[0]"></clyd-breakdown>
     <clyd-metric v-model="scope.editedObject.metrics" :metrics="metrics" :multiple="isMultipleMetric"></clyd-metric>
     <clyd-title v-model="scope.editedObject.title"></clyd-title>
