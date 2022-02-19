@@ -364,6 +364,8 @@
                         CountlyHelpers.notify({message: 'Event Updated Successfully', sticky: false, type: 'success'});
                         context.dispatch('loadEventsData');
                     }
+                }).catch(function() {
+                    CountlyHelpers.notify({message: 'Error while updating event', sticky: false, type: 'error'});
                 });
             },
             omitSegments: function(context, data) {
