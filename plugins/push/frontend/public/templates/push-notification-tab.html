@@ -140,6 +140,7 @@
                                     <el-dropdown-item v-if="shouldShowApproveUserCommand(scope.row.status)"  :command="UserCommandEnum.APPROVE">{{i18n('push-notification.approve')}}</el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowRejectUserCommand(scope.row.status)" :command="UserCommandEnum.REJECT">{{i18n('push-notification.reject')}}</el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowEditDraftUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowEditRejectUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT_REJECT">{{i18n('push-notification.edit')}}</el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowEditUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
                                 </cly-more-options>
                             </template>

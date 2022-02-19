@@ -10,7 +10,7 @@
 .account-settings-hint {font-size: 12px; line-height: 18px;}
 .account-settings-hint i.fa-check-circle {color: #67C23A;}
 .el-table tr.plugin-highlighted-row {background: #f0f9eb;}
-.config-image-uploader img {height: 100%; width: auto; vertical-align: middle; display: block;}
+.config-image-uploader img {height: 100%; width: auto; vertical-align: middle; display: block; margin-left: auto;}
 .config-error {color:red;}
 .config-image-uploader:hover {
     border-color: #409EFF;
@@ -28,9 +28,6 @@
     float: left;
 }
 
-.config-image-uploader .prelogo {width: 165px; height:50px;}
-.config-image-uploader .stopleftlogo {width: 144px; height:32px;}
-.config-image-uploader .favicon {width: 32px; height:32px;}
 .configurations {
     .cly-vue-section--has-default-skin .cly-vue-section__content{
         border: 1px solid #ECECEC !important;

@@ -177,7 +177,7 @@
             dimensions: function() {
                 return {
                     minWidth: 1,
-                    minHeight: 3,
+                    minHeight: 1,
                     width: 1,
                     height: 3
                 };

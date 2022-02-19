@@ -131,6 +131,13 @@
     background-color: map.get(c.$colors, "warm-gray-20");
     font-weight: t.$font-weight-primary;
   }
+  tbody {
+    tr:last-child {
+      td{
+        border-bottom: none;
+      }
+    }
+  }
 }
 
 .cly-vue-remote-config-conditions-table {
@@ -172,5 +179,8 @@
         border-top: 1px solid map.get(c.$colors, "warm-gray-30");
         border-bottom: 1px solid map.get(c.$colors, "warm-gray-30");
         background-color: map.get(c.$colors, "warm-gray-10");
+    }
+    .el-dialog__footer {
+        padding: 16px 24px !important;
     }
 }

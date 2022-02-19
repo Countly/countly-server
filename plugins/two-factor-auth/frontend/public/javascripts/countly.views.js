@@ -1,4 +1,4 @@
-/* global app, T, countlyGlobal, CountlyHelpers, $ */
+/* global app, countlyVue, CV, countlyGlobal, CountlyHelpers, $ */
 
 $(document).ready(function() {
     // if configuration view exists
@@ -10,7 +10,128 @@ $(document).ready(function() {
     }
 });
 
-app.addPageScript("/manage/users", function() {
+var TwoFAUser = countlyVue.views.create({
+    template: countlyVue.T("/two-factor-auth/templates/setup2fa_modal.html"),
+    data: function() {
+        if (!countlyGlobal.member.two_factor_auth) {
+            countlyGlobal.member.two_factor_auth = {};
+        }
+        if (typeof countlyGlobal.member.two_factor_auth.enabled === "undefined") {
+            countlyGlobal.member.two_factor_auth.enabled = false;
+        }
+        return {
+            TFAsettings: countlyGlobal.member.two_factor_auth,
+            dataModal: {showDialog: false},
+            qrcode_html: $('<div>').html(countlyGlobal["2fa_qrcode_html"]).text(),
+            secret_token: countlyGlobal["2fa_secret_token"],
+            secret_code: ""
+        };
+    },
+    methods: {
+        onChange: function(value) {
+            if (value) {
+                this.dataModal.showDialog = true;
+            }
+            else {
+                CountlyHelpers.confirm(
+                    $.i18n.map["two-factor-auth.confirm_disable"],
+                    "popStyleGreen",
+                    function(result) {
+                        if (!result) {
+                            return;
+                        }
+                        $.ajax({
+                            type: "GET",
+                            url: countlyGlobal.path + "/i/two-factor-auth",
+                            data: {method: "disable"},
+                            success: function() {
+                                CountlyHelpers.notify({
+                                    title: $.i18n.map["two-factor-auth.disable_title"],
+                                    message: $.i18n.map["two-factor-auth.disable_message"],
+                                    type: "ok"
+                                });
+                                countlyGlobal.member.two_factor_auth.enabled = false;
+                            },
+                            error: function(xhr) {
+                                var errMessage = "";
+
+                                try {
+                                    var response = JSON.parse(xhr.responseText);
+                                    errMessage = response.result || xhr.statusText;
+                                }
+                                catch (err) {
+                                    errMessage = xhr.statusText;
+                                }
+
+                                CountlyHelpers.notify({
+                                    title: $.i18n.map["two-factor-auth.faildisable_title"],
+                                    message: $.i18n.prop("two-factor-auth.faildisable_message", errMessage),
+                                    type: "error"
+                                });
+                            }
+                        });
+                    },
+                    [$.i18n.map["common.cancel"], $.i18n.map["common.continue"]],
+                    {
+                        title: $.i18n.map["two-factor-auth.confirm_disable_title"],
+                        image: "delete-user"
+                    }
+                );
+            }
+        },
+        closeDataModal: function() {
+            this.dataModal.showDialog = false;
+        },
+        confirmDialog: function() {
+            var self = this;
+            $.ajax({
+                type: "GET",
+                url: countlyGlobal.path + "/i/two-factor-auth",
+                data: {
+                    method: "enable",
+                    secret_token: countlyGlobal["2fa_secret_token"],
+                    auth_code: self.secret_code
+                },
+                success: function() {
+                    CountlyHelpers.notify({
+                        title: $.i18n.map["two-factor-auth.setup_title"],
+                        message: $.i18n.map["two-factor-auth.setup_message"],
+                        type: "ok"
+                    });
+
+                    self.dataModal.showDialog = false;
+                    countlyGlobal.member.two_factor_auth.enabled = true;
+                },
+                error: function(xhr) {
+                    var errMessage = "";
+
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        errMessage = response.result || xhr.statusText;
+                    }
+                    catch (err) {
+                        errMessage = xhr.statusText;
+                    }
+
+                    CountlyHelpers.notify({
+                        title: $.i18n.map["two-factor-auth.failsetup_title"],
+                        message: $.i18n.prop("two-factor-auth.failsetup_message", errMessage),
+                        type: "error"
+                    });
+                    self.dataModal.showDialog = false;
+                }
+            });
+        }
+    }
+});
+
+countlyVue.container.registerData("/account/settings", {
+    _id: "2fa",
+    title: CV.i18n('two-factor-auth.plugin-title'),
+    component: TwoFAUser
+});
+
+/*app.addPageScript("/manage/users", function() {
     $("#content").on("click", "#user-table tr", function(event) {
         var $userRow = $(event.target).closest("tr"),
             userId = $userRow.attr("id"),
@@ -86,148 +207,5 @@ app.addPageScript("/manage/users", function() {
             });
         }
     });
-});
+});*/
 
-app.addPageScript("/manage/user-settings", function() {
-    var member = countlyGlobal.member,
-        templateData = {
-            "secret_token": countlyGlobal["2fa_secret_token"],
-            "qrcode_html": $('<div>').html(countlyGlobal["2fa_qrcode_html"]).text()
-        };
-
-    $('.account-settings').find('.d-table').first().append(
-        '<tr><td><div class="title" data-localize="two-factor-auth.two-factor-authentication"></div><span id="global-2fa-notice" class="config-help" data-localize="two-factor-auth.disable_global_first"></span></td>' +
-            '<td id="setup-2fa-cell"><div class="on-off-switch" id="setup-2fa-switch">' +
-            '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox">' +
-            '<label class="on-off-switch-label"></label>' +
-            '<span class="text" data-localize="common.enable"></span></div>' +
-            '<div id="resetup-2fa-link" data-localize="two-factor-auth.resetup_2fa"></div></td></tr>');
-    app.localize();
-
-    var _setupButton = function(disabled) {
-        if (disabled || countlyGlobal["2fa_globally_enabled"]) {
-            var setupButton = "";
-
-            if (disabled) {
-                $("#resetup-2fa-link").hide();
-                $("#global-2fa-notice").hide();
-                $("#setup-2fa-switch").show();
-                $("#setup-2fa-switch input").removeAttr("checked");
-                setupButton = "#setup-2fa-switch label";
-            }
-            else {
-                $("#resetup-2fa-link").show();
-                $("#global-2fa-notice").show();
-                $("#setup-2fa-switch").hide();
-                $("#setup-2fa-switch input").attr("checked", "");
-                setupButton = "#resetup-2fa-link";
-            }
-
-            T.render('/two-factor-auth/templates/setup2fa_modal.html', function(src) {
-                var setup2FATemplate = src;
-                $(setupButton).off("click").on("click", function() {
-                    CountlyHelpers.popup(setup2FATemplate(templateData), "setup-2fa-dialog", true);
-                    app.localize();
-
-                    $(".setup-2fa-dialog .cancel-2fa-button").off("click").on("click", function() {
-                        CountlyHelpers.removeDialog($(".setup-2fa-dialog"));
-                    });
-
-                    $(".setup-2fa-dialog .confirm-2fa-button").off("click").on("click", function() {
-                        $.ajax({
-                            type: "GET",
-                            url: countlyGlobal.path + "/i/two-factor-auth",
-                            data: {
-                                method: "enable",
-                                secret_token: countlyGlobal["2fa_secret_token"],
-                                auth_code: $(".setup-2fa-dialog input[name=\"2fa_code\"]").val()
-                            },
-                            success: function() {
-                                CountlyHelpers.notify({
-                                    title: $.i18n.map["two-factor-auth.setup_title"],
-                                    message: $.i18n.map["two-factor-auth.setup_message"],
-                                    type: "ok"
-                                });
-
-                                _setupButton(false);
-                            },
-                            error: function(xhr) {
-                                var errMessage = "";
-
-                                try {
-                                    var response = JSON.parse(xhr.responseText);
-                                    errMessage = response.result || xhr.statusText;
-                                }
-                                catch (err) {
-                                    errMessage = xhr.statusText;
-                                }
-
-                                CountlyHelpers.notify({
-                                    title: $.i18n.map["two-factor-auth.failsetup_title"],
-                                    message: $.i18n.prop("two-factor-auth.failsetup_message", errMessage),
-                                    type: "error"
-                                });
-                            }
-                        });
-                        CountlyHelpers.removeDialog($(".setup-2fa-dialog"));
-                    });
-                });
-            });
-        }
-        else {
-            $("#resetup-2fa-link").hide();
-            $("#global-2fa-notice").hide();
-            $("#setup-2fa-switch").show();
-            $("#setup-2fa-switch input").attr("checked", "");
-
-            $("#setup-2fa-switch label").off("click").on("click", function() {
-                CountlyHelpers.confirm(
-                    $.i18n.map["two-factor-auth.confirm_disable"],
-                    "popStyleGreen",
-                    function(result) {
-                        if (!result) {
-                            return;
-                        }
-                        $.ajax({
-                            type: "GET",
-                            url: countlyGlobal.path + "/i/two-factor-auth",
-                            data: {method: "disable"},
-                            success: function() {
-                                CountlyHelpers.notify({
-                                    title: $.i18n.map["two-factor-auth.disable_title"],
-                                    message: $.i18n.map["two-factor-auth.disable_message"],
-                                    type: "ok"
-                                });
-                                _setupButton(true);
-                            },
-                            error: function(xhr) {
-                                var errMessage = "";
-
-                                try {
-                                    var response = JSON.parse(xhr.responseText);
-                                    errMessage = response.result || xhr.statusText;
-                                }
-                                catch (err) {
-                                    errMessage = xhr.statusText;
-                                }
-
-                                CountlyHelpers.notify({
-                                    title: $.i18n.map["two-factor-auth.faildisable_title"],
-                                    message: $.i18n.prop("two-factor-auth.faildisable_message", errMessage),
-                                    type: "error"
-                                });
-                            }
-                        });
-                    },
-                    [$.i18n.map["common.cancel"], $.i18n.map["common.continue"]],
-                    {
-                        title: $.i18n.map["two-factor-auth.confirm_disable_title"],
-                        image: "delete-user"
-                    }
-                );
-            });
-        }
-    };
-
-    _setupButton(!(member && member.two_factor_auth && member.two_factor_auth.enabled));
-});

@@ -149,6 +149,7 @@
                     self.dialog = {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''};
                 });
                 window.location.href = '#/home';
+                window.location.reload();
             },
             continuePopulate: function() {
                 this.finishedGenerateModal = { showDialog: false };
@@ -159,16 +160,17 @@
                 self.percentage = 0;
                 this.generateDataModal = { showDialog: true };
 
-                countlyPopulator.setStartTime(countlyCommon.getPeriod()[0] / 1000);
-                countlyPopulator.setEndTime(countlyCommon.getPeriod()[1] / 1000);
+                countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
+                countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
 
                 countlyPopulator.setSelectedTemplate(self.selectedTemplate);
                 countlyPopulator.getTemplate(self.selectedTemplate, function(template) {
                     countlyPopulator.generateUsers(self.maxTime * 4, template);
                 });
+                var startTime = Math.round(Date.now() / 1000);
                 this.progressBar = setInterval(function() {
                     if (parseInt(self.percentage) < 100) {
-                        self.percentage += parseFloat(100 / self.maxTime);
+                        self.percentage = parseFloat((Math.round(Date.now() / 1000) - startTime) / self.maxTime) * 100;
                         if (self.percentage > 100) {
                             self.percentage = 100;
                         }

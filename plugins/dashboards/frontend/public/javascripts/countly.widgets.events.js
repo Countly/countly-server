@@ -139,7 +139,7 @@
                         }
                     }
                 }
-                return this.calculateStackedBarOptionsFromWidget(data);
+                return this.calculateStackedBarOptionsFromWidget(data, this.map);
             },
             number: function() {
                 var eventsObj = this.calculateNumberFromWidget(this.data);
@@ -202,8 +202,21 @@
 
                 return multiple;
             },
+            showEventsSelector: function() {
+                if (this.scope.editedObject.apps && this.scope.editedObject.apps.length > 0) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            },
             showBreakdown: function() {
-                return ["bar-chart", "table"].indexOf(this.scope.editedObject.visualization) > -1;
+                if (this.scope.editedObject.events && this.scope.editedObject.events.length > 0) {
+                    return ["bar-chart", "table"].indexOf(this.scope.editedObject.visualization) > -1;
+                }
+                else {
+                    return false;
+                }
             },
             isMultipleEvents: function() {
                 return this.scope.editedObject.visualization === "time-series";

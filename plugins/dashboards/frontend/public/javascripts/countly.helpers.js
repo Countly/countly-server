@@ -966,7 +966,8 @@
                     }
                 }
                 else {
-                    return period;
+                    var periodNames = countlyCommon.convertToTimePeriodObj(period);
+                    return periodNames.longName;
                 }
             }
         }

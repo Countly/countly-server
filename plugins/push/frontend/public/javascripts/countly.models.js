@@ -49,7 +49,8 @@
         APPROVE: 'approve',
         EDIT_DRAFT: 'edit_draft',
         CREATE: 'create',
-        EDIT: 'edit'
+        EDIT: 'edit',
+        EDIT_REJECT: 'edit_reject',
     });
     var MediaTypeEnum = Object.freeze({
         IMAGE: 'image',
@@ -148,6 +149,7 @@
     var statusOptions = {};
     statusOptions[StatusEnum.CREATED] = {label: "Created", value: StatusEnum.CREATED};
     statusOptions[StatusEnum.PENDING_APPROVAL] = {label: "Waiting for approval", value: StatusEnum.PENDING_APPROVAL};
+    statusOptions[StatusEnum.REJECT] = {label: "Rejected", value: StatusEnum.REJECT};
     statusOptions[StatusEnum.DRAFT] = {label: "Draft", value: StatusEnum.DRAFT};
     statusOptions[StatusEnum.SCHEDULED] = {label: "Scheduled", value: StatusEnum.SCHEDULED};
     statusOptions[StatusEnum.SENDING] = {label: "Sending", value: StatusEnum.SENDING};
@@ -388,6 +390,9 @@
             }
             return false;
         },
+        isNetworkError: function(response) {
+            return response && !response.responseJSON && response.readyState === 0;
+        },
         getFirstValidationErrorMessageIfFound: function(response) {
             if (this.isValidationError(response)) {
                 return response.responseJSON.errors[0];
@@ -417,6 +422,12 @@
             }
             if (this.hasErrors(error)) {
                 return this.getFirstErrorMessageIfFound(error);
+            }
+            if (error && error.message) {
+                return error.message;
+            }
+            if (this.isNetworkError(error)) {
+                return 'Network error occurred.';
             }
             return CV.i18n('push-notification.unknown-error');
         },
@@ -943,6 +954,9 @@
                 }, []);
             },
             mapStatus: function(dto) {
+                if (dto.status === 'draft' && dto.info.rejected) {
+                    return StatusEnum.REJECT;
+                }
                 if (dto.status === 'inactive') {
                     return StatusEnum.PENDING_APPROVAL;
                 }
@@ -2382,7 +2396,35 @@
             if (!this.isPushNotificationApproverPluginEnabled()) {
                 throw new Error('Push approver plugin is not enabled');
             }
-            return countlyPushNotificationApprover.service.approve(messageId);
+            return new Promise(function(resolve, reject) {
+                countlyPushNotificationApprover.service.approve(messageId)
+                    .then(function(response) {
+                        resolve(response);
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    });
+            });
+
+        },
+        reject: function(messageId) {
+            if (!this.isPushNotificationApproverPluginEnabled()) {
+                throw new Error('Push approver plugin is not enabled');
+            }
+            return new Promise(function(resolve, reject) {
+                countlyPushNotificationApprover.service.reject(messageId)
+                    .then(function(response) {
+                        resolve(response);
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    });
+            });
+
         },
         updateTestUsers: function(testUsersModel, options) {
             var appConfig = {push: {test: {}}};
@@ -2438,7 +2480,20 @@
             context.dispatch('onFetchInit', {useLoader: false});
             countlyPushNotification.service.approve(id).then(function() {
                 context.dispatch('onFetchSuccess', {useLoader: false});
-                CountlyHelpers.notify({message: "Push notification has been successfully sent for approval."});
+                context.dispatch('fetchById', id);
+                CountlyHelpers.notify({message: "Push notification has been successfully approved."});
+            }).catch(function(error) {
+                console.error(error);
+                context.dispatch('onFetchError', {error: error, useLoader: false});
+                CountlyHelpers.notify({message: error.message, type: "error"});
+            });
+        },
+        onReject: function(context, id) {
+            context.dispatch('onFetchInit', {useLoader: false});
+            countlyPushNotification.service.reject(id).then(function() {
+                context.dispatch('onFetchSuccess', {useLoader: false});
+                context.dispatch('fetchById', id);
+                CountlyHelpers.notify({message: "Push notification has been successfully rejected."});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
@@ -2586,18 +2641,23 @@
             countlyPushNotification.service.approve(id).then(function() {
                 context.dispatch('fetchAll', false);
                 context.dispatch('onFetchSuccess', {useLoader: true});
-                CountlyHelpers.notify({
-                    title: "Push notification approver",
-                    message: "Push notification has been successfully sent for approval.",
-                });
+                CountlyHelpers.notify({message: "Push notification has been successfully approved."});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: true});
-                CountlyHelpers.notify({
-                    title: "Push notification approver error",
-                    message: error.message,
-                    type: "error"
-                });
+                CountlyHelpers.notify({message: error.message, type: "error"});
+            });
+        },
+        onReject: function(context, id) {
+            context.dispatch('onFetchInit', {useLoader: true});
+            countlyPushNotification.service.reject(id).then(function() {
+                context.dispatch('fetchAll', false);
+                context.dispatch('onFetchSuccess', {useLoader: true});
+                CountlyHelpers.notify({message: "Push notification has been successfully rejected."});
+            }).catch(function(error) {
+                console.error(error);
+                context.dispatch('onFetchError', {error: error, useLoader: true});
+                CountlyHelpers.notify({message: error.message, type: "error"});
             });
         },
         onUserCommand: function(context, payload) {

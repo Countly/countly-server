@@ -9,7 +9,7 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     log = common.log('views:api'),
-    { validateCreate, validateRead } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'views';
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true};
@@ -54,8 +54,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var appId = ob.params.qstring.app_id;
 
         return new Promise(function(resolve) {
-            validateCreate(ob.params, FEATURE_NAME, function(params) {
-                if (ob.params.qstring.method === "rename_views") {
+
+            if (ob.params.qstring.method === "rename_views") {
+                validateUpdate(ob.params, FEATURE_NAME, function(params) {
                     if (ob.params.qstring.data) {
                         var haveUpdate = false;
                         var data = [];
@@ -101,14 +102,14 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         common.returnMessage(params, 400, 'Missing request parameter: data');
                         resolve();
                     }
-                }
-                else if (ob.params.qstring.method === "delete_view") {
-                    var viewName = "";
-                    var viewUrl = "";
-                    var viewids = ob.params.qstring.view_id;
-                    viewids = viewids.split(","); //can pass many, concat ","
-
-
+                });
+            }
+            else if (ob.params.qstring.method === "delete_view") {
+                var viewName = "";
+                var viewUrl = "";
+                var viewids = ob.params.qstring.view_id;
+                viewids = viewids.split(","); //can pass many, concat ","
+                validateDelete(ob.params, FEATURE_NAME, function(params) {
                     Promise.each(viewids, function(viewid) {
                         return new Promise(function(resolveView) {
                             const deleteDocs = [];
@@ -167,12 +168,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         resolve();
                         common.returnOutput(params, {result: false});
                     });
-                }
-                else {
-                    common.returnMessage(params, 400, 'Invalid method. Must be one of:delete_view,rename_views ');
-                    resolve();
-                }
-            });
+                });
+            }
+            else {
+                common.returnMessage(ob.params, 400, 'Invalid method. Must be one of:delete_view,rename_views ');
+                resolve();
+            }
         });
     });
 

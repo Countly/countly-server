@@ -7,8 +7,6 @@
     border-radius: 4px;
 
     .bu-columns{
-      display: flex;
-      justify-content: space-around;
     }
 
     .el-collapse {
@@ -43,7 +41,7 @@
         }
       }
 
-      .bu-columns{
+      span div .bu-columns{
         padding: 0 !important;
         margin: 0;
         .bu-is-4{
@@ -60,6 +58,7 @@
   .account-settings-avatar-box{
     padding: 24px;
     overflow: auto;
+    flex: auto;
     .el-upload {display: block;}
   }
 
@@ -106,7 +105,7 @@
     .el-collapse-item__header {color: #333C48; padding-left: 24px !important; text-transform: uppercase;} 
   }
   .box-card{
-    background-color: #F8FAFD;
+    background-color: #E6F0FB;
     border: 1px solid #0166D6;
     box-sizing: border-box;
     box-shadow: 0px 1px 0px #ECECEC;

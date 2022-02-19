@@ -8,7 +8,7 @@
 	<div class="dashboard-widget-graph notes-widget-graph"  >
 		<div>
 			<div class="bu-pl-2 bu-pr-2" :style="widgetStyling">{{widgetText}}</div>
-			<p :style="linkStyling" class="bu-p-2"><a v-if="mylink" class="bu-pt-4" target="_blank" :href="mylink.link">{{mylink.text}}</a></p>
+			<p v-if="mylink" :style="linkStyling" class="bu-p-2"><a  class="bu-pt-4" target="_blank" :href="mylink.link">{{mylink.text}}</a></p>
 		</div>
 	</div>
 </div>
