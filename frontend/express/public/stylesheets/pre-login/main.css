@@ -182,6 +182,7 @@ input.error{
   color: #E49700;
   font-size: 14px;
   position: relative;
+  float: left;
 }
 .footer{
   font-size: 14px;border-top: 1px solid #E2E4E8; position: fixed; left: 0; bottom: 0; width: 100%; text-align: center; background-color: #fff;

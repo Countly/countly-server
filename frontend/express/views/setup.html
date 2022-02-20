@@ -51,24 +51,24 @@
         <h1 style="font-weight: 500; text-align: center; line-height: 48px;" id="header" data-localize="setup.title"></h1>
 		<div style="height: 40px; font-size: 14px; color: #333C48; text-align: center; width: 578px; margin: 0 auto 16px; line-height: 21px;" data-localize="setup.explanation"></div>
         <div id="forgot-form" style="width:304px; margin:auto;">
-            <form id="account-form" method="POST" onsubmit="return validateForm()"  style="width:300px; margin:auto;">
+            <form id="account-form" method="POST" style="width:300px; margin:auto;">
                 <div>
                     <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="setup.full-name"></p>
                     <input autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="text" name="full_name" id="full_name" placeholder="Enter your full name" data-localize="placeholder.full-name"<% if (params && params.full_name){ %> value="<%- params.full_name %>" <% } %>/>
-                    <label id="full-name-error" class="error" for="full_name" style="display: none;" data-localize="management-users.full_name.invalid"></label>
+                    <label id="full_name-error" class="error" for="full_name" style="display: none;" data-localize="setup.error-full-name"></label>
                 </div>
                 <div>
                     <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.email-adress"></p>
                     <input autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="email" name="email" id="email" placeholder="Enter your email adress" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
-                    <label id="email-error" class="error" for="email" style="display: none;" data-localize="management-users.email.invalid"></label>
+                    <label id="email-error" class="error" for="email" style="display: none;" data-localize="setup.error-email"></label>
                 </div>
                 <div>
-                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="setup.username"></p>
+                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-localize="setup.username"></p>
                     <input type="text" autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" name="username" id="username" placeholder="Enter your username" data-localize="placeholder.enter-username"<% if (params && params.username){ %> value="<%- params.username %>" <% } %>/>
-                    <label id="username-error" class="error" for="username" style="display: none;" data-localize="management-users.username.invalid"></label>
+                    <label id="username-error" class="error" for="username" style="display: none;" data-localize="setup.error-username"></label>
                 </div>
                 <div>
-                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px" data-localize="login.password"></p>
+                    <p style="float:left;color: #333C48;font-weight: 500;margin-bottom:8px;text-align: start;min-width: 100px;" data-localize="login.password"></p>
                     <input name="password" id="password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Password" data-localize="placeholder.password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
                     <div id="password-requirements">
                         <ul>
@@ -77,8 +77,6 @@
                             <span class="dot"></span><li id="hint-password_number" data-localize="management-users.password.has-number"></li>
                             <span class="dot"></span><li id="hint-password_symbol"  data-localize="management-users.password.has-special"></li>
                         </ul>
-                        <div class="hint-password-good" style="display: none;"><i class="far fa-thumbs-up" style="color:#2FA732; margin-right:5px"></i><span data-localize="setup.hint-password-good"></span></div>
-
                     </div>
                 </div>
                 <% if (typeof inject_template.form != "undefined") { %>
@@ -115,6 +113,8 @@
     <script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>
     <script language="javascript" type="text/javascript" src="javascripts/countly/countly.helpers.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/jquery.validate.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/additional-methods.min.js"></script>
 
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
@@ -123,53 +123,17 @@
         function validateForm() {
             var valid = true;
             var errors = [];
-            $('#username-error').css('display',"none");
-            $('#full-name-error').css('display',"none");
-            $('#email-error').css('display',"none");
             if ($("#full_name").val().trim().length === 0) {
                 valid = false;
-                $('#full-name-error').css('display',"flex");
-                $('#full_name').addClass("error");
                 errors.push(jQuery.i18n.map["management-users.full_name.invalid"]);
             }
             if ($("#username").val().trim().length === 0) {
                 valid = false;
                 errors.push(jQuery.i18n.map["management-users.username.invalid"]);
-                $('#username').addClass("error");
-                $('#username-error').css('display',"flex");
             }
             if (!CountlyHelpers.validateEmail($("#email").val())) {
                 valid = false;
                 errors.push(jQuery.i18n.map["management-users.email.invalid"]);
-                $('#email').addClass("error");
-                $('#email-error').css('display',"flex");
-            }
-            if($("#password").val()){
-                var password = $("#password").val();
-                if (password.length < countlyGlobal.security.password_min) {
-                    $('ul span:nth-of-type(1).dot').css("background-color", "red");
-                }
-                else{
-                    $('ul span:nth-of-type(1).dot').css("background-color", "green");
-                }
-                if (countlyGlobal.security.password_char && !/[A-Z]/.test(password)) {
-                    $('ul span:nth-of-type(2).dot').css("background-color", "red");
-                }
-                else{
-                    $('ul span:nth-of-type(2).dot').css("background-color", "green");
-                }
-                if (countlyGlobal.security.password_number && !/\d/.test(password)) {
-                    $('ul span:nth-of-type(3).dot').css("background-color", "red");
-                }
-                else{
-                    $('ul span:nth-of-type(3).dot').css("background-color", "green");
-                }
-                if (countlyGlobal.security.password_symbol && !/[^A-Za-z\d]/.test(password)) {
-                    $('ul span:nth-of-type(4).dot').css("background-color", "red");
-                }
-                else{
-                    $('ul span:nth-of-type(4).dot').css("background-color", "green");
-                }
             }
             if (CountlyHelpers.validatePassword($("#password").val())) {
                 errors.push(jQuery.i18n.map["placeholder.password"] + ": " + CountlyHelpers.validatePassword($("#password").val()));
@@ -178,6 +142,134 @@
             $("#error-message").html(errors.join("<br/>"));
             return valid;
         }
+        $(document).ready(function () {
+            $("#username").focusin(function(){
+                $(this).removeClass("error");
+                $("#username-error").hide();
+            });
+            $("#username").focusout(function(){
+                $(this).addClass("error");
+                $("#username-error").show();
+            });
+            $("#full_name").focusin(function(){
+                $(this).removeClass("error");
+                $("#full_name-error").hide();
+            });
+            $("#full_name").focusout(function(){
+                $(this).addClass("error");
+                $("#full_name-error").show();
+            });
+            $("#email").focusin(function(){
+                $(this).removeClass("error");
+                $("#email-error").hide();
+            });
+            $("#email").focusout(function(){
+                $(this).addClass("error");
+                $("#email-error").show();
+            });
+            $("#account-form").validate({
+                rules: {
+                    username: {
+                        required: true
+                    },
+                    full_name: {
+                        required: true
+                    },
+                    email: {
+                        required: true
+                    },
+                    password: {
+                        required: {
+                            depends: function(){
+                                var password = $("#password").val();
+                                if (password.length < countlyGlobal.security.password_min) {
+                                    $('ul span:nth-of-type(1).dot').css("background-color", "red");
+                                }
+                                else{
+                                    $('ul span:nth-of-type(1).dot').css("background-color", "green");
+                                }
+                                if (countlyGlobal.security.password_char && !/[A-Z]/.test(password)) {
+                                    $('ul span:nth-of-type(2).dot').css("background-color", "red");
+                                }
+                                else{
+                                    $('ul span:nth-of-type(2).dot').css("background-color", "green");
+                                }
+                                if (countlyGlobal.security.password_number && !/\d/.test(password)) {
+                                    $('ul span:nth-of-type(3).dot').css("background-color", "red");
+                                }
+                                else{
+                                    $('ul span:nth-of-type(3).dot').css("background-color", "green");
+                                }
+                                if (countlyGlobal.security.password_symbol && !/[^A-Za-z\d]/.test(password)) {
+                                    $('ul span:nth-of-type(4).dot').css("background-color", "red");
+                                }
+                                else{
+                                    $('ul span:nth-of-type(4).dot').css("background-color", "green");
+                                }
+                            }
+                            
+                        }
+                    }
+                },
+                messages: {
+                    username: {
+                        required: jQuery.i18n.map["setup.error-username"]
+                    },
+                    full_name: {
+                        required: jQuery.i18n.map["setup.error-full-name"]
+                    },
+                    email: {
+                        required: jQuery.i18n.map["setup.error-email"]
+                    }
+                }
+            });
+            $('#login-button').click(function() {
+                if(validateForm() === true){
+                    $("#account-form").submit();
+                }else{
+                    if ($('#username').val().trim().length === 0) {
+                        $("#username-error").show();
+                        $("#username").addClass("error");
+                    }
+                    if ($("#full_name").val().trim().length === 0) {
+                        $("#full_name-error").show();
+                        $("#full_name").addClass("error");
+                    }
+                    if (!CountlyHelpers.validateEmail($("#email").val())) {
+                        $("#email-error").show();
+                        $("#email").addClass("error");
+                    }
+                    if (CountlyHelpers.validatePassword($("#password").val())) {
+                        var password = $("#password").val();
+                        if (password.length < countlyGlobal.security.password_min) {
+                            $('ul span:nth-of-type(1).dot').css("background-color", "red");
+                        }
+                        else{
+                            $('ul span:nth-of-type(1).dot').css("background-color", "green");
+                        }
+                        if (countlyGlobal.security.password_char && !/[A-Z]/.test(password)) {
+                            $('ul span:nth-of-type(2).dot').css("background-color", "red");
+                        }
+                        else{
+                            $('ul span:nth-of-type(2).dot').css("background-color", "green");
+                        }
+                        if (countlyGlobal.security.password_number && !/\d/.test(password)) {
+                            $('ul span:nth-of-type(3).dot').css("background-color", "red");
+                        }
+                        else{
+                            $('ul span:nth-of-type(3).dot').css("background-color", "green");
+                        }
+                        if (countlyGlobal.security.password_symbol && !/[^A-Za-z\d]/.test(password)) {
+                            $('ul span:nth-of-type(4).dot').css("background-color", "red");
+                        }
+                        else{
+                            $('ul span:nth-of-type(4).dot').css("background-color", "green");
+                        }
+                    }
+                    return false;
+                }
+            });
+        });
 		$(document).ready(function() {
             $("#password-requirements li").first().text(jQuery.i18n.prop("management-users.password.length", countlyGlobal.security.password_min));
 			if (jQuery.i18n.map["setup.title"]) {
