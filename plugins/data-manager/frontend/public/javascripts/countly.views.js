@@ -169,6 +169,10 @@
                         value: 'created'
                     },
                     {
+                        label: CV.i18n("data-manager.unplanned"),
+                        value: 'unplanned'
+                    },
+                    {
                         label: CV.i18n("data-manager.approved"),
                         value: 'approved'
                     },
