@@ -21,6 +21,9 @@ class Info extends Validatable {
      * @param {Date}        data.removed        date of deletion
      * @param {string}      data.removedBy      user who deleted this mesage
      * @param {string}      data.removedByName  full name of a user who deleted this mesage
+     * @param {Date}        data.submitted       date of submission (push_approver plugin)
+     * @param {string}      data.submittedBy     user who submitted (push_approver plugin)
+     * @param {string}      data.submittedByName name of the user who submitted (push_approver plugin)
      * @param {Date}        data.approved       date of approval (push_approver plugin)
      * @param {string}      data.approvedBy     user who approved (push_approver plugin)
      * @param {string}      data.approvedByName name of the user who approved (push_approver plugin)
@@ -386,6 +389,75 @@ class Info extends Validatable {
         }
         else {
             delete this._data.removedByName;
+        }
+    }
+
+    /**
+     * Getter for submitted
+     * 
+     * @returns {Date|undefined} date of approval (push_approver plugin)
+     */
+    get submitted() {
+        return this._data.submitted;
+    }
+
+    /**
+     * Setter for submitted
+     * 
+     * @param {Date|number|string|undefined} submitted date of approval (push_approver plugin)
+     */
+    set submitted(submitted) {
+        if (submitted !== null && submitted !== undefined) {
+            this._data.submitted = toDate(submitted);
+        }
+        else {
+            delete this._data.submitted;
+        }
+    }
+
+    /**
+     * Getter for submittedBy
+     * 
+     * @returns {string|undefined} user who submitted (push_approver plugin)
+     */
+    get submittedBy() {
+        return this._data.submittedBy;
+    }
+
+    /**
+     * Setter for submittedBy
+     * 
+     * @param {string|undefined} submittedBy user who submitted (push_approver plugin)
+     */
+    set submittedBy(submittedBy) {
+        if (submittedBy !== null && submittedBy !== undefined) {
+            this._data.submittedBy = submittedBy;
+        }
+        else {
+            delete this._data.submittedBy;
+        }
+    }
+
+    /**
+     * Getter for submittedByName
+     * 
+     * @returns {string|undefined} user who submitted (push_approver plugin)
+     */
+    get submittedByName() {
+        return this._data.submittedByName;
+    }
+
+    /**
+     * Setter for submittedByName
+     * 
+     * @param {string|undefined} submittedByName user who submitted (push_approver plugin)
+     */
+    set submittedByName(submittedByName) {
+        if (submittedByName !== null && submittedByName !== undefined) {
+            this._data.submittedByName = submittedByName;
+        }
+        else {
+            delete this._data.submittedByName;
         }
     }
 
