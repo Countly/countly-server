@@ -378,7 +378,7 @@
                 deletedCategories: [],
                 baseColumns: [
                     {
-                        label: "Description",
+                        label: CV.i18n('data-manager.description'),
                         value: 'description',
                         default: true,
                         sort: false
