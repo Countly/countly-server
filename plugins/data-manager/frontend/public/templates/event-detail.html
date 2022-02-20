@@ -11,7 +11,7 @@
                         <span v-if="isDrill" class="tag-container">
                             <span v-bind:class="statusClassObject(event.status)" class="bu-tag bu-mt-1"> 
                                 <span class="blinker"></span>
-                                <span>{{event.status || 'unplanned'}}</span>
+                                <span>{{event.status || i18n('data-manager.unplanned') }}</span>
                             </span>
                         </span>
                         <span v-if="event.is_visible === false" class="cly-vue-data-manager__hidden-icon bu-mx-1"><i class="fa fa-eye-slash"></i></span>
@@ -30,7 +30,7 @@
                             </svg>
                         </span>
                         <span v-if="event.audit && event.auditDate" class="bu-mr-2 text-small color-cool-gray-50">
-                            <i class="el-icon-time"></i> Last modified on {{event.auditDate}} {{event.auditTime}} by {{event.audit.userName}}
+                            <i class="el-icon-time"></i> {{i18n('data-manager.last-modified-on')}} {{event.auditDate}} {{event.auditTime}} by {{event.audit.userName}}
                         </span>
                     </div>
                 </div>
@@ -38,7 +38,7 @@
         </template>
         <template v-slot:header-right>
             <div class="bu-mt-6">
-                <el-button @click="handleEdit" size="small" icon="el-icon-edit">Edit Event</el-button>
+                <el-button @click="handleEdit" size="small" icon="el-icon-edit">{{i18n('data-manager.edit-event')}}</el-button>
                 <cly-more-options class="bu-ml-2" size="small" @command="handleCommand($event, event.key)">
                     <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
                 </cly-more-options>
@@ -51,7 +51,7 @@
             <div class="bu-column">
                 <div class="bu-mx-5 bu-my-5">
                     <span class="text-medium font-weight-bold text-uppercase">
-                        Event Details
+                        {{i18n('data-manager.events.event-details')}}
                     </span>
                     <table class="bu-mt-5 cly-vue-data-manager__box-container__table text-medium">
                         <colgroup>
@@ -60,27 +60,27 @@
                         </colgroup>
                         <tbody>
                             <tr>
-                                <td><span>Event Key</span>
+                                <td><span>{{i18n('data-manager.events.key')}}</span>
                                 </td>
                                 <td>{{event.key}}</td>
                             </tr>
                             <tr>
-                                <td><span>Event Name</span>
+                                <td><span>{{i18n('data-manager.event-name')}}</span>
                                 </td>
                                 <td>{{event.name}}</td>
                             </tr>
                             <tr>
-                                <td><span>Description</span>
+                                <td><span>{{i18n('data-manager.description')}}</span>
                                 </td>
                                 <td>{{event.description}}</td>
                             </tr>
                             <tr>
-                                <td><span>Category</span>
+                                <td><span>{{i18n('data-manager.category')}}</span>
                                 </td>
-                                <td>{{categoriesMap[event.category] || 'Uncategorized'}}</td>
+                                <td>{{categoriesMap[event.category] || i18n('data-manager.uncategorized') }}</td>
                             </tr>
                             <tr>
-                                <td><span>First Triggered</span>
+                                <td><span>{{i18n('data-manager.first-triggered')}}</span>
                                 </td>
                                 <td>{{event.last_trigger}}</td>
                             </tr>
@@ -93,7 +93,7 @@
 
     <cly-section class="bu-mx-5" v-if="isDrill && segments.length > 0">
         <template v-slot:header>
-            <h4>Event Segmentation</h4>
+            <h4>{{i18n('data-manager.event-segmentation')}}</h4>
         </template>
         <cly-datatable-n 
         :keyFn="function(row) {return row.name}"
@@ -101,17 +101,17 @@
         :rows="segments"
         >
             <template v-slot="scope">
-                <el-table-column label="Segment Name" sortable="custom" prop="name">
+                <el-table-column :label="i18n('data-manager.segment-name')" sortable="custom" prop="name">
                     <template v-slot="rowScope">
                         {{rowScope.row.name}}
                     </template>
                 </el-table-column>
-                <el-table-column label="Description">
+                <el-table-column :label="i18n('data-manager.description')">
                     <template v-slot="rowScope">
                         {{rowScope.row.description}}
                     </template>
                 </el-table-column>
-                <el-table-column label="Status" sortable="custom" prop="status">
+                <el-table-column :label="i18n('data-manager.status')" sortable="custom" prop="status">
                     <template v-slot="rowScope">
                         <span v-if="isDrill" class="tag-container">
                             <span v-bind:class="statusClassObject(rowScope.row.status)" class="bu-tag bu-mt-1"> 
@@ -121,7 +121,7 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column label="Last modıfıed" prop="auditTs" sortable="custom">
+                <el-table-column :label="i18n('data-manager.last-modified')" prop="auditTs" sortable="custom">
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row.audit && rowScope.row.audit.ts && rowScope.row.auditDate">
                             <div>{{rowScope.row.auditDate}}</div>
@@ -146,9 +146,10 @@
     dialogType="danger" 
     :saveButtonLabel="i18n('common.delete')" 
     :cancelButtonLabel="i18n('common.no-dont-delete')" 
-    title="Delete Events" >
+    :title="i18n('data-manager.delete-events')" >
         <template slot-scope="scope">
-            Delete event(s) permanently?<br/> <small class="color-red-100">Warning: This is not reversible</small>
+            {{ i18n('data-manager.delete-event-permanently') }}<br/> 
+            <small class="color-red-100">{{ i18n('data-manager.delete-event-warning') }}</small>
             <ul>
              <li> {{deleteElement}}</li>
             </ul>

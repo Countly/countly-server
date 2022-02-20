@@ -18,12 +18,12 @@
                 <el-button
                     size="small"
                     @click="saveCategory">
-                    Done
+                    {{ i18n('common.done') }}
                 </el-button>
                 <el-button
                     size="small"
                     @click="cancelEdit">
-                    Cancel
+                    {{ i18n('common.cancel') }}
                 </el-button>
             </div>
         </div>
@@ -32,9 +32,9 @@
 
 <script type="text/x-template" id="data-manager-manage-category">
     <div style="height: 420px; overflow: auto">
-        <div class="text-big font-weight-bold bu-my-4">Add new category</div>
+        <div class="text-big font-weight-bold bu-my-4">{{ i18n('data-manager.add-category') }}</div>
         <div class="bu-mb-5">
-            <div class="text-small font-weight-bold bu-mb-1">Category name</div>
+            <div class="text-small font-weight-bold bu-mb-1">{{ i18n('data-manager.category-name') }}</div>
             <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mb-3">
                 <el-input
                     v-model="newCategoryName">
@@ -45,12 +45,12 @@
                     type="text"
                     :disabled="!newCategoryAllowed"
                     @click="addNewCategory">
-                    Add Category
+                    {{ i18n('data-manager.add-category') }}
                 </el-button>
             </div>
         </div>
 	    <div v-if="categories.length" class="bu-mb-4">
-            <div class="text-big font-weight-bold bu-mb-1 bu-pt-2">Manage categories</div>
+            <div class="text-big font-weight-bold bu-mb-1 bu-pt-2">{{ i18n('data-manager.manage-categories') }}</div>
 	    	<data-manager-manage-category-input
                 ref="categoryInput"
                 v-for="(category, i) in categories"
