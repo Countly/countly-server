@@ -418,6 +418,7 @@
                     CountlyHelpers.notify({message: CV.i18n('data-manager.success.category-create'), sticky: false, type: 'success'});
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
+                    context.dispatch('loadCategories');
                     return data;
                 }).catch(function() {
                     CountlyHelpers.notify({message: CV.i18n('data-manager.error.category-create'), sticky: false, type: 'error'});
@@ -428,6 +429,7 @@
                     CountlyHelpers.notify({message: CV.i18n('data-manager.success.category-update'), sticky: false, type: 'success'});
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
+                    context.dispatch('loadCategories');
                     return data;
                 }).catch(function() {
                     CountlyHelpers.notify({message: CV.i18n('data-manager.error.category-update'), sticky: false, type: 'error'});
@@ -436,6 +438,7 @@
             deleteCategories: function(context, categories) {
                 countlyDataManager.service.deleteCategories(categories).then(function(data) {
                     CountlyHelpers.notify({message: CV.i18n('data-manager.success.category-delete'), sticky: false, type: 'success'});
+                    context.dispatch('loadCategories');
                     return data;
                 }).catch(function() {
                     CountlyHelpers.notify({message: CV.i18n('data-manager.error.category-delete'), sticky: false, type: 'error'});
