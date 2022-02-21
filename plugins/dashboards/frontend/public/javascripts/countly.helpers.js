@@ -700,8 +700,7 @@
             visualizationTypes: function() {
                 var extraTypes = this.extraTypes;
                 var enabledTypes = this.enabledTypes;
-                var fullList = this.types.concat(extraTypes);
-
+                var fullList = this.types;
                 fullList.sort(function(a, b) {
                     return (a.priority || 0) - (b.priority || 0);
                 });
@@ -711,6 +710,10 @@
                         return enabledTypes.includes(item.value);
                     });
                 }
+                if (extraTypes && extraTypes.length) {
+                    fullList = fullList.concat(extraTypes);
+                }
+
 
                 return fullList;
             },
