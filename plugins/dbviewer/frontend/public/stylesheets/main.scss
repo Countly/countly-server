@@ -1,7 +1,34 @@
 .dbviewer-tab {
     height: 80vh;
 
+    &__detail-dialog {
+        width: 60% !important;
+        left: 20% !important;
+
+        pre {
+            height: 400px !important;
+        }
+    }
+    
+    pre {
+        margin: 0px;
+    }
+
+    .el-table__expanded-cell {
+        padding: 0px 0px 0px 20px !important;
+    }
+
+    &__expand-button {
+        float: right;
+    }
+
     &__code {
+        background-color: #FCFCFC;
+        max-height: 200px;
+    }
+
+    &__code-in-dialog {
+        max-height: 380px;
         background-color: #FCFCFC;
     }
 

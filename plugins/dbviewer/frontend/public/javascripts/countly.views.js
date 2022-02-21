@@ -66,6 +66,7 @@ var DBViewerTab = countlyVue.views.create({
                         self.expandKeysHolder.push(response.aaData[i]._id);
                     }
                 }
+                self.expandKeys = self.expandKeysHolder;
             },
             onError: function(context, err) {
                 throw err;
@@ -92,10 +93,13 @@ var DBViewerTab = countlyVue.views.create({
             isDescentSort: false,
             isIndexRequest: false,
             searchQuery: "",
-            isExpanded: false,
+            isExpanded: true,
             expandKeys: [],
             expandKeysHolder: [],
-            isRefresh: false
+            isRefresh: false,
+            showFilterDialog: false,
+            showDetailDialog: false,
+            rowDetail: "{}"
         };
     },
     watch: {
@@ -135,6 +139,10 @@ var DBViewerTab = countlyVue.views.create({
                 sortEnabled: this.sortEnabled || false,
                 sort: this.sort || ""
             }, options));
+        },
+        showDetailPopup: function(row) {
+            this.showDetailDialog = true;
+            this.rowDetail = row._view;
         },
         onExecuteFilter: function(formData) {
             // fields
@@ -183,6 +191,9 @@ var DBViewerTab = countlyVue.views.create({
         refresh: function(force) {
             this.refresh = true;
             this.fetch(force);
+        },
+        highlight: function(content) {
+            return hljs.highlightAuto(content).value;
         }
     },
     computed: {
@@ -244,6 +255,8 @@ var DBViewerTab = countlyVue.views.create({
 
         if (!this.collection) {
             if (this.collections[this.db].list.length) {
+                this.collection = this.collections[this.db].list[0].value;
+                this.selectedCollection = this.collection;
                 window.location = '#/manage/db/' + this.db + '/' + this.collections[this.db].list[0].value;
             }
         }
@@ -429,6 +442,7 @@ $(document).ready(function() {
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         app.addMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 100});
     }
+
 
     document.querySelectorAll('pre code').forEach(function(el) {
         hljs.highlightElement(el);
