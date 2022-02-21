@@ -161,7 +161,7 @@
                 :placeholder="i18n('reports.Select_apps')"
                 v-on:change="appsChange" 
                 :collapse-tags="false"
-                :multiple="multiple"
+                :multiple="true"
                 :multiple-limit="4"
                 v-model="drawerScope.editedObject.apps" 
                 multiple>
@@ -183,7 +183,7 @@
                 :collapse-tags="false"
                 :placeholder="i18n('reports.Select_metrics')"
                 mode="multi-check"                
-                v-model="drawerScope.editedObject.metricsArray"
+                v-model="metricsArray"
                 class="bu-is-flex"
                 :options="metricOptions">
             </cly-select-x>
@@ -199,7 +199,7 @@
             </cly-select-x>
         </cly-form-field> 
 
-        <!-- <cly-form-field name="selectedEvents" rules="required" :label="i18n('reports.select-events')"  v-if="drawerScope.editedObject.metricsArray && drawerScope.editedObject.metricsArray.indexOf('events') > -1">
+        <!-- <cly-form-field name="selectedEvents" rules="required" :label="i18n('reports.select-events')"  v-if="metricsArray && metricsArray.indexOf('events') > -1">
             <cly-select-x
                 :placeholder="i18n('reports.select-events')"
                 mode="multi-check"
@@ -209,7 +209,7 @@
             </cly-select-x>
         </cly-form-field> -->
    
-        <div class="bu-py-4" v-if="drawerScope.editedObject.metricsArray && drawerScope.editedObject.metricsArray.indexOf('events') > -1">
+        <div class="bu-py-4" v-if="metricsArray && metricsArray.indexOf('events') > -1">
             <div class="text-small bu-pb-1 title text-heading">
                 {{i18n('reports.select-events')}} 
             </div>
@@ -218,8 +218,8 @@
                    :placeholder="i18n('reports.select-events')"
                    mode="multi-check"
                    v-model="drawerScope.editedObject.selectedEvents"
-                   maxInputWidth="300"
-                   :collapse-tags="false"
+                   :maxInputWidth="300"
+                   :collapse-tags="true"
                    :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="eventOptions">
                 </cly-select-x>
@@ -289,6 +289,11 @@
                 :options="timezoneOptions">
             </cly-select-x>
         </cly-form-field>
+
+        <cly-form-field name="pdf">
+            <el-checkbox v-model="drawerScope.editedObject.sendPdf">{{i18n('reports.send-pdf')}}</el-checkbox>
+        </cly-form-field>
+        
 
         <pre v-if="0">
             {{drawerScope.editedObject}}
