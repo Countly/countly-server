@@ -34,7 +34,7 @@
                         <el-button type="success" :disabled="selectedTemplate.length === 0" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
                     </cly-sub-section>
                 </cly-section>
-                <cly-confirm-dialog @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
+                <cly-confirm-dialog class="populator-wrapper__start-dialog" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
                     <template slot-scope="scope">
                         <div v-html="dialog.text"></div>
                     </template>

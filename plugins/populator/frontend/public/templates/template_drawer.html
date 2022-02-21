@@ -4,19 +4,19 @@
             <div class="cly-vue-drawer-step__section">
                 <div class="text-button font-weight-bold bu-mb-2">{{ i18n('populator.template-name') }}</div>
                 <validation-provider name="name" rules="required" v-slot="v">
-                    <el-input class="bu-is-shadowless" :class="{'is-error': v.errors.length > 0}" :placeholder="i18n('populator.template-name-placeholder')" v-model="drawerScope.editedObject.name"></el-input>
+                    <el-input class="bu-is-shadowless" style="margin-bottom: 20px" :class="{'is-error': v.errors.length > 0}" :placeholder="i18n('populator.template-name-placeholder')" v-model="drawerScope.editedObject.name"></el-input>
                 </validation-provider>
             </div>
             <div class="cly-vue-drawer-step__section">
                 <h4 class="bu-mb-4">{{ i18n('populator.custom-user-props') }}</h4>
-                <div :key="index" class="populator-template-drawer__main-container bu-p-2" v-for="(upItem, index) in drawerScope.editedObject.up" >
+                <div :key="index" class="populator-template-drawer__main-container bu-py-3 bu-px-4" v-for="(upItem, index) in drawerScope.editedObject.up" >
                     <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mb-3">
                         <div class="text-small text-uppercase populator-template-drawer__text-custom-detail" >{{ i18n('populator-add-custom-prop-detail') }}</div>
                         <el-button @click="removeLineProperty(drawerScope.editedObject, index, 'custom')" :disabled="drawerScope.editedObject.up[index].key.length === 0" class="text-medium populator-template-drawer__btn-delete" type="text">{{ i18n('populator.delete-property')}}</el-button>
                     </div>
-                    <div class="bu-is-flex populator-template-drawer__property-container bu-mb-4">
-                        <div class="populator-template-drawer__key bu-is-flex bu-mb-4 bu-is-flex-direction-column">
-                            <div class="text-key bu-mb-4">
+                    <div class="bu-is-flex populator-template-drawer__property-container bu-mb-2">
+                        <div class="populator-template-drawer__key bu-is-flex bu-mb-2 bu-is-flex-direction-column">
+                            <div class="text-key bu-mb-2">
                                 {{ i18n('populator.user-prop-key') }}
                                 <cly-tooltip-icon></cly-tooltip-icon>
                             </div>
@@ -25,7 +25,7 @@
                             </div>
                         </div>
                         <div class="populator-template-drawer__values bu-is-flex bu-is-flex-direction-column bu-ml-2">
-                            <div class="text-values bu-mb-4">
+                            <div class="text-values bu-mb-2">
                                 {{ i18n('populator.user-prop-values') }}
                                 <cly-tooltip-icon></cly-tooltip-icon>
                             </div>
@@ -35,25 +35,25 @@
                         </div>
                     </div>
                 </div>
-                <el-button class="text-small populator-template-drawer__btn-add bu-mb-6" @click="addUserProperty(drawerScope.editedObject)">{{ i18n('populator.add-custom-prop') }}</el-button>
+                <el-button class="populator-template-drawer__btn-add bg-light-blue-100 bu-mt-5 text-smallish font-weight-bold color-blue-100 el-button--text " @click="addUserProperty(drawerScope.editedObject)">{{ i18n('populator.add-custom-prop') }}</el-button>
                 <h4 class="bu-mb-4">{{ i18n('populator.events') }}</h4>
-                <div class="populator-template-drawer__main-container bu-p-2" v-for="(eventItem, index) in drawerScope.editedObject.events">
-                    <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mb-3">
+                <div class="populator-template-drawer__main-container bu-py-2 bu-px-4" v-for="(eventItem, index) in drawerScope.editedObject.events">
+                    <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mb-3 bu-mt-2">
                         <div class="text-small text-uppercase populator-template-drawer__text-custom-detail" >{{ i18n('populator.event-details') }}</div>
                         <el-button class="text-medium populator-template-drawer__btn-delete" :disabled="drawerScope.editedObject.events[index].eventName.length === 0" @click="removeLineProperty(drawerScope.editedObject, index, 'event')" type="text">{{ i18n('populator.delete-event')}}</el-button>
                     </div>
                     <div class="populator-template-drawer__property-container bu-mb-4">
-                        <div class="populator-template-drawer__key bu-mb-4">
-                            <div class="text-key bu-mb-4">
+                        <div class="populator-template-drawer__key bu-mb-2">
+                            <div class="text-key bu-mb-2">
                                 {{ i18n('populator.event-key') }}
                                 <cly-tooltip-icon></cly-tooltip-icon>
                             </div>
                             <div>
                                 <el-input  class="bu-is-shadowless" v-model="drawerScope.editedObject.events[index].eventName" :placeholder="i18n('populator.enter-your-event-key','event')"></el-input>
                             </div>
-                            <div class="bu-is-flex populator-template-drawer__property-container bu-mb-4 bu-mt-5" v-for="(segmentItem, segmentIndex) in drawerScope.editedObject.events[index].segments">
-                                <div class="populator-template-drawer__key bu-is-flex bu-mb-4 bu-is-flex-direction-column">
-                                    <div class="text-key bu-mb-4">
+                            <div class="bu-is-flex populator-template-drawer__property-container bu-mt-4" v-for="(segmentItem, segmentIndex) in drawerScope.editedObject.events[index].segments">
+                                <div class="populator-template-drawer__key bu-is-flex bu-is-flex-direction-column">
+                                    <div class="text-key bu-mb-2">
                                         {{ i18n('populator.segmentation-key') }}
                                         <cly-tooltip-icon></cly-tooltip-icon>
                                     </div>
@@ -62,7 +62,7 @@
                                     </div>
                                 </div>
                                 <div class="populator-template-drawer__values bu-is-flex bu-is-flex-direction-column bu-ml-2">
-                                    <div class="text-values bu-mb-4">
+                                    <div class="text-values bu-mb-2">
                                         {{ i18n('populator.segmentation-values') }}
                                         <cly-tooltip-icon></cly-tooltip-icon>
                                     </div>
@@ -75,7 +75,7 @@
                                 </div>
                             </div>
                             <div>
-                                <el-button class="bu-mb-4" type="text" @click="addSegmentationProperty(drawerScope.editedObject,index)">{{ i18n('populator.add-segmentation') }}</el-button>
+                                <el-button class="bu-mb-4 font-weight-bold populator-template-drawer__btn-segmentation" type="text" @click="addSegmentationProperty(drawerScope.editedObject,index)">{{ i18n('populator.add-segmentation') }}</el-button>
                             </div>
                             <div class="bu-container populator-template-drawer__event-container">
                                 <div class="bu-columns bu-p-3">
@@ -83,10 +83,10 @@
                                         <el-checkbox v-model="drawerScope.editedObject.events[index].checkedEventProperties.duration">{{ i18n('populator.duration-help-title') }}</el-checkbox>
                                         <span class="duration-text">{{ i18n('populator.duration-help-subtitle') }}</span>
                                     </div>
-                                    <div class="event-right-container bu-level-right bu-column bu-is-5 bu-pt-1">
-                                        <el-input :disabled="!drawerScope.editedObject.events[index].checkedEventProperties.duration" v-model="drawerScope.editedObject.events[index].duration[0]" class="bu-is-shadowless"></el-input> 
-                                        <span class="bu-p-2">-</span>
-                                        <el-input :disabled="!drawerScope.editedObject.events[index].checkedEventProperties.duration" class="bu-is-shadowless" v-model="drawerScope.editedObject.events[index].duration[1]"></el-input>
+                                    <div class="event-right-container bu-level-right bu-column bu-is-5 bu-is-align-items-start"">
+                                        <el-input :disabled="!drawerScope.editedObject.events[index].checkedEventProperties.duration" v-model="drawerScope.editedObject.events[index].duration[0]" class="bu-is-shadowless event-input"></el-input> 
+                                        <span class="bu-p-1">-</span>
+                                        <el-input :disabled="!drawerScope.editedObject.events[index].checkedEventProperties.duration" class="bu-is-shadowless event-input" v-model="drawerScope.editedObject.events[index].duration[1]"></el-input>
                                     </div>
                                 </div>
                                 <div class="bu-columns bu-p-3">
@@ -94,17 +94,17 @@
                                         <el-checkbox v-model="drawerScope.editedObject.events[index].checkedEventProperties.sum">{{ i18n('populator.sum-help-title') }}</el-checkbox>
                                         <span class="duration-text">{{ i18n('populator.sum-help-subtitle') }}</span>
                                     </div>
-                                    <div class="event-right-container bu-level-right bu-column bu-is-5 bu-pt-1">
-                                        <el-input :disabled="!drawerScope.editedObject.events[index].checkedEventProperties.sum" class="bu-is-shadowless" v-model="drawerScope.editedObject.events[index].sum[0]"></el-input> 
-                                        <span class="bu-p-2">-</span>
-                                        <el-input :disabled="!drawerScope.editedObject.events[index].checkedEventProperties.sum" class="bu-is-shadowless" v-model="drawerScope.editedObject.events[index].sum[1]"></el-input>
+                                    <div class="event-right-container bu-level-right bu-column bu-is-5 bu-is-align-items-start"">
+                                        <el-input :disabled="!drawerScope.editedObject.events[index].checkedEventProperties.sum" class="bu-is-shadowless event-input" v-model="drawerScope.editedObject.events[index].sum[0]"></el-input> 
+                                        <span class="bu-p-1">-</span>
+                                        <el-input :disabled="!drawerScope.editedObject.events[index].checkedEventProperties.sum" class="bu-is-shadowless event-input" v-model="drawerScope.editedObject.events[index].sum[1]"></el-input>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <el-button class="text-small populator-template-drawer__btn-add bu-mb-6" @click="addEventProperty(drawerScope.editedObject)">{{ i18n('populator.add-event') }}</el-button>
+                <el-button class="bu-mt-4 bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text  el-button--default" @click="addEventProperty(drawerScope.editedObject)">{{ i18n('populator.add-event') }}</el-button>
             </div>
         </div>
         </cly-form-step>
