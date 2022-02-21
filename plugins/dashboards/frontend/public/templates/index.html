@@ -6,19 +6,14 @@
         <header>
             <div style="padding: 32px;">
                 <div class="bu-level">
-                    <div class="bu-level-left has-ellipsis" style="width: calc(100% - 575px)">
-                        <div class="bu-level-item">
-                            <h2>{{dashboard.name}}</h2>
+                    <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0;">
+                        <div class="bu-level-item bu-is-flex-shrink-1" style="min-width: 0;">
+                            <h2 class="has-ellipsis">{{dashboard.name}}</h2>
                         </div>
                     </div>
                     <div class="bu-level-right">
                         <div class="bu-level-item">
                             <cly-date-picker-g class="bu-mr-3"></cly-date-picker-g>
-                        </div>
-                        <div class="bu-level-item">
-                            <a :href="'#/manage/reports/create/dashboard/' + dashboard._id">
-                                <el-button v-if="canUpdate" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.create-email-reports')}}</el-button>
-                            </a>
                         </div>
                         <div class="bu-level-item">
                             <el-button v-if="canUpdate" @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
@@ -28,6 +23,7 @@
                                 <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
                                 <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
                                 <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                                <el-dropdown-item><a :href="'#/manage/reports/create/dashboard/' + dashboard._id">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
                             </cly-more-options>
                         </div>
                     </div>
