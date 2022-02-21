@@ -651,40 +651,51 @@ var metricProps = {
 
                 const options = { "directory": "/tmp", "width": "1028px", height: "1000px", phantomArgs: ["--ignore-ssl-errors=yes"] };
                 const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
-                pdf.create(msg.html, options).toFile(filePath, function(err, res) {
-                    if (err) {
-                        return log.d(err);
-                    }
-                    msg.attachments = [{filename: "Countly_Report.pdf", path: res.filename}];
-                    if (report.messages && report.messages[i]) {
-                        msg.list = {
-                            unsubscribe: {
-                                url: report.messages[i].unsubscribeLink,
-                                comment: report.unsubscribe_local_string || 'Unsubscribe'
-                            }
-                        };
-                    }
-
-
-                    /**
-                     * callback function after sending email to delete pdf file
-                     */
-                    const deletePDFCallback = function() {
-                        if (fs.existsSync(filePath)) {
-                            fs.unlink(filePath, (e) => {
-                                if (e) {
-                                    log.d(e);
-                                }
-                            });
+                if (report.messages && report.messages[i]) {
+                    msg.list = {
+                        unsubscribe: {
+                            url: report.messages[i].unsubscribeLink,
+                            comment: report.unsubscribe_local_string || 'Unsubscribe'
                         }
                     };
+                }
+
+                if (report.sendPdf === true) {
+                    pdf.create(msg.html, options).toFile(filePath, function(err, res) {
+                        if (err) {
+                            return log.d(err);
+                        }
+                        msg.attachments = [{filename: "Countly_Report.pdf", path: res.filename}];
+
+                        /**
+                         * callback function after sending email to delete pdf file
+                         */
+                        const deletePDFCallback = function() {
+                            if (fs.existsSync(filePath)) {
+                                fs.unlink(filePath, (e) => {
+                                    if (e) {
+                                        log.d(e);
+                                    }
+                                });
+                            }
+                        };
+                        if (mail.sendPoolMail) {
+                            mail.sendPoolMail(msg, deletePDFCallback);
+                        }
+                        else {
+                            mail.sendMail(msg, deletePDFCallback);
+                        }
+                    });
+                }
+                else {
                     if (mail.sendPoolMail) {
-                        mail.sendPoolMail(msg, deletePDFCallback);
+                        mail.sendPoolMail(msg);
                     }
                     else {
-                        mail.sendMail(msg, deletePDFCallback);
+                        mail.sendMail(msg);
                     }
-                });
+                }
+
             }
         }
         callback();
