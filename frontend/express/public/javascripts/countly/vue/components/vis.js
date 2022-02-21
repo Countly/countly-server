@@ -242,7 +242,7 @@
         mixins: [LegendMixin, ZoomMixin, UpdateOptionsMixin, EventsMixin],
         props: {
             height: {
-                type: Number,
+                type: [Number, String],
                 default: 472
             },
             autoresize: {
