@@ -7,7 +7,7 @@
   <template v-slot:default="drawerScope">
     <cly-form-step id="parameters-drawer">
       <div class="cly-vue-drawer-step__section">
-        <cly-form-field name="parameter-key" v-slot="validation" :subheading="i18n('remote-config.parameter-key.description')" :label="i18n('remote-config.parameter-key')" rules="required|regex:^[a-zA-Z_][a-zA-Z0-9_]*$">
+        <cly-form-field name="parameter-key" v-slot="validation" :label="i18n('remote-config.parameter-key')" rules="required|regex:^[a-zA-Z_][a-zA-Z0-9_]*$">
           <el-input
             v-model="drawerScope.editedObject.parameter_key"
             :placeholder="i18n('remote-config.parameter-key.placeholder')">
@@ -33,7 +33,7 @@
           </div>
         </div>
         <div class="bu-py-1 cly-vue-remote-config-parameters-drawer__default-value">
-          <cly-form-field name="default-value" :subheading="i18n('remote-config.default-value.description')" :label="i18n('remote-config.default-value')" rules="required">
+          <cly-form-field name="default-value"  :label="i18n('remote-config.default-value')" rules="required">
             <el-autocomplete
               class="cly-vue-remote-config-parameters-drawer__autocomplete"
               v-model="defaultValue"
@@ -48,9 +48,6 @@
         <div class="bu-py-4" v-if="isDrillEnabled">
           <div class="font-weight-bold text-big bu-mb-1">
             {{i18n('remote-config.conditions')}}
-          </div>
-          <div class="color-cool-gray-50 text-small bu-mb-1">
-            {{i18n('remote-config.parameter.conditions.description')}}
           </div>
           <div>
             <draggable 

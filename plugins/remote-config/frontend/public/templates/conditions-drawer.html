@@ -36,9 +36,6 @@
           <div class="text-big font-weight-bold bu-mb-1">
             {{i18n('remote-config.condition.color.tag')}}
           </div>
-          <div class="bu-mb-3 color-cool-gray-50 text-small bu-mb-1">
-            {{i18n('remote-config.condition.color.tag.description')}}
-          </div>
           <cly-color-tag :tags="colorTag"  :defaultTag="defaultTag" v-model="selectedTag"></cly-color-tag>
         </div>
         <div v-if="showSeedValue" class="bu-py-4">
@@ -56,9 +53,6 @@
         <div class="bu-pt-4">
           <div class="font-weight-bold text-big bu-mb-1">
             {{i18n('remote-config.condition-definition')}}
-          </div>
-          <div class="color-cool-gray-50 text-small bu-mb-1">
-            {{i18n('remote-config.condition-definition.description')}}
           </div>
           <div>
             <validation-provider name="condition-definition" rules="required" v-slot="v">
