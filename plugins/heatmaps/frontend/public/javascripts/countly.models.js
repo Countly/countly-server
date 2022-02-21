@@ -155,6 +155,7 @@
                     link = rows[k].view;
                 }
                 rows[k].actionLink = url + link;
+                rows[k].scrFormatted = countlyCommon.formatNumber(rows[k].scr);
             }
             context.rootState.countlyHeatmaps.isLoading = false;
             return rows;
