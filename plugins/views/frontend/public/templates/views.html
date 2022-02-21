@@ -16,7 +16,7 @@
     <cly-main>
 		<cly-date-picker-g class="views-date-picker-container"></cly-date-picker-g>
 		<cly-notification :text="totalViewCountWarning" v-if="showViewCountWarning" color="light-destructive" class="bu-mb-5">
-			<template v-slot:close><el-button type="text">Adjust Limit</el-button></template>
+			<template v-slot:close><a href="/dashboard#/manage/configurations/views" style="color: #0166D6;" class="el-button el-button--text">{{i18n('common.adjust-limit')}}</a></template>
 		</cly-notification>
 		<cly-section >
 			<cly-metric-cards :multiline="false">
@@ -77,6 +77,11 @@
 								{{scope.row.scrCalc}}
 							</template>
 						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								{{formatNumber(scope.row.br)}} %
+							</template>
+						</el-table-column>
 						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>
 					</template>
 				</template>
@@ -109,6 +114,11 @@
 						<el-table-column :min-width="col.width" v-else-if="col.value === 'scr'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
 							<template slot-scope="scope">
 								{{scope.row.scrCalc}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								{{scope.row.br}}
 							</template>
 						</el-table-column>
 						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>
