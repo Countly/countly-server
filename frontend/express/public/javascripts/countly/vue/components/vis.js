@@ -1353,7 +1353,7 @@
     }));
 
 
-    Vue.component("cly-flow-chart", BaseChart.extend({
+    Vue.component("cly-chart-flow", BaseChart.extend({
         data: function() {
             return {
                 forwardedSlots: ["chart-left", "chart-right", "chart-header-left-input"],
