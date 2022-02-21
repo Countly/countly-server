@@ -133,7 +133,7 @@
                         </el-table-column>
                         <el-table-column type="options">
                             <template slot-scope="scope">
-                                <cly-more-options v-if="scope.row.hover" size="small" @command="handleUserCommands($event, scope.row._id )">
+                                <cly-more-options v-if="scope.row.hover" size="small" @command="handleUserCommands($event, scope.row._id)">
                                     <el-dropdown-item v-if="shouldShowDuplicateUserCommand(scope.row.status)" :command="UserCommandEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowDeleteUserCommand(scope.row.status)"  :command="UserCommandEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowResendUserCommand(scope.row.status)" :command="UserCommandEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
@@ -142,6 +142,8 @@
                                     <el-dropdown-item v-if="shouldShowEditDraftUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowEditRejectUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT_REJECT">{{i18n('push-notification.edit')}}</el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowEditUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowStartUserCommand(scope.row.status)" :command="UserCommandEnum.START">{{i18n('push-notification.start')}} </el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowStopUserCommand(scope.row.status)" :command="UserCommandEnum.STOP">{{i18n('push-notification.stop')}} </el-dropdown-item>
                                 </cly-more-options>
                             </template>
                         </el-table-column>

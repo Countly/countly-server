@@ -51,6 +51,8 @@
         CREATE: 'create',
         EDIT: 'edit',
         EDIT_REJECT: 'edit_reject',
+        STOP: 'stop',
+        START: 'start'
     });
     var MediaTypeEnum = Object.freeze({
         IMAGE: 'image',
@@ -773,6 +775,28 @@
                     data: {
                         args: JSON.stringify(config),
                         app_id: options.app_id
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
+        },
+        toggle: function(id, isActive) {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: window.countlyCommon.API_URL + '/i/push/message/toggle',
+                    data: {
+                        _id: id,
+                        active: isActive,
+                        app_id: countlyCommon.ACTIVE_APP_ID
                     },
                     dataType: "json",
                     success: function(response) {
@@ -2437,6 +2461,9 @@
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.updateAppConfig(appConfig, options);
+        },
+        toggle: function(id, isActive) {
+            return countlyPushNotification.api.toggle(id, isActive);
         }
     };
 
@@ -2514,6 +2541,18 @@
                         reject(error);
                         CountlyHelpers.notify({message: error.message, type: "error"});
                     });
+            });
+        },
+        onToggle: function(context, payload) {
+            context.dispatch('onFetchInit', {useLoader: false});
+            countlyPushNotification.service.toggle(payload.id, payload.isActive).then(function() {
+                context.dispatch('onFetchSuccess', {useLoader: false});
+                context.dispatch('fetchById', payload.id);
+                CountlyHelpers.notify({message: CV.i18n(payload.isActive ? 'push-notification.was-successfully-started' : 'push-notification.was-successfully-stopped')});
+            }).catch(function(error) {
+                console.error(error);
+                context.dispatch('onFetchError', {error: error, useLoader: false});
+                CountlyHelpers.notify({message: error.message, type: "error"});
             });
         },
         onSetLocaleFilter: function(context, value) {
@@ -2657,6 +2696,18 @@
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: true});
+                CountlyHelpers.notify({message: error.message, type: "error"});
+            });
+        },
+        onToggle: function(context, payload) {
+            context.dispatch('onFetchInit', {useLoader: false});
+            countlyPushNotification.service.toggle(payload.id, payload.isActive).then(function() {
+                context.dispatch('fetchAll', false);
+                context.dispatch('onFetchSuccess', {useLoader: true});
+                CountlyHelpers.notify({message: CV.i18n(payload.isActive ? 'push-notification.was-successfully-started' : 'push-notification.was-successfully-stopped')});
+            }).catch(function(error) {
+                console.error(error);
+                context.dispatch('onFetchError', {error: error, useLoader: false});
                 CountlyHelpers.notify({message: error.message, type: "error"});
             });
         },
