@@ -102,7 +102,13 @@
                     </template>
                 </el-table-column>
 
-                <el-table-column v-else v-bind:sortable="col.sortable ? 'custom' : false" :key="idx" min-width="300" :prop="col.value" :label="col.label">
+                <el-table-column v-else-if="col.value === 'totalCount' " sortable="custom" min-width="250" prop="totalCount" label="Count">
+                    <template v-slot="rowScope">
+                            <div>{{rowScope.row.totalCountFormatted || i18n('data-manager.empty-placeholder') }}</div>
+                    </template>
+                </el-table-column>
+
+                <el-table-column v-else v-bind:sortable="col.sort ? 'custom' : false" :key="idx" min-width="300" :prop="col.value" :label="col.label">
                     <template v-slot="rowScope">
                         {{rowScope.row[col.value] || i18n('data-manager.empty-placeholder') }}
                     </template>
@@ -135,8 +141,8 @@
                             <el-dropdown-item command="blocked">{{ i18n('data-manager.blocked') }}</el-dropdown-item>
                         </cly-more-options>
                         <cly-more-options class="bu-mr-3" size="small" :text=" i18n('data-manager.change-visibility') " type="default" icon="el-icon-view" @command="handleChangeVisibility($event, scope.diff)">
-                            <el-dropdown-item command="visible">{{ i18n('visible') }}</el-dropdown-item>
-                            <el-dropdown-item command="hidden">{{ i18n('hidden') }}</el-dropdown-item>
+                            <el-dropdown-item command="visible">{{ i18n('data-manager.visible') }}</el-dropdown-item>
+                            <el-dropdown-item command="hidden">{{ i18n('data-manager.hidden') }}</el-dropdown-item>
                         </cly-more-options>
                         
                         <el-button class="bu-mr-3" size="small" type="default" icon="el-icon-delete-solid" @click="handleDelete(scope.diff)">{{ i18n('common.delete') }}</el-button>

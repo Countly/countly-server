@@ -41,7 +41,7 @@ plugins.register("/o/data-manager/events", function(ob) {
                             'event': {'$first': '$i.ev' }
                         }
                     }
-                ])
+                ], { allowDiskUse: true })
                 .toArray();
 
             let memberIds = [...auditLogs.map(al=>{
