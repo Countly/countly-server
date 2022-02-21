@@ -633,9 +633,12 @@ class CacheMaster {
                     if (data === null) {
                         rc = null;
                     }
+                    if (rc instanceof Jsonable) {
+                        rc = rc.json;
+                    }
                     this.data.read(group)[data === null ? 'remove' : 'write'](id, rc);
                     return this.col.put(OP.WRITE, group, id, rc).then(() => {
-                        this.ipc.send(-from, {o: OP.WRITE, g: group, k: id, d: rc && (rc instanceof Jsonable) ? rc.json : rc});
+                        this.ipc.send(-from, {o: OP.WRITE, g: group, k: id, d: rc});
                         return data === null ? true : rc;
                     });
                 }

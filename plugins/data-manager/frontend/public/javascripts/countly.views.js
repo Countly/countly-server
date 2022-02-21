@@ -169,6 +169,10 @@
                         value: 'created'
                     },
                     {
+                        label: CV.i18n("data-manager.unplanned"),
+                        value: 'unplanned'
+                    },
+                    {
                         label: CV.i18n("data-manager.approved"),
                         value: 'approved'
                     },
@@ -378,7 +382,7 @@
                 deletedCategories: [],
                 baseColumns: [
                     {
-                        label: "Description",
+                        label: CV.i18n('data-manager.description'),
                         value: 'description',
                         default: true,
                         sort: false
@@ -473,13 +477,13 @@
                         }
                         if (!e.status) {
                             var config = countlyPlugins.getConfigsData()['data-manager'] || {};
-                            if (config.allowUnexpectedEvents || !self.isDrill) {
+                            if (config.allowUnexpectedEvents) {
                                 defaultUnexpectedFilter = true;
+                                e.status = 'unplanned';
                             }
                             else {
                                 defaultUnexpectedFilter = false;
                             }
-                            e.status = 'unplanned';
                         }
                         return defaultUnexpectedFilter && isCategoryFilter && isStatusFilter && isVisiblityFilter;
                     })
@@ -927,6 +931,9 @@
                 }
                 else if (event === 'import-schema') {
                     this.importDialogVisible = true;
+                }
+                else if (event === 'navigate-settings') {
+                    app.navigate("#/manage/configurations/data-manager", true);
                 }
             },
             onSaveImport: function() {

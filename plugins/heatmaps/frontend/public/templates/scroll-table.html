@@ -11,14 +11,14 @@
                          {{scope.row.display || scope.row.view || scope.row._id}}
                     </template>
                 </el-table-column>
-                <el-table-column min-width="355" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.avg-scroll-depth')">
+                <el-table-column min-width="415" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.avg-scroll-depth')">
                     <template v-slot:default="rowScope">
                         <div class="bu-is-flex bu-is-align-items-center">
-                            <div class="bu-level bu-is-align-items-center bu-mr-2" style="width: 130px;">
-                                <div class="text-medium" style="width: 65px;">
-                                    <span>{{rowScope.row.scr}} px</span>
+                            <div class="bu-level bu-is-align-items-center bu-mr-2" style="width: 190px;">
+                                <div class="text-medium" style="width: 100px;">
+                                    <span>{{ rowScope.row.scrFormatted || rowScope.row.scr }} px</span>
                                 </div>
-                                <div style="width: 65px;">
+                                <div style="width: 90px;">
                                     <span class="color-cool-gray-50">&nbsp;|</span>&nbsp;{{rowScope.row.scrCalc}}
                                 </div>
                             </div>

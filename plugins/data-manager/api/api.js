@@ -80,7 +80,7 @@ plugins.register("/o/data-manager/events", function(ob) {
         }
         catch (e) {
             log.e(e);
-            common.returnOutput(ob.params, 500, "Error");
+            common.returnMessage(ob.params, 500, "Error");
         }
     });
     return true;
@@ -99,7 +99,7 @@ plugins.register("/o/data-manager/category", function(ob) {
         }
         catch (e) {
             log.e(e);
-            common.returnOutput(ob.params, 500, "Error");
+            common.returnMessage(ob.params, 500, "Error");
         }
     });
     return true;
@@ -122,7 +122,7 @@ plugins.register("/i/data-manager/category/create", function(ob) {
         }
         catch (e) {
             log.e(e);
-            common.returnOutput(ob.params, 500, "Error");
+            common.returnMessage(ob.params, 500, "Error");
         }
     });
     return true;
@@ -160,7 +160,7 @@ plugins.register("/i/data-manager/category/edit", function(ob) {
         }
         catch (e) {
             log.e(e);
-            common.returnOutput(ob.params, 500, "Error");
+            common.returnMessage(ob.params, 500, "Error");
         }
     });
     return true;
@@ -186,7 +186,7 @@ plugins.register("/i/data-manager/category/delete", function(ob) {
         }
         catch (e) {
             log.e(e);
-            common.returnOutput(ob.params, 500, "Error");
+            common.returnMessage(ob.params, 500, "Error");
         }
     });
     return true;
@@ -234,7 +234,7 @@ plugins.register("/i/data-manager/event/change-category", function(ob) {
         }
         catch (e) {
             log.e(e);
-            common.returnOutput(ob.params, 500, "Error");
+            common.returnMessage(ob.params, 500, "Error");
         }
     });
     return true;

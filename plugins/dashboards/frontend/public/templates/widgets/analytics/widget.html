@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]">
-    <div class="bu-level">
+    <div class="bu-level bu-level bu-pt-1 bu-pl-2 bu-pr-2">
         <div class="bu-level-left">
             <div class="bu-level-item">
                 <h4>{{title}} <span v-if="metricLabels" class="dashboard-widget-metric-labels text-small"><span class="bu-ml-1 bu-p-1" v-for="(item, idx) in metricLabels">{{item}}</span></span></h4>
@@ -41,8 +41,8 @@
 				</el-table-column>
 			</template>
 		</cly-datatable-n>
-		<cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :option="stackedBarOptions" :showToggle="false"></cly-chart-bar>
-		<cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :option="pieGraph" :showToggle="false"></cly-chart-pie>
+		<cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="stackedBarOptions" ></cly-chart-bar>
+		<cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" ></cly-chart-pie>
 	</div>
 	<div class="dashboard-widget-footer">
 	</div>

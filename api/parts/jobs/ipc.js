@@ -351,7 +351,7 @@ class CentralWorker extends CentralSuper {
     **/
     attach() {
         this.onMessageListener = m => {
-            // log.d('[%d]: Got message in Channel in %d: %j', process.pid, this.worker.pid, m, this._id);
+            // log.d('[%d]: Got message in CentralWorker: %j', process.pid, m);
             if (this.isForMe(m)) {
                 // log.d('handling', m);
 
@@ -399,7 +399,21 @@ class CentralWorker extends CentralSuper {
     * @param {any} data - data to send to master process
     **/
     send(data) {
-        process.send(this.fromMe(data, Date.now()));
+        process.send(this.fromMe(data, this.date()));
+    }
+
+    /**
+    * Unique frame date generator
+    * @param {any} date - date to use
+    * @returns {string} packet date with worker pid
+    **/
+    date(date = Date.now()) {
+        let now = `${process.pid}-${date}`,
+            i = 0;
+        while (this.promises[now]) {
+            now = `${process.pid}-${date + ++i}`;
+        }
+        return now;
     }
 
     /**
@@ -408,11 +422,22 @@ class CentralWorker extends CentralSuper {
     * @return {Promise} which either resolves to the value returned by Central, or rejects with error from master / timeout from current process
     **/
     request(data) {
-        let now = Date.now(),
+        let now = this.date(),
+            time,
             promise = new Promise((resolve, reject) => {
-                this.promises[now] = {resolve, reject};
+                log.d('adding promise', now, typeof this.promises[now]);
+                this.promises[now] = {
+                    resolve: function() {
+                        clearTimeout(time);
+                        resolve.apply(this, arguments);
+                    },
+                    reject: function() {
+                        clearTimeout(time);
+                        reject.apply(this, arguments);
+                    }
+                };
                 process.send(this.fromMe(data, now));
-                setTimeout(() => {
+                time = setTimeout(() => {
                     delete this.promises[now];
                     reject(`IPC Timeout for ${JSON.stringify(data).substr(0, 100)}`);
                 }, this.readTimeout);

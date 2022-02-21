@@ -1,7 +1,18 @@
 .cly-vue-logger {
+  & .cly-vue-eldatatable {
+    &__header {
+      border-top: 0px;
+    }
+  }
+
+  & .cly-vue-header {
+    margin-bottom: 24px !important;
+  }
+
   &__title {
     color: #24292e;
   }
+  
   &__subtitle {
     color: #81868D;
     font-size: 14px;
@@ -37,15 +48,33 @@
 
     &--card > .el-tabs__header .el-tabs__item {
       border-bottom-width: 2px !important;
+      background-color: #F6F6F6 !important;
+      padding-left: 10px;
+      padding-right: 10px;
+      border-left: 0px;
+      border-right: 0px;
     }
 
     &--card > .el-tabs__header .el-tabs__nav {
       border: none;
+      background-color: #F6F6F6 !important;
     }
 
     &__header .el-tabs__item.is-active {
       border-bottom-color: #0166D6;
       border-bottom-width: 2px;
+      background-color: #F6F6F6 !important;
+      padding-left: 10px;
+      padding-right: 10px;
+      border-left: 0px;
+      border-right: 0px;
+    }
+
+    &__header .el-tabs__item {
+      padding-left: 10px;
+      padding-right: 10px;
+      border-left: 0px;
+      border-right: 0px;
     }
 
     &__item {
