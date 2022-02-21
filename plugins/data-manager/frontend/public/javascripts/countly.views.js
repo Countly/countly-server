@@ -976,9 +976,14 @@
                         data.segments
                             .forEach(function(segment) {
                                 if (segment) {
-                                    var sg = data.sg[segment];
-                                    sg.name = segment;
-                                    segments.push(sg);
+                                    try {
+                                        var sg = data.sg[segment];
+                                        sg.name = segment;
+                                        segments.push(sg);
+                                    }
+                                    catch (e) {
+                                        // supress create mode
+                                    }
                                 }
                             });
                     }

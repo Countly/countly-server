@@ -135,8 +135,8 @@
                             <el-dropdown-item command="blocked">{{ i18n('data-manager.blocked') }}</el-dropdown-item>
                         </cly-more-options>
                         <cly-more-options class="bu-mr-3" size="small" :text=" i18n('data-manager.change-visibility') " type="default" icon="el-icon-view" @command="handleChangeVisibility($event, scope.diff)">
-                            <el-dropdown-item command="visible">{{ i18n('visible') }}</el-dropdown-item>
-                            <el-dropdown-item command="hidden">{{ i18n('hidden') }}</el-dropdown-item>
+                            <el-dropdown-item command="visible">{{ i18n('data-manager.visible') }}</el-dropdown-item>
+                            <el-dropdown-item command="hidden">{{ i18n('data-manager.hidden') }}</el-dropdown-item>
                         </cly-more-options>
                         
                         <el-button class="bu-mr-3" size="small" type="default" icon="el-icon-delete-solid" @click="handleDelete(scope.diff)">{{ i18n('common.delete') }}</el-button>
