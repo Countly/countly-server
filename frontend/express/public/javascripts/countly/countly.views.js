@@ -4564,7 +4564,7 @@ app.route("/analytics/graph-notes", "graphNotes", function() {
     this.renderWhenReady(this.graphNotesView);
 });
 
-if (countlyAuth.validateRead('global_users')) {
+if (countlyAuth.validateGlobalAdmin()) {
     app.route("/manage/users", "manageUsers", function() {
         this.manageUsersView._id = null;
         this.renderWhenReady(this.manageUsersView);
