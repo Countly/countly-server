@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]" class="logger-home cly-vue-logger">
-    <cly-header>
+    <cly-header style="margin-bottom: 24px;">
         <template v-slot:header-left>
             <h2 class="cly-vue-logger__title"> {{i18n('logger.title')}}
             </h2>
@@ -28,7 +28,7 @@
         </template>
     </cly-header>
     <cly-main>
-        <div>
+        <div style="margin-bottom: 24px;">
             <cly-notification v-if="showTurnedOff" :text="i18n('logger.state-off-warning', appId)"></cly-notification>
         </div>
         <cly-section>
@@ -63,17 +63,12 @@
 
                     <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
                         <el-table-column v-if="col.value === 'requests'" class="request-date" :key="idx" sortable="custom"
-                            :label="i18n('logger.requests')">
+                            :label="i18n('logger.requests')" vertical-align="middle" :width="283">
                             <template slot-scope="rowScope">
                                 <logger-readable-date :timestamp="rowScope.row.reqts"></logger-readable-date>
                             </template>
                         </el-table-column>
-                        <el-table-column v-if="col.value === 'timestamp'" class="request-date" :key="idx" sortable="custom" prop="timestamp" :label="i18n('logger.timestamp')">
-                            <template slot-scope="rowScope">
-                                <logger-readable-date :timestamp="rowScope.row.ts"></logger-readable-date>
-                            </template>
-                        </el-table-column>
-                        <el-table-column v-if="col.value === 'details'" :key="idx" sortable="custom" prop="details" :label="i18n('logger.details')">
+                        <el-table-column v-if="col.value === 'details'" :key="idx" sortable="custom" prop="details" :label="i18n('logger.details')" :width="413">
                             <template slot-scope="rowScope">
                                 <logger-details :device="rowScope.row.d" :version="rowScope.row.v" :sdk="rowScope.row.s"
                                     :location="rowScope.row.l"></logger-details>
