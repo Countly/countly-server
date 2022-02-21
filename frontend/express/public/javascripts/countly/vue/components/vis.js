@@ -8,7 +8,6 @@
         _mixins = countlyVue.mixins;
 
     var FONT_FAMILY = "Inter";
-    var CHART_HEADER_HEIGHT = 32;
 
     /**
      * legendOptions depends on internalLegend and legend
@@ -243,7 +242,7 @@
         mixins: [LegendMixin, ZoomMixin, UpdateOptionsMixin, EventsMixin],
         props: {
             height: {
-                type: Number,
+                type: [Number, String],
                 default: 472
             },
             autoresize: {
@@ -296,7 +295,7 @@
                         top: 30,
                         bottom: 15,
                         left: 36,
-                        right: 36,
+                        right: 24,
                         containLabel: true
                     },
                     legend: {
@@ -508,33 +507,17 @@
 
                 return classes;
             },
-            echartHeight: function() {
-                var headerHeight = this.isShowingHeader ? CHART_HEADER_HEIGHT : 0;
-                return this.height - headerHeight - 40; //20px padding on top and bottom
-            },
-            echartStyle: function() {
-                var styles = {
-                    height: this.height + 'px'
-                };
-
-                if (this.legendOptions.position !== "bottom") {
-                    styles.width = 'calc(100% - 265px)';
-                }
-
-                return styles;
-            },
-            legendStyle: function() {
+            chartStyles: function() {
                 var styles = {};
 
-                if (this.legendOptions.position !== "bottom") {
-                    styles.width = 265 + 'px';
+                if (this.height === "auto") {
+                    styles.height = '100%';
+                }
+                else {
                     styles.height = this.height + 'px';
                 }
 
                 return styles;
-            },
-            isShowingHeader: function() {
-                return this.showZoom || this.showDownload || this.showToggle;
             },
             isChartEmpty: function() {
                 var isEmpty = true;
@@ -972,7 +955,8 @@
     var MagicSwitch = countlyBaseComponent.extend({
         props: {
             chartType: {
-                type: String
+                type: String,
+                default: 'line'
             }
         },
         mixins: [
@@ -1025,7 +1009,6 @@
         },
         data: function() {
             return {
-                height: CHART_HEADER_HEIGHT,
                 isZoom: false
             };
         },
@@ -1068,7 +1051,7 @@
                 this.isZoom = false;
             }
         },
-        template: '<div class="bu-level" :style="{height: height + \'px\'}">\
+        template: '<div class="bu-level">\
                         <div class="bu-level-left">\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
 							<slot name="chart-header-left-input"></slot>\
@@ -1337,14 +1320,14 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1362,7 +1345,6 @@
                         </div>\
                         <custom-legend\
                             ref="legend"\
-                            :style="legendStyle"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
                             v-if="legendOptions.show && !isChartEmpty"\
@@ -1411,35 +1393,34 @@
         },
 
         template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div class="cly-vue-chart__echart" :style="{height: \'100%\'}">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
 							<div class="chart-wrapper" :style="{height: (chartOptions.chartheight) + \'px\'}">\
-							<vue-scroll :ops="scrollOptions" >\
-								<div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
-										<echarts\
-                                            v-if="!isChartEmpty"\
-											:updateOptions="echartUpdateOptions"\
-											ref="echarts"\
-											v-bind="$attrs"\
-											v-on="$listeners"\
-											:option="chartOptions"\
-											:autoresize="autoresize"\
-											@datazoom="onDataZoom">\
-										</echarts>\
-                                       <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                        <cly-empty-chart></cly-empty-chart>\
+                                <vue-scroll :ops="scrollOptions" >\
+                                    <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
+                                            <echarts\
+                                                v-if="!isChartEmpty"\
+                                                :updateOptions="echartUpdateOptions"\
+                                                ref="echarts"\
+                                                v-bind="$attrs"\
+                                                v-on="$listeners"\
+                                                :option="chartOptions"\
+                                                :autoresize="autoresize"\
+                                                @datazoom="onDataZoom">\
+                                            </echarts>\
+                                        <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
+                                            <cly-empty-chart></cly-empty-chart>\
+                                        </div>\
                                     </div>\
-								</div>\
-							</vue-scroll>\
+                                </vue-scroll>\
 							</div>\
                         </div>\
                         <custom-legend\
                             ref="legend"\
-                            :style="legendStyle"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
                             v-if="legendOptions.show && !isChartEmpty">\
@@ -1466,14 +1447,14 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header :chart-type="\'line\'" ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                            <chart-header :chart-type="\'line\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1491,7 +1472,6 @@
                         </div>\
                         <custom-legend\
                             ref="legend"\
-                            :style="legendStyle"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
                             v-if="legendOptions.show && !isChartEmpty">\
@@ -1585,14 +1565,14 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1610,7 +1590,6 @@
                         </div>\
                         <custom-legend\
                             ref="legend"\
-                            :style="legendStyle"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
                             v-if="legendOptions.show && !isChartEmpty">\
@@ -1635,14 +1614,14 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header :chart-type="\'bar\'" ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                            <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1660,7 +1639,6 @@
                         </div>\
                         <custom-legend\
                             ref="legend"\
-                            :style="legendStyle"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
                             v-if="legendOptions.show && !isChartEmpty">\
@@ -1709,15 +1687,14 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless\']"\
-                                :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless bu-is-flex-grow-1\']">\
                                 <div :class="classes">\
                                     <echarts\
                                         v-if="!isChartEmpty"\

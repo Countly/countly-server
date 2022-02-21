@@ -21,9 +21,9 @@
                         <div class="bu-level-item" v-if="canUpdate">
                             <cly-more-options @command="onDashboardAction($event, dashboard)">
                                 <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                                <el-dropdown-item><a :href="'#/manage/reports/create/dashboard/' + dashboard._id">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
                                 <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
                                 <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
-                                <el-dropdown-item><a :href="'#/manage/reports/create/dashboard/' + dashboard._id">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
                             </cly-more-options>
                         </div>
                     </div>

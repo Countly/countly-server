@@ -1,4 +1,4 @@
-/*global $, app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers */
+/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers */
 
 (function() {
     var FEATURE_NAME = "dashboards";
@@ -1523,25 +1523,28 @@
     countlyVue.container.registerMixin("/manage/export/export-features", {
         beforeCreate: function() {
             var self = this;
-            $.when(countlyDashboards.initialize(null, true))
-                .then(function() {
-                    var dashboards = countlyDashboards.getAllDashboards();
-                    var dashboardsList = [];
-                    dashboards.forEach(function(dashboard) {
-                        dashboardsList.push({
+            this.$store.dispatch("countlyDashboards/getAll").then(function(res) {
+                if (res) {
+                    var dashboards = [];
+
+                    res.forEach(function(dashboard) {
+                        dashboards.push({
                             name: dashboard.name,
                             id: dashboard._id
                         });
                     });
-                    var selectItem = {
-                        id: "dashboards",
-                        name: "Dashboards",
-                        children: dashboardsList
-                    };
-                    if (dashboardsList.length) {
+
+                    if (dashboards.length) {
+                        var selectItem = {
+                            id: "dashboards",
+                            name: "Dashboards",
+                            children: dashboards
+                        };
+
                         self.$store.dispatch("countlyConfigTransfer/addConfigurations", selectItem);
                     }
-                });
+                }
+            });
         }
     });
 
