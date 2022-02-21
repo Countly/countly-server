@@ -114,52 +114,52 @@
     });
 
     var audienceSelectionOptions = {};
-    audienceSelectionOptions[AudienceSelectionEnum.NOW] = {label: "Now", value: AudienceSelectionEnum.NOW};
-    audienceSelectionOptions[AudienceSelectionEnum.BEFORE] = {label: "Right before sending the message", value: AudienceSelectionEnum.BEFORE};
+    audienceSelectionOptions[AudienceSelectionEnum.NOW] = {label: CV.i18n('push-notification.now'), value: AudienceSelectionEnum.NOW};
+    audienceSelectionOptions[AudienceSelectionEnum.BEFORE] = {label: CV.i18n('push-notification.right-before-sending-the-message'), value: AudienceSelectionEnum.BEFORE};
 
     var startDateOptions = {};
-    startDateOptions[SendEnum.NOW] = {label: "Send now", value: SendEnum.NOW};
-    startDateOptions[SendEnum.LATER] = {label: "Scheduled", value: SendEnum.LATER };
+    startDateOptions[SendEnum.NOW] = {label: CV.i18n('push-notification.send-now'), value: SendEnum.NOW};
+    startDateOptions[SendEnum.LATER] = {label: CV.i18n('push-notification.scheduled'), value: SendEnum.LATER };
 
     var targetingOptions = {};
-    targetingOptions[TargetingEnum.ALL] = {label: "All push-enabled users", value: TargetingEnum.ALL};
-    targetingOptions[TargetingEnum.SEGMENTED] = {label: "Segmented push-enabled users", value: TargetingEnum.SEGMENTED};
+    targetingOptions[TargetingEnum.ALL] = {label: CV.i18n('push-notification.all-push-enabled-users'), value: TargetingEnum.ALL};
+    targetingOptions[TargetingEnum.SEGMENTED] = {label: CV.i18n('push-notification.segmented-push-enabled-users'), value: TargetingEnum.SEGMENTED};
 
     var triggerOptions = {};
-    triggerOptions[TriggerEnum.COHORT_ENTRY] = {label: "Cohort(s) Entry", value: TriggerEnum.COHORT_ENTRY};
-    triggerOptions[TriggerEnum.COHORT_EXIT] = {label: "Cohort(s) Exit", value: TriggerEnum.COHORT_EXIT};
-    triggerOptions[TriggerEnum.EVENT] = {label: "Performed Event(s)", value: TriggerEnum.EVENT};
+    triggerOptions[TriggerEnum.COHORT_ENTRY] = {label: CV.i18n('push-notification.cohorts-entry'), value: TriggerEnum.COHORT_ENTRY};
+    triggerOptions[TriggerEnum.COHORT_EXIT] = {label: CV.i18n('push-notification.cohorts-exit'), value: TriggerEnum.COHORT_EXIT};
+    triggerOptions[TriggerEnum.EVENT] = {label: CV.i18n('push-notification.performed-events'), value: TriggerEnum.EVENT};
 
     var triggerNotMetOptions = {};
-    triggerNotMetOptions[TriggerNotMetEnum.SEND_ANYWAY] = {label: "Send anyway", value: TriggerNotMetEnum.SEND_ANYWAY};
-    triggerNotMetOptions[TriggerNotMetEnum.CANCEL_ON_EXIT] = {label: "Cancel when user exits selected cohort/s", value: TriggerNotMetEnum.CANCEL_ON_EXIT};
+    triggerNotMetOptions[TriggerNotMetEnum.SEND_ANYWAY] = {label: CV.i18n('push-notification.send-anyway'), value: TriggerNotMetEnum.SEND_ANYWAY};
+    triggerNotMetOptions[TriggerNotMetEnum.CANCEL_ON_EXIT] = {label: CV.i18n('push-notification.cancel-when-user-exits-cohort'), value: TriggerNotMetEnum.CANCEL_ON_EXIT};
 
     var deliveryDateCalculationOptions = {};
-    deliveryDateCalculationOptions[DeliveryDateCalculationEnum.EVENT_SERVER_DATE] = {label: "Relative to the date event arrived to the server", value: DeliveryDateCalculationEnum.EVENT_SERVER_DATE};
-    deliveryDateCalculationOptions[DeliveryDateCalculationEnum.EVENT_DEVICE_DATE] = {label: "Relative to the date event occurred on device", value: DeliveryDateCalculationEnum.EVENT_DEVICE_DATE};
+    deliveryDateCalculationOptions[DeliveryDateCalculationEnum.EVENT_SERVER_DATE] = {label: CV.i18n('push-notification.relative-to-the-date-event-server'), value: DeliveryDateCalculationEnum.EVENT_SERVER_DATE};
+    deliveryDateCalculationOptions[DeliveryDateCalculationEnum.EVENT_DEVICE_DATE] = {label: CV.i18n('push-notification.relative-to-the-date-event-device'), value: DeliveryDateCalculationEnum.EVENT_DEVICE_DATE};
 
     var deliveryMethodOptions = {};
-    deliveryMethodOptions[DeliveryMethodEnum.IMMEDIATELY] = {label: "Immediately", value: DeliveryMethodEnum.IMMEDIATELY};
-    deliveryMethodOptions[DeliveryMethodEnum.DELAYED] = {label: "Delayed", value: DeliveryMethodEnum.DELAYED};
+    deliveryMethodOptions[DeliveryMethodEnum.IMMEDIATELY] = {label: CV.i18n('push-notification.immediately'), value: DeliveryMethodEnum.IMMEDIATELY};
+    deliveryMethodOptions[DeliveryMethodEnum.DELAYED] = {label: CV.i18n('push-notification.delayed'), value: DeliveryMethodEnum.DELAYED};
 
     var platformOptions = {};
     platformOptions[PlatformEnum.ANDROID] = {label: "Android", value: PlatformEnum.ANDROID};
-    platformOptions[PlatformEnum.IOS] = {label: 'IOS', value: PlatformEnum.IOS};
+    platformOptions[PlatformEnum.IOS] = {label: 'iOS', value: PlatformEnum.IOS};
 
     var statusOptions = {};
-    statusOptions[StatusEnum.CREATED] = {label: "Created", value: StatusEnum.CREATED};
-    statusOptions[StatusEnum.PENDING_APPROVAL] = {label: "Waiting for approval", value: StatusEnum.PENDING_APPROVAL};
-    statusOptions[StatusEnum.REJECT] = {label: "Rejected", value: StatusEnum.REJECT};
-    statusOptions[StatusEnum.DRAFT] = {label: "Draft", value: StatusEnum.DRAFT};
-    statusOptions[StatusEnum.SCHEDULED] = {label: "Scheduled", value: StatusEnum.SCHEDULED};
-    statusOptions[StatusEnum.SENDING] = {label: "Sending", value: StatusEnum.SENDING};
-    statusOptions[StatusEnum.SENT] = {label: "Sent", value: StatusEnum.SENT};
-    statusOptions[StatusEnum.STOPPED] = {label: "Stopped", value: StatusEnum.STOPPED};
-    statusOptions[StatusEnum.FAILED] = {label: "Failed", value: StatusEnum.FAILED};
+    statusOptions[StatusEnum.CREATED] = {label: CV.i18n('push-notification.created'), value: StatusEnum.CREATED};
+    statusOptions[StatusEnum.PENDING_APPROVAL] = {label: CV.i18n('push-notification.waiting-for-approval'), value: StatusEnum.PENDING_APPROVAL};
+    statusOptions[StatusEnum.REJECT] = {label: CV.i18n('push-notification.rejected'), value: StatusEnum.REJECT};
+    statusOptions[StatusEnum.DRAFT] = {label: CV.i18n('push-notification.draft'), value: StatusEnum.DRAFT};
+    statusOptions[StatusEnum.SCHEDULED] = {label: CV.i18n('push-notification.scheduled'), value: StatusEnum.SCHEDULED};
+    statusOptions[StatusEnum.SENDING] = {label: CV.i18n('push-notification.sending'), value: StatusEnum.SENDING};
+    statusOptions[StatusEnum.SENT] = {label: CV.i18n('push-notification.sent'), value: StatusEnum.SENT};
+    statusOptions[StatusEnum.STOPPED] = {label: CV.i18n('push-notification.stopped'), value: StatusEnum.STOPPED};
+    statusOptions[StatusEnum.FAILED] = {label: CV.i18n('push-notification.failed'), value: StatusEnum.FAILED};
 
     var iosAuthConfigTypeOptions = {};
-    iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: "Key file (P8)", value: IOSAuthConfigTypeEnum.P8};
-    iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P12] = {label: "Sandbox + Production certificate (P12)", value: IOSAuthConfigTypeEnum.P12};
+    iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: CV.i18n('push-notification.key-file-p8'), value: IOSAuthConfigTypeEnum.P8};
+    iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P12] = {label: CV.i18n('push-notification.key-file-p12'), value: IOSAuthConfigTypeEnum.P12};
 
     var PlatformDtoEnum = Object.freeze({
         ANDROID: 'a',
@@ -2481,7 +2481,7 @@
             countlyPushNotification.service.approve(id).then(function() {
                 context.dispatch('onFetchSuccess', {useLoader: false});
                 context.dispatch('fetchById', id);
-                CountlyHelpers.notify({message: "Push notification has been successfully approved."});
+                CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-approved')});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
@@ -2493,7 +2493,7 @@
             countlyPushNotification.service.reject(id).then(function() {
                 context.dispatch('onFetchSuccess', {useLoader: false});
                 context.dispatch('fetchById', id);
-                CountlyHelpers.notify({message: "Push notification has been successfully rejected."});
+                CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-rejected')});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
@@ -2506,7 +2506,7 @@
                 countlyPushNotification.service.delete(id)
                     .then(function() {
                         context.dispatch('onFetchSuccess', {useLoader: true});
-                        CountlyHelpers.notify({message: "Push notification was successfully deleted."});
+                        CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-deleted')});
                         resolve();
                     }).catch(function(error) {
                         console.error(error);
@@ -2629,7 +2629,7 @@
                 .then(function() {
                     context.dispatch('fetchAll', true);
                     context.dispatch('onFetchSuccess', {useLoader: true});
-                    CountlyHelpers.notify({message: "Push notification was successfully deleted."});
+                    CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-deleted')});
                 }).catch(function(error) {
                     console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
@@ -2641,7 +2641,7 @@
             countlyPushNotification.service.approve(id).then(function() {
                 context.dispatch('fetchAll', false);
                 context.dispatch('onFetchSuccess', {useLoader: true});
-                CountlyHelpers.notify({message: "Push notification has been successfully approved."});
+                CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-approved')});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: true});
@@ -2653,7 +2653,7 @@
             countlyPushNotification.service.reject(id).then(function() {
                 context.dispatch('fetchAll', false);
                 context.dispatch('onFetchSuccess', {useLoader: true});
-                CountlyHelpers.notify({message: "Push notification has been successfully rejected."});
+                CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-rejected')});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: true});

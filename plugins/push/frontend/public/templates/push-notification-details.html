@@ -9,15 +9,13 @@
             </template>
             <template v-slot:header-right>
                 <template v-if="pushNotification.status === StatusEnum.PENDING_APPROVAL && hasApproverPermission">
-                    <el-button @click="onReject(pushNotification._id)" class="bu-mr-2"> <i class="ion-close-circled" ></i> Reject </el-button>
-                    <el-button @click="onApprove(pushNotification._id)" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> Approve </el-button>
+                    <el-button @click="onReject(pushNotification._id)" class="bu-mr-2"> <i class="ion-close-circled" ></i> {{i18n('push-notification.reject')}} </el-button>
+                    <el-button @click="onApprove(pushNotification._id)" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> {{i18n('push-notification.approve')}} </el-button>
                 </template>
                 <cly-more-options size="small" @command="handleUserCommands($event, pushNotification._id)">
                     <el-dropdown-item v-if="shouldShowDuplicateUserCommand(pushNotification.status)" :command="UserCommandEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowDeleteUserCommand(pushNotification.status)"  :command="UserCommandEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowResendUserCommand(pushNotification.status)" :command="UserCommandEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowApproveUserCommand(pushNotification.status)"  :command="UserCommandEnum.APPROVE">{{i18n('push-notification.approve')}}</el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowRejectUserCommand(pushNotification.status)" :command="UserCommandEnum.REJECT">{{i18n('push-notification.reject')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowEditDraftUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowEditUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowEditRejectUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_REJECT">{{i18n('push-notification.edit')}}</el-dropdown-item>
@@ -29,7 +27,7 @@
                 </div>
                 <div class="bu-level-item cly-vue-push-notification-details-sub-header">
                     <div class="ion ion-ios-time-outline cly-vue-push-notification-details-sub-header-icon"></div>
-                    <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.created')}} {{pushNotification.createdDateTime && formatTimeAgoText(pushNotification.createdDateTime.date)}} by  {{pushNotification.createdBy}}  </span>
+                    <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.created-by',pushNotification.createdDateTime && formatTimeAgoText(pushNotification.createdDateTime.date),pushNotification.createdBy)}}</span>
                 </div>
                 <div class="bu-level-item cly-vue-push-notification-details-sub-header">
                     <div class="ion ion-pricetag cly-vue-push-notification-details-sub-header-icon"></div>
@@ -68,9 +66,9 @@
                         <cly-chart-bar :option="pushNotificationChartBars.targetedUsers" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
                             <div class="bu-my-4 bu-ml-6"> 
-                                <div class="text-medium"> Users Targeted  <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
+                                <div class="text-medium"> {{i18n('push-notification.users-targeted')}}  <cly-tooltip-icon :tooltip="i18n('push-notification.users-targeted-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{targetedUsers}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.processed || 0}} users  </div>
+                                <div class="text-medium"> {{selectedDashboard.processed || 0}} {{i18n('push-notification.users')}}  </div>
                             </div>
                         </div>
                     </div>
@@ -78,9 +76,9 @@
                         <cly-chart-bar :option="pushNotificationChartBars.sentPushNotifications" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
                             <div class="bu-my-4 bu-ml-6"> 
-                                <div class="text-medium"> Sent Notifications  <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
+                                <div class="text-medium"> {{i18n('push-notification.sent-notifications')}}  <cly-tooltip-icon :tooltip="i18n('push-notification.sent-notifications-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{sentPushNotifications}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.sent || 0}} users  </div>
+                                <div class="text-medium"> {{selectedDashboard.sent || 0}} {{i18n('push-notification.users')}}  </div>
                             </div>
                         </div>
                     </div>
@@ -88,9 +86,9 @@
                         <cly-chart-bar :option="pushNotificationChartBars.clickedPushNotifications" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
                             <div class="bu-my-4 bu-ml-6"> 
-                                <div class="text-medium"> Clicked Notifications <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
+                                <div class="text-medium"> {{i18n('push-notification.clicked-notifications')}} <cly-tooltip-icon :tooltip="i18n('push-notification.clicked-notifications-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{clickedPushNotifications}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.actioned || 0}} users </div>
+                                <div class="text-medium"> {{selectedDashboard.actioned || 0}} {{i18n('push-notification.users')}} </div>
                             </div>
                         </div>
                     </div>
@@ -98,9 +96,9 @@
                         <cly-chart-bar :option="pushNotificationChartBars.failedPushNotifications" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend"> 
                             <div class="bu-my-4 bu-ml-6"> 
-                                <div class="text-medium"> Failed <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
+                                <div class="text-medium"> {{i18n('push-notification.failed')}} <cly-tooltip-icon :tooltip="i18n('push-notification.failed-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{failedPushNotifications}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.errored || 0}} users </div>
+                                <div class="text-medium"> {{selectedDashboard.errored || 0}} {{i18n('push-notification.users')}} </div>
                             </div>
                         </div>
                     </div>
@@ -109,10 +107,10 @@
             <div class="cly-vue-push-notification-details-summary">
                 <div class="bu-columns">
                     <div class="bu-column bu-is-10">
-                        <cly-header title="Message Summary" class="cly-vue-push-notification-details-summary__header">
+                        <cly-header class="cly-vue-push-notification-details-summary__header">
                             <template v-slot:header-left>
                                 <h2> {{i18n('push-notification-details.summary-header')}} </h2>
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                <cly-tooltip-icon :tooltip="i18n('push-notification-details.summary-header-description')" icon="ion ion-help-circled" style="margin-left:8px"> </cly-tooltip-icon>
                             </template>
                             <template v-slot:header-tabs>
                                 <cly-dynamic-tabs v-model="currentSummaryTab" skin="secondary" :tabs="summaryTabs"></cly-dynamic-tabs>
