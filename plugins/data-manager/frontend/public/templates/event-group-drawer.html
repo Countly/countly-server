@@ -8,22 +8,22 @@
     <template v-slot:default="drawerScope">
         <cly-form-step id="edit-event-group-step" name="First Step">
 
-            <div class="bu-pt-3 text-smallish font-weight-bold bu-mb-2">Event Group Name</div>
+            <div class="bu-pt-3 text-smallish font-weight-bold bu-mb-2">{{ i18n('data-manager.event-group-name') }}</div>
             <!-- validation for event group name -->
             <validation-provider name="name" rules="required" v-slot="v">
                 <el-input
                     :class="{'is-error': v.errors.length > 0}"
                     v-model="drawerScope.editedObject.name"
-                    placeholder="Name your event group">
+                    :placeholder="i18n('data-manager.name-event-group-placeholder')">
                 </el-input>
             </validation-provider>
                 <div class="bu-mt-5 bu-mb-4">
                     <el-checkbox v-model="drawerScope.editedObject.needDescription" size="medium">
-                        <span class="color-cool-gray-100 font-weight-normal">Use Description</span>
+                        <span class="color-cool-gray-100 font-weight-normal">Use {{i18n('data-manager.description')}}</span>
                     </el-checkbox>
                 </div>
     
-                <div v-if="drawerScope.editedObject.needDescription || drawerScope.editedObject.description" class="text-smallish font-weight-bold bu-mb-1">Event Group Description</div>
+                <div v-if="drawerScope.editedObject.needDescription || drawerScope.editedObject.description" class="text-smallish font-weight-bold bu-mb-1">{{ i18n('data-manager.event-group-description') }}</div>
                 <!-- validation for description when it is selected -->
                 <validation-provider v-if="drawerScope.editedObject.needDescription || drawerScope.editedObject.description"
                 name="desc" rules="required" v-slot="v">
@@ -34,13 +34,13 @@
                     :rows="2"
                     v-model="drawerScope.editedObject.description"
                     :class="{'is-error': v.errors.length > 0}"
-                    placeholder="Enter your description">
+                    :placeholder="i18n('data-manager.events.enter-event-description')">
                     </el-input>
                 </validation-provider>
                 <div class="text-big font-weight-bold bu-mt-5">
-                    Included Events
+                    {{i18n('data-manager.included-events')}}
                 </div>
-                <div class="text-smallish font-weight-bold bu-mt-4 bu-mb-2">Select Events</div>
+                <div class="text-smallish font-weight-bold bu-mt-4 bu-mb-2">{{i18n('data-manager.select-events')}}</div>
                 <!-- validation for selecting from events -->
                 <validation-provider name="allEvents" rules="required" v-slot="v">
                     <el-select class="bu-mb-2" multiple style="width:100%" v-model="drawerScope.editedObject.source_events" >
@@ -50,20 +50,23 @@
                 </validation-provider>
 
                 <div class="bu-my-4">
-                    <div class="text-big bu-mb-1 bu-mt-5 font-weight-bold">Event Group Visibility</div>
-                    <div class="text-small color-cool-gray-50 bu-mb-3">If an event group is invisible server will continue to record data for it but it will not be displayed in the user interface.</div>
+                    <div class="text-big bu-mb-1 bu-mt-5 font-weight-bold">{{ i18n('data-manager.event-group-visibility') }}</div>
+                    <div class="text-small color-cool-gray-50 bu-mb-3">{{ i18n('data-manager.event-group-visibility-subheading') }}</div>
                     <div class="bu-is-flex bu-pt-2">
                     <el-switch class="bu-mr-1" v-model="drawerScope.editedObject.status">
                 </el-switch>
-                <div class="text-small bu-ml-1 color-cool-gray-50 bu-pt-1">Event group is visible</div>
+                <div class="text-small bu-ml-1 color-cool-gray-50 bu-pt-1">{{ i18n('data-manager.event-group-is-visible') }}</div>
                 </div>
                 </div>
 
                 <div v-if="drawerScope.editedObject.display_map">
-                    <div class="text-big font-weight-bold bu-pt-4">Event Group Properties</div>
+                    <div class="text-big font-weight-bold bu-pt-4">{{i18n('data-manager.event-group-properties')}}</div>
                     <div class="bu-mt-4">
-                        <div class="text-smallish font-weight-bold">Display Name for Count</div>
-                        <div class="text-small color-cool-gray-50 bu-pt-1 bu-pb-2">A display name for the count property of this event</div>
+                        <div class="text-smallish font-weight-bold">{{ i18n('data-manager.display-name-for-count') }}</div>
+                        <div class="bu-level">
+                            <div class="text-small bu-pt-1 bu-pb-2 bu-level-left bu-level-item color-cool-gray-50">{{ i18n('data-manager.display-name-for-count-subheading') }}</div>
+                            <div class="text-small bu-level-item bu-level-right color-cool-gray-50">{{i18n('data-manager.optional')}}</div>
+                        </div>
                     </div>
                     <el-input
                     class="bu-mb-3" 
@@ -71,10 +74,10 @@
 			        placeholder="Count">
 			        </el-input>
                     <div class="bu-mt-3">
-                        <div class="text-smallish font-weight-bold">Display Name for Sum</div>
+                        <div class="text-smallish font-weight-bold">{{ i18n('data-manager.display-name-for-sum') }}</div>
                         <div class="bu-level">
-                            <div class="text-small bu-pt-1 bu-pb-2 bu-level-left bu-level-item color-cool-gray-50">A display name for the sum property of this event</div>
-                            <div class="text-small bu-level-item bu-level-right color-cool-gray-50">Optional</div>
+                            <div class="text-small bu-pt-1 bu-pb-2 bu-level-left bu-level-item color-cool-gray-50">{{ i18n('data-manager.display-name-for-sum-subheading') }}</div>
+                            <div class="text-small bu-level-item bu-level-right color-cool-gray-50">{{i18n('data-manager.optional')}}</div>
                         </div>
                     </div>
                     <el-input
@@ -83,16 +86,16 @@
                     placeholder="Sum">
                     </el-input>
                     <div class="bu-mt-3">
-                        <div class="text-smallish font-weight-bold">Display Name for Duration</div>
+                        <div class="text-smallish font-weight-bold">{{ i18n('data-manager.display-name-for-duration') }}</div>
                         <div class="bu-level">
-                            <div class="text-small bu-pt-1 bu-pb-2 bu-level-left bu-level-item color-cool-gray-50">A display name for the duration property of this event</div>
-                            <div class="text-small bu-level-item bu-level-right color-cool-gray-50">Optional</div>
+                            <div class="text-small bu-pt-1 bu-pb-2 bu-level-left bu-level-item color-cool-gray-50">{{ i18n('data-manager.display-name-for-duration-subheading') }}</div>
+                            <div class="text-small bu-level-item bu-level-right color-cool-gray-50">{{i18n('data-manager.optional')}}</div>
                         </div>
                     </div>
                     <el-input
                     class="bu-mb-3" 
                     v-model="drawerScope.editedObject.display_map.d" 
-                    placeholder="Duration">
+                    :placeholder="i18n('data-manager.duration')">
                     </el-input>
                 </div>
             </div>
