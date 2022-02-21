@@ -1342,7 +1342,24 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.header('Expires', '0');
                 res.header('Pragma', 'no-cache');
                 var config = plugins.getConfig("security");
-                var data = { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: err || {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}};
+                var data = {
+                    documentationLink: req.countly.documentationLink,
+                    helpCenterLink: req.countly.helpCenterLink,
+                    feedbackLink: req.countly.feedbackLink,
+                    featureRequestLink: req.countly.featureRequestLink,
+                    languages: languages,
+                    countlyFavicon: req.countly.favicon,
+                    countlyTitle: req.countly.title,
+                    countlyPage: req.countly.page,
+                    "csrf": req.csrfToken(),
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    themeFiles: req.themeFiles,
+                    inject_template: req.template,
+                    params: {},
+                    error: err || {},
+                    security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}
+                };
                 if (params.email) {
                     data.params.email = params.email;
                 }
