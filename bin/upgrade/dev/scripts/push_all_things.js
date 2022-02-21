@@ -1,4 +1,5 @@
 const plugins = require('../../../../plugins/pluginManager'),
+      common = require('../../../../api/utils/common'),
     { Creds, Message } = require('../../../../plugins/push/api/send');
 
 
@@ -34,11 +35,16 @@ plugins.dbConnection().then(async db => {
                 messagesCount = await db.collection('messages').count(),
                 credentialsInApps = [];
             
-            apps = apps.filter(a => a.plugins && a.plugins.push && ((a.plugins.push.i && a.plugins.push.i._id) || (a.plugins.push.a && a.plugins.push.a._id) || (a.plugins.push.h && a.plugins.push.h._id)));
-            credentialsInApps = apps.map(a => [a.plugins.push.i && a.plugins.push.i._id, a.plugins.push.a && a.plugins.push.a._id, a.plugins.push.h && a.plugins.push.h._id])
-                .flat()
-                .filter(x => x)
-                .map(db.oid);
+            try {
+                apps = apps.filter(a => a.plugins && a.plugins.push && ((a.plugins.push.i && a.plugins.push.i._id) || (a.plugins.push.a && a.plugins.push.a._id) || (a.plugins.push.h && a.plugins.push.h._id)));
+                credentialsInApps = apps.map(a => [a.plugins.push.i && a.plugins.push.i._id, a.plugins.push.a && a.plugins.push.a._id, a.plugins.push.h && a.plugins.push.h._id])
+                    .flat()
+                    .filter(x => x)
+                    .map(common.dbext.oid);
+            }
+            catch (ex) {
+                console.log(ex);
+            }
             
             console.log('Going to migrate %d messages, %d queues, %d push collections, %d credentials, %d credentials in apps', messagesCount, queues.length, pushes.length, credentials.length, credentialsInApps.length);
             await new Promise(res => setTimeout(res, 1000));
@@ -101,7 +107,9 @@ plugins.dbConnection().then(async db => {
                                 batch.push(op);
                             }
                             console.log('... inserting %d-th record into "%s"', count++, push);
-                            await db.collection(push).bulkWrite(batch);
+                            if (batch.length) {
+                                await db.collection(push).bulkWrite(batch);
+                            }
                             batch = [];
                         }
                         else if (op) {
@@ -132,7 +140,9 @@ plugins.dbConnection().then(async db => {
                             batch.push(op);
                         }
                         console.log('... inserting %d-th record into "push"', count++);
-                        await db.collection('push').insertMany(batch);
+                        if (batch.length) {
+                            await db.collection('push').insertMany(batch);
+                        }
                         batch = [];
                     }
                     else if (op) {
@@ -142,13 +152,13 @@ plugins.dbConnection().then(async db => {
         
             for (const queue of queues) {
                 let stream = db.collection(queue).find().stream(),
-                    aid = db.oid(queue.substr(queue.indexOf('_') + 1, 24)),
+                    aid = common.dbext.oid(queue.substr(queue.indexOf('_') + 1, 24)),
                     type = queue.substr(queue.lastIndexOf('_') + 1),
                     p = type[0],
                     f = type[1];
                 for await (const doc of stream) {
                     await add({
-                        _id: db.oidWithDate(Math.floor(doc.d / 1000)),
+                        _id: common.dbext.oidWithDate(Math.floor(doc.d / 1000)),
                         p,
                         f,
                         a: aid,
@@ -167,5 +177,6 @@ plugins.dbConnection().then(async db => {
     }
     finally {
         await session.endSession();
+        db.close();
     }
 });
