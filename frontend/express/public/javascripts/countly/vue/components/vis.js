@@ -282,6 +282,10 @@
                 type: Function,
                 default: countlyCommon.getShortNumber,
                 required: false
+            },
+            skin: {
+                type: String,
+                default: "padded"
             }
         },
         data: function() {
@@ -504,6 +508,8 @@
                     classes['bu-is-flex'] = true;
                     classes['bu-is-flex-direction-row'] = true;
                 }
+
+                classes['cly-vue-chart--' + this.skin] = true;
 
                 return classes;
             },
