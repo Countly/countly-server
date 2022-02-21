@@ -394,6 +394,12 @@
                         sort: 'custom'
                     },
                     {
+                        label: "Count",
+                        value: 'totalCount',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
                         label: CV.i18n("data-manager.last-modified"),
                         value: 'lastModifiedts',
                         default: true,
@@ -458,6 +464,8 @@
             },
             events: function() {
                 var self = this;
+                var isEventCountAvailable = this.$store.getters["countlyDataManager/isEventCountAvailable"];
+                var eventCount = this.$store.getters["countlyDataManager/eventCount"];
                 return this.$store.getters["countlyDataManager/events"]
                     .filter(function(e) {
                         var isCategoryFilter = true;
@@ -500,6 +508,10 @@
                         }
                         if (!e.e) {
                             e.e = e.key;
+                        }
+                        if (isEventCountAvailable) {
+                            e.totalCount = eventCount[e.key] || 0;
+                            e.totalCountFormatted = countlyCommon.formatNumber(e.totalCount);
                         }
                         return e;
                     });
