@@ -44,6 +44,9 @@
                 <el-dropdown-item command="regnerate">{{i18n('data-manager.regenerate')}}</el-dropdown-item>
                 <el-dropdown-item command="export-schema">{{i18n('data-manager.export-schema')}}</el-dropdown-item>
                 <el-dropdown-item command="import-schema">{{i18n('data-manager.import-schema')}}</el-dropdown-item>
+                <el-dropdown-item command="navigate-settings">
+                    <a href="#/manage/configurations/data-manager" > {{i18n('plugins.configs')}} </a>
+                </el-dropdown-item>
             </cly-more-options>
         </div>
     </template>
@@ -79,7 +82,7 @@
                                 </svg>
                             </div>
                             <div class="bu-mt-3 text-medium color-cool-gray-50">
-                                Drag and drop file here or <span class="color-blue-100">click to upload</span>
+                                {{ i18n('data-manager.drag-drop-file') }} <span class="color-blue-100"> {{ i18n('data-manager.click-to-upload') }}</span>
                             </div>
                         </div>
                     </div>

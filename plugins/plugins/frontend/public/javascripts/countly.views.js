@@ -556,6 +556,7 @@
                     newPassword: "",
                     confirmPassword: ""
                 },
+                components: {},
                 formId: "account-settings-form",
                 userData: countlyGlobal.member,
                 userConfigs: {},
@@ -580,6 +581,16 @@
                     if (!self.userConfigs.frontend) {
                         self.userConfigs.frontend = {};
                     }
+                    for (var key in app.configurationsView.predefinedUserInputs) {
+                        var parts = key.split(".");
+                        var val = app.configurationsView.predefinedUserInputs[key];
+                        if (!self.userConfigs[parts[0]]) {
+                            self.userConfigs[parts[0]] = {};
+                        }
+                        if (parts[1]) {
+                            self.userConfigs[parts[0]][parts[1]] = typeof val === "function" ? val() : val;
+                        }
+                    }
                     for (var subkey in self.userConfigs[self.selectedConfig]) {
                         if (!self.predefinedInputs[self.selectedConfig + "." + subkey]) {
                             var type = typeof self.userConfigs[self.selectedConfig][subkey];
@@ -594,37 +605,38 @@
                             }
                         }
                     }
+                    self.loadComponents();
                 });
         },
         methods: {
-            onChange: function(key, value) {
-                if (!this.changes[this.selectedConfig]) {
-                    this.changes[this.selectedConfig] = {};
+            onChange: function(id, key, value) {
+                if (!this.changes[id]) {
+                    this.changes[id] = {};
                 }
 
-                this.changes[this.selectedConfig][key] = value;
+                this.changes[id][key] = value;
 
                 var configsData = countlyPlugins.getUserConfigsData();
 
-                if (!this.changes[this.selectedConfig]) {
-                    this.changes[this.selectedConfig] = {};
+                if (!this.changes[id]) {
+                    this.changes[id] = {};
                 }
 
                 //delete value from diff if it already exists
-                delete this.changes[this.selectedConfig][key];
+                delete this.changes[id][key];
 
-                this.userConfigs[this.selectedConfig][key] = value;
+                this.userConfigs[id][key] = value;
 
-                if (Array.isArray(value) && Array.isArray(configsData[this.selectedConfig][key])) {
+                if (Array.isArray(value) && Array.isArray(configsData[id][key])) {
                     value.sort();
-                    configsData[this.selectedConfig][key].sort();
-                    if (JSON.stringify(value) !== JSON.stringify(configsData[this.selectedConfig][key])) {
-                        this.changes[this.selectedConfig][key] = value;
+                    configsData[id][key].sort();
+                    if (JSON.stringify(value) !== JSON.stringify(configsData[id][key])) {
+                        this.changes[id][key] = value;
                     }
 
                 }
-                else if (configsData[this.selectedConfig][key] !== value) {
-                    this.changes[this.selectedConfig][key] = value;
+                else if (configsData[id][key] !== value) {
+                    this.changes[id][key] = value;
                 }
             },
             passwordDialog: function() {
@@ -673,11 +685,11 @@
                     });
                 }
             },
-            getLabelName: function(id) {
-                return app.configurationsView.getInputLabel(this.selectedConfig + "." + id);
+            getLabelName: function(id, key) {
+                return app.configurationsView.getInputLabel(id + "." + key);
             },
-            getInputType: function(id) {
-                return app.configurationsView.getInputType(this.selectedConfig + "." + id);
+            getInputType: function(id, key) {
+                return app.configurationsView.getInputType(id + "." + key);
             },
             save: function(doc) {
                 var data = {
@@ -820,6 +832,18 @@
                     var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 100;
                     return {'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto 100px'};
                 }
+            },
+            loadComponents: function() {
+                var cc = countlyVue.container.dataMixin({
+                    'accountSettingsComponents': '/account/settings'
+                });
+                cc = cc.data();
+                var allComponents = cc.accountSettingsComponents;
+                for (var i = 0; i < allComponents.length; i++) {
+                    if (allComponents[i]._id && allComponents[i].title && allComponents[i].component) {
+                        this.components[allComponents[i]._id] = allComponents[i];
+                    }
+                }
             }
         }
     });
@@ -850,6 +874,7 @@
         predefinedInputs: {},
         predefinedLabels: {},
         predefinedStructure: {},
+        predefinedUserInputs: {},
         registerInput: function(id, callback) {
             this.predefinedInputs[id] = callback;
         },
@@ -858,6 +883,9 @@
         },
         registerStructure: function(id, obj) {
             this.predefinedStructure[id] = obj;
+        },
+        registerUserInput: function(id, getVal) {
+            this.predefinedUserInputs[id] = getVal;
         },
         getInputLabel: function(id) {
             if (typeof this.predefinedLabels[id] !== "undefined") {

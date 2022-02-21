@@ -309,7 +309,7 @@ module.exports.remove = async params => {
 module.exports.toggle = async params => {
     let data = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
-        active: {type: 'Boolean', required: true}
+        active: {type: 'BooleanString', required: true}
     }, true);
     if (data.result) {
         data = data.obj;
@@ -325,8 +325,15 @@ module.exports.toggle = async params => {
         return true;
     }
 
-    if (!msg.triggerAuto()) {
+    if (!msg.triggerAutoOrApi()) {
         throw new ValidationError(`The message doesn't have Cohort or Event trigger`);
+    }
+
+    if (data.active && msg.is(State.Streamable)) {
+        throw new ValidationError(`The message is already active`);
+    }
+    else if (!data.active && !msg.is(State.Streamable)) {
+        throw new ValidationError(`The message is already stopped`);
     }
 
     if (msg.is(State.Streamable)) {
