@@ -711,6 +711,7 @@
                 appsSelectorOption: appsSelectorOption,
                 testClaps: [],
                 newTest: false,
+                description: "",
             };
         },
         computed: {

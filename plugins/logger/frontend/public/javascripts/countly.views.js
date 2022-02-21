@@ -31,7 +31,7 @@
                 return this.timestamp;
             }
         },
-        template: "<div>{{date}}<p class='text-small' style='color: #81868D;'>{{time}}</p><p>{{reqId}}</p></div>"
+        template: "<div class='bu-is-flex bu-is-align-items-center'><div>{{date}}<p style='color: #81868D; line-height: 16px; margin-top: 4px !important; margin-bottom: 4px !important;'>{{time}}</p><p style='color: #81868D; line-height: 16px; font-size: 12px; margin-top: 4px !important; margin-bottom: 4px !important;'>{{reqId}}</p></div></div>"
     });
 
     var DetailsComponent = countlyVue.components.BaseComponent.extend({
@@ -47,11 +47,11 @@
                     country: this.location.cc,
                     city: this.location.cty && this.location.cty !== 'Unknown' ? ' (' + this.location.cty + ')' : '',
                     flagCss: 'flag ' + flag,
-                    flagBg: 'display: inline-block; float: none; margin-top:2px; margin-right:6px; background-image: url(images/flags/' + flag + '.png);'
+                    flagBg: 'display: inline-block; float: none; margin-top:2px; margin-right:6px; background-image: url(images/flags/' + flag + '.png);',
                 };
             },
         },
-        template: '<div><p>{{log.deviceInfo}} <span class="oval"></span> {{log.version}} <span v-if="log.country" class="oval"></span> <span v-if="log.country" :class="log.flagCss" :style="log.flagBg"></span>{{log.country}}</p><p>ID {{log.id}}</p><p>{{log.sdkInfo}}</p></div>'
+        template: '<div><p class="has-ellipsis" :tooltip="log.deviceInfo">{{log.deviceInfo}} <span class="oval"></span> {{log.version}} <span v-if="log.country" class="oval"></span> <span v-if="log.country" :class="log.flagCss" :style="log.flagBg"></span>{{log.country}}</p><p class="has-ellipsis" :tooltip="log.id">ID {{log.id}}</p><p class="has-ellipsis" :tooltip="log.sdkInfo">{{log.sdkInfo}}</p></div>'
     });
 
     var InfoComponent = countlyVue.components.BaseComponent.extend({
@@ -92,11 +92,6 @@
                     value: "requests",
                     label: CV.i18n('logger.requests'),
                     required: true
-                },
-                {
-                    value: "timestamp",
-                    label: CV.i18n('logger.timestamp'),
-                    default: false
                 },
                 {
                     value: "details",
