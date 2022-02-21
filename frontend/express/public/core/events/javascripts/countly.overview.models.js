@@ -209,6 +209,7 @@
                         "count": item.count,
                         "sum": item.sum,
                         "duration": item.duration,
+                        "key": item.name,
                         "name": countlyEventsOverview.helpers.getEventLongName(item.name, map)
                     };
                 });
