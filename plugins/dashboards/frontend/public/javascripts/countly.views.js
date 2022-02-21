@@ -1522,6 +1522,7 @@
 
     countlyVue.container.registerMixin("/manage/export/export-features", {
         beforeCreate: function() {
+            var self = this;
             this.$store.dispatch("countlyDashboards/getAll").then(function(res) {
                 if (res) {
                     var dashboards = [];
