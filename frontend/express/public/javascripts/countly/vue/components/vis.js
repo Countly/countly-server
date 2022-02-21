@@ -1339,7 +1339,7 @@
                                     @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart></cly-empty-chart>\
+                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1413,7 +1413,7 @@
                                                 @datazoom="onDataZoom">\
                                             </echarts>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                            <cly-empty-chart></cly-empty-chart>\
+                                            <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                         </div>\
                                     </div>\
                                 </vue-scroll>\
@@ -1466,7 +1466,7 @@
                                     @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart></cly-empty-chart>\
+                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1584,7 +1584,7 @@
                                     @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart></cly-empty-chart>\
+                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1633,7 +1633,7 @@
                                     @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart></cly-empty-chart>\
+                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1707,7 +1707,7 @@
                                         @datazoom="onDataZoom">\
                                     </echarts>\
                                     <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                        <cly-empty-chart></cly-empty-chart>\
+                                        <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                     </div>\
                                 </div>\
                                 <custom-legend\
