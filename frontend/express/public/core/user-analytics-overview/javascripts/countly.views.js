@@ -15,13 +15,18 @@ var UserAnalyticsOverview = countlyVue.views.create({
         var self = this;
         $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {
             self.calculateAllData();
+            self.isLoading = false;
         });
     },
     methods: {
-        refresh: function() {
+        refresh: function(force) {
             var self = this;
+            if (force) {
+                self.isLoading = true;
+            }
             $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {
                 self.calculateAllData();
+                self.isLoading = false;
             });
         },
         calculateAllData: function() {
