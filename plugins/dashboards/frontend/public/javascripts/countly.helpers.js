@@ -701,9 +701,6 @@
                 var extraTypes = this.extraTypes;
                 var enabledTypes = this.enabledTypes;
                 var fullList = this.types;
-                fullList.sort(function(a, b) {
-                    return (a.priority || 0) - (b.priority || 0);
-                });
 
                 if (enabledTypes && enabledTypes.length) {
                     fullList = fullList.filter(function(item) {
@@ -714,6 +711,9 @@
                     fullList = fullList.concat(extraTypes);
                 }
 
+                fullList.sort(function(a, b) {
+                    return (a.priority || 0) - (b.priority || 0);
+                });
 
                 return fullList;
             },
