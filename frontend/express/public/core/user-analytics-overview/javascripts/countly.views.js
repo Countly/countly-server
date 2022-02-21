@@ -7,7 +7,8 @@ var UserAnalyticsOverview = countlyVue.views.create({
             tableData: [],
             graphOptions: this.createSeries(),
             lineLegend: this.createLineLegend(),
-            lineOptions: this.createSeries()
+            lineOptions: this.createSeries(),
+            isLoading: true
         };
     },
     mounted: function() {
