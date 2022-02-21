@@ -18,6 +18,11 @@
         margin-left: 2px;
         vertical-align: middle;
     }
+    &__clickable{
+        &:hover {
+            text-decoration: underline;
+        }
+    }
     .tag-container{
         font-size: 12px;
         .bu-tag {

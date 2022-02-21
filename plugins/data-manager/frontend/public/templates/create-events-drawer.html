@@ -8,39 +8,39 @@
     <template v-slot:default="drawerScope">
         <cly-form-step id="create-event-form" name="First Step">
 
-            <cly-form-field label="Enter Name">
+            <cly-form-field :label="i18n('data-manager.event.name')">
                     <el-input
                         v-model="drawerScope.editedObject.name"
-                        placeholder="Event Name">
+                        :placeholder="i18n('data-manager.event.name')">
                     </el-input>
             </cly-form-field>
 
-            <cly-form-field label="Event Key" rules="required" tooltip="Event Key">
+            <cly-form-field :label="i18n('data-manager.events.key')" rules="required" :tooltip="i18n('data-manager.events.key.tooltip')">
                 <el-input
                 :disabled="drawerScope.editedObject.isEditMode"
                 class="bu-mb-3" 
                 v-model="drawerScope.editedObject.key" 
-			    placeholder="Enter Event Key">
+			    :placeholder="i18n('data-manager.events.enter-key')">
 			    </el-input>
             </cly-form-field>
 
-            <div class="text-big text-heading bu-mt-2 bu-mb-1">Event Details</div>
+            <div class="text-big text-heading bu-mt-2 bu-mb-1">{{i18n('data-manager.events.event-details')}}</div>
 
-            <cly-form-field label="Event Description" :optional="true">
+            <cly-form-field :label="i18n('data-manager.events.event-description')" :optional="true">
                 <el-input
                 type="textarea"
                 :rows="2"
-                placeholder="Enter your description"
+                :placeholder="i18n('data-manager.events.enter-event-description')"
                 v-model="drawerScope.editedObject.description">
                 </el-input>
             </cly-form-field>
 
             <div v-if="isDrill">
-                <cly-form-field label="Category" :optional="true" tooltip="Category">
+                <cly-form-field :label="i18n('data-manager.category')" :optional="true" :tooltip="i18n('data-manager.category.tooltip')">
                     <cly-select-x
                         class="bu-pt-1"
-                        search-placeholder="Search Category"
-                        placeholder="Uncategorized" 
+                        :search-placeholder="i18n('data-manager.search-category')"
+                        :placeholder="i18n('data-manager.uncategorized')" 
                         v-model="drawerScope.editedObject.category"
                         :auto-commit="!autoCommitDisabled" 
                         :mode="selectX.mode"
@@ -52,7 +52,7 @@
 
             <div v-if='drawerScope.editedObject.isEditMode'>
                 <div v-if="isDrill">
-                    <cly-form-field label="Status">
+                    <cly-form-field :label="i18n('data-manager.status')">
                         <el-select class="bu-pt-1" v-model="drawerScope.editedObject.status" >
                             <el-option v-for="item in statusList" :key="item.value" :value="item.value">
                             </el-option>
@@ -60,42 +60,42 @@
                     </cly-form-field>
                 </div>
 
-                <cly-form-field label="Visibility">
+                <cly-form-field :label="i18n('data-manager.visibility')">
                     <el-select class="bu-pt-1" v-model="drawerScope.editedObject.is_visible" >
-                        <el-option :value=true label="Visible">
+                        <el-option :value=true :label="i18n('data-manager.visible')">
                         </el-option>
-                        <el-option :value=false label="Hidden">
+                        <el-option :value=false :label="i18n('data-manager.hidden')">
                         </el-option>
                     </el-select>
                 </cly-form-field>
 
-                <div class="text-big text-heading bu-mt-4 bu-pt-1">Event Properties</div>
+                <div class="text-big text-heading bu-mt-4 bu-pt-1">{{i18n('data-manager.events.event-properties')}}</div>
 
-                <cly-form-field class="bu-pt-0" label="Display Name for Count" subheading="A display name for the count property of this event">
+                <cly-form-field class="bu-pt-0" :label="i18n('data-manager.display-name-for-count')" :subheading="i18n('data-manager.display-name-for-count-subheading')">
                     <el-input
                     v-model="drawerScope.editedObject.count" 
-			        placeholder="Count">
+			        :placeholder="i18n('data-manager.count')">
 			        </el-input>
                 </cly-form-field>
 
-                <cly-form-field label="Display Name for Sum" :optional="true" subheading="A display name for the sum property of this event">
+                <cly-form-field :label="i18n('data-manager.display-name-for-sum')" :optional="true" :subheading="i18n('data-manager.display-name-for-count-sum')">
                     <el-input
                     v-model="drawerScope.editedObject.sum" 
-                    placeholder="Sum">
+                    :placeholder="i18n('data-manager.sum')">
                     </el-input>
                 </cly-form-field>
 
-                <cly-form-field label="Display Name for Duration" :optional="true" subheading="A display name for the duration property of this event">
+                <cly-form-field :label="i18n('data-manager.display-name-for-duration')" :optional="true" :subheading="i18n('data-manager.display-name-for-count-duration')">
                     <el-input
                     v-model="drawerScope.editedObject.dur" 
-                    placeholder="Duration">
+                    :placeholder="i18n('data-manager.duration')">
                     </el-input>
                 </cly-form-field>
             </div>
 
             <div v-if="drawerScope.editedObject.isEditMode">
-                <cly-form-field label="Omit Segments" 
-                tooltip="It allows to delete segmentations from aggregated data only, and keep recording to granular data as string. Omitted segments will not be saved in the future and past data for these segments will be purged immediately after you save these settings. Data for omitted segments will still be stored in Drill.">
+                <cly-form-field :label="i18n('data-manager.omit-segments')" 
+                :tooltip="i18n('data-manager.omit-segments.tooltip')">
                     <el-select multiple v-model="omitList" >
                         <el-option v-for="item in drawerScope.editedObject.segments" :key="item.name" :value="item.name">
                         </el-option>
@@ -104,7 +104,7 @@
             </div>
 
             <div v-if="isDrill" class="bu-mt-1">
-                <div class="text-big text-heading bu-pt-4">Event Segmentation</div>
+                <div class="text-big text-heading bu-pt-4">{{i18n('data-manager.event-segmentation')}}</div>
                 <data-manager-create-segment
                 ref="segments"
 			    :max-segments="20"

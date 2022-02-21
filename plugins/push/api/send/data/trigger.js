@@ -162,7 +162,8 @@ class PlainTrigger extends Trigger {
      * Constructor
      * 
      * @param {object}              data        filter data
-     * @param {number|undefined}    data.tz     in case tz = true, this is scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {boolean}             data.tz     in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {number}              data.sctz   scheduler's timezone offset in minutes (GMT +3 is "-180")
      * @param {boolean}             delayed     true if audience calculation should be done right before sending the message
      */
     constructor(data) {
