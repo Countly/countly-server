@@ -700,17 +700,20 @@
             visualizationTypes: function() {
                 var extraTypes = this.extraTypes;
                 var enabledTypes = this.enabledTypes;
-                var fullList = this.types.concat(extraTypes);
-
-                fullList.sort(function(a, b) {
-                    return (a.priority || 0) - (b.priority || 0);
-                });
+                var fullList = this.types;
 
                 if (enabledTypes && enabledTypes.length) {
                     fullList = fullList.filter(function(item) {
                         return enabledTypes.includes(item.value);
                     });
                 }
+                if (extraTypes && extraTypes.length) {
+                    fullList = fullList.concat(extraTypes);
+                }
+
+                fullList.sort(function(a, b) {
+                    return (a.priority || 0) - (b.priority || 0);
+                });
 
                 return fullList;
             },
