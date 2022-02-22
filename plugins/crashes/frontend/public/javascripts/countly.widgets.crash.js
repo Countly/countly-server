@@ -2,7 +2,7 @@
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/crash/widget.html'),
+        template: CV.T('/crashes/templates/dashboard-widget/widget.html'),
         props: {
             data: {
                 type: Object,
@@ -71,7 +71,7 @@
             {
                 namespace: "crash",
                 mapping: {
-                    "drawer": "/dashboards/templates/widgets/crash/drawer.html"
+                    "drawer": "/crashes/templates/dashboard-widget/drawer.html"
                 }
             }
         ],
