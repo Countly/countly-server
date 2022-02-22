@@ -2,7 +2,7 @@
 	<cly-header>
       <template v-slot:header-left>
         <h2>{{ i18n('feedback.ratings') }} </h2>
-        &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+        &nbsp; <cly-tooltip-icon :tooltip="i18n('ratings.tooltip.ratings')" icon="ion-help-circled"></cly-tooltip-icon>
       </template>
 			<template v-slot:header-right></template>
 	</cly-header>
@@ -30,9 +30,9 @@
     </div>
     <cly-section>
       <cly-metric-cards :multiline="false">
-        <cly-metric-card :number="count" :label="i18n('feedback.total-ratings')" :tooltip="i18n('feedback.total-ratings')">
+        <cly-metric-card :number="count" :label="i18n('feedback.total-ratings')" :tooltip="i18n('ratings.tooltip.total-ratings')">
         </cly-metric-card>
-        <cly-metric-card :number="avg" :label="i18n('feedback.average-ratings-score')" :tooltip="i18n('feedback.average-ratings-score')">
+        <cly-metric-card :number="avg" :label="i18n('feedback.average-ratings-score')" :tooltip="i18n('ratings.tooltip.average-ratings-score')">
         </cly-metric-card>
       </cly-metric-cards>
     </cly-section>
