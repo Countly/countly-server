@@ -792,7 +792,6 @@
         }
     });
 
-
     var PeriodComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/period.html'),
         props: {
@@ -902,40 +901,28 @@
         }
     });
 
-
-    var AppPeriodLineComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/helpers/widget/appPeriod.html'),
+    var WidgetAppsComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/widget/apps.html'),
         props: {
-            widgetData: {type: Object, required: true},
-            showApps: {type: Boolean, required: false, default: true},
-            showPeriod: {type: Boolean, required: false, default: true}
-        },
-        data: function() {
-            return {};
+            apps: {
+                type: Array,
+                required: true
+            }
         },
         computed: {
-            apps: function() {
-                this.widgetData = this.widgetData || {};
-                this.widgetData.apps = this.widgetData.apps || [];
+            allApps: function() {
                 var appData = [];
-                for (var i = 0; i < this.widgetData.apps.length; i++) {
-                    var appId = this.widgetData.apps[i];
+
+                for (var i = 0; i < this.apps.length; i++) {
+                    var appId = this.apps[i];
                     appData.push({
                         id: appId,
                         name: this.getAppName(appId),
                         image: 'background-image: url("' + this.getAppLogo(appId) + '")'
                     });
                 }
+
                 return appData;
-            },
-            period: function() {
-                this.widgetData = this.widgetData || {};
-                if (this.widgetData.custom_period) {
-                    return this.formatPeriodString(this.widgetData.custom_period);
-                }
-                else {
-                    return this.formatPeriodString(countlyCommon.getPeriod());
-                }
             }
         },
         methods: {
@@ -954,11 +941,32 @@
                 else {
                     return 'appimages/' + appId + '.png';
                 }
-            },
+            }
+        }
+    });
+
+    var WidgetPeriodComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/widget/period.html'),
+        props: {
+            custom_period: {
+                type: String,
+            }
+        },
+        computed: {
+            period: function() {
+                if (this.custom_period) {
+                    return this.formatPeriodString(this.custom_period);
+                }
+                else {
+                    return this.formatPeriodString(countlyCommon.getPeriod());
+                }
+            }
+        },
+        methods: {
             formatPeriodString: function(period) {
                 if (Array.isArray(period)) {
                     var effectiveRange = [moment(period[0]), moment(period[1])];
-                    if (effectiveRange[0].isSame(effectiveRange[1])) { // single point
+                    if (effectiveRange[0].isSame(effectiveRange[1])) {
                         return effectiveRange[0].format("lll");
                     }
                     else if (effectiveRange[1] - effectiveRange[0] > 86400000) {
@@ -976,31 +984,33 @@
         }
     });
 
-    // var AppsMixin = {
-    //     methods: {
-    //         getAppname: function(appId) {
-    //             var selected = this.$store.getters["countlyDashboards/selected"];
-    //             var dash = selected.data || {};
+    var PrimaryLegend = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/widget/primary-legend.html'),
+        props: {
+            apps: {
+                type: Array,
+                default: function() {
+                    return [];
+                },
+                required: true
+            },
+            custom_period: {
+                type: String,
+            }
+        },
+        computed: {
+            app: function() {
+                /**
+                 * Primary legend only shows one app
+                 * and selected period range
+                 */
 
-    //             var dashboardApps = dash.apps || [];
+                var singleApp = this.apps[0];
 
-    //             var appName = "Unknown";
-
-    //             var appObj = dashboardApps.find(function(app) {
-    //                 return app._id === appId;
-    //             });
-
-    //             if (appObj && appObj.name) {
-    //                 appName = appObj.name;
-    //             }
-    //             else if (countlyGlobal.apps[appId]) {
-    //                 appName = countlyGlobal.apps[appId].name;
-    //             }
-
-    //             return appName;
-    //         }
-    //     }
-    // };
+                return [singleApp];
+            }
+        }
+    });
 
     /**
      * DRAWER HELPERS REGISTRATION
@@ -1020,6 +1030,8 @@
      * WIDGET HELPERS REGISTRATION
      */
     Vue.component("clyd-bucket", BucketComponent);
-    Vue.component("clyd-app-period", AppPeriodLineComponent);
+    Vue.component("clyd-legend-app", WidgetAppsComponent);
+    Vue.component("clyd-legend-period", WidgetPeriodComponent);
+    Vue.component("clyd-primary-legend", PrimaryLegend);
 
 })();

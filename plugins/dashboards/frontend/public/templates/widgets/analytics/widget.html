@@ -1,5 +1,5 @@
-<div v-bind:class="[componentId]">
-    <div class="bu-level bu-level bu-pt-1 bu-pl-2 bu-pr-2">
+<div v-bind:class="[componentId, 'clyd-widget']">
+    <div class="bu-level">
         <div class="bu-level-left">
             <div class="bu-level-item">
                 <h4>{{title}} <span v-if="metricLabels" class="dashboard-widget-metric-labels text-small"><span class="bu-ml-1 bu-p-1" v-for="(item, idx) in metricLabels">{{item}}</span></span></h4>
@@ -12,8 +12,10 @@
             <slot name="action"></slot>
         </div>
     </div>
-	<clyd-app-period :widgetData="{apps:data.apps,custom_period:data.custom_period}"></clyd-app-period>
-	<div class="dashboard-widget-graph bu-pt-4" :class="'dashboard-widget-'+data.visualization" >
+
+    <clyd-primary-legend :apps="data.apps" :custom_period="data.custom_period"></clyd-primary-legend>
+
+	<div class="clyd-widget__content" :class="'clyd-widget__content--vis-' + data.visualization">
 		<cly-chart-time v-if="data.visualization === 'time-series'" :showZoom="false" :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}">
 		</cly-chart-time>
 		<div v-else-if="data.visualization === 'number'" >
@@ -43,7 +45,5 @@
 		</cly-datatable-n>
 		<cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}"></cly-chart-bar>
 		<cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
-	</div>
-	<div class="dashboard-widget-footer">
 	</div>
 </div>
