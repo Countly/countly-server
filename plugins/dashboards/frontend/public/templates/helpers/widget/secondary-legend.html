@@ -1,0 +1,13 @@
+<div class="clyd-legend-app bu-is-flex bu-is-flex-wrap-wrap">
+    <div v-for="(item, idx) in allApps" :key="item.id" :class="['bu-is-flex bu-mt-2', {'bu-mr-2': (allApps.length > 1) ? true : false}]">
+        <div :style="item.image" class="clyd-legend-app__logo"></div>
+
+        <span class="bu-ml-1 text-small">{{item.name}}</span>
+
+        <!-- Adding 26 at the end of the background color because it chagnes background opacity to 15% -->
+        <div v-for="(label, i) in item.labels" class="bu-is-flex bu-is-align-items-center bu-ml-2 bu-pr-2" :style="{backgroundColor: label.color + '26', borderRadius: '4px'}">
+            <i class="fas fa-circle bu-mx-2" :style="{fontSize: '6px', color: label.color}"></i>
+            <span class="text-small has-ellipsis">{{label.label}}</span>
+        </div>
+    </div>
+</div>

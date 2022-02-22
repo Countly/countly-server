@@ -1,14 +1,14 @@
-<div v-bind:class="[componentId]" class="notes-widget">
+<div v-bind:class="[componentId, 'clyd-widget']">
     <div class="bu-level">
 		<div class="bu-level-left"></div>
         <div class="bu-level-right">
             <slot name="action"></slot>
         </div>
     </div>
-	<div class="dashboard-widget-graph notes-widget-graph"  >
-		<div>
-			<div class="bu-pl-2 bu-pr-2" :style="widgetStyling">{{widgetText}}</div>
-			<p v-if="mylink" :style="linkStyling" class="bu-p-2"><a  class="bu-pt-4" target="_blank" :href="mylink.link">{{mylink.text}}</a></p>
-		</div>
+	<div class="clyd-widget__content">
+        <div style="width: 100%; height: 100%;" class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center">
+            <div class="bu-pl-2 bu-pr-2" :style="widgetStyling">{{widgetText}}</div>
+            <p v-if="mylink" :style="linkStyling" class="bu-p-2"><a class="bu-pt-4 bu-is-clickable color-dark-blue-100" target="_blank" :href="mylink.link">{{mylink.text}}</a></p>
+        </div>
 	</div>
 </div>

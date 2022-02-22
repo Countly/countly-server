@@ -1,7 +1,0 @@
-<div class="bu-pl-2 bu-pr-2">
-	<div class="bu-level-left" style="flex-wrap:wrap;">
-		<div class="bu-level-left bu-pt-1 bu-pb-1" v-if="showApps" v-for="(item, idx) in apps"><div :style="item.image" class="app-logo bu-pr-1"></div><span class="bu-pr-2 text-small">{{item.name}}</span></div>
-		<i v-if="showPeriod && showApps" class="fas fa-circle color-cool-gray-50 bu-px-0 bu-pt-1 bu-pb-1" style="font-size: 4px; "></i>
-		<span v-if="showPeriod" class="text-small bu-pt-1 bu-pb-1 bu-pl-2">{{period}}</span>
-	</div>
-</div>
