@@ -137,7 +137,12 @@ function upgradeDrillReport(widget, report_id, countlyDb, countlyDrill, done) {
                     "_id": res._id,
                     "period": !report.meta.byVal
                 }}}, function(){
-                    done();
+                     countlyDb.collection("widgets").updateOne({_id: widget._id}, {$push: {"drill_query": {
+                        "_id": res._id,
+                        "period": !report.meta.byVal
+                    }}}, function(){
+                        done();
+                    });
                 });
             });
         });
