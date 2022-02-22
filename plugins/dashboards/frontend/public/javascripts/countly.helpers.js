@@ -907,18 +907,26 @@
             apps: {
                 type: Array,
                 required: true
+            },
+            labels: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
             }
         },
         computed: {
             allApps: function() {
                 var appData = [];
+                var labels = this.labels;
 
                 for (var i = 0; i < this.apps.length; i++) {
                     var appId = this.apps[i];
                     appData.push({
                         id: appId,
                         name: this.getAppName(appId),
-                        image: 'background-image: url("' + this.getAppLogo(appId) + '")'
+                        image: 'background-image: url("' + this.getAppLogo(appId) + '")',
+                        labels: labels[appId] || []
                     });
                 }
 
@@ -984,7 +992,11 @@
         }
     });
 
-    var PrimaryLegend = countlyVue.views.create({
+    /**
+     * Primary legend  is shown before the widget content in the beginning.
+     * It generally contains period.
+     */
+    var PrimaryWidgetLegend = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/widget/primary-legend.html'),
         props: {
             apps: {
@@ -1013,6 +1025,29 @@
     });
 
     /**
+     * Secondary legend is generally shown after the widget content at the end of the widget.
+     * It does not show any period.
+     */
+    var SecondaryWidgetLegend = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/widget/secondary-legend.html'),
+        props: {
+            apps: {
+                type: Array,
+                default: function() {
+                    return [];
+                },
+                required: true
+            },
+            labels: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+            }
+        }
+    });
+
+    /**
      * DRAWER HELPERS REGISTRATION
      */
     Vue.component("clyd-metric", MetricComponent);
@@ -1032,6 +1067,7 @@
     Vue.component("clyd-bucket", BucketComponent);
     Vue.component("clyd-legend-app", WidgetAppsComponent);
     Vue.component("clyd-legend-period", WidgetPeriodComponent);
-    Vue.component("clyd-primary-legend", PrimaryLegend);
+    Vue.component("clyd-primary-legend", PrimaryWidgetLegend);
+    Vue.component("clyd-secondary-legend", SecondaryWidgetLegend);
 
 })();

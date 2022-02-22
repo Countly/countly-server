@@ -13,7 +13,7 @@
         </div>
     </div>
 
-    <clyd-primary-legend :apps="data.apps" :custom_period="data.custom_period"></clyd-primary-legend>
+    <clyd-primary-legend v-if="data.visualization !== 'time-series'" :apps="data.apps" :custom_period="data.custom_period"></clyd-primary-legend>
 
 	<div class="clyd-widget__content" :class="'clyd-widget__content--vis-' + data.visualization">
 		<cly-chart-time v-if="data.visualization === 'time-series'" :showZoom="false" :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}">
@@ -46,4 +46,7 @@
 		<cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}"></cly-chart-bar>
 		<cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
 	</div>
+
+    <clyd-secondary-legend :apps="data.apps" :labels="legendLabels" v-if="data.visualization === 'time-series'"></clyd-secondary-legend>
+
 </div>
