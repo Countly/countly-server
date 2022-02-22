@@ -276,7 +276,11 @@ var GridComponent = countlyVue.views.create({
             }
         },
         stackedBarOptions: function() {
-            return this.calculateStackedBarOptionsFromWidget(this.data);
+            var data = this.timelineGraph;
+            for (var k = 0; k < data.lineOptions.series.length; k++) {
+                data.lineOptions.series[k].stack = "A";
+            }
+            return data.lineOptions;
         },
         number: function() {
             return this.calculateNumberFromWidget(this.data);
@@ -315,7 +319,7 @@ var DrawerComponent = countlyVue.views.create({
             var visualization = this.scope.editedObject.visualization;
 
             if (appCount === 'single') {
-                if (visualization === 'table' || visualization === 'time-series') {
+                if (visualization === 'bar-chart' || visualization === 'time-series') {
                     multiple = true;
                 }
             }
