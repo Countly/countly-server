@@ -1,4 +1,4 @@
-/* global countlyView, countlyCommon, app, CountlyHelpers, countlyGlobal, Handlebars, countlyTaskManager, countlyVersionHistoryManager, DownloadView, VersionHistoryView, GraphNotesView, Backbone, moment, jQuery, $*/
+/* global countlyView, countlyCommon, countlyAuth, app, CountlyHelpers, countlyGlobal, Handlebars, countlyTaskManager, countlyVersionHistoryManager, DownloadView, VersionHistoryView, GraphNotesView, Backbone, moment, jQuery, $*/
 
 
 window.GraphNotesView = countlyView.extend({
