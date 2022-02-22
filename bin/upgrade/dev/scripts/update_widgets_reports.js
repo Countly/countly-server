@@ -139,16 +139,21 @@ function upgradeDrillReport(widget, report_id, countlyDb, countlyDrill, done) {
         }, {ignore_errors: [11000]}, function(insertError, insertionRes) {
             console.log("Inserting drill query", insertionRes && insertionRes.result);
             countlyDrill.collection("drill_bookmarks").findOne({sign: sign}, function(err, res){
+                var queryConfig = {
+                    "_id": res._id + "",
+                    "period": report.period_desc || true
+                };
+                var queryConfigSign = hash(queryConfig, {
+                    unorderedArrays: true,
+                    unorderedObjects: true
+                });
                 countlyDb.collection("long_tasks").updateOne({_id: report._id}, {$set: {"linked_to": {
                     "_issuer": "wqm:drill",
-                    "_sign": sign,
-                    "_id": res._id,
+                    "_sign": queryConfigSign,
+                    "_id": res._id + "",
                     "period": report.period_desc || true
                 }}}, function(){
-                     countlyDb.collection("widgets").updateOne({_id: widget._id}, {$addToSet: {"drill_query": {
-                        "_id": res._id,
-                        "period": report.period_desc || true
-                    }}}, function(){
+                     countlyDb.collection("widgets").updateOne({_id: widget._id}, {$addToSet: {"drill_query": queryConfig}}, function(){
                         done();
                     });
                 });
@@ -217,18 +222,23 @@ function upgradeFormulaReport(widget, report_id, countlyDb, countlyDrill, done) 
                     if (res && res._id) {
                         delete report.request.json.formula;
                         report.request.json.metric_id = res._id;
+                        var queryConfig = {
+                            "_id": res._id + "",
+                            "period": report.request.json.period,
+                            "bucket": report.request.json.bucket,
+                            "previous": report.request.json.previous
+                        };
+                        var queryConfigSign = hash(queryConfig, {
+                            unorderedArrays: true,
+                            unorderedObjects: true
+                        });
                         countlyDb.collection("long_tasks").updateOne({_id: report._id}, {$set: {"linked_to": {
                             "_issuer": "wqm:formulas",
-                            "_sign": formula_hash,
-                            "_id": res._id,
+                            "_sign": queryConfigSign,
+                            "_id": res._id + "",
                             "period": report.request.json.period
                         }, request: JSON.stringify(report.request)}}, function(){
-                            countlyDb.collection("widgets").updateOne({_id: widget._id}, {$addToSet: {"cmetric_refs": {
-                                "_id": res._id,
-                                "period": report.request.json.period,
-                                "bucket": report.request.json.bucket,
-                                "previous": report.request.json.previous
-                            }}}, function(){
+                            countlyDb.collection("widgets").updateOne({_id: widget._id}, {$addToSet: {"cmetric_refs": queryConfig}}, function(){
                                 done();
                             });
                         });
