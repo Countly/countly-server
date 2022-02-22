@@ -42,7 +42,7 @@
                 </template>
             </el-table-column> 
 
-            <el-table-column sortable="true" min-width="270" >
+            <el-table-column min-width="270" >
             <template v-slot:header="scope">
                <span>{{i18n('hooks.trigger')}} <i class="el-icon-arrow-right el-icon-right"></i> {{ i18n('hooks.effects') }}</span>
             </template>
@@ -69,7 +69,7 @@
                     <div class="is-last-col">
                         <div >
                             <div class="is-created-by-col">
-                                {{scope.row.createdByUser}}
+                                {{scope.row.createdByUser || "-"}}
                              </div>
                              <div class="is-created-by-desc-col">
                                  {{ scope.row.created_at_string }}
