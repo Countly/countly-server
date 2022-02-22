@@ -202,7 +202,6 @@
                     return ['time-series'];
                 }
                 else {
-
                     return ['table', 'time-series', 'number', 'bar-chart'];
                 }
             },
