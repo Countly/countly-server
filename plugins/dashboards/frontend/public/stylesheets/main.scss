@@ -85,6 +85,14 @@
         }
     }
 
+    .clyd-legend-period {
+        &--custom {
+            background-color: map.get(c.$colors, "red-10");
+            padding: 0 6px;
+            border-radius: 4px;
+        }
+    }
+
     .clyd-widget {
         display: flex;
         flex-direction: column;
