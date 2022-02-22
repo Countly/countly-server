@@ -27,16 +27,14 @@
                 var autoTitle = "Analytics";
                 return this.data.title || autoTitle;
             },
-            period: function() {
-                if (this.data.custom_period) {
-                    return this.data.custom_period;
-                }
-                else {
-                    return "";
-                }
-            },
             showBuckets: function() {
                 return false;
+            },
+            getTableData: function() {
+                return this.calculateTableDataFromWidget(this.data);
+            },
+            tableStructure: function() {
+                return this.calculateTableColsFromWidget(this.data, this.map);
             },
             timelineGraph: function() {
                 this.data = this.data || {};
@@ -88,7 +86,7 @@
                 }
             },
             stackedBarOptions: function() {
-                return this.calculateStackedBarOptionsFromWidget(this.data);
+                return this.calculateStackedBarOptionsFromWidget(this.data, this.map);
             },
             number: function() {
                 return this.calculateNumberFromWidget(this.data);

@@ -926,7 +926,7 @@
         template: CV.T('/dashboards/templates/helpers/widget/period.html'),
         props: {
             custom_period: {
-                type: String,
+                type: [Array, String],
             }
         },
         computed: {
