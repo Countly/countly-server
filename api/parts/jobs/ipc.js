@@ -2,7 +2,7 @@
 
 var EventEmitter = require('events'),
     cluster = require('cluster'),
-    log = require('../../utils/log.js')('jobs:ipc:' + process.pid);
+    log = require('../../utils/log.js')('jobs:ipc');
 
 var CMD = {
     RUN: 'job:run',
@@ -264,11 +264,11 @@ class CentralMaster extends CentralSuper {
         this.workers = {}; // map of pid: worker
         this.listeners = {}; // map of pid: listener
         cluster.on('online', (worker) => {
-            log.i('Worker started: %d', worker.process.pid);
+            log.i('New worker %d is online', worker.process.pid);
             this.workers[worker.process.pid] = worker;
             worker.on('message', this.listeners[worker.process.pid] = m => {
                 if (this.isForMe(m)) {
-                    // log.d('handling', m);
+                    log.d('[%d]: Got message in CentralMaster from %d: %j', process.pid, worker.process.pid, m);
                     let data = m[this.name];
 
                     Promise.resolve(this.handler(data, m.reply, worker.process.pid)).then(res => {
@@ -351,7 +351,7 @@ class CentralWorker extends CentralSuper {
     **/
     attach() {
         this.onMessageListener = m => {
-            // log.d('[%d]: Got message in CentralWorker: %j', process.pid, m);
+            log.d('[%d]: Got message in CentralWorker: %j', process.pid, m);
             if (this.isForMe(m)) {
                 // log.d('handling', m);
 

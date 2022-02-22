@@ -1,12 +1,13 @@
 const { Duplex } = require('stream'),
     Measurement = require('./measure'),
-    { getHasher, OutputType, HashType, hashAsBigInt} = require('bigint-hash'),
+    { XXHash64 } = require('xxhash-addon'),
+    // { getHasher, OutputType, HashType, hashAsBigInt} = require('bigint-hash'),
     { ERROR, PushError, SendError, ConnectionError, ValidationError, Message} = require('./data'),
     { FRAME } = require('./proto');
     // ,
     // log = require('../../../../api/utils/log.js')('push:send:base');
 
-/* global BigInt */
+const xx64 = new XXHash64();
 
 /**
  * Waits for given time
@@ -265,30 +266,30 @@ class Base extends Duplex {
     }
 }
 
-const bigintBuffer = Buffer.alloc(8);
-
 /**
  * Hash 
  * 
  * @param {any} data data to hash
- * @param {BigInt} seed optional BigInt for chaining multiple hashes
- * @returns {BigInt} 64-bit hash code
+ * @returns {String} 64-bit hash hex string
  */
-function hash(data, seed) {
-    if (seed) {
-        let bufhash = getHasher(HashType.xxHash64);
-        bigintBuffer.writeBigUInt64BE(seed);
-        bufhash.update(bigintBuffer);
-        // eslint-disable-next-line no-unused-vars
-        for (let _ignored in data) {
-            bufhash.update(Buffer.from(JSON.stringify(data), 'utf-8'));
-            return bufhash.digest(OutputType.BigInt);
-        }
-        return BigInt(0);
-    }
-    else {
-        return hashAsBigInt(HashType.xxHash64, Buffer.from(JSON.stringify(data), 'utf-8'));
-    }
+function hash(data) {
+    xx64.reset();
+    xx64.update(Buffer.from(JSON.stringify(data), 'utf-8'));
+    return xx64.digest().toString('hex');
+    // if (seed) {
+    //     let bufhash = getHasher(HashType.xxHash64);
+    //     bigintBuffer.writeBigUInt64BE(seed);
+    //     bufhash.update(bigintBuffer);
+    //     // eslint-disable-next-line no-unused-vars
+    //     for (let _ignored in data) {
+    //         bufhash.update(Buffer.from(JSON.stringify(data), 'utf-8'));
+    //         return bufhash.digest(OutputType.BigInt);
+    //     }
+    //     return BigInt(0);
+    // }
+    // else {
+    //     return hashAsBigInt(HashType.xxHash64, Buffer.from(JSON.stringify(data), 'utf-8'));
+    // }
 }
 
 module.exports = { Base, util: {hash, wait}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };

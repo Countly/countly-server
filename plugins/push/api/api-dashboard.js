@@ -4,6 +4,17 @@ const common = require('../../../api/utils/common'),
     log = common.log('push:api:dashboard'),
     { platforms, fields, FIELDS_TITLES, PLATFORMS_TITLES } = require('./send');
 
+/**
+ * Add chart data from from to to
+ * @param {object} from from obj
+ * @param {object} to to obj
+ */
+function add(from, to) {
+    from.data.forEach((n, i) => {
+        to.data[i] += n;
+    });
+}
+
 module.exports.dashboard = async function(params) {
     let app_id = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
@@ -235,6 +246,19 @@ module.exports.dashboard = async function(params) {
                     }
                 });
             });
+
+            if (ret.platforms.h) {
+                add(ret.platforms.h.weekly, ret.platforms.a.weekly);
+                add(ret.platforms.h.monthly, ret.platforms.a.monthly);
+                add(retAuto.platforms.h.daily, retAuto.platforms.a.daily);
+                add(retTx.platforms.h.daily, retTx.platforms.a.daily);
+                delete ret.platforms.h;
+                delete retAuto.platforms.h;
+                delete retTx.platforms.h;
+            }
+            delete ret.platforms.t;
+            delete retAuto.platforms.t;
+            delete retTx.platforms.t;
 
             return {
                 m: ret,

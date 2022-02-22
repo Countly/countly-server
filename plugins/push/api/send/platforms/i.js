@@ -399,7 +399,7 @@ const map = {
      */
     buttons: function(t, buttons) {
         if (buttons) {
-            t.result.c.b = buttons;
+            t.result.c.b = buttons.map(b => ({t: b.title, l: b.link}));
         }
     },
 
