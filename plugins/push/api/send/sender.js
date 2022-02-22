@@ -22,7 +22,7 @@ class Sender {
      * @returns {Promise} - resolved or rejected
      */
     async prepare() {
-        this.log.d('preparing sender');
+        // this.log.d('preparing sender');
 
         // loaded configuration
         this.cfg = {
@@ -78,7 +78,7 @@ class Sender {
             }
         }
 
-        this.log.d('sender prepared');
+        // this.log.d('sender prepared');
 
         // this.msgs = {}; // {mid: message}
         // this.msgsPerApp = {}; // {aid: [message, ...]}

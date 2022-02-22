@@ -138,7 +138,7 @@ class Creds extends Mongoable {
             data.key = c.key;
         }
         else if (c.type === 'hms') {
-            data.key = c.key;
+            data.app = c.key;
             data.secret = c.secret;
         }
         else {
