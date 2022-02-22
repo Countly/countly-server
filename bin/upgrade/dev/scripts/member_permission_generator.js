@@ -172,6 +172,7 @@ pluginManager.dbConnection().then((countlyDb) => {
                         for (i = 0; i < member.app_restrict[app].length; i++) {
                             if (restrictMap[member.app_restrict[app][i]]) {
                                 restricted = true;
+                                specificRestrictions = true;
                                 memberPermission.r[app].allowed[restrictMap[member.app_restrict[app][i]]] = false;
                             }
                         }
