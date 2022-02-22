@@ -976,7 +976,7 @@
                 }
             },
             custom_period: {
-                type: String,
+                type: [Array, String],
             }
         },
         computed: {
