@@ -29,20 +29,23 @@
 				<span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>
 			</p>
 		</div>
-		<cly-datatable-n v-else-if="data.visualization === 'table'" :rows="getTableData" :hideTop="true"  >
-			<template v-slot="scope">	
-				<el-table-column  v-for="(item, index) in tableStructure" :sortable="false" :prop="item.prop" :label="item.title">
-					<template slot-scope="scope">
-						<span v-if="item.type === 'number'">
-							{{formatNumber(scope.row[item.prop] || 0)}}
-						</span>
-						<span v-else>
-							{{scope.row[item.prop]}}
-						</span>
-					</template>
-				</el-table-column>
-			</template>
-		</cly-datatable-n>
+        <div v-else-if="data.visualization === 'table'" style="width: 100%;">
+            <cly-datatable-n v-if="getTableData.length" :rows="getTableData" :hideTop="true" style="width: 100%;">
+                <template v-slot="scope">
+                    <el-table-column  v-for="(item, index) in tableStructure" :key="index" :sortable="false" :prop="item.prop" :label="item.title">
+                        <template slot-scope="scope">
+                            <span v-if="item.type === 'number'">
+                                {{formatNumber(scope.row[item.prop] || 0)}}
+                            </span>
+                            <span v-else>
+                                {{scope.row[item.prop]}}
+                            </span>
+                        </template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+            <cly-blank :classes="{'bu-p-0': true}" v-else></cly-blank>
+        </div>
 		<cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}"></cly-chart-bar>
 		<cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
 	</div>
