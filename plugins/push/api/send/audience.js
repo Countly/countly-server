@@ -1,5 +1,6 @@
 const common = require('../../../../api/utils/common'),
     { PushError, ERROR } = require('./data/error'),
+    { util } = require('./std'),
     { Message, State, TriggerKind, Result, dbext } = require('./data'),
     { DEFAULTS } = require('./data/const'),
     { PLATFORM } = require('./platforms'),
@@ -644,6 +645,8 @@ class Pusher extends PusherPopper {
                 }
 
                 rp.sub(la).total++;
+
+                note.h = util.hash(note.pr);
 
                 if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);

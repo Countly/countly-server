@@ -4,6 +4,7 @@ const { ConnectionError, PushError, SendError, ERROR, Creds, Template } = requir
     { Agent } = require('https'),
     FORGE = require('node-forge'),
     logger = require('../../../../../api/utils/log'),
+    jwt = require('jsonwebtoken'),
     { threadId } = require('worker_threads'),
     HTTP2 = require('http2');
 
@@ -321,6 +322,25 @@ const CREDS = {
             return json;
         }
 
+        /**
+         * Generate new JWT token
+         */
+        get bearer() {
+            if (!this._bearer) {
+                let token = jwt.sign({
+                    iss: this._data.team,
+                    iat: Math.floor(Date.now() / 1000)
+                }, FORGE.util.decode64(this._data.key), {
+                    algorithm: 'ES256',
+                    header: {
+                        alg: 'ES256',
+                        kid: this._data.keyid
+                    }
+                });
+                this._bearer = `bearer ${token}`;
+            }
+            return this._bearer;
+        }
     }
 };
 
@@ -518,11 +538,6 @@ class APN extends Base {
             this.headersSecond[':path'] = '/3/device/' + token;
             return this.headersSecond;
         };
-        this.headersSecondWithTokenAndJWT = (token, jwt) => {
-            this.headersSecond[':path'] = '/3/device/' + token;
-            this.headersSecond.authentication = jwt;
-            return this.headersSecond;
-        };
 
         this.agent = options.proxy ? new ProxyAgent(options) : new Agent();
         this.agent.maxSockets = 1;
@@ -531,6 +546,10 @@ class APN extends Base {
         };
         if (this.creds instanceof CREDS.apn_universal) {
             Object.assign(this.sessionOptions, this.creds.tls);
+        }
+        if (this.creds instanceof CREDS.apn_token) {
+            this.headersFirst.authorization = this.creds.bearer;
+            this.headersSecond.authorization = this.creds.bearer;
         }
     }
 
@@ -612,7 +631,7 @@ class APN extends Base {
                 }
 
                 let content = this.template(p.m).compile(p),
-                    stream = this.session.request(this.creds instanceof CREDS.apn_token ? this.headersSecondWithTokenAndJWT(p.t, this.jwt) : this.headersSecondWithToken(p.t)),
+                    stream = this.session.request(this.headersSecondWithToken(p.t)),
                     status,
                     data = '';
                 stream.on('error', err => {
