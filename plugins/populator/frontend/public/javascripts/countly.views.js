@@ -281,8 +281,10 @@
                 app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.plugin-title", priority: 30, classes: "populator-menu"});
             }
         }
-
-        app.addPageScript("/manage/export/export-features", function() {
+    });
+    countlyVue.container.registerMixin("/manage/export/export-features", {
+        beforeCreate: function() {
+            var self = this;
             countlyPopulator.getTemplates(function(templates) {
                 var templateList = [];
                 templates.forEach(function(template) {
@@ -293,17 +295,15 @@
                         });
                     }
                 });
-
                 var selectItem = {
                     id: "populator",
                     name: "Populator Templates",
                     children: templateList
                 };
-
                 if (templateList.length) {
-                    app.exportView.addSelectTable(selectItem);
+                    self.$store.dispatch("countlyConfigTransfer/addConfigurations", selectItem);
                 }
             });
-        });
+        }
     });
 })();

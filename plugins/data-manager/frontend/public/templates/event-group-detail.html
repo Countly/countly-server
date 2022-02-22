@@ -68,7 +68,7 @@
     :cancelButtonLabel="i18n('common.no-dont-delete')" 
     title="Delete Event Group" >
         <template slot-scope="scope">
-            {{ i8n('data-manager.delete-event-group-permanently') }}<br/> 
+            {{ i18n('data-manager.delete-event-group-permanently') }}<br/> 
             <small class="color-red-100"> {{i18n('data-manager.delete-event-warning')}} </small>
             <ul>
              <li v-if="deleteElement">{{deleteElement.name}}</li>

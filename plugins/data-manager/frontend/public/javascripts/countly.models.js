@@ -1,4 +1,4 @@
-/*global countlyVue countlyCommon CV countlyGlobal CountlyHelpers*/
+/*global countlyVue countlyCommon CV countlyGlobal CountlyHelpers countlyEventsOverview*/
 
 (function(countlyDataManager) {
 
@@ -184,6 +184,8 @@
                 eventGroups: [],
                 categories: [],
                 categoriesMap: [],
+                isEventCountAvailable: false,
+                eventCount: {}
             }, EXTENDED_STATE);
         };
 
@@ -205,6 +207,12 @@
             },
             isLoading: function(state) {
                 return state.isLoading;
+            },
+            isEventCountAvailable: function(state) {
+                return state.isEventCountAvailable;
+            },
+            eventCount: function(state) {
+                return state.eventCount;
             }
         };
 
@@ -226,6 +234,12 @@
             },
             setIsLoading: function(state, val) {
                 state.isLoading = val;
+            },
+            setIsEventCountAvailable: function(state, val) {
+                state.isEventCountAvailable = val;
+            },
+            setEventCount: function(state, val) {
+                state.eventCount = val;
             }
         };
 
@@ -245,6 +259,18 @@
                         eventsMap[event.key] = event;
                     });
                     context.commit('setEventsMap', eventsMap);
+                    if (countlyEventsOverview && countlyEventsOverview.service) {
+                        countlyEventsOverview.service.fetchEvents().then(function(topEventData) {
+                            if (Array.isArray(topEventData.data)) {
+                                var countMap = {};
+                                topEventData.data.forEach(function(event) {
+                                    countMap[event.name] = event.count;
+                                });
+                                context.commit('setEventCount', countMap);
+                                context.commit('setIsEventCountAvailable', true);
+                            }
+                        });
+                    }
                     setTimeout(function() {
                         context.commit('setIsLoading', false);
                     }, 0);

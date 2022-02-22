@@ -2,7 +2,6 @@
   <div class="cly-vue-compare-events__header bu-is-flex">
     <h2> {{i18n('compare.events.title')}} 
     </h2>
-    <cly-tooltip-icon class="cly-vue-compare-events__header--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
   </div>
   <cly-main>
     <div class="bu-mb-4 cly-vue-compare-events">
@@ -10,6 +9,7 @@
       style="width:620px"
       v-model="value"
       multiple
+      popper-class="cly-vue-compare-apps__compare__width"
       filterable
       default-first-option
       :multiple-limit=maxLimit

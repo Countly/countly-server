@@ -31,8 +31,8 @@
     var transactionalPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
 
     var messageTypeFilterOptions = [
-        {label: "Content message", value: countlyPushNotification.service.MessageTypeEnum.CONTENT},
-        {label: "Silent message", value: countlyPushNotification.service.MessageTypeEnum.SILENT}
+        {label: CV.i18n("push-notification.content-message"), value: countlyPushNotification.service.MessageTypeEnum.CONTENT},
+        {label: CV.i18n("push-notification.silent-message"), value: countlyPushNotification.service.MessageTypeEnum.SILENT}
     ];
 
     var InitialEnabledUsers = {
@@ -169,29 +169,29 @@
         computed: {
             saveButtonLabel: function() {
                 if (!countlyPushNotification.service.isPushNotificationApproverPluginEnabled()) {
-                    return "Save";
+                    return CV.i18n('push-notification.save');
                 }
                 if (countlyPushNotification.service.hasApproverBypassPermission()) {
-                    return "Save";
+                    return CV.i18n('push-notification.save');
                 }
-                return "Send for approval";
+                return CV.i18n('push-notification.send-for-approval');
             },
             title: function() {
                 if (this.type === countlyPushNotification.service.TypeEnum.ONE_TIME) {
-                    return "Create One-Time Push Notification";
+                    return CV.i18n('push-notification.create-one-time-notification');
                 }
                 if (this.type === countlyPushNotification.service.TypeEnum.AUTOMATIC) {
-                    return "Create Automated Push Notification";
+                    return CV.i18n('push-notification.create-automated-notification');
                 }
                 if (this.type === countlyPushNotification.service.TypeEnum.TRANSACTIONAL) {
-                    return "Create Transactional Push Notification";
+                    return CV.i18n('push-notification.create-transactional-notification');
                 }
             },
             addButtonLabel: function() {
                 if (this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.length === 0) {
-                    return "+Add First button";
+                    return CV.i18n('push-notification.add-first-button');
                 }
-                return "+Add Second button";
+                return CV.i18n('push-notification.add-second-button');
             },
             isDraftButtonEnabled: function() {
                 return this.userCommand === this.UserCommandEnum.EDIT_DRAFT ||
@@ -316,10 +316,10 @@
             setUserPropertyOptions: function(propertyList) {
                 var allPropertyOptions = [];
                 if (this.type === this.TypeEnum.AUTOMATIC && this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
-                    allPropertyOptions.push({label: "Event Properties", name: "eventProperties", options: countlyPushNotification.helper.getEventPropertyOptions(propertyList)});
+                    allPropertyOptions.push({label: CV.i18n('push-notification.event-properties'), name: "eventProperties", options: countlyPushNotification.helper.getEventPropertyOptions(propertyList)});
                 }
-                allPropertyOptions.push({label: "User Properties", name: "userProperties", options: countlyPushNotification.helper.getUserPropertyOptions(propertyList)});
-                allPropertyOptions.push({label: "Custom Properties", name: "customProperties", options: countlyPushNotification.helper.getCustomPropertyOptions(propertyList)});
+                allPropertyOptions.push({label: CV.i18n('push-notification.user-properties'), name: "userProperties", options: countlyPushNotification.helper.getUserPropertyOptions(propertyList)});
+                allPropertyOptions.push({label: CV.i18n('push-notification.custom-properties'), name: "customProperties", options: countlyPushNotification.helper.getCustomPropertyOptions(propertyList)});
                 this.userPropertiesOptions = allPropertyOptions;
             },
             fetchUserPropertyOptions: function() {
@@ -509,7 +509,7 @@
                 }
                 promiseMethod().then(function() {
                     self.$refs.drawer.doClose();
-                    CountlyHelpers.notify({message: "Push notification message was successfully saved."});
+                    CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-saved')});
                     self.$emit('save');
                 }).catch(function(error) {
                     console.error(error);
@@ -542,7 +542,7 @@
                 }
                 promiseMethod().then(function() {
                     done();
-                    CountlyHelpers.notify({ message: "Push notification message was successfully saved."});
+                    CountlyHelpers.notify({ message: CV.i18n('push-notification.was-successfully-saved')});
                     self.$emit('save');
                 }).catch(function(error) {
                     console.error(error);
@@ -554,7 +554,7 @@
                 var self = this;
                 this.isLoading = true;
                 this.sendToTestUsers().then(function() {
-                    CountlyHelpers.notify({message: "Push notification message was successfully sent to test users."});
+                    CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-sent-to-test-users')});
                 }).catch(function(error) {
                     console.error(error);
                     CountlyHelpers.notify({ message: error.message, type: "error"});
@@ -974,7 +974,7 @@
 
     var PushNotificationTabView = countlyVue.views.BaseView.extend({
         template: "#push-notification-tab",
-        mixins: [countlyVue.mixins.commonFormatters],
+        mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
                 platformFilters: platformFilterOptions,
@@ -1111,7 +1111,10 @@
                 else {
                     return this.selectedTransactionalPeriodFilter;
                 }
-            }
+            },
+            hasApproverPermission: function() {
+                return countlyPushNotification.service.hasApproverPermission();
+            },
         },
         methods: {
             refresh: function() {
@@ -1163,6 +1166,14 @@
                     this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
                 }
+                case this.UserCommandEnum.STOP: {
+                    this.$store.dispatch('countlyPushNotification/main/onToggle', {id: pushNotificationId, isActive: false});
+                    break;
+                }
+                case this.UserCommandEnum.START: {
+                    this.$store.dispatch('countlyPushNotification/main/onToggle', {id: pushNotificationId, isActive: true});
+                    break;
+                }
                 case this.UserCommandEnum.CREATE: {
                     this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
@@ -1173,28 +1184,49 @@
                 }
             },
             shouldShowDuplicateUserCommand: function() {
-                return true;
+                return this.canUserCreate;
             },
             shouldShowDeleteUserCommand: function() {
-                return true;
+                return this.canUserDelete;
             },
             shouldShowResendUserCommand: function(status) {
-                return status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED;
+                return (status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED) && this.canUserCreate;
             },
             shouldShowEditDraftUserCommand: function(status) {
-                return status === this.StatusEnum.DRAFT;
+                return status === this.StatusEnum.DRAFT && this.canUserUpdate;
             },
             shouldShowEditRejectUserCommand: function(status) {
-                return status === this.StatusEnum.REJECT;
+                return status === this.StatusEnum.REJECT && this.canUserUpdate;
             },
             shouldShowApproveUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowRejectUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowEditUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED;
+                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED) && this.canUserUpdate;
+            },
+            shouldShowStartUserCommand: function(status) {
+                if (this.selectedPushNotificationType === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.CREATED
+                || status === this.StatusEnum.SENT
+                || status === this.StatusEnum.STOPPED
+                || status === this.StatusEnum.FAILED;
+            },
+            shouldShowStopUserCommand: function(status) {
+                if (this.selectedPushNotificationType === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.SCHEDULED || status === this.StatusEnum.SENDING;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
@@ -1242,7 +1274,7 @@
 
     var PushNotificationView = countlyVue.views.BaseView.extend({
         template: "#push-notification",
-        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer")],
+        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer"), countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
                 pushNotificationTabs: [
@@ -1316,11 +1348,12 @@
 
     var PushNotificationDetailsView = countlyVue.views.BaseView.extend({
         template: "#push-notification-details",
-        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer")],
+        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer"), countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
                 StatusEnum: countlyPushNotification.service.StatusEnum,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                TypeEnum: countlyPushNotification.service.TypeEnum,
                 platformFilters: platformFilterOptions,
                 statusOptions: countlyPushNotification.service.statusOptions,
                 currentSummaryTab: "message",
@@ -1507,6 +1540,14 @@
                     this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
                 }
+                case this.UserCommandEnum.STOP: {
+                    this.$store.dispatch('countlyPushNotification/details/onToggle', {id: pushNotificationId, isActive: false});
+                    break;
+                }
+                case this.UserCommandEnum.START: {
+                    this.$store.dispatch('countlyPushNotification/details/onToggle', {id: pushNotificationId, isActive: true});
+                    break;
+                }
                 case this.UserCommandEnum.CREATE: {
                     this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
@@ -1517,28 +1558,49 @@
                 }
             },
             shouldShowDuplicateUserCommand: function() {
-                return true;
+                return this.canUserCreate;
             },
             shouldShowDeleteUserCommand: function() {
-                return true;
+                return this.canUserDelete;
             },
             shouldShowResendUserCommand: function(status) {
-                return status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED;
+                return (status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED) && this.canUserCreate;
             },
             shouldShowEditDraftUserCommand: function(status) {
-                return status === this.StatusEnum.DRAFT;
+                return status === this.StatusEnum.DRAFT && this.canUserUpdate;
             },
             shouldShowEditRejectUserCommand: function(status) {
-                return status === this.StatusEnum.REJECT;
+                return status === this.StatusEnum.REJECT && this.canUserUpdate;
             },
             shouldShowApproveUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowRejectUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowEditUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED;
+                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED) && this.canUserUpdate;
+            },
+            shouldShowStartUserCommand: function(status) {
+                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.CREATED
+                || status === this.StatusEnum.SENT
+                || status === this.StatusEnum.STOPPED
+                || status === this.StatusEnum.FAILED;
+            },
+            shouldShowStopUserCommand: function(status) {
+                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.SCHEDULED || status === this.StatusEnum.SENDING;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
@@ -1685,8 +1747,8 @@
                 selectedKeyToDelete: null,
                 selectedTestUsersListOption: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID,
                 testUsersListOptions: [
-                    {label: 'User ID', value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID},
-                    {label: 'Cohort', value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT}
+                    {label: CV.i18n('push-notification.user-id'), value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID},
+                    {label: CV.i18n('push-notification.cohort-name'), value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT}
                 ]
             };
         },
@@ -1832,7 +1894,7 @@
             },
             onDeleteKey: function(platformKey) {
                 this.selectedKeyToDelete = platformKey;
-                CountlyHelpers.confirm('', 'danger', this.onConfirmCallback, ['Cancel', 'I understand, delete this key'], {title: 'Delete key'});
+                CountlyHelpers.confirm('', 'danger', this.onConfirmCallback, [CV.i18n('push-notification.cancel'), CV.i18n('push-notification.i-understand-delete-key')], {title: CV.i18n('push-notification.delete-key')});
             },
             deleteAndroidKey: function() {
                 var platform = this.PlatformEnum.ANDROID;
@@ -2023,7 +2085,7 @@
                 countlyPushNotification.service.updateTestUsers(newTestUsersModel, options).
                     then(function() {
                         self.updateTestUsersAppConfig(newTestUsersModel);
-                        CountlyHelpers.notify({message: 'Test users have been successfully removed.'});
+                        CountlyHelpers.notify({message: CV.i18n('push-notification.test-users-were-successfully-removed')});
                         self.fetchTestUsers();
                     }).catch(function(error) {
                         console.error(error);
@@ -2050,7 +2112,7 @@
                     then(function() {
                         self.updateTestUsersAppConfig(editedObject);
                         done();
-                        CountlyHelpers.notify({message: 'Test users have been successfully added.'});
+                        CountlyHelpers.notify({message: CV.i18n('push-notification.test-users-were-successfully-added')});
                     }).catch(function(error) {
                         console.error(error);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
@@ -2161,7 +2223,7 @@
         data: function() {
             return {
                 command: "CREATE_PUSH_NOTIFICATION",
-                label: "Send message to users"
+                label: CV.i18n('push-notification.send-message-to-users')
             };
         },
         computed: {

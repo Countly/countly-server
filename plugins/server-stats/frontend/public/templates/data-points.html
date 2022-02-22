@@ -46,7 +46,7 @@
 						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.events-description')"></span>
 					</template>
 				</el-table-column>
-				<el-table-column min-width="150" v-if="showPushColumn" :formatter="numberFormatter" sortable="custom" prop="push" :label="i18n('push.plugin-title')"></el-table-column>
+				<el-table-column min-width="150" v-if="showPushColumn" :formatter="numberFormatter" sortable="custom" prop="push" :label="i18n('push-notification.title')"></el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.data-points')"></el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="change" :label="i18n('server-stats.datapoint-change')"></el-table-column>
 			</cly-datatable-n>

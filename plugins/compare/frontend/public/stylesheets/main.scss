@@ -38,6 +38,14 @@
 }
 
 .cly-vue-compare-apps {
+    &__compare {
+      width: 100%;
+      &__width{
+        .el-select-dropdown__item {
+          max-width: 100%;
+        }
+      }
+    }
     &__header {
         padding: 8px 24px 24px 24px;
         letter-spacing: .003em;

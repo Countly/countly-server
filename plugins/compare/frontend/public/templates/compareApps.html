@@ -4,7 +4,6 @@
     	  <template v-slot:header-bottom>  
     <h2> {{i18n('compare.apps.title')}} 
     </h2>
-    <cly-tooltip-icon class="cly-vue-compare-apps__header--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
 	</template> 
   </cly-header>
   <cly-main>
@@ -13,6 +12,7 @@
       style="width:620px"
       v-model="value"
       multiple
+      popper-class="cly-vue-compare-apps__compare__width"
       filterable
       default-first-option
       :multiple-limit=maxLimit

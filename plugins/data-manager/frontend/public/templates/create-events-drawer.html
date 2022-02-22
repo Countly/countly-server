@@ -71,21 +71,21 @@
 
                 <div class="text-big text-heading bu-mt-4 bu-pt-1">{{i18n('data-manager.events.event-properties')}}</div>
 
-                <cly-form-field class="bu-pt-0" :label="i18n('data-manager.display-name-for-count')" :subheading="i18n('data-manager.display-name-for-count-subheading')">
+                <cly-form-field class="bu-pt-0" :label="i18n('data-manager.display-name-for-count')" :optional="true" :subheading="i18n('data-manager.display-name-for-count-subheading')">
                     <el-input
                     v-model="drawerScope.editedObject.count" 
 			        :placeholder="i18n('data-manager.count')">
 			        </el-input>
                 </cly-form-field>
 
-                <cly-form-field :label="i18n('data-manager.display-name-for-sum')" :optional="true" :subheading="i18n('data-manager.display-name-for-count-sum')">
+                <cly-form-field :label="i18n('data-manager.display-name-for-sum')" :optional="true" :subheading="i18n('data-manager.display-name-for-sum')">
                     <el-input
                     v-model="drawerScope.editedObject.sum" 
                     :placeholder="i18n('data-manager.sum')">
                     </el-input>
                 </cly-form-field>
 
-                <cly-form-field :label="i18n('data-manager.display-name-for-duration')" :optional="true" :subheading="i18n('data-manager.display-name-for-count-duration')">
+                <cly-form-field :label="i18n('data-manager.display-name-for-duration')" :optional="true" :subheading="i18n('data-manager.display-name-for-duration')">
                     <el-input
                     v-model="drawerScope.editedObject.dur" 
                     :placeholder="i18n('data-manager.duration')">

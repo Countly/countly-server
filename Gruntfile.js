@@ -314,6 +314,12 @@ module.exports = function(grunt) {
         var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');
         console.log('Preparing production files for following plugins: %j', plugins);
 
+        if (plugins.indexOf('drill') !== -1 && plugins.indexOf('users') !== -1 && plugins.indexOf('push') !== -1) {
+            var index = Math.min(plugins.indexOf('drill'), plugins.indexOf('users'));
+            plugins.splice(plugins.indexOf('push'), 1);
+            plugins.splice(index, 0, "push");
+        }
+
         if (plugins.indexOf('push') !== -1) {
             if (plugins.indexOf('geo') !== -1) {
                 plugins.splice(plugins.indexOf('geo'), 1);

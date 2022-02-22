@@ -147,7 +147,7 @@ src: url('../../fonts/Oswald-700/Oswald-700.eot?#iefix') format('embedded-openty
 }
 body { background-color:#FFFFFF; font-family:inter; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 input { outline:none; }
-input[type=text], input[type=password], input[type=email] { font-size:15px; border-radius:3px; border:none; padding:10px; color:#CCC; width:280px; background: #FBFDFE; border: 2px solid #E1EFFF; border-radius: 4px;}
+input[type=text], input[type=password], input[type=email] { font-size:15px; border-radius:3px; border:none; padding:10px; color:#CCC; width:280px; background: #FBFDFE; border: 1px solid #CFD6E4; border-radius: 4px;}
 input[type=text]:active, input[type=text]:focus, input[type=password]:active, input[type=password]:focus { outline:none; color:#666; }
 a { color:inherit; text-decoration:none; }
 a:visited { color:inherit; }
@@ -177,6 +177,12 @@ input.error{
   font-size: 14px;
   position: relative;
   display: inline-block;
+}
+#account-form label.error{
+  color: #E49700;
+  font-size: 14px;
+  position: relative;
+  float: left;
 }
 .footer{
   font-size: 14px;border-top: 1px solid #E2E4E8; position: fixed; left: 0; bottom: 0; width: 100%; text-align: center; background-color: #fff;
@@ -248,27 +254,30 @@ body.mobile { padding-top:0; min-height:300px; }
 .mobile #login-logo { margin: 0 auto; }
 .mobile #login-left { float:none; margin:0 auto; margin-bottom:30px; padding:0; width:250px; text-align: center; }
 .mobile #login-right { margin:0 auto; width:250px; text-align: center; }
-#error-message {
-  padding-top: 100px;
-  height: 40px;
-  text-align: center;
-  color: #ED6262;
-}
 #password-requirements {
     text-align: left;
     color: #A7A7A7;
     font-size: 12px;
-    padding-left: 90px;
     margin-top:-10px;
 }
 #password-requirements ul {
-    margin-top: -6px;
-    padding-left: 12px;
+    margin-top: 26px;
+    padding-left: 0;
     width:300px;
-    color: #FFF;
+    color: #333C48;
+    list-style: none;
 }
-#password-requirements ul li { margin-bottom: 4px;}
-
+#password-requirements ul li {line-height: 16px; margin-bottom: 8px; }
+.dot {
+  height: 8px;
+  width: 8px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  float: left;
+  margin-right: 8px;
+  margin-top: 4px;
+}
 .register-form #login-button {width: 300px;}
 
 .register-form input[type=text], .register-form input[type=password],.register-form input[type=email] { font-size:15px; border-radius:3px; border:none; padding:12px; background-color:#FFF; color:#CCC; width:280px; margin:0 0 16px 0; }

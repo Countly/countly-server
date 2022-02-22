@@ -12,7 +12,7 @@
       </template>
 	</cly-header>
   <cly-main>
-    <widgets-table @set-status="setWidget" :rows="widgets"></widgets-table>
+    <widgets-table @set-status="setWidget" :loading="loading" :rows="widgets"></widgets-table>
     <drawer @widgets-refresh="refresh()" :settings="drawerSettings" :controls="drawers.widget"></drawer>
   </cly-main>
 </div>
