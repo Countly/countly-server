@@ -220,8 +220,8 @@ function upgradeFormulaReport(widget, report_id, countlyDb, countlyDrill, done) 
                 console.log("Inserting formula", insertionRes && insertionRes.result);
                 countlyDb.collection("calculated_metrics").findOne({key: report._id, "app": report.app_id}, function(err, res){
                     if (res && res._id) {
-                        delete report.request.json.formula;
                         report.request.json.metric_id = res._id;
+                        report.request.json.mode = "saved";
                         var queryConfig = {
                             "_id": res._id + "",
                             "period": report.request.json.period,
