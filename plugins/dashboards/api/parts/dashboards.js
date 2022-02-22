@@ -859,6 +859,10 @@ async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
         params.qstring.period = widget.custom_period;
     }
     var collection, segment;
+    //user barchart - same data as timeline
+    if (visualization === 'bar-chart' && widget.data_type === "user-analytics") {
+        visualization = 'time-series';
+    }
 
     switch (visualization) {
     case 'time-series':
