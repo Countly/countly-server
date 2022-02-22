@@ -5,6 +5,27 @@
      * DRAWER HELPERS
      */
 
+    var AppsMixin = {
+        methods: {
+            getAppName: function(appId) {
+                if (countlyGlobal.apps && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].name) {
+                    return countlyGlobal.apps[appId].name;
+                }
+                else {
+                    return appId;
+                }
+            },
+            getAppLogo: function(appId) {
+                if (countlyGlobal.apps && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].image) {
+                    return countlyGlobal.apps[appId].image;
+                }
+                else {
+                    return 'appimages/' + appId + '.png';
+                }
+            }
+        }
+    };
+
     var MetricComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/metric.html'),
         props: {
@@ -901,58 +922,6 @@
         }
     });
 
-    var WidgetAppsComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/helpers/widget/apps.html'),
-        props: {
-            apps: {
-                type: Array,
-                required: true
-            },
-            labels: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            }
-        },
-        computed: {
-            allApps: function() {
-                var appData = [];
-                var labels = this.labels;
-
-                for (var i = 0; i < this.apps.length; i++) {
-                    var appId = this.apps[i];
-                    appData.push({
-                        id: appId,
-                        name: this.getAppName(appId),
-                        image: 'background-image: url("' + this.getAppLogo(appId) + '")',
-                        labels: labels[appId] || []
-                    });
-                }
-
-                return appData;
-            }
-        },
-        methods: {
-            getAppName: function(appId) {
-                if (countlyGlobal.apps && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].name) {
-                    return countlyGlobal.apps[appId].name;
-                }
-                else {
-                    return appId;
-                }
-            },
-            getAppLogo: function(appId) {
-                if (countlyGlobal.apps && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].image) {
-                    return countlyGlobal.apps[appId].image;
-                }
-                else {
-                    return 'appimages/' + appId + '.png';
-                }
-            }
-        }
-    });
-
     var WidgetPeriodComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/widget/period.html'),
         props: {
@@ -998,13 +967,13 @@
      */
     var PrimaryWidgetLegend = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/widget/primary-legend.html'),
+        mixins: [AppsMixin],
         props: {
             apps: {
                 type: Array,
                 default: function() {
                     return [];
-                },
-                required: true
+                }
             },
             custom_period: {
                 type: String,
@@ -1012,14 +981,17 @@
         },
         computed: {
             app: function() {
-                /**
-                 * Primary legend only shows one app
-                 * and selected period range
-                 */
+                var appId = this.apps[0];
 
-                var singleApp = this.apps[0];
+                if (!appId) {
+                    return null;
+                }
 
-                return [singleApp];
+                return {
+                    id: appId,
+                    name: this.getAppName(appId),
+                    image: 'background-image: url("' + this.getAppLogo(appId) + '")'
+                };
             }
         }
     });
@@ -1030,6 +1002,7 @@
      */
     var SecondaryWidgetLegend = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/widget/secondary-legend.html'),
+        mixins: [AppsMixin],
         props: {
             apps: {
                 type: Array,
@@ -1043,6 +1016,24 @@
                 default: function() {
                     return {};
                 },
+            }
+        },
+        computed: {
+            allApps: function() {
+                var appData = [];
+                var labels = this.labels;
+
+                for (var i = 0; i < this.apps.length; i++) {
+                    var appId = this.apps[i];
+                    appData.push({
+                        id: appId,
+                        name: this.getAppName(appId),
+                        image: 'background-image: url("' + this.getAppLogo(appId) + '")',
+                        labels: labels[appId] || []
+                    });
+                }
+
+                return appData;
             }
         }
     });
@@ -1065,7 +1056,6 @@
      * WIDGET HELPERS REGISTRATION
      */
     Vue.component("clyd-bucket", BucketComponent);
-    Vue.component("clyd-legend-app", WidgetAppsComponent);
     Vue.component("clyd-legend-period", WidgetPeriodComponent);
     Vue.component("clyd-primary-legend", PrimaryWidgetLegend);
     Vue.component("clyd-secondary-legend", SecondaryWidgetLegend);

@@ -1,4 +1,4 @@
-/*global countlyVue,countlyGlobal, CV */
+/*global countlyVue,countlyGlobal, CV, countlyCommon */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
@@ -62,7 +62,6 @@
                 this.data.dashData = this.data.dashData || {};
                 this.data.dashData.data = this.data.dashData.data || {};
 
-                var legend = {"type": "primary", data: []};
                 var series = [];
                 var appIndex = 0;
                 var multiApps = false;
@@ -100,8 +99,7 @@
                                     name = this.map[this.data.metrics[k]] || this.data.metrics[k];
                                 }
                             }
-                            series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], "event": myevent});
-                            legend.data.push({"name": name, "app": app, "metric": this.data.metrics[k], "event": myevent});
+                            series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], "event": myevent, color: countlyCommon.GRAPH_COLORS[series.length]});
                         }
 
                         for (var date in this.data.dashData.data[app][myevent]) {
@@ -118,14 +116,12 @@
                 }
                 if (this.data.custom_period) {
                     return {
-                        lineOptions: {xAxis: { data: dates}, "series": series},
-                        lineLegend: legend
+                        lineOptions: {xAxis: { data: dates}, "series": series}
                     };
                 }
                 else {
                     return {
                         lineOptions: {"series": series},
-                        lineLegend: legend
                     };
                 }
             },
@@ -157,6 +153,26 @@
                     listed.push(this.map[this.data.metrics[k]] || this.data.metrics[k]);
                 }
                 return listed;
+            },
+            legendLabels: function() {
+                var labels = {};
+
+                var graphData = this.timelineGraph;
+                var series = graphData.lineOptions.series;
+
+                for (var i = 0; i < series.length; i++) {
+                    if (!labels[series[i].app]) {
+                        labels[series[i].app] = [];
+                    }
+
+                    labels[series[i].app].push({
+                        appId: series[i].app,
+                        color: series[i].color,
+                        label: this.map[series[i].event] || series[i].event
+                    });
+                }
+
+                return labels;
             }
         }
     });
