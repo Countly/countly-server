@@ -51,6 +51,7 @@ then
     nodejs "$CUR/scripts/push_all_things.js"
     nodejs "$CUR/scripts/update_app_users.js"
     nodejs "$CUR/scripts/remove_old_flows_collections.js"
+    nodejs "$CUR/scripts/update_widgets_reports.js"
     
     #change config settings
     countly config "api.batch_on_master" null --force
