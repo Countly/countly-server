@@ -86,10 +86,13 @@
     }
 
     .clyd-legend-period {
+        min-width: 30px;
+
         &--custom {
             background-color: map.get(c.$colors, "red-10");
             padding: 0 6px;
             border-radius: 4px;
+            box-sizing: border-box;
         }
     }
 
