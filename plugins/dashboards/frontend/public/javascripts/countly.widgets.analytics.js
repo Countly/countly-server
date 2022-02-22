@@ -150,15 +150,11 @@
         },
         computed: {
             enabledVisualizationTypes: function() {
-                if (this.scope.editedObject.app_count === 'single') {
-                    return ['time-series', 'bar-chart', 'number'];
+                if (this.scope.editedObject.app_count === 'multiple') {
+                    return ['time-series'];
                 }
-                else if (this.scope.editedObject.app_count === 'multiple') {
-                    return ['time-series', 'bar-chart'];
-                }
-                else {
-                    return [];
-                }
+
+                return ['time-series', 'table', 'bar-chart', 'number'];
             },
             isMultipleMetric: function() {
                 var multiple = false;
@@ -166,7 +162,7 @@
                 var visualization = this.scope.editedObject.visualization;
 
                 if (appCount === 'single') {
-                    if (visualization === 'bar-chart' || visualization === 'time-series') {
+                    if (visualization === 'table' || visualization === 'time-series') {
                         multiple = true;
                     }
                 }
@@ -177,12 +173,7 @@
                 return this.metricLists[this.scope.editedObject.data_type];
             },
             showBreakdown: function() {
-                if (this.scope.editedObject.visualization === 'bar-chart') {
-                    return true;
-                }
-                else {
-                    return false;
-                }
+                return ["bar-chart", "table"].indexOf(this.scope.editedObject.visualization) > -1;
             },
             showPeriod: function() {
                 return true;
