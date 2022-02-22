@@ -799,7 +799,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         selOptions.count_query = {};
                         query = [{$addFields: {"sortcol": { $cond: [ "$display", "$display", "$view"] }}}];
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-                            query.push({$match: {"sortcol": { $regex: new RegExp('^' + params.qstring.sSearch.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '$', 'i')}}});
+                            //Dealing with special symbols
+                            params.qstring.sSearch = params.qstring.sSearch.replace(/\\/g, "\\\\");
+                            params.qstring.sSearch = params.qstring.sSearch.replace(/\./g, "\\.");
+                            params.qstring.sSearch = params.qstring.sSearch.replace(/\?/g, "\\?");
+                            query.push({$match: {"sortcol": {$regex: ".*" + params.qstring.sSearch + ".*", $options: 'i'}}});
                             selOptions.count_query = {"view": {$regex: params.qstring.sSearch, $options: 'i'}};
                         }
                         if (sortcol === 'name') {
