@@ -131,6 +131,9 @@ bash "$DIR/scripts/install.nghttp2.sh"
 #install plugins
 bash "$DIR/scripts/countly.install.plugins.sh"
 
+#load city data into database
+nodejs "$DIR/scripts/loadCitiesInDb.js"
+
 
 #get web sdk
 countly update sdk-web
@@ -139,11 +142,9 @@ if [ "$INSIDE_DOCKER" != "1" ]; then
     # close google services for China area
     if ping -c 1 google.com >> /dev/null 2>&1; then
         echo "Pinging Google successful. Enabling Google services."
-        countly plugin disable EChartMap
     else
         echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
         countly config "frontend.use_google" false --force
-        countly plugin enable EChartMap
     fi
 fi
 

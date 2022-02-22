@@ -107,6 +107,7 @@
                                 <el-select
                                     v-model="pushNotificationUnderEdit.cohorts"
                                     multiple
+                                    isFullWidth
                                     filterable
                                     reserve-keyword
                                     :placeholder="i18n('push-notification.select-cohort')"
@@ -129,6 +130,7 @@
                                 <el-select
                                     v-model="pushNotificationUnderEdit.locations"
                                     multiple
+                                    isFullWidth
                                     filterable
                                     reserve-keyword
                                     :loading="isFetchLocationsLoading"
@@ -178,6 +180,7 @@
                             <el-select
                                 v-model="pushNotificationUnderEdit.locations"
                                 multiple
+                                isFullWidth
                                 filterable
                                 reserve-keyword
                                 :disabled="!isLocationSet"
@@ -233,6 +236,7 @@
                                     v-model="pushNotificationUnderEdit.automatic.events"
                                     multiple
                                     filterable
+                                    isFullWidth
                                     reserve-keyword
                                     :placeholder="i18n('push-notification.select-event')"
                                     :loading="isFetchEventsLoading"
@@ -256,6 +260,7 @@
                                 <el-select
                                     v-model="pushNotificationUnderEdit.automatic.cohorts"
                                     multiple
+                                    isFullWidth
                                     filterable
                                     reserve-keyword
                                     :placeholder="i18n('push-notification.select-cohort')"

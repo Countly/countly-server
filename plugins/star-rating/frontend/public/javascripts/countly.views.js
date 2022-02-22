@@ -146,6 +146,10 @@ var WidgetsTable = countlyVue.views.create({
         rows: {
             type: Array,
             default: []
+        },
+        loading: {
+            type: Boolean,
+            default: true
         }
     },
     data: function() {
@@ -435,7 +439,8 @@ var WidgetsTab = countlyVue.views.create({
                 isEditMode: false
             },
             widget: '',
-            rating: {}
+            rating: {},
+            loading: true
         };
     },
     methods: {
@@ -524,6 +529,7 @@ var WidgetsTab = countlyVue.views.create({
         },
         fetch: function() {
             var self = this;
+            this.loading = true;
             $.when(starRatingPlugin.requestFeedbackWidgetsData(), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod())
                 .then(function() {
                     // set platform versions for filter
@@ -532,6 +538,7 @@ var WidgetsTab = countlyVue.views.create({
                     // calculate cumulative data for chart
                     self.rating = starRatingPlugin.getRatingInPeriod();
                     self.widgets = starRatingPlugin.getFeedbackWidgetsData();
+                    self.loading = false;
                 });
         }
     },

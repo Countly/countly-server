@@ -14,17 +14,18 @@
     }
 
     &__btn-add {
-        background: #E1EFFF;
-        color: #0166D6 !important;
-        margin-top: 24px;
-        font-size: 13px;
-        font-weight: 500 !important;
-        width: 182px;
+        margin-bottom: 32px;
     }
 
     &__btn-delete {
         font-weight: 500 !important;
         color: #D23F00 !important;
+        padding-right: unset !important;
+    }
+
+    &__btn-segmentation {
+        font-size: 13px;
+        margin-bottom: 32px !important;
     }
 
     &__text-custom-detail {
@@ -77,6 +78,17 @@
 
         .event-right-container {
             margin-left: 40px !important;
+            padding: unset !important;
+            margin-top: -5px !important;
+        }
+
+        .el-checkbox__label {
+            margin-left: 8px !important;
+            padding-left: unset !important;
+        }
+
+        .event-input {
+            width: 80px !important;
         }
     }
 }
@@ -136,9 +148,26 @@
     .el-dialog__body {
         padding: unset;
     }
+
+    &__start-dialog {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        div {
+            margin-top: 0 !important;
+        }
+    }
 }
 
 .populator-start-modal-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    div {
+        margin-top: 0 !important;
+    }
+
     &__modal-progress-container {
         display: flex;
         justify-content: center;
@@ -162,6 +191,14 @@
 }
 
 .populator-stop-modal-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    div {
+        margin-top: 0 !important;
+    }
+
     &__modal-progress-container {
         display: flex;
         justify-content: center;
