@@ -243,6 +243,20 @@ module.exports.dashboard = async function(params) {
             };
         });
 
+        let pltfms = {},
+            tokens = {};
+
+        for (let p in PLATFORMS_TITLES) {
+            if (p !== 't' && p !== 'h') {
+                pltfms[p] = PLATFORMS_TITLES[p];
+                for (let tk in FIELDS_TITLES) {
+                    if (tk[2] === p) {
+                        tokens[tk] = FIELDS_TITLES[tk];
+                    }
+                }
+            }
+        }
+
         common.returnOutput(params, {
             sent: events[0].m,
             sent_automated: events[0].a,
@@ -252,8 +266,8 @@ module.exports.dashboard = async function(params) {
             actions_tx: events[1].t,
             enabled,
             users: results[2] ? results[2] : 0,
-            platforms: PLATFORMS_TITLES,
-            tokens: FIELDS_TITLES
+            platforms: pltfms,
+            tokens
         });
     }
     catch (error) {
