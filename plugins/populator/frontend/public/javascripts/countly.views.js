@@ -281,29 +281,29 @@
                 app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.plugin-title", priority: 30, classes: "populator-menu"});
             }
         }
-        countlyVue.container.registerMixin("/manage/export/export-features", {
-            beforeCreate: function() {
-                var self = this;
-                countlyPopulator.getTemplates(function(templates) {
-                    var templateList = [];
-                    templates.forEach(function(template) {
-                        if (!template.isDefault) {
-                            templateList.push({
-                                id: template._id,
-                                name: template.name
-                            });
-                        }
-                    });
-                    var selectItem = {
-                        id: "populator",
-                        name: "Populator Templates",
-                        children: templateList
-                    };
-                    if (templateList.length) {
-                        self.$store.dispatch("countlyConfigTransfer/addConfigurations", selectItem);
+    });
+    countlyVue.container.registerMixin("/manage/export/export-features", {
+        beforeCreate: function() {
+            var self = this;
+            countlyPopulator.getTemplates(function(templates) {
+                var templateList = [];
+                templates.forEach(function(template) {
+                    if (!template.isDefault) {
+                        templateList.push({
+                            id: template._id,
+                            name: template.name
+                        });
                     }
                 });
-            }
-        });
+                var selectItem = {
+                    id: "populator",
+                    name: "Populator Templates",
+                    children: templateList
+                };
+                if (templateList.length) {
+                    self.$store.dispatch("countlyConfigTransfer/addConfigurations", selectItem);
+                }
+            });
+        }
     });
 })();
