@@ -551,7 +551,10 @@
                 allEventsProcessed: {},
                 barData: {},
                 lineChartData: {},
-                legendData: {},
+                legendData: {
+                    type: "primary",
+                    data: []
+                },
                 tableRows: [],
                 selectedEventsOverview: {},
                 allEventsList: [],
