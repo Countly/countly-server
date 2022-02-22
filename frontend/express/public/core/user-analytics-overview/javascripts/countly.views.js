@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery*/
+/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery, countlyGlobal*/
 var UserAnalyticsOverview = countlyVue.views.create({
     template: CV.T("/core/user-analytics-overview/templates/overview.html"),
     data: function() {
@@ -230,10 +230,20 @@ var GridComponent = countlyVue.views.create({
             var series = [];
             var dates = [];
             var appIndex = 0;
+            var multiApps = false;
+            if (Object.keys(this.data.dashData.data).length > 0) {
+                multiApps = true;
+            }
+
             for (var app in this.data.dashData.data) {
                 for (var k = 0; k < this.data.metrics.length; k++) {
-                    series.push({ "data": [], "name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
-                    legend.data.push({"name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
+                    var name = this.map[this.data.metrics[k]] || this.data.metrics[k];
+
+                    if (multiApps) {
+                        name = (countlyGlobal.apps[app].name || app) + " (" + name + ")";
+                    }
+                    series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k]});
+                    legend.data.push({"name": name, "app": app, "metric": this.data.metrics[k]});
                 }
                 for (var date in this.data.dashData.data[app]) {
                     if (appIndex === 0) {

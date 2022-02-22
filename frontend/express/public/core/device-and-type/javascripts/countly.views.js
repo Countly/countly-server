@@ -419,7 +419,7 @@ var GridComponent = countlyVue.views.create({
             return this.calculateTableColsFromWidget(this.data, this.tableMap);
         },
         stackedBarOptions: function() {
-            return this.calculateStackedBarOptionsFromWidget(this.data);
+            return this.calculateStackedBarOptionsFromWidget(this.data, this.tableMap);
         },
         pieGraph: function() {
             return this.calculatePieGraphFromWidget(this.data, this.tableMap);
