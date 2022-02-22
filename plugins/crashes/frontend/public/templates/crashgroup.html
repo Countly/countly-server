@@ -85,7 +85,7 @@
                 </el-tab-pane>
                 <el-tab-pane name="comments">
                     <span slot="label">
-                        {{i18n("crashes.comments")}} <span class="bu-tag" style="background-color: #A7AEB8;">{{comments.length}}</span>
+                        {{i18n("crashes.comments")}} <span class="bu-tag" style="background-color: #A7AEB8; font-size: 13px; font-weight: 500;">{{comments.length}}</span>
                     </span>
                     <div class="bu-mx-5 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="comments.length === 0">
                         <img class="bu-mb-2" style="margin-top: 32px; height: 76px;" src="images/crashes/no-comments.svg"/>
@@ -187,7 +187,7 @@
             </template>
             <cly-chart-bar :option="chartData" :legend="{show: true}"></cly-chart-bar>
         </cly-section>
-        <cly-section :title="i18n('crashes.crash-occurences')">
+        <cly-section :title="i18n('crashes.crash-occurences')" class="crash-occurences">
             <cly-datatable-n :rows="crashes" ref="tableData" @row-click="handleRowClick">
                 <template v-slot:header-left="filterScope">
                     <cly-multi-select v-model="userFilter" :fields="userFilterFields"></cly-multi-select>
