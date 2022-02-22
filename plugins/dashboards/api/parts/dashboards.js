@@ -146,11 +146,13 @@ dashboard.mapWidget = function(widget) {
         widgetType = "analytics";
         dataType = "user-analytics";
         breakdowns = ["online"];
+        delete widget.isPluginWidget;
         break;
     case "active_users":
         widgetType = "analytics";
         dataType = "user-analytics";
         breakdowns = ["active"];
+        delete widget.isPluginWidget;
         break;
     case "views":
         widgetType = "analytics";
