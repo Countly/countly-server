@@ -1030,14 +1030,7 @@ async function getPushDataForApp(params, apps, appId, widget) {
 
             break;
         case 'number':
-            data = model.getNumber();
-            if (event === "[CLY]_push_action") {
-                widgetData.actioned = data;
-            }
-
-            if (event === "[CLY]_push_sent") {
-                widgetData.sent = data;
-            }
+            widgetData = model.getNumber();
 
             break;
         default:
