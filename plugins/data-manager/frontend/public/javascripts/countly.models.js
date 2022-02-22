@@ -1,4 +1,4 @@
-/*global countlyVue countlyCommon CV countlyGlobal CountlyHelpers*/
+/*global countlyVue countlyCommon CV countlyGlobal CountlyHelpers countlyEventsOverview*/
 
 (function(countlyDataManager) {
 
@@ -184,6 +184,8 @@
                 eventGroups: [],
                 categories: [],
                 categoriesMap: [],
+                isEventCountAvailable: false,
+                eventCount: {}
             }, EXTENDED_STATE);
         };
 
@@ -205,6 +207,12 @@
             },
             isLoading: function(state) {
                 return state.isLoading;
+            },
+            isEventCountAvailable: function(state) {
+                return state.isEventCountAvailable;
+            },
+            eventCount: function(state) {
+                return state.eventCount;
             }
         };
 
@@ -226,6 +234,12 @@
             },
             setIsLoading: function(state, val) {
                 state.isLoading = val;
+            },
+            setIsEventCountAvailable: function(state, val) {
+                state.isEventCountAvailable = val;
+            },
+            setEventCount: function(state, val) {
+                state.eventCount = val;
             }
         };
 
@@ -245,6 +259,18 @@
                         eventsMap[event.key] = event;
                     });
                     context.commit('setEventsMap', eventsMap);
+                    if (countlyEventsOverview && countlyEventsOverview.service) {
+                        countlyEventsOverview.service.fetchEvents().then(function(topEventData) {
+                            if (Array.isArray(topEventData.data)) {
+                                var countMap = {};
+                                topEventData.data.forEach(function(event) {
+                                    countMap[event.name] = event.count;
+                                });
+                                context.commit('setEventCount', countMap);
+                                context.commit('setIsEventCountAvailable', true);
+                            }
+                        });
+                    }
                     setTimeout(function() {
                         context.commit('setIsLoading', false);
                     }, 0);
@@ -259,10 +285,10 @@
             deleteEventGroups: function(context, events) {
                 countlyDataManager.service.deleteEventGroups(events).then(function(data) {
                     context.dispatch("loadEventGroups");
-                    CountlyHelpers.notify({message: 'Event Group Deleted', sticky: false, type: 'success'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.success.event-group-delete'), sticky: false, type: 'success'});
                     return data;
                 }).catch(function() {
-                    CountlyHelpers.notify({message: 'Error while deleting event group', sticky: false, type: 'error'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-group-delete'), sticky: false, type: 'error'});
                 });
             },
             changeEventGroupsVisibility: function(context, data) {
@@ -273,33 +299,36 @@
             },
             saveEventGroups: function(context, data) {
                 countlyDataManager.service.createEventGroups(data).then(function(res) {
-                    CountlyHelpers.notify({message: 'Event Group Created', sticky: false, type: 'success'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.success.event-group-create'), sticky: false, type: 'success'});
                     context.dispatch("loadEventGroups");
                     return res;
                 }).catch(function() {
-                    CountlyHelpers.notify({message: 'Error while creating event group', sticky: false, type: 'error'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-group-create'), sticky: false, type: 'error'});
                 });
             },
             editEventGroups: function(context, data) {
                 countlyDataManager.service.editEventGroups(data).then(function(res) {
-                    CountlyHelpers.notify({message: 'Event Group Updated', sticky: false, type: 'success'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.success.event-group-update'), sticky: false, type: 'success'});
                     context.dispatch("loadEventGroups");
                     return res;
                 }).catch(function() {
-                    CountlyHelpers.notify({message: 'Error while updating event group', sticky: false, type: 'error'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-group-update'), sticky: false, type: 'error'});
                 });
             },
             saveEvent: function(context, event) {
                 countlyDataManager.service.saveEvent(event).then(function(err) {
                     if (err !== 'Error') {
-                        CountlyHelpers.notify({message: 'Event Created', sticky: false, type: 'success'});
+                        CountlyHelpers.notify({message: CV.i18n('data-manager.success.event-create'), sticky: false, type: 'success'});
                         context.dispatch('loadEventsData');
                         context.dispatch('loadSegmentsMap');
                     }
                     else {
-                        CountlyHelpers.notify({message: 'Error while creating event', sticky: false, type: 'error'});
+                        CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-create'), sticky: false, type: 'error'});
                         return err;
                     }
+                }).catch(function(err) {
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-create'), sticky: false, type: 'error'});
+                    return err;
                 });
             },
             editEvent: function(context, event) {
@@ -341,23 +370,28 @@
                     if (isDrill) {
                         countlyDataManager.service.editEventMeta(eventMeta).then(function(errMeta) {
                             if (err === 'Error' || errMeta === "Error") {
-                                CountlyHelpers.notify({message: 'Error while updating event', sticky: false, type: 'error'});
+                                CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-update'), sticky: false, type: 'error'});
                                 return 'Error';
                             }
-                            CountlyHelpers.notify({message: 'Event Updated Successfully', sticky: false, type: 'success'});
+                            CountlyHelpers.notify({message: CV.i18n('data-manager.success.event-update'), sticky: false, type: 'success'});
                             context.dispatch('loadEventsData');
                             context.dispatch('loadValidations');
                             context.dispatch('loadSegmentsMap');
+                        }).catch(function() {
+                            CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-update'), sticky: false, type: 'error'});
+                            return 'Error';
                         });
                     }
                     else {
                         if (err === 'Error') {
-                            CountlyHelpers.notify({message: 'Error while updating event', sticky: false, type: 'error'});
+                            CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-update'), sticky: false, type: 'error'});
                             return 'Error';
                         }
-                        CountlyHelpers.notify({message: 'Event Updated Successfully', sticky: false, type: 'success'});
+                        CountlyHelpers.notify({message: CV.i18n('data-manager.success.event-update'), sticky: false, type: 'success'});
                         context.dispatch('loadEventsData');
                     }
+                }).catch(function() {
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-update'), sticky: false, type: 'error'});
                 });
             },
             omitSegments: function(context, data) {
@@ -383,15 +417,15 @@
                 countlyDataManager.service.deleteEvents(events).then(function(res) {
                     countlyDataManager.service.deleteEventsMeta(events).then(function(res2) {
                         if (res === 'Error' || res2 === 'Error') {
-                            CountlyHelpers.notify({message: 'Error while deleting Event', sticky: false, type: 'error'});
+                            CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-delete'), sticky: false, type: 'error'});
                             return 'Error';
                         }
                         context.dispatch('loadEventsData');
                         context.dispatch('loadSegmentsMap');
-                        CountlyHelpers.notify({message: 'Event Deleted', sticky: false, type: 'success'});
+                        CountlyHelpers.notify({message: CV.i18n('data-manager.success.event-delete'), sticky: false, type: 'success'});
                     });
                 }).catch(function() {
-                    CountlyHelpers.notify({message: 'Error while deleting Event', sticky: false, type: 'error'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-delete'), sticky: false, type: 'error'});
                 });
             },
             loadCategories: function(context) {
@@ -407,40 +441,43 @@
             },
             saveCategories: function(context, categories) {
                 countlyDataManager.service.createCategory(categories).then(function(data) {
-                    CountlyHelpers.notify({message: 'Category Created', sticky: false, type: 'success'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.success.category-create'), sticky: false, type: 'success'});
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
+                    context.dispatch('loadCategories');
                     return data;
                 }).catch(function() {
-                    CountlyHelpers.notify({message: 'Error while creating Category', sticky: false, type: 'error'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.category-create'), sticky: false, type: 'error'});
                 });
             },
             editCategories: function(context, categories) {
                 return countlyDataManager.service.editCategories(categories).then(function(data) {
-                    CountlyHelpers.notify({message: 'Category Updated', sticky: false, type: 'success'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.success.category-update'), sticky: false, type: 'success'});
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
+                    context.dispatch('loadCategories');
                     return data;
                 }).catch(function() {
-                    CountlyHelpers.notify({message: 'Error while creating Category', sticky: false, type: 'error'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.category-update'), sticky: false, type: 'error'});
                 });
             },
             deleteCategories: function(context, categories) {
                 countlyDataManager.service.deleteCategories(categories).then(function(data) {
-                    CountlyHelpers.notify({message: 'Category Deleted', sticky: false, type: 'success'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.success.category-delete'), sticky: false, type: 'success'});
+                    context.dispatch('loadCategories');
                     return data;
                 }).catch(function() {
-                    CountlyHelpers.notify({message: 'Error while deleting category', sticky: false, type: 'error'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.category-delete'), sticky: false, type: 'error'});
                 });
             },
             changeCategory: function(context, data) {
                 countlyDataManager.service.changeCategory(data.events, data.category).then(function(res) {
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
-                    CountlyHelpers.notify({message: 'Category Changed', sticky: false, type: 'success'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.success.category-change'), sticky: false, type: 'success'});
                     return res;
                 }).catch(function() {
-                    CountlyHelpers.notify({message: 'Error while changing category', sticky: false, type: 'error'});
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.category-change'), sticky: false, type: 'error'});
                 });
             },
         };

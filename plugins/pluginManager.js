@@ -1313,7 +1313,7 @@ var pluginManager = function pluginManager() {
         }
 
         client.on('commandFailed', (event) => logDbRead.e("commandFailed %j", event));
-        client.on('serverHeartbeatFailed', (event) => logDbRead.e("serverHeartbeatFailed %j", event));
+        client.on('serverHeartbeatFailed', (event) => logDbRead.d("serverHeartbeatFailed %j", event));
 
         client._db = client.db;
 

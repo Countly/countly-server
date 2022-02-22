@@ -11,7 +11,7 @@
             </cly-header>
             <cly-main>
                 <div>
-                    <cly-notification :closable="false">{{ description }}</cly-notification>
+                    <cly-notification :closable="false" :text="description"></cly-notification>
                 </div>
                 <cly-section class="bu-mt-5">
                     <cly-sub-section>
@@ -34,12 +34,12 @@
                         <el-button type="success" :disabled="selectedTemplate.length === 0" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
                     </cly-sub-section>
                 </cly-section>
-                <cly-confirm-dialog @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
+                <cly-confirm-dialog class="populator-wrapper__start-dialog" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
                     <template slot-scope="scope">
                         <div v-html="dialog.text"></div>
                     </template>
                 </cly-confirm-dialog> 
-                <el-dialog class="populator-start-modal-wrapper" :visible.sync="generateDataModal.showDialog"  width="30%" :before-close="closeGenerateDataModal">
+                <el-dialog class="populator-start-modal-wrapper" :close-on-press-escape="false" :close-on-click-modal="false" :visible.sync="generateDataModal.showDialog"  width="30%" :before-close="closeGenerateDataModal">
                     <img src="/populator/images/generate-data-modal.png" style="width: 100%; height: 177px;">
                     <div class="populator-start-modal-wrapper__modal-progress-container">
                         <cly-progress-bar  :percentage="percentage" :color="progressBarColor" :height:=8 class="bu-mt-1 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>

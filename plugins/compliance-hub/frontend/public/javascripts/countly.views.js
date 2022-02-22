@@ -98,6 +98,26 @@
                     this.initializeStoreData();
                 }
             },
+        },
+        methods: {
+            initializeStoreData: function() {
+                var newValue = this.selectedfilter0;
+                if (this.selectedfilter0 === 'all') {
+                    newValue = "";
+                }
+                var self = this;
+                countlyConsentManager.initialize().then(function() {
+                    var payload = {
+                        "segment": newValue
+                    };
+                    self.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
+                    self.$store.dispatch("countlyConsentManager/_consentDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_exportDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_purgeDP");
+                    self.$store.dispatch("countlyConsentManager/_ePData");
+
+                });
+            },
         }
 
     });
@@ -188,6 +208,26 @@
                     this.initializeStoreData();
                 }
             },
+        },
+        methods: {
+            initializeStoreData: function() {
+                var newValue = this.selectedfilter0;
+                if (this.selectedfilter0 === 'all') {
+                    newValue = "";
+                }
+                var self = this;
+                countlyConsentManager.initialize().then(function() {
+                    var payload = {
+                        "segment": newValue
+                    };
+                    self.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
+                    self.$store.dispatch("countlyConsentManager/_consentDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_exportDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_purgeDP");
+                    self.$store.dispatch("countlyConsentManager/_ePData");
+
+                });
+            },
         }
 
     });
@@ -251,15 +291,17 @@
 
         },
         beforeCreate: function() {
-            countlyConsentManager.initialize();
+            var self = this;
             var payload = {
                 "segment": "sessions"
             };
-            this.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
-            this.$store.dispatch("countlyConsentManager/_consentDP", payload);
-            this.$store.dispatch("countlyConsentManager/_exportDP", payload);
-            this.$store.dispatch("countlyConsentManager/_purgeDP");
-            this.$store.dispatch("countlyConsentManager/_ePData");
+            countlyConsentManager.initialize().then(function() {
+                self.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
+                self.$store.dispatch("countlyConsentManager/_consentDP", payload);
+                self.$store.dispatch("countlyConsentManager/_exportDP", payload);
+                self.$store.dispatch("countlyConsentManager/_purgeDP");
+                self.$store.dispatch("countlyConsentManager/_ePData");
+            });
         },
         computed: {
             selectedfilterforMetrics: {
@@ -411,15 +453,18 @@
                 if (this.selectedfilter0 === 'all') {
                     newValue = "";
                 }
-                countlyConsentManager.initialize();
-                var payload = {
-                    "segment": newValue
-                };
-                this.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
-                this.$store.dispatch("countlyConsentManager/_consentDP", payload);
-                this.$store.dispatch("countlyConsentManager/_exportDP", payload);
-                this.$store.dispatch("countlyConsentManager/_purgeDP");
-                this.$store.dispatch("countlyConsentManager/_ePData");
+                var self = this;
+                countlyConsentManager.initialize().then(function() {
+                    var payload = {
+                        "segment": newValue
+                    };
+                    self.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
+                    self.$store.dispatch("countlyConsentManager/_consentDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_exportDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_purgeDP");
+                    self.$store.dispatch("countlyConsentManager/_ePData");
+
+                });
             },
         }
 

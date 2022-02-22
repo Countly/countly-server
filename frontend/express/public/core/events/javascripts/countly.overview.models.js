@@ -203,17 +203,21 @@
             return context.state.monitorEvents.overview ? context.state.monitorEvents.overview.slice() : [];
         },
         getTableRows: function(data, map) {
+            var tableRows = [];
             if (data && data.length > 0) {
-                return data.map(function(item) {
-                    return {
-                        "count": item.count,
-                        "sum": item.sum,
-                        "duration": item.duration,
-                        "name": countlyEventsOverview.helpers.getEventLongName(item.name, map)
-                    };
+                data.forEach(function(item) {
+                    if (!map[item.name] || (map[item.name] && (map[item.name].is_visible || map[item.name].is_visible === undefined))) {
+                        tableRows.push({
+                            "count": item.count,
+                            "sum": item.sum,
+                            "duration": item.duration,
+                            "key": item.name,
+                            "name": countlyEventsOverview.helpers.getEventLongName(item.name, map)
+                        });
+                    }
                 });
             }
-            return [];
+            return tableRows;
         },
         getEventLongName: function(eventKey, eventMap) {
             var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");

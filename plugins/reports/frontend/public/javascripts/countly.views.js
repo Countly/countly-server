@@ -195,6 +195,7 @@
                 showMetrics: true,
                 showDashboards: false,
                 reportDateRangesOptions: [],
+                metricsArray: [],
             };
         },
         computed: {
@@ -230,7 +231,7 @@
                     this.showApps = false;
                     this.showMetrics = false;
                     this.showDashboards = true;
-                    this.$children[0].editedObject.metricsArray = [];
+                    this.metricsArray = [];
                 }
                 else {
                     this.showApps = true;
@@ -268,10 +269,9 @@
             },
             onSubmit: function(doc) {
                 doc.metrics = {};
-                doc.metricsArray.forEach(function(m) {
+                this.metricsArray.forEach(function(m) {
                     doc.metrics[m] = true;
                 });
-                delete doc.metricsArray;
                 delete doc.hover;
                 delete doc.user;
                 this.$store.dispatch("countlyReports/saveReport", doc);
@@ -281,15 +281,15 @@
             },
             onCopy: function(newState) {
                 var self = this;
+                this.metricsArray = [];
                 if (newState._id !== null) {
                     this.reportTypeChange(newState.report_type);
                     this.reportFrequencyChange(newState.frequency);
 
                     this.title = jQuery.i18n.map["reports.edit_report_title"];
                     this.saveButtonLabel = jQuery.i18n.map["reports.Save_Changes"];
-                    newState.metricsArray = [];
                     for (var k in newState.metrics) {
-                        newState.metricsArray.push(k);
+                        this.metricsArray.push(k);
                     }
                     countlyEvent.getEventsForApps(newState.apps, function(eventData) {
                         var eventOptions = eventData.map(function(e) {

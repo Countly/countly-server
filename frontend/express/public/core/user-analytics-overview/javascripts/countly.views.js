@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery*/
+/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery, countlyGlobal*/
 var UserAnalyticsOverview = countlyVue.views.create({
     template: CV.T("/core/user-analytics-overview/templates/overview.html"),
     data: function() {
@@ -7,20 +7,26 @@ var UserAnalyticsOverview = countlyVue.views.create({
             tableData: [],
             graphOptions: this.createSeries(),
             lineLegend: this.createLineLegend(),
-            lineOptions: this.createSeries()
+            lineOptions: this.createSeries(),
+            isLoading: true
         };
     },
     mounted: function() {
         var self = this;
         $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {
             self.calculateAllData();
+            self.isLoading = false;
         });
     },
     methods: {
-        refresh: function() {
+        refresh: function(force) {
             var self = this;
+            if (force) {
+                self.isLoading = true;
+            }
             $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {
                 self.calculateAllData();
+                self.isLoading = false;
             });
         },
         calculateAllData: function() {
@@ -174,6 +180,7 @@ app.route("/analytics/users/*tab", "user-analytics-tab", function(tab) {
 //Analytics->User analytics - overview widget
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
+    mixins: [countlyVue.mixins.DashboardsHelpersMixin],
     props: {
         data: {
             type: Object,
@@ -224,10 +231,20 @@ var GridComponent = countlyVue.views.create({
             var series = [];
             var dates = [];
             var appIndex = 0;
+            var multiApps = false;
+            if (Object.keys(this.data.dashData.data).length > 0) {
+                multiApps = true;
+            }
+
             for (var app in this.data.dashData.data) {
                 for (var k = 0; k < this.data.metrics.length; k++) {
-                    series.push({ "data": [], "name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
-                    legend.data.push({"name": this.data.metrics[k] + app, "app": app, "metric": this.data.metrics[k]});
+                    var name = this.map[this.data.metrics[k]] || this.data.metrics[k];
+
+                    if (multiApps) {
+                        name = (countlyGlobal.apps[app].name || app) + " (" + name + ")";
+                    }
+                    series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k]});
+                    legend.data.push({"name": name, "app": app, "metric": this.data.metrics[k]});
                 }
                 for (var date in this.data.dashData.data[app]) {
                     if (appIndex === 0) {
@@ -259,7 +276,11 @@ var GridComponent = countlyVue.views.create({
             }
         },
         stackedBarOptions: function() {
-            return this.calculateStackedBarOptionsFromWidget(this.data);
+            var data = this.timelineGraph;
+            for (var k = 0; k < data.lineOptions.series.length; k++) {
+                data.lineOptions.series[k].stack = "A";
+            }
+            return data.lineOptions;
         },
         number: function() {
             return this.calculateNumberFromWidget(this.data);
@@ -298,7 +319,7 @@ var DrawerComponent = countlyVue.views.create({
             var visualization = this.scope.editedObject.visualization;
 
             if (appCount === 'single') {
-                if (visualization === 'table' || visualization === 'time-series') {
+                if (visualization === 'bar-chart' || visualization === 'time-series') {
                     multiple = true;
                 }
             }

@@ -1,11 +1,9 @@
 <div class="cly-vue-data-manager__events">
     <cly-datatable-n
-    @row-click="onRowClick"
     ref="eventsDefaultTable"
-    searchPlaceholder="Search in Events"
+    :searchPlaceholder="i18n('data-manager.event-search-placeholder')"
     :rows="events"
     :keyFn="function(row) {return row.key}"
-    :row-class-name="function() {return 'bu-is-clickable'}"
     :indent=0
     :height=550
     :force-loading="isLoading"
@@ -38,7 +36,10 @@
 
             <el-table-column fixed="left" min-width="330" sortable="custom" prop="name" :label="i18n('data-manager.event-name')">
                 <template v-slot="rowScope">
-                    <div>{{rowScope.row.name || rowScope.row.key || rowScope.row.e}}</div>
+                    <!-- <div @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100">{{rowScope.row.name || rowScope.row.key || rowScope.row.e}}</div> -->
+                    <a v-bind:href="'#/manage/data-manager/events/events/' + rowScope.row.key" @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100">
+                        {{rowScope.row.name || rowScope.row.key || rowScope.row.e}}
+                    </a>
                     <div v-if="rowScope.row.audit && rowScope.row.audit.userName" class="text-small color-cool-gray-50">Last modified by {{rowScope.row.audit.userName}}</div>
                     <div>
                         <span v-if="isDrill" class="tag-container">
@@ -71,33 +72,45 @@
             <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
 
                 <el-table-column v-if="col.value === 'category'"
-                    min-width="250" sortable="custom" prop="category" label="Category">
+                    min-width="250" sortable="custom" prop="category" :label="i18n('data-manager.category')">
                     <template v-slot="rowScope">
-                        {{rowScope.row.categoryName || 'Uncategorized'}}
+                        {{rowScope.row.categoryName || i18n('data-manager.uncategorized') }}
                     </template>
                 </el-table-column>
 
                 <el-table-column v-else-if="col.value === 'lastModifiedts'"
-                    prop="lastModifiedts" sortable="custom" min-width="275" label="Last Modified">
+                    prop="lastModifiedts" sortable="custom" min-width="275" :label="i18n('data-manager.last-modified')">
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row && rowScope.row.lastModifiedts">
-                            <div>{{rowScope.row.lastModifiedDate}}</div>
+                            <div>{{rowScope.row.lastModifiedDate || i18n('data-manager.empty-placeholder') }}</div>
                             <span class="text-small color-cool-gray-50">{{rowScope.row.lastModifiedTime}}</span>
                         </div>
-                    </template>
-                </el-table-column>
-
-                <el-table-column v-else-if="col.value === 'lts' && isDrill" sortable="custom" min-width="250" prop="lts" label="Last Triggered">
-                    <template v-slot="rowScope">
-                        <div v-if="rowScope.row && rowScope.row.lts">
-                            <div>{{rowScope.row.lastTriggerDate}}</div>
+                        <div v-else>
+                            {{ i18n('data-manager.empty-placeholder') }}
                         </div>
                     </template>
                 </el-table-column>
 
-                <el-table-column v-else v-bind:sortable="col.sortable ? 'custom' : false" :key="idx" min-width="300" :prop="col.value" :label="col.label">
+                <el-table-column v-else-if="col.value === 'lts' && isDrill" sortable="custom" min-width="250" prop="lts" :label="i18n('data-manager.last-triggered')">
                     <template v-slot="rowScope">
-                        {{rowScope.row[col.value]}}
+                        <div v-if="rowScope.row && rowScope.row.lts">
+                            <div>{{rowScope.row.lastTriggerDate || i18n('data-manager.empty-placeholder') }}</div>
+                        </div>
+                        <div v-else>
+                            {{ i18n('data-manager.empty-placeholder') }}
+                        </div>
+                    </template>
+                </el-table-column>
+
+                <el-table-column v-else-if="col.value === 'totalCount' " sortable="custom" min-width="250" prop="totalCount" label="Count">
+                    <template v-slot="rowScope">
+                            <div>{{rowScope.row.totalCountFormatted || i18n('data-manager.empty-placeholder') }}</div>
+                    </template>
+                </el-table-column>
+
+                <el-table-column v-else v-bind:sortable="col.sort ? 'custom' : false" :key="idx" min-width="300" :prop="col.value" :label="col.label">
+                    <template v-slot="rowScope">
+                        {{rowScope.row[col.value] || i18n('data-manager.empty-placeholder') }}
                     </template>
                 </el-table-column>
             </template>  
@@ -116,22 +129,23 @@
             <cly-diff-helper class="action-bar" :diff="scope.diff" @discard="scope.unpatch()">
                 <template v-slot:main>
                     <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center" style="height: 100%;">
-                        <cly-more-options class="bu-mr-3" size="small" text="Change Category" type="default" icon="el-icon-crop" @command="handleChangeCategory($event, scope.diff)">
-                            <el-dropdown-item command=null>Uncategorized</el-dropdown-item>
+                        <cly-more-options class="bu-mr-3" size="small" :text="i18n('data-manager.change-category')" type="default" icon="el-icon-crop" @command="handleChangeCategory($event, scope.diff)">
+                            <el-dropdown-item command=null>{{ i18n('data-manager.uncategorized') }}</el-dropdown-item>
                             <el-dropdown-item :command="cat._id" :key="idx" v-for="(cat, idx) in categories">{{cat.name}}</el-dropdown-item>
                         </cly-more-options>
                         <cly-more-options v-if="isDrill" class="bu-mr-3" size="small" text="Change Status" type="default" icon="el-icon-s-tools" @command="handleChangeStatus($event, scope.diff)">
-                            <el-dropdown-item command="live">Live</el-dropdown-item>
-                            <el-dropdown-item command="approved">Approved</el-dropdown-item>
-                            <el-dropdown-item command="unplanned">Unplanned</el-dropdown-item>
-                            <el-dropdown-item command="blocked">Blocked</el-dropdown-item>
+                            <el-dropdown-item command="live">{{ i18n('data-manager.live') }}</el-dropdown-item>
+                            <el-dropdown-item command="approved">{{ i18n('data-manager.approved') }}</el-dropdown-item>
+                            <el-dropdown-item command="unplanned">{{ i18n('data-manager.unplanned') }}</el-dropdown-item>
+                            <el-dropdown-item command="created">{{ i18n('data-manager.created') }}</el-dropdown-item>
+                            <el-dropdown-item command="blocked">{{ i18n('data-manager.blocked') }}</el-dropdown-item>
                         </cly-more-options>
-                        <cly-more-options class="bu-mr-3" size="small" text="Change Visibility" type="default" icon="el-icon-view" @command="handleChangeVisibility($event, scope.diff)">
-                            <el-dropdown-item command="visible">Visibile</el-dropdown-item>
-                            <el-dropdown-item command="hidden">Hidden</el-dropdown-item>
+                        <cly-more-options class="bu-mr-3" size="small" :text=" i18n('data-manager.change-visibility') " type="default" icon="el-icon-view" @command="handleChangeVisibility($event, scope.diff)">
+                            <el-dropdown-item command="visible">{{ i18n('data-manager.visible') }}</el-dropdown-item>
+                            <el-dropdown-item command="hidden">{{ i18n('data-manager.hidden') }}</el-dropdown-item>
                         </cly-more-options>
                         
-                        <el-button class="bu-mr-3" size="small" type="default" icon="el-icon-delete-solid" @click="handleDelete(scope.diff)">Delete</el-button>
+                        <el-button class="bu-mr-3" size="small" type="default" icon="el-icon-delete-solid" @click="handleDelete(scope.diff)">{{ i18n('common.delete') }}</el-button>
                     </div>
                 </template>
             </cly-diff-helper>
@@ -147,9 +161,10 @@
     dialogType="danger" 
     :saveButtonLabel="i18n('common.delete')" 
     :cancelButtonLabel="i18n('common.no-dont-delete')" 
-    title="Delete Events" >
+    :title="i18n('data-manager.delete-events')">
         <template slot-scope="scope">
-            Delete event(s) permanently?<br/> <small class="color-red-100">Warning: This is not reversible</small>
+            {{i18n('data-manager.delete-event-permanently')}}<br/> 
+            <small class="color-red-100">{{ i18n('data-manager.delete-event-warning') }}</small>
             <ul>
              <li v-for="ev in deleteQueue"> {{ev.key}}</li>
             </ul>
@@ -157,7 +172,7 @@
     </cly-confirm-dialog>
     <cly-form-dialog
         name="Manage Categories"
-        title="Manage Categories"
+        :title="i18n('data-manager.manage-categories')"
         @submit="onSaveCategories"
         :closeFn="onCloseCategories"
         saveButtonLabel="Save"

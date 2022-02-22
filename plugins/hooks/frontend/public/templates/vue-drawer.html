@@ -2,7 +2,7 @@
 		@submit="onSubmit"
 		@close="onClose"
 		@copy="onCopy"
-        size="6"
+        :size="6"
 		:title="title"
         ref="drawerData"
 		:saveButtonLabel="saveButtonLabel"
@@ -24,7 +24,10 @@
                     </el-input>
                 </cly-form-field>
 
-                <cly-form-field name="application" :label="i18n('hooks.source-application')" rules="required">
+                <cly-form-field name="application" rules="required">
+                    <div class="text-big text-heading cly-vue-hook-drawer__no-margin bu-mt-3">
+                        {{i18n('hooks.source-application')}}<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5.5px; font-size:15px;" v-tooltip.top-center="i18n('hooks.application-tips')"></span>
+                    </div>
                     <div class="cly-vue-hook-drawer__help-text bu-mb-2">
                         {{i18n('hooks.app-desc')}}
                     </div>
@@ -51,7 +54,7 @@
 
             <cly-form-step id="step2" :name="i18n('hooks.step2')">
                 <div class="text-big text-heading cly-vue-hook-drawer__no-margin bu-mt-3">
-                {{i18n('hooks.trigger')}}<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5.5px; font-size:15px;" v-tooltip.top-center="description"></span>
+                {{i18n('hooks.trigger')}}<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5.5px; font-size:15px;" v-tooltip.top-center="i18n('hooks.trigger-tips')"></span>
                 </div>
                 <div class="cly-vue-drawer-hook_description">
                     {{i18n('hooks.trigger-intro')}} 
@@ -69,7 +72,7 @@
 
             <cly-form-step id="step3" :name="i18n('hooks.step3')">
                 <div class="text-big text-heading cly-vue-hook-drawer__no-margin bu-mt-3">
-                    {{i18n('hooks.effects')}}<span class="cly-vue-tooltip-icon ion ion-help-circled cly-vue-hook-drawer__small-icon"  v-tooltip.top-center="description"></span>
+                    {{i18n('hooks.effects')}}<span class="cly-vue-tooltip-icon ion ion-help-circled cly-vue-hook-drawer__small-icon"  v-tooltip.top-center="i18n('hooks.actions-tips')"></span>
                 </div>
                 <div class="cly-vue-drawer-hook_description">
                     {{i18n('hooks.effects-intro')}} 
@@ -90,9 +93,9 @@
                                 <div class="text-small text-heading cly-vue-hook-drawer__no-margin">
                                     {{i18n('hooks.test-hook')}}
                                    
-                                    <span class="ion ion-help-circled cly-vue-hook-drawer__small-icon cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                                    <!-- <span class="ion ion-help-circled cly-vue-hook-drawer__small-icon cly-vue-tooltip-icon" v-tooltip.top-center=""/> -->
                                 </div>
-                                <div class="color-cool-gray-100 bu-mt-3" style="font-size: 13px;line-height: 16px;">
+                            <div class="color-cool-gray-100 bu-mt-3" style="font-size: 13px;line-height: 16px;">
                                     {{i18n('hooks.test-hook-intro')}} 
                                 </div>
                             </div>

@@ -1000,7 +1000,7 @@
                     this.data = this.data || {};
                     this.data.metrics = this.data.metrics || [];
                     for (var k = 0; k < this.data.metrics.length; k++) {
-                        if (this.data.metrics[k] === "d" || this.data.metrics[k] === "src") {
+                        if (this.data.metrics[k] === "d" || this.data.metrics[k] === "scr" || this.data.metrics[k] === "br") {
                             columns.push({"prop": this.data.metrics[k], "title": CV.i18n("views." + this.data.metrics[k])});
                         }
                         else {
@@ -1033,11 +1033,15 @@
                                     if (vv > 100) {
                                         vv = 100;
                                     }
-                                    ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + "%";
+                                    ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + " %";
                                 }
                                 else {
                                     ob[this.data.metrics[k]] = 0;
                                 }
+                            }
+                            else if (this.data.metrics[k] === "br") {
+                                ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]] || 0;
+                                ob[this.data.metrics[k]] = countlyCommon.formatNumber(ob[this.data.metrics[k]]) + " %";
                             }
                             else {
                                 ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]];

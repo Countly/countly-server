@@ -12,7 +12,7 @@
         },
         methods: {
             onRowClick: function(params) {
-                app.navigate("#/analytics/events/key/" + params.name, true);
+                app.navigate("#/analytics/events/key/" + params.key, true);
             },
             formatNumber: function(val) {
                 return countlyCommon.formatNumber(val);

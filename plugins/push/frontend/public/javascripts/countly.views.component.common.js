@@ -206,8 +206,8 @@
                 selectedPropertyCategory: "internal",
                 UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum,
                 propertyCategoryOptions: [
-                    {label: "Internal Properties", value: "internal"},
-                    {label: "External Properties", value: "external"}
+                    {label: CV.i18n('push-notification.internal-properties'), value: "internal"},
+                    {label: CV.i18n('push-notification.external-properties'), value: "external"}
                 ]
             };
         },
@@ -305,7 +305,7 @@
                 return this.value.fallback;
             },
             description: function() {
-                return "User's \"" + this.userProperty + "\" property which falls back to " + this.fallback;
+                return CV.i18n('push-notification-fallback-value-description', this.userProperty, this.fallback);
             }
         }
     });

@@ -65,12 +65,18 @@
                                     <span v-if="index">{{ rowScope.row.name }}</span>
                                 </template>
                             </el-table-column>
+                            <el-table-column>
+                                <template v-slot="rowScope">
+                                    <el-button @click="showDetailPopup(rowScope.row)" class="dbviewer-tab__expand-button" icon="fas fa-expand"></el-button>
+                                </template>
+                            </el-table-column>
                         </template>
                     </cly-datatable-n>
                 </cly-section>
             </div>
         </div>
         <cly-form-dialog title="Filter Query"
+            name="dbviewer-filter-query"
             @submit="onExecuteFilter"
             saveButtonLabel="Apply Filter"
             v-bind="formDialogs.queryFilter"
@@ -165,6 +171,24 @@
                 <div @click="clearFilters()" class="text-medium color-danger bu-is-clickable">
                     Remove Filter
                 </div>
+            </template>
+        </cly-form-dialog>
+        <cly-form-dialog
+            class="dbviewer-tab__detail-dialog"
+            :isOpened="showDetailDialog"
+            name="dbviewer-document-detail"
+            title="Document Detail"
+            saveButtonLabel="Close"
+            ref="dbviewerDetailDialog"
+            @submit="showDetailDialog = false"
+            :hasCancelButton="false"
+            >
+            <template v-slot="formDialogScope">
+                <pre>
+                    <code class="language-json hljs dbviewer-tab__code-in-dialog">
+                        {{ JSON.parse(rowDetail) }}
+                    </code>
+                </pre>
             </template>
         </cly-form-dialog>
     </cly-main>
