@@ -1694,13 +1694,13 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1" style="height: 100%">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless bu-is-flex-grow-1\']">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless bu-is-flex-grow-1\']" style="overflow: hidden">\
                                 <div :class="classes">\
                                     <echarts\
                                         v-if="!isChartEmpty"\
