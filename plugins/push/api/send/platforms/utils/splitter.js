@@ -184,20 +184,22 @@ class Splitter extends Base {
         this.messages.test = Message.test();
         let data = [];
         this.once('data', dt => data.push(dt));
-        return this.send([{_id: -1, m: 'test', pr: {}, t: Math.random() + ''}], 0).then(() => {
-            if (!data.length) {
-                throw new PushError('FCM IllegalState');
-            }
-            else if (data[0].p && data[0].p instanceof PushError) {
-                if (data[0].p.isCredentials) {
-                    return false;
+        return this.send([{_id: -Math.random(), m: 'test', pr: {}, t: Math.random() + ''}], 0).then(() => new Promise((res, rej) => {
+            setImmediate(() => {
+                if (!data.length) {
+                    return rej(new PushError('IllegalState: no data after connect'));
                 }
-                else if (data[0].p.type & ERROR.DATA_TOKEN_INVALID) {
-                    return true;
+                else if (data[0].p && data[0].p instanceof PushError) {
+                    if (data[0].p.isCredentials) {
+                        return res(false);
+                    }
+                    else if (data[0].p.type & ERROR.DATA_TOKEN_INVALID) {
+                        return res(true);
+                    }
                 }
-            }
-            throw new PushError('FCM WeirdState');
-        }, err => {
+                rej(new PushError('WeirdState'));
+            });
+        }), err => {
             if (err.isCredentials) {
                 return false;
             }
