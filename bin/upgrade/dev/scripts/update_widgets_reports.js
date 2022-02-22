@@ -6,6 +6,14 @@ var pluginManager = require('../../../../plugins/pluginManager.js'),
 
 console.log("Upgrading widgets and reports data");
 
+var parsing;
+try {
+    parsing = require('../../../../plugins/formulas/api/parts/parsing.js');
+}
+catch (ex) {
+    parsing = null;
+}
+
 /**
  * The function creates a hash of the object disregarding
  * the order of constituents (arrays, objects)
@@ -135,17 +143,107 @@ function upgradeDrillReport(widget, report_id, countlyDb, countlyDrill, done) {
                     "_issuer": "wqm:drill",
                     "_sign": sign,
                     "_id": res._id,
-                    "period": !report.meta.byVal
+                    "period": report.period_desc || true
                 }}}, function(){
-                     countlyDb.collection("widgets").updateOne({_id: widget._id}, {$push: {"drill_query": {
+                     countlyDb.collection("widgets").updateOne({_id: widget._id}, {$addToSet: {"drill_query": {
                         "_id": res._id,
-                        "period": !report.meta.byVal
+                        "period": report.period_desc || true
                     }}}, function(){
                         done();
                     });
                 });
             });
         });
+    });
+}
+
+/**
+ *  Returns formula signature
+ *  @param {object} formula ui formula json
+ *  @returns {string} hash
+ */
+function getFormulaSignature(formula) {
+    var str = formula;
+    if (typeof str !== 'string') {
+        str = JSON.stringify(formula);
+    }
+    return crypto.createHash('md5').update(str).digest('hex');
+}
+
+function upgradeFormulaReport(widget, report_id, countlyDb, countlyDrill, done) {
+    countlyDb.collection("long_tasks").findOne({_id: report_id}, function(err, report){
+        if (err) {
+            console.log("Error", err);
+            process.exit(1);
+        }
+        try {
+            report.request = JSON.parse(report.request);
+        }
+        catch (ex) {
+            console.log("Cannot parse", report.request);
+        }
+        
+        if (report.request && report.request.json && report.request.json.metric_id) {
+            return done();
+        }
+        
+        if (report.request && report.request.json) {
+            try {
+                report.request.json.formula = JSON.parse(report.request.json.formula);
+            }
+            catch (ex) {
+                console.log("Cannot parse", report.request.json.formula);
+            }
+            let parsed
+            if (parsing) {
+                parsed = parsing.parseBuilderOutput(report.request.json.formula);
+            }
+            var formula_hash = getFormulaSignature(report.request.json.formula);
+            countlyDb.collection("calculated_metrics").insertOne({
+                "app": report.app_id,
+                "title": report.report_name,
+                "key": report._id,
+                "format": report.request.json.format,
+                "dplaces": report.request.json.dplaces,
+                "visibility": report.global ? "global" : "private",
+                "description": parsed || "",
+                "expression": parsing,
+                "formula": JSON.stringify(report.request.json.formula),
+                "formula_hash": formula_hash,
+                "owner_id": report.creator
+            }, {ignore_errors: [11000]}, function(insertError, insertionRes) {
+                console.log("Inserting formula", insertionRes && insertionRes.result);
+                countlyDb.collection("calculated_metrics").findOne({key: report._id, "app": report.app_id}, function(err, res){
+                    if (res && res._id) {
+                        delete report.request.json.formula;
+                        report.request.json.metric_id = res._id;
+                        countlyDb.collection("long_tasks").updateOne({_id: report._id}, {$set: {"linked_to": {
+                            "_issuer": "wqm:formulas",
+                            "_sign": formula_hash,
+                            "_id": res._id,
+                            "period": report.request.json.period
+                        }, request: JSON.stringify(report.request)}}, function(){
+                            countlyDb.collection("widgets").updateOne({_id: widget._id}, {$addToSet: {"cmetric_refs": {
+                                "_id": res._id,
+                                "period": report.request.json.period,
+                                "bucket": report.request.json.bucket,
+                                "previous": report.request.json.previous
+                            }}}, function(){
+                                done();
+                            });
+                        });
+                    }
+                    else {
+                        console.log("Error getting formula", insertError, err);
+                        done();
+                    }
+                });
+            });
+        }
+        else {
+            console.log("incorrect formule", report);
+            done();
+        }
     });
 }
 
@@ -162,6 +260,12 @@ pluginManager.dbConnection().then((countlyDb) => {
                     console.log("This is a drill widget");
                     asyncjs.eachSeries(widget.drill_report, function(report_id, callback){
                         upgradeDrillReport(widget, report_id, countlyDb, countlyDrill, callback);
+                    }, done);
+                }
+                else if (widget.cmetrics && widget.cmetrics.length) {
+                    console.log("This is a formula widget");
+                    asyncjs.eachSeries(widget.cmetrics, function(report_id, callback){
+                        upgradeFormulaReport(widget, report_id, countlyDb, countlyDrill, callback);
                     }, done);
                 }
                 else {
