@@ -155,6 +155,9 @@ dashboard.mapWidget = function(widget) {
     case "views":
         widgetType = "analytics";
         dataType = "views";
+        widget.metrics = widget.views;
+        visualization = "table";
+        delete widget.isPluginWidget;
 
         break;
     case "funnels":
