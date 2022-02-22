@@ -1327,7 +1327,7 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
@@ -1399,7 +1399,7 @@
         },
 
         template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
@@ -1454,7 +1454,7 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
                             <chart-header :chart-type="\'line\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
@@ -1572,7 +1572,7 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
@@ -1621,7 +1621,7 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
                             <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
