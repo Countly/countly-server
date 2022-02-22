@@ -22,7 +22,11 @@ pluginManager.dbConnection().then((countlyDb) => {
                 "c": {},
                 "r": {},
                 "u": {},
-                "d": {}
+                "d": {},
+                "_": {
+                    "a": [],
+                    "u": [[]]
+                }
             };
 
             writeAccess.forEach(app => {
@@ -30,10 +34,14 @@ pluginManager.dbConnection().then((countlyDb) => {
                 memberPermission.r[app] = {all: true};
                 memberPermission.u[app] = {all: true};
                 memberPermission.d[app] = {all: true};
+                memberPermission._.a.push(app);
             });
 
             readAccess.forEach(app => {
                 memberPermission.r[app] = {all: true};
+                if (writeAccess.indexOf(app) === -1) {
+                    memberPermission._.u[0].push(app);        
+                }
             });
 
             countlyDb.collection('members').findAndModify({"_id": member._id}, {}, {$set: {permission: memberPermission}}, function(err, member) {
