@@ -32,7 +32,11 @@
           <div class="text-medium color-cool-gray-100 text-heading">{{i18n('hooks.detail-title')}}</div>
           <div class="bu-mt-5">
             <div class="bu-columns">
-              <div  class="bu-column bu-pb-1 bu-is-2 text-medium bu-has-text-weight-medium">{{i18n('hooks.trigger-count')}}</div>
+              <div  class="bu-column bu-pb-1 bu-is-2 text-medium bu-has-text-weight-medium">
+                {{i18n('hooks.trigger-count')}}
+                <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5.5px; font-size:15px;" v-tooltip.top-center="i18n('hooks.trigger-count-tips')">
+                </span>
+              </div>
               <div class="bu-column bu-pb-1 ">{{hookDetail.triggerCount}}</div>
             </div>
             <div class="bu-columns">
@@ -40,7 +44,10 @@
               <div class="bu-column bu-pb-1 ">{{hookDetail.lastTriggerTimestampString}}</div>
             </div>
             <div class="bu-columns cly-vue-hook-table">
-              <div  class="bu-column bu-pb-1  bu-is-2 text-medium bu-has-text-weight-medium">{{i18n('hooks.trigger-and-effect')}}</div>
+              <div  class="bu-column bu-pb-1  bu-is-2 text-medium bu-has-text-weight-medium">{{i18n('hooks.trigger-and-effect')}}
+                <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5.5px; font-size:15px;" v-tooltip.top-center="i18n('hooks.trigger-action-tips')">
+                </span>
+              </div>
               <div class="bu-column bu-pb-1 " v-html="hookDetail.triggerEffectDom"></div>
             </div>
           </div>
