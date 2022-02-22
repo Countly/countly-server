@@ -86,7 +86,7 @@
                 }
             },
             stackedBarOptions: function() {
-                return this.calculateStackedBarOptionsFromWidget(this.data);
+                return this.calculateStackedBarOptionsFromWidget(this.data, this.map);
             },
             number: function() {
                 return this.calculateNumberFromWidget(this.data);
