@@ -39,7 +39,7 @@ plugins.dbConnection().then(async db => {
             apps = apps.filter(a => a.plugins && a.plugins.push && ((a.plugins.push.i && a.plugins.push.i._id) || (a.plugins.push.a && a.plugins.push.a._id) || (a.plugins.push.h && a.plugins.push.h._id)));
             credentialsInApps = apps.map(a => [a.plugins.push.i && a.plugins.push.i._id, a.plugins.push.a && a.plugins.push.a._id, a.plugins.push.h && a.plugins.push.h._id])
                 .flat()
-                .filter(x => x)
+                .filter(x => !!x && x !== 'demo')
                 .map(common.dbext.oid);
         }
         catch (ex) {
