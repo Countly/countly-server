@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <clyd-primary-legend :apps="data.apps" :custom_period="data.custom_period"></clyd-primary-legend>
+    <clyd-secondary-legend :apps="data.apps"></clyd-secondary-legend>
 
     <div class="clyd-widget__content">
         <times-of-day-scatter-chart :series="series" :maxSeriesValue="maxSeriesValue" :show-zoom="false" :show-toggle="false" :showDownload="false" height="auto" skin="full"></times-of-day-scatter-chart>
