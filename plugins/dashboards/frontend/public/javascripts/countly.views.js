@@ -495,7 +495,8 @@
                 this.sharedGroupView = doc.shared_user_groups_view || [];
 
                 if (!this.sharingAllowed) {
-                    if (this.doc.__action === "create") {
+                    if (this.doc.__action === "create" ||
+                        this.doc.__action === "duplicate") {
                         this.doc.share_with = "none";
                     }
                 }
@@ -1442,9 +1443,21 @@
                     break;
 
                 case "duplicate":
-                    d.__action = "duplicate";
                     d.name = "Copy - " + d.name;
-                    self.openDrawer("dashboards", d);
+                    var empty = countlyDashboards.factory.dashboards.getEmpty();
+
+                    var obj = {};
+                    for (var key in empty) {
+                        /**
+                         * Copy the keys from existing dashboard.
+                         * Otherwise fallback to the default ones.
+                         */
+                        obj[key] = d[key] || empty[key];
+                    }
+
+                    obj.__action = "duplicate";
+
+                    self.openDrawer("dashboards", obj);
                     break;
 
                 case "delete":
