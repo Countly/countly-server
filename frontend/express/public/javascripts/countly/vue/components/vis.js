@@ -2085,7 +2085,9 @@
                 },
                 defaultMapOptions: {
                     attributionControl: false,
-                    zoomControl: false
+                    zoomControl: false,
+                    zoomSnap: 0.1,
+                    zoom: 1.3
                 }
             };
         },
