@@ -94,9 +94,13 @@
         padding-bottom: 12px !important;
         div:nth-child(2){
           .el-form-item__content {
+            display: flex !important;
+            justify-content: right !important;
             float: right;
-            max-width: 232px;
-            line-height: 0;
+            line-height: inherit;
+            > div {
+              max-width: 232px;
+            }
           }
         }  
       }
