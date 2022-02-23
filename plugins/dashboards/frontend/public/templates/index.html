@@ -15,17 +15,19 @@
                         <div class="bu-level-item">
                             <cly-date-picker-g class="bu-mr-3"></cly-date-picker-g>
                         </div>
-                        <div class="bu-level-item">
-                            <el-button v-if="canUpdate" @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
-                        </div>
-                        <div class="bu-level-item" v-if="canUpdate">
-                            <cly-more-options @command="onDashboardAction($event, dashboard)">
-                                <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-                                <el-dropdown-item><a :href="'#/manage/reports/create/dashboard/' + dashboard._id">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
-                                <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
-                                <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
-                            </cly-more-options>
-                        </div>
+                        <template v-if="!isInitLoad">
+                            <div class="bu-level-item">
+                                <el-button v-if="canUpdate" @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
+                            </div>
+                            <div class="bu-level-item" v-if="canUpdate">
+                                <cly-more-options @command="onDashboardAction($event, dashboard)">
+                                    <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                                    <el-dropdown-item><a :href="'#/manage/reports/create/dashboard/' + dashboard._id">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
+                                    <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
+                                    <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                                </cly-more-options>
+                            </div>
+                        </template>
                     </div>
                 </div>
                 <div class="bu-level bu-mt-2" v-if="dashboard.creation.time || dashboard.creation.by">
@@ -49,8 +51,8 @@
             </div>
         </header>
         <cly-main>
-            <no-widget v-if="noWidgets" @new-widget="newWidget"></no-widget>
-            <dashboards-grid ref="grid" :init-load="isInitLoad" @widget-added="onWidgetAdded"></dashboards-grid>
+            <no-widget v-if="noWidgets && !ADDING_WIDGET" @new-widget="newWidget"></no-widget>
+            <dashboards-grid ref="grid" :loading="isInitLoad" @widget-added="onWidgetAdded"></dashboards-grid>
 
             <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
             <widgets-drawer @add-widget="addWidgetToGrid" @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
