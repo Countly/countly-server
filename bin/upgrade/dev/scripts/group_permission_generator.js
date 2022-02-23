@@ -78,9 +78,9 @@ pluginManager.dbConnection().then((countlyDb) => {
             // but we still need empty permission object for ui to work
             // also we still need to check that group has admin_of and user_of properties 
             // because some groups may dooesn't have those properties
-            if (!group.global_admin && (group.admin_of && group.user_of)) {
-                var writeAccess = group.admin_of;
-                var readAccess = group.user_of;
+            if (!group.global_admin) {
+                var writeAccess = group.admin_of || [];
+                var readAccess = group.user_of || [];
     
                 writeAccess.forEach(app => {
                     if (!app.length) {

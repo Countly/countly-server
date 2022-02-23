@@ -62,11 +62,6 @@ pluginManager.dbConnection().then((countlyDb) => {
         }
 
         function upgrade(member, done) {
-            if ((!member.global_admin) && !member.admin_of || !member.user_of) {
-                done();
-                return;
-            }
-            
             var memberPermission = {
                 "c": {},
                 "r": {},
@@ -79,8 +74,8 @@ pluginManager.dbConnection().then((countlyDb) => {
             };
 
             if (!member.global_admin) {
-                var writeAccess = member.admin_of;
-                var readAccess = member.user_of;
+                var writeAccess = member.admin_of || [];
+                var readAccess = member.user_of || [];
 
                 writeAccess.forEach(app => {
                     if (!app.length) {
