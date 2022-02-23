@@ -616,10 +616,10 @@
 
             var payload = {
                 intent: 'message',
-                message: countlyCommon.encodeSomeHtml(msg),
+                message: (moreData && moreData.title) ? countlyCommon.encodeSomeHtml(msg) : "",
                 type: convertedType,
                 confirmLabel: confirmLabel,
-                title: (moreData && moreData.title) || "An error occurred.",
+                title: (moreData && moreData.title) || countlyCommon.encodeSomeHtml(msg),
                 image: moreData && moreData.image
             };
 
