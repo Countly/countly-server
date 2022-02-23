@@ -1614,7 +1614,7 @@
             // no need to force all points to be present
             // if there are too many of them
             return {
-                grid: {containLabel: false, bottom: 90},
+                grid: {containLabel: false, bottom: 90, left: 75},
                 xAxis: {
                     axisLabel: {
                         width: 100,
@@ -1626,7 +1626,7 @@
         }
         else if (xAxis.data.length >= 5) {
             return {
-                grid: {containLabel: false, bottom: 90},
+                grid: {containLabel: false, bottom: 90, left: 75},
                 xAxis: {
                     axisLabel: {
                         width: 100,
@@ -1653,7 +1653,7 @@
 
         if (maxLen > 25 && xAxis.data.length >= 2) {
             return {
-                grid: {containLabel: false, bottom: 90},
+                grid: {containLabel: false, bottom: 90, left: 75},
                 xAxis: {
                     axisLabel: {
                         width: 150,
