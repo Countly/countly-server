@@ -245,6 +245,7 @@
                     var currMenu = {};
                     var part1 = "";
                     var part2 = "";
+                    var part3 = "";
                     var menu;
 
                     if (!Object.keys(menus).length || !Object.keys(submenus).length) {
@@ -256,6 +257,7 @@
                         for (var i = 0; i < menus[k].length; i++) {
                             menu = menus[k][i];
 
+
                             if (menu.url === "#" + currLink) {
                                 foundMenu = true;
                                 currMenu = menu;
@@ -265,7 +267,8 @@
                             if (currLink.split("/").length > 2) {
                                 part1 = "/" + currLink.split("/")[1];
                                 part2 = part1 + "/" + currLink.split("/")[2];
-                                if (menu.url === "#" + part1 || menu.url === "#" + part2) {
+                                part3 = part2 + "/";
+                                if (menu.url === "#" + part1 || menu.url === "#" + part2 || menu.url === "#" + part3) {
                                     foundMenu = true;
                                     currMenu = menu;
                                     break;
@@ -292,7 +295,8 @@
                                 if (currLink.split("/").length > 2) {
                                     part1 = "/" + currLink.split("/")[1];
                                     part2 = part1 + "/" + currLink.split("/")[2];
-                                    if (menu.url === "#" + part1 || menu.url === "#" + part2) {
+                                    part3 = part2 + "/";
+                                    if (menu.url === "#" + part1 || menu.url === "#" + part2 || menu.url === "#" + part3) {
                                         foundMenu = true;
                                         currMenu = menu;
                                         break;
