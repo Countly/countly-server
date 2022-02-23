@@ -115,12 +115,16 @@ function upgradeDrillReport(widget, report_id, countlyDb, countlyDrill, done) {
         }
         
         //get hash
+        var byVal = report.meta.byVal;
+        if (byVal && typeof byVal === "string") {
+            byVal = [byVal];
+        }
         var sign = getBookmarkSignature({
             app_id: report.app_id, 
             event_key: report.meta.event, 
             creator: report.creator, 
             query_obj: report.meta.dbFilter, 
-            by_val: report.meta.byVal || "[]"
+            by_val: byVal || []
         });
         var eventUnescaped = _.unescape(report.meta.event);
         countlyDrill.collection("drill_bookmarks").insertOne({
@@ -181,6 +185,9 @@ function upgradeFormulaReport(widget, report_id, countlyDb, countlyDrill, done) 
             console.log("Error", err);
             process.exit(1);
         }
+        if (!report) {
+            return done();
+        }
         try {
             report.request = JSON.parse(report.request);
         }
@@ -206,13 +213,13 @@ function upgradeFormulaReport(widget, report_id, countlyDb, countlyDrill, done) 
             var formula_hash = getFormulaSignature(report.request.json.formula);
             countlyDb.collection("calculated_metrics").insertOne({
                 "app": report.app_id,
-                "title": report.report_name,
+                "title": report.report_name + "(" + report._id + ")",
                 "key": report._id,
                 "format": report.request.json.format,
                 "dplaces": report.request.json.dplaces,
                 "visibility": report.global ? "global" : "private",
-                "description": parsed || "",
-                "expression": parsing,
+                "description": report.report_desc,
+                "expression": JSON.stringify(parsed || ""),
                 "formula": JSON.stringify(report.request.json.formula),
                 "formula_hash": formula_hash,
                 "owner_id": report.creator
