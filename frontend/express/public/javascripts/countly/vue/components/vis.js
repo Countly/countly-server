@@ -1610,7 +1610,16 @@
         var xAxis = options.xAxis;
 
         // Early return, no need to analyze the array
-        if (xAxis.data.length >= 15) {
+        if (xAxis.data.length >= 20) {
+            // no need to force all points to be present
+            // if there are too many of them
+            return {
+                width: 100,
+                overflow: "truncate",
+                rotate: 45,
+            };
+        }
+        else if (xAxis.data.length >= 10) {
             return {
                 width: 100,
                 overflow: "truncate",
@@ -1632,7 +1641,7 @@
             maxLen = Math.max(maxLen, str.length);
         });
 
-        if (maxLen > 25) {
+        if (maxLen > 25 && xAxis.data.length >= 3) {
             return {
                 width: 150,
                 overflow: "truncate",
