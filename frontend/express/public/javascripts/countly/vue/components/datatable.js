@@ -124,7 +124,7 @@
                 }
             },
             totalPages: function() {
-                return countlyCommon.formatNumber(Math.ceil(this.dataView.totalRows / this.controlParams.perPage));
+                return Math.ceil(this.dataView.totalRows / this.controlParams.perPage);
             },
             lastPage: function() {
                 return this.totalPages;
@@ -770,6 +770,7 @@
 
     Vue.component("cly-datatable-n", countlyVue.components.create({
         mixins: [
+            _mixins.commonFormatters,
             _mixins.i18n,
             TableExtensionsMixin,
             MutationTrackerMixin,
