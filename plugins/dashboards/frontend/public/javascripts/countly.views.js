@@ -495,9 +495,9 @@
                 this.sharedGroupView = doc.shared_user_groups_view || [];
 
                 if (!this.sharingAllowed) {
-                    if (this.doc.__action === "create" ||
-                        this.doc.__action === "duplicate") {
-                        this.doc.share_with = "none";
+                    if (doc.__action === "create" ||
+                        doc.__action === "duplicate") {
+                        doc.share_with = "none";
                     }
                 }
             }
