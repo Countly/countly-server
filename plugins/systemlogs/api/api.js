@@ -340,6 +340,7 @@ plugins.setConfigs("systemlogs", {
         log.i = data;
         log.ts = Math.round(new Date().getTime() / 1000);
         log.cd = new Date();
+        user = user || {};
         log.u = user.email || user.username || "";
 
         var PreventIPTracking = plugins.getConfig("systemlogs").preventIPTracking;
