@@ -827,7 +827,7 @@
             };
         },
         computed: {
-            custom_period: {
+            customPeriod: {
                 get: function() {
                     return this.value || "30days";
                 },
@@ -925,14 +925,14 @@
     var WidgetPeriodComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/widget/period.html'),
         props: {
-            custom_period: {
+            customPeriod: {
                 type: [Array, String],
             }
         },
         computed: {
             period: function() {
-                if (this.custom_period) {
-                    return this.formatPeriodString(this.custom_period);
+                if (this.customPeriod) {
+                    return this.formatPeriodString(this.customPeriod);
                 }
                 else {
                     return this.formatPeriodString(countlyCommon.getPeriod());
@@ -975,8 +975,16 @@
                     return [];
                 }
             },
-            custom_period: {
+            customPeriod: {
                 type: [Array, String],
+            },
+            showPeriod: {
+                type: Boolean,
+                default: true
+            },
+            showApps: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
