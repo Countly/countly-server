@@ -626,6 +626,10 @@
             loading: {
                 type: Boolean,
                 default: true
+            },
+            updateAllowed: {
+                type: Boolean,
+                default: false
             }
         },
         components: {
@@ -1172,6 +1176,12 @@
                             var noMove = self.widgetMoveNotAllowed(widget);
 
                             var nodeEl = document.getElementById(widgetId);
+
+                            if (!self.updateAllowed) {
+                                locked = true;
+                                noResize = true;
+                                noMove = true;
+                            }
 
                             var setting = {
                                 locked: locked,
