@@ -13,13 +13,13 @@
                     </div>
                     <div class="bu-level-right">
                         <div class="bu-level-item">
-                            <cly-date-picker-g class="bu-mr-3"></cly-date-picker-g>
+                            <cly-date-picker-g></cly-date-picker-g>
                         </div>
-                        <template v-if="!isInitLoad">
+                        <template v-if="!isInitLoad && canUpdateGrid">
                             <div class="bu-level-item">
-                                <el-button v-if="canUpdateGrid" @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
+                                <el-button @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
                             </div>
-                            <div class="bu-level-item" v-if="canUpdateGrid">
+                            <div class="bu-level-item">
                                 <cly-more-options @command="onDashboardAction($event, dashboard)">
                                     <el-dropdown-item command="edit" v-if="canUpdateDashboard">{{i18n('common.edit')}}</el-dropdown-item>
                                     <el-dropdown-item><a :href="'#/manage/reports/create/dashboard/' + dashboard._id">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
