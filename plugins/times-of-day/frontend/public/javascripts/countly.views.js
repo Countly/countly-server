@@ -83,7 +83,15 @@ var TimesOfDayWidgetComponent = countlyVue.views.create({
     },
     computed: {
         title: function() {
-            return this.data.tile || CV.i18n('times-of-day.title');
+            var self = this;
+            var periods = countlyTimesOfDay.service.getDateBucketsList();
+            var periodName = periods.filter(function(obj) {
+                return obj.value === self.data.period;
+            });
+
+            var esTypeName = this.data.data_type === "session" ? this.i18nM('times-of-day.sessions') : this.data.events[0].split("***")[1];
+            var widgetTitle = CV.i18n('times-of-day.title') + " : " + esTypeName + " (" + periodName[0].label + ")";
+            return this.data.title || widgetTitle;
         },
         dashboardData: function() {
             if (this.data.dashData && this.data.dashData.data) {
