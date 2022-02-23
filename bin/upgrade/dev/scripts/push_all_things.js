@@ -73,7 +73,7 @@ plugins.dbConnection().then(async db => {
             console.log('Migrating credentials %s', cid);
             let c = credentials.filter(x => x._id.toString() === cid.toString())[0];
             if (!c) {
-                console.error('Credentials %s of are not found in credentials collection, skipping', cid);
+                console.error('Credentials %s are not found in credentials collection, skipping', cid);
             }
             else {
                 let creds = Creds.fromCredentials(c),
@@ -98,8 +98,18 @@ plugins.dbConnection().then(async db => {
                     return console.error('Illegal state: credentials %s are not found in app %s', cid, app._id);
                 }
 
-                await db.collection('creds').insertOne(creds.json);
-                console.log('Migrated credentials %s', cid);
+                try {
+                    await db.collection('creds').insertOne(creds.json);
+                    console.log('Migrated credentials %s', cid);
+                }
+                catch(e) {
+                    if (e.code === 11000) {
+                        console.log(`Creds with _id ${cid} already exists, delete it in order to migrate it again`);
+                    }
+                    else {
+                        throw e;
+                    }
+                }
             }
         }));
         console.log('Migrating %d out of %d credentials: DONE', credentialsInApps.length, credentials.length);
@@ -126,11 +136,30 @@ plugins.dbConnection().then(async db => {
                 };
             
             for await (const doc of stream) {
+                let obj = {};
                 if (Array.isArray(doc.msgs)) {
-                    let obj = {};
-                    doc.msgs.forEach(([mid, date]) => {
-                        obj[mid] = date;
+                    doc.msgs.forEach(msg => {
+                        if (Array.isArray(msg)) {
+                            obj[msg[0]] = msg[1];
+                        }
+                        else if (common.dbext.isoid(msg)) {
+                            obj[msg] = new Date(2018, 0, 1, 1).getTime();
+                        }
                     });
+                }
+                else if (doc.msgs && doc.msgs['0']) {
+                    for (let k in doc.msgs) {
+                        let msg = doc.msgs[k];
+                        if (Array.isArray(msg)) {
+                            obj[msg[0]] = msg[1];
+                        }
+                        else if (common.dbext.isoid(msg)) {
+                            obj[msg] = new Date(2018, 0, 1, 1).getTime();
+                        }
+                    }
+                }
+
+                if (Object.keys(obj).length) {
                     await add({updateOne: {filter: {_id: doc._id}, update: {$set: {msgs: obj}}}});
 
                     if (doc.tk && doc.tk.at) {
