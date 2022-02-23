@@ -622,6 +622,12 @@
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
         mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, WidgetValidationMixin],
+        props: {
+            initLoad: {
+                type: Boolean,
+                default: true
+            }
+        },
         components: {
             "widgets-drawer": WidgetDrawer,
             "widget": WidgetComponent
@@ -1261,6 +1267,7 @@
             return {
                 dashboardId: this.$route.params && this.$route.params.dashboardId,
                 ADDING_WIDGET: false,
+                isInitLoad: true
             };
         },
         computed: {
@@ -1307,9 +1314,6 @@
             },
             dateChanged: function(isRefresh) {
                 this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh});
-            },
-            getDashboardData: function() {
-                this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false});
             },
             onDashboardAction: function(command, data) {
                 var self = this;
@@ -1366,7 +1370,12 @@
             }
         },
         beforeMount: function() {
-            this.getDashboardData();
+            var self = this;
+            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function(res) {
+                if (res) {
+                    self.isInitLoad = false;
+                }
+            });
         }
     });
 
