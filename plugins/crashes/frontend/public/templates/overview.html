@@ -66,19 +66,19 @@
                                 <cly-metric-card :is-percentage="true" color="#CDAD7A" :number="statistics.users.affected.totalPercent">
                                     {{i18n('crashes.affected-users')}}
                                     <template v-slot:description>
-                                        <span class="text-medium" style="white-space: initial;">{{formatNumber(statistics.users.affected.total)}} of {{formatNumber(statistics.users.total)}} Total Users</span>
+                                        <span class="text-medium" style="white-space: initial;">{{getShortNumber(statistics.users.affected.total)}} of {{getShortNumber(statistics.users.total)}} Total Users</span>
                                     </template>
                                 </cly-metric-card>
                                 <div class="cly-divider"></div>
                                 <cly-metric-card :label="i18n('crashes.resolution-status')" :is-percentage="true" color="#F96300" :number="statistics.crashes.resolvedPercent" :tooltip="i18n('crashes.help-resolved')">
                                     <template v-slot:description>
-                                        <span class="text-medium" style="white-space: initial;">{{formatNumber(statistics.crashes.resolved)}} Resolved of {{formatNumber(statistics.crashes.total)}} Total Crashes</span>
+                                        <span class="text-medium" style="white-space: initial;">{{getShortNumber(statistics.crashes.resolved)}} Resolved of {{getShortNumber(statistics.crashes.total)}} Total Crashes</span>
                                     </template>
                                 </cly-metric-card>
                                 <div class="cly-divider"></div>
                                 <cly-metric-card :label="i18n('crashes.fatality')" :is-percentage="true" color="#F62404" :number="parseFloat(statistics.crashes.fatalPercent.toFixed(2))">
                                     <template v-slot:description>
-                                        <span class="text-medium" style="white-space: initial;">{{formatNumber(statistics.crashes.fatal)}} Fatal of {{formatNumber(statistics.crashes.total)}} Total Crashes</span>
+                                        <span class="text-medium" style="white-space: initial;">{{getShortNumber(statistics.crashes.fatal)}} Fatal of {{getShortNumber(statistics.crashes.total)}} Total Crashes</span>
                                     </template>
                                 </cly-metric-card>
                             </div>

@@ -63,11 +63,16 @@ const operators = {
 
 function queryToName(queryString) {
     var query;
-    try {
-        query = JSON.parse(queryString);
+    if (typeof queryString === "undefined") {
+        try {
+            query = JSON.parse(queryString);
+        }
+        catch (ex) {
+            console.log("cannot parse", queryString);
+        }
     }
-    catch (ex) {
-        console.log("cannot parse", queryString);
+    else {
+        query = queryString;
     }
     if (!query) {
         return "";
@@ -107,6 +112,9 @@ function upgradeDrillReport(widget, report_id, countlyDb, countlyDrill, done) {
             console.log("Error", err);
             process.exit(1);
         }
+        if (!report) {
+            return done();
+        }
         try {
             report.meta = JSON.parse(report.meta);
         }
@@ -134,9 +142,9 @@ function upgradeDrillReport(widget, report_id, countlyDb, countlyDrill, done) {
             "desc": report.report_desc,
             "global": report.global,
             "creator": report.creator,
-            "by_val": report.meta.byVal || "[]",
-            "by_val_text": report.meta.byVal || "",
-            "query_obj": report.meta.dbFilter,
+            "by_val": JSON.stringify(byVal || []),
+            "by_val_text": report.meta.byVal + "" || "",
+            "query_obj": JSON.stringify(report.meta.dbFilter),
             "query_text": queryToName(report.meta.dbFilter),
             "sign": sign,
             "event_app_id": crypto.createHash('sha1').update(eventUnescaped + report.app_id).digest('hex')
