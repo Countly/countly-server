@@ -1610,10 +1610,11 @@
         var xAxis = options.xAxis;
 
         // Early return, no need to analyze the array
-        if (xAxis.data.length >= 20) {
+        if (xAxis.data.length > 15) {
             // no need to force all points to be present
             // if there are too many of them
             return {
+                grid: {containLabel: false, bottom: 90},
                 xAxis: {
                     axisLabel: {
                         width: 100,
@@ -1623,8 +1624,9 @@
                 }
             };
         }
-        else if (xAxis.data.length >= 10) {
+        else if (xAxis.data.length >= 5) {
             return {
+                grid: {containLabel: false, bottom: 90},
                 xAxis: {
                     axisLabel: {
                         width: 100,
@@ -1649,8 +1651,9 @@
             maxLen = Math.max(maxLen, str.length);
         });
 
-        if (maxLen > 25 && xAxis.data.length >= 4) {
+        if (maxLen > 25) {
             return {
+                grid: {containLabel: false, bottom: 90},
                 xAxis: {
                     axisLabel: {
                         width: 150,
