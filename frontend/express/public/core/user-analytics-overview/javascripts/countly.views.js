@@ -370,7 +370,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
     primary: false,
     getter: function(widget) {
         var kk = widget.breakdowns || [];
-        if (widget.widget_type === "analytics" && widget.data_type === "user-analytics" && (kk.length === 0 || kk[0] === 'overview')) {
+        if (widget.widget_type === "analytics" && widget.data_type === "user-analytics" && (kk.length === 0 || kk[0] === 'overview' || (kk[0] !== "active" && kk[0] !== "online"))) {
             return true;
         }
         else {
