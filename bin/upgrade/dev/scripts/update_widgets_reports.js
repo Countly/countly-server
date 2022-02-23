@@ -142,7 +142,7 @@ function upgradeDrillReport(widget, report_id, countlyDb, countlyDrill, done) {
             "desc": report.report_desc,
             "global": report.global,
             "creator": report.creator,
-            "by_val": byVal || "[]",
+            "by_val": JSON.stringify(byVal || []),
             "by_val_text": report.meta.byVal + "" || "",
             "query_obj": JSON.stringify(report.meta.dbFilter),
             "query_text": queryToName(report.meta.dbFilter),
