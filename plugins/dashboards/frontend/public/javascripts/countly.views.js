@@ -4,6 +4,16 @@
     var FEATURE_NAME = "dashboards";
     var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
 
+    /**
+     * To whom it may concern,
+     * Dashboard sharing is only allowed for global admins or dashboard owners.
+     * Other people cannot edit the dashbaord.
+     * The users with whom the dashboard is shared with, can only update its widgets,
+     * and not the dashboard settings itself.
+     *
+     * - prikshit
+     */
+
     var WidgetsMixin = {
         computed: {
             __widgets: function() {
@@ -420,15 +430,6 @@
                             doc.share_with = "none";
                         }
 
-                        if (__action === "edit") {
-                            /**
-                             * If the user cannot share a dashboard and is trying to edit it,
-                             * lets not send the share_with key to the server. So that it stays
-                             * in its original sharing state.
-                             */
-                            delete doc.share_with;
-                        }
-
                         deleteShares = true;
                     }
                 }
@@ -436,7 +437,10 @@
                     /**
                      * Sharing is disabled globally
                      */
-                    doc.share_with = "none";
+                    if (__action === "create" || __action === "duplicate") {
+                        doc.share_with = "none";
+                    }
+
                     deleteShares = true;
                 }
 
