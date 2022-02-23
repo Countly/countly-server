@@ -474,19 +474,16 @@
                     return a[1] - b[1];
                 }).reverse();
 
-                if (totalsArray.length === 0) {
-                    return [
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
-                    ];
+                var totalsData = [];
+                for (var z = 0; z < 3; z++) {
+                    if (totalsArray[z]) {
+                        totalsData.push({percentage: Math.round((data[totalsArray[z][0]].t / sum) * 100), label: data[totalsArray[z][0]]._id, value: countlyCommon.getShortNumber(totalsArray[z][1] || 0)});
+                    }
+                    else {
+                        totalsData.push({ percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 });
+                    }
                 }
-
-                return [
-                    {percentage: Math.round((data[totalsArray[0][0]].t / sum) * 100), label: data[totalsArray[0][0]]._id, value: countlyCommon.getShortNumber(totalsArray[0][1] || 0)},
-                    {percentage: Math.round((data[totalsArray[1][0]].t / sum) * 100), label: data[totalsArray[1][0]]._id, value: countlyCommon.getShortNumber(totalsArray[1][1] || 0)},
-                    {percentage: Math.round((data[totalsArray[2][0]].t / sum) * 100), label: data[totalsArray[2][0]]._id, value: countlyCommon.getShortNumber(totalsArray[2][1] || 0)}
-                ];
+                return totalsData;
             }
         }
     });

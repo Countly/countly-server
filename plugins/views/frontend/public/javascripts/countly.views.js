@@ -18,7 +18,7 @@
                 deleteDialogTitle: CV.i18n('views.delete-confirm-title'),
                 deleteDialogText: "",
                 deleteDialogConfirmText: CV.i18n('views.yes-delete-view'),
-                showDeleteDialog: false
+                showDeleteDialog: false,
             };
         },
         mounted: function() {
@@ -189,6 +189,7 @@
                 totalViewCountWarning: "",
                 showViewCountWarning: false,
                 tableDynamicCols: dynamicCols,
+                isGraphLoading: true,
                 showActionMapColumn: showActionMapColumn, //for action map
                 domains: [], //for action map
                 persistentSettings: [],
@@ -206,6 +207,7 @@
             this.$store.dispatch('countlyViews/onSetSelectedViews', self.persistentSettings);
             this.$store.dispatch('countlyViews/fetchData').then(function() {
                 self.calculateGraphSeries();
+                self.isGraphLoading = false;
                 self.showActionsMapColumn(); //for action map
                 self.setUpDomains(); //for action map
             });
@@ -219,10 +221,14 @@
 
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
                 var self = this;
+                if (force) {
+                    self.isGraphLoading = true;
+                }
                 this.$store.dispatch('countlyViews/fetchData').then(function() {
                     self.calculateGraphSeries();
+                    self.isGraphLoading = false;
                     self.showActionsMapColumn();//for action map
                     self.setUpDomains();//for action map
                 });
@@ -274,6 +280,7 @@
                 });
             },
             handleSelectionChange: function(selectedRows) {
+                var self = this;
                 var selected = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
                 var map = {};
                 for (var kz = 0; kz < selected.length; kz++) {
@@ -302,8 +309,13 @@
                     }
                 }
                 this.persistentSettings = selected;
-                this.$store.dispatch('countlyViews/onSetSelectedViews', selected).then();
-                this.refresh();
+                this.$store.dispatch('countlyViews/onSetSelectedViews', selected).then(function() {
+                    self.isGraphLoading = true;
+                    self.$store.dispatch('countlyViews/fetchData').then(function() {
+                        self.calculateGraphSeries();
+                        self.isGraphLoading = false;
+                    });
+                });
                 return true;
             },
             segmentChosen: function(val) {
