@@ -112,6 +112,9 @@ function upgradeDrillReport(widget, report_id, countlyDb, countlyDrill, done) {
             console.log("Error", err);
             process.exit(1);
         }
+        if (!report) {
+            return done();
+        }
         try {
             report.meta = JSON.parse(report.meta);
         }
