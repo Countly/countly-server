@@ -82,6 +82,9 @@ var TimesOfDayWidgetComponent = countlyVue.views.create({
         return {};
     },
     computed: {
+        title: function() {
+            return this.data.tile || CV.i18n('times-of-day.title');
+        },
         dashboardData: function() {
             if (this.data.dashData && this.data.dashData.data) {
                 return this.data.dashData.data;
@@ -125,6 +128,7 @@ if (countlyAuth.validateRead(featureName)) {
         label: CV.i18n("times-of-day.title"),
         priority: 8,
         primary: true,
+        isPluginWidget: true,
         getter: function(widget) {
             return widget.widget_type === "times-of-day";
         },
@@ -159,9 +163,9 @@ if (countlyAuth.validateRead(featureName)) {
             component: TimesOfDayWidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 6,
+                    minWidth: 2,
                     minHeight: 4,
-                    width: 7,
+                    width: 3,
                     height: 4
                 };
             },
