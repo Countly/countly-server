@@ -50,7 +50,7 @@
         </header>
         <cly-main>
             <no-widget v-if="noWidgets" @new-widget="newWidget"></no-widget>
-            <dashboards-grid ref="grid" @widget-added="onWidgetAdded"></dashboards-grid>
+            <dashboards-grid ref="grid" :init-load="isInitLoad" @widget-added="onWidgetAdded"></dashboards-grid>
 
             <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
             <widgets-drawer @add-widget="addWidgetToGrid" @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
