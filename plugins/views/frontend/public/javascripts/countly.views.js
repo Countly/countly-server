@@ -1138,9 +1138,9 @@
                 component: GridComponent,
                 dimensions: function() {
                     return {
-                        minWidth: 6,
+                        minWidth: 2,
                         minHeight: 4,
-                        width: 6,
+                        width: 2,
                         height: 4
                     };
                 }
