@@ -199,19 +199,19 @@
                                 </cly-inline-form-field>
                                 <h6 class="bu-mt-5 bu-ml-6 text-uppercase">{{i18n("management-applications.app-users")}}</h6>
                                 <cly-inline-form-field :label="i18n('management-applications.global_admins')">
-                                    <a :href="'#/manage/users/' + user._id" v-for="user in appDetails.global_admin" class="el-button el-button--primary is-plain">
-                                    {{user.full_name || user.username || user._id}}
-                                    </a>&nbsp;
+                                    <template v-for="user in appDetails.global_admin">
+                                    {{user.full_name || user.username || user._id}},
+                                    </template>&nbsp;
                                 </cly-inline-form-field>
                                 <cly-inline-form-field :label="i18n('management-applications.admins')">
-                                    <a :href="'#/manage/users/' + user._id" v-for="user in appDetails.admin" class="el-button el-button--primary is-plain">
-                                    {{user.full_name || user.username || user._id}}
-                                    </a>&nbsp;
+                                    <template v-for="user in appDetails.admin">
+                                    {{user.full_name || user.username || user._id}},
+                                    </template>&nbsp;
                                 </cly-inline-form-field>
                                 <cly-inline-form-field :label="i18n('management-applications.users')">
-                                    <a :href="'#/manage/users/' + user._id" v-for="user in appDetails.user" class="el-button el-button--primary is-plain">
-                                    {{user.full_name || user.username || user._id}}
-                                    </a>&nbsp;
+                                    <template v-for="user in appDetails.user">
+                                    {{user.full_name || user.username || user._id}},
+                                    </template>&nbsp;
                                 </cly-inline-form-field>
                             </div>
                             <div v-else v-loading="true" style="height: 500px;"></div>
