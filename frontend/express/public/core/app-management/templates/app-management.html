@@ -82,19 +82,6 @@
                                             </cly-inline-form-field>
                                         </div>
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-key')" :help="i18n('management-applications.app-key.hint')" class="has-ellipsis">
-                                                {{formScope.editedObject.key}}
-                                            </cly-inline-form-field>
-                                            <cly-inline-form-field v-else :rules="(!newApp) ? 'required' : ''" :label="i18n('management-applications.app-key')" prop="key" :help="i18n('management-applications.app-key.hint')">
-                                                <el-input 
-                                                    :readonly="isDisabled()"
-                                                    onclick="select()"
-                                                    :placeholder="i18n(newApp ? 'management-applications.app-key.generate' : 'management-applications.app-key')" 
-                                                    v-model="formScope.editedObject.key">
-                                                </el-input>
-                                            </cly-inline-form-field>
-                                        </div>
-                                        <div>
                                             <cly-inline-form-field v-if="edited" :label="i18n('countries.table.country')" :help="i18n('management-applications.country.hint')">
                                                 {{formScope.editedObject.country}}
                                             </cly-inline-form-field>
@@ -133,7 +120,7 @@
                                             </cly-inline-form-field>
                                         </div>  
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-id')" :help="i18n('management-applications.app-id.hint')" class="has-ellipsis">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-id')" :help="i18n('management-applications.app-id.hint')">
                                                 {{formScope.editedObject._id}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field v-if="!newApp && !edited" :label="i18n('management-applications.app-id')" prop="_id"  :help="i18n('management-applications.app-id.hint')">
@@ -142,6 +129,19 @@
                                                     onclick="select()"
                                                     :placeholder="i18n('management-applications.app-id')" 
                                                     v-model="formScope.editedObject._id">
+                                                </el-input>
+                                            </cly-inline-form-field>
+                                        </div>
+                                        <div>
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-key')" :help="i18n('management-applications.app-key.hint')">
+                                                {{formScope.editedObject.key}}
+                                            </cly-inline-form-field>
+                                            <cly-inline-form-field v-else :rules="(!newApp) ? 'required' : ''" :label="i18n('management-applications.app-key')" prop="key" :help="i18n('management-applications.app-key.hint')">
+                                                <el-input 
+                                                    :readonly="isDisabled()"
+                                                    onclick="select()"
+                                                    :placeholder="i18n(newApp ? 'management-applications.app-key.generate' : 'management-applications.app-key')" 
+                                                    v-model="formScope.editedObject.key">
                                                 </el-input>
                                             </cly-inline-form-field>
                                         </div>
