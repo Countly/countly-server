@@ -1100,7 +1100,7 @@
                     data[getUs[k].prop] = data[getUs[k].prop] || {};
                     var value = data[getUs[k].prop].total;
                     if (!getUs[k].p) {
-                        value = countlyCommon.formatNumber(data[getUs[k].prop].total || 0);
+                        value = countlyCommon.getShortNumber(data[getUs[k].prop].total || 0);
                     }
 
                     blocks.push({
