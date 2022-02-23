@@ -235,6 +235,7 @@
         template: CV.T("/compliance-hub/templates/metrics.html"),
         data: function() {
             return {
+                consentDpChartloaded: false,
                 chartLoading: false,
                 filter0: [
                     {
@@ -314,12 +315,19 @@
                 }
             },
             consentDpChart: function() {
+                this.consentDpChartloaded = false;
                 var consentDp = this.$store.getters["countlyConsentManager/_consentDP"];
                 var optinYAxisData = [];
                 var optoutYAxisData = [];
                 for (var key in consentDp.chartData) {
                     optinYAxisData.push(consentDp.chartData[key].i);
                     optoutYAxisData.push(consentDp.chartData[key].o);
+                }
+                if (optinYAxisData.length > 0) {
+                    this.consentDpChartloaded = true;
+                }
+                else if (consentDp.chartData) {
+                    this.consentDpChartloaded = true;
                 }
                 return {
                     series: [
@@ -353,7 +361,7 @@
                         label: this.i18n("consent.opt-o"),
                         value: _bigNumberData && _bigNumberData.o ? this.formatNumber(_bigNumberData.o.total) : 0,
                         percentage: _bigNumberData && _bigNumberData.o ? _bigNumberData.o.change : 0,
-                        trend: _bigNumberData && _bigNumberData.o ? _bigNumberData.o.trend === 'u' ? "up" : "down": "-",
+                        trend: _bigNumberData && _bigNumberData.o ? _bigNumberData.o.trend === 'u' ? "up" : "down" : "-",
                     }
                     ],
                 };

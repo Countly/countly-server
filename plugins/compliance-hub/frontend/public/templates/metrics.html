@@ -1,4 +1,4 @@
-    <cly-main>
+    <cly-main v-show="consentDpChartloaded">
         <div class="bu-level bu-my-4">
             <div class="bu-level-left">
                 Consent Requests for
@@ -20,7 +20,7 @@
                 </cly-date-picker-g>
             </div>
         </div>
-        <cly-section v-if="consentDpChart">
+        <cly-section>
             <cly-chart-time
                  :showDownload=false :showToggle=false :showZoom=false :option="consentDpChart" :legend="consentDpChartlegend"> </cly-chart-time>
 
