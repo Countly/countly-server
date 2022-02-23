@@ -38,3 +38,9 @@
         
     }
   }
+
+  .cly-vue-compliance__user_consent_history {
+    .bu-level:not(:last-child) {
+        margin-bottom: 1.5rem;
+    }
+  }

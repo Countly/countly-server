@@ -20,9 +20,9 @@
                 </cly-date-picker-g>
             </div>
         </div>
-        <cly-section>
-            <cly-chart-time v-if="consentDpChart && consentDpChart.series"
-                 :showDownload=false :showToggle=false :showZoom=false :option.sync="consentDpChart" :legend="consentDpChartlegend"> </cly-chart-time>
+        <cly-section v-if="consentDpChart">
+            <cly-chart-time
+                 :showDownload=false :showToggle=false :showZoom=false :option="consentDpChart" :legend="consentDpChartlegend"> </cly-chart-time>
 
         </cly-section>
             <div class="bu-is-flex">
