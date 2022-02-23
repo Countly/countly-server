@@ -137,7 +137,7 @@
                     </div>
                 </div>
                 <div class="bu-level-item text-smallish">
-                    of {{totalPages}} pages
+                    of {{formatNumber(totalPages)}} pages
                 </div>
                 <div :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
                     <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="ion-ios-arrow-back"></i><i class="ion-ios-arrow-back"></i></span>

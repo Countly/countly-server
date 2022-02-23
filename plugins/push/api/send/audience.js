@@ -1,5 +1,6 @@
 const common = require('../../../../api/utils/common'),
     { PushError, ERROR } = require('./data/error'),
+    { util } = require('./std'),
     { Message, State, TriggerKind, Result, dbext } = require('./data'),
     { DEFAULTS } = require('./data/const'),
     { PLATFORM } = require('./platforms'),
@@ -614,7 +615,8 @@ class Pusher extends PusherPopper {
             stream = common.db.collection(`app_users${this.audience.app._id}`).aggregate(steps).stream(),
             batch = Push.batchInsert(batchSize),
             start = this.start || this.trigger.start,
-            result = new Result();
+            result = new Result(),
+            updates = {};
 
         for await (let user of stream) {
             let push = user[TK][0],
@@ -634,16 +636,22 @@ class Pusher extends PusherPopper {
                     rp = result.sub(p);
 
                 result.total++;
+                updates['result.total'] = result.total;
                 if (!result.next || d < result.next.getTime()) {
                     result.next = d;
                 }
 
                 rp.total++;
+                updates[`result.subs.${p}.total`] = rp.total;
                 if (!rp.next || d < rp.next.getTime()) {
                     rp.next = d;
                 }
 
-                rp.sub(la).total++;
+                let rpl = rp.sub(la);
+                rpl.total++;
+                updates[`result.subs.${p}.subs.${la}.total`] = rpl.total;
+
+                note.h = util.hash(note.pr);
 
                 if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);
@@ -651,6 +659,8 @@ class Pusher extends PusherPopper {
                 }
             }
         }
+
+        await this.audience.message.update({$inc: updates}, () => {});
 
         this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
         await batch.flush([11000]);

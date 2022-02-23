@@ -4,8 +4,6 @@ const CRC32 = require('crc-32'),
     MMHstream = require('murmurhash-native/stream'),
     {getHasher, OutputType, HashType, hashAsBigInt} = require('bigint-hash'),
     { XXHash64 } = require('xxhash-addon'),
-    BSON = require('bson-ext'),
-    bson = new BSON([BSON.Binary, BSON.Code, BSON.DBRef, BSON.Decimal128, BSON.Double, BSON.Int32, BSON.Long, BSON.Map, BSON.MaxKey, BSON.MinKey, BSON.ObjectId, BSON.BSONRegExp, BSON.Symbol, BSON.Timestamp]),
     avro = require('avsc'),
     Type = require('js-binary').Type;
 
@@ -253,7 +251,7 @@ function hashxx3json(data, h) {
         xx3.reset();
         h = xx3;
     }
-    h.update(Buffer.from(JSON.stringify(data)));
+    h.update(Buffer.from(JSON.stringify(data), 'utf-8'));
     return h;
 }
 
@@ -303,17 +301,17 @@ function databufjson(data) {
     return bufhash.digest(OutputType.BigInt);
 }
 
-/**
- * 
- * @param {any} data data
- * @returns {BigInt} hash of the data
- */
-function databufjsonunbuf(data) {
-    let bufhash = getHasher(HashType.xxHash64);
-    let len = bson.serializeWithBufferAndIndex(data, buffer);
-    bufhash.update(buffer.slice(0, len + 1));
-    return bufhash.digest(OutputType.BigInt);
-}
+// /**
+//  * 
+//  * @param {any} data data
+//  * @returns {BigInt} hash of the data
+//  */
+// function databufjsonunbuf(data) {
+//     let bufhash = getHasher(HashType.xxHash64);
+//     let len = bson.serializeWithBufferAndIndex(data, buffer);
+//     bufhash.update(buffer.slice(0, len + 1));
+//     return bufhash.digest(OutputType.BigInt);
+// }
 
 /**
  * 
@@ -400,7 +398,7 @@ function bufset(buf, offset, data) {
  * @param {string} message name of measurement
  * @param {number} n number of iterations in one run (10 runs)
  */
-function measure(f, message, n = 100000) {
+function measure(f, message, n = 10000) {
     let results = [];
     for (let i = 0; i < 10; i++) {
         let now = Date.now(),
@@ -440,11 +438,11 @@ measure(() => databufjson({a: 1}), 'databufjson bigint for {a: 1}');
 // measure(() => databufjsonunbuf({a: 1}), 'databufjsonunbuf bigint for {a: 1}');
 // measure(() => databufavro({a: 1}), 'databufavro bigint for {a: 1}');
 measure(() => databufjsb({a: 1}), 'databufjsb bigint for {a: 1}');
-// measure(() => hashmm({a: 1}).digest('hex'), 'Murmur for {a: 1}');
-// measure(() => hashxx({a: 1}).digest(), 'XX buffer for {a: 1}');
-// measure(() => hashxx({a: 1}).digest(OutputType.BigInt), 'XX bigint for {a: 1}');
-// measure(() => hashxx({a: 1}).digest(), 'XX3 for {a: 1}');
-// measure(() => hashxx3json({a: 1}).digest(), 'XX3json for {a: 1}');
+measure(() => hashmm({a: 1}).digest('hex'), 'Murmur for {a: 1}');
+measure(() => hashxx({a: 1}).digest(), 'XX buffer for {a: 1}');
+measure(() => hashxx({a: 1}).digest(OutputType.BigInt), 'XX bigint for {a: 1}');
+measure(() => hashxx({a: 1}).digest(), 'XX3 for {a: 1}');
+measure(() => hashxx3json({a: 1}).digest(), 'XX3json for {a: 1}');
 
 // measure(() => hash({a: 1, b: {c: false, some: "string"}}), 'CRC32 for {a: 1, b: {c: false, some: "string"}}');
 measure(() => databuf({a: 1, b: {c: false, some: "string"}}), 'databuf/xx bigint for {a: 1, b: {c: false, some: "string"}}');
@@ -455,8 +453,8 @@ measure(() => databufjson({a: 1, b: {c: false, some: "string"}}), 'databufjson f
 // measure(() => databufjsonunbuf({a: 1, b: {c: false, some: "string"}}), 'databufjsonunbuf for {a: 1, b: {c: false, some: "string"}}');
 measure(() => databufavro({a: 1, b: {c: false, some: "string"}}), 'databufavro for {a: 1, b: {c: false, some: "string"}}');
 measure(() => databufjsb({a: 1, b: {c: false, some: "string"}}), 'databufjsb for {a: 1, b: {c: false, some: "string"}}');
-// measure(() => hashmm({a: 1, b: {c: false, some: "string"}}).digest('hex'), 'Murmur for {a: 1, b: {c: false, some: "string"}}');
-// measure(() => hashxx({a: 1, b: {c: false, some: "string"}}).digest(), 'XX buffer for {a: 1, b: {c: false, some: "string"}}');
-// measure(() => hashxx({a: 1, b: {c: false, some: "string"}}).digest(OutputType.BigInt), 'XX bigint for {a: 1, b: {c: false, some: "string"}}');
-// measure(() => hashxx({a: 1, b: {c: false, some: "string"}}).digest(), 'XX3 for {a: 1}');
-// measure(() => hashxx3json({a: 1, b: {c: false, some: "string"}}).digest(), 'XX3json for {a: 1}');
+measure(() => hashmm({a: 1, b: {c: false, some: "string"}}).digest('hex'), 'Murmur for {a: 1, b: {c: false, some: "string"}}');
+measure(() => hashxx({a: 1, b: {c: false, some: "string"}}).digest(), 'XX buffer for {a: 1, b: {c: false, some: "string"}}');
+measure(() => hashxx({a: 1, b: {c: false, some: "string"}}).digest(OutputType.BigInt), 'XX bigint for {a: 1, b: {c: false, some: "string"}}');
+measure(() => hashxx({a: 1, b: {c: false, some: "string"}}).digest(), 'XX3 for {a: 1}');
+measure(() => hashxx3json({a: 1, b: {c: false, some: "string"}}).digest(), 'XX3json for {a: 1}');

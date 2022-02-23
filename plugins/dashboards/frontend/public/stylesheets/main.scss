@@ -14,18 +14,7 @@
         background-color: map.get(c.$colors, "white");
         border: 1px solid #E2E4E8;
         border-radius: 4px;
-		
-		>div {
-			display: flex;
-			flex-direction: column;
-			height: 100%;
-		}
-		.dashboard-widget-graph {
-			flex:1;
-		}
     }
-	
-	
 
     .clyd-visualization {
         &__item {
@@ -84,59 +73,65 @@
 		font-weight: 500;
 		font-size: 10px;
 	}
-	.app-logo {
-		width: 16px;
-		height: 16px;
-		background-position: 50% 50%;
-		border-radius: 4px;
-		background-repeat: no-repeat;
-		background-size: auto 16px;
-	}
-	
-	.dashboard-widget-graph .cly-vue-eldatatable__footer {
-		display:none;
-	}
-	.dashboard-widget-graph .cly-vue-eldatatable {
-		margin: 0 -20px;
-	}
-	.dashboard-widget-graph.dashboard-widget-number {
-		text-align: center;
-		h1{
-			font-size:40px;
-			line-height:40px;
-			padding:0;
-			margin:0;
-		}
-		.trend-up {
-			color: #12af51;
-		}
-		.trend-down {
-			color:#d23f00;
-		}
-		div {
-			margin: 0;
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			-ms-transform: translate(-50%, -50%);
-			transform: translate(-50%, -50%);
-		}
-	}
-	.notes-widget-graph {
-		text-align: center;
-		position:relative;
-		>div {
-			margin: 0;
-			position: absolute;
-			top: 50%;
-			width:100%;
-			-ms-transform: translate(0%, -50%);
-			transform: translate(0%, -50%);
-		}
-		a {
-		    cursor: pointer;
-			color: #32659D;
-		}
-	}
-	
+
+	.clyd-legend-app {
+        &__logo {
+            width: 16px;
+            height: 16px;
+            background-position: 50% 50%;
+            border-radius: 4px;
+            background-repeat: no-repeat;
+            background-size: auto 16px;
+        }
+    }
+
+    .clyd-legend-period {
+        min-width: 30px;
+
+        &--custom {
+            background-color: map.get(c.$colors, "red-10");
+            padding: 0 6px;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    }
+
+    .clyd-widget {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+
+        &__content {
+            flex-shrink: 1;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+
+            &--vis-number {
+                text-align: center;
+
+                h1{
+                    font-size:40px;
+                    line-height:40px;
+                    padding:0;
+                    margin:0;
+                }
+
+                .trend-up {
+                    color: #12af51;
+                }
+
+                .trend-down {
+                    color:#d23f00;
+                }
+            }
+
+            //Data table css
+            .cly-vue-eldatatable__footer {
+                display:none;
+            }
+        }
+    }
 }

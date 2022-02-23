@@ -2,7 +2,7 @@
 
 var EventEmitter = require('events'),
     cluster = require('cluster'),
-    log = require('../../utils/log.js')('jobs:ipc:' + process.pid);
+    log = require('../../utils/log.js')('jobs:ipc');
 
 var CMD = {
     RUN: 'job:run',
@@ -198,20 +198,20 @@ class PassThrough {
     * @param {object} m - message
     **/
     pass(m) {
-        log.d('Got message in PassThrough: %j', m);
+        // log.d('Got message in PassThrough: %j', m);
         if (m.to && m.to in this.workers) {
-            log.d('Passing through message from %j to %j', m.from, m.to);
+            // log.d('Passing through message from %j to %j', m.from, m.to);
             this.workers[m.to].send(m);
         }
         else if (m.to && m.to === this.jobsWorker.pid) {
-            log.d('Passing through message from %j to jobs %j', m.from, m.to);
+            // log.d('Passing through message from %j to jobs %j', m.from, m.to);
             this.jobsWorker.send(m);
         }
         else if (!m.to && m.from) {
             let pids = Object.keys(this.workers);
             var idx = Math.floor(Math.random() * pids.length);
             m.to = pids[idx];
-            log.d('Passing through message from %d to randomly selected %d (out of %d)', m.from, m.to, pids.length);
+            // log.d('Passing through message from %d to randomly selected %d (out of %d)', m.from, m.to, pids.length);
             this.workers[m.to].send(m);
         }
     }
@@ -264,11 +264,11 @@ class CentralMaster extends CentralSuper {
         this.workers = {}; // map of pid: worker
         this.listeners = {}; // map of pid: listener
         cluster.on('online', (worker) => {
-            log.i('Worker started: %d', worker.process.pid);
+            log.i('New worker %d is online', worker.process.pid);
             this.workers[worker.process.pid] = worker;
             worker.on('message', this.listeners[worker.process.pid] = m => {
                 if (this.isForMe(m)) {
-                    // log.d('handling', m);
+                    log.d('[%d]: Got message in CentralMaster from %d: %j', process.pid, worker.process.pid, m);
                     let data = m[this.name];
 
                     Promise.resolve(this.handler(data, m.reply, worker.process.pid)).then(res => {
@@ -351,7 +351,7 @@ class CentralWorker extends CentralSuper {
     **/
     attach() {
         this.onMessageListener = m => {
-            // log.d('[%d]: Got message in CentralWorker: %j', process.pid, m);
+            log.d('[%d]: Got message in CentralWorker: %j', process.pid, m);
             if (this.isForMe(m)) {
                 // log.d('handling', m);
 
@@ -360,7 +360,7 @@ class CentralWorker extends CentralSuper {
 
                 if (m.error) {
                     if (reject) {
-                        log.d('Rejecting a reply: %j / %j / %j', m.date, m.error, data);
+                        // log.d('Rejecting a reply: %j / %j / %j', m.date, m.error, data);
                         reject(m.error);
                     }
                     else {
@@ -369,7 +369,7 @@ class CentralWorker extends CentralSuper {
                 }
                 else if (m.reply) {
                     if (resolve) {
-                        log.d('Resolving a reply: %j / %j', m.date, data);
+                        // log.d('Resolving a reply: %j / %j', m.date, data);
                         resolve(data);
                     }
                     else {
@@ -425,7 +425,7 @@ class CentralWorker extends CentralSuper {
         let now = this.date(),
             time,
             promise = new Promise((resolve, reject) => {
-                log.d('adding promise', now, typeof this.promises[now]);
+                // log.d('adding promise', now, typeof this.promises[now]);
                 this.promises[now] = {
                     resolve: function() {
                         clearTimeout(time);

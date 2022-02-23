@@ -4,6 +4,17 @@ const common = require('../../../api/utils/common'),
     log = common.log('push:api:dashboard'),
     { platforms, fields, FIELDS_TITLES, PLATFORMS_TITLES } = require('./send');
 
+/**
+ * Add chart data from from to to
+ * @param {object} from from obj
+ * @param {object} to to obj
+ */
+function add(from, to) {
+    from.data.forEach((n, i) => {
+        to.data[i] += n;
+    });
+}
+
 module.exports.dashboard = async function(params) {
     let app_id = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
@@ -236,12 +247,39 @@ module.exports.dashboard = async function(params) {
                 });
             });
 
+            if (ret.platforms.h) {
+                add(ret.platforms.h.weekly, ret.platforms.a.weekly);
+                add(ret.platforms.h.monthly, ret.platforms.a.monthly);
+                add(retAuto.platforms.h.daily, retAuto.platforms.a.daily);
+                add(retTx.platforms.h.daily, retTx.platforms.a.daily);
+                delete ret.platforms.h;
+                delete retAuto.platforms.h;
+                delete retTx.platforms.h;
+            }
+            delete ret.platforms.t;
+            delete retAuto.platforms.t;
+            delete retTx.platforms.t;
+
             return {
                 m: ret,
                 a: retAuto,
                 t: retTx
             };
         });
+
+        let pltfms = {},
+            tokens = {};
+
+        for (let p in PLATFORMS_TITLES) {
+            if (p !== 't' && p !== 'h') {
+                pltfms[p] = PLATFORMS_TITLES[p];
+                for (let tk in FIELDS_TITLES) {
+                    if (tk[2] === p) {
+                        tokens[tk] = FIELDS_TITLES[tk];
+                    }
+                }
+            }
+        }
 
         common.returnOutput(params, {
             sent: events[0].m,
@@ -252,8 +290,8 @@ module.exports.dashboard = async function(params) {
             actions_tx: events[1].t,
             enabled,
             users: results[2] ? results[2] : 0,
-            platforms: PLATFORMS_TITLES,
-            tokens: FIELDS_TITLES
+            platforms: pltfms,
+            tokens
         });
     }
     catch (error) {

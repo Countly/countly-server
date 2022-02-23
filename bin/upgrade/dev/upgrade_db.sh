@@ -39,6 +39,8 @@ then
         
         #disable old plugins
         countly plugin disable EChartMap
+        countly plugin disable crashes-jira
+        countly plugin disable restrict
     fi
 
     #run upgrade scripts
@@ -48,6 +50,9 @@ then
     nodejs "$CUR/scripts/member_permission_generator.js"
     nodejs "$CUR/scripts/push_all_things.js"
     nodejs "$CUR/scripts/update_app_users.js"
+    nodejs "$CUR/scripts/remove_old_flows_collections.js"
+    nodejs "$CUR/scripts/update_widgets_reports.js"
+    nodejs "$CUR/scripts/clear_old_report_data.js"
     
     #change config settings
     countly config "api.batch_on_master" null --force

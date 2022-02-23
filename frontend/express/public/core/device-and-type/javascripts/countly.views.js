@@ -521,9 +521,9 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
         component: GridComponent,
         dimensions: function() {
             return {
-                minWidth: 4,
-                minHeight: 3,
-                width: 6,
+                minWidth: 2,
+                minHeight: 4,
+                width: 2,
                 height: 4
             };
         }

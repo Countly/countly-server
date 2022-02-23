@@ -141,7 +141,7 @@
         });
     };
 
-    if (countlyAuth.validateRead('global_jobs')) {
+    if (countlyAuth.validateGlobalAdmin()) {
         app.route("/manage/jobs", "manageJobs", function() {
             this.renderWhenReady(getMainView());
         });

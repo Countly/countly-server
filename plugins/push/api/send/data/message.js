@@ -105,12 +105,12 @@ class Message extends Mongoable {
      */
     static filter(date, state = State.Streamable) {
         return {
-            state,
+            state: {$bitsAllSet: state},
             $or: [
                 {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte: date}, end: {$gte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte: date}, end: {$gte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte: date}, end: {$gte: date}}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
             ]
         };
     }
