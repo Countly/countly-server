@@ -12,7 +12,8 @@
                     shared_user_groups_edit: [],
                     shared_user_groups_view: [],
                     share_with: "all-users",
-                    theme: 0
+                    theme: 0,
+                    is_owner: true
                 };
             }
         },

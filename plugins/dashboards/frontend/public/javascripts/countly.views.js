@@ -2,6 +2,7 @@
 
 (function() {
     var FEATURE_NAME = "dashboards";
+    var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
 
     var WidgetsMixin = {
         computed: {
@@ -339,8 +340,8 @@
             return {
                 title: "",
                 saveButtonLabel: "",
-                sharingAllowed: countlyGlobal.sharing_status || (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0)),
-                groupSharingAllowed: countlyGlobal.plugins.indexOf("groups") > -1 && countlyGlobal.member.global_admin,
+                sharingAllowed: countlyGlobal.sharing_status || AUTHENTIC_GLOBAL_ADMIN,
+                groupSharingAllowed: countlyGlobal.plugins.indexOf("groups") > -1 && AUTHENTIC_GLOBAL_ADMIN,
                 constants: {
                     sharingOptions: [
                         {
@@ -359,12 +360,20 @@
                             description: this.i18nM("dashboards.share.none.description"),
                         }
                     ]
-                }
+                },
+                sharedEmailEdit: [],
+                sharedEmailView: [],
+                sharedGroupEdit: [],
+                sharedGroupView: []
             };
         },
         computed: {
             allGroups: function() {
                 return [];
+            },
+            canShare: function() {
+                var canShare = this.sharingAllowed && (this.controls.initialEditedObject.is_owner || AUTHENTIC_GLOBAL_ADMIN);
+                return canShare;
             }
         },
         methods: {
@@ -383,9 +392,79 @@
                 var empty = countlyDashboards.factory.dashboards.getEmpty();
                 var obj = {};
 
-                for (var key in empty) {
-                    obj[key] = doc[key];
+                var deleteShares = false;
+
+                if (this.sharingAllowed) {
+                    if (this.canShare) {
+                        if (doc.share_with === "selected-users") {
+                            doc.shared_email_edit = this.sharedEmailEdit;
+                            doc.shared_email_view = this.sharedEmailView;
+
+                            if (this.groupSharingAllowed) {
+                                doc.shared_user_groups_edit = this.sharedGroupEdit;
+                                doc.shared_user_groups_view = this.sharedGroupView;
+                            }
+                        }
+                        else {
+                            deleteShares = true;
+                        }
+                    }
+                    else {
+                        /**
+                         * If the user cannot share, then the dashbaord should stay in none
+                         * sharing mode or whatever is already present (set by the original
+                         * dashboard owner).
+                         */
+
+                        if (__action === "create" || __action === "duplicate") {
+                            doc.share_with = "none";
+                        }
+
+                        if (__action === "edit") {
+                            /**
+                             * If the user cannot share a dashboard and is trying to edit it,
+                             * lets not send the share_with key to the server. So that it stays
+                             * in its original sharing state.
+                             */
+                            delete doc.share_with;
+                        }
+
+                        deleteShares = true;
+                    }
                 }
+                else {
+                    /**
+                     * Sharing is disabled globally
+                     */
+                    doc.share_with = "none";
+                    deleteShares = true;
+                }
+
+                if (deleteShares) {
+                    delete doc.shared_email_edit;
+                    delete doc.shared_email_view;
+                    delete doc.shared_user_groups_edit;
+                    delete doc.shared_user_groups_view;
+                }
+
+                for (var key in empty) {
+                    /**
+                     * This check is important since we don't want to send all the keys
+                     * to the server.
+                     * Especially in case where the user doesn't have the sharing permission.
+                     * In that case we don't want to send the sharing fields to the server.
+                     * Otherwise the existing keys will be overwritten.
+                     */
+                    if (Object.prototype.hasOwnProperty.call(doc, key)) {
+                        obj[key] = doc[key];
+                    }
+                }
+
+                /**
+                 * This is just a runtime only key.
+                 * Should not be sent back to the server.
+                 */
+                delete obj.is_owner;
 
                 this.$store.dispatch(action, obj).then(function(id) {
                     if (id) {
@@ -408,6 +487,17 @@
                 if (doc.__action === "duplicate") {
                     this.title = this.i18nM("dashboards.duplicate-dashboard-heading");
                     this.saveButtonLabel = this.i18nM("dashboards.create-dashboard");
+                }
+
+                this.sharedEmailEdit = doc.shared_email_edit || [];
+                this.sharedEmailView = doc.shared_email_view || [];
+                this.sharedGroupEdit = doc.shared_user_groups_edit || [];
+                this.sharedGroupView = doc.shared_user_groups_view || [];
+
+                if (!this.sharingAllowed) {
+                    if (this.doc.__action === "create") {
+                        this.doc.share_with = "none";
+                    }
                 }
             }
         }
@@ -473,7 +563,7 @@
             "widget-invalid": InvalidWidget
         },
         computed: {
-            canUpdate: function() {
+            canUpdateGrid: function() {
                 var dashboard = this.$store.getters["countlyDashboards/selected"];
                 return (dashboard.data && dashboard.data.is_editable) ? true : false;
             }
@@ -1318,8 +1408,11 @@
 
                 return dashboard;
             },
-            canUpdate: function() {
+            canUpdateGrid: function() {
                 return !!this.dashboard.is_editable;
+            },
+            canUpdateDashboard: function() {
+                return !!(AUTHENTIC_GLOBAL_ADMIN || this.dashboard.is_owner);
             }
         },
         methods: {

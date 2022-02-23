@@ -22,7 +22,7 @@
 
     <div class="grid-stack-item-content bu-p-4">
         <widget-disabled v-if="isWidgetDisabled(widget)" :widget="widget">
-            <template v-slot:action v-if="canUpdate">
+            <template v-slot:action v-if="canUpdateGrid">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">
                         <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
@@ -31,7 +31,7 @@
             </template>
         </widget-disabled>
         <widget-invalid v-else-if="isWidgetInvalid(widget)" :widget="widget">
-            <template v-slot:action v-if="canUpdate">
+            <template v-slot:action v-if="canUpdateGrid">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">
                         <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
@@ -40,7 +40,7 @@
             </template>
         </widget-invalid>
         <component v-else :is="settings.grid.component" @command="$emit('command', $event, widget)" :data="widget">
-            <template v-slot:action v-if="canUpdate">
+            <template v-slot:action v-if="canUpdateGrid">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">
                         <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>

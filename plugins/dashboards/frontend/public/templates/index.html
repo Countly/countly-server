@@ -17,14 +17,14 @@
                         </div>
                         <template v-if="!isInitLoad">
                             <div class="bu-level-item">
-                                <el-button v-if="canUpdate" @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
+                                <el-button v-if="canUpdateGrid" @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
                             </div>
-                            <div class="bu-level-item" v-if="canUpdate">
+                            <div class="bu-level-item" v-if="canUpdateGrid">
                                 <cly-more-options @command="onDashboardAction($event, dashboard)">
-                                    <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                                    <el-dropdown-item command="edit" v-if="canUpdateDashboard">{{i18n('common.edit')}}</el-dropdown-item>
                                     <el-dropdown-item><a :href="'#/manage/reports/create/dashboard/' + dashboard._id">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
                                     <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
-                                    <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                                    <el-dropdown-item command="delete" v-if="canUpdateDashboard">{{i18n('common.delete')}}</el-dropdown-item>
                                 </cly-more-options>
                             </div>
                         </template>
@@ -51,8 +51,8 @@
             </div>
         </header>
         <cly-main>
-            <no-widget v-if="noWidgets && !ADDING_WIDGET" :can-update="canUpdate" @new-widget="newWidget"></no-widget>
-            <dashboards-grid ref="grid" :loading="isInitLoad" :can-update="canUpdate" @widget-added="onWidgetAdded"></dashboards-grid>
+            <no-widget v-if="noWidgets && !ADDING_WIDGET" :can-update="canUpdateGrid" @new-widget="newWidget"></no-widget>
+            <dashboards-grid ref="grid" :loading="isInitLoad" :can-update="canUpdateGrid" @widget-added="onWidgetAdded"></dashboards-grid>
 
             <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
             <widgets-drawer @add-widget="addWidgetToGrid" @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
