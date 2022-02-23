@@ -1651,7 +1651,7 @@
             maxLen = Math.max(maxLen, str.length);
         });
 
-        if (maxLen > 25) {
+        if (maxLen > 25 && xAxis.data.length >= 2) {
             return {
                 grid: {containLabel: false, bottom: 90},
                 xAxis: {
