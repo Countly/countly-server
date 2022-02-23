@@ -62,14 +62,11 @@ pluginManager.dbConnection().then((countlyDb) => {
         }
 
         function upgrade(member, done) {
-            if (!member.admin_of || !member.user_of) {
+            if ((!member.global_admin) && !member.admin_of || !member.user_of) {
                 done();
                 return;
             }
-
-            var writeAccess = member.admin_of;
-            var readAccess = member.user_of;
-
+            
             var memberPermission = {
                 "c": {},
                 "r": {},
@@ -81,87 +78,30 @@ pluginManager.dbConnection().then((countlyDb) => {
                 }
             };
 
-            writeAccess.forEach(app => {
-                if (!app.length) {
-                    return;
-                }
-                var restricted = false;
-                var i = 0;
-                memberPermission.c[app] = {all: false, allowed: {}};
-                memberPermission.r[app] = {all: false, allowed: {}};
-                memberPermission.u[app] = {all: false, allowed: {}};
-                memberPermission.d[app] = {all: false, allowed: {}};
-                
-                //check global restrict permissions
-                if (member.restrict && member.restrict.length) {
-                    for (i = 0; i < member.restrict.length; i++) {
-                        if (restrictMap[member.restrict[i]]) {
-                            restricted = true;
-                            memberPermission.c[app].allowed[restrictMap[member.restrict[i]]] = false;
-                            memberPermission.r[app].allowed[restrictMap[member.restrict[i]]] = false;
-                            memberPermission.u[app].allowed[restrictMap[member.restrict[i]]] = false;
-                            memberPermission.d[app].allowed[restrictMap[member.restrict[i]]] = false;
-                        }
-                    }
-                }
-                
-                //check app level restrict permissions
-                if (member.app_restrict && member.app_restrict[app] && member.app_restrict[app].length) {
-                    var specificRestrictions = false;
-                    for (i = 0; i < member.app_restrict[app].length; i++) {
-                        if (restrictMap[member.app_restrict[app][i]]) {
-                            restricted = true;
-                            specificRestrictions = true;
-                            memberPermission.c[app].allowed[restrictMap[member.app_restrict[app][i]]] = false;
-                            memberPermission.r[app].allowed[restrictMap[member.app_restrict[app][i]]] = false;
-                            memberPermission.u[app].allowed[restrictMap[member.app_restrict[app][i]]] = false;
-                            memberPermission.d[app].allowed[restrictMap[member.app_restrict[app][i]]] = false;
-                        }
-                    }
-                    if (specificRestrictions) {
-                        //app has specific restrictions, adding it to separate set
-                         memberPermission._.u.push([app]);
-                    }
-                }
-                else if (restricted){
-                    //app did not have any specific restrictions, so adding it to first set
-                    memberPermission._.u[0].push(app);
-                }
-                
-                //fill other permissions
-                if (restricted) {
-                    for (i = 0; i < permissions.length; i++) {
-                        if (typeof memberPermission.c[app].allowed[permissions[i]] === "undefined") {
-                            memberPermission.c[app].allowed[permissions[i]] = true;
-                            memberPermission.r[app].allowed[permissions[i]] = true;
-                            memberPermission.u[app].allowed[permissions[i]] = true;
-                            memberPermission.d[app].allowed[permissions[i]] = true;
-                        }
-                    }
-                }
-                //user was not restricted
-                else {
-                    memberPermission.c[app] = {all: true};
-                    memberPermission.r[app] = {all: true};
-                    memberPermission.u[app] = {all: true};
-                    memberPermission.d[app] = {all: true};
-                    memberPermission._.a.push(app);
-                }
-            });
+            if (!member.global_admin) {
+                var writeAccess = member.admin_of;
+                var readAccess = member.user_of;
 
-            readAccess.forEach(app => {
-                //only if permission was not filled by write
-                if (!memberPermission.r[app]) {
+                writeAccess.forEach(app => {
+                    if (!app.length) {
+                        return;
+                    }
                     var restricted = false;
                     var i = 0;
+                    memberPermission.c[app] = {all: false, allowed: {}};
                     memberPermission.r[app] = {all: false, allowed: {}};
+                    memberPermission.u[app] = {all: false, allowed: {}};
+                    memberPermission.d[app] = {all: false, allowed: {}};
                     
                     //check global restrict permissions
                     if (member.restrict && member.restrict.length) {
                         for (i = 0; i < member.restrict.length; i++) {
                             if (restrictMap[member.restrict[i]]) {
                                 restricted = true;
+                                memberPermission.c[app].allowed[restrictMap[member.restrict[i]]] = false;
                                 memberPermission.r[app].allowed[restrictMap[member.restrict[i]]] = false;
+                                memberPermission.u[app].allowed[restrictMap[member.restrict[i]]] = false;
+                                memberPermission.d[app].allowed[restrictMap[member.restrict[i]]] = false;
                             }
                         }
                     }
@@ -173,12 +113,15 @@ pluginManager.dbConnection().then((countlyDb) => {
                             if (restrictMap[member.app_restrict[app][i]]) {
                                 restricted = true;
                                 specificRestrictions = true;
+                                memberPermission.c[app].allowed[restrictMap[member.app_restrict[app][i]]] = false;
                                 memberPermission.r[app].allowed[restrictMap[member.app_restrict[app][i]]] = false;
+                                memberPermission.u[app].allowed[restrictMap[member.app_restrict[app][i]]] = false;
+                                memberPermission.d[app].allowed[restrictMap[member.app_restrict[app][i]]] = false;
                             }
                         }
                         if (specificRestrictions) {
                             //app has specific restrictions, adding it to separate set
-                            memberPermission._.u.push([app]);
+                             memberPermission._.u.push([app]);
                         }
                     }
                     else if (restricted){
@@ -189,22 +132,81 @@ pluginManager.dbConnection().then((countlyDb) => {
                     //fill other permissions
                     if (restricted) {
                         for (i = 0; i < permissions.length; i++) {
-                            if (typeof memberPermission.r[app].allowed[permissions[i]] === "undefined") {
+                            if (typeof memberPermission.c[app].allowed[permissions[i]] === "undefined") {
+                                memberPermission.c[app].allowed[permissions[i]] = true;
                                 memberPermission.r[app].allowed[permissions[i]] = true;
+                                memberPermission.u[app].allowed[permissions[i]] = true;
+                                memberPermission.d[app].allowed[permissions[i]] = true;
                             }
                         }
                     }
                     //user was not restricted
                     else {
+                        memberPermission.c[app] = {all: true};
                         memberPermission.r[app] = {all: true};
-                        memberPermission._.u[0].push(app);
+                        memberPermission.u[app] = {all: true};
+                        memberPermission.d[app] = {all: true};
+                        memberPermission._.a.push(app);
                     }
+                });
+    
+                readAccess.forEach(app => {
+                    //only if permission was not filled by write
+                    if (!memberPermission.r[app]) {
+                        var restricted = false;
+                        var i = 0;
+                        memberPermission.r[app] = {all: false, allowed: {}};
+                        
+                        //check global restrict permissions
+                        if (member.restrict && member.restrict.length) {
+                            for (i = 0; i < member.restrict.length; i++) {
+                                if (restrictMap[member.restrict[i]]) {
+                                    restricted = true;
+                                    memberPermission.r[app].allowed[restrictMap[member.restrict[i]]] = false;
+                                }
+                            }
+                        }
+                        
+                        //check app level restrict permissions
+                        if (member.app_restrict && member.app_restrict[app] && member.app_restrict[app].length) {
+                            var specificRestrictions = false;
+                            for (i = 0; i < member.app_restrict[app].length; i++) {
+                                if (restrictMap[member.app_restrict[app][i]]) {
+                                    restricted = true;
+                                    specificRestrictions = true;
+                                    memberPermission.r[app].allowed[restrictMap[member.app_restrict[app][i]]] = false;
+                                }
+                            }
+                            if (specificRestrictions) {
+                                //app has specific restrictions, adding it to separate set
+                                memberPermission._.u.push([app]);
+                            }
+                        }
+                        else if (restricted){
+                            //app did not have any specific restrictions, so adding it to first set
+                            memberPermission._.u[0].push(app);
+                        }
+                        
+                        //fill other permissions
+                        if (restricted) {
+                            for (i = 0; i < permissions.length; i++) {
+                                if (typeof memberPermission.r[app].allowed[permissions[i]] === "undefined") {
+                                    memberPermission.r[app].allowed[permissions[i]] = true;
+                                }
+                            }
+                        }
+                        //user was not restricted
+                        else {
+                            memberPermission.r[app] = {all: true};
+                            memberPermission._.u[0].push(app);
+                        }
+                    }
+                });
+                
+                //sanity check for _ if first set is empty and has multiple sets
+                if (memberPermission._.u.length > 1 && !memberPermission._.u[0].length) {
+                    memberPermission._.u.shift();
                 }
-            });
-            
-            //sanity check for _ if first set is empty and has multiple sets
-            if (memberPermission._.u.length > 1 && !memberPermission._.u[0].length) {
-                memberPermission._.u.shift();
             }
 
             countlyDb.collection('members').findAndModify({"_id": member._id}, {}, {$set: {permission: memberPermission, migrated:"22.02"}}, function(err, member) {

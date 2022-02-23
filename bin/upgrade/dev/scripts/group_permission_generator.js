@@ -62,14 +62,6 @@ pluginManager.dbConnection().then((countlyDb) => {
         }
 
         function upgrade(group, done) {
-            if (!group.admin_of || !group.user_of) {
-                done();
-                return;
-            }
-
-            var writeAccess = group.admin_of;
-            var readAccess = group.user_of;
-
             var groupPermission = {
                 "c": {},
                 "r": {},
@@ -81,87 +73,35 @@ pluginManager.dbConnection().then((countlyDb) => {
                 }
             };
 
-            writeAccess.forEach(app => {
-                if (!app.length) {
-                    return;
-                }
-                var restricted = false;
-                var i = 0;
-                groupPermission.c[app] = {all: false, allowed: {}};
-                groupPermission.r[app] = {all: false, allowed: {}};
-                groupPermission.u[app] = {all: false, allowed: {}};
-                groupPermission.d[app] = {all: false, allowed: {}};
-                
-                //check global restrict permissions
-                if (group.restrict && group.restrict.length) {
-                    for (i = 0; i < group.restrict.length; i++) {
-                        if (restrictMap[group.restrict[i]]) {
-                            restricted = true;
-                            groupPermission.c[app].allowed[restrictMap[group.restrict[i]]] = false;
-                            groupPermission.r[app].allowed[restrictMap[group.restrict[i]]] = false;
-                            groupPermission.u[app].allowed[restrictMap[group.restrict[i]]] = false;
-                            groupPermission.d[app].allowed[restrictMap[group.restrict[i]]] = false;
-                        }
+            // we need to check global admin flag
+            // because if groups is global admin, we don't need to prepare permissions 
+            // but we still need empty permission object for ui to work
+            // also we still need to check that group has admin_of and user_of properties 
+            // because some groups may dooesn't have those properties
+            if (!group.global_admin && (group.admin_of && group.user_of)) {
+                var writeAccess = group.admin_of;
+                var readAccess = group.user_of;
+    
+                writeAccess.forEach(app => {
+                    if (!app.length) {
+                        return;
                     }
-                }
-                
-                //check app level restrict permissions
-                if (group.app_restrict && group.app_restrict[app] && group.app_restrict[app].length) {
-                    var specificRestrictions = false;
-                    for (i = 0; i < group.app_restrict[app].length; i++) {
-                        if (restrictMap[group.app_restrict[app][i]]) {
-                            restricted = true;
-                            specificRestrictions = true;
-                            groupPermission.c[app].allowed[restrictMap[group.app_restrict[app][i]]] = false;
-                            groupPermission.r[app].allowed[restrictMap[group.app_restrict[app][i]]] = false;
-                            groupPermission.u[app].allowed[restrictMap[group.app_restrict[app][i]]] = false;
-                            groupPermission.d[app].allowed[restrictMap[group.app_restrict[app][i]]] = false;
-                        }
-                    }
-                    if (specificRestrictions) {
-                        //app has specific restrictions, adding it to separate set
-                         groupPermission._.u.push([app]);
-                    }
-                }
-                else if (restricted){
-                    //app did not have any specific restrictions, so adding it to first set
-                    groupPermission._.u[0].push(app);
-                }
-                
-                //fill other permissions
-                if (restricted) {
-                    for (i = 0; i < permissions.length; i++) {
-                        if (typeof groupPermission.c[app].allowed[permissions[i]] === "undefined") {
-                            groupPermission.c[app].allowed[permissions[i]] = true;
-                            groupPermission.r[app].allowed[permissions[i]] = true;
-                            groupPermission.u[app].allowed[permissions[i]] = true;
-                            groupPermission.d[app].allowed[permissions[i]] = true;
-                        }
-                    }
-                }
-                //user was not restricted
-                else {
-                    groupPermission.c[app] = {all: true};
-                    groupPermission.r[app] = {all: true};
-                    groupPermission.u[app] = {all: true};
-                    groupPermission.d[app] = {all: true};
-                    groupPermission._.a.push(app);
-                }
-            });
-
-            readAccess.forEach(app => {
-                //only if permission was not filled by write
-                if (!groupPermission.r[app]) {
                     var restricted = false;
                     var i = 0;
+                    groupPermission.c[app] = {all: false, allowed: {}};
                     groupPermission.r[app] = {all: false, allowed: {}};
+                    groupPermission.u[app] = {all: false, allowed: {}};
+                    groupPermission.d[app] = {all: false, allowed: {}};
                     
                     //check global restrict permissions
                     if (group.restrict && group.restrict.length) {
                         for (i = 0; i < group.restrict.length; i++) {
                             if (restrictMap[group.restrict[i]]) {
                                 restricted = true;
+                                groupPermission.c[app].allowed[restrictMap[group.restrict[i]]] = false;
                                 groupPermission.r[app].allowed[restrictMap[group.restrict[i]]] = false;
+                                groupPermission.u[app].allowed[restrictMap[group.restrict[i]]] = false;
+                                groupPermission.d[app].allowed[restrictMap[group.restrict[i]]] = false;
                             }
                         }
                     }
@@ -173,12 +113,15 @@ pluginManager.dbConnection().then((countlyDb) => {
                             if (restrictMap[group.app_restrict[app][i]]) {
                                 restricted = true;
                                 specificRestrictions = true;
+                                groupPermission.c[app].allowed[restrictMap[group.app_restrict[app][i]]] = false;
                                 groupPermission.r[app].allowed[restrictMap[group.app_restrict[app][i]]] = false;
+                                groupPermission.u[app].allowed[restrictMap[group.app_restrict[app][i]]] = false;
+                                groupPermission.d[app].allowed[restrictMap[group.app_restrict[app][i]]] = false;
                             }
                         }
                         if (specificRestrictions) {
                             //app has specific restrictions, adding it to separate set
-                            groupPermission._.u.push([app]);
+                             groupPermission._.u.push([app]);
                         }
                     }
                     else if (restricted){
@@ -189,22 +132,81 @@ pluginManager.dbConnection().then((countlyDb) => {
                     //fill other permissions
                     if (restricted) {
                         for (i = 0; i < permissions.length; i++) {
-                            if (typeof groupPermission.r[app].allowed[permissions[i]] === "undefined") {
+                            if (typeof groupPermission.c[app].allowed[permissions[i]] === "undefined") {
+                                groupPermission.c[app].allowed[permissions[i]] = true;
                                 groupPermission.r[app].allowed[permissions[i]] = true;
+                                groupPermission.u[app].allowed[permissions[i]] = true;
+                                groupPermission.d[app].allowed[permissions[i]] = true;
                             }
                         }
                     }
                     //user was not restricted
                     else {
+                        groupPermission.c[app] = {all: true};
                         groupPermission.r[app] = {all: true};
-                        groupPermission._.u[0].push(app);
+                        groupPermission.u[app] = {all: true};
+                        groupPermission.d[app] = {all: true};
+                        groupPermission._.a.push(app);
                     }
+                });
+    
+                readAccess.forEach(app => {
+                    //only if permission was not filled by write
+                    if (!groupPermission.r[app]) {
+                        var restricted = false;
+                        var i = 0;
+                        groupPermission.r[app] = {all: false, allowed: {}};
+                        
+                        //check global restrict permissions
+                        if (group.restrict && group.restrict.length) {
+                            for (i = 0; i < group.restrict.length; i++) {
+                                if (restrictMap[group.restrict[i]]) {
+                                    restricted = true;
+                                    groupPermission.r[app].allowed[restrictMap[group.restrict[i]]] = false;
+                                }
+                            }
+                        }
+                        
+                        //check app level restrict permissions
+                        if (group.app_restrict && group.app_restrict[app] && group.app_restrict[app].length) {
+                            var specificRestrictions = false;
+                            for (i = 0; i < group.app_restrict[app].length; i++) {
+                                if (restrictMap[group.app_restrict[app][i]]) {
+                                    restricted = true;
+                                    specificRestrictions = true;
+                                    groupPermission.r[app].allowed[restrictMap[group.app_restrict[app][i]]] = false;
+                                }
+                            }
+                            if (specificRestrictions) {
+                                //app has specific restrictions, adding it to separate set
+                                groupPermission._.u.push([app]);
+                            }
+                        }
+                        else if (restricted){
+                            //app did not have any specific restrictions, so adding it to first set
+                            groupPermission._.u[0].push(app);
+                        }
+                        
+                        //fill other permissions
+                        if (restricted) {
+                            for (i = 0; i < permissions.length; i++) {
+                                if (typeof groupPermission.r[app].allowed[permissions[i]] === "undefined") {
+                                    groupPermission.r[app].allowed[permissions[i]] = true;
+                                }
+                            }
+                        }
+                        //user was not restricted
+                        else {
+                            groupPermission.r[app] = {all: true};
+                            groupPermission._.u[0].push(app);
+                        }
+                    }
+                });
+                
+                //sanity check for _ if first set is empty and has multiple sets
+                if (groupPermission._.u.length > 1 && !groupPermission._.u[0].length) {
+                    groupPermission._.u.shift();
                 }
-            });
-            
-            //sanity check for _ if first set is empty and has multiple sets
-            if (groupPermission._.u.length > 1 && !groupPermission._.u[0].length) {
-                groupPermission._.u.shift();
             }
 
             countlyDb.collection('groups').findAndModify({"_id": group._id}, {}, {$set: {permission: groupPermission, migrated:"22.02"}}, function(err, group) {
