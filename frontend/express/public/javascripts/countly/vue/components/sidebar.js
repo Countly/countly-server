@@ -469,7 +469,8 @@
                 return {
                     selectedMenuOptionLocal: null,
                     versionInfo: countlyGlobal.countlyTypeName,
-                    showMainMenu: true
+                    showMainMenu: true,
+                    redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID
                 };
             },
             computed: {
