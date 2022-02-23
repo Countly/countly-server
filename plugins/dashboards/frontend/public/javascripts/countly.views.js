@@ -414,6 +414,10 @@
                                 doc.shared_user_groups_edit = this.sharedGroupEdit;
                                 doc.shared_user_groups_view = this.sharedGroupView;
                             }
+                            else {
+                                delete doc.shared_user_groups_edit;
+                                delete doc.shared_user_groups_view;
+                            }
                         }
                         else {
                             deleteShares = true;
