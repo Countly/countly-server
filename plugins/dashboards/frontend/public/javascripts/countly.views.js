@@ -623,7 +623,7 @@
         template: '#dashboards-grid',
         mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, WidgetValidationMixin],
         props: {
-            initLoad: {
+            loading: {
                 type: Boolean,
                 default: true
             }
