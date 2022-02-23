@@ -20,7 +20,7 @@
     <div class="cly-vue-sidebar__main-menu">
         <vue-scroll>
             <ul>
-                <li v-for="(dashboard, idx) in allDashboards" :key="dashboard.id" :class="['bu-px-3 bu-mb-1 bu-is-clickable']">
+                <li v-for="(dashboard, idx) in allDashboards" :key="dashboard.id" :class="['bu-px-3 bu-mb-1 bu-is-clickable', {'bu-mb-6': (idx === (allDashboards.length - 1) ? true: false)}]">
                     <a :href="'#/custom/' + dashboard._id">
                         <div
                             :class="['cly-vue-sidebar__menu-items has-ellipsis',
