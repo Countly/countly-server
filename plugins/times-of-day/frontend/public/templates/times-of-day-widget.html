@@ -1,13 +1,18 @@
-<div v-bind:class="[componentId]">
+<div v-bind:class="[componentId, 'clyd-widget']">
     <div class="bu-level">
         <div class="bu-level-left">
             <div class="bu-level-item">
-                {{data.title}}
+                {{title}}
             </div>
         </div>
         <div class="bu-level-right">
             <slot name="action"></slot>
         </div>
     </div>
-    <times-of-day-scatter-chart :series="series" :maxSeriesValue="maxSeriesValue" :show-zoom="false" :show-toggle="false" :showDownload="false"></times-of-day-scatter-chart>
+
+    <clyd-primary-legend :apps="data.apps" :custom_period="data.custom_period"></clyd-primary-legend>
+
+    <div class="clyd-widget__content">
+        <times-of-day-scatter-chart :series="series" :maxSeriesValue="maxSeriesValue" :show-zoom="false" :show-toggle="false" :showDownload="false" height="auto" skin="full"></times-of-day-scatter-chart>
+    </div>
 </div>
