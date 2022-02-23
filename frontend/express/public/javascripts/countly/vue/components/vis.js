@@ -1614,17 +1614,25 @@
             // no need to force all points to be present
             // if there are too many of them
             return {
-                width: 100,
-                overflow: "truncate",
-                rotate: 45,
+                xAxis: {
+                    axisLabel: {
+                        width: 100,
+                        overflow: "truncate",
+                        rotate: 45,
+                    }
+                }
             };
         }
         else if (xAxis.data.length >= 10) {
             return {
-                width: 100,
-                overflow: "truncate",
-                interval: 0,
-                rotate: 45,
+                xAxis: {
+                    axisLabel: {
+                        width: 100,
+                        overflow: "truncate",
+                        interval: 0,
+                        rotate: 45,
+                    }
+                }
             };
         }
 
@@ -1641,22 +1649,35 @@
             maxLen = Math.max(maxLen, str.length);
         });
 
-        if (maxLen > 25 && xAxis.data.length >= 3) {
+        if (maxLen > 25 && xAxis.data.length >= 4) {
             return {
-                width: 150,
-                overflow: "truncate",
-                interval: 0,
-                rotate: 30,
+                xAxis: {
+                    axisLabel: {
+                        width: 150,
+                        overflow: "truncate",
+                        interval: 0,
+                        rotate: 30,
+                    }
+                }
             };
         }
-        else if (xAxis.data.length >= 5) {
+        else if (xAxis.data.length >= 2) {
             return {
-                width: 150,
-                overflow: "break",
-                interval: 0
+                grid: {
+                    bottom: 50
+                },
+                xAxis: {
+                    axisLabel: {
+                        width: 150,
+                        overflow: "break",
+                        interval: 0
+                    }
+                }
             };
         }
-        return {interval: 0};
+        return {
+            xAxis: {axisLabel: {interval: 0}}
+        };
     };
 
     Vue.component("cly-chart-bar", BaseBarChart.extend({
@@ -1672,11 +1693,11 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
+                opt = this.patchChart(opt);
                 var xAxisOverflowPatch = handleXAxisOverflow(opt);
                 if (xAxisOverflowPatch) {
-                    opt.xAxis.axisLabel = _merge(opt.xAxis.axisLabel, xAxisOverflowPatch);
+                    opt = _merge(opt, xAxisOverflowPatch);
                 }
-                opt = this.patchChart(opt);
                 return opt;
             }
         },
