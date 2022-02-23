@@ -415,6 +415,12 @@
 
     var NoWidget = countlyVue.views.BaseView.extend({
         template: '#dashboards-nowidget',
+        props: {
+            canUpdate: {
+                type: Boolean,
+                default: true
+            }
+        },
         methods: {
             newWidget: function() {
                 this.$emit("new-widget");
@@ -469,7 +475,7 @@
         computed: {
             canUpdate: function() {
                 var dashboard = this.$store.getters["countlyDashboards/selected"];
-                return dashboard.data && dashboard.data.is_editable;
+                return (dashboard.data && dashboard.data.is_editable) ? true : false;
             }
         },
         mounted: function() {
@@ -627,9 +633,9 @@
                 type: Boolean,
                 default: true
             },
-            updateAllowed: {
+            canUpdate: {
                 type: Boolean,
-                default: false
+                default: true
             }
         },
         components: {
@@ -972,6 +978,10 @@
                     this.updateWidgetGeography(wId, {size: size, position: position});
                 }
 
+                if (!this.canUpdate) {
+                    this.disableGrid();
+                }
+
                 this.grid.on("change", function(event, items) {
                     for (i = 0; i < items.length; i++) {
                         var node = items[i];
@@ -1177,7 +1187,7 @@
 
                             var nodeEl = document.getElementById(widgetId);
 
-                            if (!self.updateAllowed) {
+                            if (!self.canUpdate) {
                                 locked = true;
                                 noResize = true;
                                 noMove = true;
@@ -1240,6 +1250,9 @@
                      */
                     this.grid.makeWidget("#" + id);
                 }
+            },
+            disableGrid: function() {
+                this.grid.disable();
             },
             compactGrid: function() {
                 this.grid.compact();
@@ -1306,7 +1319,7 @@
                 return dashboard;
             },
             canUpdate: function() {
-                return this.dashboard.is_editable;
+                return !!this.dashboard.is_editable;
             }
         },
         methods: {
