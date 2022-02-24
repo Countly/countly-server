@@ -199,19 +199,13 @@
                                 </cly-inline-form-field>
                                 <h6 class="bu-mt-5 bu-ml-6 text-uppercase">{{i18n("management-applications.app-users")}}</h6>
                                 <cly-inline-form-field :label="i18n('management-applications.global_admins')">
-                                    <template v-for="user in appDetails.global_admin">
-                                    {{user.full_name || user.username || user._id}},
-                                    </template>&nbsp;
+                                    {{ joinNameList(appDetails.global_admin) }}
                                 </cly-inline-form-field>
                                 <cly-inline-form-field :label="i18n('management-applications.admins')">
-                                    <template v-for="user in appDetails.admin">
-                                    {{user.full_name || user.username || user._id}},
-                                    </template>&nbsp;
+                                    {{ joinNameList(appDetails.admin) }}
                                 </cly-inline-form-field>
                                 <cly-inline-form-field :label="i18n('management-applications.users')">
-                                    <template v-for="user in appDetails.user">
-                                    {{user.full_name || user.username || user._id}},
-                                    </template>&nbsp;
+                                    {{ joinNameList(appDetails.user) }}
                                 </cly-inline-form-field>
                             </div>
                             <div v-else v-loading="true" style="height: 500px;"></div>
@@ -280,8 +274,10 @@
                     <p>{{i18n('common.integrate-sdks')}}</p>
                     <p><a href='https://code.count.ly' target='_blank'>Countly Code Generator </a>{{i18n('common.integrate-sdks-text')}}</p>
                     <p class="select-platforms">{{i18n('common.integrate-sdks-platforms')}}</p>
-                    <div v-if="sdks" class="sdks">
-                        <a :href="'http://code.count.ly/integration-' + code + '.html?server=' + server + '&app_key=' + apps[selectedApp].key" target='_blank' v-for="(value, code) in sdks" class="el-button el-button--primary is-plain">{{value.name.replace("SDK", "")}}</a>&nbsp;
+                    <div v-if="sdks" class="sdks" style="text-align: right">
+                        <a :href="'http://code.count.ly/integration-' + code + '.html?server=' + server + '&app_key=' + apps[selectedApp].key" target='_blank' v-for="(value, code) in sdks" class="el-button el-button--primary is-plain">
+                            {{value.name.replace("SDK", "")}}
+                        </a>&nbsp;
                     </div>
                 </el-card>
             </div>
