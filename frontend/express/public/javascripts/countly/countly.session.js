@@ -256,7 +256,7 @@
                     name: "previous_average",
                     func: function(dataObj) {
                         if (use_seconds) {
-                            return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t)).toFixed(1));
+                            return ((parseInt(dataObj.t) === 0) ? 0 : (dataObj.d / dataObj.t).toFixed(1));
                         }
                         else {
                             return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
@@ -268,7 +268,7 @@
                     name: "average",
                     func: function(dataObj) {
                         if (use_seconds) {
-                            return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t)).toFixed(1));
+                            return ((parseInt(dataObj.t) === 0) ? 0 : (dataObj.d / dataObj.t).toFixed(1));
                         }
                         else {
                             return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
