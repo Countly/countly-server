@@ -1603,8 +1603,8 @@
                     </div>'
     }));
 
-    var handleXAxisOverflow = function(options) {
-        if (!options || !options.xAxis || !options.xAxis.data) {
+    var handleXAxisOverflow = function(options, strategy) {
+        if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
             return null;
         }
         var xAxis = options.xAxis;
@@ -1689,6 +1689,13 @@
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
+        props: {
+            xAxisLabelOverflow: {
+                type: String,
+                default: 'auto',
+                required: false
+            }
+        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
@@ -1697,7 +1704,7 @@
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 opt = this.patchChart(opt);
-                var xAxisOverflowPatch = handleXAxisOverflow(opt);
+                var xAxisOverflowPatch = handleXAxisOverflow(opt, this.xAxisLabelOverflow);
                 if (xAxisOverflowPatch) {
                     opt = _merge(opt, xAxisOverflowPatch);
                 }
