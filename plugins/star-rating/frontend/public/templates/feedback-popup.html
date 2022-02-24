@@ -59,8 +59,10 @@
                 </input>
             </label>
             -->
-            <input data-state="0" id="countly-feedback-show-comment" type="checkbox">
-            <label id="cf-comment-text" for="countly-feedback-show-comment">Add comment</label>
+            <div class="countly-feedback-checkbox-wrapper">
+                <input data-state="0" id="countly-feedback-show-comment" type="checkbox">
+                <label id="cf-comment-text" for="countly-feedback-show-comment">Add comment</label>    
+            </div>
             <textarea id="countly-feedback-comment-textarea">
             </textarea>
         </div>
@@ -76,9 +78,10 @@
                 </input>
             </label>
             -->
-            
-            <input data-state="0" id="countly-feedback-show-email" type="checkbox">
-            <label id="cf-email-text" for="countly-feedback-show-email">Contact me by e-mail</label>
+            <div class="countly-feedback-checkbox-wrapper">
+                <input data-state="0" id="countly-feedback-show-email" type="checkbox">
+                <label id="cf-email-text" for="countly-feedback-show-email">Contact me by e-mail</label>
+            </div>
             <input id="countly-feedback-contact-me-email" type="text">
             </input>
         </div>
@@ -121,11 +124,15 @@
 </script>
 <script>
     (function() {
+        if (document.location.href.split("feedback/rating").length === 1) {
+            $('#close-btn').hide();
+            $('#question-area').css({ marginTop: '50px' });
+        }
         /*
         Helper methods which we need
         */
         function hasClass(ele, cls) {
-            return !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+            return (typeof ele.className !== 'undefined' && !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)')));
         }
 
         function addClass(ele, cls) {
@@ -319,14 +326,10 @@
             if (showEmailCheckbox.getAttribute('data-state') == 0) {
                 document.getElementById('countly-feedback-contact-me-email').style.display = "block";
                 showEmailCheckbox.setAttribute('data-state', 1);
-                removeClass(showEmailCheckboxMask, 'fa-square-o');
-                addClass(showEmailCheckboxMask, 'fa-check-square');
             }
             else {
                 showEmailCheckbox.setAttribute('data-state', 0);
                 document.getElementById('countly-feedback-contact-me-email').style.display = "none";
-                removeClass(showEmailCheckboxMask, 'fa-check-square');
-                addClass(showEmailCheckboxMask, 'fa-square-o');
             }
         }
 

@@ -18,9 +18,9 @@
 }
 #countly-ratings-iframe{
     width: 400px;
-    height: 500px;
-    border:none;
-    background-color:transparent;
+    height: 800px;
+    border: none;
+    background-color: transparent;
     overflow:hidden;
     z-index: 9;
 }
@@ -122,16 +122,15 @@
 
 #countly-feedback-iframe {
     width: 100%;
-    height: 600px;
+    height: 800px;
     border: none;
     background: 0 0;
 }
 
 .countly-iframe-wrapper {
     z-index: 9999;
-    margin-left: calc(50% - 200px);
     box-sizing: border-box;
-    height: 600px;
+    height: 800px;
     background: 0 0;
     position: fixed;
     top: 100px;
@@ -167,3 +166,146 @@
     top: 15px;
     right: 15px;
 }
+
+.countly-feedback-sticker.mleft-s > span,
+.countly-feedback-sticker.mleft-m > span,
+.countly-feedback-sticker.mleft-l > span,
+.countly-feedback-sticker.mright-s > span,
+.countly-feedback-sticker.mright-m > span,
+.countly-feedback-sticker.mright-l > span {
+    margin-top: 5px;
+}
+
+.countly-feedback-sticker.bleft-s > span,
+.countly-feedback-sticker.bleft-m > span,
+.countly-feedback-sticker.bleft-l > span,
+.countly-feedback-sticker.bright-s > span,
+.countly-feedback-sticker.bright-m > span,
+.countly-feedback-sticker.bright-l > span {
+    margin-left: 5px;
+}
+
+.countly-feedback-sticker.mleft-s > #feedback-sticker-svg, .countly-feedback-sticker.mright-s > #feedback-sticker-svg, .countly-feedback-sticker.bright-s > #feedback-sticker-svg, .countly-feedback-sticker.bleft-s > #feedback-sticker-svg {
+    height: 14px;
+    width: 14px;
+    vertical-align: baseline;
+}
+.countly-feedback-sticker.mleft-m > #feedback-sticker-svg, .countly-feedback-sticker.mright-m > #feedback-sticker-svg, .countly-feedback-sticker.bright-m > #feedback-sticker-svg, .countly-feedback-sticker.bleft-m > #feedback-sticker-svg {
+    height: 18px;
+    width: 18px;
+    vertical-align: baseline;
+}
+.countly-feedback-sticker.mleft-l > #feedback-sticker-svg, .countly-feedback-sticker.mright-l > #feedback-sticker-svg, .countly-feedback-sticker.bright-l > #feedback-sticker-svg, .countly-feedback-sticker.bleft-l > #feedback-sticker-svg {
+    height: 20px;
+    width: 20px;
+    vertical-align: baseline;
+}
+
+.countly-feedback-sticker > #feedback-sticker-svg {
+    height: 14px;
+    width: 14px;
+    vertical-align: baseline;
+}
+
+.countly-feedback-close-icon {
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    width: 32px;
+    height: 50px;
+    padding: 0;
+    color: #d6d6d6;
+    font-style: normal;
+    font-size: 32px;
+    font-family: Arial, Baskerville, monospace;
+    line-height: 32px;
+    position: absolute;
+    z-index: 9999;
+}
+@media (min-width: 1150px) {
+    .countly-iframe-wrapper {
+        width: 30%;
+        left: 35%;
+    }
+    .countly-feedback-close-icon {
+        top: 30px;
+        right: 30px;
+    }
+}
+@media (min-width: 768px) and (max-width: 1149px) {
+    .countly-iframe-wrapper {
+        width: 44%;
+        left: 28%;
+    }
+    .countly-feedback-close-icon {
+        top: 30px;
+        right: 30px;
+    }
+}
+@media (min-width: 414px) and (max-width: 767px) {
+    .countly-iframe-wrapper {
+        margin-top:-40px;
+        width: 96%;
+        margin-left: 2%;
+    }
+    .countly-feedback-close-icon {
+        top: 25px;
+        right: 25px;
+    }
+}
+@media (min-width: 375px) and (max-width: 413px) {
+    .countly-iframe-wrapper {
+        margin-top:-40px;
+        width: 95%;
+        margin-left: 2.5%;
+    }
+    .countly-feedback-close-icon {
+        top: 25px;
+        right: 25px;
+    }
+}
+@media (min-width: 320px) and (max-width: 374px) {
+    .countly-iframe-wrapper {
+        margin-top:-40px;
+        width: 95%;
+        margin-left: 2.5%;
+    }
+    .countly-feedback-close-icon {
+        top: 25px;
+        right: 25px;
+    }
+}
+
+/* SAFARI ONLY STYLES - START */
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-s > #feedback-sticker-svg, 
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-m > #feedback-sticker-svg, 
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-l > #feedback-sticker-svg {
+    vertical-align: middle;
+    margin-left: 3px;
+}
+/*middle right sticker styles*/
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-s,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-m {
+    right: 3px;
+}
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-l {
+    right: 5px;
+}
+/*middle left sticker styles*/
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mleft-l > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mleft-m > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mleft-s > #feedback-sticker-svg {
+    margin-left: -2px;
+}
+/*bottom left sticker styles*/
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bleft-m > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bright-m > #feedback-sticker-svg {
+    margin-bottom: -2px;
+}
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bleft-l > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bright-l > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bright-s > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bleft-s > #feedback-sticker-svg {
+    margin-bottom: -1px;   
+}
+/* SAFARI ONLY STYLES - END */
