@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers, $, screenfull */
+/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull */
 
 (function() {
     var FEATURE_NAME = "dashboards";
@@ -374,16 +374,21 @@
                 sharedEmailEdit: [],
                 sharedEmailView: [],
                 sharedGroupEdit: [],
-                sharedGroupView: []
+                sharedGroupView: [],
+                allGroups: []
             };
         },
         computed: {
-            allGroups: function() {
-                return [];
-            },
             canShare: function() {
                 var canShare = this.sharingAllowed && (this.controls.initialEditedObject.is_owner || AUTHENTIC_GLOBAL_ADMIN);
                 return canShare;
+            },
+            elSelectKey: function() {
+                var key = this.allGroups.map(function(g) {
+                    return g._id;
+                }).join(",");
+
+                return key;
             }
         },
         methods: {
@@ -508,6 +513,23 @@
                         doc.share_with = "none";
                     }
                 }
+            }
+        },
+        mounted: function() {
+            if (this.groupSharingAllowed) {
+                var self = this;
+                groupsModel.initialize().then(function() {
+                    var groups = _.sortBy(groupsModel.data(), 'name');
+
+                    var userGroups = groups.map(function(g) {
+                        return {
+                            name: g.name,
+                            value: g._id
+                        };
+                    });
+
+                    self.allGroups = userGroups;
+                });
             }
         }
     });
@@ -1395,7 +1417,7 @@
             };
         },
         computed: {
-            noDashboards: function() {
+            noSelectedDashboard: function() {
                 var selected = this.$store.getters["countlyDashboards/selected"];
                 return !(selected.id && selected.data);
             },
@@ -1542,10 +1564,8 @@
         },
         beforeMount: function() {
             var self = this;
-            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function(res) {
-                if (res) {
-                    self.isInitLoad = false;
-                }
+            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function() {
+                self.isInitLoad = false;
             });
         }
     });
@@ -1644,7 +1664,6 @@
                     var query = this.searchQuery;
 
                     var dashboards = this.$store.getters["countlyDashboards/all"];
-                    this.identifySelectedDashboard(dashboards);
 
                     if (!query) {
                         return dashboards;
@@ -1662,10 +1681,25 @@
                 onDashboardMenuItemClick: function(dashboard) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: dashboard});
                 },
-                identifySelectedDashboard: function(dashboards) {
+                identifySelected: function() {
+                    var dashboards = this.$store.getters["countlyDashboards/all"];
+
                     var currLink = Backbone.history.fragment;
 
                     if (/^\/custom/.test(currLink) === false) {
+                        var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                        if (selected.menu === "dashboards") {
+                            /**
+                             * Incase the selected menu is already dashboards, we need to reset
+                             * the selected item to {}. Since we did not find the menu item.
+                             *
+                             * This is important as there are urls in countly like /versions,
+                             * which are not in the sidebar. So for them we don't need to highlight
+                             * anything.
+                             */
+                            this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "dashboards", item: {} });
+                        }
+
                         return;
                     }
 
@@ -1676,10 +1710,10 @@
                         return d._id === id;
                     });
 
-                    if (!currMenu) {
-                        countlyDashboards.factory.log("Dashboard not found - " + id + ", Dashboards = " + JSON.stringify(dashboards));
-                    }
-
+                    /**
+                     * Even if we don't find a dashboard, we should atleast set the
+                     * menu item to dashboards.
+                     */
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
                 }
             },
@@ -1688,7 +1722,10 @@
                 CV.vuex.registerGlobally(this.module);
             },
             beforeMount: function() {
-                this.$store.dispatch("countlyDashboards/getAll");
+                var self = this;
+                this.$store.dispatch("countlyDashboards/getAll").then(function() {
+                    self.identifySelected();
+                });
             }
         });
 

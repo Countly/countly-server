@@ -38,9 +38,9 @@
 
     <transition name="cly-vue-sidebar__slide-transition">
         <div class="cly-vue-sidebar__menu" v-if="showMainMenu">
-            <analytics-menu v-show="selectedMenuOption === 'analytics'"></analytics-menu>
-            <management-menu v-show="selectedMenuOption === 'management'"></management-menu>
-            <component v-for="item in components" :is="item.component" v-show="selectedMenuOption === item.name" :key="item.name"></component>
+            <analytics-menu ref="analytics" v-show="selectedMenuOption === 'analytics'"></analytics-menu>
+            <management-menu ref="management" v-show="selectedMenuOption === 'management'"></management-menu>
+            <component :ref="item.name" v-for="item in components" :is="item.component" v-show="selectedMenuOption === item.name" :key="item.name"></component>
             <div class="cly-vue-sidebar__version">{{versionInfo}}</div>
         </div>
     </transition>

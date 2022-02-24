@@ -504,8 +504,9 @@
             },
             getDashboard: function(context, params) {
                 var dashboardId = context.getters.selected.id;
+                var isRefresh = params && params.isRefresh;
 
-                return countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(res) {
+                return countlyDashboards.service.dashboards.get(dashboardId, isRefresh).then(function(res) {
                     var dashbaord = null;
                     var widgets = [];
                     var dId = null;
@@ -530,7 +531,13 @@
 
                     context.commit("setSelectedDashboard", {id: dId, data: dashbaord});
 
-                    if (dashbaord) {
+                    if (dashbaord && !isRefresh) {
+                        /**
+                         * Lets not update the all dashboard list if the dashboard is
+                         * being refreshed. It calls the get all dashboards getter unnessarily
+                         * in the sidebar menu component of dashboards as well.
+                         * We can avoid that.
+                         */
                         context.commit("addOrUpdateDashboard", dashbaord);
                     }
 
@@ -592,6 +599,8 @@
                 if (dashboardId) {
                     return context.dispatch("getDashboard", params);
                 }
+
+                return false;
             },
 
             /*
