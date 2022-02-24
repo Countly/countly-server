@@ -35,6 +35,7 @@
                 var data = ob.data;
                 for (var i = 0; i < ob.data.length; i++) {
                     var event = {};
+                    event.key = data[i].name;
                     event.name = countlyEventsOverview.helpers.getEventLongName(data[i].name, map);
                     event.value = countlyCommon.formatNumber((data[i].count));
                     event.change = data[i].change;

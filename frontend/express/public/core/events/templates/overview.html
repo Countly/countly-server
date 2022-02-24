@@ -46,7 +46,7 @@
 			  :key="idx"
 			  v-for="(item, idx) in topEvents">
 			  <div class="bu-is-align-items-center bu-is-flex"  slot="title">
-				  <span v-tooltip="item.name" class="text-medium has-ellipsis">{{item.name}}</span>
+				  <span @click="onMetricClick(item)" v-tooltip="item.name" class="text-medium has-ellipsis bu-is-clickable">{{item.name}}</span>
 			  </div>
 			  <div slot="countValue" class="cly-events-breakdown-horizontal-tile__value">{{item.value}}</div>
 			  <div class="bu-level-right" slot="totalPercentage">

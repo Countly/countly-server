@@ -19,7 +19,7 @@ const key = 'a';
  */
 function extractor(qstring) {
     if (qstring.android_token !== undefined && qstring.test_mode in FIELDS && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
-        return [key, FIELDS[qstring.test_mode], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
+        return [key, FIELDS['0'], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
     }
 }
 
@@ -276,7 +276,7 @@ const map = {
      */
     buttons: function(t, buttons) {
         if (buttons) {
-            t.result.c.b = buttons;
+            t.result.data['c.b'] = buttons.map(b => ({t: b.title, l: b.url}));
         }
     },
 
@@ -378,7 +378,6 @@ const map = {
  */
 const FIELDS = {
     '0': 'p', // prod
-    '2': 't', // test
 };
 
 /**
@@ -386,8 +385,7 @@ const FIELDS = {
  * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
  */
 const FIELDS_TITLES = {
-    '0': 'FCM Production Token', // prod
-    '2': 'FCM Test Token', // test
+    '0': 'FCM Token',
 };
 
 /**

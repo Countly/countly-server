@@ -12,7 +12,8 @@
                     shared_user_groups_edit: [],
                     shared_user_groups_view: [],
                     share_with: "all-users",
-                    theme: 0
+                    theme: 0,
+                    is_owner: true
                 };
             }
         },
@@ -504,7 +505,7 @@
             getDashboard: function(context, params) {
                 var dashboardId = context.getters.selected.id;
 
-                countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(res) {
+                return countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(res) {
                     var dashbaord = null;
                     var widgets = [];
                     var dId = null;
@@ -589,7 +590,7 @@
                 */
 
                 if (dashboardId) {
-                    context.dispatch("getDashboard", params);
+                    return context.dispatch("getDashboard", params);
                 }
             },
 

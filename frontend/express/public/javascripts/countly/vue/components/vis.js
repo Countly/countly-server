@@ -1327,7 +1327,7 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
@@ -1399,7 +1399,7 @@
         },
 
         template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
@@ -1454,7 +1454,7 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
                             <chart-header :chart-type="\'line\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
@@ -1572,7 +1572,7 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
@@ -1603,11 +1603,98 @@
                     </div>'
     }));
 
+    var handleXAxisOverflow = function(options, strategy) {
+        if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
+            return null;
+        }
+        var xAxis = options.xAxis;
+
+        // Early return, no need to analyze the array
+        if (xAxis.data.length > 15) {
+            // no need to force all points to be present
+            // if there are too many of them
+            return {
+                grid: {containLabel: false, bottom: 90, left: 75},
+                xAxis: {
+                    axisLabel: {
+                        width: 100,
+                        overflow: "truncate",
+                        rotate: 45,
+                    }
+                }
+            };
+        }
+        else if (xAxis.data.length >= 5) {
+            return {
+                grid: {containLabel: false, bottom: 90, left: 75},
+                xAxis: {
+                    axisLabel: {
+                        width: 100,
+                        overflow: "truncate",
+                        interval: 0,
+                        rotate: 45,
+                    }
+                }
+            };
+        }
+
+        var maxLen = 0;
+
+        xAxis.data.forEach(function(item) {
+            var str = "";
+            if (Array.isArray(item)) {
+                str = (item[1] || item[0] || "") + "";
+            }
+            else {
+                str = (item || "") + "";
+            }
+            maxLen = Math.max(maxLen, str.length);
+        });
+
+        if (maxLen > 25 && xAxis.data.length >= 2) {
+            return {
+                grid: {containLabel: false, bottom: 90, left: 75},
+                xAxis: {
+                    axisLabel: {
+                        width: 150,
+                        overflow: "truncate",
+                        interval: 0,
+                        rotate: 30,
+                    }
+                }
+            };
+        }
+        else if (xAxis.data.length >= 2) {
+            return {
+                grid: {
+                    bottom: 50
+                },
+                xAxis: {
+                    axisLabel: {
+                        width: 150,
+                        overflow: "break",
+                        interval: 0
+                    }
+                }
+            };
+        }
+        return {
+            xAxis: {axisLabel: {interval: 0}}
+        };
+    };
+
     Vue.component("cly-chart-bar", BaseBarChart.extend({
         data: function() {
             return {
                 forwardedSlots: ["chart-left", "chart-right"]
             };
+        },
+        props: {
+            xAxisLabelOverflow: {
+                type: String,
+                default: 'auto',
+                required: false
+            }
         },
         components: {
             'chart-header': ChartHeader,
@@ -1617,11 +1704,15 @@
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 opt = this.patchChart(opt);
+                var xAxisOverflowPatch = handleXAxisOverflow(opt, this.xAxisLabelOverflow);
+                if (xAxisOverflowPatch) {
+                    opt = _merge(opt, xAxisOverflowPatch);
+                }
                 return opt;
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
                             <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
@@ -1694,13 +1785,13 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1" style="height: 100%">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless bu-is-flex-grow-1\']">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless bu-is-flex-grow-1\']" style="overflow: hidden">\
                                 <div :class="classes">\
                                     <echarts\
                                         v-if="!isChartEmpty"\

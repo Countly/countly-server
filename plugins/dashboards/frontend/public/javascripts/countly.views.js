@@ -2,6 +2,17 @@
 
 (function() {
     var FEATURE_NAME = "dashboards";
+    var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
+
+    /**
+     * To whom it may concern,
+     * Dashboard sharing is only allowed for global admins or dashboard owners.
+     * Other people cannot edit the dashbaord.
+     * The users with whom the dashboard is shared with, can only update its widgets,
+     * and not the dashboard settings itself.
+     *
+     * - prikshit
+     */
 
     var WidgetsMixin = {
         computed: {
@@ -339,8 +350,8 @@
             return {
                 title: "",
                 saveButtonLabel: "",
-                sharingAllowed: countlyGlobal.sharing_status || (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0)),
-                groupSharingAllowed: countlyGlobal.plugins.indexOf("groups") > -1 && countlyGlobal.member.global_admin,
+                sharingAllowed: countlyGlobal.sharing_status || AUTHENTIC_GLOBAL_ADMIN,
+                groupSharingAllowed: countlyGlobal.plugins.indexOf("groups") > -1 && AUTHENTIC_GLOBAL_ADMIN,
                 constants: {
                     sharingOptions: [
                         {
@@ -359,12 +370,20 @@
                             description: this.i18nM("dashboards.share.none.description"),
                         }
                     ]
-                }
+                },
+                sharedEmailEdit: [],
+                sharedEmailView: [],
+                sharedGroupEdit: [],
+                sharedGroupView: []
             };
         },
         computed: {
             allGroups: function() {
                 return [];
+            },
+            canShare: function() {
+                var canShare = this.sharingAllowed && (this.controls.initialEditedObject.is_owner || AUTHENTIC_GLOBAL_ADMIN);
+                return canShare;
             }
         },
         methods: {
@@ -383,9 +402,77 @@
                 var empty = countlyDashboards.factory.dashboards.getEmpty();
                 var obj = {};
 
-                for (var key in empty) {
-                    obj[key] = doc[key];
+                var deleteShares = false;
+
+                if (this.sharingAllowed) {
+                    if (this.canShare) {
+                        if (doc.share_with === "selected-users") {
+                            doc.shared_email_edit = this.sharedEmailEdit;
+                            doc.shared_email_view = this.sharedEmailView;
+
+                            if (this.groupSharingAllowed) {
+                                doc.shared_user_groups_edit = this.sharedGroupEdit;
+                                doc.shared_user_groups_view = this.sharedGroupView;
+                            }
+                            else {
+                                delete doc.shared_user_groups_edit;
+                                delete doc.shared_user_groups_view;
+                            }
+                        }
+                        else {
+                            deleteShares = true;
+                        }
+                    }
+                    else {
+                        /**
+                         * If the user cannot share, then the dashbaord should stay in none
+                         * sharing mode or whatever is already present (set by the original
+                         * dashboard owner).
+                         */
+
+                        if (__action === "create" || __action === "duplicate") {
+                            doc.share_with = "none";
+                        }
+
+                        deleteShares = true;
+                    }
                 }
+                else {
+                    /**
+                     * Sharing is disabled globally
+                     */
+                    if (__action === "create" || __action === "duplicate") {
+                        doc.share_with = "none";
+                    }
+
+                    deleteShares = true;
+                }
+
+                if (deleteShares) {
+                    delete doc.shared_email_edit;
+                    delete doc.shared_email_view;
+                    delete doc.shared_user_groups_edit;
+                    delete doc.shared_user_groups_view;
+                }
+
+                for (var key in empty) {
+                    /**
+                     * This check is important since we don't want to send all the keys
+                     * to the server.
+                     * Especially in case where the user doesn't have the sharing permission.
+                     * In that case we don't want to send the sharing fields to the server.
+                     * Otherwise the existing keys will be overwritten.
+                     */
+                    if (Object.prototype.hasOwnProperty.call(doc, key)) {
+                        obj[key] = doc[key];
+                    }
+                }
+
+                /**
+                 * This is just a runtime only key.
+                 * Should not be sent back to the server.
+                 */
+                delete obj.is_owner;
 
                 this.$store.dispatch(action, obj).then(function(id) {
                     if (id) {
@@ -409,12 +496,30 @@
                     this.title = this.i18nM("dashboards.duplicate-dashboard-heading");
                     this.saveButtonLabel = this.i18nM("dashboards.create-dashboard");
                 }
+
+                this.sharedEmailEdit = doc.shared_email_edit || [];
+                this.sharedEmailView = doc.shared_email_view || [];
+                this.sharedGroupEdit = doc.shared_user_groups_edit || [];
+                this.sharedGroupView = doc.shared_user_groups_view || [];
+
+                if (!this.sharingAllowed) {
+                    if (doc.__action === "create" ||
+                        doc.__action === "duplicate") {
+                        doc.share_with = "none";
+                    }
+                }
             }
         }
     });
 
     var NoWidget = countlyVue.views.BaseView.extend({
         template: '#dashboards-nowidget',
+        props: {
+            canUpdate: {
+                type: Boolean,
+                default: true
+            }
+        },
         methods: {
             newWidget: function() {
                 this.$emit("new-widget");
@@ -467,9 +572,9 @@
             "widget-invalid": InvalidWidget
         },
         computed: {
-            canUpdate: function() {
+            canUpdateGrid: function() {
                 var dashboard = this.$store.getters["countlyDashboards/selected"];
-                return dashboard.data && dashboard.data.is_editable;
+                return (dashboard.data && dashboard.data.is_editable) ? true : false;
             }
         },
         mounted: function() {
@@ -622,6 +727,16 @@
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
         mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, WidgetValidationMixin],
+        props: {
+            loading: {
+                type: Boolean,
+                default: true
+            },
+            canUpdate: {
+                type: Boolean,
+                default: true
+            }
+        },
         components: {
             "widgets-drawer": WidgetDrawer,
             "widget": WidgetComponent
@@ -962,6 +1077,10 @@
                     this.updateWidgetGeography(wId, {size: size, position: position});
                 }
 
+                if (!this.canUpdate) {
+                    this.disableGrid();
+                }
+
                 this.grid.on("change", function(event, items) {
                     for (i = 0; i < items.length; i++) {
                         var node = items[i];
@@ -1167,6 +1286,12 @@
 
                             var nodeEl = document.getElementById(widgetId);
 
+                            if (!self.canUpdate) {
+                                locked = true;
+                                noResize = true;
+                                noMove = true;
+                            }
+
                             var setting = {
                                 locked: locked,
                                 noMove: noMove,
@@ -1225,6 +1350,9 @@
                     this.grid.makeWidget("#" + id);
                 }
             },
+            disableGrid: function() {
+                this.grid.disable();
+            },
             compactGrid: function() {
                 this.grid.compact();
             },
@@ -1261,6 +1389,7 @@
             return {
                 dashboardId: this.$route.params && this.$route.params.dashboardId,
                 ADDING_WIDGET: false,
+                isInitLoad: true
             };
         },
         computed: {
@@ -1288,8 +1417,11 @@
 
                 return dashboard;
             },
-            canUpdate: function() {
-                return this.dashboard.is_editable;
+            canUpdateGrid: function() {
+                return !!this.dashboard.is_editable;
+            },
+            canUpdateDashboard: function() {
+                return !!(AUTHENTIC_GLOBAL_ADMIN || this.dashboard.is_owner);
             }
         },
         methods: {
@@ -1308,9 +1440,6 @@
             dateChanged: function(isRefresh) {
                 this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh});
             },
-            getDashboardData: function() {
-                this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false});
-            },
             onDashboardAction: function(command, data) {
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
@@ -1322,9 +1451,21 @@
                     break;
 
                 case "duplicate":
-                    d.__action = "duplicate";
                     d.name = "Copy - " + d.name;
-                    self.openDrawer("dashboards", d);
+                    var empty = countlyDashboards.factory.dashboards.getEmpty();
+
+                    var obj = {};
+                    for (var key in empty) {
+                        /**
+                         * Copy the keys from existing dashboard.
+                         * Otherwise fallback to the default ones.
+                         */
+                        obj[key] = d[key] || empty[key];
+                    }
+
+                    obj.__action = "duplicate";
+
+                    self.openDrawer("dashboards", obj);
                     break;
 
                 case "delete":
@@ -1366,7 +1507,12 @@
             }
         },
         beforeMount: function() {
-            this.getDashboardData();
+            var self = this;
+            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function(res) {
+                if (res) {
+                    self.isInitLoad = false;
+                }
+            });
         }
     });
 

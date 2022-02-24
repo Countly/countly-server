@@ -82,6 +82,17 @@ var TimesOfDayWidgetComponent = countlyVue.views.create({
         return {};
     },
     computed: {
+        title: function() {
+            var self = this;
+            var periods = countlyTimesOfDay.service.getDateBucketsList();
+            var periodName = periods.filter(function(obj) {
+                return obj.value === self.data.period;
+            });
+
+            var esTypeName = this.data.data_type === "session" ? this.i18nM('times-of-day.sessions') : this.data.events[0].split("***")[1];
+            var widgetTitle = CV.i18n('times-of-day.title') + " : " + esTypeName + " (" + periodName[0].label + ")";
+            return this.data.title || widgetTitle;
+        },
         dashboardData: function() {
             if (this.data.dashData && this.data.dashData.data) {
                 return this.data.dashData.data;
@@ -125,6 +136,7 @@ if (countlyAuth.validateRead(featureName)) {
         label: CV.i18n("times-of-day.title"),
         priority: 8,
         primary: true,
+        isPluginWidget: true,
         getter: function(widget) {
             return widget.widget_type === "times-of-day";
         },
@@ -159,9 +171,9 @@ if (countlyAuth.validateRead(featureName)) {
             component: TimesOfDayWidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 6,
+                    minWidth: 2,
                     minHeight: 4,
-                    width: 7,
+                    width: 3,
                     height: 4
                 };
             },

@@ -217,7 +217,10 @@
             dateChanged: function() {
                 this.$store.dispatch("countlyEventsOverview/setMonitorEventsLoading", true);
                 this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
-            }
+            },
+            onMetricClick: function(params) {
+                app.navigate("#/analytics/events/key/" + params.key, true);
+            },
         },
         computed: {
             selectedEvents: function() {

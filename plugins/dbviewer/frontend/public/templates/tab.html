@@ -63,10 +63,6 @@
                                 <template v-slot="rowScope">
                                     <span v-if="!index">_id: {{ rowScope.row._id }}</span>
                                     <span v-if="index">{{ rowScope.row.name }}</span>
-                                </template>
-                            </el-table-column>
-                            <el-table-column>
-                                <template v-slot="rowScope">
                                     <el-button @click="showDetailPopup(rowScope.row)" class="dbviewer-tab__expand-button" icon="fas fa-expand"></el-button>
                                 </template>
                             </el-table-column>
@@ -177,7 +173,7 @@
             class="dbviewer-tab__detail-dialog"
             :isOpened="showDetailDialog"
             name="dbviewer-document-detail"
-            title="Document Detail"
+            :title="JSON.parse(rowDetail)._id"
             saveButtonLabel="Close"
             ref="dbviewerDetailDialog"
             @submit="showDetailDialog = false"

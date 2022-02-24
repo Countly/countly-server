@@ -287,9 +287,8 @@
             }
         }
     };
+
     _mixins.DashboardsHelpersMixin = DashboardsHelpersMixin;
-
-
 
     var _globalVuexStore = new Vuex.Store({
         modules: {

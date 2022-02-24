@@ -9,7 +9,7 @@
             height: 400px !important;
         }
     }
-    
+
     pre {
         margin: 0px;
     }
@@ -88,6 +88,14 @@
     &__collections-list {
         border-radius: 0px !important;
         border: none !important;
+    }
+
+    .el-table__fixed-body-wrapper {
+        .cell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     }
 }
 

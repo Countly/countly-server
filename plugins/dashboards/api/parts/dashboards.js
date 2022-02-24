@@ -146,15 +146,20 @@ dashboard.mapWidget = function(widget) {
         widgetType = "analytics";
         dataType = "user-analytics";
         breakdowns = ["online"];
+        delete widget.isPluginWidget;
         break;
     case "active_users":
         widgetType = "analytics";
         dataType = "user-analytics";
         breakdowns = ["active"];
+        delete widget.isPluginWidget;
         break;
     case "views":
         widgetType = "analytics";
         dataType = "views";
+        widget.metrics = widget.views;
+        visualization = "table";
+        delete widget.isPluginWidget;
 
         break;
     case "funnels":
@@ -1030,14 +1035,7 @@ async function getPushDataForApp(params, apps, appId, widget) {
 
             break;
         case 'number':
-            data = model.getNumber();
-            if (event === "[CLY]_push_action") {
-                widgetData.actioned = data;
-            }
-
-            if (event === "[CLY]_push_sent") {
-                widgetData.sent = data;
-            }
+            widgetData = model.getNumber();
 
             break;
         default:

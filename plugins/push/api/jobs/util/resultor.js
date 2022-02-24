@@ -94,7 +94,7 @@ class Resultor extends SynFlushTransform {
                 [results.affected, results.left].forEach(arr => {
                     if (results.type & (ERROR.DATA_TOKEN_EXPIRED | ERROR.DATA_TOKEN_INVALID)) {
                         arr.forEach(id => {
-                            if (id === -1) {
+                            if (id < 0) {
                                 return;
                             }
                             let {a, p, f, u} = this.data.pushes[id];
@@ -102,7 +102,7 @@ class Resultor extends SynFlushTransform {
                         });
                     }
                     arr.forEach(id => {
-                        if (id === -1) {
+                        if (id < 0) {
                             return;
                         }
                         let {p, m, pr} = this.data.pushes[id],
@@ -174,7 +174,7 @@ class Resultor extends SynFlushTransform {
 
             [results.affected, results.left].forEach(arr => {
                 arr.forEach(id => {
-                    if (id === -1) {
+                    if (id < 0) {
                         return;
                     }
                     let {m, p, pr} = this.data.pushes[id];

@@ -12,7 +12,7 @@ var pluginOb = {},
     ip = require("../../../api/parts/mgmt/ip"),
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateUser } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'dashboards';
 
@@ -37,7 +37,7 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
-            validateRead(params, FEATURE_NAME, function() {
+            validateUser(params, function() {
                 var member = params.member,
                     memberId = member._id + "";
 
@@ -213,7 +213,7 @@ plugins.setConfigs("dashboards", {
             return true;
         }
 
-        validateRead(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 if (!err && dashboard) {
                     hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
@@ -357,7 +357,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/o/dashboards/widget-layout", function(ob) {
         var params = ob.params;
 
-        validateRead(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id;
 
@@ -380,7 +380,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/create", function(ob) {
         var params = ob.params;
 
-        validateCreate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             var dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit || [],
                 sharedEmailView = params.qstring.shared_email_view || [],
@@ -607,7 +607,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/update", function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             var dashboardId = params.qstring.dashboard_id,
                 dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit,
@@ -772,7 +772,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/delete", function(ob) {
         var params = ob.params;
 
-        validateDelete(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             var dashboardId = params.qstring.dashboard_id,
                 memberId = params.member._id + "";
 
@@ -824,7 +824,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/add-widget", function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widget = params.qstring.widget || {};
@@ -890,7 +890,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/update-widget", function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -955,7 +955,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/remove-widget", function(ob) {
         var params = ob.params;
 
-        validateDelete(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,

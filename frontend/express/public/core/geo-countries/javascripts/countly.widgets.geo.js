@@ -50,7 +50,7 @@
                 return this.calculateTableColsFromWidget(this.data, this.tableMap);
             },
             stackedBarOptions: function() {
-                return this.calculateStackedBarOptionsFromWidget(this.data);
+                return this.calculateStackedBarOptionsFromWidget(this.data, this.tableMap);
             },
             pieGraph: function() {
                 return this.calculatePieGraphFromWidget(this.data, this.tableMap);
@@ -130,10 +130,10 @@
             component: WidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 6,
-                    minHeight: 3,
-                    width: 6,
-                    height: 3
+                    minWidth: 2,
+                    minHeight: 4,
+                    width: 2,
+                    height: 4
                 };
             },
             onClick: function() {}

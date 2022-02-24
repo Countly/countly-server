@@ -313,7 +313,13 @@
                                 { value: 310, name: "Email" },
                                 { value: 234, name: "Ad Networks" },
                                 { value: 135, name: "Video Ads" },
-                                { value: 1548, name: "Search Engines is a long name" }
+                                { value: 1548, name: "Search Engines is a long name" },
+                                { value: 15, name: "Video Ads2" },
+                                { value: 115, name: "Video Ads3" },
+                                { value: 5, name: "Video Ads4" },
+                                { value: 50, name: "Video Ads5" },
+                                { value: 18, name: "Video Ads6" },
+                                { value: 15, name: "Video Ads7" },
                             ],
                             // label: {
                             //     formatter: function() {
@@ -427,6 +433,15 @@
                             percentage: "3.4%",
                         }
                     ]
+                },
+                overflowOptions: {
+                    xAxis: {
+                        data: ['crash-analytics', 'rich-push-notifications', 'dashboards', 'remote-config', 'desktop-analytics', 'user-profiles', 'drill-segmentation', 'funnels', 'behavioral-cohorts', 'crash-symbolication', 'surveys', 'ab-testing', 'automated-push-notifications', 'web-analytics', 'web-heatmaps', 'nps', 'user-retention', 'hooks', 'views', 'online-users', 'ratings', 'flows', 'single-sign-on', 'db-viewer', 'email-reports', 'data-manager', 'mobile-analytics', 'performance-monitoring', 'density-metric', 'device-locale', 'filtering-rules', 'event-logs', 'updates', 'enterprise-info', 'compare', 'server-stats', 'iot-analytics', 'revenue-analytics', 'activity-maps', 'slipping-away-users', 'geolocations', 'github', 'white-label', 'ipip-database', 'data-migration', 'plugin-uploader', 'okta', 'formulas', 'consolidate', 'server-logs', 'aws-kinesis-streaming', 'recaptcha', 'alerts', 'data-populator', 'two-factor-auth', 'browsers-metric', 'assistant', 'video-intelligence-monetization', 'config-transfer', 'times-of-day', 'push-approver', 'compliance-hub']
+                    },
+                    series: [{
+                        name: '',
+                        data: [ 31, 28, 25, 22, 20, 20, 19, 14, 13, 13, 13, 11, 9, 9, 9, 9, 8, 8, 7, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                    }]
                 },
                 barOptions: {
                     xAxis: {

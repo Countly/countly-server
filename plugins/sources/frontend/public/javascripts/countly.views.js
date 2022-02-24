@@ -341,7 +341,7 @@
                 return this.calculateTableColsFromWidget(this.data, this.tableMap);
             },
             stackedBarOptions: function() {
-                return this.calculateStackedBarOptionsFromWidget(this.data);
+                return this.calculateStackedBarOptionsFromWidget(this.data, this.tableMap);
             },
             pieGraph: function() {
                 return this.calculatePieGraphFromWidget(this.data, this.tableMap);
@@ -420,10 +420,10 @@
             component: WidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 6,
-                    minHeight: 3,
-                    width: 6,
-                    height: 3
+                    minWidth: 2,
+                    minHeight: 4,
+                    width: 2,
+                    height: 4
                 };
             },
             onClick: function() {}
@@ -474,19 +474,16 @@
                     return a[1] - b[1];
                 }).reverse();
 
-                if (totalsArray.length === 0) {
-                    return [
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
-                    ];
+                var totalsData = [];
+                for (var z = 0; z < 3; z++) {
+                    if (totalsArray[z]) {
+                        totalsData.push({percentage: Math.round((data[totalsArray[z][0]].t / sum) * 100), label: data[totalsArray[z][0]]._id, value: countlyCommon.getShortNumber(totalsArray[z][1] || 0)});
+                    }
+                    else {
+                        totalsData.push({ percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 });
+                    }
                 }
-
-                return [
-                    {percentage: Math.round((data[totalsArray[0][0]].t / sum) * 100), label: data[totalsArray[0][0]]._id, value: countlyCommon.getShortNumber(totalsArray[0][1] || 0)},
-                    {percentage: Math.round((data[totalsArray[1][0]].t / sum) * 100), label: data[totalsArray[1][0]]._id, value: countlyCommon.getShortNumber(totalsArray[1][1] || 0)},
-                    {percentage: Math.round((data[totalsArray[2][0]].t / sum) * 100), label: data[totalsArray[2][0]]._id, value: countlyCommon.getShortNumber(totalsArray[2][1] || 0)}
-                ];
+                return totalsData;
             }
         }
     });

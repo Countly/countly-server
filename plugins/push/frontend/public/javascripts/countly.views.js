@@ -2334,7 +2334,8 @@
     });
 
     var PushNotificationWidgetComponent = countlyVue.views.create({
-        template: CV.T('/push/templates/push-notification-widget.html'),
+        template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
         props: {
             data: {
                 type: Object,
@@ -2344,53 +2345,104 @@
             }
         },
         data: function() {
-            return {};
+            return {
+                selectedBucket: "daily",
+                map: {
+                    "sent": this.i18n("dashboards.sent"),
+                    "actioned": this.i18n("dashboards.actioned")
+                }
+            };
         },
         computed: {
-            dashboardData: function() {
-                return this.data.data || {};
+            title: function() {
+                var autoTitle = "Push";
+                return this.data.title || autoTitle;
             },
-            selectedMetric: function() {
-                return this.data.metrics[0];
+            showBuckets: function() {
+                return false;
             },
-            selectedBucket: function() {
-                return this.data.bucket;
-            },
-            xAxisPeriods: function() {
-                var keys = Object.keys(this.dashboardData);
-                if (keys.length) {
-                    return Object.keys(this.dashboardData[keys[0]]);
+            timelineGraph: function() {
+                this.data = this.data || {};
+                this.data.dashData = this.data.dashData || {};
+                this.data.dashData.data = this.data.dashData.data || {};
+
+                var series = [];
+                var appIndex = 0;
+                var multiApps = this.data.app_count === "multiple" ? true : false;
+
+                var dates = [];
+
+                for (var app in this.data.dashData.data) {
+                    var name;
+                    for (var k = 0; k < this.data.metrics.length; k++) {
+                        if (multiApps) {
+                            if (this.data.metrics.length > 1) {
+                                name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+                            }
+                            else {
+                                name = (countlyGlobal.apps[app].name || "");
+                            }
+                        }
+                        else {
+                            name = (this.map[this.data.metrics[k]] || this.data.metrics[k]);
+                        }
+                        series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], color: countlyCommon.GRAPH_COLORS[series.length]});
+                    }
+
+                    for (var date in this.data.dashData.data[app]) {
+                        if (appIndex === 0) {
+                            dates.push(date);
+                        }
+                        for (var kk = 0; kk < this.data.metrics.length; kk++) {
+                            series[appIndex * this.data.metrics.length + kk].data.push(this.data.dashData.data[app][date][this.data.metrics[kk]] || 0);
+                        }
+                    }
+                    appIndex++;
                 }
-                return [];
-            },
-            yAxisSeries: function() {
-                var self = this;
-                return Object.keys(this.dashboardData).sort(function(a, b) {
-                    return a < b;
-                }).map(function(appKey) {
+                if (this.data.custom_period) {
                     return {
-                        data: Object.keys(self.dashboardData[appKey]).map(function(periodKey) {
-                            return self.dashboardData[appKey][periodKey][self.selectedMetric];
-                        }),
-                        name: countlyGlobal.apps[appKey].label
+                        lineOptions: {xAxis: { data: dates}, "series": series}
                     };
-                });
+                }
+                else {
+                    return {
+                        lineOptions: {"series": series}
+                    };
+                }
             },
-            barchartOptions: function() {
-                return {
-                    xAxis: {
-                        data: this.xAxisPeriods
-                    },
-                    series: this.yAxisSeries
-                };
+            number: function() {
+                return this.calculateNumberFromWidget(this.data);
             },
-            legend: function() {
-                return {
-                    show: false,
-                    type: "primary",
-                };
+            metricLabels: function() {
+                this.data = this.data || {};
+                var listed = [];
+
+                for (var k = 0; k < this.data.metrics.length; k++) {
+                    listed.push(this.map[this.data.metrics[k]] || this.data.metrics[k]);
+                }
+                return listed;
             },
-        }
+            legendLabels: function() {
+                var labels = {};
+
+                var graphData = this.timelineGraph;
+                var series = graphData.lineOptions.series;
+
+                for (var i = 0; i < series.length; i++) {
+                    if (!labels[series[i].app]) {
+                        labels[series[i].app] = [];
+                    }
+
+                    labels[series[i].app].push({
+                        appId: series[i].app,
+                        color: series[i].color,
+                        label: this.map[series[i].metric] || series[i].metric
+                    });
+                }
+
+                return labels;
+            }
+        },
     });
 
 
@@ -2474,9 +2526,9 @@
                 component: PushNotificationWidgetComponent,
                 dimensions: function() {
                     return {
-                        minWidth: 6,
+                        minWidth: 2,
                         minHeight: 4,
-                        width: 7,
+                        width: 2,
                         height: 4
                     };
                 }

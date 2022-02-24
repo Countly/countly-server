@@ -2,7 +2,7 @@
     <div class="cly-vue-sidebar__menu-options bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-space-between">
         <ul class="bu-is-flex bu-is-flex-direction-column bu-is-flex-align-items-center bu-is-flex-justify-content-center">
             <li v-for="item in mainMenuOptions" v-tooltip.right="{content: item.tooltip, container: false}" :key="item.name" @click="onClick(item)" class="cly-vue-sidebar__menu-option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
-                <div v-if="item.name === 'app'" :class="['cly-icon-btn', item.icon]" style="margin-bottom: 32px;"></div>
+                <a v-if="item.name === 'app'" :href="redirectHomePage"><div :class="['cly-icon-btn', item.icon]" style="margin-bottom: 32px;"></div></a>
                 <div v-else-if="item.name === 'last-queries'">
                     <cly-report-manager-dialog :disableAutoNavigationToTask="false" :disableRunningCount="true">
                         <template v-slot:trigger="scope">

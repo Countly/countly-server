@@ -442,9 +442,4 @@ $(document).ready(function() {
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         app.addMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 100});
     }
-
-
-    document.querySelectorAll('pre code').forEach(function(el) {
-        hljs.highlightElement(el);
-    });
 });

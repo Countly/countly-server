@@ -227,7 +227,6 @@ var GridComponent = countlyVue.views.create({
             this.data.dashData = this.data.dashData || {};
             this.data.dashData.data = this.data.dashData.data || {};
 
-            var legend = {"type": "primary", data: []};
             var series = [];
             var dates = [];
             var appIndex = 0;
@@ -243,8 +242,7 @@ var GridComponent = countlyVue.views.create({
                     if (multiApps) {
                         name = (countlyGlobal.apps[app].name || app) + " (" + name + ")";
                     }
-                    series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k]});
-                    legend.data.push({"name": name, "app": app, "metric": this.data.metrics[k]});
+                    series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], color: countlyCommon.GRAPH_COLORS[series.length]});
                 }
                 for (var date in this.data.dashData.data[app]) {
                     if (appIndex === 0) {
@@ -264,14 +262,12 @@ var GridComponent = countlyVue.views.create({
             }
             if (this.data.custom_period) {
                 return {
-                    lineOptions: {xAxis: { data: dates}, "series": series},
-                    lineLegend: legend
+                    lineOptions: {xAxis: { data: dates}, "series": series}
                 };
             }
             else {
                 return {
-                    lineOptions: {"series": series},
-                    lineLegend: legend
+                    lineOptions: {"series": series}
                 };
             }
         },
@@ -284,6 +280,26 @@ var GridComponent = countlyVue.views.create({
         },
         number: function() {
             return this.calculateNumberFromWidget(this.data);
+        },
+        legendLabels: function() {
+            var labels = {};
+
+            var graphData = this.timelineGraph;
+            var series = graphData.lineOptions.series;
+
+            for (var i = 0; i < series.length; i++) {
+                if (!labels[series[i].app]) {
+                    labels[series[i].app] = [];
+                }
+
+                labels[series[i].app].push({
+                    appId: series[i].app,
+                    color: series[i].color,
+                    label: this.map[series[i].metric] || series[i].metric
+                });
+            }
+
+            return labels;
         }
     }
 });
@@ -354,7 +370,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
     primary: false,
     getter: function(widget) {
         var kk = widget.breakdowns || [];
-        if (widget.widget_type === "analytics" && widget.data_type === "user-analytics" && (kk.length === 0 || kk[0] === 'overview')) {
+        if (widget.widget_type === "analytics" && widget.data_type === "user-analytics" && (kk.length === 0 || kk[0] === 'overview' || (kk[0] !== "active" && kk[0] !== "online"))) {
             return true;
         }
         else {
@@ -393,9 +409,9 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
         component: GridComponent,
         dimensions: function() {
             return {
-                minWidth: 6,
+                minWidth: 2,
                 minHeight: 4,
-                width: 6,
+                width: 2,
                 height: 4
             };
         }

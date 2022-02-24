@@ -22,6 +22,9 @@
                 </template>
             </cly-chart-time>
         </cly-section>
+        <cly-section>
+            <cly-chart-bar :option="overflowOptions"></cly-chart-bar>
+        </cly-section>
         <cly-section title="Bar Chart">
             <cly-chart-bar :option="barOptions" :legend="barLegend"></cly-chart-bar>
         </cly-section>
@@ -34,14 +37,14 @@
         <cly-section title="Pie Chart">
             <div class="bu-columns bu-is-gapless">
                 <div class="bu-column bu-is-half">
-                    <cly-chart-pie :option="pieOptions" :showToggle="false"></cly-chart-pie>
+                    <cly-chart-pie :option="pieOptions" :show-download="true"></cly-chart-pie>
                 </div>
                 <div class="bu-column bu-is-half">
                     <cly-chart-pie :option="pieOptions" :legend="{show: false}" :showToggle="false"></cly-chart-pie>
                 </div>
             </div>
-            <br />
-            <br />
+        </cly-section>
+        <cly-section>
             <cly-chart-pie :option="newPieOptions" :showToggle="false"></cly-chart-pie>
         </cly-section>
         <cly-section title="Worldmap">

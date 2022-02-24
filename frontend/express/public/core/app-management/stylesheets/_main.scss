@@ -94,9 +94,13 @@
         padding-bottom: 12px !important;
         div:nth-child(2){
           .el-form-item__content {
+            display: flex !important;
+            justify-content: right !important;
             float: right;
-            max-width: 232px;
-            line-height: 0;
+            line-height: inherit;
+            > div {
+              max-width: 232px;
+            }
           }
         }  
       }
@@ -125,4 +129,20 @@
       }
     }
   }  
+}
+@media( max-width: 2133px ) {
+	.app-section span div div:nth-last-child(1) .cly-vue-form-step__section{
+		display: block !important;
+    .el-input{
+      width: 268%;
+    }
+	}
+}
+@media( max-width: 1280px ) {
+	.app-section span div div:nth-last-child(2) .cly-vue-form-step__section{
+		display: block !important;
+    .el-input{
+      width: 177%;
+    }
+	}
 }

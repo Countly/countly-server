@@ -1,13 +1,12 @@
-<div v-bind:class="[componentId]">
+<div v-bind:class="[componentId, 'clyd-widget']">
     <div class="bu-level">
         <div class="bu-level-left">
             <div class="bu-level-item">
-                {{data.title}}
+                {{data.widget_type}}
             </div>
         </div>
         <div class="bu-level-right">
             <slot name="action"></slot>
         </div>
     </div>
-    <cly-chart-time :bucket="selectedBucket" :option="barchartOptions" :legend="legend" :show-zoom="false" :show-toggle="false" :showDownload="false"> </cly-chart-time>
 </div>
