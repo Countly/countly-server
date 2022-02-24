@@ -238,7 +238,7 @@
                         var eventKey = event.split(countlyDashboards.factory.events.separator)[1];
                         appId = event.split(countlyDashboards.factory.events.separator)[0];
 
-                        var allSegments = this.store.getters["countlyDashboards/allSegments"]([appId]);
+                        var allSegments = this.$store.getters["countlyDashboards/allSegments"]([appId]);
 
                         var eventSegments = allSegments[eventKey] || [];
 
@@ -338,19 +338,16 @@
                         return;
                     }
 
-                    if (this.store && event && event.length) {
+                    if (this.$store && event && event.length) {
                         var appId = event.split(countlyDashboards.factory.events.separator)[0];
 
-                        this.store.dispatch("countlyDashboards/getEvents", {appIds: [appId]});
+                        this.$store.dispatch("countlyDashboards/getEvents", {appIds: [appId]});
                     }
                     if (oldVal) {
                         this.$emit("input", []);
                     }
                 }
             }
-        },
-        beforeMount: function() {
-            this.store = countlyVue.vuex.getGlobalStore();
         }
     });
 
@@ -403,7 +400,7 @@
             },
             allEvents: function() {
                 var appIds = this.appIds;
-                return this.store.getters["countlyDashboards/allEvents"](appIds);
+                return this.$store.getters["countlyDashboards/allEvents"](appIds);
             },
             selectedEvents: {
                 get: function() {
@@ -446,8 +443,8 @@
                 handler: function(newVal, oldVal) {
                     var appIds = newVal;
 
-                    if (this.store && Array.isArray(appIds) && appIds.length) {
-                        this.store.dispatch("countlyDashboards/getEvents", {appIds: appIds});
+                    if (this.$store && Array.isArray(appIds) && appIds.length) {
+                        this.$store.dispatch("countlyDashboards/getEvents", {appIds: appIds});
                     }
 
                     this.rerender = "_id_" + this.multiple + "_" + this.appIds;
@@ -472,9 +469,6 @@
                     }
                 }
             }
-        },
-        beforeMount: function() {
-            this.store = countlyVue.vuex.getGlobalStore();
         }
     });
 
