@@ -64,14 +64,36 @@
                     return false;
                 }
 
+                var defaultSetting = {
+                    type: widget.widget_type,
+                    grid: {
+                        dimensions: function() {
+                            var width = widget.size && widget.size[0] || this.DEFAULT_MIN_WIDTH;
+                            var height = widget.size && widget.size[1] || this.DEFAULT_MIN_HEIGHT;
+                            return {
+                                width: width,
+                                height: height,
+                                minWidth: width,
+                                minHeight: height
+                            };
+                        }
+                    },
+                    drawer: {
+                        getEmpty: function() {
+                            return {};
+                        }
+                    }
+                };
+
                 var registrations = widgets[widget.widget_type];
 
                 if (!registrations) {
                     countlyDashboards.factory.log("Soooo, unfortunately, we don't have any widget settings for " + widget.widget_type);
                     countlyDashboards.factory.log("Possible reason is - The widget wasn't registered correctly in the UI.");
                     countlyDashboards.factory.log("Please check the widget registration. Thanks :)");
+                    countlyDashboards.factory.log("Also it could be that the plugin associated with the widget is disabled.");
 
-                    return false;
+                    return defaultSetting;
                 }
 
                 var setting = registrations.find(function(registration) {
@@ -80,6 +102,7 @@
 
                 if (!setting) {
                     countlyDashboards.factory.log("No setting found for the " + widget.widget_type + " widget type based on the widget getter. Please register the widget settings correctly.");
+                    return defaultSetting;
                 }
 
 
@@ -127,6 +150,7 @@
             return {
                 GRID_COLUMNS: 4,
                 DEFAULT_MIN_WIDTH: 2,
+                DEFAULT_MIN_HEIGHT: 4,
                 MAX_ROW_X_SUM: 6
             };
         },
@@ -237,6 +261,10 @@
                 return h;
             },
             isWidgetLocked: function(widget) {
+                /**
+                 * Method not used anymore.
+                 * No widget will be locked.
+                 */
                 var disabled = this.isWidgetDisabled(widget);
 
                 if (disabled) {
@@ -252,6 +280,10 @@
                 return false;
             },
             widgetResizeNotAllowed: function(widget) {
+                /**
+                 * Method not used anymore.
+                 * All widgets can be resized.
+                 */
                 var disabled = this.isWidgetDisabled(widget);
 
                 if (disabled) {
@@ -267,6 +299,10 @@
                 return false;
             },
             widgetMoveNotAllowed: function(widget) {
+                /**
+                 * Method not used anymore.
+                 * All widgets can be moved.
+                 */
                 var disabled = this.isWidgetDisabled(widget);
 
                 if (disabled) {
@@ -1302,9 +1338,9 @@
                             var widget = allWidgets[i];
                             var widgetId = widget._id;
 
-                            var locked = self.isWidgetLocked(widget);
-                            var noResize = self.widgetResizeNotAllowed(widget);
-                            var noMove = self.widgetMoveNotAllowed(widget);
+                            var locked = false;
+                            var noResize = false;
+                            var noMove = false;
 
                             var nodeEl = document.getElementById(widgetId);
 
