@@ -1393,7 +1393,7 @@
             };
         },
         computed: {
-            noDashboards: function() {
+            noSelectedDashboard: function() {
                 var selected = this.$store.getters["countlyDashboards/selected"];
                 return !(selected.id && selected.data);
             },
