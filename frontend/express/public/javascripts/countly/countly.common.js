@@ -160,7 +160,7 @@
                 return;
             }
 
-            if (window.countlyVue && window.countlyVue.vuex) {
+            if (window.countlyCommon === this && window.countlyVue && window.countlyVue.vuex) {
                 var currentStore = window.countlyVue.vuex.getGlobalStore();
                 if (currentStore) {
                     currentStore.dispatch("countlyCommon/updatePeriod", {period: period, label: countlyCommon.getDateRangeForCalendar()});
