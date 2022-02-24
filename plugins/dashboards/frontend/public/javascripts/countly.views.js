@@ -1509,9 +1509,7 @@
         beforeMount: function() {
             var self = this;
             this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function(res) {
-                if (res) {
-                    self.isInitLoad = false;
-                }
+                self.isInitLoad = false;
             });
         }
     });
