@@ -70,7 +70,7 @@
 					</div>
 				</div>
 				<div v-if="registredComponents[item._id]">
-					<div class="bu-level bu-pb-3">
+					<div class="bu-level bu-pb-3" v-if="!registredComponents[item._id].hide_header">
 						<div class="bu-level-left">
 							<h2>{{registredComponents[item._id].label}}</h2>
 							<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="registredComponents[item._id].description"></span>
