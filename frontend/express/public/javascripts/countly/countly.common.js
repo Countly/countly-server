@@ -1629,8 +1629,7 @@
                         activeDate = countlyCommon.periodObj.activePeriod;
                     }
                 }
-
-                for (var i = periodMin; i < periodMax; i++) {
+                for (var i = periodMin, counter = 0; i < periodMax; i++, counter++) {
 
                     if (!countlyCommon.periodObj.isSpecialPeriod) {
 
@@ -1653,11 +1652,11 @@
 
                     dataObj = clearFunction(dataObj);
 
-                    if (!tableData[i]) {
-                        tableData[i] = {};
+                    if (!tableData[counter]) {
+                        tableData[counter] = {};
                     }
 
-                    tableData[i].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                    tableData[counter].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
                     var propertyValue = "";
                     if (propertyFunctions[j]) {
                         propertyValue = propertyFunctions[j](dataObj);
@@ -1666,8 +1665,8 @@
                         propertyValue = dataObj[propertyNames[j]];
                     }
 
-                    chartData[j].data[chartData[j].data.length] = [i, propertyValue];
-                    tableData[i][propertyNames[j]] = propertyValue;
+                    chartData[j].data[chartData[j].data.length] = [counter, propertyValue];
+                    tableData[counter][propertyNames[j]] = propertyValue;
                 }
             }
 

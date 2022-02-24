@@ -195,6 +195,18 @@ var CountryView = countlyVue.views.create({
                 return this.$store.state.countlyCountry.selectedProperty;
             }
         },
+        selectedPropertyTitle: function() {
+            var selectedProperty = this.$store.state.countlyCountry.selectedProperty || "t";
+            if (selectedProperty === 't') {
+                return CV.i18n('common.table.total-sessions');
+            }
+            else if (selectedProperty === 'u') {
+                return CV.i18n('common.table.total-users');
+            }
+            else if (selectedProperty === 'n') {
+                return CV.i18n('common.table.new-users');
+            }
+        },
         isLoading: function() {
             return this.$store.state.countlyCountry.isLoading;
         },
@@ -237,6 +249,20 @@ var GeoAnalyticsView = countlyVue.views.create({
 
 var CountriesHomeWidget = countlyVue.views.create({
     template: CV.T("/core/geo-countries/templates/countriesHomeWidget.html"),
+    computed: {
+        selectedPropertyTitle: function() {
+            var selectedProperty = this.selectedProperty || "t";
+            if (selectedProperty === 't') {
+                return CV.i18n('common.table.total-sessions');
+            }
+            else if (selectedProperty === 'u') {
+                return CV.i18n('common.table.total-users');
+            }
+            else if (selectedProperty === 'n') {
+                return CV.i18n('common.table.new-users');
+            }
+        },
+    },
     data: function() {
         var buttonText = "";
         var buttonLink = "#/analytics/geo/countries/All";
