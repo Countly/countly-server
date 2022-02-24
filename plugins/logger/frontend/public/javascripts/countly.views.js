@@ -47,7 +47,7 @@
                     country: this.location.cc,
                     city: this.location.cty && this.location.cty !== 'Unknown' ? ' (' + this.location.cty + ')' : '',
                     flagCss: 'flag ' + flag,
-                    flagBg: 'display: inline-block; float: none; margin-top:2px; margin-right:6px; background-image: url(images/flags/' + flag + '.png);',
+                    flagBg: 'display: inline-block; float: none; background-size: contain; background-image: url(images/flags/' + flag + '.png);',
                 };
             },
         },
