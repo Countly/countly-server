@@ -54,10 +54,9 @@ class IncomingDataTrigger {
 
     /**
      * process pipeline feed, pick out matched record with rule
-     * @param {string} e - event type
      * @param {object} ob - trggered out from pipeline
      */
-    async process(e, ob) {
+    async process(ob) {
         let rule = null;
         if (ob.is_mock === true) {
             return ob;
@@ -95,15 +94,16 @@ class IncomingDataTrigger {
                     log.d(e, ob, "[Incoming data capture]");
                     if (e === '/plugins/drill') {
                         const hooksData = {
-                            params: {...ob.params}
+                            params: {...ob.params},
+                            event: e,
                         };
                         if (ob.events) {
                             hooksData.params.qstring.events = ob.events;
                         }
-                        this.process(e, hooksData);
+                        this.process(hooksData);
                         return;
                     }
-                    this.process(e, ob);
+                    this.process(ob);
                 }
                 catch (err) {
                     console.log(err);
