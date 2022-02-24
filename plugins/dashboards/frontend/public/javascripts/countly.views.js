@@ -1393,7 +1393,7 @@
             };
         },
         computed: {
-            noDashboards: function() {
+            noSelectedDashboard: function() {
                 var selected = this.$store.getters["countlyDashboards/selected"];
                 return !(selected.id && selected.data);
             },
@@ -1508,10 +1508,8 @@
         },
         beforeMount: function() {
             var self = this;
-            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function(res) {
-                if (res) {
-                    self.isInitLoad = false;
-                }
+            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function() {
+                self.isInitLoad = false;
             });
         }
     });
@@ -1610,7 +1608,6 @@
                     var query = this.searchQuery;
 
                     var dashboards = this.$store.getters["countlyDashboards/all"];
-                    this.identifySelectedDashboard(dashboards);
 
                     if (!query) {
                         return dashboards;
@@ -1628,7 +1625,9 @@
                 onDashboardMenuItemClick: function(dashboard) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: dashboard});
                 },
-                identifySelectedDashboard: function(dashboards) {
+                identifySelected: function() {
+                    var dashboards = this.$store.getters["countlyDashboards/all"];
+
                     var currLink = Backbone.history.fragment;
 
                     if (/^\/custom/.test(currLink) === false) {
@@ -1642,10 +1641,10 @@
                         return d._id === id;
                     });
 
-                    if (!currMenu) {
-                        countlyDashboards.factory.log("Dashboard not found - " + id + ", Dashboards = " + JSON.stringify(dashboards));
-                    }
-
+                    /**
+                     * Even if we don't find a dashboard, we should atleast set the
+                     * menu item to dashboards.
+                     */
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
                 }
             },
@@ -1654,7 +1653,10 @@
                 CV.vuex.registerGlobally(this.module);
             },
             beforeMount: function() {
-                this.$store.dispatch("countlyDashboards/getAll");
+                var self = this;
+                this.$store.dispatch("countlyDashboards/getAll").then(function() {
+                    self.identifySelected();
+                });
             }
         });
 

@@ -191,10 +191,8 @@
                         this.selectedAnalyticsMenu = selected.item && selected.item.parent_code;
                         return selected.item;
                     }
-                    else {
-                        this.checkCurrentAnalyticsTab();
-                        return {};
-                    }
+
+                    return {};
                 }
             },
             methods: {
@@ -234,7 +232,7 @@
 
                     return retArr;
                 },
-                checkCurrentAnalyticsTab: function() {
+                identifySelected: function() {
                     var currLink = Backbone.history.fragment;
                     if (/^\/custom/.test(currLink) === true) {
                         return;
@@ -242,7 +240,7 @@
                     var menus = this.categorizedMenus;
                     var submenus = this.categorizedSubmenus;
                     var foundMenu = false;
-                    var currMenu = {};
+                    var currMenu;
                     var part1 = "";
                     var part2 = "";
                     var part3 = "";
@@ -310,25 +308,13 @@
                         }
                     }
 
-                    var setMenuItem = this.$store.getters["countlySidebar/getSelectedMenuItem"];
-
-                    //Check if we have a selected menu item already
-                    //If its management, that means the url is not in the analytics menu
-                    //The value of currMenu in that case should be empty
-                    //Although analytics menu should be mounted first but just incase it doesn't,
-                    //We should check if the menu is already set or not. If its set then the only case
-                    //Could be that its a management menu
-
-                    if (!setMenuItem || (setMenuItem.menu !== "management")) {
+                    if (currMenu) {
                         this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
                     }
                 },
                 toggleAppSelection: function() {
                     this.appSelector = !this.appSelector;
                 }
-            },
-            mounted: function() {
-                this.checkCurrentAnalyticsTab();
             }
         });
 
@@ -354,17 +340,15 @@
                     if (selected && selected.menu === "management") {
                         return selected.item;
                     }
-                    else {
-                        this.checkCurrentManagementTab();
-                        return {};
-                    }
+
+                    return {};
                 }
             },
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
                 },
-                checkCurrentManagementTab: function() {
+                identifySelected: function() {
                     var currLink = Backbone.history.fragment;
                     if (/^\/custom/.test(currLink) === true) {
                         return;
@@ -384,13 +368,11 @@
                             });
                         }
                     }
+
                     if (currMenu) {
                         this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu });
                     }
                 }
-            },
-            mounted: function() {
-                this.checkCurrentManagementTab();
             }
         });
 
@@ -619,7 +601,66 @@
                 },
                 onToggleClick: function() {
                     this.showMainMenu = !this.showMainMenu;
+                },
+                identifySelected: function() {
+                    for (var ref in this.$refs) {
+                        if (Array.isArray(this.$refs[ref])) {
+                            for (var i = 0; i < this.$refs[ref].length; i++) {
+                                if (this.$refs[ref][i].identifySelected) {
+                                    this.$refs[ref][i].identifySelected();
+                                }
+                            }
+                        }
+                        else if (this.$refs[ref].identifySelected) {
+                            this.$refs[ref].identifySelected();
+                        }
+                    }
+                },
+                setDefaultMenu: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    if (!selected || !selected.menu) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: {}});
+                    }
                 }
+            },
+            mounted: function() {
+                var self = this;
+
+                /**
+                 * As per official mounted documentation, its likely that refs are not
+                 * available immediately. Therefore, they suggest to check for the refs
+                 * in the nextTick.
+                 *
+                 * Following technique of checking refs is just a fullproof way to do it.
+                 */
+                setTimeout(function() {
+                    self.$nextTick(function() {
+                        self.$nextTick(function() {
+                            /**
+                             * Check if the refs are available.
+                             */
+                            if (Object.keys(self.$refs).length) {
+                                self.identifySelected();
+                                self.setDefaultMenu();
+                            }
+                            else {
+                                /**
+                                 * This means that we don't have refs available yet.
+                                 * Lets retry to check refs after a interval.
+                                 * Clear the interval when the refs are found.
+                                 */
+                                var interval = setInterval(function() {
+                                    if (Object.keys(self.$refs).length) {
+                                        self.identifySelected();
+                                        self.setDefaultMenu();
+                                        clearInterval(interval);
+                                    }
+                                }, 50);
+                            }
+                        });
+                    });
+                }, 0);
             }
         });
         app.initSidebar = function() {
