@@ -57,6 +57,7 @@
                 }
             },
             widgetSettingsGetter: function(widget) {
+                var self = this;
                 var widgets = this.__widgets;
 
                 if (!widget.widget_type) {
@@ -64,14 +65,36 @@
                     return false;
                 }
 
+                var defaultSetting = {
+                    type: widget.widget_type,
+                    grid: {
+                        dimensions: function() {
+                            var width = widget.size && widget.size[0] || self.DEFAULT_MIN_WIDTH;
+                            var height = widget.size && widget.size[1] || self.DEFAULT_MIN_HEIGHT;
+                            return {
+                                width: width,
+                                height: height,
+                                minWidth: self.DEFAULT_MIN_WIDTH,
+                                minHeight: self.DEFAULT_MIN_HEIGHT
+                            };
+                        }
+                    },
+                    drawer: {
+                        getEmpty: function() {
+                            return {};
+                        }
+                    }
+                };
+
                 var registrations = widgets[widget.widget_type];
 
                 if (!registrations) {
                     countlyDashboards.factory.log("Soooo, unfortunately, we don't have any widget settings for " + widget.widget_type);
                     countlyDashboards.factory.log("Possible reason is - The widget wasn't registered correctly in the UI.");
                     countlyDashboards.factory.log("Please check the widget registration. Thanks :)");
+                    countlyDashboards.factory.log("Also it could be that the plugin associated with the widget is disabled.");
 
-                    return false;
+                    return defaultSetting;
                 }
 
                 var setting = registrations.find(function(registration) {
@@ -80,6 +103,7 @@
 
                 if (!setting) {
                     countlyDashboards.factory.log("No setting found for the " + widget.widget_type + " widget type based on the widget getter. Please register the widget settings correctly.");
+                    return defaultSetting;
                 }
 
 
@@ -127,6 +151,7 @@
             return {
                 GRID_COLUMNS: 4,
                 DEFAULT_MIN_WIDTH: 2,
+                DEFAULT_MIN_HEIGHT: 4,
                 MAX_ROW_X_SUM: 6
             };
         },
@@ -237,6 +262,10 @@
                 return h;
             },
             isWidgetLocked: function(widget) {
+                /**
+                 * Method not used anymore.
+                 * No widget will be locked.
+                 */
                 var disabled = this.isWidgetDisabled(widget);
 
                 if (disabled) {
@@ -252,6 +281,10 @@
                 return false;
             },
             widgetResizeNotAllowed: function(widget) {
+                /**
+                 * Method not used anymore.
+                 * All widgets can be resized.
+                 */
                 var disabled = this.isWidgetDisabled(widget);
 
                 if (disabled) {
@@ -267,6 +300,10 @@
                 return false;
             },
             widgetMoveNotAllowed: function(widget) {
+                /**
+                 * Method not used anymore.
+                 * All widgets can be moved.
+                 */
                 var disabled = this.isWidgetDisabled(widget);
 
                 if (disabled) {
@@ -1076,7 +1113,6 @@
             },
             initGrid: function() {
                 var self = this;
-                var i;
 
                 this.grid = GridStack.init({
                     cellHeight: 80,
@@ -1087,35 +1123,11 @@
                 });
 
                 self.syncWidgetHeights();
-
-                var allGridWidgets = this.savedGrid();
-
-                for (i = 0; i < allGridWidgets.length; i++) {
-                    var n = allGridWidgets[i];
-                    var wId = n.id;
-                    var size = [n.w, n.h];
-                    var position = [n.x, n.y];
-
-                    this.updateWidgetGeography(wId, {size: size, position: position});
-                }
+                this.updateAllWidgetsGeography();
 
                 if (!this.canUpdate) {
                     this.disableGrid();
                 }
-
-                this.grid.on("change", function(event, items) {
-                    for (i = 0; i < items.length; i++) {
-                        var node = items[i];
-                        var widgetId = node.id;
-
-                        var s = [node.w, node.h];
-                        var p = [node.x, node.y];
-
-                        self.updateWidgetGeography(widgetId, {size: s, position: p});
-                    }
-
-                    self.syncWidgetHeights();
-                });
 
                 this.grid.on("resizestop", function(event, element) {
                     var node = element.gridstackNode;
@@ -1127,7 +1139,7 @@
                      */
                     self.grid.batchUpdate();
 
-                    var finalRowH = self.updateRowHeight(rowWidgets, node.h);
+                    self.updateRowHeight(rowWidgets, node.h);
 
                     /**
                      * Committing batch update.
@@ -1142,15 +1154,12 @@
                      *
                      * But we need to update the geography of this widget form here itself.
                      * Since the change in this widget does not fire the change event for itself.
-                     * Case - when there is a single widget in the grid, reisizing it does not call
+                     * Case - when there is a single widget in the grid, resizing it does not call
                      * the change event.
                      */
 
-                    var widgetId = node.id;
-                    var s = [node.w, finalRowH];
-                    var p = [node.x, node.y];
-
-                    self.updateWidgetGeography(widgetId, {size: s, position: p});
+                    self.syncWidgetHeights();
+                    self.updateAllWidgetsGeography();
                 });
 
                 this.grid.on("dragstop", function(event, element) {
@@ -1188,10 +1197,8 @@
                      */
                     self.grid.commit();
 
-                    /**
-                     * After dragstop event, change event is also fired.
-                     * In the change event we sync heights of all rows, so no need to do that here.
-                     */
+                    self.syncWidgetHeights();
+                    self.updateAllWidgetsGeography();
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -1269,14 +1276,22 @@
             updateWidgetGeography: function(widgetId, settings) {
                 var self = this;
 
-                this.syncWidgetGeography({_id: widgetId, size: settings.size, position: settings.position});
-
+                this.$store.dispatch("countlyDashboards/widgets/syncGeography", {_id: widgetId, settings: settings});
                 setTimeout(function() {
                     self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
                 }, 50);
             },
-            syncWidgetGeography: function(widget) {
-                this.$store.dispatch("countlyDashboards/widgets/syncGeography", widget);
+            updateAllWidgetsGeography: function() {
+                var allGridWidgets = this.savedGrid();
+
+                for (var i = 0; i < allGridWidgets.length; i++) {
+                    var n = allGridWidgets[i];
+                    var wId = n.id;
+                    var size = [n.w, n.h];
+                    var position = [n.x, n.y];
+
+                    this.updateWidgetGeography(wId, {size: size, position: position});
+                }
             },
             savedGrid: function() {
                 return this.grid.save(false);
@@ -1302,9 +1317,9 @@
                             var widget = allWidgets[i];
                             var widgetId = widget._id;
 
-                            var locked = self.isWidgetLocked(widget);
-                            var noResize = self.widgetResizeNotAllowed(widget);
-                            var noMove = self.widgetMoveNotAllowed(widget);
+                            var locked = false;
+                            var noResize = false;
+                            var noMove = false;
 
                             var nodeEl = document.getElementById(widgetId);
 

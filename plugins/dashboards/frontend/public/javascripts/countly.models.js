@@ -243,6 +243,7 @@
                 },
                 syncGeography: function(state, widget) {
                     var index = -1;
+                    var settings = widget.settings || {};
 
                     for (var i = 0; i < state.all.length; i++) {
                         if (state.all[i]._id === widget._id) {
@@ -251,15 +252,15 @@
                         }
                     }
 
-                    if ((index > -1) && (widget.size || widget.position)) {
+                    if ((index > -1) && (settings.size || settings.position)) {
                         var obj = JSON.parse(JSON.stringify(state.all[index]));
 
-                        if (widget.size) {
-                            obj.size = widget.size;
+                        if (settings.size) {
+                            obj.size = settings.size;
                         }
 
-                        if (widget.position) {
-                            obj.position = widget.position;
+                        if (settings.position) {
+                            obj.position = settings.position;
                         }
 
                         state.all.splice(index, 1, obj);
