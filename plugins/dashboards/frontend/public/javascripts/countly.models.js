@@ -592,6 +592,8 @@
                 if (dashboardId) {
                     return context.dispatch("getDashboard", params);
                 }
+
+                return true;
             },
 
             /*
