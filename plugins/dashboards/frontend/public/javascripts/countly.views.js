@@ -1508,7 +1508,7 @@
         },
         beforeMount: function() {
             var self = this;
-            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function(res) {
+            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function() {
                 self.isInitLoad = false;
             });
         }
