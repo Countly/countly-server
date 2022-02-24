@@ -311,6 +311,20 @@
                     if (currMenu) {
                         this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
                     }
+                    else {
+                        var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                        if (selected.menu === "analytics") {
+                            /**
+                             * Incase the selected menu is already analytics, we need to reset
+                             * the selected item to {}. Since we did not find the menu item.
+                             *
+                             * This is important as there are urls in countly like /versions,
+                             * which are not in the sidebar. So for them we don't need to highlight
+                             * anything.
+                             */
+                            this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: {} });
+                        }
+                    }
                 },
                 toggleAppSelection: function() {
                     this.appSelector = !this.appSelector;
@@ -371,6 +385,20 @@
 
                     if (currMenu) {
                         this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu });
+                    }
+                    else {
+                        var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                        if (selected.menu === "management") {
+                            /**
+                             * Incase the selected menu is already management, we need to reset
+                             * the selected item to {}. Since we did not find the menu item.
+                             *
+                             * This is important as there are urls in countly like /versions,
+                             * which are not in the sidebar. So for them we don't need to highlight
+                             * anything.
+                             */
+                            this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: {} });
+                        }
                     }
                 }
             }
@@ -615,6 +643,8 @@
                             this.$refs[ref].identifySelected();
                         }
                     }
+
+                    this.setDefaultMenu();
                 },
                 setDefaultMenu: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
@@ -642,7 +672,6 @@
                              */
                             if (Object.keys(self.$refs).length) {
                                 self.identifySelected();
-                                self.setDefaultMenu();
                             }
                             else {
                                 /**
@@ -653,7 +682,6 @@
                                 var interval = setInterval(function() {
                                     if (Object.keys(self.$refs).length) {
                                         self.identifySelected();
-                                        self.setDefaultMenu();
                                         clearInterval(interval);
                                     }
                                 }, 50);

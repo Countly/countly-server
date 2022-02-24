@@ -1631,6 +1631,19 @@
                     var currLink = Backbone.history.fragment;
 
                     if (/^\/custom/.test(currLink) === false) {
+                        var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                        if (selected.menu === "dashboards") {
+                            /**
+                             * Incase the selected menu is already dashboards, we need to reset
+                             * the selected item to {}. Since we did not find the menu item.
+                             *
+                             * This is important as there are urls in countly like /versions,
+                             * which are not in the sidebar. So for them we don't need to highlight
+                             * anything.
+                             */
+                            this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "dashboards", item: {} });
+                        }
+
                         return;
                     }
 
