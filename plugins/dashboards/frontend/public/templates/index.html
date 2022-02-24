@@ -1,8 +1,31 @@
 <div v-bind:class="[componentId, 'cly-vue-dashboards']">
-    <cly-main v-if="noDashboards" class="bu-mt-6">
-        <no-dashboard></no-dashboard>
-    </cly-main>
+    <template v-if="noSelectedDashboard">
+        <!--
+            If there are no dashbaords let us show NO DASHBOARDS view.
+            But we must check if the dashbaord is in its initial loading state.
+            If it is in its initial loading state, we must show a loading state.
+        -->
+        <cly-main v-if="!isInitLoad" class="bu-mt-6">
+            <no-dashboard></no-dashboard>
+        </cly-main>
+        <cly-main v-else v-loading="isInitLoad" style="margin-top: 40%;"></cly-main>
+    </template>
     <template v-else>
+        <!--
+            So we do have a dashboard. But is it empty or contains any widgets?
+            If the dashboard is empty, lets us show a NO WIDGETS view.
+            We must check here aswell if the dashboard is in loading state or not.
+            If ineed it is a loading state, let us not show any action buttons to the user.
+
+            In case widgets exist in the vuex but the dashboard is in initial loading state,
+            let us pass the loading state to the grid component so that it shows loading state
+            in the widgets aswell.
+
+            If the dashboard is showing a NO WIDGET view and its still loading, that means
+            there are no widgets in the dashboard and we have a selected dashboard avaiable.
+            It was probably set as selected in some previous request.
+            Its a valid state.
+        -->
         <header>
             <div style="padding: 32px;">
                 <div class="bu-level">
@@ -15,17 +38,23 @@
                         <div class="bu-level-item">
                             <cly-date-picker-g></cly-date-picker-g>
                         </div>
-                        <template v-if="!isInitLoad && canUpdateGrid">
+                        <template v-if="!isInitLoad && canUpdateGrid && !fullscreen">
                             <div class="bu-level-item">
                                 <el-button @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
                             </div>
                             <div class="bu-level-item">
                                 <cly-more-options @command="onDashboardAction($event, dashboard)">
+                                    <el-dropdown-item command="fullscreen">{{i18n('dashboards.activate-full-screen')}}</el-dropdown-item>
                                     <el-dropdown-item command="edit" v-if="canUpdateDashboard">{{i18n('common.edit')}}</el-dropdown-item>
                                     <el-dropdown-item><a :href="'#/manage/reports/create/dashboard/' + dashboard._id">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
                                     <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
                                     <el-dropdown-item command="delete" v-if="canUpdateDashboard">{{i18n('common.delete')}}</el-dropdown-item>
                                 </cly-more-options>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="bu-level-item">
+                                <el-button @click="exitFullScreen" icon="el-icon-circle-close"></el-button>
                             </div>
                         </template>
                     </div>

@@ -397,11 +397,11 @@
                                 });
                             countlyEventsOverview.service.fetchEvents()
                                 .then(function(response) {
+                                    context.dispatch("setTableLoading", false);
                                     if (response) {
                                         context.commit("setDetailEvents", response || {});
                                         context.commit("setEventOverview", countlyEventsOverview.helpers.getEventOverview(response) || []);
                                         context.commit("setTableRows", countlyEventsOverview.helpers.getTableRows(response.data, res.map) || []);
-                                        context.dispatch("setTableLoading", false);
                                         return;
                                     }
                                 });

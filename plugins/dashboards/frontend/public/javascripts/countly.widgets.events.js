@@ -25,8 +25,13 @@
         },
         computed: {
             title: function() {
-                var autoTitle = CV.i18nM("dashboards.widget-type.events");
-                return this.data.title || autoTitle;
+                if (this.data.events && this.data.events.length === 1) {
+                    var parts = this.data.events[0].split("***");
+                    if (parts.length === 2) {
+                        return this.data.title || parts[1];
+                    }
+                }
+                return this.data.title || CV.i18nM("dashboards.widget-type.events");
             },
             showBuckets: function() {
                 return false;

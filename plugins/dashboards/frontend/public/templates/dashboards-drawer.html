@@ -57,6 +57,7 @@
                     :label="i18n('dashboards.users-edit-permission')"
                     :subheading="i18n('dashboards.users-edit-description')">
                     <el-select
+                        :key="elSelectKey"
                         multiple
                         :disabled="!canShare"
                         v-model="sharedGroupEdit"
@@ -64,9 +65,9 @@
                         style="width: 100%;">
                         <el-option
                             v-for="(item) in allGroups"
-                            :value="item._id"
+                            :value="item.value"
                             :label="item.name"
-                            :key="item.id">
+                            :key="item.value">
                         </el-option>
                     </el-select>
                 </cly-form-field>
@@ -75,6 +76,7 @@
                     :label="i18n('dashboards.users-view-permission')"
                     :subheading="i18n('dashboards.users-view-description')">
                     <el-select
+                        :key="elSelectKey"
                         multiple
                         :disabled="!canShare"
                         v-model="sharedGroupView"
@@ -82,9 +84,9 @@
                         style="width: 100%;">
                         <el-option
                             v-for="(item) in allGroups"
-                            :value="item._id"
+                            :value="item.value"
                             :label="item.name"
-                            :key="item.id">
+                            :key="item.value">
                         </el-option>
                     </el-select>
                 </cly-form-field>

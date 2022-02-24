@@ -68,7 +68,7 @@ var HomeViewView = countlyVue.views.create({
                         if (enabled && !allComponents[k].placeBeforeDatePicker && this.selectedDynamicComponents.indexOf(allComponents[k]._id) === -1) {
                             this.selectedDynamicComponents.push(allComponents[k]._id);//add as selected
                         }
-                        this.registredComponents[allComponents[k]._id] = {"width": allComponents[k].width, "enabled": enabled, _id: allComponents[k]._id, "label": allComponents[k].label, "description": allComponents[k].description, "order": allComponents[k].order, "placeBeforeDatePicker": allComponents[k].placeBeforeDatePicker, "component": allComponents[k].component, "linkTo": allComponents[k].linkTo};
+                        this.registredComponents[allComponents[k]._id] = {"hide_header": allComponents[k].hide_header || false, "width": allComponents[k].width, "enabled": enabled, _id: allComponents[k]._id, "label": allComponents[k].label, "description": allComponents[k].description, "order": allComponents[k].order, "placeBeforeDatePicker": allComponents[k].placeBeforeDatePicker, "component": allComponents[k].component, "linkTo": allComponents[k].linkTo};
                         if (this.registredComponents[allComponents[k]._id].placeBeforeDatePicker) {
                             if (this.topComponents.length === 0) {
                                 this.topComponents.push(this.registredComponents[allComponents[k]._id]);

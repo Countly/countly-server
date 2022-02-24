@@ -1136,7 +1136,7 @@
     });
 
     countlyVue.container.registerTab("/users/tabs", {
-        priority: 5,
+        priority: 7,
         title: 'Crashes',
         name: 'crashes',
         component: countlyVue.components.create({

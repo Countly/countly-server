@@ -19,7 +19,7 @@
 		<cly-chart-time v-if="data.visualization === 'time-series'" :showZoom="false" :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}">
 		</cly-chart-time>
 		<div v-else-if="data.visualization === 'number'" >
-			<h1 class="bu-pb-2">{{number.total}}</h1>
+			<h1 class="bu-pb-2">{{formatNumber(number.total)}}</h1>
 			<p v-if="number.trend== 'u'" class="trend-up bu-p-0 bu-m-0">
 				<i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{number.change}}</span>
 				<span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>

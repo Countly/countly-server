@@ -162,7 +162,10 @@ var SessionHomeWidget = countlyVue.views.create({
                     "trend": sessionData.usage['total-duration'].trend,
                     "number": countlyCommon.getShortNumber(sessionData.usage['total-duration'].total || 0),
                     "trendValue": sessionData.usage['total-duration'].change,
-                    "description": CV.i18n('dashboard.time-spent-desc')
+                    "description": CV.i18n('dashboard.time-spent-desc'),
+                    "formatter": function(value) {
+                        return countlyCommon.formatSecond(value);
+                    }
                 });
             }
 
@@ -174,6 +177,9 @@ var SessionHomeWidget = countlyVue.views.create({
                     "number": countlyCommon.getShortNumber(sessionData.usage['avg-duration-per-session'].total || 0),
                     "trendValue": sessionData.usage['avg-duration-per-session'].change,
                     "description": CV.i18n('dashboard.avg-time-spent-desc'),
+                    "formatter": function(value) {
+                        return countlyCommon.formatSecond(Math.round(value));
+                    }
                 });
             }
 
@@ -191,7 +197,8 @@ var SessionHomeWidget = countlyVue.views.create({
         },
         calculateSeries: function(value) {
             var sessionDP = {};
-            switch (value || this.chosenProperty) {
+            value = value || this.chosenProperty;
+            switch (value) {
             case "t":
                 sessionDP = countlySession.getSessionDPTotal();
                 break;
@@ -203,10 +210,18 @@ var SessionHomeWidget = countlyVue.views.create({
                 }
                 break;
             case "d":
-                sessionDP = countlySession.getDurationDPAvg();
+                sessionDP = countlySession.getDurationDP(true); //makes sure I get seconds, not minutes
+                if (sessionDP && sessionDP.chartDP && sessionDP.chartDP.length > 1) {
+                    sessionDP.chartDP[1].label = CV.i18n('dashboard.time-spent');
+                    sessionDP.chartDP[0].label = CV.i18n('dashboard.time-spent');
+                }
                 break;
             case "d-avg":
-                sessionDP = countlySession.getDurationDP();
+                sessionDP = countlySession.getDurationDPAvg(true);//makes sure I get seconds, not minutes
+                if (sessionDP && sessionDP.chartDP && sessionDP.chartDP.length > 1) {
+                    sessionDP.chartDP[1].label = CV.i18n('dashboard.avg-time-spent');
+                    sessionDP.chartDP[0].label = CV.i18n('dashboard.avg-time-spent');
+                }
                 break;
             case "e-avg":
                 sessionDP = countlySession.getEventsDPAvg();
@@ -217,7 +232,21 @@ var SessionHomeWidget = countlyVue.views.create({
                 series.push({"name": sessionDP.chartDP[1].label, "data": sessionDP.chartDP[1].data});
                 series.push({"name": sessionDP.chartDP[0].label + "(" + CV.i18n('common.previous-period') + ")", "data": sessionDP.chartDP[0].data, "color": "#39C0C8", lineStyle: {"color": "#39C0C8"} });
             }
-            return {"series": series};
+            if (value === "d" || value === "d-avg") {
+                return {
+                    "series": series,
+                    "yAxis": {
+                        axisLabel: {
+                            formatter: function(value2) {
+                                return countlyCommon.formatSecond(Math.round(value2));
+                            }
+                        }
+                    }
+                };
+            }
+            else {
+                return {"series": series};
+            }
         }
     },
     computed: {

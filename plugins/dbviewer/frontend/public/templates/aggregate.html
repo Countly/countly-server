@@ -33,6 +33,26 @@
                             {{ rowScope.row._id }}
                         </template>
                     </el-table-column>
+                    <el-table-column v-if="aggregationResult[0]._id === 'query_not_executed_yet'" prop="uid" label="uid" min-width="250" fixed>
+                        <template v-slot="rowScope">
+                            -
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="aggregationResult[0]._id === 'query_not_executed_yet'" prop="did" label="did" min-width="250" fixed>
+                        <template v-slot="rowScope">
+                            -
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="aggregationResult[0]._id === 'query_not_executed_yet'" prop="brw" label="brw" min-width="250" fixed>
+                        <template v-slot="rowScope">
+                            -
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="aggregationResult[0]._id === 'query_not_executed_yet'" prop="brwv" label="brwv" min-width="250" fixed>
+                        <template v-slot="rowScope">
+                            -
+                        </template>
+                    </el-table-column>
                     <el-table-column v-if="field !== '_id'" min-width="150" v-for="field in fields" prop="field" :label="field">
                         <template v-slot="rowScope">
                             <span>{{ rowScope.row[field] }}</span>
