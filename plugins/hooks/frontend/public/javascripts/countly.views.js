@@ -152,78 +152,6 @@
         watch: {
         },
         mounted: function() {
-            var self = this;
-            var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-            self.emailInput = $(this.$el).find('select.email-list-input').selectize({
-                plugins: ['remove_button'],
-                persist: false,
-                maxItems: null,
-                valueField: 'email',
-                labelField: 'name',
-                searchField: ['name', 'email'],
-                options: [
-                    {email: countlyGlobal.member.email, name: ''},
-                ],
-                render: {
-                    item: function(item, escape) {
-                        return '<div>' +
-                            (item.name ? '<span class="name">' + escape(item.name) + '</span>' : '') +
-                            (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
-                        '</div>';
-                    },
-                    option: function(item, escape) {
-                        var label = item.name || item.email;
-                        var caption = item.name ? item.email : null;
-                        return '<div>' +
-                            '<span class="label">' + escape(label) + '</span>' +
-                            (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
-                        '</div>';
-                    }
-                },
-                createFilter: function(input) {
-                    var match, regex;
-                    // email@address.com
-                    regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
-                    match = input.match(regex);
-                    if (match) {
-                        return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
-                    }
-                    // name <email@address.com>
-                    /*eslint-disable */
-                    regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
-                    /*eslint-enable */
-                    match = input.match(regex);
-                    if (match) {
-                        return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
-                    }
-                    return false;
-                },
-                create: function(input) {
-                    if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
-                        return {email: input};
-                    }
-                    /*eslint-disable */
-                    var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-                    /*eslint-enable */
-                    if (match) {
-                        return {
-                            email: match[2],
-                            name: $.trim(match[1])
-                        };
-                    }
-                    CountlyHelpers.alert('Invalid email address.', "red");
-                    return false;
-                },
-                onChange: function(value) {
-                    self.$emit("input", {address: value || [], emailTemplate: self.value.emailTemplate});
-                }
-            });
-            if (this.value && this.value.address) {
-                for (var i = 0; i < this.value.address.length; i++) {
-                    this.emailInput[0].selectize.addOption({ "name": '', "email": this.value.address[i] });
-                }
-                this.emailInput[0].selectize.setValue(this.value.address, false);
-            }
             this.value.emailTemplate = _.unescape(this.value.emailTemplate);
         },
         methods: {
@@ -388,11 +316,7 @@
         },
         methods: {
             eventChange: function() {
-                var change = this.$refs.filterSegments.setQuery.bind(this.$refs.filterSegments, {}, function() {});
-                setTimeout(function() {
-                    change({}, function() {});
-                }, 0);
-
+                this.queryObj = {};
             },
             queryChange: function(changedQueryWrapper, isQueryValid) {
                 if (isQueryValid) {
@@ -896,7 +820,6 @@
             },
             "/hooks/templates/vue-triggers.html",
             "/hooks/templates/vue-effects.html",
-            "/drill/templates/drill.query.builder.html",
             "/drill/templates/query.builder.v2.html",
         ]
     });
