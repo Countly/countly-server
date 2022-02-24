@@ -1113,7 +1113,6 @@
             },
             initGrid: function() {
                 var self = this;
-                var i;
 
                 this.grid = GridStack.init({
                     cellHeight: 80,
@@ -1124,35 +1123,11 @@
                 });
 
                 self.syncWidgetHeights();
-
-                var allGridWidgets = this.savedGrid();
-
-                for (i = 0; i < allGridWidgets.length; i++) {
-                    var n = allGridWidgets[i];
-                    var wId = n.id;
-                    var size = [n.w, n.h];
-                    var position = [n.x, n.y];
-
-                    this.updateWidgetGeography(wId, {size: size, position: position});
-                }
+                this.updateAllWidgetsGeography();
 
                 if (!this.canUpdate) {
                     this.disableGrid();
                 }
-
-                this.grid.on("change", function(event, items) {
-                    for (i = 0; i < items.length; i++) {
-                        var node = items[i];
-                        var widgetId = node.id;
-
-                        var s = [node.w, node.h];
-                        var p = [node.x, node.y];
-
-                        self.updateWidgetGeography(widgetId, {size: s, position: p});
-                    }
-
-                    self.syncWidgetHeights();
-                });
 
                 this.grid.on("resizestop", function(event, element) {
                     var node = element.gridstackNode;
@@ -1164,7 +1139,7 @@
                      */
                     self.grid.batchUpdate();
 
-                    var finalRowH = self.updateRowHeight(rowWidgets, node.h);
+                    self.updateRowHeight(rowWidgets, node.h);
 
                     /**
                      * Committing batch update.
@@ -1179,15 +1154,12 @@
                      *
                      * But we need to update the geography of this widget form here itself.
                      * Since the change in this widget does not fire the change event for itself.
-                     * Case - when there is a single widget in the grid, reisizing it does not call
+                     * Case - when there is a single widget in the grid, resizing it does not call
                      * the change event.
                      */
 
-                    var widgetId = node.id;
-                    var s = [node.w, finalRowH];
-                    var p = [node.x, node.y];
-
-                    self.updateWidgetGeography(widgetId, {size: s, position: p});
+                    self.syncWidgetHeights();
+                    self.updateAllWidgetsGeography();
                 });
 
                 this.grid.on("dragstop", function(event, element) {
@@ -1225,10 +1197,8 @@
                      */
                     self.grid.commit();
 
-                    /**
-                     * After dragstop event, change event is also fired.
-                     * In the change event we sync heights of all rows, so no need to do that here.
-                     */
+                    self.syncWidgetHeights();
+                    self.updateAllWidgetsGeography();
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -1306,14 +1276,22 @@
             updateWidgetGeography: function(widgetId, settings) {
                 var self = this;
 
-                this.syncWidgetGeography({_id: widgetId, size: settings.size, position: settings.position});
-
+                this.$store.dispatch("countlyDashboards/widgets/syncGeography", {_id: widgetId, settings: settings});
                 setTimeout(function() {
                     self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
                 }, 50);
             },
-            syncWidgetGeography: function(widget) {
-                this.$store.dispatch("countlyDashboards/widgets/syncGeography", widget);
+            updateAllWidgetsGeography: function() {
+                var allGridWidgets = this.savedGrid();
+
+                for (var i = 0; i < allGridWidgets.length; i++) {
+                    var n = allGridWidgets[i];
+                    var wId = n.id;
+                    var size = [n.w, n.h];
+                    var position = [n.x, n.y];
+
+                    this.updateWidgetGeography(wId, {size: size, position: position});
+                }
             },
             savedGrid: function() {
                 return this.grid.save(false);
