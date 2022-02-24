@@ -1071,32 +1071,25 @@ plugins.setConfigs("dashboards", {
                                 options.cbFn = function(opt) {
                                     var rep = opt.report || {};
                                     var reportDateRange = rep.date_range || "30days";
-                                    var reportTimeObj = rep.timeObj;
+                                    // eslint-disable-next-line no-undef
+                                    countlyCommon.setPeriod(reportDateRange);
+                                    // eslint-disable-next-line no-undef
+                                    app.activeView.vm.$emit("cly-date-change");
                                     // eslint-disable-next-line no-undef
                                     var $ = window.$;
-                                    $("#date-selector .date-selector[id='" + reportDateRange + "']").trigger("click");
-                                    $("body").css({ "min-width": "0px" });
-                                    $("html").alterClass('theme-*', 'theme-5');
-                                    $("#fullscreen, #fullscreen-alt").trigger("click");
-                                    $("#dashboards #fullscreen").remove();
-                                    $("#dashboards .logo.full-screen").remove();
-                                    $("#dashboards #dashboard-name").addClass("remove-before");
-                                    $("#dashboards #add-widget-button-group").remove();
-                                    $("#dashboards #date-selector").html("<div style='margin:8px 0px 0px 2px; font-size:18px;'>" + reportTimeObj.date + "</div>");
-                                    $("#dashboards .live").parents(".grid-stack-item").hide();
-                                    $("html.theme-5 body, html.full-screen.theme-5").css("background-color", "#fff");
-                                    $(".number").parents(".grid-stack-item").css("height", "220");
-                                    $(".number .spark").hide();
+                                    $("html").addClass("email-screen");
                                 };
 
-                                options.beforeScrnCbFn = function() {
-                                    // eslint-disable-next-line no-undef
-                                    var $ = window.$;
-                                    $(".funnels table colgroup col:first-child").width("145px");
-                                    $(".funnels table colgroup col:last-child").width("80px");
-                                };
+                                //options.beforeScrnCbFn = function() {
+                                // eslint-disable-next-line no-undef
+                                //var $ = window.$;
+                                //$(".funnels table colgroup col:first-child").width("145px");
+                                //$(".funnels table colgroup col:last-child").width("80px");
+                                //};
 
                                 options.waitForRegex = new RegExp(/o\/dashboards?/gi);
+
+                                options.id = "#content";
 
                                 formatDate(report, moment);
 

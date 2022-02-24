@@ -1,6 +1,29 @@
 @use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
 @use "sass:map";
 
+.full-screen {
+    #cly-vue-sidebar {display: none;}
+}
+
+.email-screen {
+    #cly-vue-sidebar {display: none;}
+    .cly-vue-dashboards > header {display: none;}
+    #content {
+        min-width: 0px;
+        background-color: #fff;
+        overflow: hidden;
+    }
+    .clyd-widget > .bu-my-2 {display: none !important;}
+    .cly-vue-chart--full .cly-vue-chart__echart .bu-level {display: none;}
+    .cly-vue-more-options {display: none;}
+    body{
+        overflow: hidden !important;
+        background-color: #fff !important;
+    }
+    #main-views-container{overflow: hidden;}
+    #main-views-container .main-view{overflow: hidden;}
+}
+
 .cly-vue-dashboards {
     &__null-widgets {
         height: 100%;
