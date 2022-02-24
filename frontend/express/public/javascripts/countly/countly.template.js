@@ -1207,24 +1207,14 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.parseAndShowMsg(countlyGlobal.message);
         }
 
-        // Init sidebar based on the current url
+        /**
+         * Identify the actuve sidebar menu item.
+         *
+         * countlyVue.sideBarComponent is null on the initial load.
+         * But don't worry, we identify selected menu items when its mounted aswell.
+         */
         if (countlyVue.sideBarComponent) {
-            var selectedMenuItem = countlyVue.sideBarComponent.$store.getters["countlySidebar/getSelectedMenuItem"];
-            var currLink = Backbone.history.fragment;
-            var reset = false;
-
-            if (selectedMenuItem.menu === "dashboards") {
-                if (!(/^\/custom/.test(currLink))) {
-                    reset = true;
-                }
-            }
-            else if (selectedMenuItem.item.url !== ("#" + currLink)) {
-                reset = true;
-            }
-
-            if (reset) {
-                countlyVue.sideBarComponent.$store.dispatch("countlySidebar/updateSelectedMenuItem", {});
-            }
+            countlyVue.sideBarComponent.$children[0].identifySelected();
         }
     },
     sidebar: {

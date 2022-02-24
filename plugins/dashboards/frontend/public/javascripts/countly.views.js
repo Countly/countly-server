@@ -1608,7 +1608,6 @@
                     var query = this.searchQuery;
 
                     var dashboards = this.$store.getters["countlyDashboards/all"];
-                    this.identifySelectedDashboard(dashboards);
 
                     if (!query) {
                         return dashboards;
@@ -1626,7 +1625,9 @@
                 onDashboardMenuItemClick: function(dashboard) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: dashboard});
                 },
-                identifySelectedDashboard: function(dashboards) {
+                identifySelected: function() {
+                    var dashboards = this.$store.getters["countlyDashboards/all"];
+
                     var currLink = Backbone.history.fragment;
 
                     if (/^\/custom/.test(currLink) === false) {
@@ -1640,6 +1641,10 @@
                         return d._id === id;
                     });
 
+                    /**
+                     * Even if we don't find a dashboard, we should atleast set the
+                     * menu item to dashboards.
+                     */
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
                 }
             },
@@ -1648,7 +1653,10 @@
                 CV.vuex.registerGlobally(this.module);
             },
             beforeMount: function() {
-                this.$store.dispatch("countlyDashboards/getAll");
+                var self = this;
+                this.$store.dispatch("countlyDashboards/getAll").then(function() {
+                    self.identifySelected();
+                });
             }
         });
 
