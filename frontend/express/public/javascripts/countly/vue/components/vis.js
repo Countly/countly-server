@@ -443,7 +443,13 @@
                         axisLabel: {
                             show: true,
                             color: "#81868D",
-                            fontSize: 12
+                            fontSize: 12,
+                            formatter: function(value) {
+                                if (typeof value === "number") {
+                                    return countlyCommon.getShortNumber(value);
+                                }
+                                return value;
+                            }
                         },
                         splitLine: {
                             show: true,
