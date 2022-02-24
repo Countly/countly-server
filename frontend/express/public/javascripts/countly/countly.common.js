@@ -2621,7 +2621,7 @@
                     //so we would not start from previous year
                     start.add(1, 'day');
 
-                    var monthCount = moment().diff(start, "months") + 1;
+                    var monthCount = 12;
 
                     for (i = 0; i < monthCount; i++) {
                         allMonths.push(start.format(countlyCommon.getDateFormat("MMM YYYY")));
