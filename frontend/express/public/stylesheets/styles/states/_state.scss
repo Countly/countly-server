@@ -26,6 +26,10 @@
     text-transform: uppercase !important;
 }
 
+.text-capitalize {
+    text-transform: capitalize !important;
+}
+
 .text-big {
     color: map.get(c.$colors, "cool-gray-100");
     font-size: t.$text-big-size;

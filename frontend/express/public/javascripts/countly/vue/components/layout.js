@@ -109,7 +109,7 @@
             },
             hideConfig: {
                 type: Boolean,
-                default: false
+                default: true
             },
             skin: {
                 type: String,
@@ -119,6 +119,14 @@
                     return val === "default" || val === "configurator";
                 }
             },
+        },
+        data: function() {
+            return {
+                isMounted: false
+            };
+        },
+        mounted: function() {
+            this.isMounted = true;
         },
         computed: {
             levelClass: function() {
@@ -131,10 +139,7 @@
                 var classes = {};
                 classes["cly-vue-section--has-" + this.skin + "-skin"] = true;
                 return classes;
-            },
-            isConfigSlotUsed: function() {
-                return !!this.$slots.config && !this.hideConfig;
-            },
+            }
         },
         template: '<div class="cly-vue-section" :class="topClasses">\
                         <div :class="[levelClass]">\
@@ -147,7 +152,7 @@
                             </div>\
                         </div>\
                         <div class="cly-vue-section__content white-bg">\
-                            <div v-if="isConfigSlotUsed" class="cly-vue-section__content-config bu-is-flex bu-px-4 bu-py-2"><slot name="config"></slot></div>\
+                            <div v-if="!hideConfig" class="cly-vue-section__content-config bu-is-flex bu-px-4 bu-py-2"><slot name="config"></slot></div>\
                             <slot></slot>\
                         </div>\
                     </div>'

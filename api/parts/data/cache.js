@@ -225,10 +225,10 @@ class CacheWorker {
                         if (!this.data.read(g)) {
                             this.data.write(g, new DataStore(ret[g].size, ret[g].age, undefined, ret[g].Cls));
                         }
-                        clearTimeout(timeout);
-                        this.started = true;
-                        resolve();
                     });
+                    this.started = true;
+                    clearTimeout(timeout);
+                    resolve();
                 });
             });
         }
@@ -599,7 +599,7 @@ class CacheMaster {
             this.ipc.send(0, {o: OP.PURGE, g: group, k});
         }, Cls));
 
-        this.ipc.send(0, {o: OP.INIT, g: group, d: {size, age}});
+        this.ipc.send(0, {o: OP.INIT, g: group, d: {size, age, Cls}});
 
         init().then(arr => {
             (arr || []).forEach(([k, d]) => {
@@ -633,9 +633,12 @@ class CacheMaster {
                     if (data === null) {
                         rc = null;
                     }
+                    if (rc instanceof Jsonable) {
+                        rc = rc.json;
+                    }
                     this.data.read(group)[data === null ? 'remove' : 'write'](id, rc);
                     return this.col.put(OP.WRITE, group, id, rc).then(() => {
-                        this.ipc.send(-from, {o: OP.WRITE, g: group, k: id, d: rc && (rc instanceof Jsonable) ? rc.json : rc});
+                        this.ipc.send(-from, {o: OP.WRITE, g: group, k: id, d: rc});
                         return data === null ? true : rc;
                     });
                 }

@@ -591,7 +591,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
-            var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
+            //var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
             // then result is owner id
             if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
@@ -617,7 +617,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                     return false;
                 }
 
-                if (!member.global_admin && appIdExceptions.indexOf(feature) === -1 && typeof params.qstring.app_id === "undefined") {
+                if (!member.global_admin && /*appIdExceptions.indexOf(feature) === -1 && */ typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
                     return false;
@@ -642,7 +642,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                         */
                         var isPermissionObjectExistForRead = (typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object");
                         var isFeatureAllowedInReadPermissionObject = isPermissionObjectExistForRead && (member.permission.r[params.qstring.app_id].all || member.permission.r[params.qstring.app_id].allowed[feature]);
-                        var hasAdminAccess = member.permission._.a.indexOf(params.qstring.app_id) > -1;
+                        var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission.a === "object") && member.permission._.a.indexOf(params.qstring.app_id) > -1;
                         // don't allow if user has not permission for feature and has no admin access for current app
                         if (!(isFeatureAllowedInReadPermissionObject) && !(hasAdminAccess)) {
                             common.returnMessage(params, 401, 'User does not have right');
@@ -740,7 +740,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
-            var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
+            //var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
             // then result is owner id
             if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
@@ -766,7 +766,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                     return false;
                 }
 
-                if (!member.global_admin && appIdExceptions.indexOf(feature) === -1 && typeof params.qstring.app_id === "undefined") {
+                if (!member.global_admin && /*appIdExceptions.indexOf(feature) === -1 && */ typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
                     return false;
@@ -786,7 +786,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                         */
                         var isPermissionObjectExistForAccessType = (typeof member.permission[accessType] === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object");
                         var isFeatureAllowedInRelatedPermissionObject = isPermissionObjectExistForAccessType && (member.permission[accessType][params.qstring.app_id].all || member.permission[accessType][params.qstring.app_id].allowed[feature]);
-                        var hasAdminAccess = member.permission._.a.indexOf(params.qstring.app_id) > -1;
+                        var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission.a === "object") && member.permission._.a.indexOf(params.qstring.app_id) > -1;
                         // don't allow if user has not permission for feature and has no admin access for current app
                         if (!(isFeatureAllowedInRelatedPermissionObject) && !(hasAdminAccess)) {
                             common.returnMessage(params, 401, 'User does not have right');
@@ -938,7 +938,6 @@ exports.hasDeleteRight = function(feature, app_id, member) {
     return member.global_admin || member.permission.d[app_id].allowed[feature] || member.permission.d[app_id].all;
 };
 
-/* not tested yet */
 exports.getUserApps = function(member) {
     let userApps = [];
     if (member.global_admin) {
@@ -957,7 +956,6 @@ exports.getUserApps = function(member) {
     }
 };
 
-/* not tested yet */
 exports.getAdminApps = function(member) {
     if (member.global_admin) {
         return [];

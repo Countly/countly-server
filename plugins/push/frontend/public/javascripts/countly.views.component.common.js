@@ -17,11 +17,6 @@
             description: {
                 type: String,
                 required: false,
-            },
-            hasTopMargin: {
-                type: Boolean,
-                required: false,
-                default: false,
             }
         },
         data: function() {
@@ -211,8 +206,8 @@
                 selectedPropertyCategory: "internal",
                 UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum,
                 propertyCategoryOptions: [
-                    {label: "Internal Properties", value: "internal"},
-                    {label: "External Properties", value: "external"}
+                    {label: CV.i18n('push-notification.internal-properties'), value: "internal"},
+                    {label: CV.i18n('push-notification.external-properties'), value: "external"}
                 ]
             };
         },
@@ -310,7 +305,7 @@
                 return this.value.fallback;
             },
             description: function() {
-                return "User's \"" + this.userProperty + "\" property which falls back to " + this.fallback;
+                return CV.i18n('push-notification-fallback-value-description', this.userProperty, this.fallback);
             }
         }
     });
@@ -813,7 +808,6 @@
         template: '#details-message-tab',
         data: function() {
             return {
-                selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 MessageTypeEnum: countlyPushNotification.service.MessageTypeEnum,
             };
@@ -822,8 +816,16 @@
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
+            selectedMessageLocale: {
+                get: function() {
+                    return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
+                },
+                set: function(value) {
+                    this.$store.dispatch("countlyPushNotification/details/onSetMessageLocaleFilter", value);
+                }
+            },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
+                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocale];
             },
             localizations: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
@@ -885,6 +887,10 @@
                 triggerNotMetOptions: countlyPushNotification.service.triggerNotMetOptions,
                 deliveryDateCalculationOptions: countlyPushNotification.service.deliveryDateCalculationOptions,
                 deliveryMethodOptions: countlyPushNotification.service.deliveryMethodOptions,
+                cohorts: [],
+                locations: [],
+                isFetchLocationsLoading: false,
+                isFetchCohortsLoading: false,
             };
         },
         computed: {
@@ -892,17 +898,9 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
             previewCohorts: function() {
-                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
-                    return this.pushNotification.cohorts.map(function(cohortItem) {
-                        return cohortItem.name;
-                    });
-                }
-                if (this.pushNotification.type === this.TypeEnum.AUTOMATIC) {
-                    return this.pushNotification[this.TypeEnum.AUTOMATIC].cohorts.map(function(cohortItem) {
-                        return cohortItem.name;
-                    });
-                }
-                return [];
+                return this.cohorts.map(function(cohortItem) {
+                    return cohortItem.name;
+                });
             },
         },
         methods: {
@@ -912,6 +910,53 @@
             formatDateAndTime: function(date) {
                 return countlyPushNotification.helper.formatDateTime(date, 'MMMM Do, YYYY, h:mm a');
             },
+            setCohorts: function(cohorts) {
+                this.cohorts = cohorts;
+            },
+            setLocations: function(locations) {
+                this.locations = locations;
+            },
+            fetchCohorts: function() {
+                var self = this;
+                if (this.pushNotification.type === this.TypeEnum.TRANSACTIONAL) {
+                    return;
+                }
+                this.isFetchCohortsLoading = true;
+                var cohortsList = [];
+                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
+                    cohortsList = this.pushNotification.cohorts;
+                }
+                if (this.pushNotification.type === this.TypeEnum.AUTOMATIC) {
+                    cohortsList = this.pushNotification.automatic.cohorts;
+                }
+                countlyPushNotification.service.fetchCohorts(cohortsList, false)
+                    .then(function(cohorts) {
+                        self.setCohorts(cohorts);
+                    }).catch(function() {
+                        self.setCohorts([]);
+                    }).finally(function() {
+                        self.isFetchCohortsLoading = false;
+                    });
+            },
+            fetchLocations: function() {
+                var self = this;
+                if (this.pushNotification.type === this.TypeEnum.TRANSACTIONAL) {
+                    return;
+                }
+                this.isFetchLocationsLoading = true;
+                countlyPushNotification.service.fetchLocations(this.pushNotification.locations, false)
+                    .then(function(locations) {
+                        self.setLocations(locations);
+                    }).catch(function() {
+                        self.setLocations([]);
+                    }).finally(function() {
+                        self.isFetchLocationsLoading = false;
+                    });
+            },
+        },
+        mounted: function() {
+            this.fetchCohorts();
+            this.fetchLocations();
         },
         components: {
             'details-tab-row': countlyPushNotificationComponent.DetailsTabRow

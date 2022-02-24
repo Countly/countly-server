@@ -3,13 +3,15 @@
     rules="required"
     :label="i18nM(multiple ? 'dashboards.events': 'dashboards.event')">
     <el-select
+		isFullWidth
         :key="rerender"
         style="width: 100%;"
         v-bind="$attrs"
         v-on="allListeners"
         v-model="selectedEvents"
-        :collapse-tags="false"
+        :collapse-tags="true"
         :multiple="multiple"
+		:filterable = "true"
         :multiple-limit="multipleLimit"
         :placeholder="placeholderText">
         <el-option

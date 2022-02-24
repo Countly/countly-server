@@ -64,4 +64,74 @@
             margin-top: -3px;
         }
     }
+	
+	.dashboard-widget-metric-labels span {
+		background-color: #E2E4E8;
+		color: #333C48;
+		border-radius: 4px;
+		text-transform: uppercase;
+		font-weight: 500;
+		font-size: 10px;
+	}
+
+	.clyd-legend-app {
+        &__logo {
+            width: 16px;
+            height: 16px;
+            background-position: 50% 50%;
+            border-radius: 4px;
+            background-repeat: no-repeat;
+            background-size: auto 16px;
+        }
+    }
+
+    .clyd-legend-period {
+        min-width: 30px;
+
+        &--custom {
+            background-color: map.get(c.$colors, "red-10");
+            padding: 0 6px;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    }
+
+    .clyd-widget {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+
+        &__content {
+            flex-shrink: 1;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+
+            &--vis-number {
+                text-align: center;
+
+                h1{
+                    font-size:40px;
+                    line-height:40px;
+                    padding:0;
+                    margin:0;
+                }
+
+                .trend-up {
+                    color: #12af51;
+                }
+
+                .trend-down {
+                    color:#d23f00;
+                }
+            }
+
+            //Data table css
+            .cly-vue-eldatatable__footer {
+                display:none;
+            }
+        }
+    }
 }

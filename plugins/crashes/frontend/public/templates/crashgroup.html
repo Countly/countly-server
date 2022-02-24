@@ -1,5 +1,5 @@
 <div>
-    <cly-header>
+    <cly-header style="align-items: flex-start !important;">
         <template v-slot:header-top>
             <cly-back-link></cly-back-link>
         </template>
@@ -70,7 +70,7 @@
             </div>
         </cly-section>
         <cly-section id="crash-tabs" v-if="!!(crashgroup && crashgroup.error)">
-            <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card">
+            <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card" style="border-radius: 4px;">
                 <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
                     <crash-stacktrace :code="crashgroup.error">
                         <template v-slot:header-left v-if="symbolicationEnabled">
@@ -85,7 +85,7 @@
                 </el-tab-pane>
                 <el-tab-pane name="comments">
                     <span slot="label">
-                        {{i18n("crashes.comments")}} <span class="bu-tag" style="background-color: #A7AEB8;">{{comments.length}}</span>
+                        {{i18n("crashes.comments")}} <span class="bu-tag" style="background-color: #A7AEB8; font-size: 13px; font-weight: 500;">{{comments.length}}</span>
                     </span>
                     <div class="bu-mx-5 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="comments.length === 0">
                         <img class="bu-mb-2" style="margin-top: 32px; height: 76px;" src="images/crashes/no-comments.svg"/>
@@ -113,9 +113,9 @@
                         <div>
                         </div>
                     </el-card>
-                    <div class="bu-m-5 comment-box">
+                    <div class="bu-m-5 comment-box" style="margin-top: 38px !important;">
                         <el-input type="textarea" autosize placeholder="Enter your comment" v-model="commentInput"></el-input>
-                        <div class="bu-level bu-mt-3">
+                        <div class="bu-level bu-mt-3" style="margin-top: 16px !important;">
                             <div class="bu-left">
                             </div>
                             <div class="bu-right">
@@ -187,7 +187,7 @@
             </template>
             <cly-chart-bar :option="chartData" :legend="{show: true}"></cly-chart-bar>
         </cly-section>
-        <cly-section :title="i18n('crashes.crash-occurences')">
+        <cly-section :title="i18n('crashes.crash-occurences')" class="crash-occurences">
             <cly-datatable-n :rows="crashes" ref="tableData" @row-click="handleRowClick">
                 <template v-slot:header-left="filterScope">
                     <cly-multi-select v-model="userFilter" :fields="userFilterFields"></cly-multi-select>
@@ -195,7 +195,7 @@
                 <template v-slot="scope">
                     <el-table-column type="expand">
                         <template slot-scope="props">
-                            <el-card class="bu-mb-5" :body-style="{padding: '0px'}">
+                            <el-card class="bu-mb-5" shadow="never" :body-style="{padding: '0px'}">
                                 <div class="bu-columns bu-is-gapless bu-is-mobile">
                                     <cly-crashes-dashboard-tile :columnWidth="props.row.custom ? 3 : 4">
                                         <div class="bu-p-5 bu-is-align-self-flex-start">
@@ -232,7 +232,7 @@
                                         </div>
                                         <div v-else>
                                             <el-button class="crash-link text-medium" type="text" @click="symbolicateCrash(props.row)" :loading="isCrashBeingSymbolicated(props.row._id)" v-if="!!crashgroup._symbol_id">{{i18n("crash_symbolication.symbolicate_error")}}</el-button>
-                                            <span class="text-small bu-ml-3 text-uppercase font-weight-bold">{{i18n("crashes.stacktrace")}}</span>
+                                            <span class="text-medium bu-ml-3 text-uppercase font-weight-bold">{{i18n("crashes.stacktrace")}}</span>
                                         </div>
                                     </template>
                                     <template v-slot:header-right>

@@ -190,7 +190,7 @@ usersApi.createUser = function(params) {
 
     var createUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(newMember = createUserValidation.obj)) {
-        common.returnMessage(params, 400, 'Error: ' + createUserValidation.errors);
+        common.returnMessage(params, 400, createUserValidation.errors);
         return false;
     }
 
@@ -224,7 +224,7 @@ usersApi.createUser = function(params) {
 
     common.db.collection('members').findOne({ $or: [{ email: newMember.email }, { username: newMember.username }] }, function(err, member) {
         if (member || err) {
-            common.returnMessage(params, 200, 'Email or username already exists');
+            common.returnMessage(params, 400, ['Email or username already exists']);
             return false;
         }
         else {
@@ -276,7 +276,7 @@ usersApi.createUser = function(params) {
                     common.returnOutput(params, member[0]);
                 }
                 else {
-                    common.returnMessage(params, 500, 'Error creating user');
+                    common.returnMessage(params, 400, ['Error creating user']);
                 }
             });
         });
@@ -423,7 +423,7 @@ usersApi.updateUser = async function(params) {
 
     var updateUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(updatedMember = updateUserValidation.obj)) {
-        common.returnMessage(params, 400, 'Error: ' + updateUserValidation.errors);
+        common.returnMessage(params, 400, updateUserValidation.errors);
         return false;
     }
 

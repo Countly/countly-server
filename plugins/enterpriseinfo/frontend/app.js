@@ -1,8 +1,6 @@
 var exported = {},
     countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
     versionInfo = require('../../../frontend/express/version.info'),
-    path = require('path'),
-    fs = require('fs'),
     async = require('async');
 
 (function(plugin) {
@@ -48,17 +46,6 @@ var exported = {},
                 }
             });
         }
-        app.get(countlyConfig.path + '/login', function(req, res, next) {
-            var filename = path.resolve(__dirname, "public/templates/login.html");
-            fs.readFile(filename, "utf8", function(err, data) {
-                if (!err && data) {
-                    var parts = data.split("<!-- JS PART -->");
-                    req.template.html += parts[0];
-                    req.template.js += parts[1];
-                }
-                next();
-            });
-        });
         app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
             if (req.session.uid && versionInfo.type === "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6" && !versionInfo.footer) {
                 countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid)}, function(err, member) {

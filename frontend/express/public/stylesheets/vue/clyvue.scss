@@ -968,7 +968,6 @@
 	.cly-vue-radio-block {
 		 .radio-wrapper {
             border-radius: 0px;
-			width: 256px;
 
             .radio-button {
                 border-top: 1px solid #ececec;
@@ -1648,6 +1647,10 @@
         }
 
         &--full-screen {
+            .cly-vue-drawer__close-button {
+                height: 24px;
+                margin-top: -6px;
+            }
             .cly-vue-drawer__steps-view {
                 width: 100%;
             }
@@ -1667,13 +1670,18 @@
             .cly-vue-drawer__steps-container {
                 &.is-scroll-shadow-at-middle::before,
                 &.is-scroll-shadow-at-bottom::before {
-                    width: 685px;
+                    width: 100%;
+                    left: 0;
                 }
                 &.is-scroll-shadow-at-middle .scroll-shadow-container::after,
                 &.is-scroll-shadow-at-top .scroll-shadow-container::after {
-                    width: 685px;
-                    bottom: 16px;
-                    margin-left: -16px;
+                    width: 100%;
+                    bottom: 15px;
+                }
+
+                &.is-scroll-shadow-at-middle .scroll-shadow-container,
+                &.is-scroll-shadow-at-top .scroll-shadow-container {
+                    left: -16px;
                 }
             }
 
@@ -1734,10 +1742,6 @@
         &__body-container {
             margin-left: 32px !important;
             margin-right: 32px !important;
-
-            .bu-column {
-                padding: unset !important;
-            }
         }
 
         &__steps-header {

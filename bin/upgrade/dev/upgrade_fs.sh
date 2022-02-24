@@ -39,12 +39,24 @@ then
     
     
     (cd "$DIR/.." && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
+    
     #upgrade plugins
     countly plugin upgrade white-labeling
+    countly plugin upgrade sources
+    countly plugin upgrade two-factor-auth
+    countly plugin upgrade web
+    countly plugin upgrade push
 
     
     #enable new plugins
-    #countly plugin enable activity-map
+    countly plugin enable data-manager
+    countly plugin enable heatmaps
+    countly plugin enable hooks
+    
+    #disable old plugins
+    countly plugin disable EChartMap
+    countly plugin disable crashes-jira
+    countly plugin disable restrict
     
     #get web sdk
     countly update sdk-web

@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery*/
+/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery, countlyGlobal*/
 var UserAnalyticsOverview = countlyVue.views.create({
     template: CV.T("/core/user-analytics-overview/templates/overview.html"),
     data: function() {
@@ -7,20 +7,26 @@ var UserAnalyticsOverview = countlyVue.views.create({
             tableData: [],
             graphOptions: this.createSeries(),
             lineLegend: this.createLineLegend(),
-            lineOptions: this.createSeries()
+            lineOptions: this.createSeries(),
+            isLoading: true
         };
     },
     mounted: function() {
         var self = this;
         $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {
             self.calculateAllData();
+            self.isLoading = false;
         });
     },
     methods: {
-        refresh: function() {
+        refresh: function(force) {
             var self = this;
+            if (force) {
+                self.isLoading = true;
+            }
             $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {
                 self.calculateAllData();
+                self.isLoading = false;
             });
         },
         calculateAllData: function() {
@@ -171,6 +177,248 @@ app.route("/analytics/users/*tab", "user-analytics-tab", function(tab) {
     ViewWrapper.params = params;
     this.renderWhenReady(ViewWrapper);
 });
+//Analytics->User analytics - overview widget
+var GridComponent = countlyVue.views.create({
+    template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
+    mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+    props: {
+        data: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        }
+    },
+    mounted: function() {
+    },
+    data: function() {
+        return {
+            showBuckets: false,
+            map: {
+                "u": this.i18n("common.table.total-users"),
+                "r": this.i18n("common.table.returning-users"),
+                "n": this.i18n("common.table.new-users")
+            }
+        };
+    },
+    methods: {
+    },
+    computed: {
+        title: function() {
+            if (this.data.title) {
+                return this.data.title;
+            }
+            if (this.data.dashData) {
+                return CV.i18n("user-analytics.overview-title");
+            }
+            return "";
+        },
+        metricLabels: function() {
+            this.data = this.data || {};
+            var listed = [];
+
+            for (var k = 0; k < this.data.metrics.length; k++) {
+                listed.push(this.map[this.data.metrics[k]] || this.data.metrics[k]);
+            }
+            return listed;
+        },
+        timelineGraph: function() {
+            this.data = this.data || {};
+            this.data.dashData = this.data.dashData || {};
+            this.data.dashData.data = this.data.dashData.data || {};
+
+            var series = [];
+            var dates = [];
+            var appIndex = 0;
+            var multiApps = false;
+            if (Object.keys(this.data.dashData.data).length > 0) {
+                multiApps = true;
+            }
+
+            for (var app in this.data.dashData.data) {
+                for (var k = 0; k < this.data.metrics.length; k++) {
+                    var name = this.map[this.data.metrics[k]] || this.data.metrics[k];
+
+                    if (multiApps) {
+                        name = (countlyGlobal.apps[app].name || app) + " (" + name + ")";
+                    }
+                    series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], color: countlyCommon.GRAPH_COLORS[series.length]});
+                }
+                for (var date in this.data.dashData.data[app]) {
+                    if (appIndex === 0) {
+                        dates.push(date);
+                    }
+                    for (var kk = 0; kk < this.data.metrics.length; kk++) {
+                        if (this.data.metrics[kk] === 'r') {
+                            var vv = this.data.dashData.data[app][date].u - this.data.dashData.data[app][date].n;
+                            series[appIndex * this.data.metrics.length + kk].data.push(vv);
+                        }
+                        else {
+                            series[appIndex * this.data.metrics.length + kk].data.push(this.data.dashData.data[app][date][this.data.metrics[kk]] || 0);
+                        }
+                    }
+                }
+                appIndex++;
+            }
+            if (this.data.custom_period) {
+                return {
+                    lineOptions: {xAxis: { data: dates}, "series": series}
+                };
+            }
+            else {
+                return {
+                    lineOptions: {"series": series}
+                };
+            }
+        },
+        stackedBarOptions: function() {
+            var data = this.timelineGraph;
+            for (var k = 0; k < data.lineOptions.series.length; k++) {
+                data.lineOptions.series[k].stack = "A";
+            }
+            return data.lineOptions;
+        },
+        number: function() {
+            return this.calculateNumberFromWidget(this.data);
+        },
+        legendLabels: function() {
+            var labels = {};
+
+            var graphData = this.timelineGraph;
+            var series = graphData.lineOptions.series;
+
+            for (var i = 0; i < series.length; i++) {
+                if (!labels[series[i].app]) {
+                    labels[series[i].app] = [];
+                }
+
+                labels[series[i].app].push({
+                    appId: series[i].app,
+                    color: series[i].color,
+                    label: this.map[series[i].metric] || series[i].metric
+                });
+            }
+
+            return labels;
+        }
+    }
+});
+
+var DrawerComponent = countlyVue.views.create({
+    template: "#usersoverview-drawer",
+    data: function() {
+        return {
+        };
+    },
+    computed: {
+        metrics: function() {
+            return [
+                { label: this.i18n("common.table.total-users"), value: "u" },
+                { label: this.i18n("common.table.new-users"), value: "n" },
+                { label: this.i18n("common.table.returning-users"), value: "r" }
+            ];
+        },
+        enabledVisualizationTypes: function() {
+            if (this.scope.editedObject.app_count === 'single') {
+                return ['time-series', 'bar-chart', 'number'];
+            }
+            else if (this.scope.editedObject.app_count === 'multiple') {
+                return ['time-series', 'bar-chart'];
+            }
+            else {
+                return [];
+            }
+        },
+        isMultipleMetric: function() {
+            var multiple = false;
+            var appCount = this.scope.editedObject.app_count;
+            var visualization = this.scope.editedObject.visualization;
+
+            if (appCount === 'single') {
+                if (visualization === 'bar-chart' || visualization === 'time-series') {
+                    multiple = true;
+                }
+            }
+
+            return multiple;
+        },
+    },
+    mounted: function() {
+        if (this.scope.editedObject.breakdowns.length === 0) {
+            this.scope.editedObject.breakdowns = ['overview'];
+        }
+    },
+    methods: {
+    },
+    watch: {
+
+    },
+    props: {
+        scope: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        }
+    }
+});
+
+countlyVue.container.registerData("/custom/dashboards/widget", {
+    type: "analytics",
+    label: CV.i18n("user-analytics.overview-title"),
+    priority: 1,
+    primary: false,
+    getter: function(widget) {
+        var kk = widget.breakdowns || [];
+        if (widget.widget_type === "analytics" && widget.data_type === "user-analytics" && (kk.length === 0 || kk[0] === 'overview' || (kk[0] !== "active" && kk[0] !== "online"))) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    },
+    templates: [
+        {
+            namespace: "usersoverview",
+            mapping: {
+                "drawer": "/core/user-analytics-overview/templates/widgetDrawer.html"
+            }
+        }
+    ],
+    drawer: {
+        component: DrawerComponent,
+        getEmpty: function() {
+            return {
+                title: "",
+                widget_type: "analytics",
+                data_type: "user-analytics",
+                app_count: 'single',
+                metrics: [],
+                apps: [],
+                visualization: "",
+                breakdowns: ['overview'],
+                custom_period: "30days"
+            };
+        },
+        beforeLoadFn: function(/*doc, isEdited*/) {
+        },
+        beforeSaveFn: function(/*doc*/) {
+        }
+    },
+    grid: {
+        component: GridComponent,
+        dimensions: function() {
+            return {
+                minWidth: 2,
+                minHeight: 4,
+                width: 2,
+                height: 4
+            };
+        }
+    }
+
+});
+
 
 countlyVue.container.registerTab("/analytics/users", {
     priority: 1,

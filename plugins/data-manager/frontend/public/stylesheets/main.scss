@@ -4,8 +4,9 @@
         width: 26px;
         border-radius: 4px;
         background: #81868D;
-        padding: 1.5px 5.5px 1.5px 6px;
+        padding: 1px 5.5px 1.5px 6px;
         margin-left: 2px;
+        vertical-align: middle;
     }
     &__hidden-icon{
         color: #fff;
@@ -13,8 +14,14 @@
         border-radius: 4px;
         height: 20px;
         width: 26px;
-        padding: 1.4px 4px 1.4px 3.5px;
+        padding: 1px 4px 1.4px 3.5px;
         margin-left: 2px;
+        vertical-align: middle;
+    }
+    &__clickable{
+        &:hover {
+            text-decoration: underline;
+        }
     }
     .tag-container{
         font-size: 12px;
@@ -107,6 +114,7 @@
             border-spacing: 0 20px;
             tr td:nth-child(1) {
                 font-weight: 500;
+                vertical-align: baseline;
             }
         }
     }
@@ -166,6 +174,21 @@
             .dz-preview{
                 margin-top: 24px;
             }
+            .dz-filename{
+                margin-bottom: 8px;
+            }
+            .dz-remove{
+                margin-bottom: 10px;
+            }
+            .dz-filename::before{
+                content: url('/data-manager/images/upload-icon.svg');
+                vertical-align: middle;
+                display: inline-block;
+                margin-right: 8px;
+            }
         }
+    }
+    .cly-vue-diff-helper{
+        z-index: 2000 !important;
     }
 }

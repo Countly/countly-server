@@ -76,57 +76,68 @@ appsApi.getCurrentUserApps = function(params) {
 * @returns {boolean} true if got data from db, false if did not
 **/
 appsApi.getAppsDetails = function(params) {
-    if (params.app.owner) {
-        params.app.owner_id = params.app.owner;
-        params.app.owner = common.db.ObjectID(params.app.owner + "");
+    if (!params.qstring.app_id) {
+        common.returnMessage(params, 401, 'No app_id provided');
+        return false;
     }
-    common.db.collection('app_users' + params.qstring.app_id).find({}, {
-        lac: 1,
-        _id: 0
-    }).sort({lac: -1}).limit(1).toArray(function(err, last) {
-        common.db.collection('members').findOne({ _id: params.app.owner }, {
-            full_name: 1,
-            username: 1
-        }, function(err2, owner) {
-            if (owner) {
-                if (owner.full_name && owner.full_name !== "") {
-                    params.app.owner = owner.full_name;
-                }
-                else if (owner.username && owner.username !== "") {
-                    params.app.owner = owner.username;
+    common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
+        if (!app) {
+            common.returnMessage(params, 401, 'App does not exist');
+            return false;
+        }
+        params.app = app;
+        if (params.app.owner) {
+            params.app.owner_id = params.app.owner;
+            params.app.owner = common.db.ObjectID(params.app.owner + "");
+        }
+        common.db.collection('app_users' + params.qstring.app_id).find({}, {
+            lac: 1,
+            _id: 0
+        }).sort({lac: -1}).limit(1).toArray(function(err, last) {
+            common.db.collection('members').findOne({ _id: params.app.owner }, {
+                full_name: 1,
+                username: 1
+            }, function(err2, owner) {
+                if (owner) {
+                    if (owner.full_name && owner.full_name !== "") {
+                        params.app.owner = owner.full_name;
+                    }
+                    else if (owner.username && owner.username !== "") {
+                        params.app.owner = owner.username;
+                    }
+                    else {
+                        params.app.owner = "";
+                    }
                 }
                 else {
                     params.app.owner = "";
                 }
-            }
-            else {
-                params.app.owner = "";
-            }
-            common.db.collection('members').find({ global_admin: true }, {
-                full_name: 1,
-                username: 1
-            }).toArray(function(err3, global_admins) {
-                common.db.collection('members').find({ admin_of: params.qstring.app_id }, {
+                common.db.collection('members').find({ global_admin: true }, {
                     full_name: 1,
                     username: 1
-                }).toArray(function(err4, admins) {
-                    common.db.collection('members').find({ user_of: params.qstring.app_id }, {
+                }).toArray(function(err3, global_admins) {
+                    common.db.collection('members').find({ admin_of: params.qstring.app_id }, {
                         full_name: 1,
                         username: 1
-                    }).toArray(function(err5, users) {
-                        common.returnOutput(params, {
-                            app: {
-                                owner: params.app.owner || "",
-                                owner_id: params.app.owner_id || "",
-                                created_at: params.app.created_at || 0,
-                                edited_at: params.app.edited_at || 0,
-                                plugins: params.app.plugins,
-                                last_data: params.app.last_data,
-                                last_data_users: (typeof last !== "undefined" && last.length) ? last[0].lac : 0,
-                            },
-                            global_admin: global_admins || [],
-                            admin: admins || [],
-                            user: users || []
+                    }).toArray(function(err4, admins) {
+                        common.db.collection('members').find({ user_of: params.qstring.app_id }, {
+                            full_name: 1,
+                            username: 1
+                        }).toArray(function(err5, users) {
+                            common.returnOutput(params, {
+                                app: {
+                                    owner: params.app.owner || "",
+                                    owner_id: params.app.owner_id || "",
+                                    created_at: params.app.created_at || 0,
+                                    edited_at: params.app.edited_at || 0,
+                                    plugins: params.app.plugins,
+                                    last_data: params.app.last_data,
+                                    last_data_users: (typeof last !== "undefined" && last.length) ? last[0].lac : 0,
+                                },
+                                global_admin: global_admins || [],
+                                admin: admins || [],
+                                user: users || []
+                            });
                         });
                     });
                 });
@@ -549,7 +560,12 @@ appsApi.updateAppPlugins = function(params) {
                 common.returnOutput(params, ret);
             }, err => {
                 log.e('Error during plugin config updates for app %s: %j %s, %d', params.qstring.app_id, err, typeof err, err.length);
-                common.returnMessage(params, 400, 'Couldn\'t update plugin: ' + (typeof err === 'string' ? err : err.message || err.code || JSON.stringify(err)));
+                if (err.errors) {
+                    common.returnMessage(params, 400, {errors: err.errors}, null, true);
+                }
+                else {
+                    common.returnMessage(params, 400, 'Couldn\'t update plugin: ' + (typeof err === 'string' ? err : err.message || err.code || JSON.stringify(err)));
+                }
             });
         }
         else {

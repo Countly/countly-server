@@ -109,6 +109,10 @@
             disableAutoNavigationToTask: {
                 type: Boolean,
                 default: false
+            },
+            maxHeight: {
+                type: String,
+                default: null
             }
         },
         computed: {
@@ -214,7 +218,8 @@
                     "flows": CV.i18n("flows.flows") || "Flows",
                     "retention": CV.i18n("retention.retention") || "Retention",
                     "formulas": CV.i18n("calculated-metrics.formulas") || "Formulas",
-                    "dbviewer": CV.i18n("dbviewer.title") || "DBViewer"
+                    "dbviewer": CV.i18n("dbviewer.title") || "DBViewer",
+                    "data-manager": CV.i18n("data-manager.plugin-title") || "Data Manager",
                 },
                 availableRunTimeTypes: {
                     "all": CV.i18n("report-manager.all-types"),

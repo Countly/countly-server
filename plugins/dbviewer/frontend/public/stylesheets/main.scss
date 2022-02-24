@@ -1,8 +1,46 @@
 .dbviewer-tab {
+    height: 80vh;
+
+    &__detail-dialog {
+        width: 60% !important;
+        left: 20% !important;
+
+        pre {
+            height: 400px !important;
+        }
+    }
+
+    pre {
+        margin: 0px;
+    }
+
+    .el-table__expanded-cell {
+        padding: 0px 0px 0px 20px !important;
+    }
+
+    &__expand-button {
+        float: right;
+    }
+
+    &__code {
+        background-color: #FCFCFC;
+        max-height: 200px;
+    }
+
+    &__code-in-dialog {
+        max-height: 380px;
+        background-color: #FCFCFC;
+    }
+
+    .cly-vue-eldatatable__header {
+        border-bottom: 1px solid #ebebeb;
+    }
+
     &__sidebar {
         border-top-right-radius: 4px;
         border-top-left-radius: 4px;
         border: 1px solid #ECECEC;
+        height: calc(100vh - 250px);
     }
 
     &__app-selector-dropdown {
@@ -50,6 +88,14 @@
     &__collections-list {
         border-radius: 0px !important;
         border: none !important;
+    }
+
+    .el-table__fixed-body-wrapper {
+        .cell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     }
 }
 

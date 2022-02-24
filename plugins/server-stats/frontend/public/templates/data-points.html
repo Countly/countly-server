@@ -9,10 +9,10 @@
         </template>
     </cly-header>
 	<cly-main>
-		<div class="bu-level-left">
+		<div v-if="!subPage" class="bu-level-left">
 			<h4>{{i18n('server-stats.data-points-last_hours')}}</h4>
 		</div>
-		<cly-section class="bu-mt-4">
+		<cly-section v-if="!subPage" class="bu-mt-4">
 			<cly-metric-cards :multiline="false" v-loading="isLoading" style="min-height:100px;">
 				<cly-metric-card formatting="long" :is-percentage="false" :box-type="3" :label="item.name" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in topApps">
 					<template v-slot:number>{{item.value}}</template>
@@ -30,7 +30,7 @@
             <cly-datatable-n  :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
 				<el-table-column min-width="200" type="clickable" sortable="custom" prop="appName" :show-overflow-tooltip="true" :label="i18n('compare.apps.app-name')" fixed="left">
 					<template slot-scope="scope">
-						<a v-if="scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId'>{{scope.row.appName}}</a>
+						<a v-if="!subPage && scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId'>{{scope.row.appName}}</a>
 						<span v-else class="i_am_not_clickable">{{scope.row.appName}}</span>
 					</template>
 				</el-table-column>
@@ -46,7 +46,7 @@
 						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.events-description')"></span>
 					</template>
 				</el-table-column>
-				<el-table-column min-width="150" v-if="showPushColumn" :formatter="numberFormatter" sortable="custom" prop="push" :label="i18n('push.plugin-title')"></el-table-column>
+				<el-table-column min-width="150" v-if="showPushColumn" :formatter="numberFormatter" sortable="custom" prop="push" :label="i18n('push-notification.title')"></el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.data-points')"></el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="change" :label="i18n('server-stats.datapoint-change')"></el-table-column>
 			</cly-datatable-n>

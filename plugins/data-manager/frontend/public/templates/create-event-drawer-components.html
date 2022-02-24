@@ -2,20 +2,20 @@
 	<div class="data-manager-create-event__segment bu-my-4 bg-cool-gray-10">
         <div class="bu-px-4 bu-py-5">
             <div class="bu-level">
-                <div class="text-small text-heading bu-level-left bu-level-item text-uppercase bu-mb-3">Segmentation Details</div>
-                <div @click="removeSegment" class="bu-is-clickable text-small bu-level-item bu-level-right color-red-100">Delete Segmentation</div>
+                <div class="text-small text-heading bu-level-left bu-level-item text-uppercase bu-mb-3">{{i18n('data-manager.segmentation.details')}}</div>
+                <div @click="removeSegment" class="bu-is-clickable text-small bu-level-item bu-level-right color-red-100">{{i18n('data-manager.segmentation.delete')}}</div>
             </div>
 
-            <cly-form-field label="Segmentation Key">
+            <cly-form-field :label="i18n('data-manager.segmentation.key')">
                 <el-input
                 class="bu-pt-1"
                 v-model="segment.name" 
-		        placeholder="Enter Segmentation Key">
+		        :placeholder="i18n('data-manager.segmentation.enter.key')">
 		        </el-input>
             </cly-form-field>
 
-            <cly-form-field class="bu-pt-1" label="Segmentation Type">
-                <el-select v-model="segment.type" placeholder="Select Segmentation Type">
+            <cly-form-field class="bu-pt-1" :label="i18n('data-manager.segmentation.type')">
+                <el-select style="width: 280px;" v-model="segment.type" :placeholder="i18n('data-manager.segmentation.select.type')">
                     <el-option
                       class="bu-pt-1"
                       v-for="item in dataTypes"
@@ -29,19 +29,19 @@
 
             <div class="bu-mt-3">
                 <el-checkbox v-model="segment.required" size="medium">
-                    <span class="text-smallish color-cool-gray-100">Segmentation Required?</span>
+                    <span class="text-smallish color-cool-gray-100">{{i18n('data-manager.segmentation.required')}}</span>
                 </el-checkbox>
             </div>
 
             <div v-if="segment.required" class="text-medium text-heading">
-                <cly-form-field label="Segmentation Description" class="bu-pb-0">
+                <cly-form-field :label="i18n('data-manager.segmentation.description')" class="bu-pb-0">
                     <el-input
                     class="bu-pt-1"
                     v-if="segment.required"
                     type="textarea"
                     :rows="2"
                     v-model="segment.description" 
-		            placeholder="Enter Segmentation description">
+		            :placeholder="i18n('data-manager.segmentation.enter.description')">
 		            </el-input>
                 </cly-form-field>
             </div>
@@ -68,7 +68,7 @@
 			type="text"
             :disabled="!newSegmentAllowed"
 			@click="addNewSegment">
-			+ Add Event Segmentation
+			{{i18n('data-manager.segmentation.add')}}
 		</el-button>
 
 	</div>

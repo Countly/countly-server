@@ -1,4 +1,5 @@
 <cly-datatable-n
+    :force-loading="loading"
     :rows="widgets">
       <template v-slot="scope">
           <el-table-column width="100" fixed type="switch" sortable="true" prop="status" :label="i18n('feedback.status')">

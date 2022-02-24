@@ -98,6 +98,26 @@
                     this.initializeStoreData();
                 }
             },
+        },
+        methods: {
+            initializeStoreData: function() {
+                var newValue = this.selectedfilter0;
+                if (this.selectedfilter0 === 'all') {
+                    newValue = "";
+                }
+                var self = this;
+                countlyConsentManager.initialize().then(function() {
+                    var payload = {
+                        "segment": newValue
+                    };
+                    self.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
+                    self.$store.dispatch("countlyConsentManager/_consentDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_exportDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_purgeDP");
+                    self.$store.dispatch("countlyConsentManager/_ePData");
+
+                });
+            },
         }
 
     });
@@ -188,6 +208,26 @@
                     this.initializeStoreData();
                 }
             },
+        },
+        methods: {
+            initializeStoreData: function() {
+                var newValue = this.selectedfilter0;
+                if (this.selectedfilter0 === 'all') {
+                    newValue = "";
+                }
+                var self = this;
+                countlyConsentManager.initialize().then(function() {
+                    var payload = {
+                        "segment": newValue
+                    };
+                    self.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
+                    self.$store.dispatch("countlyConsentManager/_consentDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_exportDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_purgeDP");
+                    self.$store.dispatch("countlyConsentManager/_ePData");
+
+                });
+            },
         }
 
     });
@@ -195,6 +235,8 @@
         template: CV.T("/compliance-hub/templates/metrics.html"),
         data: function() {
             return {
+                consentDpChartloaded: false,
+                chartLoading: false,
                 filter0: [
                     {
                         value: 'all',
@@ -250,15 +292,17 @@
 
         },
         beforeCreate: function() {
-            countlyConsentManager.initialize();
+            var self = this;
             var payload = {
                 "segment": "sessions"
             };
-            this.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
-            this.$store.dispatch("countlyConsentManager/_consentDP", payload);
-            this.$store.dispatch("countlyConsentManager/_exportDP", payload);
-            this.$store.dispatch("countlyConsentManager/_purgeDP");
-            this.$store.dispatch("countlyConsentManager/_ePData");
+            countlyConsentManager.initialize().then(function() {
+                self.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
+                self.$store.dispatch("countlyConsentManager/_consentDP", payload);
+                self.$store.dispatch("countlyConsentManager/_exportDP", payload);
+                self.$store.dispatch("countlyConsentManager/_purgeDP");
+                self.$store.dispatch("countlyConsentManager/_ePData");
+            });
         },
         computed: {
             selectedfilterforMetrics: {
@@ -271,12 +315,19 @@
                 }
             },
             consentDpChart: function() {
+                this.consentDpChartloaded = false;
                 var consentDp = this.$store.getters["countlyConsentManager/_consentDP"];
                 var optinYAxisData = [];
                 var optoutYAxisData = [];
                 for (var key in consentDp.chartData) {
                     optinYAxisData.push(consentDp.chartData[key].i);
                     optoutYAxisData.push(consentDp.chartData[key].o);
+                }
+                if (optinYAxisData.length > 0) {
+                    this.consentDpChartloaded = true;
+                }
+                else if (consentDp.chartData) {
+                    this.consentDpChartloaded = true;
                 }
                 return {
                     series: [
@@ -300,17 +351,17 @@
                     data: [{
                         name: "opt-in",
                         label: this.i18n("consent.opt-i"),
-                        value: _bigNumberData.i.total,
-                        percentage: _bigNumberData.i.change,
-                        trend: _bigNumberData.i.trend === 'u' ? "up" : "down",
+                        value: _bigNumberData && _bigNumberData.i ? this.formatNumber(_bigNumberData.i.total) : 0,
+                        percentage: _bigNumberData && _bigNumberData.i ? _bigNumberData.i.change : 0,
+                        trend: _bigNumberData && _bigNumberData.i ? _bigNumberData.i.trend === 'u' ? "up" : "down" : "-",
                     },
                     {
 
                         name: "opt-out",
                         label: this.i18n("consent.opt-o"),
-                        value: _bigNumberData.o.total,
-                        percentage: _bigNumberData.o.change,
-                        trend: _bigNumberData.o.trend === 'u' ? "up" : "down",
+                        value: _bigNumberData && _bigNumberData.o ? this.formatNumber(_bigNumberData.o.total) : 0,
+                        percentage: _bigNumberData && _bigNumberData.o ? _bigNumberData.o.change : 0,
+                        trend: _bigNumberData && _bigNumberData.o ? _bigNumberData.o.trend === 'u' ? "up" : "down" : "-",
                     }
                     ],
                 };
@@ -366,50 +417,68 @@
             },
             userDatalegend: function() {
                 var data = this.$store.getters["countlyConsentManager/_ePData"];
-                data.e.title = this.i18n("consent.userdata-exports");
-                data.p.title = this.i18n("consent.userdata-purges");
-                var legendData = {
-                    name: data.e.title,
-                    label: data.e.title,
-                    value: data.e.total,
-                    percentage: data.e.change,
-                    trend: data.e.trend,
-                    class: data.e.trend === 'u' ? 'cly-trend-up' : 'cly-trend-down'
-                };
-                return legendData;
+                if (data.e) {
+                    data.e.title = this.i18n("consent.userdata-exports");
+                    data.p.title = this.i18n("consent.userdata-purges");
+                    var legendData = {
+                        name: data.e.title,
+                        label: data.e.title,
+                        value: data.e.total,
+                        percentage: data.e.change,
+                        trend: data.e.trend,
+                        class: data.e.trend === 'u' ? 'cly-trend-up' : 'cly-trend-down'
+                    };
+                    return legendData;
+                }
+                return {};
             },
             purgeDatalegend: function() {
                 var data = this.$store.getters["countlyConsentManager/_ePData"];
-                data.e.title = this.i18n("consent.userdata-exports");
-                data.p.title = this.i18n("consent.userdata-purges");
-                var legendData = {
-                    name: data.p.title,
-                    label: data.p.title,
-                    value: data.e.total,
-                    percentage: data.p.change,
-                    trend: data.p.trend,
-                    class: data.p.trend === 'u' ? 'cly-trend-up' : 'cly-trend-down'
-                };
-                return legendData;
+                if (data.e) {
+                    data.e.title = this.i18n("consent.userdata-exports");
+                    data.p.title = this.i18n("consent.userdata-purges");
+                    var legendData = {
+                        name: data.p.title,
+                        label: data.p.title,
+                        value: data.e.total,
+                        percentage: data.p.change,
+                        trend: data.p.trend,
+                        class: data.p.trend === 'u' ? 'cly-trend-up' : 'cly-trend-down'
+                    };
+                    return legendData;
+                }
+                return {};
 
             }
 
         },
         methods: {
+            formatTableNumber: function(data) {
+                if (Math.abs(data) >= 10000) {
+                    return this.getShortNumber(data);
+                }
+                else {
+                    return this.formatNumber(data);
+                }
+            },
             initializeStoreData: function() {
+                this.chartLoading = false;
                 var newValue = this.selectedfilter0;
                 if (this.selectedfilter0 === 'all') {
                     newValue = "";
                 }
-                countlyConsentManager.initialize();
-                var payload = {
-                    "segment": newValue
-                };
-                this.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
-                this.$store.dispatch("countlyConsentManager/_consentDP", payload);
-                this.$store.dispatch("countlyConsentManager/_exportDP", payload);
-                this.$store.dispatch("countlyConsentManager/_purgeDP");
-                this.$store.dispatch("ountlyConsentManager/_ePData");
+                var self = this;
+                countlyConsentManager.initialize().then(function() {
+                    var payload = {
+                        "segment": newValue
+                    };
+                    self.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
+                    self.$store.dispatch("countlyConsentManager/_consentDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_exportDP", payload);
+                    self.$store.dispatch("countlyConsentManager/_purgeDP");
+                    self.$store.dispatch("countlyConsentManager/_ePData");
+
+                });
             },
         }
 
@@ -499,7 +568,7 @@
         var renderedView = getMainView();
         this.renderWhenReady(renderedView);
     });
-    app.route("/manage/compliance/*tab", 'compliance', function(tab) {
+    app.route("/manage/compliance/*tab", 'compliance-tab', function(tab) {
         var renderedView = getMainView();
         var params = {
             tab: tab

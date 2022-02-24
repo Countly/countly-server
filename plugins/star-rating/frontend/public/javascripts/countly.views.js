@@ -1,5 +1,14 @@
-/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, Promise, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
 var FEATURE_NAME = 'star_rating';
+
+/**
+ * Replace escaped characters
+ * @param {string} val - string to replace
+ * @returns {string} - replaced escaped characters
+ */
+function replaceEscapes(val) {
+    return val.replace("&#39;", "'");
+}
 
 var Drawer = countlyVue.views.create({
     template: CV.T("/star-rating/templates/drawer.html"),
@@ -137,6 +146,10 @@ var WidgetsTable = countlyVue.views.create({
         rows: {
             type: Array,
             default: []
+        },
+        loading: {
+            type: Boolean,
+            default: true
         }
     },
     data: function() {
@@ -152,6 +165,7 @@ var WidgetsTable = countlyVue.views.create({
                     ratingScore = (this.rows[i].ratingsSum / this.rows[i].ratingsCount).toFixed(1);
                 }
                 this.rows[i].ratingScore = ratingScore;
+                this.rows[i].popup_header_text = replaceEscapes(this.rows[i].popup_header_text);
                 if (this.cohortsEnabled) {
                     this.rows[i] = this.parseTargeting(this.rows[i]);
                 }
@@ -268,18 +282,23 @@ var RatingsTab = countlyVue.views.create({
             self.sum = 0;
             // reset cumulative data
             self.cumulativeData = [{
+                rating: 0,
                 count: 0,
                 percent: 0
             }, {
+                rating: 1,
                 count: 0,
                 percent: 0
             }, {
+                rating: 2,
                 count: 0,
                 percent: 0
             }, {
+                rating: 3,
                 count: 0,
                 percent: 0
             }, {
+                rating: 4,
                 count: 0,
                 percent: 0
             }];
@@ -420,7 +439,8 @@ var WidgetsTab = countlyVue.views.create({
                 isEditMode: false
             },
             widget: '',
-            rating: {}
+            rating: {},
+            loading: true
         };
     },
     methods: {
@@ -509,6 +529,7 @@ var WidgetsTab = countlyVue.views.create({
         },
         fetch: function() {
             var self = this;
+            this.loading = true;
             $.when(starRatingPlugin.requestFeedbackWidgetsData(), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod())
                 .then(function() {
                     // set platform versions for filter
@@ -517,6 +538,7 @@ var WidgetsTab = countlyVue.views.create({
                     // calculate cumulative data for chart
                     self.rating = starRatingPlugin.getRatingInPeriod();
                     self.widgets = starRatingPlugin.getFeedbackWidgetsData();
+                    self.loading = false;
                 });
         }
     },
@@ -696,8 +718,14 @@ var WidgetDetail = countlyVue.views.create({
             });
         },
         editWidget: function() {
-            if (this.cohortsEnabled && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
+            if (this.cohortsEnabled && this.widget.targeting && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
                 this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
+            }
+            else {
+                this.widget.targeting = {
+                    user_segmentation: null,
+                    steps: null
+                };
             }
             this.widget.target_page = this.widget.target_page === "selected";
             this.openDrawer('widget', this.widget);
@@ -749,6 +777,7 @@ var WidgetDetail = countlyVue.views.create({
 
             starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
                 self.widget = widget;
+                self.widget.popup_header_text = replaceEscapes(self.widget.popup_header_text);
                 self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
                 if (self.cohortsEnabled) {
                     self.widget = self.parseTargeting(widget);
@@ -895,45 +924,13 @@ countlyVue.container.registerTab("/users/tabs", {
         methods: {},
         created: function() {
             this.uid = this.$route.params.uid;
-            /*
             var self = this;
-            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "12months"})
+            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})
                 .then(function() {
                     self.ratingsData = starRatingPlugin.getFeedbackData().aaData;
                     self.ratingsData.map(function(rating) {
                         rating.ts = countlyCommon.formatTimeAgo(rating.ts);
-                        starRatingPlugin.requestSingleWidget(rating.widget_id, function(widget) {
-                            if (widget) {
-                                rating.widgetTitle = widget.popup_header_text;
-                            }
-                            else {
-                                rating.widgetTitle = "Widget not exist";
-                            }
-                            return rating;
-                        });
                     });
-                });
-            */
-            var self = this;
-            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})
-                .then(function() {
-                    return Promise.all(starRatingPlugin.getFeedbackData().aaData.map(function(rating) {
-                        return new Promise(function(resolve) {
-                            rating.ts = countlyCommon.formatTimeAgo(rating.ts);
-                            starRatingPlugin.requestSingleWidget(rating.widget_id, function(widget) {
-                                if (widget) {
-                                    rating.widgetTitle = widget.popup_header_text;
-                                }
-                                else {
-                                    rating.widgetTitle = "Widget not exist";
-                                }
-                                resolve(rating);
-                            });
-                        });
-                    }));
-                })
-                .then(function(data) {
-                    self.ratingsData = data;
                 });
         }
     })
@@ -947,7 +944,10 @@ var RatingsMainView = new countlyVue.views.BackboneWrapper({
 });
 
 var WidgetDetailView = new countlyVue.views.BackboneWrapper({
-    component: WidgetDetail
+    component: WidgetDetail,
+    templates: [
+        "/drill/templates/query.builder.v2.html"
+    ]
 });
 
 app.ratingsMainView = RatingsMainView;

@@ -294,6 +294,143 @@
         });
     }
 
+    var WidgetComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+        props: {
+            data: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        data: function() {
+            return {
+                map: {
+                    "sources": this.i18n("sources.title")
+                },
+                tableMap: {
+                    "u": this.i18n("common.table.total-users"),
+                    "t": this.i18n("common.total-sessions"),
+                    "n": this.i18n("common.table.new-users"),
+                    "sources": this.i18n("sources.source"),
+                }
+            };
+        },
+        computed: {
+            title: function() {
+                if (this.data.title) {
+                    return this.data.title;
+                }
+                if (this.data.dashData) {
+                    return CV.i18n("sources.title");
+                }
+                return "";
+            },
+            showBuckets: function() {
+                return false;
+            },
+            metricLabels: function() {
+                return [];
+            },
+            getTableData: function() {
+                return this.calculateTableDataFromWidget(this.data);
+            },
+            tableStructure: function() {
+                return this.calculateTableColsFromWidget(this.data, this.tableMap);
+            },
+            stackedBarOptions: function() {
+                return this.calculateStackedBarOptionsFromWidget(this.data, this.tableMap);
+            },
+            pieGraph: function() {
+                return this.calculatePieGraphFromWidget(this.data, this.tableMap);
+            }
+        }
+    });
+
+    var DrawerComponent = countlyVue.views.create({
+        template: "#sources-drawer",
+        props: {
+            scope: {
+                type: Object
+            }
+        },
+        data: function() {
+            return {};
+        },
+        computed: {
+            metrics: function() {
+                return [
+                    { label: this.i18n("common.table.total-users"), value: "u" },
+                    { label: this.i18n("common.table.new-users"), value: "n" },
+                    { label: this.i18n("common.total-sessions"), value: "t" }
+                ];
+            },
+            enabledVisualizationTypes: function() {
+                return ['pie-chart', 'bar-chart', 'table'];
+            },
+            isMultipleMetric: function() {
+                var multiple = false;
+                var visualization = this.scope.editedObject.visualization;
+                if (visualization === 'table') {
+                    multiple = true;
+                }
+
+                return multiple;
+            }
+        }
+    });
+
+    countlyVue.container.registerData("/custom/dashboards/widget", {
+        type: "analytics",
+        label: CV.i18nM("sources.title"),
+        priority: 1,
+        primary: false,
+        getter: function(widget) {
+            return widget.widget_type === "analytics" && widget.data_type === "sources";
+        },
+        templates: [
+            {
+                namespace: "sources",
+                mapping: {
+                    "drawer": "/sources/templates/widgetDrawer.html"
+                }
+            }
+        ],
+        drawer: {
+            component: DrawerComponent,
+            getEmpty: function() {
+                return {
+                    title: "",
+                    widget_type: "analytics",
+                    app_count: 'single',
+                    data_type: "sources",
+                    apps: [],
+                    visualization: "table",
+                    custom_period: "30days",
+                    metrics: ["t"],
+                    bar_color: 1
+                };
+            },
+            beforeSaveFn: function() {
+            }
+        },
+        grid: {
+            component: WidgetComponent,
+            dimensions: function() {
+                return {
+                    minWidth: 2,
+                    minHeight: 4,
+                    width: 2,
+                    height: 4
+                };
+            },
+            onClick: function() {}
+        }
+    });
+
+
 
     var KeywordsDashboardWidget = countlyVue.views.create({
         template: CV.T("/sources/templates/searchedTermsHomeWidget.html"),
@@ -337,19 +474,16 @@
                     return a[1] - b[1];
                 }).reverse();
 
-                if (totalsArray.length === 0) {
-                    return [
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
-                    ];
+                var totalsData = [];
+                for (var z = 0; z < 3; z++) {
+                    if (totalsArray[z]) {
+                        totalsData.push({percentage: Math.round((data[totalsArray[z][0]].t / sum) * 100), label: data[totalsArray[z][0]]._id, value: countlyCommon.getShortNumber(totalsArray[z][1] || 0)});
+                    }
+                    else {
+                        totalsData.push({ percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 });
+                    }
                 }
-
-                return [
-                    {percentage: Math.round((data[totalsArray[0][0]].t / sum) * 100), label: data[totalsArray[0][0]]._id, value: countlyCommon.getShortNumber(totalsArray[0][1] || 0)},
-                    {percentage: Math.round((data[totalsArray[1][0]].t / sum) * 100), label: data[totalsArray[1][0]]._id, value: countlyCommon.getShortNumber(totalsArray[1][1] || 0)},
-                    {percentage: Math.round((data[totalsArray[2][0]].t / sum) * 100), label: data[totalsArray[2][0]]._id, value: countlyCommon.getShortNumber(totalsArray[2][1] || 0)}
-                ];
+                return totalsData;
             }
         }
     });

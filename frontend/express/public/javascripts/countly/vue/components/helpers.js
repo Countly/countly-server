@@ -113,7 +113,7 @@
             emitSaveWhenDisabled: {
                 type: Boolean,
                 required: false,
-                defualt: false
+                default: false
             }
         },
         computed: {
@@ -348,7 +348,7 @@
             },
             tooltip: {
                 type: String,
-                default: 'Tooltip here :)'
+                default: ''
             },
             placement: {
                 type: String,
@@ -363,7 +363,7 @@
                 };
             }
         },
-        template: '<i :class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltipConf"></i>'
+        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltipConf"></i>'
     }));
 
     Vue.component("cly-remover", countlyBaseComponent.extend({
@@ -784,15 +784,9 @@
                 if (this.emitClose) {
                     this.$emit("closed");
                 }
-            },
-            escKeyEvent: function() {
-                this.opened = false;
-                if (this.emitClose) {
-                    this.$emit("closed");
-                }
-            },
+            }
         },
-        template: '<div class="cly-vue-json-editor" v-show="opened" @keydown.esc="escKeyEvent">\
+        template: '<div class="cly-vue-json-editor" v-show="opened">\
                     <slot name="title"><h3 class="bu-pl-4 color-cool-gray-100">{{title}}</h3></slot>\
                     <div class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center bu-px-4 bu-pb-1">\
                     <div>\
@@ -810,8 +804,8 @@
                     ></textarea>\
                     <slot name="footer">\
                     <div class="bu-p-4 bu-is-justify-content-flex-end bu-is-flex">\
-							<el-button size="small" @click="cancel"  type="default" >{{cancelLabel}}</el-button>\
-							<el-button size="small" @click="submit" type="success">{{saveLabel}}</el-button>\
+							<el-button size="small" @click="cancel"  class="text-smallish font-weight-bold bg-warm-gray-20" type="default" >{{cancelLabel}}</el-button>\
+							<el-button size="small" @click="submit"  class="text-smallish font-weight-bold color-white" type="success">{{saveLabel}}</el-button>\
 					</div>\
                     </slot>\
                    </div>'

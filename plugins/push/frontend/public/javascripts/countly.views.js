@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
 
 (function() {
@@ -30,8 +31,8 @@
     var transactionalPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
 
     var messageTypeFilterOptions = [
-        {label: "Content message", value: countlyPushNotification.service.MessageTypeEnum.CONTENT},
-        {label: "Silent message", value: countlyPushNotification.service.MessageTypeEnum.SILENT}
+        {label: CV.i18n("push-notification.content-message"), value: countlyPushNotification.service.MessageTypeEnum.CONTENT},
+        {label: CV.i18n("push-notification.silent-message"), value: countlyPushNotification.service.MessageTypeEnum.SILENT}
     ];
 
     var InitialEnabledUsers = {
@@ -168,29 +169,29 @@
         computed: {
             saveButtonLabel: function() {
                 if (!countlyPushNotification.service.isPushNotificationApproverPluginEnabled()) {
-                    return "Save";
+                    return CV.i18n('push-notification.save');
                 }
                 if (countlyPushNotification.service.hasApproverBypassPermission()) {
-                    return "Save";
+                    return CV.i18n('push-notification.save');
                 }
-                return "Send for approval";
+                return CV.i18n('push-notification.send-for-approval');
             },
             title: function() {
                 if (this.type === countlyPushNotification.service.TypeEnum.ONE_TIME) {
-                    return "Create One-Time Push Notification";
+                    return CV.i18n('push-notification.create-one-time-notification');
                 }
                 if (this.type === countlyPushNotification.service.TypeEnum.AUTOMATIC) {
-                    return "Create Automated Push Notification";
+                    return CV.i18n('push-notification.create-automated-notification');
                 }
                 if (this.type === countlyPushNotification.service.TypeEnum.TRANSACTIONAL) {
-                    return "Create Transactional Push Notification";
+                    return CV.i18n('push-notification.create-transactional-notification');
                 }
             },
             addButtonLabel: function() {
                 if (this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.length === 0) {
-                    return "+Add First button";
+                    return CV.i18n('push-notification.add-first-button');
                 }
-                return "+Add Second button";
+                return CV.i18n('push-notification.add-second-button');
             },
             isDraftButtonEnabled: function() {
                 return this.userCommand === this.UserCommandEnum.EDIT_DRAFT ||
@@ -315,10 +316,10 @@
             setUserPropertyOptions: function(propertyList) {
                 var allPropertyOptions = [];
                 if (this.type === this.TypeEnum.AUTOMATIC && this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
-                    allPropertyOptions.push({label: "Event Properties", name: "eventProperties", options: countlyPushNotification.helper.getEventPropertyOptions(propertyList)});
+                    allPropertyOptions.push({label: CV.i18n('push-notification.event-properties'), name: "eventProperties", options: countlyPushNotification.helper.getEventPropertyOptions(propertyList)});
                 }
-                allPropertyOptions.push({label: "User Properties", name: "userProperties", options: countlyPushNotification.helper.getUserPropertyOptions(propertyList)});
-                allPropertyOptions.push({label: "Custom Properties", name: "customProperties", options: countlyPushNotification.helper.getCustomPropertyOptions(propertyList)});
+                allPropertyOptions.push({label: CV.i18n('push-notification.user-properties'), name: "userProperties", options: countlyPushNotification.helper.getUserPropertyOptions(propertyList)});
+                allPropertyOptions.push({label: CV.i18n('push-notification.custom-properties'), name: "customProperties", options: countlyPushNotification.helper.getCustomPropertyOptions(propertyList)});
                 this.userPropertiesOptions = allPropertyOptions;
             },
             fetchUserPropertyOptions: function() {
@@ -387,13 +388,6 @@
             setIsLoading: function(value) {
                 this.isLoading = value;
             },
-            dispatchUnknownErrorNotification: function() {
-                CountlyHelpers.notify({
-                    title: "Push Notification Error",
-                    message: "Unknown error occurred. Please try again later.",
-                    type: "error"
-                });
-            },
             getQueryFilter: function() {
                 if (!this.queryFilter) {
                     return {};
@@ -423,11 +417,9 @@
                         self.setCurrentNumberOfUsers(response.total);
                         resolve(true);
                     }).catch(function(error) {
+                        console.error(error);
                         self.setLocalizationOptions([]);
-                        CountlyHelpers.notify({
-                            message: error.message,
-                            type: "error"
-                        });
+                        CountlyHelpers.notify({ message: error.message, type: "error"});
                         resolve(false);
                     }).finally(function() {
                         self.setIsLoading(false);
@@ -517,15 +509,11 @@
                 }
                 promiseMethod().then(function() {
                     self.$refs.drawer.doClose();
-                    CountlyHelpers.notify({
-                        message: "Push notification message was successfully saved."
-                    });
+                    CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-saved')});
                     self.$emit('save');
                 }).catch(function(error) {
-                    CountlyHelpers.notify({
-                        message: error.message,
-                        type: "error"
-                    });
+                    console.error(error);
+                    CountlyHelpers.notify({message: error.message, type: "error"});
                 });
             },
             onSubmit: function(_, done) {
@@ -536,6 +524,9 @@
                 }
                 if (this.userCommand === this.UserCommandEnum.EDIT) {
                     promiseMethod = this.update;
+                }
+                if (this.userCommand === this.UserCommandEnum.EDIT_REJECT) {
+                    promiseMethod = this.saveFromDraft;
                 }
                 if (this.userCommand === this.UserCommandEnum.CREATE) {
                     promiseMethod = this.save;
@@ -551,15 +542,11 @@
                 }
                 promiseMethod().then(function() {
                     done();
-                    CountlyHelpers.notify({
-                        message: "Push notification message was successfully saved."
-                    });
+                    CountlyHelpers.notify({ message: CV.i18n('push-notification.was-successfully-saved')});
                     self.$emit('save');
                 }).catch(function(error) {
-                    CountlyHelpers.notify({
-                        message: error.message,
-                        type: "error"
-                    });
+                    console.error(error);
+                    CountlyHelpers.notify({ message: error.message, type: "error"});
                     done(true);
                 });
             },
@@ -567,14 +554,10 @@
                 var self = this;
                 this.isLoading = true;
                 this.sendToTestUsers().then(function() {
-                    CountlyHelpers.notify({
-                        message: "Push notification message was successfully sent to test users."
-                    });
+                    CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-sent-to-test-users')});
                 }).catch(function(error) {
-                    CountlyHelpers.notify({
-                        message: error.message,
-                        type: "error"
-                    });
+                    console.error(error);
+                    CountlyHelpers.notify({ message: error.message, type: "error"});
                 }).finally(function() {
                     self.isLoading = false;
                 });
@@ -882,7 +865,8 @@
                 countlyPushNotification.service.fetchCohorts()
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setCohortOptions([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
@@ -897,7 +881,8 @@
                 countlyPushNotification.service.fetchLocations()
                     .then(function(locations) {
                         self.setLocationOptions(locations);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setLocationOptions([]);
                     }).finally(function() {
                         self.isFetchLocationsLoading = false;
@@ -912,7 +897,8 @@
                 countlyPushNotification.service.fetchEvents()
                     .then(function(events) {
                         self.setEventOptions(events);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setEventOptions([]);
                     }).finally(function() {
                         self.isFetchEventsLoading = false;
@@ -931,10 +917,10 @@
                         self.setTotalAppUsers(response.totalAppUsers);
                         self.setEnabledUsers(response.enabledUsers);
                     })
-                    .catch(function() {
+                    .catch(function(error) {
+                        console.error(error);
                         self.setTotalAppUsers(0);
                         self.setEnabledUsers(JSON.parse(JSON.stringify(InitialEnabledUsers)));
-                        //TODO: log error;
                     });
             },
             setPushNotificationUnderEdit: function(value) {
@@ -951,11 +937,11 @@
                         }
                         self.resetMessageInHTMLToActiveLocalization();
                     })
-                    .catch(function() {
-                        var initialModel = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
+                    .catch(function(error) {
+                        console.error(error);
+                        var initialModel = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(self.type)));
                         initialModel.type = self.type;
                         self.setPushNotificationUnderEdit(initialModel);
-                        //TODO: log error;
                     })
                     .finally(function() {
                         self.setIsLoading(false);
@@ -988,7 +974,7 @@
 
     var PushNotificationTabView = countlyVue.views.BaseView.extend({
         template: "#push-notification-tab",
-        mixins: [countlyVue.mixins.commonFormatters],
+        mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
                 platformFilters: platformFilterOptions,
@@ -1064,7 +1050,7 @@
                 if (!this.totalAppUsers) {
                     return 0;
                 }
-                return Math.ceil(this.enabledUsers / this.totalAppUsers);
+                return parseInt(this.formatPercentage(this.enabledUsers / this.totalAppUsers));
             },
             xAxisPushNotificationPeriods: function() {
                 return this.$store.state.countlyPushNotification.main.dashboard.periods[this.selectedPeriodFilter];
@@ -1125,7 +1111,10 @@
                 else {
                     return this.selectedTransactionalPeriodFilter;
                 }
-            }
+            },
+            hasApproverPermission: function() {
+                return countlyPushNotification.service.hasApproverPermission();
+            },
         },
         methods: {
             refresh: function() {
@@ -1173,6 +1162,18 @@
                     this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
                 }
+                case this.UserCommandEnum.EDIT_REJECT: {
+                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    break;
+                }
+                case this.UserCommandEnum.STOP: {
+                    this.$store.dispatch('countlyPushNotification/main/onToggle', {id: pushNotificationId, isActive: false});
+                    break;
+                }
+                case this.UserCommandEnum.START: {
+                    this.$store.dispatch('countlyPushNotification/main/onToggle', {id: pushNotificationId, isActive: true});
+                    break;
+                }
                 case this.UserCommandEnum.CREATE: {
                     this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
@@ -1183,25 +1184,49 @@
                 }
             },
             shouldShowDuplicateUserCommand: function() {
-                return true;
+                return this.canUserCreate;
             },
             shouldShowDeleteUserCommand: function() {
-                return true;
+                return this.canUserDelete;
             },
             shouldShowResendUserCommand: function(status) {
-                return status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED;
+                return (status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED) && this.canUserCreate;
             },
             shouldShowEditDraftUserCommand: function(status) {
-                return status === this.StatusEnum.DRAFT;
+                return status === this.StatusEnum.DRAFT && this.canUserUpdate;
+            },
+            shouldShowEditRejectUserCommand: function(status) {
+                return status === this.StatusEnum.REJECT && this.canUserUpdate;
             },
             shouldShowApproveUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowRejectUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowEditUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED;
+                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED) && this.canUserUpdate;
+            },
+            shouldShowStartUserCommand: function(status) {
+                if (this.selectedPushNotificationType === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.CREATED
+                || status === this.StatusEnum.SENT
+                || status === this.StatusEnum.STOPPED
+                || status === this.StatusEnum.FAILED;
+            },
+            shouldShowStopUserCommand: function(status) {
+                if (this.selectedPushNotificationType === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.SCHEDULED || status === this.StatusEnum.SENDING;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
@@ -1229,6 +1254,9 @@
                 case this.StatusEnum.FAILED: {
                     return "red";
                 }
+                case this.StatusEnum.REJECT: {
+                    return "yellow";
+                }
                 default: {
                     return "#FFFFFF";
                 }
@@ -1246,7 +1274,7 @@
 
     var PushNotificationView = countlyVue.views.BaseView.extend({
         template: "#push-notification",
-        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer")],
+        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer"), countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
                 pushNotificationTabs: [
@@ -1278,7 +1306,7 @@
         watch: {
             isDrawerOpen: function(value) {
                 if (value) {
-                    this.openDrawer("pushNotificationDrawer");
+                    this.openDrawer("pushNotificationDrawer", {});
                 }
             }
         },
@@ -1320,16 +1348,14 @@
 
     var PushNotificationDetailsView = countlyVue.views.BaseView.extend({
         template: "#push-notification-details",
-        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer")],
+        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer"), countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
                 StatusEnum: countlyPushNotification.service.StatusEnum,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
-                selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
+                TypeEnum: countlyPushNotification.service.TypeEnum,
                 platformFilters: platformFilterOptions,
                 statusOptions: countlyPushNotification.service.statusOptions,
-                selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
-                DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
                 currentSummaryTab: "message",
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
                 summaryTabs: [
@@ -1370,15 +1396,49 @@
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
+            selectedMessageLocaleFilter: function() {
+                return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
+            },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
+                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocaleFilter];
+            },
+            selectedDashboard: function() {
+                var selectedDashboard = this.pushNotification.dashboard[this.selectedPlatformFilter];
+                if (this.selectedLocaleFilter) {
+                    selectedDashboard = selectedDashboard.locales[this.selectedLocaleFilter];
+                }
+                return selectedDashboard;
+            },
+            targetedUsers: function() {
+                if (!this.selectedDashboard.processed) {
+                    return 0;
+                }
+                return CountlyHelpers.formatPercentage(this.selectedDashboard.processed / this.selectedDashboard.total);
+            },
+            sentPushNotifications: function() {
+                if (!this.selectedDashboard.sent) {
+                    return 0;
+                }
+                return CountlyHelpers.formatPercentage(this.selectedDashboard.sent / this.selectedDashboard.processed);
+            },
+            clickedPushNotifications: function() {
+                if (!this.selectedDashboard.actioned) {
+                    return 0;
+                }
+                return CountlyHelpers.formatPercentage(this.selectedDashboard.actioned / this.selectedDashboard.sent);
+            },
+            failedPushNotifications: function() {
+                if (!this.selectedDashboard.errored) {
+                    return 0;
+                }
+                return CountlyHelpers.formatPercentage(this.selectedDashboard.errored / this.selectedDashboard.processed);
             },
             pushNotificationChartBars: function() {
                 return {
-                    targetedUsers: this.getDetailsBaseChartOptions(this.findTargetedUsers()),
-                    sentPushNotifications: this.getDetailsBaseChartOptions(this.findSentPushNotifications()),
-                    clickedPushNotifications: this.getDetailsBaseChartOptions(this.findClickedPushNotifications()),
-                    failedPushNotifications: this.getDetailsBaseChartOptions(this.findFailedPushNotifications())
+                    targetedUsers: this.getDetailsBaseChartOptions(this.targetedUsers),
+                    sentPushNotifications: this.getDetailsBaseChartOptions(this.sentPushNotifications),
+                    clickedPushNotifications: this.getDetailsBaseChartOptions(this.clickedPushNotifications),
+                    failedPushNotifications: this.getDetailsBaseChartOptions(this.failedPushNotifications)
                 };
             },
             chartBarLegend: function() {
@@ -1386,14 +1446,13 @@
                     show: false
                 };
             },
-            totalAppUsers: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.total;
-            },
             isLoading: function() {
                 return this.$store.getters['countlyPushNotification/details/isLoading'];
             },
             localizations: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+                return Object.keys(this.pushNotification.dashboard[this.selectedPlatformFilter].locales).map(function(localeKey) {
+                    return countlyPushNotification.mapper.incoming.mapLocalizationByKey(localeKey);
+                });
             },
             hasApproverPermission: function() {
                 return countlyPushNotification.service.hasApproverPermission();
@@ -1410,12 +1469,29 @@
             },
             userCommand: function() {
                 return this.$store.state.countlyPushNotification.details.userCommand;
-            }
+            },
+            selectedLocaleFilter: {
+                get: function() {
+                    return this.$store.state.countlyPushNotification.details.localeFilter;
+                },
+                set: function(value) {
+                    this.$store.dispatch("countlyPushNotification/details/onSetLocaleFilter", value);
+                }
+            },
+            selectedPlatformFilter: {
+                get: function() {
+                    return this.$store.state.countlyPushNotification.details.platformFilter;
+                },
+                set: function(value) {
+                    this.$store.dispatch("countlyPushNotification/details/onSetPlatformFilter", value);
+                    this.$store.dispatch("countlyPushNotification/details/onSetLocaleFilter", null);
+                }
+            },
         },
         watch: {
             isDrawerOpen: function(value) {
                 if (value) {
-                    this.openDrawer("pushNotificationDrawer");
+                    this.openDrawer("pushNotificationDrawer", {});
                 }
             }
         },
@@ -1460,6 +1536,18 @@
                     this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
                 }
+                case this.UserCommandEnum.EDIT_REJECT: {
+                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    break;
+                }
+                case this.UserCommandEnum.STOP: {
+                    this.$store.dispatch('countlyPushNotification/details/onToggle', {id: pushNotificationId, isActive: false});
+                    break;
+                }
+                case this.UserCommandEnum.START: {
+                    this.$store.dispatch('countlyPushNotification/details/onToggle', {id: pushNotificationId, isActive: true});
+                    break;
+                }
                 case this.UserCommandEnum.CREATE: {
                     this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
@@ -1470,25 +1558,49 @@
                 }
             },
             shouldShowDuplicateUserCommand: function() {
-                return true;
+                return this.canUserCreate;
             },
             shouldShowDeleteUserCommand: function() {
-                return true;
+                return this.canUserDelete;
             },
             shouldShowResendUserCommand: function(status) {
-                return status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED;
+                return (status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED) && this.canUserCreate;
             },
             shouldShowEditDraftUserCommand: function(status) {
-                return status === this.StatusEnum.DRAFT;
+                return status === this.StatusEnum.DRAFT && this.canUserUpdate;
+            },
+            shouldShowEditRejectUserCommand: function(status) {
+                return status === this.StatusEnum.REJECT && this.canUserUpdate;
             },
             shouldShowApproveUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowRejectUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL;
+                return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowEditUserCommand: function(status) {
-                return status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED;
+                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED) && this.canUserUpdate;
+            },
+            shouldShowStartUserCommand: function(status) {
+                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.CREATED
+                || status === this.StatusEnum.SENT
+                || status === this.StatusEnum.STOPPED
+                || status === this.StatusEnum.FAILED;
+            },
+            shouldShowStopUserCommand: function(status) {
+                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
+                    return false;
+                }
+                if (!this.canUserUpdate) {
+                    return false;
+                }
+                return status === this.StatusEnum.SCHEDULED || status === this.StatusEnum.SENDING;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
@@ -1516,6 +1628,9 @@
                 case this.StatusEnum.FAILED: {
                     return "red";
                 }
+                case this.StatusEnum.REJECT: {
+                    return "yellow";
+                }
                 default: {
                     return "#FFFFFF";
                 }
@@ -1538,19 +1653,7 @@
             getRemainingStackBar: function(value) {
                 return {data: [100 - value], itemStyle: {color: "#E2E4E8"}, silent: true};
             },
-            findTargetedUsers: function() {
-                //TODO-LA: find how to calculate the targeted users;
-                return CountlyHelpers.formatPercentage(1);
-            },
-            findSentPushNotifications: function() {
-                return CountlyHelpers.formatPercentage(this.pushNotification.sent / this.pushNotification.total);
-            },
-            findClickedPushNotifications: function() {
-                return CountlyHelpers.formatPercentage(this.pushNotification.actioned / this.pushNotification.sent);
-            },
-            findFailedPushNotifications: function() {
-                return CountlyHelpers.formatPercentage(this.pushNotification.failed / this.pushNotification.total);
-            },
+
             onDrawerClose: function() {
                 this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', false);
             }
@@ -1612,6 +1715,10 @@
 
     var keyFileReader = new FileReader();
 
+    var initialTestUsersRows = {};
+    initialTestUsersRows[countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID] = [];
+    initialTestUsersRows[countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT] = [];
+
     var PushNotificationAppConfigView = countlyVue.views.create({
         componentName: "AppSettingsContainerObservable",
         template: CV.T("/push/templates/push-notification-app-config.html"),
@@ -1633,11 +1740,16 @@
                 cohortOptions: [],
                 isSearchUsersLoading: false,
                 isFetchCohortsLoading: false,
-                isAddTestUsersLoading: false,
+                isUpdateTestUsersLoading: false,
                 isDialogVisible: false,
                 areRowsLoading: false,
-                testUsersRows: [],
+                testUsersRows: initialTestUsersRows,
                 selectedKeyToDelete: null,
+                selectedTestUsersListOption: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID,
+                testUsersListOptions: [
+                    {label: CV.i18n('push-notification.user-id'), value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID},
+                    {label: CV.i18n('push-notification.cohort-name'), value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT}
+                ]
             };
         },
         computed: {
@@ -1647,6 +1759,9 @@
             isIOSConfigRequired: function() {
                 return this.isIOSConfigTouched;
             },
+            selectedTestUsersRows: function() {
+                return this.testUsersRows[this.selectedTestUsersListOption];
+            }
         },
         methods: {
             setModel: function(newModel) {
@@ -1760,9 +1875,26 @@
                 this.resetConfig();
                 this.reconcilate();
             },
+            isKeyEmpty: function(platform) {
+                if (platform === this.PlatformEnum.ANDROID) {
+                    return !this.viewModel[platform].firebaseKey;
+                }
+                if (platform === this.PlatformEnum.IOS) {
+                    if (this.iosAuthConfigType === countlyPushNotification.service.IOSAuthConfigTypeEnum.P8) {
+                        return !(this.viewModel[platform].p8KeyFile || this.viewModel[platform].keyId || this.viewModel[platform].teamId || this.viewModel[platform].bundleId);
+                    }
+                    if (this.iosAuthConfigType === countlyPushNotification.service.IOSAuthConfigTypeEnum.P12) {
+                        return !(this.viewModel[platform].p12KeyFile || this.viewModel[platform].passphrase);
+                    }
+                }
+                if (platform === this.PlatformEnum.HUAWEI) {
+                    return !(this.viewModel[platform].appId || this.viewModel[platform].appSecret);
+                }
+                throw new Error('Unknown key platform, received:' + platform);
+            },
             onDeleteKey: function(platformKey) {
                 this.selectedKeyToDelete = platformKey;
-                CountlyHelpers.confirm('', 'danger', this.onConfirmCallback, ['Cancel', 'I understand, delete this key'], {title: 'Delete key'});
+                CountlyHelpers.confirm('', 'danger', this.onConfirmCallback, [CV.i18n('push-notification.cancel'), CV.i18n('push-notification.i-understand-delete-key')], {title: CV.i18n('push-notification.delete-key')});
             },
             deleteAndroidKey: function() {
                 var platform = this.PlatformEnum.ANDROID;
@@ -1780,6 +1912,7 @@
                 this.viewModel[platform].authType = this.iosAuthConfigType;
                 this.$emit('change', 'push' + '.' + platformDto, null);
                 this.isIOSConfigTouched = false;
+                this.uploadedIOSKeyFilename = "";
             },
             deleteHuaweiKey: function() {
                 var platform = this.PlatformEnum.HUAWEI;
@@ -1787,6 +1920,7 @@
                 this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
                 this.$emit('change', 'push' + '.' + platformDto, null);
+                this.isHuaweiConfigTouched = false;
             },
             deleteKeyOnCofirm: function() {
                 if (this.selectedKeyToDelete === this.PlatformEnum.ANDROID) {
@@ -1804,7 +1938,7 @@
                 if (!this.selectedKeyToDelete) {
                     return;
                 }
-                throw new Error('Unknown platform key, ' + this.selectedKeyToDelete);
+                throw new Error('Unknown key platform to delete, received:' + this.selectedKeyToDelete);
             },
             onConfirmCallback: function(isConfirmed) {
                 if (isConfirmed) {
@@ -1875,21 +2009,24 @@
                 countlyPushNotification.service.fetchCohorts()
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
-                    }).catch(function() {
-                        // TODO:log error;
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setCohortOptions([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
                     });
             },
-            fetchTestUsers: function(options) {
+            fetchTestUsers: function() {
                 var self = this;
+                var testUsers = this.getTestUsersFromAppConfig();
+                var options = {};
+                options.appId = this.selectedAppId;
                 this.areRowsLoading = true;
-                countlyPushNotification.service.fetchTestUsers(options)
+                countlyPushNotification.service.fetchTestUsers(testUsers, options)
                     .then(function(testUserRows) {
                         self.setTestUserRows(testUserRows);
                     }).catch(function(error) {
-                        // TODO:log error;
+                        console.error(error);
                         self.setTestUserRows([]);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
@@ -1915,7 +2052,7 @@
             },
             onShowTestUserList: function() {
                 this.openTestUsersDialog();
-                this.fetchTestUsers(this.getTestUsersFromAppConfig());
+                this.fetchTestUsers();
             },
             onOpen: function() {
                 this.fetchCohortsIfNotFound();
@@ -1924,32 +2061,76 @@
                 var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(editedObject);
                 countlyGlobal.apps[this.selectedAppId].plugins.push.test = testDto;
             },
-            onSubmit: function(editedObject, done) {
+            onDeleteTestUser: function(row) {
                 var self = this;
-                this.isAddTestUsersLoading = true;
+                var actualTestUsers = this.getTestUsersFromAppConfig();
+                if (this.selectedTestUsersListOption === this.AddTestUserDefinitionTypeEnum.USER_ID) {
+                    actualTestUsers.uids = actualTestUsers.uids.filter(function(uid) {
+                        return uid !== row.uid && Boolean(uid);
+                    });
+                }
+                if (this.selectedTestUsersListOption === this.AddTestUserDefinitionTypeEnum.COHORT) {
+                    actualTestUsers.cohorts = actualTestUsers.cohorts.filter(function(cohortId) {
+                        return cohortId !== row._id && Boolean(cohortId);
+                    });
+                }
+                var newTestUsersModel = {
+                    definitionType: this.selectedTestUsersListOption,
+                    cohorts: actualTestUsers.cohorts,
+                    userIds: actualTestUsers.uids,
+                };
                 var options = {};
                 options.app_id = this.selectedAppId;
-                countlyPushNotification.service.addTestUsers(editedObject, options)
-                    .then(function() {
+                this.isUpdateTestUsersLoading = true;
+                countlyPushNotification.service.updateTestUsers(newTestUsersModel, options).
+                    then(function() {
+                        self.updateTestUsersAppConfig(newTestUsersModel);
+                        CountlyHelpers.notify({message: CV.i18n('push-notification.test-users-were-successfully-removed')});
+                        self.fetchTestUsers();
+                    }).catch(function(error) {
+                        console.error(error);
+                        CountlyHelpers.notify({message: error.message, type: 'error'});
+                    }).finally(function() {
+                        self.isUpdateTestUsersLoading = false;
+                    });
+            },
+            onSubmit: function(editedObject, done) {
+                var self = this;
+                var actualTestUsersConfig = this.getTestUsersFromAppConfig();
+                if (editedObject.definitionType === this.AddTestUserDefinitionTypeEnum.USER_ID) {
+                    editedObject.cohorts = actualTestUsersConfig.cohorts;
+                    editedObject.userIds = editedObject.userIds.concat(actualTestUsersConfig.uids);
+                }
+                if (editedObject.definitionType === this.AddTestUserDefinitionTypeEnum.COHORT) {
+                    editedObject.cohorts = editedObject.cohorts.concat(actualTestUsersConfig.cohorts);
+                    editedObject.userIds = actualTestUsersConfig.uids;
+                }
+                var options = {};
+                options.app_id = this.selectedAppId;
+                this.isUpdateTestUsersLoading = true;
+                countlyPushNotification.service.updateTestUsers(editedObject, options).
+                    then(function() {
                         self.updateTestUsersAppConfig(editedObject);
                         done();
-                        CountlyHelpers.notify({message: 'Test users have been successfully added.'});
-                    }).catch(function() {
-                        // TODO: log error
-                        CountlyHelpers.notify({message: 'Unknown error occurred. Please try again later.'});
+                        CountlyHelpers.notify({message: CV.i18n('push-notification.test-users-were-successfully-added')});
+                    }).catch(function(error) {
+                        console.error(error);
+                        CountlyHelpers.notify({message: error.message, type: 'error'});
+                        done(error);
                     }).finally(function() {
-                        self.isAddTestUsersLoading = false;
-                        done(false);
+                        self.isUpdateTestUsersLoading = false;
                     });
             },
             onSearchUsers: function(query) {
                 var self = this;
                 this.isSearchUsersLoading = true;
-                countlyPushNotification.service.searchUsersById(query)
+                var options = {};
+                options.appId = this.selectedAppId;
+                countlyPushNotification.service.searchUsersById(query, options)
                     .then(function(userIds) {
                         self.setUserIdOptions(userIds);
                     }).catch(function(error) {
-                        // TODO:log error;
+                        console.error(error);
                         self.setUserIdOptions([]);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
@@ -2042,7 +2223,7 @@
         data: function() {
             return {
                 command: "CREATE_PUSH_NOTIFICATION",
-                label: "Send message to users"
+                label: CV.i18n('push-notification.send-message-to-users')
             };
         },
         computed: {
@@ -2153,7 +2334,8 @@
     });
 
     var PushNotificationWidgetComponent = countlyVue.views.create({
-        template: CV.T('/push/templates/push-notification-widget.html'),
+        template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
         props: {
             data: {
                 type: Object,
@@ -2163,53 +2345,104 @@
             }
         },
         data: function() {
-            return {};
+            return {
+                selectedBucket: "daily",
+                map: {
+                    "sent": this.i18n("dashboards.sent"),
+                    "actioned": this.i18n("dashboards.actioned")
+                }
+            };
         },
         computed: {
-            dashboardData: function() {
-                return this.data.data || {};
+            title: function() {
+                var autoTitle = "Push";
+                return this.data.title || autoTitle;
             },
-            selectedMetric: function() {
-                return this.data.metrics[0];
+            showBuckets: function() {
+                return false;
             },
-            selectedBucket: function() {
-                return this.data.bucket;
-            },
-            xAxisPeriods: function() {
-                var keys = Object.keys(this.dashboardData);
-                if (keys.length) {
-                    return Object.keys(this.dashboardData[keys[0]]);
+            timelineGraph: function() {
+                this.data = this.data || {};
+                this.data.dashData = this.data.dashData || {};
+                this.data.dashData.data = this.data.dashData.data || {};
+
+                var series = [];
+                var appIndex = 0;
+                var multiApps = this.data.app_count === "multiple" ? true : false;
+
+                var dates = [];
+
+                for (var app in this.data.dashData.data) {
+                    var name;
+                    for (var k = 0; k < this.data.metrics.length; k++) {
+                        if (multiApps) {
+                            if (this.data.metrics.length > 1) {
+                                name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+                            }
+                            else {
+                                name = (countlyGlobal.apps[app].name || "");
+                            }
+                        }
+                        else {
+                            name = (this.map[this.data.metrics[k]] || this.data.metrics[k]);
+                        }
+                        series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], color: countlyCommon.GRAPH_COLORS[series.length]});
+                    }
+
+                    for (var date in this.data.dashData.data[app]) {
+                        if (appIndex === 0) {
+                            dates.push(date);
+                        }
+                        for (var kk = 0; kk < this.data.metrics.length; kk++) {
+                            series[appIndex * this.data.metrics.length + kk].data.push(this.data.dashData.data[app][date][this.data.metrics[kk]] || 0);
+                        }
+                    }
+                    appIndex++;
                 }
-                return [];
-            },
-            yAxisSeries: function() {
-                var self = this;
-                return Object.keys(this.dashboardData).sort(function(a, b) {
-                    return a < b;
-                }).map(function(appKey) {
+                if (this.data.custom_period) {
                     return {
-                        data: Object.keys(self.dashboardData[appKey]).map(function(periodKey) {
-                            return self.dashboardData[appKey][periodKey][self.selectedMetric];
-                        }),
-                        name: countlyGlobal.apps[appKey].label
+                        lineOptions: {xAxis: { data: dates}, "series": series}
                     };
-                });
+                }
+                else {
+                    return {
+                        lineOptions: {"series": series}
+                    };
+                }
             },
-            barchartOptions: function() {
-                return {
-                    xAxis: {
-                        data: this.xAxisPeriods
-                    },
-                    series: this.yAxisSeries
-                };
+            number: function() {
+                return this.calculateNumberFromWidget(this.data);
             },
-            legend: function() {
-                return {
-                    show: false,
-                    type: "primary",
-                };
+            metricLabels: function() {
+                this.data = this.data || {};
+                var listed = [];
+
+                for (var k = 0; k < this.data.metrics.length; k++) {
+                    listed.push(this.map[this.data.metrics[k]] || this.data.metrics[k]);
+                }
+                return listed;
             },
-        }
+            legendLabels: function() {
+                var labels = {};
+
+                var graphData = this.timelineGraph;
+                var series = graphData.lineOptions.series;
+
+                for (var i = 0; i < series.length; i++) {
+                    if (!labels[series[i].app]) {
+                        labels[series[i].app] = [];
+                    }
+
+                    labels[series[i].app].push({
+                        appId: series[i].app,
+                        color: series[i].color,
+                        label: this.map[series[i].metric] || series[i].metric
+                    });
+                }
+
+                return labels;
+            }
+        },
     });
 
 
@@ -2225,7 +2458,7 @@
             command: "CREATE_PUSH_NOTIFICATION",
             component: CreateMessageDropdownItemWrapper,
             click: function() {
-                this.openDrawer("pushNotificationDrawer");
+                this.openDrawer("pushNotificationDrawer", {});
             }
         };
     }
@@ -2293,9 +2526,9 @@
                 component: PushNotificationWidgetComponent,
                 dimensions: function() {
                     return {
-                        minWidth: 6,
+                        minWidth: 2,
                         minHeight: 4,
-                        width: 7,
+                        width: 2,
                         height: 4
                     };
                 }

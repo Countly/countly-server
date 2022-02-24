@@ -12,7 +12,8 @@
                     shared_user_groups_edit: [],
                     shared_user_groups_view: [],
                     share_with: "all-users",
-                    theme: 0
+                    theme: 0,
+                    is_owner: true
                 };
             }
         },
@@ -188,6 +189,15 @@
             getters: {
                 all: function(state) {
                     return state.all;
+                },
+                allGeography: function(state) {
+                    return state.all.map(function(w) {
+                        return {
+                            _id: w._id,
+                            size: w.size,
+                            position: w.position
+                        };
+                    });
                 }
             },
             mutations: {
@@ -229,6 +239,30 @@
 
                     if (index > -1) {
                         state.all.splice(index, 1);
+                    }
+                },
+                syncGeography: function(state, widget) {
+                    var index = -1;
+
+                    for (var i = 0; i < state.all.length; i++) {
+                        if (state.all[i]._id === widget._id) {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    if ((index > -1) && (widget.size || widget.position)) {
+                        var obj = JSON.parse(JSON.stringify(state.all[index]));
+
+                        if (widget.size) {
+                            obj.size = widget.size;
+                        }
+
+                        if (widget.position) {
+                            obj.position = widget.position;
+                        }
+
+                        state.all.splice(index, 1, obj);
                     }
                 }
             },
@@ -306,6 +340,9 @@
 
                         return false;
                     });
+                },
+                syncGeography: function(context, widget) {
+                    context.commit("syncGeography", widget);
                 }
             }
         });
@@ -468,7 +505,7 @@
             getDashboard: function(context, params) {
                 var dashboardId = context.getters.selected.id;
 
-                countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(res) {
+                return countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(res) {
                     var dashbaord = null;
                     var widgets = [];
                     var dId = null;
@@ -553,7 +590,7 @@
                 */
 
                 if (dashboardId) {
-                    context.dispatch("getDashboard", params);
+                    return context.dispatch("getDashboard", params);
                 }
             },
 

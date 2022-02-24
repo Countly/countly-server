@@ -61,6 +61,7 @@ function toCollection(val) {
         versions: "device_details",
         app_versions: "device_details",
         resolutions: "device_details",
+        device_type: "device_details",
         countries: "users"
     };
 
@@ -105,12 +106,8 @@ function toSegment(val) {
     return val;
 }
 
-/**
- * Function to map the old widget structure to the new one
- * @param  {Object} widget - Widget object
- */
-function mapWidget(widget) {
-    var widgetType, visualization, dataType, appcount;
+dashboard.mapWidget = function(widget) {
+    var widgetType, visualization, dataType, appcount, breakdowns;
 
     switch (widget.widget_type) {
     case "time-series":
@@ -145,9 +142,24 @@ function mapWidget(widget) {
         appcount = "single";
 
         break;
+    case "concurrent_users":
+        widgetType = "analytics";
+        dataType = "user-analytics";
+        breakdowns = ["online"];
+        delete widget.isPluginWidget;
+        break;
+    case "active_users":
+        widgetType = "analytics";
+        dataType = "user-analytics";
+        breakdowns = ["active"];
+        delete widget.isPluginWidget;
+        break;
     case "views":
         widgetType = "analytics";
         dataType = "views";
+        widget.metrics = widget.views;
+        visualization = "table";
+        delete widget.isPluginWidget;
 
         break;
     case "funnels":
@@ -205,7 +217,13 @@ function mapWidget(widget) {
     if (appcount) {
         widget.app_count = appcount;
     }
-}
+
+    if (breakdowns) {
+        widget.breakdowns = breakdowns;
+    }
+
+    return widget;
+};
 
 dashboard.fetchWidgetDataOld = function(params, my_widgets, callback) {
     if (my_widgets) {
@@ -507,13 +525,11 @@ dashboard.fetchWidgetDataOld = function(params, my_widgets, callback) {
     }
 };
 
-dashboard.fetchAllWidgetsData = function(params, widgets, callback) {
+dashboard.fetchWidgetApps = function(params, widgets, callback) {
     if (widgets && widgets.length) {
         var appIds = [];
         for (var i = 0; i < widgets.length; i++) {
             var widget = widgets[i];
-
-            mapWidget(widget);
 
             var widgetApps = widget.apps || [];
 
@@ -534,7 +550,18 @@ dashboard.fetchAllWidgetsData = function(params, widgets, callback) {
                 }
             }
 
-            async.map(widgets, function(wget, done) {
+            return callback(null, apps);
+        });
+    }
+    else {
+        return callback(null, {});
+    }
+};
+
+dashboard.fetchAllWidgetsData = function(params, widgets, callback) {
+    if (widgets && widgets.length) {
+        dashboard.fetchWidgetApps(params, widgets, function(err, apps) {
+            async.forEach(widgets, function(wget, done) {
 
                 if (wget.client_fetch) {
                     return done();
@@ -565,12 +592,14 @@ dashboard.fetchAllWidgetsData = function(params, widgets, callback) {
 
 dashboard.fetchAnalyticsData = async function(params, apps, widget) {
     var dashData = {};
+    var widgetApps;
+    var widgetData;
 
     switch (widget.data_type) {
     case "session":
         try {
-            var widgetApps = widget.apps || [];
-            var widgetData = {};
+            widgetApps = widget.apps || [];
+            widgetData = {};
 
             for (let i = 0; i < widgetApps.length; i++) {
                 var appId = widgetApps[i];
@@ -579,7 +608,6 @@ dashboard.fetchAnalyticsData = async function(params, apps, widget) {
 
             dashData.isValid = true;
             dashData.data = widgetData;
-
             widget.dashData = dashData;
         }
         catch (e) {
@@ -588,12 +616,70 @@ dashboard.fetchAnalyticsData = async function(params, apps, widget) {
 
             dashData.isValid = false;
             dashData.data = undefined;
-
             widget.dashData = dashData;
 
             return widget;
         }
 
+        break;
+    case "technology":
+    case "geo":
+    case "sources":
+        try {
+            widgetApps = widget.apps || [];
+            widgetData = {};
+
+            for (let i = 0; i < widgetApps.length; i++) {
+                var appId2 = widgetApps[i];
+                widgetData[appId2] = await getAnalyticsTechnologyDataForApp(params, apps, appId2, widget);
+            }
+            dashData.isValid = true;
+            dashData.data = widgetData;
+            widget.dashData = dashData;
+        }
+        catch (e) {
+            log.d("Error while fetching analytics widget data for - ", widget);
+            log.d("Error is - ", e);
+
+            dashData.isValid = false;
+            dashData.data = undefined;
+            widget.dashData = dashData;
+            return widget;
+        }
+        break;
+    case "user-analytics":
+        if (widget.breakdowns && Array.isArray(widget.breakdowns) && widget.breakdowns[0] === "overview") {
+
+            try {
+                widgetApps = widget.apps || [];
+                widgetData = {};
+                var metrics = [];
+                for (var k = 0;k < widget.metrics.length; k++) {
+                    metrics.push(widget.metrics[k]);
+                }
+                widget.metrics = ['u', 'n'];
+                for (let i = 0; i < widgetApps.length; i++) {
+                    var appId3 = widgetApps[i];
+                    widgetData[appId3] = await getAnalyticsSessionDataForApp(params, apps, appId3, widget);
+                }
+                widget.metrics = metrics;
+                dashData.isValid = true;
+                dashData.data = widgetData;
+
+                widget.dashData = dashData;
+            }
+            catch (e) {
+                log.d("Error while fetching analytics widget data for - ", widget);
+                log.d("Error is - ", e);
+
+                dashData.isValid = false;
+                dashData.data = undefined;
+
+                widget.dashData = dashData;
+
+                return widget;
+            }
+        }
         break;
     default:
         break;
@@ -700,6 +786,68 @@ dashboard.fetchNoteData = async function(params, apps, widget) {
     return widget;
 };
 
+
+/**
+ * Function to fetch technology analytics data for app
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {String} appId - app id
+ * @param  {Object} widget - widget object
+ */
+async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
+    var visualization = widget.visualization;
+    var breakdowns = widget.breakdowns;
+    var widgetData = {};
+
+    if (widget.custom_period && widget.custom_period !== "") {
+        params.qstring.period = widget.custom_period;
+    }
+    if (widget.data_type === "sources") {
+        breakdowns = ['sources'];
+    }
+    //bar-chart, pie-chart, table
+    var collection, segment;
+    switch (visualization) {
+    case 'bar-chart':
+    case 'pie-chart':
+    case 'table':
+        if (!breakdowns || !breakdowns.length) {
+            throw new Error("Breakdowns are required for bar chart and table");
+        }
+
+        collection = toCollection(breakdowns[0]);
+        segment = toSegment(breakdowns[0]);
+
+        break;
+    default:
+        throw new Error("Invalid visualization!");
+    }
+
+    var model = await getSessionModel(params, apps, appId, collection, segment, widget);
+
+    switch (visualization) {
+    case 'bar-chart':
+    case 'pie-chart':
+        var totals = {};
+        totals[widget.metrics[0]] = 0;
+        var graph = model.getBars(segment, -1);
+        for (var z in graph) {
+            totals[widget.metrics[0]] += graph[z].value;
+        }
+
+        widgetData = {"total": totals, "graph": model.getBars(segment, 10)};
+
+        break;
+    case 'table':
+        widgetData = model.getTableData(segment, 10);
+        break;
+    default:
+        break;
+    }
+
+    return widgetData;
+}
+
 /**
  * Function to fetch sessions analytics data for app
  * @param  {Object} params - params object
@@ -712,7 +860,14 @@ async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
     var breakdowns = widget.breakdowns;
     var widgetData = {};
 
+    if (widget.custom_period && widget.custom_period !== "") {
+        params.qstring.period = widget.custom_period;
+    }
     var collection, segment;
+    //user barchart - same data as timeline
+    if (visualization === 'bar-chart' && widget.data_type === "user-analytics") {
+        visualization = 'time-series';
+    }
 
     switch (visualization) {
     case 'time-series':
@@ -787,7 +942,6 @@ async function getEventsDataForApp(params, apps, appId, widget) {
         }
 
         segment = toSegment(breakdowns[0]);
-
         break;
     default:
         throw new Error("Invalid visualization!");
@@ -881,14 +1035,7 @@ async function getPushDataForApp(params, apps, appId, widget) {
 
             break;
         case 'number':
-            data = model.getNumber();
-            if (event === "[CLY]_push_action") {
-                widgetData.actioned = data;
-            }
-
-            if (event === "[CLY]_push_sent") {
-                widgetData.sent = data;
-            }
+            widgetData = model.getNumber();
 
             break;
         default:

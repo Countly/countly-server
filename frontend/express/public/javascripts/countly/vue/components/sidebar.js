@@ -131,21 +131,22 @@
                 };
             },
             computed: {
-                allApps: function() {
-                    var storedApp = this.$store.getters["countlyCommon/getAllApps"];
-                    var apps = _.sortBy(storedApp, function(app) {
-                        return (app.name + "").toLowerCase();
-                    });
-                    if (countlyGlobal.member.appSortList) {
-                        apps = this.sortBy(apps, countlyGlobal.member.appSortList);
-                    }
-                    apps = apps.map(function(a) {
-                        a.label = a.name;
-                        a.value = a._id;
-                        return a;
-                        //a.image = countlyGlobal.path + "appimages/" + active._id + ".png"
-                    });
-                    return apps;
+                allApps: {
+                    get: function() {
+                        var storedApp = this.$store.getters["countlyCommon/getAllApps"];
+                        var apps = _.sortBy(storedApp, function(app) {
+                            return (app.name + "").toLowerCase();
+                        });
+                        if (countlyGlobal.member.appSortList) {
+                            apps = this.sortBy(apps, countlyGlobal.member.appSortList);
+                        }
+                        apps = apps.map(function(a) {
+                            a.label = a.name;
+                            a.value = a._id;
+                            return a;
+                        });
+                        return apps;
+                    },
                 },
                 activeApp: function() {
                     var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"] && this.$store.getters["countlyCommon/getActiveApp"]._id;
@@ -244,16 +245,18 @@
                     var currMenu = {};
                     var part1 = "";
                     var part2 = "";
+                    var part3 = "";
                     var menu;
 
                     if (!Object.keys(menus).length || !Object.keys(submenus).length) {
                         // eslint-disable-next-line no-console
-                        console.log("Something is terribly wrong, please contact Prikshit Tekta asap and don't clear the logs please! ", currLink, menus, submenus);
+                        console.log("Something is terribly wrong in sidebar ! ", currLink, menus, submenus);
                     }
 
                     for (var k in menus) {
                         for (var i = 0; i < menus[k].length; i++) {
                             menu = menus[k][i];
+
 
                             if (menu.url === "#" + currLink) {
                                 foundMenu = true;
@@ -264,7 +267,8 @@
                             if (currLink.split("/").length > 2) {
                                 part1 = "/" + currLink.split("/")[1];
                                 part2 = part1 + "/" + currLink.split("/")[2];
-                                if (menu.url === "#" + part1 || menu.url === "#" + part2) {
+                                part3 = part2 + "/";
+                                if (menu.url === "#" + part1 || menu.url === "#" + part2 || menu.url === "#" + part3) {
                                     foundMenu = true;
                                     currMenu = menu;
                                     break;
@@ -291,7 +295,8 @@
                                 if (currLink.split("/").length > 2) {
                                     part1 = "/" + currLink.split("/")[1];
                                     part2 = part1 + "/" + currLink.split("/")[2];
-                                    if (menu.url === "#" + part1 || menu.url === "#" + part2) {
+                                    part3 = part2 + "/";
+                                    if (menu.url === "#" + part1 || menu.url === "#" + part2 || menu.url === "#" + part3) {
                                         foundMenu = true;
                                         currMenu = menu;
                                         break;
@@ -464,7 +469,8 @@
                 return {
                     selectedMenuOptionLocal: null,
                     versionInfo: countlyGlobal.countlyTypeName,
-                    showMainMenu: true
+                    showMainMenu: true,
+                    redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID
                 };
             },
             computed: {
@@ -488,28 +494,28 @@
                     var menuOptions = [
                         {
                             name: "app",
+                            icon: "cly-icon-sidebar-app",
                             noSelect: true
                         },
-                        // {
-                        //     name: "search",
-                        //     icon: "ion-ios-search-strong"
-                        // },
                         {
                             name: "analytics",
-                            icon: "ion-stats-bars"
+                            icon: "cly-icon-sidebar-analytics",
+                            tooltip: CV.i18n("sidebar.main-menu")
                         },
                         {
                             name: "divider",
+                            icon: "cly-icon-sidebar-divider",
                             noSelect: true
                         },
                         {
                             name: "management",
-                            icon: "ion-wrench",
-                            tooltip: "Management"
+                            icon: "cly-icon-sidebar-management",
+                            tooltip: "Management",
+                            svg: ""
                         },
                         {
                             name: "last-queries",
-                            icon: "fas fa-file-contract",
+                            icon: "cly-icon-sidebar-report-manager",
                             noSelect: true,
                             tooltip: "Report Manager"
                         }
@@ -529,21 +535,21 @@
                     var menuOptions = [
                         {
                             name: "help-center",
-                            icon: "ion-clipboard",
+                            icon: "cly-icon-sidebar-help-center",
                             noSelect: true,
                             tooltip: "Help Center"
                         },
                         {
                             name: "notifications",
-                            icon: "ion-android-notifications",
+                            icon: "cly-icon-sidebar-notifications",
                             noSelect: true,
                             tooltip: "Assistant"
                         },
                         {
                             name: "user",
-                            icon: "ion-person",
                             noSelect: true,
-                            member: this.member
+                            member: this.member,
+                            tooltip: CV.i18n("sidebar.my-profile")
                         },
                         {
                             name: "language",
@@ -552,7 +558,7 @@
                         },
                         {
                             name: "toggle",
-                            icon: "ion-chevron-left",
+                            icon: "cly-icon-sidebar-toggle-left",
                             noSelect: true
                         }
                     ];
@@ -616,15 +622,20 @@
                 }
             }
         });
+        app.initSidebar = function() {
+            countlyVue.sideBarComponent = new Vue({
+                el: $('#sidebar-x').get(0),
+                store: countlyVue.vuex.getGlobalStore(),
+                components: {
+                    Sidebar: SidebarView
+                },
+                template: '<Sidebar></Sidebar>'
+            });
+        };
 
-        countlyVue.sideBarComponent = new Vue({
-            el: $('#sidebar-x').get(0),
-            store: countlyVue.vuex.getGlobalStore(),
-            components: {
-                Sidebar: SidebarView
-            },
-            template: '<Sidebar></Sidebar>'
-        });
+        if (Object.keys(countlyGlobal.apps).length) {
+            app.initSidebar();
+        }
     });
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));

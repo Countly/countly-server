@@ -1,12 +1,11 @@
 /*global countlyAuth, app, countlyGlobal, $, groupsModel, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
-    var FEATURE_NAME = "global_users";
-
     var DataTable = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/data-table.html"),
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
-            rows: Array
+            rows: Array,
+            loading: Boolean
         },
         data: function() {
             return {
@@ -55,10 +54,10 @@
                             return row.global_admin;
                         }
                         else if (self.tableFilter === 'admin') {
-                            return !row.global_admin && row.permission._.a.length > 0;
+                            return !row.global_admin && (row.permission && row.permission._.a.length > 0);
                         }
                         else {
-                            return !row.global_admin && row.permission._.a.length === 0;
+                            return !row.global_admin && (row.permission && row.permission._.a.length === 0);
                         }
                     });
                 }
@@ -348,7 +347,7 @@
                 if (this.settings.editMode) {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.editUser(this.user._id, submitted, function(res) {
-                        if (res.result) {
+                        if (res.result && typeof res.result === "string") {
                             if (self.groupsInput.length) {
                                 var group_id = self.group._id ? [self.group._id] : [];
                                 groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id })
@@ -384,12 +383,21 @@
                                 done();
                             }
                         }
+                        else if (typeof res === "object") {
+                            for (var i2 = 0; i2 < res.length; i2++) {
+                                CountlyHelpers.notify({
+                                    message: res[i2],
+                                    type: 'error'
+                                });
+                            }
+                            self.$refs.userDrawer.isSubmitPending = false;
+                        }
                         else {
                             CountlyHelpers.notify({
-                                message: res.result,
+                                message: CV.i18n('management-applications.plugins.smth'),
                                 type: 'error'
                             });
-                            done(res.result);
+                            self.$refs.userDrawer.isSubmitPending = false;
                         }
                     });
                 }
@@ -429,17 +437,27 @@
                                 done();
                             }
                         }
+                        else if (res.length) {
+                            for (var i1 = 0; i1 < res.length; i1++) {
+                                CountlyHelpers.notify({
+                                    message: res[i1],
+                                    type: 'error'
+                                });
+                            }
+                            self.$refs.userDrawer.isSubmitPending = false;
+                        }
                         else {
                             CountlyHelpers.notify({
-                                message: res.result,
+                                message: CV.i18n('management-applications.plugins.smth'),
                                 type: 'error'
                             });
-                            done(res.result);
+                            self.$refs.userDrawer.isSubmitPending = false;
                         }
                     });
                 }
             },
             onOpen: function() {
+                this.changePasswordFlag = false;
                 // types
                 var types = ['c', 'r', 'u', 'd'];
 
@@ -548,7 +566,8 @@
                     createButtonLabel: CV.i18n('management-users.create-user'),
                     editMode: false
                 },
-                features: []
+                features: [],
+                loading: true
             };
         },
         methods: {
@@ -585,6 +604,7 @@
                 for (var user in usersObj) {
                     self.users.push(usersObj[user]);
                 }
+                self.loading = false;
                 self.features = countlyUserManagement.getFeatures().sort();
             });
         }
@@ -627,7 +647,7 @@
 
     app.ManageUsersView = ManageUsersView;
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
+    if (countlyAuth.validateGlobalAdmin()) {
         app.route("/manage/users", "manage-users", function() {
             var params = {
                 tab: "users"

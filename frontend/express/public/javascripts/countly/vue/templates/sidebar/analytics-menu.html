@@ -20,10 +20,10 @@
     <app-selector @close="toggleAppSelection()" v-if="appSelector && allApps && allApps.length && allApps.length > 1"
         :allApps="allApps"></app-selector>
     <div class="cly-vue-sidebar__main-menu">
-        <vue-scroll>
-            <div v-for="(cat, idx) in categories" class="bu-mb-4" :data-category="cat.name">
-                <ul class="bu-mb-5">
-                    <li v-for="(menu, idx) in categorizedMenus[cat.name]" class="bu-px-3 bu-my-3">
+        <vue-scroll :ops="{scrollPanel: { scrollingX: false }}">
+            <div v-for="(cat, id) in categories" :data-category="cat.name" style="margin-bottom: 40px">
+                <ul>
+                    <li v-for="(menu, idx) in categorizedMenus[cat.name]" :class="['bu-px-3 bu-is-clickable', {'bu-mb-1': idx !== 0}]" :style="{marginBottom: (id === 0) ? '20px': ''}">
                         <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
                             <el-collapse v-model="selectedAnalyticsMenu" accordion
                                 :class="[{'cly-vue-sidebar__el-collapse--selected':  (selectedMenuItem && (selectedMenuItem.parent_code === menu.name))}]">
@@ -31,10 +31,11 @@
                                     :icon="{position: 'right', direction: 'down'}">
                                     <ul>
                                         <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]"
-                                            class="bu-is-clickable">
+                                            :class="['bu-mb-1', {'bu-mt-1': idx === 0}]">
                                             <a :href="submenu.url">
-                                                <div :class="['cly-vue-sidebar__submenu-items has-ellipsis',
-                                                     'bu-pl-5', 'bu-my-3',
+                                                <div
+                                                    style="width: calc(100% - 44px);"
+                                                    :class="['cly-vue-sidebar__submenu-items has-ellipsis',
                                                     {'cly-vue-sidebar__submenu-items--selected': (selectedMenuItem && (selectedMenuItem.name === submenu.name))}]"
                                                     @click="onMenuItemClick(submenu)">
                                                     {{i18nM(submenu.title)}}
@@ -47,7 +48,8 @@
                         </div>
                         <a v-else :href="menu.url">
                             <div
-                                :class="['cly-vue-sidebar__menu-items has-ellipsis bu-is-clickable',
+                                style="width: calc(100% - 24px);"
+                                :class="['cly-vue-sidebar__menu-items has-ellipsis',
                                 {'cly-vue-sidebar__menu-items--selected': (selectedMenuItem && (selectedMenuItem.name === menu.name))}]"
                                 @click="onMenuItemClick(menu)">
                                 {{i18nM(menu.title)}}

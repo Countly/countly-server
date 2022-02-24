@@ -8,8 +8,15 @@
         _mixins = countlyVue.mixins;
 
     var FONT_FAMILY = "Inter";
-    var CHART_HEADER_HEIGHT = 32;
 
+    /**
+     * legendOptions depends on internalLegend and legend
+     * mergedOptions depends on legendOptions
+     * chartOptions depends on mergedOptions
+     * chartOptions also calls patchChart which intern calls patchZoom and patchLegend
+     * patchZoom internally calls patchZoom of Zoom component
+     * patchLegend depends on legendOptions
+     */
     var EchartRefMixin = {
         data: function() {
             return {
@@ -18,6 +25,191 @@
         },
         mounted: function() {
             this.echartRef = this.$parent.$refs.echarts;
+        }
+    };
+
+    var LegendMixin = {
+        data: function() {
+            return {
+                internalLegend: {
+                    show: true,
+                    type: "secondary",
+                    data: [],
+                    position: "bottom"
+                },
+            };
+        },
+        computed: {
+            legendOptions: function() {
+                var options = _merge({}, this.internalLegend, this.legend || {});
+
+                if (this.legend && this.legend.data && this.legend.data.length) {
+                    options.data = JSON.parse(JSON.stringify(this.legend.data));
+                }
+                else {
+                    options.data = JSON.parse(JSON.stringify(this.internalLegend.data));
+                }
+
+                if (this.internalLegend.data.length !== options.data.length) {
+                    options.data = [];
+                }
+
+                for (var i = 0; i < options.data.length; i++) {
+                    options.data[i].color = this.internalLegend.data[i].color;
+                    options.data[i].displayColor = options.data[i].color;
+                }
+
+                return options;
+            }
+        },
+        methods: {
+            setInternalLegendData: function(opt, series) {
+                var data = [];
+                var colorIndex = 0;
+                var obj = {}, color;
+                var colors = opt.color;
+
+                for (var i = 0; i < series.length; i++) {
+                    var seriesData = series[i];
+                    var dataSum = 0;
+
+                    if (seriesData.type === "pie") {
+                        seriesData = seriesData.data;
+
+                        dataSum = seriesData.reduce(function(acc, val) {
+                            acc += val.value;
+                            return acc;
+                        }, 0);
+
+                        for (var j = 0; j < seriesData.length; j++) {
+                            color = seriesData[j].color;
+
+                            if (!color) {
+                                color = colors[colorIndex];
+                                colorIndex++;
+                            }
+
+                            obj = {
+                                name: seriesData[j].name,
+                                color: color,
+                                percentage: ((seriesData[j].value / dataSum) * 100).toFixed(1)
+                            };
+
+                            data.push(obj);
+                        }
+                    }
+                    else {
+                        color = seriesData.color;
+
+                        if (!color) {
+                            color = colors[colorIndex];
+                            colorIndex++;
+                        }
+
+                        obj = {
+                            name: seriesData.name,
+                            color: color
+                        };
+
+                        data.push(obj);
+                    }
+                }
+
+                this.internalLegend.data = data;
+
+                //Set default legend show to false
+                opt.legend.show = false;
+
+                return data;
+            },
+            patchLegend: function(chartOpt) {
+                var echartRef = this.$refs.echarts;
+                var legend = this.$refs.legend;
+
+                if (echartRef && legend) {
+                    var oldChartOpt = echartRef.getOption();
+
+                    if (Array.isArray(oldChartOpt.legend)) {
+                        var oldSelected = oldChartOpt.legend.find(function(item) {
+                            return item.id === "__chartLegend";
+                        });
+
+                        if (oldSelected && oldSelected.selected) {
+                            var legendOptions = this.legendOptions;
+                            for (var i = 0; i < legendOptions.data.length; i++) {
+                                var leg = legendOptions.data[i];
+                                if (oldSelected.selected[leg.name] === false) {
+                                    chartOpt.legend.selected[leg.name] = false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return chartOpt;
+            }
+        }
+    };
+
+    var ZoomMixin = {
+        methods: {
+            onDataZoom: function(event) {
+                this.$refs.header.$refs.zoom.onZoomFinished(event);
+            },
+            patchZoom: function(chartOpt) {
+                var echartRef = this.$refs.echarts;
+                var header = this.$refs.header;
+
+                if (echartRef && header) {
+                    var oldChartOpt = echartRef.getOption();
+                    if (Array.isArray(oldChartOpt.dataZoom)) {
+                        var dataZoom = oldChartOpt.dataZoom[0];
+
+                        /**
+                         * Since patchZoom depends on the headers isZoom state,
+                         * therefore, the computed property calling patchZoom function,
+                         * will be re-computed after the headers isZoom state is updated.
+                         */
+                        if (dataZoom && header.isZoom) {
+                            chartOpt.dataZoom[0].start = dataZoom.start;
+                            chartOpt.dataZoom[0].end = dataZoom.end;
+
+                            var self = this;
+                            this.$nextTick(function() {
+                                self.$nextTick(function() {
+                                    header.$refs.zoom.patchZoom(false);
+                                });
+                            });
+                        }
+                    }
+                }
+
+                return chartOpt;
+            }
+        }
+    };
+
+    var UpdateOptionsMixin = {
+        data: function() {
+            return {
+                internalUpdateOptions: {
+                    notMerge: true
+                }
+            };
+        },
+        computed: {
+            echartUpdateOptions: function() {
+                return _merge({}, this.internalUpdateOptions, this.updateOptions || {});
+            }
+        }
+    };
+
+    var EventsMixin = {
+        methods: {
+            onSeriesChange: function(v) {
+                this.seriesOptions.type = v;
+                this.$emit("series-toggle", v);
+            }
         }
     };
 
@@ -47,9 +239,10 @@
     */
 
     var BaseChart = _mixins.BaseContent.extend({
+        mixins: [LegendMixin, ZoomMixin, UpdateOptionsMixin, EventsMixin],
         props: {
             height: {
-                type: Number,
+                type: [Number, String],
                 default: 472
             },
             autoresize: {
@@ -84,9 +277,19 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            valFormatter: {
+                type: Function,
+                default: countlyCommon.getShortNumber,
+                required: false
+            },
+            skin: {
+                type: String,
+                default: "padded"
             }
         },
         data: function() {
+            var self = this;
             return {
                 baseOptions: {
                     title: {
@@ -96,10 +299,11 @@
                         top: 30,
                         bottom: 15,
                         left: 36,
-                        right: 36,
+                        right: 24,
                         containLabel: true
                     },
                     legend: {
+                        id: "__chartLegend",
                         show: false,
                         type: 'scroll',
                         bottom: 10,
@@ -115,7 +319,8 @@
                         },
                         icon: "roundRect",
                         itemHeight: 6,
-                        itemWidth: 12
+                        itemWidth: 12,
+                        selected: {}
                     },
                     toolbox: {
                         id: "toolbox",
@@ -130,7 +335,8 @@
                                 show: false
                             },
                             dataZoom: {
-                                show: true
+                                show: true,
+                                yAxisIndex: false
                             },
                             magicType: {
                                 show: false,
@@ -163,7 +369,7 @@
                                                         <div>\
                                                             <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
                                                             <div class="text-small"> ' + params.data.name + '</div>\
-                                                            <div class="text-big">' + countlyCommon.getShortNumber(params.data.value) + '</div>\
+                                                            <div class="text-big">' + self.valFormatter(params.data.value) + '</div>\
                                                         </div>\
                                                   </div>';
 
@@ -181,7 +387,7 @@
                                                     <div class="chart-tooltip__series">\
                                                             <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
                                                         <div class="chart-tooltip__value">\
-                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? countlyCommon.getShortNumber(params[i].value[1]) : countlyCommon.getShortNumber(params[i].value)) + '</span>\
+                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter(params[i].value[1], params[i].value, i) : self.valFormatter(params[i].value, null, i)) + '</span>\
                                                         </div>\
                                                     </div>\
                                                 </div>';
@@ -249,28 +455,11 @@
                     },
                     dataZoom: [
                         {
-                            type: 'slider',
-                            show: false,
-                            xAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'slider',
-                            show: false,
-                            yAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
                             type: 'inside',
-                            xAxisIndex: 0,
                             filterMode: 'none',
-                            zoomLock: true
-                        },
-                        {
-                            type: 'inside',
-                            yAxisIndex: 0,
-                            filterMode: 'none',
-                            zoomLock: true
+                            zoomLock: true,
+                            start: 0,
+                            end: 100
                         }
                     ],
                     color: countlyCommon.GRAPH_COLORS,
@@ -304,39 +493,10 @@
                     emphasis: {
                         focus: 'series'
                     }
-                },
-                internalLegend: {
-                    show: true,
-                    type: "secondary",
-                    data: [],
-                    position: "bottom"
-                },
-                internalUpdateOptions: {
-                    notMerge: true
                 }
             };
         },
-        methods: {
-            onSeriesChange: function(v) {
-                this.seriesOptions.type = v;
-                this.$emit("series-toggle", v);
-            },
-            onZoomFinished: function() {
-                this.$refs.header.$refs.zoom.onZoomFinished();
-            }
-        },
         computed: {
-            legendOptions: function() {
-                var options = _merge({}, this.internalLegend, this.legend || {});
-                if (this.legend && this.legend.data && this.legend.data.length) {
-                    options.data = JSON.parse(JSON.stringify(this.legend.data));
-                }
-                else {
-                    options.data = JSON.parse(JSON.stringify(this.internalLegend.data));
-                }
-
-                return options;
-            },
             chartClasses: function() {
                 var classes = {};
 
@@ -349,38 +509,21 @@
                     classes['bu-is-flex-direction-row'] = true;
                 }
 
+                classes['cly-vue-chart--' + this.skin] = true;
+
                 return classes;
             },
-            echartHeight: function() {
-                var headerHeight = this.isShowingHeader ? CHART_HEADER_HEIGHT : 0;
-                return this.height - headerHeight - 40; //20px padding on top and bottom
-            },
-            echartStyle: function() {
-                var styles = {
-                    height: this.height + 'px'
-                };
-
-                if (this.legendOptions.position !== "bottom") {
-                    styles.width = 'calc(100% - 265px)';
-                }
-
-                return styles;
-            },
-            legendStyle: function() {
+            chartStyles: function() {
                 var styles = {};
 
-                if (this.legendOptions.position !== "bottom") {
-                    styles.width = 265 + 'px';
+                if (this.height === "auto") {
+                    styles.height = '100%';
+                }
+                else {
                     styles.height = this.height + 'px';
                 }
 
                 return styles;
-            },
-            isShowingHeader: function() {
-                return this.showZoom || this.showDownload || this.showToggle;
-            },
-            echartUpdateOptions: function() {
-                return _merge({}, this.internalUpdateOptions, this.updateOptions || {});
             },
             isChartEmpty: function() {
                 var isEmpty = true;
@@ -420,6 +563,17 @@
                 else {
                     return false;
                 }
+            },
+            seriesType: function() {
+                return this.chartOptions.series && this.chartOptions.series[0] && this.chartOptions.series[0].type;
+            }
+        },
+        methods: {
+            patchChart: function(options) {
+                this.patchZoom(options);
+                this.patchLegend(options);
+
+                return options;
             }
         }
     });
@@ -467,17 +621,12 @@
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
-                var legendData = [];
 
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push({name: series[i].name});
                 }
 
-                this.internalLegend.data = legendData;
-
-                //Set default legend show to false
-                opt.legend.show = false;
+                this.setInternalLegendData(opt, series);
 
                 opt.series = series;
 
@@ -515,17 +664,12 @@
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
-                var legendData = [];
 
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push({name: series[i].name});
                 }
 
-                this.internalLegend.data = legendData;
-
-                //Set default legend show to false
-                opt.legend.show = false;
+                this.setInternalLegendData(opt, series);
 
                 opt.series = series;
 
@@ -608,7 +752,6 @@
 
                 var series = opt.series || [];
 
-                var legendData = [];
                 var sumOfOthers;
                 var seriesArr;
 
@@ -618,11 +761,6 @@
 
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                     var seriesData = series[i].data;
-
-                    var dataSum = seriesData.reduce(function(acc, val) {
-                        acc += val.value;
-                        return acc;
-                    }, 0);
 
                     seriesData.sort(function(a, b) {
                         return b.value - a.value;
@@ -636,24 +774,12 @@
                         seriesArr.push({value: sumOfOthers, name: 'Others'});
                         series[i].data = seriesData = seriesArr;
                     }
-
-                    /*
-                        Legend data in series comes from within series data names
-                    */
-                    for (var j = 0; j < seriesData.length; j++) {
-                        legendData.push({
-                            name: seriesData[j].name,
-                            percentage: ((seriesData[j].value / dataSum) * 100).toFixed(1)
-                        });
-                    }
                 }
 
-                this.internalLegend.data = legendData;
-
-                //Set default legend show to false
-                opt.legend.show = false;
+                this.setInternalLegendData(opt, series);
 
                 opt.series = series;
+
                 return opt;
             }
         }
@@ -762,7 +888,7 @@
             };
         },
         methods: {
-            onZoomTrigger: function() {
+            onZoomTrigger: function(e) {
                 this.echartRef.setOption({tooltip: {show: false}}, {notMerge: false});
 
                 this.echartRef.dispatchAction({
@@ -772,7 +898,9 @@
                 });
 
                 this.zoomStatus = "triggered";
-                this.$parent.onZoomTrigger();
+                if (e) {
+                    this.$parent.onZoomTrigger();
+                }
             },
             onZoomReset: function() {
                 this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
@@ -806,6 +934,11 @@
                 });
 
                 this.zoomStatus = "done";
+            },
+            patchZoom: function() {
+                if (this.zoomStatus === "triggered") {
+                    this.onZoomTrigger(false);
+                }
             }
         },
         template: '<div>\
@@ -828,7 +961,8 @@
     var MagicSwitch = countlyBaseComponent.extend({
         props: {
             chartType: {
-                type: String
+                type: String,
+                default: 'line'
             }
         },
         mixins: [
@@ -881,7 +1015,6 @@
         },
         data: function() {
             return {
-                height: CHART_HEADER_HEIGHT,
                 isZoom: false
             };
         },
@@ -897,7 +1030,9 @@
                     This resembles to the actual download handler of echarts.
                     This does not support download in IE and older edge versions yet.
                 */
-
+                if (!this.echartRef) {
+                    this.echartRef = this.$parent.$refs.echarts;
+                }
                 var chartOptions = this.echartRef.getOption();
 
                 var aTag = document.createElement('a');
@@ -922,7 +1057,7 @@
                 this.isZoom = false;
             }
         },
-        template: '<div class="bu-level" :style="{height: height + \'px\'}">\
+        template: '<div class="bu-level">\
                         <div class="bu-level-left">\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
 							<slot name="chart-header-left-input"></slot>\
@@ -1063,17 +1198,15 @@
     var CustomLegend = countlyBaseComponent.extend({
         mixins: [EchartRefMixin],
         props: {
-            chartOptions: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            },
             options: {
                 type: Object,
                 default: function() {
                     return {};
                 }
+            },
+            seriesType: {
+                type: String,
+                default: ""
             }
         },
         data: function() {
@@ -1082,9 +1215,6 @@
             };
         },
         computed: {
-            seriesType: function() {
-                return this.chartOptions.series && this.chartOptions.series[0] && this.chartOptions.series[0].type;
-            },
             legendClasses: function() {
                 var classes = {};
                 classes['cly-vue-chart-legend__' + this.options.position] = true;
@@ -1107,24 +1237,29 @@
                     return;
                 }
 
-                this.echartRef.dispatchAction({
-                    type: "legendToggleSelect",
-                    name: item.name
-                });
-
                 var obj = JSON.parse(JSON.stringify(this.legendData[index]));
 
                 //For the first time, item.status does not exist
                 //So we set it to off
-                //On subsequent click we toggle between on and off
+                //On subsequent clicks we toggle between on and off
 
                 if (obj.status === "off") {
                     obj.status = "on";
                     obj.displayColor = obj.color;
+
+                    this.echartRef.dispatchAction({
+                        type: "legendSelect",
+                        name: item.name
+                    });
                 }
                 else {
                     obj.status = "off";
                     obj.displayColor = "transparent";
+
+                    this.echartRef.dispatchAction({
+                        type: "legendUnSelect",
+                        name: item.name
+                    });
                 }
 
                 this.$set(this.legendData, index, obj);
@@ -1132,37 +1267,24 @@
         },
         watch: {
             'options': {
-                deep: true,
                 immediate: true,
                 handler: function() {
                     var data = JSON.parse(JSON.stringify(this.options.data || []));
 
-                    var series = this.chartOptions.series || [];
+                    if (this.legendData) {
+                        for (var i = 0; i < data.length; i++) {
+                            var legend = data[i];
 
-                    if (this.seriesType === "pie") {
-                        series = series[0].data;
-                    }
+                            // eslint-disable-next-line no-loop-func
+                            var existingLegend = this.legendData.find(function(o) {
+                                return o.name === legend.name;
+                            });
 
-                    if (series.length !== data.length) {
-                        // eslint-disable-next-line no-console
-                        console.log("Series length and legend length should be same");
-                        return [];
-                    }
-
-                    var colors = this.chartOptions.color || [];
-                    var colorIndex = 0;
-                    for (var k = 0; k < series.length; k++) {
-                        var serie = series[k];
-
-                        if (serie.color) {
-                            data[k].color = serie.color;
+                            if (existingLegend) {
+                                legend.status = existingLegend.status;
+                                legend.displayColor = existingLegend.displayColor;
+                            }
                         }
-                        else {
-                            data[k].color = colors[colorIndex];
-                            colorIndex++;
-                        }
-
-                        data[k].displayColor = data[k].color;
                     }
 
                     this.legendData = data;
@@ -1198,17 +1320,20 @@
         },
         computed: {
             chartOptions: function() {
-                return _merge({}, this.baseOptions, this.option);
+                var opt = _merge({}, this.baseOptions, this.option);
+                opt = this.patchChart(opt);
+
+                return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
+                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1217,24 +1342,24 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
-                                    @datazoom="onZoomFinished">\
+                                    @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart></cly-empty-chart>\
+                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
                         <custom-legend\
-                            :style="legendStyle"\
+                            ref="legend"\
                             :options="legendOptions"\
+                            :seriesType="seriesType"\
                             v-if="legendOptions.show && !isChartEmpty"\
-                            :chartOptions="chartOptions">\
                         </custom-legend>\
                     </div>'
     }));
 
 
-    Vue.component("cly-flow-chart", BaseChart.extend({
+    Vue.component("cly-chart-flow", BaseChart.extend({
         data: function() {
             return {
                 forwardedSlots: ["chart-left", "chart-right", "chart-header-left-input"],
@@ -1266,42 +1391,45 @@
                 delete ops.grid;
                 delete ops.xAxis;
                 delete ops.yAxis; //remove not needed to don;t get grey line at bottom
+
+                ops = this.patchChart(ops);
+
                 return ops;
             }
         },
 
         template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div class="cly-vue-chart__echart" :style="{height: \'100%\'}">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
+                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
 							<div class="chart-wrapper" :style="{height: (chartOptions.chartheight) + \'px\'}">\
-							<vue-scroll :ops="scrollOptions" >\
-								<div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
-										<echarts\
-                                            v-if="!isChartEmpty"\
-											:updateOptions="echartUpdateOptions"\
-											ref="echarts"\
-											v-bind="$attrs"\
-											v-on="$listeners"\
-											:option="chartOptions"\
-											:autoresize="autoresize"\
-											@datazoom="onZoomFinished">\
-										</echarts>\
-                                       <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                        <cly-empty-chart></cly-empty-chart>\
+                                <vue-scroll :ops="scrollOptions" >\
+                                    <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
+                                            <echarts\
+                                                v-if="!isChartEmpty"\
+                                                :updateOptions="echartUpdateOptions"\
+                                                ref="echarts"\
+                                                v-bind="$attrs"\
+                                                v-on="$listeners"\
+                                                :option="chartOptions"\
+                                                :autoresize="autoresize"\
+                                                @datazoom="onDataZoom">\
+                                            </echarts>\
+                                        <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
+                                            <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                        </div>\
                                     </div>\
-								</div>\
-							</vue-scroll>\
+                                </vue-scroll>\
 							</div>\
                         </div>\
                         <custom-legend\
-                            :style="legendStyle"\
+                            ref="legend"\
                             :options="legendOptions"\
-                            v-if="legendOptions.show && !isChartEmpty"\
-                            :chartOptions="chartOptions">\
+                            :seriesType="seriesType"\
+                            v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1319,17 +1447,20 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
+
+                opt = this.patchChart(opt);
+
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header :chart-type="\'line\'" ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
+                            <chart-header :chart-type="\'line\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1338,18 +1469,18 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
-                                    @datazoom="onZoomFinished">\
+                                    @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart></cly-empty-chart>\
+                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
                         <custom-legend\
-                            :style="legendStyle"\
+                            ref="legend"\
                             :options="legendOptions"\
-                            v-if="legendOptions.show && !isChartEmpty"\
-                            :chartOptions="chartOptions">\
+                            :seriesType="seriesType"\
+                            v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1435,17 +1566,19 @@
                     //Adding dummy data end
                 }
 
+                opt = this.patchChart(opt);
+
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
+                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1454,27 +1587,114 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
-                                    @datazoom="onZoomFinished">\
+                                    @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart></cly-empty-chart>\
+                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
                         <custom-legend\
-                            :style="legendStyle"\
+                            ref="legend"\
                             :options="legendOptions"\
-                            v-if="legendOptions.show && !isChartEmpty"\
-                            :chartOptions="chartOptions">\
+                            :seriesType="seriesType"\
+                            v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
     }));
+
+    var handleXAxisOverflow = function(options, strategy) {
+        if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
+            return null;
+        }
+        var xAxis = options.xAxis;
+
+        // Early return, no need to analyze the array
+        if (xAxis.data.length > 15) {
+            // no need to force all points to be present
+            // if there are too many of them
+            return {
+                grid: {containLabel: false, bottom: 90, left: 75},
+                xAxis: {
+                    axisLabel: {
+                        width: 100,
+                        overflow: "truncate",
+                        rotate: 45,
+                    }
+                }
+            };
+        }
+        else if (xAxis.data.length >= 5) {
+            return {
+                grid: {containLabel: false, bottom: 90, left: 75},
+                xAxis: {
+                    axisLabel: {
+                        width: 100,
+                        overflow: "truncate",
+                        interval: 0,
+                        rotate: 45,
+                    }
+                }
+            };
+        }
+
+        var maxLen = 0;
+
+        xAxis.data.forEach(function(item) {
+            var str = "";
+            if (Array.isArray(item)) {
+                str = (item[1] || item[0] || "") + "";
+            }
+            else {
+                str = (item || "") + "";
+            }
+            maxLen = Math.max(maxLen, str.length);
+        });
+
+        if (maxLen > 25 && xAxis.data.length >= 2) {
+            return {
+                grid: {containLabel: false, bottom: 90, left: 75},
+                xAxis: {
+                    axisLabel: {
+                        width: 150,
+                        overflow: "truncate",
+                        interval: 0,
+                        rotate: 30,
+                    }
+                }
+            };
+        }
+        else if (xAxis.data.length >= 2) {
+            return {
+                grid: {
+                    bottom: 50
+                },
+                xAxis: {
+                    axisLabel: {
+                        width: 150,
+                        overflow: "break",
+                        interval: 0
+                    }
+                }
+            };
+        }
+        return {
+            xAxis: {axisLabel: {interval: 0}}
+        };
+    };
 
     Vue.component("cly-chart-bar", BaseBarChart.extend({
         data: function() {
             return {
                 forwardedSlots: ["chart-left", "chart-right"]
             };
+        },
+        props: {
+            xAxisLabelOverflow: {
+                type: String,
+                default: 'auto',
+                required: false
+            }
         },
         components: {
             'chart-header': ChartHeader,
@@ -1483,17 +1703,22 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
+                opt = this.patchChart(opt);
+                var xAxisOverflowPatch = handleXAxisOverflow(opt, this.xAxisLabelOverflow);
+                if (xAxisOverflowPatch) {
+                    opt = _merge(opt, xAxisOverflowPatch);
+                }
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header :chart-type="\'bar\'" ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
+                            <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1502,18 +1727,18 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
-                                    @datazoom="onZoomFinished">\
+                                    @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart></cly-empty-chart>\
+                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
                         <custom-legend\
-                            :style="legendStyle"\
+                            ref="legend"\
                             :options="legendOptions"\
-                            v-if="legendOptions.show && !isChartEmpty"\
-                            :chartOptions="chartOptions">\
+                            :seriesType="seriesType"\
+                            v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1531,6 +1756,7 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
+                opt = this.patchChart(opt);
                 return opt;
             },
             classes: function() {
@@ -1558,15 +1784,14 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" @series-toggle="onSeriesChange" v-bind="$props">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1" style="height: 100%">\
+                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless\']"\
-                                :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless bu-is-flex-grow-1\']" style="overflow: hidden">\
                                 <div :class="classes">\
                                     <echarts\
                                         v-if="!isChartEmpty"\
@@ -1576,16 +1801,17 @@
                                         v-on="$listeners"\
                                         :option="chartOptions"\
                                         :autoresize="autoresize"\
-                                        @datazoom="onZoomFinished">\
+                                        @datazoom="onDataZoom">\
                                     </echarts>\
                                     <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                        <cly-empty-chart></cly-empty-chart>\
+                                        <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                     </div>\
                                 </div>\
                                 <custom-legend\
+                                    ref="legend"\
                                     :options="pieLegendOptions"\
+                                    :seriesType="seriesType"\
                                     v-if="pieLegendOptions.show && !isChartEmpty"\
-                                    :chartOptions="chartOptions"\
                                     :class="classes" class="shadow-container">\
                                 </custom-legend>\
                             </div>\
@@ -1734,6 +1960,7 @@
             'l-control': Vue2Leaflet.LControl,
             'l-tooltip': Vue2Leaflet.LTooltip
         },
+        mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.i18n],
         props: {
             showNavigation: {
                 type: Boolean,
@@ -1898,7 +2125,9 @@
                 },
                 defaultMapOptions: {
                     attributionControl: false,
-                    zoomControl: false
+                    zoomControl: false,
+                    zoomSnap: 0.1,
+                    zoom: 1.3
                 }
             };
         },
@@ -2122,6 +2351,14 @@
                     return this.minMarkerRadius;
                 }
                 return Math.max(this.minMarkerRadius, (value / this.largestMarkerValue) * this.maxMarkerRadius);
+            },
+            getMarkerFlag: function(code) {
+                if (this.detailMode === "cities") {
+                    return false;
+                }
+                else {
+                    return "/images/flags/" + code.toLowerCase() + ".png";
+                }
             },
             getMarkerTooltipTitle: function(code) {
                 switch (this.currentViewType) {

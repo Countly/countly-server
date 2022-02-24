@@ -87,7 +87,7 @@ async function validate(args, draft = false) {
     }
 
     if (msg.filter.cohorts.length) {
-        let cohorts = await common.db.collection('cohorts').find({_id: msg.filter.cohorts}).toArray();
+        let cohorts = await common.db.collection('cohorts').find({_id: {$in: msg.filter.cohorts}}).toArray();
         if (cohorts.length !== msg.filter.cohorts.length) {
             throw new ValidationError('No such cohort');
         }
@@ -114,6 +114,10 @@ async function validate(args, draft = false) {
             scheduled: msg.info.scheduled,
             locales: msg.info.locales,
         }));
+
+        // state & status cannot be changed by api
+        msg.status = existing.status;
+        msg.state = existing.state;
     }
 
     return msg;
@@ -208,12 +212,12 @@ module.exports.test = async params => {
 module.exports.create = async params => {
     let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
     msg._id = common.db.ObjectID();
-    msg.info.created = new Date();
-    msg.info.createdBy = params.member._id;
-    msg.info.createdByName = params.member.full_name;
+    msg.info.created = msg.info.updated = new Date();
+    msg.info.createdBy = msg.info.updatedBy = params.member._id;
+    msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
 
     if (params.qstring.status === Status.Draft) {
-        msg.status = params.qstring.status;
+        msg.status = Status.Draft;
         msg.state = State.Inactive;
         await msg.save();
     }
@@ -248,6 +252,11 @@ module.exports.update = async params => {
         }
     }
     else {
+        msg.info.rejected = null;
+        msg.info.rejectedAt = null;
+        msg.info.rejectedBy = null;
+        msg.info.rejectedByName = null;
+
         if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
             msg.status = Status.Created;
             msg.state = State.Created;
@@ -300,7 +309,7 @@ module.exports.remove = async params => {
 module.exports.toggle = async params => {
     let data = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
-        active: {type: 'Boolean', required: true}
+        active: {type: 'BooleanString', required: true}
     }, true);
     if (data.result) {
         data = data.obj;
@@ -316,8 +325,15 @@ module.exports.toggle = async params => {
         return true;
     }
 
-    if (!msg.triggerAuto()) {
+    if (!msg.triggerAutoOrApi()) {
         throw new ValidationError(`The message doesn't have Cohort or Event trigger`);
+    }
+
+    if (data.active && msg.is(State.Streamable)) {
+        throw new ValidationError(`The message is already active`);
+    }
+    else if (!data.active && !msg.is(State.Streamable)) {
+        throw new ValidationError(`The message is already stopped`);
     }
 
     if (msg.is(State.Streamable)) {

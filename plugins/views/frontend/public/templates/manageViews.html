@@ -16,7 +16,7 @@
 		<cly-section>
 			<cly-datatable-n  :default-sort="{prop: 'view', order: 'ascending'}" :trackedFields="['display']" :data-source="remoteTableDataSource" ref="editViewsTable" @selection-change="handleSelectionChange" >
 				<template v-slot:header-left>
-					<el-button v-if="!isDeleteButtonDisabled" ref="deleteManyButton" :disabled="isDeleteButtonDisabled"  type="danger" @click="deleteManyViews" >{{i18n('common.delete')}}</el-button>
+					<el-button v-if="!isDeleteButtonDisabled && canUserDelete" ref="deleteManyButton" :disabled="isDeleteButtonDisabled"  type="danger" @click="deleteManyViews" >{{i18n('common.delete')}}</el-button>
 				</template>
 				<template v-slot="scope">
 					<el-table-column width="65" type="selection"></el-table-column>
@@ -28,9 +28,8 @@
 					</el-table-column>
 				</template>
 				<template v-slot:bottomline="scope">
-					<cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateManyViews" ></cly-diff-helper>
+					<cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateManyViews" v-if="canUserUpdate" ></cly-diff-helper>
 				</template>
-
 			</cly-datatable-n>
 		</cly-section>
     </cly-main>

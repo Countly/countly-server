@@ -12,7 +12,7 @@ var pluginOb = {},
     ip = require("../../../api/parts/mgmt/ip"),
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateUser } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'dashboards';
 
@@ -37,7 +37,7 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
-            validateRead(params, FEATURE_NAME, function() {
+            validateUser(params, function() {
                 var member = params.member,
                     memberId = member._id + "";
 
@@ -45,10 +45,12 @@ plugins.setConfigs("dashboards", {
                     if (!err && dashboard) {
                         async.parallel([
                             hasViewAccessToDashboard.bind(null, params.member, dashboard),
-                            hasEditAccessToDashboard.bind(null, params.member, dashboard)
+                            hasEditAccessToDashboard.bind(null, params.member, dashboard),
+                            fetchMembersData.bind(null, [dashboard.owner_id], [])
                         ], function(er, res) {
                             var hasViewAccess = res[0];
                             var hasEditAccess = res[1];
+                            var ownerData = res[2];
 
                             if (er || !hasViewAccess) {
                                 return common.returnOutput(params, {error: true, dashboard_access_denied: true});
@@ -60,6 +62,10 @@ plugins.setConfigs("dashboards", {
 
                             if (hasEditAccess) {
                                 dashboard.is_editable = true;
+                            }
+
+                            if (ownerData && ownerData.length) {
+                                dashboard.owner = ownerData[0];
                             }
 
                             var parallelTasks = [
@@ -150,8 +156,8 @@ plugins.setConfigs("dashboards", {
                         var sharedEditEmails = dash.shared_email_edit || [];
 
                         async.parallel([
-                            fetchSharedMembers.bind(null, sharedViewIds, sharedViewEmails), //View users
-                            fetchSharedMembers.bind(null, sharedEditIds, sharedEditEmails) //Edit users
+                            fetchMembersData.bind(null, sharedViewIds, sharedViewEmails), //View users
+                            fetchMembersData.bind(null, sharedEditIds, sharedEditEmails) //Edit users
                         ], function(er, result) {
                             var totalViewUsers = result[0] || [];
                             var totalEditUsers = result[1] || [];
@@ -207,7 +213,7 @@ plugins.setConfigs("dashboards", {
             return true;
         }
 
-        validateRead(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 if (!err && dashboard) {
                     hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
@@ -215,8 +221,9 @@ plugins.setConfigs("dashboards", {
                             return common.returnOutput(params, {error: true, dashboard_access_denied: true});
                         }
 
-                        common.db.collection("widgets").findOne({_id: common.db.ObjectID(widgetId)}, function(error, widget) {
-                            customDashboards.fetchAllWidgetsData(params, [widget], function(data) {
+                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], function(e, meta) {
+                            var widgets = meta[0] || [];
+                            customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
                                 common.returnOutput(params, data);
                             });
                         });
@@ -286,7 +293,8 @@ plugins.setConfigs("dashboards", {
                 async.forEach(dashboards, function(dashboard, done) {
                     async.parallel([
                         hasEditAccessToDashboard.bind(null, member, dashboard),
-                        fetchWidgetsMeta.bind(null, params, dashboard.widgets)
+                        fetchWidgetsMeta.bind(null, params, dashboard.widgets),
+                        fetchMembersData.bind(null, [dashboard.owner_id], [])
                     ], function(perr, result) {
                         if (perr) {
                             return done(perr);
@@ -294,6 +302,7 @@ plugins.setConfigs("dashboards", {
 
                         var hasEditAccess = result[0];
                         var widgetsMeta = result[1] || [];
+                        var ownerData = result[2];
 
                         if (dashboard.owner_id === memberId || member.global_admin) {
                             dashboard.is_owner = true;
@@ -301,6 +310,10 @@ plugins.setConfigs("dashboards", {
 
                         if (hasEditAccess) {
                             dashboard.is_editable = true;
+                        }
+
+                        if (ownerData && ownerData.length) {
+                            dashboard.owner = ownerData[0];
                         }
 
                         if (!dashboard.share_with) {
@@ -344,7 +357,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/o/dashboards/widget-layout", function(ob) {
         var params = ob.params;
 
-        validateRead(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id;
 
@@ -367,7 +380,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/create", function(ob) {
         var params = ob.params;
 
-        validateCreate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             var dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit || [],
                 sharedEmailView = params.qstring.shared_email_view || [],
@@ -485,7 +498,8 @@ plugins.setConfigs("dashboards", {
                     shared_email_view: sharedEmailView,
                     shared_user_groups_edit: sharedUserGroupEdit,
                     shared_user_groups_view: sharedUserGroupView,
-                    theme: theme
+                    theme: theme,
+                    created_at: new Date().getTime()
                 };
 
                 var widgets = dataObj.newWidgetIds;
@@ -593,7 +607,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/update", function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             var dashboardId = params.qstring.dashboard_id,
                 dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit,
@@ -758,7 +772,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/delete", function(ob) {
         var params = ob.params;
 
-        validateDelete(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             var dashboardId = params.qstring.dashboard_id,
                 memberId = params.member._id + "";
 
@@ -810,7 +824,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/add-widget", function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widget = params.qstring.widget || {};
@@ -876,7 +890,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/update-widget", function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -941,7 +955,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/remove-widget", function(ob) {
         var params = ob.params;
 
-        validateDelete(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -1214,30 +1228,20 @@ plugins.setConfigs("dashboards", {
     function fetchWidgetsMeta(params, widgetIds = [], callback) {
         common.db.collection("widgets").find({_id: {$in: widgetIds}}).toArray(function(e, widgets = []) {
             if (e) {
-                log.d("Could not fetch widgets", e, widgetIds);
+                log.e("Could not fetch widgets", e, widgetIds);
             }
 
-            var appIds = [],
-                appObjIds = [];
-
-            for (let i = 0; i < widgets.length; i++) {
-                for (var j = 0; j < widgets[i].apps.length; j++) {
-                    if (appIds.indexOf(widgets[i].apps[j]) === -1) {
-                        appIds.push(widgets[i].apps[j]);
-                    }
-                }
+            for (var i = 0; i < widgets.length; i++) {
+                customDashboards.mapWidget(widgets[i]);
             }
 
-            for (let i = 0; i < appIds.length; i++) {
-                appObjIds.push(common.db.ObjectID(appIds[i]));
-            }
-
-            common.db.collection("apps").find({_id: {$in: appObjIds}}, {name: 1}).toArray(function(er, apps = []) {
-                if (er) {
-                    return callback(er);
+            customDashboards.fetchWidgetApps(params, widgets, function(err, apps = {}) {
+                var allApps = [];
+                for (var appId in apps) {
+                    allApps.push({_id: apps[appId]._id, name: apps[appId].name});
                 }
 
-                return callback(null, [widgets, apps]);
+                return callback(null, [widgets, allApps]);
             });
         });
     }
@@ -1247,13 +1251,13 @@ plugins.setConfigs("dashboards", {
      * @param  {Array} emails - emails array
      * @param  {Function} callback - callback function
      */
-    function fetchSharedMembers(ids, emails, callback) {
+    function fetchMembersData(ids, emails, callback) {
         var dashboardUserIds = [];
         for (var i = 0; i < ids.length; i++) {
             dashboardUserIds.push(common.db.ObjectID(ids[i]));
         }
 
-        common.db.collection("members").find({$or: [{_id: { $in: dashboardUserIds }}, {email: { $in: emails }} ]}, {_id: 1, full_name: 1, email: 1}).toArray(function(err, users) {
+        common.db.collection("members").find({$or: [{_id: { $in: dashboardUserIds }}, {email: { $in: emails }} ]}, {_id: 1, full_name: 1, email: 1, username: 1}).toArray(function(err, users) {
             return callback(null, users);
         });
     }

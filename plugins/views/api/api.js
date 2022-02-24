@@ -9,7 +9,7 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     log = common.log('views:api'),
-    { validateCreate, validateRead } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'views';
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true};
@@ -54,8 +54,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var appId = ob.params.qstring.app_id;
 
         return new Promise(function(resolve) {
-            validateCreate(ob.params, FEATURE_NAME, function(params) {
-                if (ob.params.qstring.method === "rename_views") {
+
+            if (ob.params.qstring.method === "rename_views") {
+                validateUpdate(ob.params, FEATURE_NAME, function(params) {
                     if (ob.params.qstring.data) {
                         var haveUpdate = false;
                         var data = [];
@@ -101,14 +102,14 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         common.returnMessage(params, 400, 'Missing request parameter: data');
                         resolve();
                     }
-                }
-                else if (ob.params.qstring.method === "delete_view") {
-                    var viewName = "";
-                    var viewUrl = "";
-                    var viewids = ob.params.qstring.view_id;
-                    viewids = viewids.split(","); //can pass many, concat ","
-
-
+                });
+            }
+            else if (ob.params.qstring.method === "delete_view") {
+                var viewName = "";
+                var viewUrl = "";
+                var viewids = ob.params.qstring.view_id;
+                viewids = viewids.split(","); //can pass many, concat ","
+                validateDelete(ob.params, FEATURE_NAME, function(params) {
                     Promise.each(viewids, function(viewid) {
                         return new Promise(function(resolveView) {
                             const deleteDocs = [];
@@ -167,12 +168,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         resolve();
                         common.returnOutput(params, {result: false});
                     });
-                }
-                else {
-                    common.returnMessage(params, 400, 'Invalid method. Must be one of:delete_view,rename_views ');
-                    resolve();
-                }
-            });
+                });
+            }
+            else {
+                common.returnMessage(ob.params, 400, 'Invalid method. Must be one of:delete_view,rename_views ');
+                resolve();
+            }
         });
     });
 
@@ -656,7 +657,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     var settingsList = [ 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'scr', "uvc"];
                     columns = ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'scr', "uvc"];
                     selOptions = {app_id: params.qstring.app_id, sortby: sortby, sortcol: sortcol, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "scr", "br", "uvc"], monthly: ["u", "t", "s", "b", "e", "d", "n", "scr", "br", "uvc"]}};
-                    sortby = {$sort: {"t": 1}};
+                    sortby = {$sort: {"t": -1}};
                     if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
                         sortby.$sort = {};
                         sortcol = columns[parseInt(params.qstring.iSortCol_0, 10)];
@@ -745,7 +746,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 if (params.qstring.action === 'getTable') {
                     colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
                     columns = ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'uvc', 'scr'];
-                    sortby = {$sort: {"t": 1}};
+                    sortby = {$sort: {"t": -1}};
                     if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
                         sortby.$sort = {};
                         sortcol = columns[parseInt(params.qstring.iSortCol_0, 10)];
@@ -798,7 +799,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         selOptions.count_query = {};
                         query = [{$addFields: {"sortcol": { $cond: [ "$display", "$display", "$view"] }}}];
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-                            query.push({$match: {"sortcol": { $regex: new RegExp('^' + params.qstring.sSearch.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '$', 'i')}}});
+                            //Dealing with special symbols
+                            params.qstring.sSearch = params.qstring.sSearch.replace(/\\/g, "\\\\");
+                            params.qstring.sSearch = params.qstring.sSearch.replace(/\./g, "\\.");
+                            params.qstring.sSearch = params.qstring.sSearch.replace(/\?/g, "\\?");
+                            query.push({$match: {"sortcol": {$regex: ".*" + params.qstring.sSearch + ".*", $options: 'i'}}});
                             selOptions.count_query = {"view": {$regex: params.qstring.sSearch, $options: 'i'}};
                         }
                         if (sortcol === 'name') {

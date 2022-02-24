@@ -370,6 +370,13 @@
             };
         },
         methods: {
+            getOffset: function() {
+                var activeAppId = countlyCommon.ACTIVE_APP_ID;
+                var timeZone = countlyGlobal.apps[activeAppId].timezone ? countlyGlobal.apps[activeAppId].timezone : 'UTC';
+                var utcDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'UTC' }));
+                var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: timeZone }));
+                return (tzDate.getTime() - utcDate.getTime()) / 6e4;
+            },
             handleSelect: function(item) {
                 this.showCondition = false;
                 if (countlyGlobal.conditions_per_paramaeters === this.conditions.length) {
@@ -426,6 +433,9 @@
                 };
             },
             onSubmit: function(doc) {
+                if (doc.expiry_dttm) {
+                    doc.expiry_dttm = doc.expiry_dttm - this.getOffset() * 60 * 1000;
+                }
                 var self = this;
                 doc.conditions = [];
                 doc.default_value = this.defaultValue;
@@ -672,9 +682,19 @@
             },
             hasDeleteRight: function() {
                 return countlyAuth.validateDelete(FEATURE_NAME);
+            },
+            isTableLoading: function() {
+                return this.$store.getters["countlyRemoteConfig/parameters/isTableLoading"];
             }
         },
         methods: {
+            getOffset: function() {
+                var activeAppId = countlyCommon.ACTIVE_APP_ID;
+                var timeZone = countlyGlobal.apps[activeAppId].timezone ? countlyGlobal.apps[activeAppId].timezone : 'UTC';
+                var utcDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'UTC' }));
+                var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: timeZone }));
+                return (tzDate.getTime() - utcDate.getTime()) / 6e4;
+            },
             getNumberOfConditionsText: function(conditions) {
                 if (conditions.length === 1) {
                     return "1 condition";
@@ -686,14 +706,14 @@
                     return "-";
                 }
                 var d = new Date(ts);
-                return moment(d).utc().format("MMM Do, YYYY");
+                return moment(d).utcOffset(this.getOffset()).format("MMM Do, YYYY");
             },
             getTime: function(ts) {
                 if (!ts) {
                     return "-";
                 }
                 var d = new Date(ts);
-                return moment(d).utc().format("h:mm a");
+                return moment(d).utcOffset(this.getOffset()).format("h:mm a");
             },
             create: function() {
                 this.openDrawer("parameters", countlyRemoteConfig.factory.parameters.getEmpty());
@@ -757,6 +777,9 @@
             },
             hasDeleteRight: function() {
                 return countlyAuth.validateDelete(FEATURE_NAME);
+            },
+            isTableLoading: function() {
+                return this.$store.getters["countlyRemoteConfig/conditions/isTableLoading"];
             }
         },
         methods: {
@@ -835,7 +858,11 @@
             };
         },
         beforeCreate: function() {
-            this.$store.dispatch("countlyRemoteConfig/initialize");
+            var self = this;
+            this.$store.dispatch("countlyRemoteConfig/initialize").then(function() {
+                self.$store.dispatch("countlyRemoteConfig/parameters/setTableLoading", false);
+                self.$store.dispatch("countlyRemoteConfig/conditions/setTableLoading", false);
+            });
         },
         methods: {
             refresh: function() {

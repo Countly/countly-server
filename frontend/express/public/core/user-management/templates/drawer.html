@@ -16,7 +16,7 @@
       <cly-form-step id="user-main" screen="full">
         <div class="user-management-drawer-content">
           <div class="bu-columns">
-            <div class="bu-column bu-mx-4">
+            <div class="bu-column">
               <div class="user-management-drawer-content__input-wrapper">
                 <div class="user-management-drawer-content__label">
                   <div class="text-small text-heading">{{ i18n('management-users.full-name') }}</div>
@@ -75,7 +75,7 @@
               </div>
               <div class="bu-is-flex" v-if="!pictureEditMode && $props.settings.editMode">
                 <!-- we have problem at here about image src, will be fixed, already noted. -->
-                <img class="user-management-drawer-content__user-pp" :src="'/memberimages/' + drawerScope.editedObject._id + '.png'"/>
+                <img class="user-management-drawer-content__user-pp" :src="'/memberimages/' + drawerScope.editedObject._id + '.png?t=' + Date.now()"/>
                 <cly-more-options class="user-management-drawer-content__pp-options" size="small" @command="handlePPCommand($event)">
                   <el-dropdown-item command="edit-pp">{{i18n('common.edit')}}</el-dropdown-item>
                 </cly-more-options>
@@ -92,7 +92,7 @@
                 :useCustomSlot=true 
                 :options="dropzoneOptions">
                     <div class="dropzone-custom-content">
-                      <img v-if="$props.settings.editMode" :src="'/memberimages/' + user._id + '.png'" class="user-management-drawer-content__profile-picture-area__upload-section__img-box"/>
+                      <img v-if="$props.settings.editMode" :src="'/memberimages/' + user._id + '.png?t=' + Date.now()" class="user-management-drawer-content__profile-picture-area__upload-section__img-box"/>
                       <div v-if="!$props.settings.editMode" class="user-management-drawer-content__profile-picture-area__upload-section__img-box"></div>
                       <div class="user-management-drawer-content__profile-picture-area__upload-section__description-box">
                         <p class="user-management-drawer-content__profile-picture-area__upload-section__description-box--bold">{{ i18n('management-users.drag-and-drop-or') }} <span class="user-management-drawer-content__profile-picture-area__upload-section__description-box--link"> {{ i18n('management-users.browser') }} </span> {{ i18n('management-users.files-to-add-picture') }}</p>

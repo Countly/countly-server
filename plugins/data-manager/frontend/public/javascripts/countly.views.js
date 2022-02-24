@@ -169,6 +169,10 @@
                         value: 'created'
                     },
                     {
+                        label: CV.i18n("data-manager.unplanned"),
+                        value: 'unplanned'
+                    },
+                    {
                         label: CV.i18n("data-manager.approved"),
                         value: 'approved'
                     },
@@ -378,13 +382,51 @@
                 deletedCategories: [],
                 baseColumns: [
                     {
+                        label: CV.i18n('data-manager.description'),
+                        value: 'description',
+                        default: true,
+                        sort: false
+                    },
+                    {
+                        label: "Category",
+                        value: 'category',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
+                        label: "Count",
+                        value: 'totalCount',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
+                        label: CV.i18n("data-manager.last-modified"),
+                        value: 'lastModifiedts',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
+                        label: CV.i18n("data-manager.last-triggered"),
+                        value: 'lts',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
                         label: 'Event key',
                         value: 'e',
+                        default: false,
+                        sort: 'custom'
                     },
                 ]
             };
         },
         computed: {
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyDataManager/isLoading"];
+                },
+                cache: false
+            },
             dynamicEventCols: function() {
                 var cols = this.baseColumns;
                 var colMap = {};
@@ -422,6 +464,8 @@
             },
             events: function() {
                 var self = this;
+                var isEventCountAvailable = this.$store.getters["countlyDataManager/isEventCountAvailable"];
+                var eventCount = this.$store.getters["countlyDataManager/eventCount"];
                 return this.$store.getters["countlyDataManager/events"]
                     .filter(function(e) {
                         var isCategoryFilter = true;
@@ -441,13 +485,13 @@
                         }
                         if (!e.status) {
                             var config = countlyPlugins.getConfigsData()['data-manager'] || {};
-                            if (config.allowUnexpectedEvents || !self.isDrill) {
+                            if (config.allowUnexpectedEvents) {
                                 defaultUnexpectedFilter = true;
+                                e.status = 'unplanned';
                             }
                             else {
                                 defaultUnexpectedFilter = false;
                             }
-                            e.status = 'unplanned';
                         }
                         return defaultUnexpectedFilter && isCategoryFilter && isStatusFilter && isVisiblityFilter;
                     })
@@ -464,6 +508,10 @@
                         }
                         if (!e.e) {
                             e.e = e.key;
+                        }
+                        if (isEventCountAvailable) {
+                            e.totalCount = eventCount[e.key] || 0;
+                            e.totalCountFormatted = countlyCommon.formatNumber(e.totalCount);
                         }
                         return e;
                     });
@@ -690,6 +738,12 @@
             };
         },
         computed: {
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyDataManager/isLoading"];
+                },
+                cache: false
+            },
             eventGroups: function() {
                 var self = this;
                 var eventGroup = this.$store.getters["countlyDataManager/eventGroups"];
@@ -890,6 +944,9 @@
                 else if (event === 'import-schema') {
                     this.importDialogVisible = true;
                 }
+                else if (event === 'navigate-settings') {
+                    app.navigate("#/manage/configurations/data-manager", true);
+                }
             },
             onSaveImport: function() {
                 var self = this;
@@ -931,9 +988,14 @@
                         data.segments
                             .forEach(function(segment) {
                                 if (segment) {
-                                    var sg = data.sg[segment];
-                                    sg.name = segment;
-                                    segments.push(sg);
+                                    try {
+                                        var sg = data.sg[segment];
+                                        sg.name = segment;
+                                        segments.push(sg);
+                                    }
+                                    catch (e) {
+                                        // supress create mode
+                                    }
                                 }
                             });
                     }

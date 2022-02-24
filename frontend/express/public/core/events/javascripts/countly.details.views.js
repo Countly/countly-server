@@ -50,6 +50,9 @@
                     return true;
                 }
                 return false;
+            },
+            formatNumber: function(val) {
+                return countlyCommon.formatNumber(val);
             }
         },
     });
@@ -78,38 +81,25 @@
         components: {
             "detail-tables": EventsTable,
         },
+        methods: {
+            dateChanged: function() {
+                this.$store.dispatch('countlyAllEvents/setTableLoading', true);
+                this.$store.dispatch('countlyAllEvents/setChartLoading', true);
+                this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+            }
+        },
         computed: {
-            selectedDatePeriod: {
-                get: function() {
-                    return this.$store.getters["countlyAllEvents/selectedDatePeriod"];
-                },
-                set: function(value) {
-                    var self = this;
-                    this.$store.dispatch('countlyAllEvents/fetchSelectedDatePeriod', value);
-                    this.$store.dispatch('countlyAllEvents/setTableLoading', true);
-                    this.$store.dispatch('countlyAllEvents/setChartLoading', true);
-                    countlyCommon.setPeriod(value);
-                    this.$store.dispatch('countlyAllEvents/fetchAllEventsData').then(function() {
-                        self.$store.dispatch('countlyAllEvents/setTableLoading', false);
-                        self.$store.dispatch('countlyAllEvents/setChartLoading', false);
-                    });
-                }
-            },
             selectedEventFromSearchBar: {
                 get: function() {
                     return this.$store.getters["countlyAllEvents/selectedEventName"];
                 },
                 set: function(value) {
-                    var self = this;
                     this.$store.dispatch('countlyAllEvents/setTableLoading', true);
                     this.$store.dispatch('countlyAllEvents/setChartLoading', true);
 
                     this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', value);
                     this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", "segment");
-                    this.$store.dispatch('countlyAllEvents/fetchAllEventsData').then(function() {
-                        self.$store.dispatch('countlyAllEvents/setTableLoading', false);
-                        self.$store.dispatch('countlyAllEvents/setChartLoading', false);
-                    });
+                    this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
                 }
             },
             selectedSegment: {
@@ -117,7 +107,6 @@
                     return this.$store.getters["countlyAllEvents/currentActiveSegmentation"];
                 },
                 set: function(selectedItem) {
-                    var self = this;
                     this.$store.dispatch('countlyAllEvents/setChartLoading', true);
 
                     this.$store.dispatch('countlyAllEvents/setTableLoading', true);
@@ -128,10 +117,7 @@
                     else {
                         this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", selectedItem);
                     }
-                    this.$store.dispatch("countlyAllEvents/fetchSelectedEventsData").then(function() {
-                        self.$store.dispatch('countlyAllEvents/setTableLoading', false);
-                        self.$store.dispatch('countlyAllEvents/setChartLoading', false);
-                    });
+                    this.$store.dispatch("countlyAllEvents/fetchSelectedEventsData");
                     this.$store.dispatch("countlyAllEvents/setSegmentDescription");
                 }
             },
@@ -226,24 +212,13 @@
             if (countlyGlobal.plugins.indexOf("drill") > -1 && countlyGlobal.plugins.indexOf("data-manager") > -1) {
                 this.$store.dispatch('countlyAllEvents/fetchSegments');
                 this.$store.dispatch('countlyAllEvents/fetchCategories').then(function() {
-                    self.$store.dispatch('countlyAllEvents/fetchAllEventsData').then(function() {
-                        self.$store.dispatch('countlyAllEvents/setTableLoading', false);
-                        self.$store.dispatch('countlyAllEvents/setChartLoading', false);
-                    });
+                    self.$store.dispatch('countlyAllEvents/fetchAllEventsData');
                 });
             }
             else {
-                this.$store.dispatch('countlyAllEvents/fetchAllEventsData').then(function() {
-                    self.$store.dispatch('countlyAllEvents/setTableLoading', false);
-                    self.$store.dispatch('countlyAllEvents/setChartLoading', false);
-                });
+                this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
             }
 
-        },
-        methods: {
-            refresh: function() {
-                this.$store.dispatch("countlyAllEvents/fetchRefreshAllEventsData");
-            }
         }
     });
     var getAllEventsView = function() {

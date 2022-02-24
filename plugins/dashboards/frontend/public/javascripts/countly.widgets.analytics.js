@@ -1,8 +1,9 @@
-/*global countlyVue, CV */
+/*global countlyVue, CV, countlyGlobal, countlyCommon */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
         props: {
             data: {
                 type: Object,
@@ -13,7 +14,12 @@
         },
         data: function() {
             return {
-                selectedBucket: "daily"
+                selectedBucket: "daily",
+                map: {
+                    "t": this.i18n("common.total-sessions"),
+                    "u": this.i18n("common.unique-sessions"),
+                    "n": this.i18n("common.new-sessions")
+                }
             };
         },
         computed: {
@@ -21,23 +27,109 @@
                 var autoTitle = "Analytics";
                 return this.data.title || autoTitle;
             },
-            apps: function() {
-                var apps = this.data.apps;
-                var appData = [];
+            showBuckets: function() {
+                return false;
+            },
+            getTableData: function() {
+                return this.calculateTableDataFromWidget(this.data);
+            },
+            tableStructure: function() {
+                return this.calculateTableColsFromWidget(this.data, this.map);
+            },
+            timelineGraph: function() {
+                this.data = this.data || {};
+                this.data.dashData = this.data.dashData || {};
+                this.data.dashData.data = this.data.dashData.data || {};
 
-                for (var i = 0; i < apps.length; i++) {
-                    var appId = apps[i];
-                    appData.push({
-                        id: appId,
-                        name: this.getAppName(appId)
+                var series = [];
+                var appIndex = 0;
+                var multiApps = this.data.app_count === "multiple" ? true : false;
+
+                var dates = [];
+
+                for (var app in this.data.dashData.data) {
+                    var name;
+                    for (var k = 0; k < this.data.metrics.length; k++) {
+                        if (multiApps) {
+                            if (this.data.metrics.length > 1) {
+                                name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+                            }
+                            else {
+                                name = (countlyGlobal.apps[app].name || "");
+                            }
+                        }
+                        else {
+                            name = (this.map[this.data.metrics[k]] || this.data.metrics[k]);
+                        }
+                        series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], color: countlyCommon.GRAPH_COLORS[series.length]});
+                    }
+
+                    for (var date in this.data.dashData.data[app]) {
+                        if (appIndex === 0) {
+                            dates.push(date);
+                        }
+                        for (var kk = 0; kk < this.data.metrics.length; kk++) {
+                            series[appIndex * this.data.metrics.length + kk].data.push(this.data.dashData.data[app][date][this.data.metrics[kk]] || 0);
+                        }
+                    }
+                    appIndex++;
+                }
+                if (this.data.custom_period) {
+                    return {
+                        lineOptions: {xAxis: { data: dates}, "series": series}
+                    };
+                }
+                else {
+                    return {
+                        lineOptions: {"series": series}
+                    };
+                }
+            },
+            stackedBarOptions: function() {
+                return this.calculateStackedBarOptionsFromWidget(this.data, this.map);
+            },
+            number: function() {
+                return this.calculateNumberFromWidget(this.data);
+            },
+            metricLabels: function() {
+                this.data = this.data || {};
+                var listed = [];
+
+                for (var k = 0; k < this.data.metrics.length; k++) {
+                    listed.push(this.map[this.data.metrics[k]] || this.data.metrics[k]);
+                }
+                return listed;
+            },
+            legendLabels: function() {
+                var labels = {};
+
+                var graphData = this.timelineGraph;
+                var series = graphData.lineOptions.series;
+
+                for (var i = 0; i < series.length; i++) {
+                    if (!labels[series[i].app]) {
+                        labels[series[i].app] = [];
+                    }
+
+                    labels[series[i].app].push({
+                        appId: series[i].app,
+                        color: series[i].color,
+                        label: this.map[series[i].metric] || series[i].metric
                     });
                 }
+
+                return labels;
+            }
+        },
+        methods: {
+            beforeCopy: function(data) {
+                return data;
             }
         }
     });
 
     var DrawerComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/analytics/drawer.html'),
+        template: "#analytics-drawer",
         props: {
             scope: {
                 type: Object
@@ -45,11 +137,13 @@
         },
         data: function() {
             return {
-                sessionMetrics: [
-                    { label: this.i18n("sidebar.analytics.sessions"), value: "t" },
-                    { label: this.i18n("sidebar.analytics.users"), value: "u" },
-                    { label: this.i18n("common.table.new-users"), value: "n" }
-                ]
+                metricLists: {
+                    "session": [
+                        { label: this.i18n("common.total-sessions"), value: "t" },
+                        { label: this.i18n("common.unique-sessions"), value: "u" },
+                        { label: this.i18n("common.new-sessions"), value: "n" }
+                    ]
+                }
             };
         },
         computed: {
@@ -58,7 +152,7 @@
                     return ['time-series'];
                 }
 
-                return [];
+                return ['time-series', 'table', 'bar-chart', 'number'];
             },
             isMultipleMetric: function() {
                 var multiple = false;
@@ -73,8 +167,14 @@
 
                 return multiple;
             },
+            metrics: function() {
+                return this.metricLists[this.scope.editedObject.data_type];
+            },
             showBreakdown: function() {
                 return ["bar-chart", "table"].indexOf(this.scope.editedObject.visualization) > -1;
+            },
+            showPeriod: function() {
+                return true;
             }
         }
     });
@@ -100,6 +200,14 @@
         getter: function(widget) {
             return widget.widget_type === "analytics" && widget.data_type === "session";
         },
+        templates: [
+            {
+                namespace: "analytics",
+                mapping: {
+                    "drawer": "/dashboards/templates/widgets/analytics/drawer.html"
+                }
+            }
+        ],
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
@@ -112,6 +220,7 @@
                     apps: [],
                     visualization: "",
                     breakdowns: [],
+                    custom_period: null
                 };
             },
             beforeSaveFn: function(doc) {
@@ -127,10 +236,10 @@
             component: WidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 6,
-                    minHeight: 3,
-                    width: 6,
-                    height: 3
+                    minWidth: 2,
+                    minHeight: 4,
+                    width: 2,
+                    height: 4
                 };
             },
             onClick: function() {}

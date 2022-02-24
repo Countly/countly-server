@@ -105,12 +105,12 @@ class Message extends Mongoable {
      */
     static filter(date, state = State.Streamable) {
         return {
-            state,
+            state: {$bitsAllSet: state},
             $or: [
                 {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte: date}, end: {$gte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte: date}, end: {$gte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte: date}, end: {$gte: date}}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
             ]
         };
     }
@@ -590,12 +590,15 @@ class Message extends Mongoable {
             await this.stop(log);
         }
         let plain = this.triggerPlain();
-        if (plain && this.state === State.Created) {
+        if (plain && !this.is(State.Streamable)) {
+            if (this.is(State.Stopped)) {
+                await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Created, status: Status.Created}});
+            }
             let date = plain.delayed ? plain.start.getTime() - DEFAULTS.schedule_ahead : Date.now();
             await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app}).replace().once(date);
         }
-        if (this.triggerAutoOrApi() && (this.state === State.Inactive || this.state === State.Created)) {
-            await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Streamable, status: Status.Scheduled}});
+        if (this.triggerAutoOrApi() && (this.is(State.Done) || this.state === State.Created)) {
+            await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Streamable | State.Created, status: Status.Scheduled}});
             await require('../../../../pluginManager').getPluginsApis().push.cache.write(this.id, this.json);
         }
     }
@@ -626,7 +629,7 @@ class Message extends Mongoable {
 
         await JOBS.cancel('push:schedule', {mid: this._id, aid: this.app});
 
-        await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Done | State.Cleared, status: Status.Stopped}});
+        await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Created | State.Done | State.Cleared, status: Status.Stopped}});
 
         if (auto) {
             await PLUGINS.getPluginsApis().push.cache.remove(this.id);

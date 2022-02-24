@@ -124,7 +124,7 @@
                 }
             },
             totalPages: function() {
-                return countlyCommon.formatNumber(Math.ceil(this.dataView.totalRows / this.controlParams.perPage));
+                return Math.ceil(this.dataView.totalRows / this.controlParams.perPage);
             },
             lastPage: function() {
                 return this.totalPages;
@@ -316,7 +316,7 @@
                     if (loadedState) {
                         var parsed = JSON.parse(loadedState);
                         // disable loading of persisted searchQuery
-                        delete parsed.searchQuery;
+                        parsed.searchQuery = ""; // but we still need the field to be present for reactivity
                         return parsed;
                     }
                     return defaultState;
@@ -582,12 +582,16 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            hasExport: {
+                type: Boolean,
+                default: true,
+                required: false
             }
         },
         data: function() {
             return {
                 selectedExportColumns: null,
-                hasExport: true,
                 selectedExportType: 'csv',
                 availableExportTypes: [
                     {'name': '.CSV', value: 'csv'},
@@ -766,6 +770,7 @@
 
     Vue.component("cly-datatable-n", countlyVue.components.create({
         mixins: [
+            _mixins.commonFormatters,
             _mixins.i18n,
             TableExtensionsMixin,
             MutationTrackerMixin,

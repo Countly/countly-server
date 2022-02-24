@@ -1,92 +1,98 @@
 <div id="push-notification-app-config">
     <div>
-        <div class="bu-is-flex bu-is-justify-content-space-between">
-            <h3>iOS Settings </h3>
-            <el-button type="danger" @click="onDeleteKey(PlatformEnum.IOS)">Delete</el-button>
+        <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
+            <h3>{{i18n('push-notification.ios-settings')}} </h3>
+            <el-button type="danger" @click="onDeleteKey(PlatformEnum.IOS)" :disabled="isKeyEmpty(PlatformEnum.IOS)">{{i18n('push-notification.delete')}}</el-button>
         </div>        
-        <cly-inline-form-field label="Authentication type">
+        <cly-inline-form-field :label="i18n('push-notification.authentication-type')">
             <el-select  :value="iosAuthConfigType" @change="onIOSAuthTypeChange">
                 <el-option :key="iosAuthType.value" :value="iosAuthType.value" :label="iosAuthType.label" v-for="iosAuthType in iosAuthConfigTypeOptions"></el-option>
             </el-select>
         </cly-inline-form-field>
-            <cly-inline-form-field :label="iosAuthConfigType === IOSAuthConfigTypeEnum.P8 ? 'Key file (P8)' : 'Sandbox + Production certificate (P12)'">
-                <div class="bu-is-flex bu-is-flex-direction-column">
-                    <div class="bu-is-flex">
-                            <el-upload 
-                                ref="keyFileUploader"
-                                action=""
-                                :on-change="onKeyFileChange"
-                                :auto-upload="false"
-                                :show-file-list="false"
-                                accept="p8, p12">
-                                    <el-button size="small" type="text" class="bu-p-0">Choose File</el-button>
-                            </el-upload>
-                        <div class="bu-ml-5">{{uploadedIOSKeyFilename}}</div>
-                    </div>
-                    <div v-if="viewModel[PlatformEnum.IOS].hasKeyFile"> Key file ({{viewModel[PlatformEnum.IOS].authType}}) is already uploaded </div>
+        <cly-inline-form-field :label="iosAuthConfigType === IOSAuthConfigTypeEnum.P8 ? i18n('push-notification.key-file-p8') : i18n('push-notification.key-file-p12')">
+            <div class="bu-is-flex bu-is-flex-direction-column">
+                <div class="bu-is-flex">
+                    <validation-provider :rules="{required:isIOSConfigRequired}">
+                        <el-input v-model="uploadedIOSKeyFilename" style="display:none"></el-input>
+                        <el-upload
+                            ref="keyFileUploader"
+                            action=""
+                            :multiple="false"
+                            :on-change="onKeyFileChange"
+                            :auto-upload="false"
+                            :show-file-list="false"
+                            accept="p8, p12">
+                            <el-button size="small" type="text" class="bu-p-0">{{i18n('push-notification.choose-file')}}</el-button>
+                        </el-upload>
+                    </validation-provider>
+                    <div class="bu-ml-5">{{uploadedIOSKeyFilename}}</div>
                 </div>
-            </cly-inline-form-field>
+                <div v-if="viewModel[PlatformEnum.IOS].hasKeyFile"> {{i18n('push-notification.key-file-already-uploaded',viewModel[PlatformEnum.IOS].authType)}} </div>
+            </div>
+        </cly-inline-form-field>
         <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P8"> 
-            <cly-inline-form-field label="Key ID" :rules="{required:isIOSConfigRequired}">
+            <cly-inline-form-field :label="i18n('push-notification.key-id')" :rules="{required:isIOSConfigRequired}">
                 <el-input :value="viewModel[PlatformEnum.IOS].keyId" @input="onInput('keyId', $event, PlatformEnum.IOS)"></el-input>
             </cly-inline-form-field>
-            <cly-inline-form-field label="Team ID" :rules="{required:isIOSConfigRequired}">
+            <cly-inline-form-field :label="i18n('push-notification.team-id')" :rules="{required:isIOSConfigRequired}">
                 <el-input :value="viewModel[PlatformEnum.IOS].teamId" @input="onInput('teamId', $event, PlatformEnum.IOS)"></el-input>
             </cly-inline-form-field>
-            <cly-inline-form-field label="Bundle ID" :rules="{required:isIOSConfigRequired}">
+            <cly-inline-form-field :label="i18n('push-notification.bundle-id')" :rules="{required:isIOSConfigRequired}">
                 <el-input :value="viewModel[PlatformEnum.IOS].bundleId" @input="onInput('bundleId',$event,PlatformEnum.IOS)"></el-input>
             </cly-inline-form-field>
         </template>
         <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P12">
-            <cly-inline-form-field label="Passphrase">
+            <cly-inline-form-field :label="i18n('push-notification.passphrase')">
                 <form>
                     <el-input type="password" :value="viewModel[PlatformEnum.IOS].passphrase" @input="onInput('passphrase',$event,PlatformEnum.IOS)"></el-input>
                 </form>            
             </cly-inline-form-field>
         </template>
 
-        <div class="bu-is-flex bu-is-justify-content-space-between">
-            <h3>Android (Google FM) </h3>
-            <el-button type="danger" @click="onDeleteKey(PlatformEnum.ANDROID)">Delete</el-button>
+        <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
+            <h3>{{i18n('push-notification.android-settings')}} </h3>
+            <el-button type="danger" @click="onDeleteKey(PlatformEnum.ANDROID)" :disabled="isKeyEmpty(PlatformEnum.ANDROID)">{{i18n('push-notification.delete')}}</el-button>
         </div>        
-        <cly-inline-form-field label="Firebase key">
+        <cly-inline-form-field :label="i18n('push-notification.firebase-key')">
             <el-input :value="viewModel[PlatformEnum.ANDROID].firebaseKey" @input="onInput('firebaseKey',$event,PlatformEnum.ANDROID)"></el-input>
         </cly-inline-form-field>
 
-        <div class="bu-is-flex bu-is-justify-content-space-between">
-            <h3>Android (Huawei Push Kit) </h3>
-            <el-button type="danger" @click="onDeleteKey(PlatformEnum.HUAWEI)">Delete</el-button>
+        <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
+            <h3>{{i18n('push-notification.huawei-settings')}} </h3>
+            <el-button type="danger" @click="onDeleteKey(PlatformEnum.HUAWEI)" :disabled="isKeyEmpty(PlatformEnum.HUAWEI)">{{i18n('push-notification.delete')}}</el-button>
         </div>        
-        <cly-inline-form-field label="Huawei App ID" :rules="{required:isHuaweiConfigRequired}">
+        <cly-inline-form-field :label="i18n('push-notification.huawei-app-id')" :rules="{required:isHuaweiConfigRequired}">
             <el-input :value="viewModel[PlatformEnum.HUAWEI].appId" @input="onInput('appId',$event,PlatformEnum.HUAWEI)"></el-input>
         </cly-inline-form-field>
-        <cly-inline-form-field label="App Secret" :rules="{required:isHuaweiConfigRequired, numeric: true}">
+        <cly-inline-form-field :label="i18n('push-notification.huawei-app-secret')" :rules="{required:isHuaweiConfigRequired, numeric: true}">
             <el-input :value="viewModel[PlatformEnum.HUAWEI].appSecret" @input="onInput('appSecret',$event,PlatformEnum.HUAWEI)"></el-input>
         </cly-inline-form-field>
 
-        <div> Rate limit </div>
-        <cly-inline-form-field label="Maximum number of notifications scheduled per period" rules="numeric">
+        <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
+            <h3>{{i18n('push-notification.rate-limit')}}</h3>
+        </div>
+        <cly-inline-form-field :label="i18n('push-notification.maximum-notifications-per-period')" rules="numeric">
             <el-input :value="viewModel.rate" @input="onInput('rate',$event)"></el-input>
         </cly-inline-form-field>
-        <cly-inline-form-field label="Period duration (seconds)" rules="numeric">
+        <cly-inline-form-field :label="i18n('push-notification.period-in-seconds')" rules="numeric">
             <el-input :value="viewModel.period" @input="onInput('period',$event)"></el-input>
         </cly-inline-form-field>
     </div>
     <div class="cly-vue-section bu-mr-4 cly-vue-section--has-default-skin">
-        <div class="bu-is-flex bu-level">
+        <div class="bu-is-flex bu-level bu-ml-6">
             <div class="bu-level">
-                <h3 class="bu-my-4"> Test users</h3>
-                <cly-tooltip-icon tooltip="Desribe test users" icon="ion ion-help-circled" style="margin-left:8px"> </cly-tooltip-icon>
+                <h3 class="bu-my-4 "> {{i18n('push-notification.test-users')}}</h3>
+                <cly-tooltip-icon :tooltip="i18n('push-notification.test-users-description')" icon="ion ion-help-circled" style="margin-left:8px"> </cly-tooltip-icon>
             </div>
-            <el-button type="default" size="small" @click="onAddNewTestUser" class="is-light-blue"> +Define New User</el-button>
+            <el-button type="default" size="small" @click="onAddNewTestUser" class="is-light-blue"> {{i18n('push-notification.define-new-user')}}</el-button>
         </div>
         <cly-section class="cly-vue-section__content white-bg">
             <div class="bu-is-flex bu-level bu-p-3 bu-mx-1 config-section">
                 <div class="bu-column">
-                    <p class="bu-has-text-weight-medium">User Definition</p>
-                    <p>You can send test notifications to users defined as test users before sending push notifications</p>
+                    <p class="bu-has-text-weight-medium">{{i18n('push-notification.user-definition')}}</p>
+                    <p>{{i18n('push-notification.user-definition-description')}}</p>
                 </div>
-                <el-link type="primary" size="small" @click="onShowTestUserList">See User List </el-link>
+                <el-link type="primary" size="small" @click="onShowTestUserList">{{i18n('push-notification.see-user-list')}} </el-link>
             </div>
         </cly-section>
         <cly-drawer 
@@ -94,17 +100,17 @@
             @open="onOpen"
             :requires-async-submit="true"
             v-bind="drawers.testUsersDrawer" 
-            title="Define New User" 
-            saveButtonLabel="Add Users">
+            :title="i18n('push-notification.define-new-user-title')" 
+            :saveButtonLabel="i18n('push-notification.add-test-users-label')">
             <template v-slot:default="formScope">
                 <cly-form-step id="step1" name="Define new user">
-                    <cly-form-field name="definition" label="Definition Type">
+                    <cly-form-field name="definition" :label="i18n('push-notification.definition-type')">
                         <div class="bu-is-flex bu-is-align-items-center">
                             <el-radio class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.USER_ID" border>
-                                <div class="text">Define with User ID</div>
+                                <div class="text">{{i18n('push-notification.define-with-user-id')}}</div>
                             </el-radio>
                             <el-radio class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.COHORT" border>
-                                <div class="text">Define with Cohort</div>
+                                <div class="text">{{i18n('push-notification.define-with-cohort')}}</div>
                             </el-radio>
                         </div>
                     </cly-form-field>
@@ -117,7 +123,7 @@
                             reserve-keyword
                             :arrow="false"
                             :remote-method="onSearchUsers"
-                            placeholder="Enter User ID"
+                            :placeholder="i18n('push-notification.enter-user-id')"
                             :loading="isSearchUsersLoading"
                             style="width:100%">
                             <el-option
@@ -129,15 +135,15 @@
                         </el-select>
                     </cly-form-field>
                     <div v-if="formScope.editedObject.definitionType === AddTestUserDefinitionTypeEnum.COHORT" class="cly-vue-drawer-step__section">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Select one or more cohorts to set the trigger</div>
-                        <div class="cly-vue-push-notification-drawer__input-description">Recalculation of cohorts above will trigger sending process automatically.</div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.select-one-or-more-cohorts')}}</div>
+                        <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.select-one-or-more-cohorts-description')}}</div>
                         <validation-provider vid="cohort" v-slot="validation" rules="required">
                             <el-select
                                 v-model="formScope.editedObject.cohorts"
                                 multiple
                                 filterable
                                 reserve-keyword
-                                placeholder="Please select a cohort"
+                                :placeholder="i18n('push-notification.select-cohort')"
                                 :loading="isFetchCohortsLoading"
                                 :class="{'is-error': validation.errors.length > 0}"
                                 style="width:100%">
@@ -154,13 +160,21 @@
             </template>
         </cly-drawer>
         <cly-dialog
-            title="User List"
             width="720px"
             autoCentered
             :visible.sync="isDialogVisible">
-            <cly-datatable-n :rows="testUsersRows" v-loading="areRowsLoading" :force-loading="areRowsLoading" :hideTop="true">
+            <template slot="title">
+                <div class="bu-is-flex bu-is-align-items-center bu-ml-2">
+                    <h3>{{i18n('push-notification.user-list')}}</h3>
+                    <cly-tooltip-icon :tooltip="i18n('push-notification.test-users-description')" icon="ion ion-help-circled" style="margin-left:8px"> </cly-tooltip-icon>
+                </div>
+            </template>
+            <el-select v-model="selectedTestUsersListOption" class="bu-my-3 bu-ml-4">
+                <el-option v-for="item in testUsersListOptions" :key="item.label" :value="item.value" :label="item.label"></el-option>
+            </el-select>
+            <cly-datatable-n :rows="selectedTestUsersRows" v-loading="areRowsLoading || isUpdateTestUsersLoading" :force-loading="areRowsLoading || isUpdateTestUsersLoading" :hideTop="true">
                 <template v-slot="scope">
-                    <el-table-column label="Username" >
+                    <el-table-column :label="i18n('push-notification.username')" v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID">
                         <template slot-scope="rowScope">
                             <div class="bu-is-flex bu-is-align-items-center">
                                 <img :src="rowScope.row.picture" width="16px" height="16px" class="bu-mr-2" style="border-radius: 50%;" />
@@ -168,7 +182,19 @@
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column label="User ID" prop="_id"></el-table-column>
+                    <el-table-column :label="i18n('push-notification.user-id')" prop="_id"  v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID" ></el-table-column>
+                    <el-table-column :label="i18n('push-notification.cohort-name')" v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.COHORT">
+                        <template v-slot="rowScope">
+                            <span class="has-ellipsis">{{rowScope.row.name}}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column type="options">
+                        <template slot-scope="scope">
+                            <cly-more-options v-if="scope.row.hover" size="small" @command="onDeleteTestUser(scope.row)">
+                                <el-dropdown-item>{{i18n('push-notification.delete')}}</el-dropdown-item>
+                            </cly-more-options>
+                        </template>
+                    </el-table-column>
                 </template>
             </cly-datatable-n>
         </cly-dialog>

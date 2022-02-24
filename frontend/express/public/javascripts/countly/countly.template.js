@@ -1160,9 +1160,8 @@ var AppRouter = Backbone.Router.extend({
     },
     renderWhenReady: function(viewName) { //all view renders end up here
         // If there is an active view call its destroy function to perform cleanups before a new view renders
-
-        if (this.activeView) {
-            this.activeView._removeMyRequests();
+        if (this.activeView && this.activeView.destroy) {
+            this.activeView._removeMyRequests && this.activeView._removeMyRequests();
             this.activeView.destroy();
         }
 
@@ -1378,20 +1377,20 @@ var AppRouter = Backbone.Router.extend({
                 }
             });
 
-            if (countlyAuth.validateRead('core')) {
-                self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
-            }
+            // if (countlyAuth.validateRead('core')) {
+            //     self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
+            // }
 
             //management is also a menu category which goes in default menu i.e. visible to all users
 
             var jobsIconSvg = '<svg width="20px" height="16px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><title>list-24px 2</title><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="list-24px-2" fill="#9f9f9f" fill-rule="nonzero"><g id="list-24px"><path d="M0,6 L2,6 L2,4 L0,4 L0,6 Z M0,10 L2,10 L2,8 L0,8 L0,10 Z M0,2 L2,2 L2,0 L0,0 L0,2 Z M3,6 L12,6 L12,4 L3,4 L3,6 Z M3,10 L12,10 L12,8 L3,8 L3,10 Z M3,0 L3,2 L12,2 L12,0 L3,0 Z" id="Shape"></path></g></g></g></svg>';
-            if (countlyAuth.validateRead('global_applications')) {
+            if (countlyAuth.validateGlobalAdmin()) {
                 self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 80});
             }
-            if (countlyAuth.validateRead('global_users')) {
+            if (countlyAuth.validateGlobalAdmin()) {
                 self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 70});
             }
-            if (countlyAuth.validateRead('global_jobs')) {
+            if (countlyAuth.validateGlobalAdmin()) {
                 self.addMenu("management", {code: "jobs", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 140});
             }
 
@@ -4283,7 +4282,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         }
         else {
             if (app.activeView) {
-                if (app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata]) {
+                if (app.activeView._myRequests && app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata]) {
                     jqXHR.abort_reason = "duplicate";
                     jqXHR.abort(); //we already have same working request
                 }
