@@ -331,7 +331,7 @@
         watch: {
             event: {
                 immediate: true,
-                handler: function(newVal) {
+                handler: function(newVal, oldVal) {
                     var event = newVal;
 
                     if (this.type !== "events") {
@@ -343,8 +343,9 @@
 
                         this.store.dispatch("countlyDashboards/getEvents", {appIds: [appId]});
                     }
-
-                    this.$emit("input", []);
+                    if (oldVal) {
+                        this.$emit("input", []);
+                    }
                 }
             }
         },
@@ -442,7 +443,7 @@
         watch: {
             appIds: {
                 immediate: true,
-                handler: function(newVal) {
+                handler: function(newVal, oldVal) {
                     var appIds = newVal;
 
                     if (this.store && Array.isArray(appIds) && appIds.length) {
@@ -450,7 +451,9 @@
                     }
 
                     this.rerender = "_id_" + this.multiple + "_" + this.appIds;
-                    this.$emit("input", []);
+                    if (oldVal) {
+                        this.$emit("input", []);
+                    }
                 }
             },
             multiple: {
