@@ -57,6 +57,7 @@
                 }
             },
             widgetSettingsGetter: function(widget) {
+                var self = this;
                 var widgets = this.__widgets;
 
                 if (!widget.widget_type) {
@@ -68,13 +69,13 @@
                     type: widget.widget_type,
                     grid: {
                         dimensions: function() {
-                            var width = widget.size && widget.size[0] || this.DEFAULT_MIN_WIDTH;
-                            var height = widget.size && widget.size[1] || this.DEFAULT_MIN_HEIGHT;
+                            var width = widget.size && widget.size[0] || self.DEFAULT_MIN_WIDTH;
+                            var height = widget.size && widget.size[1] || self.DEFAULT_MIN_HEIGHT;
                             return {
                                 width: width,
                                 height: height,
-                                minWidth: width,
-                                minHeight: height
+                                minWidth: self.DEFAULT_MIN_WIDTH,
+                                minHeight: self.DEFAULT_MIN_HEIGHT
                             };
                         }
                     },
