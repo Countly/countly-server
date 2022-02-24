@@ -1640,10 +1640,6 @@
                         return d._id === id;
                     });
 
-                    if (!currMenu) {
-                        countlyDashboards.factory.log("Dashboard not found - " + id + ", Dashboards = " + JSON.stringify(dashboards));
-                    }
-
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
                 }
             },

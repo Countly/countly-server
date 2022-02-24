@@ -1210,8 +1210,19 @@ var AppRouter = Backbone.Router.extend({
         // Init sidebar based on the current url
         if (countlyVue.sideBarComponent) {
             var selectedMenuItem = countlyVue.sideBarComponent.$store.getters["countlySidebar/getSelectedMenuItem"];
-            var currLink = "#" + Backbone.history.fragment;
-            if (selectedMenuItem.item.url !== currLink) {
+            var currLink = Backbone.history.fragment;
+            var reset = false;
+
+            if (selectedMenuItem.menu === "dashboards") {
+                if (!(/^\/custom/.test(currLink))) {
+                    reset = true;
+                }
+            }
+            else if (selectedMenuItem.item.url !== ("#" + currLink)) {
+                reset = true;
+            }
+
+            if (reset) {
                 countlyVue.sideBarComponent.$store.dispatch("countlySidebar/updateSelectedMenuItem", {});
             }
         }
