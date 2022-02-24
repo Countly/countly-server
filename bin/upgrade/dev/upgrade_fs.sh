@@ -46,12 +46,12 @@ then
     countly plugin upgrade two-factor-auth
     countly plugin upgrade web
     countly plugin upgrade push
-
+    countly plugin upgrade hooks
+    
     
     #enable new plugins
     countly plugin enable data-manager
     countly plugin enable heatmaps
-    countly plugin enable hooks
     
     #disable old plugins
     countly plugin disable EChartMap

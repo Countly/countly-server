@@ -30,12 +30,12 @@ then
         countly plugin upgrade two-factor-auth
         countly plugin upgrade web
         countly plugin upgrade push
+        countly plugin upgrade hooks
     
         
         #enable new plugins
         countly plugin enable data-manager
         countly plugin enable heatmaps
-        countly plugin enable hooks
         
         #disable old plugins
         countly plugin disable EChartMap
@@ -47,6 +47,7 @@ then
     nodejs "$DIR/scripts/loadCitiesInDb.js"
     nodejs "$CUR/scripts/fix_bookmarks.js"
     nodejs "$CUR/scripts/fix_cohorts_appID.js"
+    nodejs "$CUR/scripts/group_permission_generator.js"
     nodejs "$CUR/scripts/member_permission_generator.js"
     nodejs "$CUR/scripts/push_all_things.js"
     nodejs "$CUR/scripts/update_app_users.js"
@@ -58,7 +59,7 @@ then
     countly config "api.batch_on_master" null --force
     countly config "api.batch_read_on_master" null --force
     countly config "funnels.funnel_caching" true --force
-    countly config "frontend.production" false
+    countly config "frontend.production" false --force
     
     #add indexes
     nodejs "$DIR/scripts/add_indexes.js"
