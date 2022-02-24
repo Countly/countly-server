@@ -121,7 +121,7 @@
 
     var viewsTableResource = countlyVue.vuex.ServerDataTable("viewsMainTable", {
         columns: ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'uvc', 'scr', 'actionLink'],
-        onRequest: function(context, params) {
+        onRequest: function(context) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'views',
@@ -130,8 +130,9 @@
                 period: countlyCommon.getPeriodForAjax(),
             };
             data = data || {};
-            var selectedKey = params.segmentKey || "";//context.state.countlyViews.selectedSegment;
-            var selectedValue = params.segmentValue || "";//context.state.countlyViews.selectedSegmentValue;
+            var selectedInfo = context.getters.selectedData;
+            var selectedKey = selectedInfo.selectedSegment || "";//context.state.countlyViews.selectedSegment;
+            var selectedValue = selectedInfo.selectedSegmentValue || "";//context.state.countlyViews.selectedSegmentValue;
 
             if (selectedKey !== "" && selectedValue !== "") {
                 data.segment = selectedKey;
@@ -545,7 +546,14 @@
                         }
                     }
                     return rows;
+                },
+                selectedData: function(context) {
+                    return {
+                        selectedSegment: context.selectedSegment,
+                        selectedSegmentValue: context.selectedSegmentValue
+                    };
                 }
+
             },
             mutations: ViewsMutations,
             submodules: [viewsTableResource, editTableResource]
