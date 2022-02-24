@@ -15,17 +15,23 @@
                         <div class="bu-level-item">
                             <cly-date-picker-g></cly-date-picker-g>
                         </div>
-                        <template v-if="!isInitLoad && canUpdateGrid">
+                        <template v-if="!isInitLoad && canUpdateGrid && !fullscreen">
                             <div class="bu-level-item">
                                 <el-button @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
                             </div>
                             <div class="bu-level-item">
                                 <cly-more-options @command="onDashboardAction($event, dashboard)">
+                                    <el-dropdown-item command="fullscreen">{{i18n('dashboards.activate-full-screen')}}</el-dropdown-item>
                                     <el-dropdown-item command="edit" v-if="canUpdateDashboard">{{i18n('common.edit')}}</el-dropdown-item>
                                     <el-dropdown-item><a :href="'#/manage/reports/create/dashboard/' + dashboard._id">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
                                     <el-dropdown-item command="duplicate">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
                                     <el-dropdown-item command="delete" v-if="canUpdateDashboard">{{i18n('common.delete')}}</el-dropdown-item>
                                 </cly-more-options>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="bu-level-item">
+                                <el-button @click="exitFullScreen" icon="el-icon-circle-close"></el-button>
                             </div>
                         </template>
                     </div>

@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers */
+/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers, $, screenfull */
 
 (function() {
     var FEATURE_NAME = "dashboards";
@@ -1389,7 +1389,9 @@
             return {
                 dashboardId: this.$route.params && this.$route.params.dashboardId,
                 ADDING_WIDGET: false,
-                isInitLoad: true
+                isInitLoad: true,
+                fullscreen: false,
+                preventTimeoutInterval: null
             };
         },
         computed: {
@@ -1424,6 +1426,27 @@
                 return !!(AUTHENTIC_GLOBAL_ADMIN || this.dashboard.is_owner);
             }
         },
+        created: function() {
+            var self = this;
+            var fullscreeToggle = function() {
+                if (document.fullscreenElement) {
+                    $("html").addClass("full-screen");
+                    self.preventTimeoutInterval = setInterval(function() {
+                        $(document).trigger("extend-dashboard-user-session");
+                    }, 1000);
+                    $(document).idleTimer("pause");
+                    self.fullscreen = true;
+                }
+                else {
+                    $("html").removeClass("full-screen");
+                    clearInterval(self.preventTimeoutInterval);
+                    $(document).idleTimer("reset");
+                    self.fullscreen = false;
+                }
+            };
+            document.removeEventListener('fullscreenchange', fullscreeToggle);
+            document.addEventListener('fullscreenchange', fullscreeToggle);
+        },
         methods: {
             refresh: function() {
                 if (this.ADDING_WIDGET) {
@@ -1445,6 +1468,14 @@
                 var d = JSON.parse(JSON.stringify(data));
 
                 switch (command) {
+                case "fullscreen":
+                    if (screenfull.enabled && !screenfull.isFullscreen) {
+                        screenfull.request();
+                    }
+                    else {
+                        screenfull.exit();
+                    }
+                    break;
                 case "edit":
                     d.__action = "edit";
                     self.openDrawer("dashboards", d);
@@ -1504,6 +1535,9 @@
             },
             onWidgetAdded: function() {
                 this.ADDING_WIDGET = false;
+            },
+            exitFullScreen: function() {
+                screenfull.exit();
             }
         },
         beforeMount: function() {
