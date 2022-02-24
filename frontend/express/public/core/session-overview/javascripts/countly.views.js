@@ -237,8 +237,8 @@ var SessionHomeWidget = countlyVue.views.create({
                     "series": series,
                     "yAxis": {
                         axisLabel: {
-                            formatter: function(value) {
-                                return countlyCommon.formatSecond(Math.round(value));
+                            formatter: function(value2) {
+                                return countlyCommon.formatSecond(Math.round(value2));
                             }
                         }
                     }
