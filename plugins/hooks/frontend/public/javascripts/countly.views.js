@@ -152,7 +152,6 @@
         watch: {
         },
         mounted: function() {
-            var self = this;
             this.value.emailTemplate = _.unescape(this.value.emailTemplate);
         },
         methods: {
