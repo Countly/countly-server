@@ -173,7 +173,7 @@
             class="dbviewer-tab__detail-dialog"
             :isOpened="showDetailDialog"
             name="dbviewer-document-detail"
-            :title="JSON.parse(rowDetail)._id"
+            :title="index ? JSON.parse(rowDetail).name : JSON.parse(rowDetail)._id"
             saveButtonLabel="Close"
             ref="dbviewerDetailDialog"
             @submit="showDetailDialog = false"
