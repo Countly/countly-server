@@ -14,16 +14,11 @@ var pluginOb = {},
     async = require('async'),
     { validateUser } = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'dashboards';
-
 plugins.setConfigs("dashboards", {
     sharing_status: true
 });
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
 
     plugins.register("/o/dashboards", function(ob) {
         var paths = ob.paths;
