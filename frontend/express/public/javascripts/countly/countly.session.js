@@ -210,7 +210,7 @@
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getDurationDP = function() {
+    countlySession.getDurationDP = function(use_seconds) {
 
         var chartData = [
                 { data: [], label: jQuery.i18n.map["common.graph.time-spent"], color: '#DDDDDD', mode: "ghost"},
@@ -220,14 +220,24 @@
                 {
                     name: "previous_t",
                     func: function(dataObj) {
-                        return ((dataObj.d / 60).toFixed(1));
+                        if (use_seconds) {
+                            return dataObj.d;
+                        }
+                        else {
+                            return ((dataObj.d / 60).toFixed(1));
+                        }
                     },
                     period: "previous"
                 },
                 {
                     name: "t",
                     func: function(dataObj) {
-                        return ((dataObj.d / 60).toFixed(1));
+                        if (use_seconds) {
+                            return dataObj.d;
+                        }
+                        else {
+                            return ((dataObj.d / 60).toFixed(1));
+                        }
                     }
                 }
             ];
@@ -235,7 +245,7 @@
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getDurationDPAvg = function() {
+    countlySession.getDurationDPAvg = function(use_seconds) {
 
         var chartData = [
                 { data: [], label: jQuery.i18n.map["common.graph.average-time"], color: '#DDDDDD', mode: "ghost"},
@@ -245,14 +255,24 @@
                 {
                     name: "previous_average",
                     func: function(dataObj) {
-                        return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
+                        if (use_seconds) {
+                            return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t)).toFixed(1));
+                        }
+                        else {
+                            return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
+                        }
                     },
                     period: "previous"
                 },
                 {
                     name: "average",
                     func: function(dataObj) {
-                        return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
+                        if (use_seconds) {
+                            return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t)).toFixed(1));
+                        }
+                        else {
+                            return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
+                        }
                     }
                 }
             ];
