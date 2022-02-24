@@ -20,6 +20,11 @@
             In case widgets exist in the vuex but the dashboard is in initial loading state,
             let us pass the loading state to the grid component so that it shows loading state
             in the widgets aswell.
+
+            If the dashboard is showing a NO WIDGET view and its still loading, that means
+            there are no widgets in the dashboard and we have a selected dashboard avaiable.
+            It was probably set as selected in some previous request.
+            Its a valid state.
         -->
         <header>
             <div style="padding: 32px;">
