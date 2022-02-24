@@ -531,9 +531,6 @@
                     self.allGroups = userGroups;
                 });
             }
-        },
-        updated: function() {
-            console.log("updated");
         }
     });
 
