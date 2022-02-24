@@ -246,11 +246,6 @@
                     var part3 = "";
                     var menu;
 
-                    if (!Object.keys(menus).length || !Object.keys(submenus).length) {
-                        // eslint-disable-next-line no-console
-                        console.log("Something is terribly wrong in sidebar ! ", currLink, menus, submenus);
-                    }
-
                     for (var k in menus) {
                         for (var i = 0; i < menus[k].length; i++) {
                             menu = menus[k][i];
@@ -691,6 +686,7 @@
                 }, 0);
             }
         });
+
         app.initSidebar = function() {
             countlyVue.sideBarComponent = new Vue({
                 el: $('#sidebar-x').get(0),
