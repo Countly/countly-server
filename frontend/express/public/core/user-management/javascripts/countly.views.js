@@ -484,9 +484,10 @@
                                 var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
                                 for (var type in types) {
                                     for (var feature in this.features) {
-                                        permissionSet[types[type]].all = this.user.permission[types[type]][appFromSet].all;
+                                        // TODO: these checks will be converted to helper method
+                                        permissionSet[types[type]].all = typeof this.user.permission === "object" && typeof this.user.permission[types][type] === "object" && typeof this.user.permission[types][type][appFromSet] === "object" && typeof this.user.permission[types[type]][appFromSet].all === "boolean" && this.user.permission[types[type]][appFromSet].all;
                                         if (this.features[feature] !== 'core') {
-                                            permissionSet[types[type]].allowed[this.features[feature]] = this.user.permission[types[type]][appFromSet].allowed[this.features[feature]];
+                                            permissionSet[types[type]].allowed[this.features[feature]] = typeof this.user.permission === "object" && this.user.permission[types[type]] === "object" && typeof this.user.permission[types[type]][appFromSet] === "object" && typeof this.user.permission[types[type]][appFromSet] === "object" && typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] === "boolean" && this.user.permission[types[type]][appFromSet].allowed[this.features[feature]];
                                         }
                                     }
                                 }
