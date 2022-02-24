@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers */
+/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers */
 
 (function() {
     var FEATURE_NAME = "dashboards";
@@ -374,16 +374,21 @@
                 sharedEmailEdit: [],
                 sharedEmailView: [],
                 sharedGroupEdit: [],
-                sharedGroupView: []
+                sharedGroupView: [],
+                allGroups: []
             };
         },
         computed: {
-            allGroups: function() {
-                return [];
-            },
             canShare: function() {
                 var canShare = this.sharingAllowed && (this.controls.initialEditedObject.is_owner || AUTHENTIC_GLOBAL_ADMIN);
                 return canShare;
+            },
+            elSelectKey: function() {
+                var key = this.allGroups.map(function(g) {
+                    return g._id;
+                }).join(",");
+
+                return key;
             }
         },
         methods: {
@@ -508,6 +513,23 @@
                         doc.share_with = "none";
                     }
                 }
+            }
+        },
+        mounted: function() {
+            if (this.groupSharingAllowed) {
+                var self = this;
+                groupsModel.initialize().then(function() {
+                    var groups = _.sortBy(groupsModel.data(), 'name');
+
+                    var userGroups = groups.map(function(g) {
+                        return {
+                            name: g.name,
+                            value: g._id
+                        };
+                    });
+
+                    self.allGroups = userGroups;
+                });
             }
         }
     });
