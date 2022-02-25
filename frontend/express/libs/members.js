@@ -1105,6 +1105,18 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     user.user_of = data.user_of || [];
     user.restrict = data.restrict || [];
     user.app_restrict = data.app_restrict || {};
+    user.permission = data.permission || {
+        "c": {},
+        "r": {},
+        "u": {},
+        "d": {},
+        "_": {
+            "a": [],
+            "u": [
+                []
+            ]
+        }
+    };
 
     if (data.admin_of && data.admin_of.length) {
         user.user_of = [...new Set([...data.admin_of, ...data.user_of])];
