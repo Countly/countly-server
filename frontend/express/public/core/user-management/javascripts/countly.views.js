@@ -279,7 +279,9 @@
 
                 for (var type in types) {
                     for (var feature in this.features) {
-                        permissionSet[types[type]].allowed[this.features[feature]] = false;
+                        if (!(types[type] === 'r' && this.features[feature] === 'core')) {
+                            permissionSet[types[type]].allowed[this.features[feature]] = false;
+                        }
                     }
                 }
 
