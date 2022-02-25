@@ -165,6 +165,9 @@ if (countlyAuth.validateRead(featureName)) {
                     var eventItem = countlyTimesOfDay.service.findEventKeyByName(doc.events);
                     doc.events = [eventItem.key + '***' + eventItem.name];
                 }
+                if (doc.data_type === 'session') {
+                    doc.events = undefined;
+                }
             }
         },
         grid: {
