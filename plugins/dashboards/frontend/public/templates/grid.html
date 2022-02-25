@@ -6,7 +6,7 @@
             :key="widget._id"
             :widget="widget"
             :settings="widgetSettingsGetter(widget)"
-            :autoPosition="autoPosition"
+            :autoPosition="autoPosition(allWidgets)"
             v-loading="loading"
             @ready="onReady"
             @command="onWidgetAction">
