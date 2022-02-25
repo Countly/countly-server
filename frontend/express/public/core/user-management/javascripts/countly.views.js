@@ -290,16 +290,16 @@
                 this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u.splice(index, 1));
             },
             setPermissionByFeature: function(index, type, feature) {
-                var types = ['c','r','u','d'];
+                var types = ['c', 'r', 'u', 'd'];
 
-                if (type !== 'r' && !(this.permissionSets[index]['r'].all || this.permissionSets[index]['r'].allowed[feature])) {
-                    this.permissionSets[index]['r'].allowed[feature] = true;
+                if (type !== 'r' && !(this.permissionSets[index].r.all || this.permissionSets[index].r.allowed[feature])) {
+                    this.permissionSets[index].r.allowed[feature] = true;
                     CountlyHelpers.notify({
                         message: CV.i18n('management-users.read-permission-given-feature') + ' ' + this.featureBeautifier(feature),
                         type: 'info'
                     });
                 }
-                if (type === 'r' && !this.permissionSets[index]['r'].allowed[feature]) {
+                if (type === 'r' && !this.permissionSets[index].r.allowed[feature]) {
                     for (var _type in types) {
                         this.permissionSets[index][types[_type]].allowed[feature] = false;
                         if (this.permissionSets[index][types[_type]].all) {
@@ -321,7 +321,7 @@
                 }
             },
             setPermissionByType: function(index, type) {
-                var types = ['c','r','u','d'];
+                var types = ['c', 'r', 'u', 'd'];
                 // set true read permissions automatically if read not selected yet
                 if (this.permissionSets[index][type].all && type !== 'r' && !this.permissionSets[index].r.all) {
                     this.permissionSets[index].r.all = true;
@@ -339,9 +339,9 @@
                 if (type === 'r' && !this.permissionSets[index].r.all) {
                     for (var _type in types) {
                         this.permissionSets[index][types[_type]].all = false;
-                        for (var feature in this.features) {
-                            if (!(types[_type] === 'r' && this.features[feature] == 'core')) {
-                                this.permissionSets[index][types[_type]].allowed[this.features[feature]] = false;
+                        for (var feature1 in this.features) {
+                            if (!(types[_type] === 'r' && this.features[feature1] === 'core')) {
+                                this.permissionSets[index][types[_type]].allowed[this.features[feature1]] = false;
                             }
                         }
                     }
@@ -351,9 +351,9 @@
                     });
                 }
                 // set type specific features for other cases
-                for (var feature in this.features) {
-                    if (!(type === 'r' && this.features[feature] === 'core')) {
-                        this.permissionSets[index][type].allowed[this.features[feature]] = this.permissionSets[index][type].all;
+                for (var feature2 in this.features) {
+                    if (!(type === 'r' && this.features[feature2] === 'core')) {
+                        this.permissionSets[index][type].allowed[this.features[feature2]] = this.permissionSets[index][type].all;
                     }
                 }
             },
