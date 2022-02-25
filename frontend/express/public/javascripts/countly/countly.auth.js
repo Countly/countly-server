@@ -66,8 +66,8 @@
             */
             var isPermissionObjectExistForAccessType = (typeof member.permission[accessType] === "object" && typeof member.permission[accessType][app_id] === "object");
             // TODO: make here better. create helper method for these checks
-            var memberHasAllFlag = typeof member.permission !== "undefined" && typeof member.permission[accessType] !== "undefined" && typeof member.permission[accessType][app_id] !== "undefined" && typeof member.permission[accessType][app_id].all === "boolean" && member.permission[accessType][app_id].all;
-            var memberHasAllowedFlag = typeof member.permission !== "undefined" && typeof member.permission[accessType] !== "undefined" && typeof member.permission[accessType][app_id] !== "undefined" && typeof member.permission[accessType][app_id].allowed !== "undefined" && typeof member.permission[accessType][app_id].allowed[feature] === "boolean" && member.permission[accessType][app_id].allowed[feature];
+            var memberHasAllFlag = typeof member.permission[accessType][app_id].all === "boolean" ? member.permission[accessType][app_id].all : false;
+            var memberHasAllowedFlag = typeof member.permission[accessType][app_id].allowed[feature] === "boolean" ? member.permission[accessType][app_id].allowed[feature] : false;
             var isFeatureAllowedInRelatedPermissionObject = isPermissionObjectExistForAccessType && (memberHasAllFlag || memberHasAllowedFlag);
             var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission.a === "object") && member.permission._.a.indexOf(app_id) > -1;
             // don't allow if user has not permission for feature and has no admin access for current app
@@ -118,8 +118,8 @@
             */
             var isPermissionObjectExistForRead = (typeof member.permission.r === "object" && typeof member.permission.r[app_id] === "object");
             // TODO: make here better. create helper method for these checks
-            var memberHasAllFlag = typeof member.permission !== "undefined" && typeof member.permission.r !== "undefined" && typeof member.permission.r[app_id] !== "undefined" && typeof member.permission.r[app_id].all === "boolean" && member.permission.r[app_id].all;
-            var memberHasAllowedFlag = typeof member.permission !== "undefined" && typeof member.permission.r !== "undefined" && typeof member.permission.r[app_id] !== "undefined" && typeof member.permission.r[app_id].allowed !== "undefined" && typeof member.permission.r[app_id].allowed[feature] === "boolean" && member.permission.r[app_id].allowed[feature];
+            var memberHasAllFlag = typeof member.permission.r[app_id].all === "boolean" ? member.permission.r[app_id].all : false;
+            var memberHasAllowedFlag = typeof member.permission.r[app_id].allowed[feature] === "boolean" ? member.permission.r[app_id].allowed[feature] : false;
             var isFeatureAllowedInReadPermissionObject = isPermissionObjectExistForRead && (memberHasAllFlag || memberHasAllowedFlag);
             var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission.a === "object") && member.permission._.a.indexOf(app_id) > -1;
             // don't allow if user has not permission for feature and has no admin access for current app
