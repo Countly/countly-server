@@ -204,9 +204,9 @@
 
     var consentHistoryUserResource = countlyVue.vuex.ServerDataTable("consentHistoryUserResource", {
         columns: ['_id', 'type', 'optin', 'optout', 'av', 'ts' ],
-        loadedData: {},
         // eslint-disable-next-line 
         onRequest: function(context, payload) {
+            context.rootState.countlyConsentManager.isLoading = true;
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
             };
@@ -217,7 +217,6 @@
                     data: data
                 };
             }
-            return [];
         },
         onReady: function(context, rows) {
             for (var k = 0; k < rows.length; k++) {
@@ -235,6 +234,7 @@
                     }
                 }
             }
+            context.rootState.countlyConsentManager.isLoading = false;
             return rows;
         }
     });
@@ -248,6 +248,7 @@
                     _consentDP: {},
                     _exportDP: {},
                     _bigNumberData: {},
+                    isLoading: false
                 };
             },
             getters: {},
@@ -255,6 +256,9 @@
             actions: {},
             submodules: []
         };
+        _consentManagerDbModule.getters.isLoading =  function(state) {
+            return state.isLoading;
+        }
         _consentManagerDbModule.getters._ePData = function(state) {
             return state._ePData;
         };
@@ -271,23 +275,28 @@
             return state._bigNumberData;
         };
         _consentManagerDbModule.mutations._ePData = function(state, payload) {
-            return state._ePData = payload;
+            state._ePData = payload;
+            state._ePData = Object.assign({}, state._ePData, {});
         };
         _consentManagerDbModule.mutations._purgeDP = function(state, payload) {
-            return state._purgeDP = payload;
+            state._purgeDP = payload;
+            state._purgeDP = Object.assign({}, state._purgeDP, {});
         };
         _consentManagerDbModule.mutations._consentDP = function(state, payload) {
-            return state._consentDP = payload;
+            state._consentDP = payload;
+            state._consentDP = Object.assign({}, payload, {});
         };
         _consentManagerDbModule.mutations._exportDP = function(state, payload) {
-            return state._exportDP = payload;
+            state._exportDP = payload;
+            state._exportDP = Object.assign({}, state._exportDP, {});
         };
         _consentManagerDbModule.mutations._bigNumberData = function(state, payload) {
-            return state._bigNumberData = payload;
+            state._bigNumberData = payload;
+            state._bigNumberData = Object.assign({}, state._bigNumberData, {});
         };
         _consentManagerDbModule.actions._ePData = function(context) {
             var data = countlyCommon.getDashboardData(countlyConsentManager.getDb(), ["e", "p"], [], {}, countlyConsentManager.service.clearObj);
-            context.commit("_ePData", data);
+            return context.commit("_ePData", data);
         };
         _consentManagerDbModule.actions._purgeDP = function(context) {
             var chartData = [
@@ -305,8 +314,7 @@
                     { name: "p" }
                 ];
 
-            var data = countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.service.clearObj, chartData, dataProps);
-            context.commit("_purgeDP", data);
+            return context.commit("_purgeDP", countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.service.clearObj, chartData, dataProps));
         };
         _consentManagerDbModule.actions._consentDP = function(context, payload) {
             var chartData = [
@@ -317,9 +325,7 @@
                     { name: "i" },
                     { name: "o" }
                 ];
-
-            var data = countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.service.clearObj, chartData, dataProps, payload.segment);
-            context.commit("_consentDP", data);
+            return context.commit("_consentDP", countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.service.clearObj, chartData, dataProps, payload.segment));
         };
         _consentManagerDbModule.actions._exportDP = function(context, payload) {
             var chartData = [
@@ -338,11 +344,11 @@
                 ];
 
             var data = countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.service.clearObj, chartData, dataProps, payload.segment);
-            context.commit("_exportDP", data);
+            return context.commit("_exportDP", data);
         };
         _consentManagerDbModule.actions._bigNumberData = function(context, payload) {
             var data = countlyCommon.getDashboardData(countlyConsentManager.getDb(), ["i", "o"], [], {}, countlyConsentManager.service.clearObj, payload.segment);
-            context.commit("_bigNumberData", data);
+            return context.commit("_bigNumberData", data);
         };
         var _module = {
             state: _consentManagerDbModule.state,

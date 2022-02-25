@@ -535,19 +535,19 @@
             data: function() {
                 return {
                     userConsentHistoryTableSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyConsentManager", "consentHistoryUserResource"),
-                };
+                }
+            },
+            computed: {
+                isLoading: function() {
+                    return this.$store.getters["countlyConsentManager/isLoading"];
+                }
             },
             mounted: function() {
-                var userDetails = this.userDetails();
+                var userDetails = this.$store.getters["countlyUsers/userDetailsResource/userDetails"];
                 if (userDetails.uid) {
                     this.$store.dispatch("countlyConsentManager/fetchConsentHistoryUserResource", userDetails);
                 }
             },
-            methods: {
-                userDetails: function() {
-                    return this.$store.getters["countlyUsers/userDetailsResource/userDetails"];
-                },
-            }
 
         }),
         vuex: [{
