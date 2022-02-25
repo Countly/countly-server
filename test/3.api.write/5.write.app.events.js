@@ -69,22 +69,17 @@ describe('Writing app events', function() {
             });
         });
         describe('Empty events', function() {
-            it('should be empty', function(done) {
+            it('should have 1 event', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events')
                     .expect(200)
                     .end(function(err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-                        var ob = JSON.parse(res.text);
-                        ob.should.eql({});
-                        done();
+                        testUtils.validateEvents(err, res, done, {c: 1});
                     });
             });
         });
         describe('Empty get_events', function() {
-            it('should be empty', function(done) {
+            it('should have event data', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=get_events')
                     .expect(200)
@@ -93,6 +88,10 @@ describe('Writing app events', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
+                        var ob = JSON.parse(res.text);
+                        ob.should.not.eql({});
+                        ob.should.have.property("list", ["test"]);
+                        ob.should.not.have.property("segments");
                         ob.should.eql({
                             limits: {
                                 event_limit: 500,
@@ -128,44 +127,44 @@ describe('Writing app events', function() {
         /*{"2015":{"1":{"6":{"17":{"c":1},"c":1},"c":1},"c":1}}
 		*/
         describe('verify events without params', function() {
-            it('should have 1 event', function(done) {
+            it('should have 2 event', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 1});
+                        testUtils.validateEvents(err, res, done, {c: 2});
                     });
             });
         });
         describe('verify specific event', function() {
-            it('should have 1 event', function(done) {
+            it('should have 2 event', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 1});
+                        testUtils.validateEvents(err, res, done, {c: 2});
                     });
             });
         });
         //{"2015":{"1":{"6":{"17":{"c":1},"c":1}}}}
         describe('verify daily refresh event', function() {
-            it('should have 1 event', function(done) {
+            it('should have 2 event', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 1}, true);
+                        testUtils.validateEvents(err, res, done, {c: 2}, true);
                     });
             });
         });
         describe('verify merged event', function() {
-            it('should have 1 event', function(done) {
+            it('should have 2 event', function(done) {
                 var events = ["test"];
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 1});
+                        testUtils.validateEvents(err, res, done, {c: 2});
                     });
             });
         });
@@ -209,43 +208,43 @@ describe('Writing app events', function() {
             });
         });
         describe('verify events without params', function() {
-            it('should have 3 test events', function(done) {
+            it('should have 4 test events', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 3});
+                        testUtils.validateEvents(err, res, done, {c: 4});
                     });
             });
         });
         describe('verify specific event', function() {
-            it('should have 3 test events', function(done) {
+            it('should have 4 test events', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 3});
+                        testUtils.validateEvents(err, res, done, {c: 4});
                     });
             });
         });
         describe('verify daily refresh event', function() {
-            it('should have 3 test events', function(done) {
+            it('should have 4 test events', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 3}, true);
+                        testUtils.validateEvents(err, res, done, {c: 4}, true);
                     });
             });
         });
         describe('verify merged event', function() {
-            it('should have 3 test events', function(done) {
+            it('should have 4 test events', function(done) {
                 var events = ["test"];
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 3});
+                        testUtils.validateEvents(err, res, done, {c: 4});
                     });
             });
         });
@@ -288,12 +287,12 @@ describe('Writing app events', function() {
             });
         });
         describe('verify events without params', function() {
-            it('should 1 test and 2 test1 events', function(done) {
+            it('should 1 test1 and 4 test events', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 3});
+                        testUtils.validateEvents(err, res, done, {c: 4});
                     });
             });
         });
@@ -324,7 +323,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 4});
+                        testUtils.validateEvents(err, res, done, {c: 5});
                     });
             });
         });
@@ -418,13 +417,13 @@ describe('Writing app events', function() {
             });
         });
         describe('verify merged all events', function() {
-            it('should have 9 events', function(done) {
+            it('should have 10 events', function(done) {
                 var events = ["test", "test1", "test2"];
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 9});
+                        testUtils.validateEvents(err, res, done, {c: 10});
                     });
             });
         });
@@ -491,13 +490,13 @@ describe('Writing app events', function() {
             });
         });
         describe('verify merged event', function() {
-            it('should have 10 events and 2.97 sum', function(done) {
+            it('should have 11 events and 2.97 sum', function(done) {
                 var events = ["test", "test1", "test2"];
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 10, s: 2.97});
+                        testUtils.validateEvents(err, res, done, {c: 11, s: 2.97});
                     });
             });
         });
@@ -564,13 +563,13 @@ describe('Writing app events', function() {
             });
         });
         describe('verify merged event', function() {
-            it('should have 11 events and 4 sum', function(done) {
+            it('should have 12 events and 4 sum', function(done) {
                 var events = ["test", "test1", "test2"];
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 11, s: 4});
+                        testUtils.validateEvents(err, res, done, {c: 12, s: 4});
                     });
             });
         });
@@ -680,13 +679,13 @@ describe('Writing app events', function() {
             });
         });
         describe('verify merged event', function() {
-            it('should 12 events and 4 sum', function(done) {
+            it('should 13 events and 4 sum', function(done) {
                 var events = ["test", "test1", "test2"];
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 12, s: 4});
+                        testUtils.validateEvents(err, res, done, {c: 13, s: 4});
                     });
             });
         });
@@ -822,13 +821,13 @@ describe('Writing app events', function() {
             });
         });
         describe('verify merged event', function() {
-            it('should have 14 events and 4 sum', function(done) {
+            it('should have 15 events and 4 sum', function(done) {
                 var events = ["test", "test1", "test2"];
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 14, s: 4});
+                        testUtils.validateEvents(err, res, done, {c: 15, s: 4});
                     });
             });
         });
@@ -965,13 +964,13 @@ describe('Writing app events', function() {
             });
         });
         describe('verify merged event', function() {
-            it('should 16 events and 5.5 sum', function(done) {
+            it('should 17 events and 5.5 sum', function(done) {
                 var events = ["test", "test1", "test2"];
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 16, s: 5.5});
+                        testUtils.validateEvents(err, res, done, {c: 17, s: 5.5});
                     });
             });
         });
@@ -1087,13 +1086,13 @@ describe('Writing app events', function() {
             });
         });
         describe('verify merged event', function() {
-            it('should 16 events and 5.5 sum', function(done) {
+            it('should 19 events and 5.5 sum', function(done) {
                 var events = ["test", "test1", "test2"];
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 18, s: 7});
+                        testUtils.validateEvents(err, res, done, {c: 19, s: 7});
                     });
             });
         });
@@ -1215,7 +1214,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&events=' + JSON.stringify(events))
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 20, s: 8.5});
+                        testUtils.validateEvents(err, res, done, {c: 21, s: 8.5});
                     });
             });
         });
