@@ -499,6 +499,7 @@
                 var isRefresh = params && params.isRefresh;
 
                 return countlyDashboards.service.dashboards.get(dashboardId, isRefresh).then(function(res) {
+                    var isSane = context.getters["requests/isSane"];
                     var dashbaord = null;
                     var widgets = [];
                     var dId = null;
@@ -515,31 +516,28 @@
                         }
                     }
 
-                    /*
-                        On getting the dashboard, Set the selected dashboard data
-                        as well as update the local list of all dashboards.
-                        If the dashboard is not present in the local list, add it there
-                    */
+                    if (isSane) {
 
-                    context.commit("setSelectedDashboard", {id: dId, data: dashbaord});
-
-                    if (dashbaord && !isRefresh) {
                         /**
-                         * Lets not update the all dashboard list if the dashboard is
-                         * being refreshed. It calls the get all dashboards getter unnessarily
-                         * in the sidebar menu component of dashboards as well.
-                         * We can avoid that.
+                         * We will only update the vuex if the request is sane.
+                         * Requset will not be considered sane if during refresh
+                         * the widget geography (size and position) was changed.
+                         *
+                         * On getting the dashboard, Set the selected dashboard data
+                         * as well as update the local list of all dashboards.
+                         * If the dashboard is not present in the local list, add it there.
+                         *
+                         * Set all widgets of this dashboard here in the vuex store.
                          */
-                        context.commit("addOrUpdateDashboard", dashbaord);
-                    }
 
-                    /*
-                        Set all widgets of this dashboard here in the vuex store - Start
-                    */
-                    context.dispatch("widgets/setAll", widgets);
-                    /*
-                        Set all widgets of this dashboard here in the vuex store - End
-                    */
+                        context.commit("setSelectedDashboard", {id: dId, data: dashbaord});
+
+                        if (dashbaord) {
+                            context.commit("addOrUpdateDashboard", dashbaord);
+                        }
+
+                        context.dispatch("widgets/setAll", widgets);
+                    }
 
                     return dashbaord;
                 }).catch(function(e) {
@@ -712,12 +710,85 @@
             }
         };
 
+        var requestResource = countlyVue.vuex.Module("requests", {
+            state: function() {
+                return {
+                    isInit: true,
+                    isRefresh: false,
+                    isDrawerOpen: false,
+                    isGridInteraction: false,
+                    isProcessing: false,
+                    isSane: true
+                };
+            },
+            getters: {
+                isInitializing: function(state) {
+                    return state.isInit;
+                },
+                isRefreshing: function(state) {
+                    return state.isRefresh;
+                },
+                drawerOpenStatus: function(state) {
+                    return state.isDrawerOpen;
+                },
+                gridInteraction: function(state) {
+                    return state.isGridInteraction;
+                },
+                isProcessing: function(state) {
+                    return state.isProcessing;
+                },
+                isSane: function(state) {
+                    return state.isSane;
+                }
+            },
+            mutations: {
+                setIsInit: function(state, value) {
+                    state.isInit = value;
+                },
+                setIsRefresh: function(state, value) {
+                    state.isRefresh = value;
+                },
+                setIsDrawerOpen: function(state, value) {
+                    state.isDrawerOpen = value;
+                },
+                setIsGridInteraction: function(state, value) {
+                    state.isGridInteraction = value;
+                },
+                setIsProcessing: function(state, value) {
+                    state.isProcessing = value;
+                },
+                setIsSane: function(state, value) {
+                    state.isSane = value;
+                }
+            },
+            actions: {
+                isInitializing: function(context, status) {
+                    context.commit("setIsInit", status);
+                },
+                isRefreshing: function(context, status) {
+                    context.commit("setIsRefresh", status);
+                },
+                drawerOpenStatus: function(context, status) {
+                    context.commit("setIsDrawerOpen", status);
+                },
+                gridInteraction: function(context, status) {
+                    context.commit("setIsGridInteraction", status);
+                },
+                isProcessing: function(context, status) {
+                    context.commit("setIsProcessing", status);
+                },
+                markSanity: function(context, status) {
+                    context.commit("setIsSane", status);
+                }
+            }
+        });
+
         return countlyVue.vuex.Module("countlyDashboards", {
             state: getEmptyState,
             getters: getters,
             mutations: mutations,
             actions: actions,
-            submodules: [widgetsResource],
+            submodules: [widgetsResource, requestResource],
             destroy: false
         });
     };

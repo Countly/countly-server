@@ -2673,10 +2673,11 @@
                 }
                 else {
                     if (_period === "day") {
+                        start.add(1, 'days');
                         for (i = 0; i < new Date(start.year(), start.month(), 0).getDate(); i++) {
-                            start.add(1, 'days');
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            start.add(1, 'days');
                         }
                     }
                     else {
@@ -3626,7 +3627,7 @@
                 _period: period
             };
 
-            endTimestamp = currentTimestamp.clone().utc().endOf("day");
+            endTimestamp = currentTimestamp.clone().endOf("day");
 
             if (period && period.indexOf(",") !== -1) {
                 try {
@@ -3655,8 +3656,8 @@
                     toDate = moment(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
                 }
 
-                startTimestamp = fromDate.clone().utc().startOf("day");
-                endTimestamp = toDate.clone().utc().endOf("day");
+                startTimestamp = fromDate.clone().startOf("day");
+                endTimestamp = toDate.clone().endOf("day");
                 // fromDate.tz(_appTimezone);
                 // toDate.tz(_appTimezone);
 
@@ -3674,8 +3675,8 @@
                     //incorrect range - reset to 30 days
                     nDays = 30;
 
-                    startTimestamp = currentTimestamp.clone().utc().startOf("day").subtract(nDays - 1, "days");
-                    endTimestamp = currentTimestamp.clone().utc().endOf("day");
+                    startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
+                    endTimestamp = currentTimestamp.clone().endOf("day");
 
                     cycleDuration = moment.duration(nDays, "days");
                     Object.assign(periodObject, {
@@ -3692,7 +3693,7 @@
                 }
             }
             else if (period === "month") {
-                startTimestamp = currentTimestamp.clone().utc().startOf("year");
+                startTimestamp = currentTimestamp.clone().startOf("year");
                 cycleDuration = moment.duration(1, "year");
                 periodObject.dateString = "MMM";
                 Object.assign(periodObject, {
@@ -3704,7 +3705,7 @@
                 });
             }
             else if (period === "day") {
-                startTimestamp = currentTimestamp.clone().utc().startOf("month");
+                startTimestamp = currentTimestamp.clone().startOf("month");
                 cycleDuration = moment.duration(1, "month");
                 periodObject.dateString = "D MMM";
                 Object.assign(periodObject, {
@@ -3716,7 +3717,7 @@
                 });
             }
             else if (period === "hour") {
-                startTimestamp = currentTimestamp.clone().utc().startOf("day");
+                startTimestamp = currentTimestamp.clone().startOf("day");
                 cycleDuration = moment.duration(1, "day");
                 Object.assign(periodObject, {
                     dateString: "HH:mm",
@@ -3729,8 +3730,8 @@
             else if (period === "yesterday") {
                 var yesterday = currentTimestamp.clone().subtract(1, "day");
 
-                startTimestamp = yesterday.clone().utc().startOf("day");
-                endTimestamp = yesterday.clone().utc().endOf("day");
+                startTimestamp = yesterday.clone().startOf("day");
+                endTimestamp = yesterday.clone().endOf("day");
                 cycleDuration = moment.duration(1, "day");
                 Object.assign(periodObject, {
                     dateString: "D MMM, HH:mm",
@@ -3745,7 +3746,7 @@
                 if (nDays < 1) {
                     nDays = 30; //if there is less than 1 day
                 }
-                startTimestamp = currentTimestamp.clone().utc().startOf("day").subtract(nDays - 1, "days");
+                startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
                 cycleDuration = moment.duration(nDays, "days");
                 Object.assign(periodObject, {
                     dateString: "D MMM",
@@ -3757,7 +3758,7 @@
                 if (nDays < 1) {
                     nDays = 30; //if there is less than 1 day
                 }
-                startTimestamp = currentTimestamp.clone().utc().startOf("day").subtract(nDays - 1, "days");
+                startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
                 cycleDuration = moment.duration(nDays, "days");
                 Object.assign(periodObject, {
                     dateString: "D MMM",
@@ -3769,7 +3770,7 @@
                 if (nDays < 1) {
                     nDays = 30; //if there is less than 1 day
                 }
-                startTimestamp = currentTimestamp.clone().utc().startOf("day").subtract(nDays - 1, "days");
+                startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
                 cycleDuration = moment.duration(nDays, "days");
                 Object.assign(periodObject, {
                     dateString: "D MMM",
@@ -3780,7 +3781,7 @@
             else {
                 nDays = 30;
 
-                startTimestamp = currentTimestamp.clone().utc().startOf("day").subtract(nDays - 1, "days");
+                startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
                 cycleDuration = moment.duration(nDays, "days");
                 Object.assign(periodObject, {
                     dateString: "D MMM",

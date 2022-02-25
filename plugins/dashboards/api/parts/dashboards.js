@@ -154,10 +154,38 @@ dashboard.mapWidget = function(widget) {
         breakdowns = ["active"];
         delete widget.isPluginWidget;
         break;
+    case "retention_segments":
+        if (widget.interval) {
+            if (widget.interval === "adaily") {
+                widget.period = "d" + (widget.selected_span || 7);
+            }
+            else if (widget.inerval === "aweekly") {
+                widget.period = "w" + (widget.selected_span || 12);
+            }
+            else if (widget.inerval === "amonthly") {
+                widget.period = "m" + (widget.selected_span || 6);
+            }
+        }
+        if (widget.retention_event) {
+            var thisevent = widget.retention_event.split("***");
+            widget.retention_data_type = thisevent[1];
+        }
+        if (widget.vis_type === "graph-standard") {
+            widget.visualization_type = "graph1";
+        }
+        else if (widget.vis_type === "graph-weighted") {
+            widget.visualization_type = "graph2";
+        }
+        else if (widget.vis_type === "table") {
+            widget.visualization_type = "table";
+        }
+        break;
     case "views":
         widgetType = "analytics";
         dataType = "views";
-        widget.metrics = widget.views;
+        if (widget.views) {
+            widget.metrics = widget.views;
+        }
         visualization = "table";
         delete widget.isPluginWidget;
 
@@ -490,7 +518,6 @@ dashboard.fetchWidgetDataOld = function(params, my_widgets, callback) {
                         }
                     }
                     widgets[index].data = widgetDat;
-
                     cbk();
                 }
 
@@ -697,6 +724,8 @@ dashboard.fetchEventsData = async function(params, apps, widget) {
             var appId = widgetApps[i];
             widgetData[appId] = await getEventsDataForApp(params, apps, appId, widget);
         }
+        var names = await getEventsNames(widget);
+        dashData.naming = names;
 
         dashData.isValid = true;
         dashData.data = widgetData;
@@ -914,6 +943,52 @@ async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
     }
 
     return widgetData;
+}
+
+/**
+ * Function to fetch names
+ * @param  {Object} widget - widget object
+ */
+async function getEventsNames(widget) {
+    return new Promise((resolve) => {
+        if (widget.title) { //no need to fetch as we have default title
+            resolve({});
+        }
+        else {
+            var sel = {};
+            for (let k = 0; k < widget.events.length; k++) {
+                var splitted = widget.events[k].split("***");
+                if (!sel[splitted[0]]) {
+                    sel[splitted[0]] = {};
+                }
+                sel[splitted[0]][splitted[1]] = splitted[1];
+
+            }
+            var match = [];
+            for (var app in sel) {
+                match.push(common.db.ObjectID(app));
+            }
+
+            common.db.collection("events").aggregate([{"$match": {"_id": {"$in": match}}}, {"$project": {"_id": true, "map": true}}], function(err, data) {
+                if (err) {
+                    log.e(err);
+                    resolve({});
+                }
+                else {
+                    for (let k = 0; k < data.length; k++) {
+                        if (sel[data[k]._id + ""]) {
+                            for (var eventKey in sel[data[k]._id + ""]) {
+                                if (data[k].map && data[k].map[eventKey] && data[k].map[eventKey].name) {
+                                    sel[data[k]._id + ""][eventKey] = data[k].map[eventKey].name;
+                                }
+                            }
+                        }
+                    }
+                    resolve(sel);
+                }
+            });
+        }
+    });
 }
 
 /**
