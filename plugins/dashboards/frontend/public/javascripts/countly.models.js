@@ -712,12 +712,75 @@
             }
         };
 
+        var requestResource = countlyVue.vuex.Module("requests", {
+            state: function() {
+                return {
+                    isInit: true,
+                    isRefresh: false,
+                    isDrawerOpen: false,
+                    isGridInteraction: false,
+                    isProcessing: false
+                };
+            },
+            getters: {
+                isInitializing: function(state) {
+                    return state.isInit;
+                },
+                isRefreshing: function(state) {
+                    return state.isRefresh;
+                },
+                drawerOpenStatus: function(state) {
+                    return state.isDrawerOpen;
+                },
+                gridInteraction: function(state) {
+                    return state.isGridInteraction;
+                },
+                isProcessing: function(state) {
+                    return state.isProcessing;
+                }
+            },
+            mutations: {
+                setIsInit: function(state, value) {
+                    state.isInit = value;
+                },
+                setIsRefresh: function(state, value) {
+                    state.isRefresh = value;
+                },
+                setIsDrawerOpen: function(state, value) {
+                    state.isDrawerOpen = value;
+                },
+                setIsGridInteraction: function(state, value) {
+                    state.isGridInteraction = value;
+                },
+                setIsProcessing: function(state, value) {
+                    state.isProcessing = value;
+                }
+            },
+            actions: {
+                isInitializing: function(context, status) {
+                    context.commit("setIsInit", status);
+                },
+                isRefreshing: function(context, status) {
+                    context.commit("setIsRefresh", status);
+                },
+                drawerOpenStatus: function(context, status) {
+                    context.commit("setIsDrawerOpen", status);
+                },
+                gridInteraction: function(context, status) {
+                    context.commit("setIsGridInteraction", status);
+                },
+                isProcessing: function(context, status) {
+                    context.commit("setIsProcessing", status);
+                }
+            }
+        });
+
         return countlyVue.vuex.Module("countlyDashboards", {
             state: getEmptyState,
             getters: getters,
             mutations: mutations,
             actions: actions,
-            submodules: [widgetsResource],
+            submodules: [widgetsResource, requestResource],
             destroy: false
         });
     };

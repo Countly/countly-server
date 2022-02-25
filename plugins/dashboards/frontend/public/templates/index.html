@@ -80,8 +80,8 @@
             </div>
         </header>
         <cly-main>
-            <no-widget v-if="noWidgets && !ADDING_WIDGET" :can-update="canUpdateGrid" @new-widget="newWidget"></no-widget>
-            <dashboards-grid ref="grid" :loading="isInitLoad" :can-update="canUpdateGrid" @widget-added="onWidgetAdded"></dashboards-grid>
+            <no-widget v-if="noWidgets && !isAddingWidget" :can-update="canUpdateGrid" @new-widget="newWidget"></no-widget>
+            <dashboards-grid ref="grid" :loading="isInitLoad" :can-update="canUpdateGrid"></dashboards-grid>
 
             <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
             <widgets-drawer @add-widget="addWidgetToGrid" @reset="onReset" :controls="drawers.widgets"></widgets-drawer>

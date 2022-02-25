@@ -352,6 +352,7 @@
             addDashboard: function() {
                 var empty = countlyDashboards.factory.dashboards.getEmpty();
                 empty.__action = "create";
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                 this.openDrawer("dashboards", empty);
             }
         }
@@ -555,7 +556,10 @@
                         doc.share_with = "none";
                     }
                 }
-            }
+            },
+            onClose: function() {
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", false);
+            },
         },
         mounted: function() {
             if (this.groupSharingAllowed) {
@@ -740,10 +744,14 @@
                 this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(id) {
                     if (id) {
                         if (isEdited) {
-                            self.$store.dispatch("countlyDashboards/widgets/get", doc._id);
+                            self.$store.dispatch("countlyDashboards/requests/isProcessing", true);
+                            self.$store.dispatch("countlyDashboards/widgets/get", doc._id).then(function() {
+                                self.$store.dispatch("countlyDashboards/requests/isProcessing", false);
+                            });
                         }
                         else {
                             obj.id = id;
+                            self.$store.dispatch("countlyDashboards/requests/isProcessing", true);
                             self.$emit("add-widget", obj);
                         }
                     }
@@ -781,6 +789,9 @@
                         }
                     }
                 }
+            },
+            onClose: function() {
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", false);
             },
             reset: function(v) {
                 this.$emit("reset", v);
@@ -843,7 +854,8 @@
                 switch (command) {
                 case "edit":
                     d.__action = "edit";
-                    self.openDrawer("widgets", Object.assign({}, empty, d));
+                    this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
+                    this.openDrawer("widgets", Object.assign({}, empty, d));
                     break;
 
                 case "delete":
@@ -1056,6 +1068,10 @@
                     this.disableGrid();
                 }
 
+                this.grid.on("resizestart", function() {
+                    self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
+                });
+
                 this.grid.on("resizestop", function(event, element) {
                     var node = element.gridstackNode;
 
@@ -1087,6 +1103,16 @@
 
                     self.syncWidgetHeights();
                     self.updateAllWidgetsGeography();
+                    setTimeout(function() {
+                        /**
+                         * Or we could set grid interaction to false from the then of updateAllWidgetsGeography
+                         */
+                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", false);
+                    }, 500);
+                });
+
+                this.grid.on("dragstart", function() {
+                    self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
                 });
 
                 this.grid.on("dragstop", function(event, element) {
@@ -1126,6 +1152,12 @@
 
                     self.syncWidgetHeights();
                     self.updateAllWidgetsGeography();
+                    setTimeout(function() {
+                        /**
+                         * Or we could set grid interaction to false from the then of updateAllWidgetsGeography
+                         */
+                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", false);
+                    }, 500);
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -1193,7 +1225,7 @@
                             if (res) {
                                 self.$store.dispatch("countlyDashboards/widgets/get", widgetId).then(function() {
                                     self.removeGridWidget(node.el);
-                                    self.$emit("widget-added", widgetId);
+                                    self.$store.dispatch("countlyDashboards/requests/isProcessing", false);
                                 });
                             }
                         });
@@ -1206,7 +1238,7 @@
                 this.$store.dispatch("countlyDashboards/widgets/syncGeography", {_id: widgetId, settings: settings});
                 setTimeout(function() {
                     self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
-                }, 50);
+                }, 10);
             },
             updateAllWidgetsGeography: function() {
                 var allGridWidgets = this.savedGrid();
@@ -1437,9 +1469,6 @@
         data: function() {
             return {
                 dashboardId: this.$route.params && this.$route.params.dashboardId,
-                ADDING_WIDGET: false,
-                isInitLoad: true,
-                processingRequest: false,
                 fullscreen: false,
                 preventTimeoutInterval: null
             };
@@ -1474,6 +1503,30 @@
             },
             canUpdateDashboard: function() {
                 return !!(AUTHENTIC_GLOBAL_ADMIN || this.dashboard.is_owner);
+            },
+            isInitLoad: function() {
+                var isInit = this.$store.getters["countlyDashboards/requests/isInitializing"];
+                return isInit;
+            },
+            isAddingWidget: function() {
+                var isAdding = this.$store.getters["countlyDashboards/requests/isProcessing"];
+                return isAdding;
+            },
+            isRefreshing: function() {
+                var isRefreshing = this.$store.getters["countlyDashboards/requests/isRefreshing"];
+                return isRefreshing;
+            },
+            isDrawerOpen: function() {
+                var isOpen = this.$store.getters["countlyDashboards/requests/drawerOpenStatus"];
+                return isOpen;
+            },
+            isProcessing: function() {
+                var isProcessing = this.$store.getters["countlyDashboards/requests/isProcessing"];
+                return isProcessing;
+            },
+            isGridInteraction: function() {
+                var isInteraction = this.$store.getters["countlyDashboards/requests/gridInteraction"];
+                return isInteraction;
             }
         },
         created: function() {
@@ -1499,22 +1552,25 @@
         },
         methods: {
             refresh: function() {
-                if (this.ADDING_WIDGET || this.isInitLoad || this.processingRequest) {
+                var isRefreshing = this.isRefreshing;
+                var isInitializing = this.isInitLoad;
+                var isAddingWidget = this.isAddingWidget;
+                var isDrawerOpen = this.isDrawerOpen;
+                var isProcessing = this.isProcessing;
+                var isGridInteraction = this.isGridInteraction;
+
+                if (isAddingWidget || isInitializing || isRefreshing || isDrawerOpen || isProcessing || isGridInteraction) {
                     return;
                 }
 
-                if (!this.drawers.dashboards.isOpened && !this.drawers.widgets.isOpened) {
-                    /**
-                     * Refresh only if the drawers are not open at the moment.
-                     */
-                    this.dateChanged(true);
-                }
+                this.dateChanged(true);
             },
             dateChanged: function(isRefresh) {
                 var self = this;
-                this.processingRequest = true;
+                this.$store.dispatch("countlyDashboards/requests/isRefreshing", true);
+
                 this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh}).then(function() {
-                    self.processingRequest = false;
+                    self.$store.dispatch("countlyDashboards/requests/isRefreshing", false);
                 });
             },
             onDashboardAction: function(command, data) {
@@ -1532,6 +1588,7 @@
                     break;
                 case "edit":
                     d.__action = "edit";
+                    this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                     self.openDrawer("dashboards", d);
                     break;
 
@@ -1550,6 +1607,7 @@
 
                     obj.__action = "duplicate";
 
+                    this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                     self.openDrawer("dashboards", obj);
                     break;
 
@@ -1581,14 +1639,11 @@
                 var defaultEmpty = setting.drawer.getEmpty();
 
                 empty.__action = "create";
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
             },
             addWidgetToGrid: function(widget) {
-                this.ADDING_WIDGET = true;
                 this.$refs.grid.addWidget(widget);
-            },
-            onWidgetAdded: function() {
-                this.ADDING_WIDGET = false;
             },
             exitFullScreen: function() {
                 screenfull.exit();
@@ -1596,8 +1651,9 @@
         },
         beforeMount: function() {
             var self = this;
+
             this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function() {
-                self.isInitLoad = false;
+                self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
             });
         }
     });
@@ -1798,3 +1854,22 @@
     });
 
 })();
+
+/**
+ * Race conditions in dashbaords -
+ *
+ * 1. Someone tries to drag or resize widgets and as soon as they do so, there is a refresh
+ * call initiated which fetches the old positions and sizes of widgets. So even though the
+ * positions and sizes were updated on the server, the widgets are not updated on the client.
+ * The solution to this would be not to initiatite a refresh while users are interacting
+ * with the dashboard.
+ *
+ * 2. Maybe the refresh was initiated earlier than the widget was being resized or repositioned.
+ * But the api is taking a very long time to respond. Meanwhile, even though we updated the
+ * positions, the widgets are not updated on the client as the refresh call that was initiated,
+ * sends old values for positions and sizes. This is the case when refresh initiated,
+ * widgets resized or dragged and the api sends response after that with old widget
+ * positions and sizes. This can heppen since we fetch the widgets data in the very
+ * beginning in the api. Solution could be to refetch the widgets positions and sizes
+ * just before sending the response to the client on the server.
+ */
