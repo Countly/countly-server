@@ -1900,6 +1900,6 @@
  * sends old values for positions and sizes. This is the case when refresh initiated,
  * widgets resized or dragged and the api sends response after that with old widget
  * positions and sizes. This can heppen since we fetch the widgets data in the very
- * beginning in the api. Solution could be to refetch the widgets positions and sizes
- * just before sending the response to the client on the server.
+ * beginning in the api.
+ * We have fixed this by marking request sanity and checking for it before updating vuex.
  */
