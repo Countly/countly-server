@@ -2060,6 +2060,11 @@
                 default: false,
                 required: false
             },
+            preventLayerClick: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
             options: {
                 type: Object,
                 default: function() {
@@ -2204,9 +2209,11 @@
             onEachFeatureFunction: function(/*params*/) {
                 var self = this;
                 return function(feature, layer) {
-                    layer.on('click', function() {
-                        self.goToCountry(feature.properties.code);
-                    });
+                    if (!self.preventLayerClick) {
+                        layer.on('click', function() {
+                            self.goToCountry(feature.properties.code);
+                        });
+                    }
                 };
             },
             onEachFeatureFunctionDetail: function() {
@@ -2477,7 +2484,7 @@
                 });
             },
             onMarkerClick: function(code) {
-                if (!this.inDetail) {
+                if (!this.inDetail && !this.preventLayerClick) {
                     this.goToCountry(code);
                 }
             },
