@@ -1069,7 +1069,10 @@
                 }
 
                 this.grid.on("resizestart", function() {
-                    self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
+                    self.$nextTick(function() {
+                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
+                        self.$store.dispatch("countlyDashboards/requests/markSanity", false);
+                    });
                 });
 
                 this.grid.on("resizestop", function(event, element) {
@@ -1112,7 +1115,10 @@
                 });
 
                 this.grid.on("dragstart", function() {
-                    self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
+                    self.$nextTick(function() {
+                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
+                        self.$store.dispatch("countlyDashboards/requests/markSanity", false);
+                    });
                 });
 
                 this.grid.on("dragstop", function(event, element) {
@@ -1508,10 +1514,6 @@
                 var isInit = this.$store.getters["countlyDashboards/requests/isInitializing"];
                 return isInit;
             },
-            isAddingWidget: function() {
-                var isAdding = this.$store.getters["countlyDashboards/requests/isProcessing"];
-                return isAdding;
-            },
             isRefreshing: function() {
                 var isRefreshing = this.$store.getters["countlyDashboards/requests/isRefreshing"];
                 return isRefreshing;
@@ -1520,13 +1522,17 @@
                 var isOpen = this.$store.getters["countlyDashboards/requests/drawerOpenStatus"];
                 return isOpen;
             },
-            isProcessing: function() {
+            isWidgetProcessing: function() {
                 var isProcessing = this.$store.getters["countlyDashboards/requests/isProcessing"];
                 return isProcessing;
             },
             isGridInteraction: function() {
                 var isInteraction = this.$store.getters["countlyDashboards/requests/gridInteraction"];
                 return isInteraction;
+            },
+            isRequestSane: function() {
+                var isSane = this.$store.getters["countlyDashboards/requests/isSane"];
+                return isSane;
             }
         },
         created: function() {
@@ -1554,12 +1560,33 @@
             refresh: function() {
                 var isRefreshing = this.isRefreshing;
                 var isInitializing = this.isInitLoad;
-                var isAddingWidget = this.isAddingWidget;
                 var isDrawerOpen = this.isDrawerOpen;
-                var isProcessing = this.isProcessing;
+                var isWidgetProcessing = this.isWidgetProcessing;
                 var isGridInteraction = this.isGridInteraction;
+                var isRequestSane = this.isRequestSane;
 
-                if (isAddingWidget || isInitializing || isRefreshing || isDrawerOpen || isProcessing || isGridInteraction) {
+                if (!isRequestSane) {
+                    /**
+                     * So turns out that the previous request wasn't sane. This happens
+                     * if grid interaction takes place while the request is in progress.
+                     *
+                     * Lets return and skip this refresh request just as a safety measure.
+                     */
+
+                    if (!isRefreshing && !isInitializing && !isGridInteraction && !isWidgetProcessing) {
+                        /**
+                         * We can mark requset sanity as true now. Since the previous request
+                         * is not in progress anymore. And since it wasn't sane, no updates
+                         * would have followed through on the vuex store. Check getDashboard action.
+                         * It doesn't update the vuex if the request is not sane.
+                         */
+                        this.$store.dispatch("countlyDashboards/requests/markSanity", true);
+                    }
+
+                    return;
+                }
+
+                if (isInitializing || isRefreshing || isDrawerOpen || isWidgetProcessing || isGridInteraction) {
                     return;
                 }
 

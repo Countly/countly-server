@@ -499,6 +499,7 @@
                 var isRefresh = params && params.isRefresh;
 
                 return countlyDashboards.service.dashboards.get(dashboardId, isRefresh).then(function(res) {
+                    var isSane = context.getters["requests/isSane"];
                     var dashbaord = null;
                     var widgets = [];
                     var dId = null;
@@ -515,31 +516,28 @@
                         }
                     }
 
-                    /*
-                        On getting the dashboard, Set the selected dashboard data
-                        as well as update the local list of all dashboards.
-                        If the dashboard is not present in the local list, add it there
-                    */
+                    if (isSane) {
 
-                    context.commit("setSelectedDashboard", {id: dId, data: dashbaord});
-
-                    if (dashbaord && !isRefresh) {
                         /**
-                         * Lets not update the all dashboard list if the dashboard is
-                         * being refreshed. It calls the get all dashboards getter unnessarily
-                         * in the sidebar menu component of dashboards as well.
-                         * We can avoid that.
+                         * We will only update the vuex if the request is sane.
+                         * Requset will not be considered sane if during refresh
+                         * the widget geography (size and position) was changed.
+                         *
+                         * On getting the dashboard, Set the selected dashboard data
+                         * as well as update the local list of all dashboards.
+                         * If the dashboard is not present in the local list, add it there.
+                         *
+                         * Set all widgets of this dashboard here in the vuex store.
                          */
-                        context.commit("addOrUpdateDashboard", dashbaord);
-                    }
 
-                    /*
-                        Set all widgets of this dashboard here in the vuex store - Start
-                    */
-                    context.dispatch("widgets/setAll", widgets);
-                    /*
-                        Set all widgets of this dashboard here in the vuex store - End
-                    */
+                        context.commit("setSelectedDashboard", {id: dId, data: dashbaord});
+
+                        if (dashbaord) {
+                            context.commit("addOrUpdateDashboard", dashbaord);
+                        }
+
+                        context.dispatch("widgets/setAll", widgets);
+                    }
 
                     return dashbaord;
                 }).catch(function(e) {
@@ -719,7 +717,8 @@
                     isRefresh: false,
                     isDrawerOpen: false,
                     isGridInteraction: false,
-                    isProcessing: false
+                    isProcessing: false,
+                    isSane: true
                 };
             },
             getters: {
@@ -737,6 +736,9 @@
                 },
                 isProcessing: function(state) {
                     return state.isProcessing;
+                },
+                isSane: function(state) {
+                    return state.isSane;
                 }
             },
             mutations: {
@@ -754,6 +756,9 @@
                 },
                 setIsProcessing: function(state, value) {
                     state.isProcessing = value;
+                },
+                setIsSane: function(state, value) {
+                    state.isSane = value;
                 }
             },
             actions: {
@@ -771,6 +776,9 @@
                 },
                 isProcessing: function(context, status) {
                     context.commit("setIsProcessing", status);
+                },
+                markSanity: function(context, status) {
+                    context.commit("setIsSane", status);
                 }
             }
         });
