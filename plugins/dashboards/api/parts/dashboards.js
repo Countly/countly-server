@@ -956,30 +956,48 @@ async function getEventsNames(widget) {
         }
         else {
             var sel = {};
+            var eventGroups = {};
             for (let k = 0; k < widget.events.length; k++) {
                 var splitted = widget.events[k].split("***");
                 if (!sel[splitted[0]]) {
                     sel[splitted[0]] = {};
                 }
                 sel[splitted[0]][splitted[1]] = splitted[1];
-
+                if (splitted[1] && splitted[1].startsWith('[CLY]_group_')) {
+                    eventGroups[splitted[1]] = true;
+                }
             }
             var match = [];
             for (var app in sel) {
                 match.push(common.db.ObjectID(app));
             }
 
-            common.db.collection("events").aggregate([{"$match": {"_id": {"$in": match}}}, {"$project": {"_id": true, "map": true}}], function(err, data) {
+            var pipeline = [{"$match": {"_id": {"$in": match}}}, {"$project": {"_id": true, "map": true}}];
+            if (Object.keys(eventGroups).length > 0) {
+                var match2 = [];
+                for (var key in eventGroups) {
+                    match2.push(key);
+                }
+                pipeline.push({"$unionWith": {coll: "event_groups", pipeline: [{"$match": {"_id": {"$in": match2}}}, {"$project": {"_id": true, "app_id": true, "name": true, "is_group": "1"}}] }});
+            }
+            common.db.collection("events").aggregate(pipeline, function(err, data) {
                 if (err) {
                     log.e(err);
                     resolve({});
                 }
                 else {
                     for (let k = 0; k < data.length; k++) {
-                        if (sel[data[k]._id + ""]) {
-                            for (var eventKey in sel[data[k]._id + ""]) {
-                                if (data[k].map && data[k].map[eventKey] && data[k].map[eventKey].name) {
-                                    sel[data[k]._id + ""][eventKey] = data[k].map[eventKey].name;
+                        if (data[k].is_group === "1") {
+                            if (sel[data[k].app_id]) {
+                                sel[data[k].app_id][data[k]._id + ""] = data[k].name;
+                            }
+                        }
+                        else {
+                            if (sel[data[k]._id + ""]) {
+                                for (var eventKey in sel[data[k]._id + ""]) {
+                                    if (data[k].map && data[k].map[eventKey] && data[k].map[eventKey].name) {
+                                        sel[data[k]._id + ""][eventKey] = data[k].map[eventKey].name;
+                                    }
                                 }
                             }
                         }
