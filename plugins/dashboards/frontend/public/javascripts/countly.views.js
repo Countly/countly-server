@@ -1683,6 +1683,9 @@
             this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function() {
                 self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
             });
+        },
+        beforeDestroy: function() {
+            //this.$store.dispatch("countlyDashboards/requests/reset");
         }
     });
 

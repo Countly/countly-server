@@ -29,6 +29,18 @@
             },
             separator: "***"
         },
+        request: {
+            getEmpty: function() {
+                return {
+                    isInit: true,
+                    isRefresh: false,
+                    isDrawerOpen: false,
+                    isGridInteraction: false,
+                    isProcessing: false,
+                    isSane: true
+                };
+            }
+        },
         log: function(e) {
             var DEBUG = true;
             if (DEBUG) {
@@ -721,14 +733,8 @@
 
         var requestResource = countlyVue.vuex.Module("requests", {
             state: function() {
-                return {
-                    isInit: true,
-                    isRefresh: false,
-                    isDrawerOpen: false,
-                    isGridInteraction: false,
-                    isProcessing: false,
-                    isSane: true
-                };
+                var empty = countlyDashboards.factory.request.getEmpty();
+                return empty;
             },
             getters: {
                 isInitializing: function(state) {
@@ -768,6 +774,12 @@
                 },
                 setIsSane: function(state, value) {
                     state.isSane = value;
+                },
+                reset: function(state) {
+                    var empty = countlyDashboards.factory.request.getEmpty();
+                    for (var key in empty) {
+                        state[key] = empty[key];
+                    }
                 }
             },
             actions: {
@@ -788,6 +800,9 @@
                 },
                 markSanity: function(context, status) {
                     context.commit("setIsSane", status);
+                },
+                reset: function(context) {
+                    context.commit("reset");
                 }
             }
         });
