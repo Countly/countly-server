@@ -56,7 +56,12 @@
                     this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
                 }
             },
-            widgetSettingsGetter: function(widget) {
+            widgetSettingsGetter: function(widget, def) {
+                /**
+                 * def should be true only when the settings are required by the grid.
+                 * We want to set it to true then so that we can show a widget in the grid.
+                 * This covers the case when the widget data is invalid or widget is disabled.
+                 */
                 var self = this;
                 var widgets = this.__widgets;
 
@@ -94,7 +99,7 @@
                     countlyDashboards.factory.log("Please check the widget registration. Thanks :)");
                     countlyDashboards.factory.log("Also it could be that the plugin associated with the widget is disabled.");
 
-                    return defaultSetting;
+                    return def ? defaultSetting : false;
                 }
 
                 var setting = registrations.find(function(registration) {
@@ -103,7 +108,7 @@
 
                 if (!setting) {
                     countlyDashboards.factory.log("No setting found for the " + widget.widget_type + " widget type based on the widget getter. Please register the widget settings correctly.");
-                    return defaultSetting;
+                    return def ? defaultSetting : false;
                 }
 
 
