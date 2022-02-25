@@ -16,7 +16,8 @@
         _selectedViews = [],
         _graphDataObj = {},
         _viewsCount = 0,
-        _viewsNames = {};
+        _viewsNames = {},
+        FEATURE_NAME = 'views';
 
 
     CountlyHelpers.createMetricModel(countlyViews, {name: "views"}, jQuery);
@@ -654,7 +655,7 @@
         });
     };
 
-    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0) {
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME)) {
         countlyViews.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 
