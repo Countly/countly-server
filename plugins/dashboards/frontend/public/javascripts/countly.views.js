@@ -352,6 +352,7 @@
             addDashboard: function() {
                 var empty = countlyDashboards.factory.dashboards.getEmpty();
                 empty.__action = "create";
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                 this.openDrawer("dashboards", empty);
             }
         }
@@ -555,7 +556,10 @@
                         doc.share_with = "none";
                     }
                 }
-            }
+            },
+            onClose: function() {
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", false);
+            },
         },
         mounted: function() {
             if (this.groupSharingAllowed) {
@@ -740,10 +744,14 @@
                 this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(id) {
                     if (id) {
                         if (isEdited) {
-                            self.$store.dispatch("countlyDashboards/widgets/get", doc._id);
+                            self.$store.dispatch("countlyDashboards/requests/isProcessing", true);
+                            self.$store.dispatch("countlyDashboards/widgets/get", doc._id).then(function() {
+                                self.$store.dispatch("countlyDashboards/requests/isProcessing", false);
+                            });
                         }
                         else {
                             obj.id = id;
+                            self.$store.dispatch("countlyDashboards/requests/isProcessing", true);
                             self.$emit("add-widget", obj);
                         }
                     }
@@ -781,6 +789,9 @@
                         }
                     }
                 }
+            },
+            onClose: function() {
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", false);
             },
             reset: function(v) {
                 this.$emit("reset", v);
@@ -843,7 +854,8 @@
                 switch (command) {
                 case "edit":
                     d.__action = "edit";
-                    self.openDrawer("widgets", Object.assign({}, empty, d));
+                    this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
+                    this.openDrawer("widgets", Object.assign({}, empty, d));
                     break;
 
                 case "delete":
@@ -1193,7 +1205,7 @@
                             if (res) {
                                 self.$store.dispatch("countlyDashboards/widgets/get", widgetId).then(function() {
                                     self.removeGridWidget(node.el);
-                                    self.$emit("widget-added", widgetId);
+                                    self.$store.dispatch("countlyDashboards/requests/isProcessing", false);
                                 });
                             }
                         });
@@ -1437,9 +1449,6 @@
         data: function() {
             return {
                 dashboardId: this.$route.params && this.$route.params.dashboardId,
-                ADDING_WIDGET: false,
-                isInitLoad: true,
-                processingRequest: false,
                 fullscreen: false,
                 preventTimeoutInterval: null
             };
@@ -1474,6 +1483,26 @@
             },
             canUpdateDashboard: function() {
                 return !!(AUTHENTIC_GLOBAL_ADMIN || this.dashboard.is_owner);
+            },
+            isInitLoad: function() {
+                var isInit = this.$store.getters["countlyDashboards/requests/isInitializing"];
+                return isInit;
+            },
+            isAddingWidget: function() {
+                var isAdding = this.$store.getters["countlyDashboards/requests/isProcessing"];
+                return isAdding;
+            },
+            isRefreshing: function() {
+                var isRefreshing = this.$store.getters["countlyDashboards/requests/isRefreshing"];
+                return isRefreshing;
+            },
+            isDrawerOpen: function() {
+                var isOpen = this.$store.getters["countlyDashboards/requests/drawerOpenStatus"];
+                return isOpen;
+            },
+            isProcessing: function() {
+                var isProcessing = this.$store.getters["countlyDashboards/requests/isProcessing"];
+                return isProcessing;
             }
         },
         created: function() {
@@ -1499,23 +1528,24 @@
         },
         methods: {
             refresh: function() {
-                if (this.ADDING_WIDGET || this.isInitLoad || this.processingRequest) {
+                var isRefreshing = this.isRefreshing;
+                var isInitializing = this.isInitLoad;
+                var isAddingWidget = this.isAddingWidget;
+                var isDrawerOpen = this.isDrawerOpen;
+                var isProcessing = this.isProcessing;
+
+                if (isAddingWidget || isInitializing || isRefreshing || isDrawerOpen || isProcessing) {
                     return;
                 }
 
-                if (!this.drawers.dashboards.isOpened && !this.drawers.widgets.isOpened) {
-                    /**
-                     * Refresh only if the drawers are not open at the moment.
-                     */
-                    this.dateChanged(true);
-                }
+                this.dateChanged(true);
             },
             dateChanged: function(isRefresh) {
                 var self = this;
+                this.$store.dispatch("countlyDashboards/requests/isRefreshing", true);
 
-                this.processingRequest = true;
                 this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh}).then(function() {
-                    self.processingRequest = false;
+                    self.$store.dispatch("countlyDashboards/requests/isRefreshing", false);
                 });
             },
             onDashboardAction: function(command, data) {
@@ -1533,6 +1563,7 @@
                     break;
                 case "edit":
                     d.__action = "edit";
+                    this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                     self.openDrawer("dashboards", d);
                     break;
 
@@ -1551,6 +1582,7 @@
 
                     obj.__action = "duplicate";
 
+                    this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                     self.openDrawer("dashboards", obj);
                     break;
 
@@ -1582,14 +1614,11 @@
                 var defaultEmpty = setting.drawer.getEmpty();
 
                 empty.__action = "create";
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
             },
             addWidgetToGrid: function(widget) {
-                this.ADDING_WIDGET = true;
                 this.$refs.grid.addWidget(widget);
-            },
-            onWidgetAdded: function() {
-                this.ADDING_WIDGET = false;
             },
             exitFullScreen: function() {
                 screenfull.exit();
@@ -1597,8 +1626,9 @@
         },
         beforeMount: function() {
             var self = this;
+
             this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function() {
-                self.isInitLoad = false;
+                self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
             });
         }
     });
