@@ -154,10 +154,38 @@ dashboard.mapWidget = function(widget) {
         breakdowns = ["active"];
         delete widget.isPluginWidget;
         break;
+    case "retention_segments":
+        if (widget.interval) {
+            if (widget.interval === "adaily") {
+                widget.period = "d" + (widget.selected_span || 7);
+            }
+            else if (widget.inerval === "aweekly") {
+                widget.period = "w" + (widget.selected_span || 12);
+            }
+            else if (widget.inerval === "amonthly") {
+                widget.period = "m" + (widget.selected_span || 6);
+            }
+        }
+        if (widget.retention_event) {
+            var thisevent = widget.retention_event.split("***");
+            widget.retention_data_type = thisevent[1];
+        }
+        if (widget.vis_type === "graph-standard") {
+            widget.visualization_type = "graph1";
+        }
+        else if (widget.vis_type === "graph-weighted") {
+            widget.visualization_type = "graph2";
+        }
+        else if (widget.vis_type === "table") {
+            widget.visualization_type = "table";
+        }
+        break;
     case "views":
         widgetType = "analytics";
         dataType = "views";
-        widget.metrics = widget.views;
+        if (widget.views) {
+            widget.metrics = widget.views;
+        }
         visualization = "table";
         delete widget.isPluginWidget;
 
