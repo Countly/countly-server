@@ -535,7 +535,7 @@
             data: function() {
                 return {
                     userConsentHistoryTableSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyConsentManager", "consentHistoryUserResource"),
-                }
+                };
             },
             computed: {
                 isLoading: function() {
