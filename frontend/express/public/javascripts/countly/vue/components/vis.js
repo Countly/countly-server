@@ -244,7 +244,9 @@
                  * Which inturn dispatches patchzoom.
                  */
                 this.$refs.zoomRef.onZoomTrigger();
-                this.$refs.echartRef.$refs.header.isZoom = true;
+                if (this.$refs.echartRef && this.$refs.echartRef.$refs.header) {
+                    this.$refs.echartRef.$refs.header.isZoom = true;
+                }
             },
             onZoomReset: function() {
                 /**
@@ -253,7 +255,9 @@
                  * of the chart.
                  * Which inturn dispatches patchzoom.
                  */
-                this.$refs.echartRef.$refs.header.isZoom = false;
+                if (this.$refs.echartRef && this.$refs.echartRef.$refs.header) {
+                    this.$refs.echartRef.$refs.header.isZoom = false;
+                }
                 this.showZoom = false;
             },
             onDataZoom: function() {
@@ -981,13 +985,15 @@
         },
         methods: {
             onZoomTrigger: function(e) {
-                this.echartRef.setOption({tooltip: {show: false}}, {notMerge: false});
+                if (this.echartRef) {
+                    this.echartRef.setOption({tooltip: {show: false}}, {notMerge: false});
 
-                this.echartRef.dispatchAction({
-                    type: "takeGlobalCursor",
-                    key: 'dataZoomSelect',
-                    dataZoomSelectActive: true
-                });
+                    this.echartRef.dispatchAction({
+                        type: "takeGlobalCursor",
+                        key: 'dataZoomSelect',
+                        dataZoomSelectActive: true
+                    });
+                }
 
                 this.zoomStatus = "triggered";
                 if (e) {
@@ -995,35 +1001,41 @@
                 }
             },
             onZoomReset: function() {
-                this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
+                if (this.echartRef) {
+                    this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
 
-                this.echartRef.dispatchAction({
-                    type: "restore",
-                });
+                    this.echartRef.dispatchAction({
+                        type: "restore",
+                    });
+                }
 
                 this.zoomStatus = "reset";
                 this.$emit("zoom-reset");
             },
             onZoomCancel: function() {
-                this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
+                if (this.echartRef) {
+                    this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
 
-                this.echartRef.dispatchAction({
-                    type: "takeGlobalCursor",
-                    key: 'dataZoomSelect',
-                    dataZoomSelectActive: false
-                });
+                    this.echartRef.dispatchAction({
+                        type: "takeGlobalCursor",
+                        key: 'dataZoomSelect',
+                        dataZoomSelectActive: false
+                    });
+                }
 
                 this.zoomStatus = "reset";
                 this.$emit("zoom-reset");
             },
             onZoomFinished: function() {
-                this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
+                if (this.echartRef) {
+                    this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
 
-                this.echartRef.dispatchAction({
-                    type: "takeGlobalCursor",
-                    key: 'dataZoomSelect',
-                    dataZoomSelectActive: false
-                });
+                    this.echartRef.dispatchAction({
+                        type: "takeGlobalCursor",
+                        key: 'dataZoomSelect',
+                        dataZoomSelectActive: false
+                    });
+                }
 
                 this.zoomStatus = "done";
             },
