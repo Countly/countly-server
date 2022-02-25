@@ -298,10 +298,15 @@
                         return widget;
                     }).catch(function(e) {
                         log(e);
+
+                        /*
+
                         CountlyHelpers.notify({
                             message: "Something went wrong while getting the widget!",
                             type: "error"
                         });
+
+                        */
 
                         return false;
                     });
