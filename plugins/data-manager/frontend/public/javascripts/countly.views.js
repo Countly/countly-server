@@ -493,6 +493,9 @@
                             else {
                                 defaultUnexpectedFilter = false;
                             }
+                            if (!self.isDrill) {
+                                defaultUnexpectedFilter = true;
+                            }
                         }
                         return defaultUnexpectedFilter && isCategoryFilter && isStatusFilter && isVisiblityFilter;
                     })
