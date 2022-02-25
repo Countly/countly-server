@@ -407,12 +407,6 @@
                         sort: 'custom'
                     },
                     {
-                        label: CV.i18n("data-manager.last-triggered"),
-                        value: 'lts',
-                        default: true,
-                        sort: 'custom'
-                    },
-                    {
                         label: 'Event key',
                         value: 'e',
                         default: false,
@@ -431,6 +425,20 @@
             dynamicEventCols: function() {
                 var cols = this.baseColumns;
                 var colMap = {};
+                var ltsAdded = false;
+                cols.forEach(function(col) {
+                    if (col.value === 'lts') {
+                        ltsAdded = true;
+                    }
+                });
+                if (this.isDrill && !ltsAdded) {
+                    cols.push({
+                        label: CV.i18n("data-manager.last-triggered"),
+                        value: 'lts',
+                        default: true,
+                        sort: 'custom'
+                    });
+                }
                 this.events.forEach(function(ev) {
                     for (var key in ev) {
                         if (key.indexOf('[CLY_input]_') === 0) {
