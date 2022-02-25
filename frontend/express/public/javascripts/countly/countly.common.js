@@ -2673,10 +2673,11 @@
                 }
                 else {
                     if (_period === "day") {
+                        start.add(1, 'days');
                         for (i = 0; i < new Date(start.year(), start.month(), 0).getDate(); i++) {
-                            start.add(1, 'days');
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            start.add(1, 'days');
                         }
                     }
                     else {
