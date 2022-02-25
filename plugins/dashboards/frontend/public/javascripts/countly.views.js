@@ -1439,6 +1439,7 @@
                 dashboardId: this.$route.params && this.$route.params.dashboardId,
                 ADDING_WIDGET: false,
                 isInitLoad: true,
+                processingRequest: false,
                 fullscreen: false,
                 preventTimeoutInterval: null
             };
@@ -1498,7 +1499,7 @@
         },
         methods: {
             refresh: function() {
-                if (this.ADDING_WIDGET) {
+                if (this.ADDING_WIDGET || this.isInitLoad || this.processingRequest) {
                     return;
                 }
 
@@ -1510,7 +1511,11 @@
                 }
             },
             dateChanged: function(isRefresh) {
-                this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh});
+                var self = this;
+                this.processingRequest = true;
+                this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh}).then(function() {
+                    self.processingRequest = false;
+                });
             },
             onDashboardAction: function(command, data) {
                 var self = this;
