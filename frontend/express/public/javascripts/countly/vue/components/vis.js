@@ -200,7 +200,7 @@
         data: function() {
             /**
              * Usage of external zoom component -
-             * <cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
+             * <cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef && $refs.echartRef.$refs && $refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
              * <cly-chart-line ref="echartRef" @patchzoom="onPatchZoom" @datazoom="onDataZoom" :show-zoom="false"></cly-chart-line>
              *
              * For external zoom to work, you need to ensure following things -
@@ -965,8 +965,15 @@
         props: {
             echartRef: {
                 type: Object
+            },
+            zoomInfo: {
+                type: Boolean,
+                default: true
             }
         },
+        mixins: [
+            countlyVue.mixins.i18n
+        ],
         data: function() {
             return {
                 zoomStatus: "reset"
@@ -1027,18 +1034,18 @@
             }
         },
         template: '<div>\
-                        <div v-if="zoomStatus === \'triggered\'" class="bu-mr-3 color-cool-gray-50 text-smallish">\
-                            Select an area in the chart to zoom\
+                        <div v-if="zoomInfo && zoomStatus === \'triggered\'" class="bu-mr-3 color-cool-gray-50 text-smallish">\
+                            {{i18nM(\'common.zoom-info\')}}\
                         </div>\
                         <el-button class="chart-zoom-button" @click="onZoomTrigger" v-if="zoomStatus === \'reset\'"\
                             size="small"\
                             icon="cly-icon-btn cly-icon-zoom">\
                         </el-button>\
                         <el-button class="chart-zoom-button" @click="onZoomCancel" v-if="zoomStatus === \'triggered\'" size="small">\
-                            Cancel Zoom\
+                            {{i18nM(\'common.cancel-zoom\')}}\
                         </el-button>\
                         <el-button class="chart-zoom-button" @click="onZoomReset" v-if="zoomStatus === \'done\'" size="small">\
-                            Reset Zoom\
+                            {{i18nM(\'common.zoom-reset\')}}\
                         </el-button>\
                     </div>'
     });
