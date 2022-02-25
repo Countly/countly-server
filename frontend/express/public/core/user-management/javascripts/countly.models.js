@@ -138,7 +138,8 @@
             url: countlyCommon.API_URL + "/o/users/permissions",
             data: {
                 api_key: countlyGlobal.member.api_key,
-                app_id: countlyGlobal.defaultApp._id
+                app_id: countlyGlobal.defaultApp._id,
+                _t: Date.now()
             },
             success: function(res) {
                 _features = res;

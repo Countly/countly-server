@@ -641,8 +641,8 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                         }
                         */
                         var isPermissionObjectExistForRead = (typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object");
-                        var isFeatureAllowedInReadPermissionObject = isPermissionObjectExistForRead && (member.permission.r[params.qstring.app_id].all || member.permission.r[params.qstring.app_id].allowed[feature]);
-                        var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission.a === "object") && member.permission._.a.indexOf(params.qstring.app_id) > -1;
+                        var isFeatureAllowedInReadPermissionObject = isPermissionObjectExistForRead && (member.permission.r[params.qstring.app_id].all || (member.permission.r[params.qstring.app_id].allowed && member.permission.r[params.qstring.app_id].allowed[feature]));
+                        var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission._ === "object" && typeof member.permission._.a === "object") && member.permission._.a.indexOf(params.qstring.app_id) > -1;
                         // don't allow if user has not permission for feature and has no admin access for current app
                         if (!(isFeatureAllowedInReadPermissionObject) && !(hasAdminAccess)) {
                             common.returnMessage(params, 401, 'User does not have right');
@@ -785,8 +785,8 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                         }
                         */
                         var isPermissionObjectExistForAccessType = (typeof member.permission[accessType] === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object");
-                        var isFeatureAllowedInRelatedPermissionObject = isPermissionObjectExistForAccessType && (member.permission[accessType][params.qstring.app_id].all || member.permission[accessType][params.qstring.app_id].allowed[feature]);
-                        var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission.a === "object") && member.permission._.a.indexOf(params.qstring.app_id) > -1;
+                        var isFeatureAllowedInRelatedPermissionObject = isPermissionObjectExistForAccessType && (member.permission[accessType][params.qstring.app_id].all || (member.permission[accessType][params.qstring.app_id].allowed && member.permission[accessType][params.qstring.app_id].allowed[feature]));
+                        var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission._ === "object" && typeof member.permission._.a === "object") && member.permission._.a.indexOf(params.qstring.app_id) > -1;
                         // don't allow if user has not permission for feature and has no admin access for current app
                         if (!(isFeatureAllowedInRelatedPermissionObject) && !(hasAdminAccess)) {
                             common.returnMessage(params, 401, 'User does not have right');

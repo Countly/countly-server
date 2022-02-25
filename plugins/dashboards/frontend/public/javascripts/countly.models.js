@@ -29,6 +29,18 @@
             },
             separator: "***"
         },
+        request: {
+            getEmpty: function() {
+                return {
+                    isInit: true,
+                    isRefresh: false,
+                    isDrawerOpen: false,
+                    isGridInteraction: false,
+                    isProcessing: false,
+                    isSane: true
+                };
+            }
+        },
         log: function(e) {
             var DEBUG = true;
             if (DEBUG) {
@@ -272,15 +284,29 @@
                         /*
                             Update the widget in the widget store.
                         */
+                        var selectedDashbaordId = context.rootGetters["countlyDashboards/selected"].id;
+                        if (dashboardId !== selectedDashbaordId) {
+                            /**
+                             * For some reason lets say view was changed and there was a
+                             * widget request in background.
+                             */
+                            return;
+                        }
+
                         var widget = w && w[0];
                         context.commit("update", widget);
                         return widget;
                     }).catch(function(e) {
                         log(e);
+
+                        /*
+
                         CountlyHelpers.notify({
                             message: "Something went wrong while getting the widget!",
                             type: "error"
                         });
+
+                        */
 
                         return false;
                     });
@@ -712,14 +738,8 @@
 
         var requestResource = countlyVue.vuex.Module("requests", {
             state: function() {
-                return {
-                    isInit: true,
-                    isRefresh: false,
-                    isDrawerOpen: false,
-                    isGridInteraction: false,
-                    isProcessing: false,
-                    isSane: true
-                };
+                var empty = countlyDashboards.factory.request.getEmpty();
+                return empty;
             },
             getters: {
                 isInitializing: function(state) {
@@ -759,6 +779,12 @@
                 },
                 setIsSane: function(state, value) {
                     state.isSane = value;
+                },
+                reset: function(state) {
+                    var empty = countlyDashboards.factory.request.getEmpty();
+                    for (var key in empty) {
+                        state[key] = empty[key];
+                    }
                 }
             },
             actions: {
@@ -779,6 +805,9 @@
                 },
                 markSanity: function(context, status) {
                     context.commit("setIsSane", status);
+                },
+                reset: function(context) {
+                    context.commit("reset");
                 }
             }
         });

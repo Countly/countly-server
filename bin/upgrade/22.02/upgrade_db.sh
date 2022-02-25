@@ -39,7 +39,6 @@ then
         
         #disable old plugins
         countly plugin disable EChartMap
-        countly plugin disable crashes-jira
         countly plugin disable restrict
     fi
 

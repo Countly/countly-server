@@ -209,7 +209,7 @@ plugins.setConfigs("dashboards", {
         }
 
         validateUser(params, function() {
-            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (!err && dashboard) {
                     hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
                         if (er || !status) {
@@ -225,7 +225,7 @@ plugins.setConfigs("dashboards", {
                     });
                 }
                 else {
-                    common.returnMessage(params, 404, "Dashboard does not exist");
+                    common.returnMessage(params, 404, "Such dashboard and widget combination does not exist.");
                 }
             });
         });
@@ -908,9 +908,9 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
-            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (err || !dashboard) {
-                    common.returnMessage(params, 400, "Dashboard with the given id doesn't exist");
+                    common.returnMessage(params, 400, "Such dashboard and widget combination does not exist.");
                 }
                 else {
                     async.parallel([
@@ -973,9 +973,9 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
-            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (err || !dashboard) {
-                    common.returnMessage(params, 400, "Dashboard with the given id doesn't exist");
+                    common.returnMessage(params, 400, "Such dashboard and widget combination does not exist.");
                 }
                 else {
                     async.parallel([
