@@ -288,6 +288,13 @@
                 this.permissionSets.push(permissionSet);
             },
             removePermissionSet: function(index) {
+                for (var i = 0; i < this.$refs.userDrawer.editedObject.permission._.u[index].length; i++) {
+                    var app_id = this.$refs.userDrawer.editedObject.permission._.u[index][i];
+                    this.$refs.userDrawer.editedObject.permission.c[app_id] = undefined;
+                    this.$refs.userDrawer.editedObject.permission.r[app_id] = undefined;
+                    this.$refs.userDrawer.editedObject.permission.u[app_id] = undefined;
+                    this.$refs.userDrawer.editedObject.permission.d[app_id] = undefined;
+                }
                 this.permissionSets.splice(index, 1);
                 this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u.splice(index, 1));
             },
