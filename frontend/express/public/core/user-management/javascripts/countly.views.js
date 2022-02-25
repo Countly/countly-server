@@ -290,13 +290,71 @@
                 this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u.splice(index, 1));
             },
             setPermissionByFeature: function(index, type, feature) {
+                var types = ['c', 'r', 'u', 'd'];
+
+                if (type !== 'r' && !(this.permissionSets[index].r.all || this.permissionSets[index].r.allowed[feature])) {
+                    this.permissionSets[index].r.allowed[feature] = true;
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.read-permission-given-feature') + ' ' + this.featureBeautifier(feature),
+                        type: 'info'
+                    });
+                }
+                if (type === 'r' && !this.permissionSets[index].r.allowed[feature]) {
+                    for (var _type in types) {
+                        this.permissionSets[index][types[_type]].allowed[feature] = false;
+                        if (this.permissionSets[index][types[_type]].all) {
+                            this.permissionSets[index][types[_type]].all = false;
+                            for (var _feature in this.features) {
+                                if (this.features[_feature] !== feature) {
+                                    this.permissionSets[index][types[_type]].allowed[this.features[_feature]] = true;
+                                }
+                            }
+                        }
+                    }
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.other-permissions-for') + ' ' + this.featureBeautifier(feature) + ' ' + CV.i18n('management-users.removed-because-disabled'),
+                        type: 'info'
+                    });
+                }
                 if (!this.permissionSets[index][type].allowed[feature] && this.permissionSets[index][type].all) {
                     this.permissionSets[index][type].all = false;
                 }
             },
             setPermissionByType: function(index, type) {
-                for (var feature in this.features) {
-                    this.permissionSets[index][type].allowed[this.features[feature]] = this.permissionSets[index][type].all;
+                var types = ['c', 'r', 'u', 'd'];
+                // set true read permissions automatically if read not selected yet
+                if (this.permissionSets[index][type].all && type !== 'r' && !this.permissionSets[index].r.all) {
+                    this.permissionSets[index].r.all = true;
+                    for (var feature in this.features) {
+                        if (this.features[feature] !== 'core') {
+                            this.permissionSets[index].r.allowed[this.features[feature]] = this.permissionSets[index][type].all;
+                        }
+                    }
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.read-permission-all'),
+                        type: 'info'
+                    });
+                }
+                // set false all other permissions automatically if read set as false
+                if (type === 'r' && !this.permissionSets[index].r.all) {
+                    for (var _type in types) {
+                        this.permissionSets[index][types[_type]].all = false;
+                        for (var feature1 in this.features) {
+                            if (!(types[_type] === 'r' && this.features[feature1] === 'core')) {
+                                this.permissionSets[index][types[_type]].allowed[this.features[feature1]] = false;
+                            }
+                        }
+                    }
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.other-permissions-removed'),
+                        type: 'info'
+                    });
+                }
+                // set type specific features for other cases
+                for (var feature2 in this.features) {
+                    if (!(type === 'r' && this.features[feature2] === 'core')) {
+                        this.permissionSets[index][type].allowed[this.features[feature2]] = this.permissionSets[index][type].all;
+                    }
                 }
             },
             handleCommand: function(command, index) {
