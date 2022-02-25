@@ -256,9 +256,9 @@
             actions: {},
             submodules: []
         };
-        _consentManagerDbModule.getters.isLoading =  function(state) {
+        _consentManagerDbModule.getters.isLoading = function(state) {
             return state.isLoading;
-        }
+        };
         _consentManagerDbModule.getters._ePData = function(state) {
             return state._ePData;
         };
