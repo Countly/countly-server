@@ -945,7 +945,12 @@ async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
     return widgetData;
 }
 
-
+/**
+ * Function to fetch names
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {Object} widget - widget object
+ */
 async function getEventsNames(params, apps, widget) {
 
     return new Promise((resolve) => {
