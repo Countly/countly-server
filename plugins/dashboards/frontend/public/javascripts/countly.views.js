@@ -1679,6 +1679,7 @@
         beforeMount: function() {
             var self = this;
 
+            this.$store.dispatch("countlyDashboards/requests/isInitializing", true);
             this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function() {
                 self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
             });

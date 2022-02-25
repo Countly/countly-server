@@ -272,6 +272,15 @@
                         /*
                             Update the widget in the widget store.
                         */
+                        var selectedDashbaordId = context.rootGetters["countlyDashboards/selected"].id;
+                        if (dashboardId !== selectedDashbaordId) {
+                            /**
+                             * For some reason lets say view was changed and there was a
+                             * widget request in background.
+                             */
+                            return;
+                        }
+
                         var widget = w && w[0];
                         context.commit("update", widget);
                         return widget;
