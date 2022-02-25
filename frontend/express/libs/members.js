@@ -681,7 +681,27 @@ membersUtility.setup = function(req, callback) {
             argon2Hash(req.body.password + secret).then(password => {
                 req.body.email = (req.body.email + "").trim();
                 req.body.username = (req.body.username + "").trim();
-                var doc = {"full_name": req.body.full_name, "username": req.body.username, "password": password, "email": req.body.email, "global_admin": true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
+                var doc = {
+                    "full_name": req.body.full_name,
+                    "username": req.body.username,
+                    "password": password,
+                    "email": req.body.email,
+                    "global_admin": true,
+                    created_at: Math.floor(((new Date()).getTime()) / 1000),
+                    password_changed: Math.floor(((new Date()).getTime()) / 1000),
+                    permission: {
+                        "c": {},
+                        "r": {},
+                        "u": {},
+                        "d": {},
+                        "_": {
+                            "a": [],
+                            "u": [
+                                []
+                            ]
+                        }
+                    }
+                };
                 if (req.body.lang) {
                     doc.lang = req.body.lang;
                 }
