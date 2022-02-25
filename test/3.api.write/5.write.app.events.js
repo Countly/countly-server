@@ -92,12 +92,10 @@ describe('Writing app events', function() {
                         ob.should.not.eql({});
                         ob.should.have.property("list", ["test"]);
                         ob.should.not.have.property("segments");
-                        ob.should.eql({
-                            limits: {
-                                event_limit: 500,
-                                event_segmentation_limit: 100,
-                                event_segmentation_value_limit: 1000
-                            }
+                        ob.should.have.property("limits", {
+                            event_limit: 500,
+                            event_segmentation_limit: 100,
+                            event_segmentation_value_limit: 1000
                         });
                         done();
                     });
