@@ -995,7 +995,6 @@
                                         segments.push(sg);
                                     }
                                     catch (e) {
-                                        console.error(e);
                                         // supress create mode
                                     }
                                 }
