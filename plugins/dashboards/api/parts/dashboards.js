@@ -518,7 +518,6 @@ dashboard.fetchWidgetDataOld = function(params, my_widgets, callback) {
                         }
                     }
                     widgets[index].data = widgetDat;
-
                     cbk();
                 }
 
@@ -725,6 +724,8 @@ dashboard.fetchEventsData = async function(params, apps, widget) {
             var appId = widgetApps[i];
             widgetData[appId] = await getEventsDataForApp(params, apps, appId, widget);
         }
+        var names = await getEventsNames(widget);
+        dashData.naming = names;
 
         dashData.isValid = true;
         dashData.data = widgetData;
@@ -942,6 +943,55 @@ async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
     }
 
     return widgetData;
+}
+
+/**
+ * Function to fetch names
+ * @param  {Object} params - params object
+ * @param  {Object} apps - all apps object
+ * @param  {Object} widget - widget object
+ */
+async function getEventsNames(params, apps, widget) {
+
+    return new Promise((resolve) => {
+        if (widget.title) { //no need to fetch as we have default title
+            resolve({});
+        }
+        else {
+            var sel = {};
+            for (let k = 0; k < widget.events.length; k++) {
+                var splitted = widget.events[k].split("***");
+                if (!sel[splitted[0]]) {
+                    sel[splitted[0]] = {};
+                }
+                sel[splitted[0]][splitted[1]] = splitted[1];
+
+            }
+            var match = [];
+            for (var app in sel) {
+                match.push(common.db.ObjectID(app));
+            }
+
+            common.db.collection("events").aggregate([{"$match": {"_id": {"$in": match}}}, {"$project": {"_id": true, "map": true}}], function(err, data) {
+                if (err) {
+                    log.e(err);
+                    resolve({});
+                }
+                else {
+                    for (let k = 0; k < data.length; k++) {
+                        if (sel[data[k]._id + ""]) {
+                            for (var eventKey in sel[data[k]._id + ""]) {
+                                if (data[k].map && data[k].map[eventKey] && data[k].map[eventKey].name) {
+                                    sel[data[k]._id + ""][eventKey] = data[k].map[eventKey].name;
+                                }
+                            }
+                        }
+                    }
+                    resolve(sel);
+                }
+            });
+        }
+    });
 }
 
 /**
