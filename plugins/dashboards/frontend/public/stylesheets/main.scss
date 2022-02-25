@@ -24,6 +24,20 @@
     #main-views-container .main-view{overflow: hidden;}
 }
 
+.dashboards-notes-widget {
+	.notes-widget-button {
+		visibility:hidden;
+		.bu-level-right {
+			position: absolute;
+			top:16px;
+			right:16px;
+		}
+	}
+}
+.dashboards-notes-widget:hover .notes-widget-button {
+	visibility:visible;
+}
+
 .cly-vue-dashboards {
     &__null-widgets {
         height: 100%;
