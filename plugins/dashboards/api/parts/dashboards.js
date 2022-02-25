@@ -724,7 +724,7 @@ dashboard.fetchEventsData = async function(params, apps, widget) {
             var appId = widgetApps[i];
             widgetData[appId] = await getEventsDataForApp(params, apps, appId, widget);
         }
-        var names = await getEventsNames(params, apps, widget);
+        var names = await getEventsNames(widget);
         dashData.naming = names;
 
         dashData.isValid = true;
