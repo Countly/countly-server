@@ -947,12 +947,9 @@ async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
 
 /**
  * Function to fetch names
- * @param  {Object} params - params object
- * @param  {Object} apps - all apps object
  * @param  {Object} widget - widget object
  */
-async function getEventsNames(params, apps, widget) {
-
+async function getEventsNames(widget) {
     return new Promise((resolve) => {
         if (widget.title) { //no need to fetch as we have default title
             resolve({});
