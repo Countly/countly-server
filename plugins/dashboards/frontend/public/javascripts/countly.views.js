@@ -1512,6 +1512,7 @@
             },
             dateChanged: function(isRefresh) {
                 var self = this;
+
                 this.processingRequest = true;
                 this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh}).then(function() {
                     self.processingRequest = false;
@@ -1798,3 +1799,22 @@
     });
 
 })();
+
+/**
+ * Race conditions in dashbaords -
+ *
+ * 1. Someone tries to drag or resize widgets and as soon as they do so, there is a refresh
+ * call initiated which fetches the old positions and sizes of widgets. So even though the
+ * positions and sizes were updated on the server, the widgets are not updated on the client.
+ * The solution to this would be not to initiatite a refresh while users are interacting
+ * with the dashboard.
+ *
+ * 2. Maybe the refresh was initiated earlier than the widget was being resized or repositioned.
+ * But the api is taking a very long time to respond. Meanwhile, even though we updated the
+ * positions, the widgets are not updated on the client as the refresh call that was initiated,
+ * sends old values for positions and sizes. This is the case when refresh initiated,
+ * widgets resized or dragged and the api sends response after that with old widget
+ * positions and sizes. This can heppen since we fetch the widgets data in the very
+ * beginning in the api. Solution could be to refetch the widgets positions and sizes
+ * just before sending the response to the client on the server.
+ */
