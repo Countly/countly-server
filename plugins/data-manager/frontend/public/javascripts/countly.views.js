@@ -214,7 +214,8 @@
                         }
                     });
                     this.$refs.eventDrawer.editedObject.omit_list = list;
-                }
+                },
+                cache: false
             },
             title: function() {
                 if (this.controls && this.controls.initialEditedObject && this.controls.initialEditedObject.isEditMode) {
@@ -994,6 +995,7 @@
                                         segments.push(sg);
                                     }
                                     catch (e) {
+                                        console.error(e);
                                         // supress create mode
                                     }
                                 }
