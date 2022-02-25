@@ -209,9 +209,14 @@
             var currEvent = this.$route.params && this.$route.params.eventKey;
             if (!currEvent) {
                 var eventKey = localStorage.getItem("eventKey");
-                if (eventKey) {
-                    eventKey = JSON.parse(eventKey);
-                    currEvent = eventKey[appId];
+                try {
+                    if (eventKey) {
+                        eventKey = JSON.parse(eventKey);
+                        currEvent = eventKey[appId];
+                    }
+                }
+                catch (err) {
+                    currEvent = undefined;
                 }
             }
             if (currEvent) {

@@ -160,7 +160,7 @@
                 return;
             }
 
-            if (window.countlyVue && window.countlyVue.vuex) {
+            if (window.countlyCommon === this && window.countlyVue && window.countlyVue.vuex) {
                 var currentStore = window.countlyVue.vuex.getGlobalStore();
                 if (currentStore) {
                     currentStore.dispatch("countlyCommon/updatePeriod", {period: period, label: countlyCommon.getDateRangeForCalendar()});
@@ -1629,8 +1629,7 @@
                         activeDate = countlyCommon.periodObj.activePeriod;
                     }
                 }
-
-                for (var i = periodMin; i < periodMax; i++) {
+                for (var i = periodMin, counter = 0; i < periodMax; i++, counter++) {
 
                     if (!countlyCommon.periodObj.isSpecialPeriod) {
 
@@ -1653,11 +1652,11 @@
 
                     dataObj = clearFunction(dataObj);
 
-                    if (!tableData[i]) {
-                        tableData[i] = {};
+                    if (!tableData[counter]) {
+                        tableData[counter] = {};
                     }
 
-                    tableData[i].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                    tableData[counter].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
                     var propertyValue = "";
                     if (propertyFunctions[j]) {
                         propertyValue = propertyFunctions[j](dataObj);
@@ -1666,8 +1665,8 @@
                         propertyValue = dataObj[propertyNames[j]];
                     }
 
-                    chartData[j].data[chartData[j].data.length] = [i, propertyValue];
-                    tableData[i][propertyNames[j]] = propertyValue;
+                    chartData[j].data[chartData[j].data.length] = [counter, propertyValue];
+                    tableData[counter][propertyNames[j]] = propertyValue;
                 }
             }
 
@@ -2622,7 +2621,7 @@
                     //so we would not start from previous year
                     start.add(1, 'day');
 
-                    var monthCount = moment().diff(start, "months") + 1;
+                    var monthCount = 12;
 
                     for (i = 0; i < monthCount; i++) {
                         allMonths.push(start.format(countlyCommon.getDateFormat("MMM YYYY")));

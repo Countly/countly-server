@@ -348,6 +348,7 @@
                         itemSize: 0
                     },
                     tooltip: {
+                        appendToBody: true,
                         show: true,
                         trigger: 'axis',
                         axisPointer: {
@@ -387,7 +388,7 @@
                                                     <div class="chart-tooltip__series">\
                                                             <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
                                                         <div class="chart-tooltip__value">\
-                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter(params[i].value[1], params[i].value, i) : self.valFormatter(params[i].value, null, i)) + '</span>\
+                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
                                                         </div>\
                                                     </div>\
                                                 </div>';
@@ -443,7 +444,13 @@
                         axisLabel: {
                             show: true,
                             color: "#81868D",
-                            fontSize: 12
+                            fontSize: 12,
+                            formatter: function(value) {
+                                if (typeof value === "number") {
+                                    return countlyCommon.getShortNumber(value);
+                                }
+                                return value;
+                            }
                         },
                         splitLine: {
                             show: true,
