@@ -261,7 +261,7 @@
                     context.commit('setEventsMap', eventsMap);
                     if (countlyEventsOverview && countlyEventsOverview.service) {
                         countlyEventsOverview.service.fetchEvents().then(function(topEventData) {
-                            if (Array.isArray(topEventData.data)) {
+                            if (topEventData && Array.isArray(topEventData.data)) {
                                 var countMap = {};
                                 topEventData.data.forEach(function(event) {
                                     countMap[event.name] = event.count;
