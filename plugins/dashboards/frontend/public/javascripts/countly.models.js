@@ -732,7 +732,7 @@
                 drawerOpenStatus: function(state) {
                     return state.isDrawerOpen;
                 },
-                gridInteractionStatus: function(state) {
+                gridInteraction: function(state) {
                     return state.isGridInteraction;
                 },
                 isProcessing: function(state) {
@@ -766,7 +766,7 @@
                 drawerOpenStatus: function(context, status) {
                     context.commit("setIsDrawerOpen", status);
                 },
-                gridInteractionStatus: function(context, status) {
+                gridInteraction: function(context, status) {
                     context.commit("setIsGridInteraction", status);
                 },
                 isProcessing: function(context, status) {

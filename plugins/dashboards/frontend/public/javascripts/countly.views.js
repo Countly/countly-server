@@ -1068,6 +1068,10 @@
                     this.disableGrid();
                 }
 
+                this.grid.on("resizestart", function() {
+                    self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
+                });
+
                 this.grid.on("resizestop", function(event, element) {
                     var node = element.gridstackNode;
 
@@ -1099,6 +1103,16 @@
 
                     self.syncWidgetHeights();
                     self.updateAllWidgetsGeography();
+                    setTimeout(function() {
+                        /**
+                         * Or we could set grid interaction to false from the then of updateAllWidgetsGeography
+                         */
+                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", false);
+                    }, 500);
+                });
+
+                this.grid.on("dragstart", function() {
+                    self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
                 });
 
                 this.grid.on("dragstop", function(event, element) {
@@ -1138,6 +1152,12 @@
 
                     self.syncWidgetHeights();
                     self.updateAllWidgetsGeography();
+                    setTimeout(function() {
+                        /**
+                         * Or we could set grid interaction to false from the then of updateAllWidgetsGeography
+                         */
+                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", false);
+                    }, 500);
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -1218,7 +1238,7 @@
                 this.$store.dispatch("countlyDashboards/widgets/syncGeography", {_id: widgetId, settings: settings});
                 setTimeout(function() {
                     self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
-                }, 50);
+                }, 10);
             },
             updateAllWidgetsGeography: function() {
                 var allGridWidgets = this.savedGrid();
@@ -1503,6 +1523,10 @@
             isProcessing: function() {
                 var isProcessing = this.$store.getters["countlyDashboards/requests/isProcessing"];
                 return isProcessing;
+            },
+            isGridInteraction: function() {
+                var isInteraction = this.$store.getters["countlyDashboards/requests/gridInteraction"];
+                return isInteraction;
             }
         },
         created: function() {
@@ -1533,8 +1557,9 @@
                 var isAddingWidget = this.isAddingWidget;
                 var isDrawerOpen = this.isDrawerOpen;
                 var isProcessing = this.isProcessing;
+                var isGridInteraction = this.isGridInteraction;
 
-                if (isAddingWidget || isInitializing || isRefreshing || isDrawerOpen || isProcessing) {
+                if (isAddingWidget || isInitializing || isRefreshing || isDrawerOpen || isProcessing || isGridInteraction) {
                     return;
                 }
 

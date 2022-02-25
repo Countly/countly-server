@@ -21,7 +21,6 @@
     -->
 
     <div class="grid-stack-item-content bu-p-4">
-        <div style="position: absolute; font-size: 10px; left: 0; top: 0;">{{widget.widget_type}} widget... text added here for testing only.</div>
         <widget-disabled v-if="isWidgetDisabled(widget)" :widget="widget">
             <template v-slot:action v-if="canUpdateGrid">
                 <div class="bu-level-item">
