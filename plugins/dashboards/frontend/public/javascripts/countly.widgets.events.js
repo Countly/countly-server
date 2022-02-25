@@ -28,6 +28,9 @@
                 if (this.data.events && this.data.events.length === 1) {
                     var parts = this.data.events[0].split("***");
                     if (parts.length === 2) {
+                        if (this.data.dashData.naming && this.data.dashData.naming[parts[0]] && this.data.dashData.naming[parts[0]][parts[1]]) {
+                            parts[1] = this.data.dashData.naming[parts[0]][parts[1]];
+                        }
                         return this.data.title || parts[1];
                     }
                 }
