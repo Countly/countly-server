@@ -492,9 +492,9 @@
                             var currentVisibility = e.is_visible !== false;
                             isVisiblityFilter = currentVisibility === visibility;
                         }
-                        if (!e.status) {
+                        if (!e.status || e.status === "unplanned") {
                             var config = countlyPlugins.getConfigsData()['data-manager'] || {};
-                            if (config.allowUnexpectedEvents) {
+                            if (config.showUnplannedEventsUI) {
                                 defaultUnexpectedFilter = true;
                                 e.status = 'unplanned';
                             }
