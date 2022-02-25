@@ -487,7 +487,7 @@
                                         // TODO: these checks will be converted to helper method
                                         permissionSet[types[type]].all = typeof this.user.permission[types[type]][appFromSet].all === "boolean" ? this.user.permission[types[type]][appFromSet].all : false;
                                         if (!(types[type] === "r" && this.features[feature] === 'core')) {
-                                            permissionSet[types[type]].allowed[this.features[feature]] = typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]]  !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false;
+                                            permissionSet[types[type]].allowed[this.features[feature]] = typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false;
                                         }
                                     }
                                 }
