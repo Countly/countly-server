@@ -818,84 +818,6 @@
                 this.validateWidgets(allWidgets);
 
                 return allWidgets;
-            },
-            autoPosition: function() {
-                /**
-                 * This computed property is created for backward compatibility of
-                 * the grid system.
-                 * In the older dashborads, we used 12 column grid system, but in
-                 * new dashboard we are using 4 column grid system.
-                 * In the 4 column grid system, total sum of x coordinates of all
-                 * widgets can be maximum 6. If the sum is greater than that, it means
-                 * the widget is still following the old grid structure.
-                 *
-                 * Widget can be positioned at x = 0, 1, 2, 3. Total sum = 6
-                 *
-                 * We should remove this computed property after all customers are
-                 * moved to the new dashboards and are following the new grid system.
-                 */
-                var allGeography = this.$store.getters["countlyDashboards/widgets/allGeography"];
-                var autoPosition = false;
-
-                var positions = allGeography.map(function(w) {
-                    var position = w.position;
-
-                    if (!Array.isArray(position) || (position.length !== 2)) {
-                        autoPosition = true;
-                        return;
-                    }
-
-                    if (!Number.isInteger(position[0]) || !Number.isInteger(position[1])) {
-                        autoPosition = true;
-                        return;
-                    }
-
-                    return {
-                        x: position[0],
-                        y: position[1],
-                    };
-                });
-
-                if (autoPosition) {
-                    return autoPosition;
-                }
-
-                var sortedGeography = this.sortWidgetByGeography(positions);
-
-                var rowXSum = 0;
-                var Y;
-
-                for (var i = 0; i < sortedGeography.length; i++) {
-                    var node = sortedGeography[i];
-                    var y = node.y;
-                    var x = node.x;
-
-                    if (x > this.GRID_COLUMNS) {
-                        autoPosition = true;
-                        break;
-                    }
-
-                    if (!Number.isInteger(Y)) {
-                        Y = y;
-                    }
-
-                    if (Y !== y) {
-                        /**
-                         * Means its a new row now.
-                         */
-                        Y = y;
-                        rowXSum = 0;
-                    }
-
-                    rowXSum += x;
-
-                    if (rowXSum > this.MAX_ROW_X_SUM) {
-                        autoPosition = true;
-                        break;
-                    }
-                }
-
-                return autoPosition;
             }
         },
         methods: {
@@ -1292,6 +1214,91 @@
 
                     this.updateWidgetGeography(wId, {size: size, position: position});
                 }
+            },
+            autoPosition: function(allWidgets) {
+                /**
+                 * This function is created for backward compatibility of
+                 * the grid system.
+                 * In the older dashborads, we used 12 column grid system, but in
+                 * new dashboard we are using 4 column grid system.
+                 * In the 4 column grid system, total sum of x coordinates of all
+                 * widgets can be maximum 6. If the sum is greater than that, it means
+                 * the widget is still following the old grid structure.
+                 *
+                 * Widget can be positioned at x = 0, 1, 2, 3. Total sum = 6
+                 *
+                 * We should remove this computed property after all customers are
+                 * moved to the new dashboards and are following the new grid system.
+                 */
+                var allGeography = allWidgets.map(function(w) {
+                    return {
+                        _id: w._id,
+                        size: w.size,
+                        position: w.position
+                    };
+                });
+
+                var autoPosition = false;
+
+                var positions = allGeography.map(function(w) {
+                    var position = w.position;
+
+                    if (!Array.isArray(position) || (position.length !== 2)) {
+                        autoPosition = true;
+                        return;
+                    }
+
+                    if (!Number.isInteger(position[0]) || !Number.isInteger(position[1])) {
+                        autoPosition = true;
+                        return;
+                    }
+
+                    return {
+                        x: position[0],
+                        y: position[1],
+                    };
+                });
+
+                if (autoPosition) {
+                    return autoPosition;
+                }
+
+                var sortedGeography = this.sortWidgetByGeography(positions);
+
+                var rowXSum = 0;
+                var Y;
+
+                for (var i = 0; i < sortedGeography.length; i++) {
+                    var node = sortedGeography[i];
+                    var y = node.y;
+                    var x = node.x;
+
+                    if (x > this.GRID_COLUMNS) {
+                        autoPosition = true;
+                        break;
+                    }
+
+                    if (!Number.isInteger(Y)) {
+                        Y = y;
+                    }
+
+                    if (Y !== y) {
+                        /**
+                         * Means its a new row now.
+                         */
+                        Y = y;
+                        rowXSum = 0;
+                    }
+
+                    rowXSum += x;
+
+                    if (rowXSum > this.MAX_ROW_X_SUM) {
+                        autoPosition = true;
+                        break;
+                    }
+                }
+
+                return autoPosition;
             },
             savedGrid: function() {
                 return this.grid.save(false);
