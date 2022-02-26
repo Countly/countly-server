@@ -1177,7 +1177,7 @@
         };
 
         app.addAppSwitchCallback(function(appId) {
-            if (app._isFirstLoad !== true) {
+            if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME)) {
                 countlyViews.loadList(appId);
             }
         });
