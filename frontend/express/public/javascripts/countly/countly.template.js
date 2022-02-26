@@ -701,7 +701,7 @@ var AppRouter = Backbone.Router.extend({
         "events": "events",
         "events-overview": "events",
         "all-events": "events",
-        "management": "admin",
+        "management": "core",
         "applications": "admin",
         "users": "admin",
         "jobs": "admin",
