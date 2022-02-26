@@ -4,11 +4,13 @@ const asyncLib = require('async');
 const EventEmitter = require('events');
 
 const common = require('../../../api/utils/common.js');
+const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');
 const log = common.log('hooks:api');
 const _ = require('lodash');
 const utils = require('./utils');
 
+const FEATURE_NAME = 'hooks';
 
 plugins.setConfigs("hooks", {
     batchActionSize: 0, // size for processing actions each time
@@ -178,9 +180,8 @@ const CheckHookProperties = function(hookConfig) {
 
 plugins.register("/i/hook/save", function(ob) {
     let paramsInstance = ob.params;
-    let validateUserForWriteAPI = ob.validateUserForWriteAPI;
 
-    validateUserForWriteAPI(function(params) {
+    validateCreate(ob.params, FEATURE_NAME, function(params) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
@@ -229,8 +230,8 @@ plugins.register("/i/hook/save", function(ob) {
 
 plugins.register("/o/hook/list", function(ob) {
     const paramsInstance = ob.params;
-    let validateUserForWriteAPI = ob.validateUserForWriteAPI;
-    validateUserForWriteAPI(function(params) {
+
+    validateRead(paramsInstance, FEATURE_NAME, function(params) {
         try {
             let query = { $query: {}, $orderby: { created_at: -1 } };
             if (paramsInstance.qstring && paramsInstance.qstring.id) {
@@ -262,8 +263,8 @@ plugins.register("/o/hook/list", function(ob) {
 
 plugins.register("/i/hook/status", function(ob) {
     let paramsInstance = ob.params;
-    let validateUserForWriteAPI = ob.validateUserForWriteAPI;
-    validateUserForWriteAPI(function(params) {
+
+    validateUpdate(paramsInstance, FEATURE_NAME, function(params) {
         const statusList = JSON.parse(params.qstring.status);
         const batch = [];
         for (const appID in statusList) {
@@ -287,9 +288,8 @@ plugins.register("/i/hook/status", function(ob) {
 
 plugins.register("/i/hook/delete", function(ob) {
     let paramsInstance = ob.params;
-    let validateUserForWriteAPI = ob.validateUserForWriteAPI;
 
-    validateUserForWriteAPI(function(params) {
+    validateDelete(paramsInstance, FEATURE_NAME, function(params) {
         let hookID = params.qstring.hookID;
         try {
             common.db.collection("hooks").remove(
@@ -313,8 +313,8 @@ plugins.register("/i/hook/delete", function(ob) {
 //  test hook with mock hook config data
 plugins.register("/i/hook/test", function(ob) {
     const paramsInstance = ob.params;
-    let validateUserForWriteAPI = ob.validateUserForWriteAPI;
-    validateUserForWriteAPI(async(params) => {
+    
+    validateCreate(paramsInstance, FEATURE_NAME, async(params) => {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
