@@ -364,6 +364,9 @@
 
     var EventsDefaultTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events-default.html'),
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         components: {
             'data-manager-manage-category': ManageCategory
         },
@@ -416,6 +419,12 @@
             };
         },
         computed: {
+            hasCreateRight: function() {
+                return countlyAuth.validateCreate(FEATURE_NAME);
+            },
+            hasDeleteRight: function() {
+                return countlyAuth.validateDelete(FEATURE_NAME);
+            },
             isLoading: {
                 get: function() {
                     return this.$store.getters["countlyDataManager/isLoading"];
@@ -735,6 +744,9 @@
 
     var EventsGroupsTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-groups.html'),
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         data: function() {
             return {
                 eventsGroupTablePersistKey: "dm_event_groups_table_" + countlyCommon.ACTIVE_APP_ID,
@@ -851,6 +863,7 @@
     var EventsView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events.html'),
         mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME),
             countlyVue.mixins.hasDrawers(["events", "transform", "segments", "eventgroup", "regenerate"]),
             countlyVue.container.tabsMixin({
                 "externalTabs": "/manage/data-manager/events"
