@@ -1,7 +1,6 @@
 /*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull */
 
 (function() {
-    var FEATURE_NAME = "dashboards";
     var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
 
     /**
@@ -1762,22 +1761,20 @@
         });
     };
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route("/custom", '', function() {
-            var mainView = getMainView();
-            this.renderWhenReady(mainView);
-        });
+    app.route("/custom", '', function() {
+        var mainView = getMainView();
+        this.renderWhenReady(mainView);
+    });
 
-        app.route('/custom/*dashboardId', '', function(dashboardId) {
-            var mainView = getMainView();
-            var params = {
-                dashboardId: dashboardId
-            };
+    app.route('/custom/*dashboardId', '', function(dashboardId) {
+        var mainView = getMainView();
+        var params = {
+            dashboardId: dashboardId
+        };
 
-            mainView.params = params;
-            this.renderWhenReady(mainView);
-        });
-    }
+        mainView.params = params;
+        this.renderWhenReady(mainView);
+    });
 
 
     var DashboardsMenu = countlyVue.views.create({
@@ -1788,7 +1785,7 @@
         },
         data: function() {
             return {
-                canCreate: countlyAuth.validateCreate(FEATURE_NAME),
+                canCreate: true,
                 searchQuery: "",
             };
         },

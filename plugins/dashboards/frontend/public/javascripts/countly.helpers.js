@@ -1,4 +1,4 @@
-/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal, countlyDashboards, moment*/
+/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal, countlyDashboards, moment, countlyAuth*/
 
 (function() {
     /**
@@ -258,13 +258,12 @@
                 case "user-analytics":
                     breakdowns.push({ label: this.i18n("user-analytics.overview-title"), value: "overview"});
 
-                    if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("active_users") > -1) {
+                    if (countlyAuth.validateRead("active_users") && countlyGlobal.plugins && countlyGlobal.plugins.indexOf("active_users") > -1) {
                         breakdowns.push({ label: this.i18n("active_users.title"), value: "active"});
                     }
-                    if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("concurrent_users") > -1) {
+                    if (countlyAuth.validateRead("concurrent_users") && countlyGlobal.plugins && countlyGlobal.plugins.indexOf("concurrent_users") > -1) {
                         breakdowns.push({ label: this.i18n("concurrent-users.title"), value: "online"});
                     }
-
 
                     break;
                 case "geo":
@@ -492,29 +491,34 @@
             }
         },
         data: function() {
-            var allTypes = [
-                {
-                    value: "session",
-                    label: this.i18n("dashboards.data-type.session")
-                },
-                {
-                    value: "user-analytics",
-                    label: this.i18n("dashboards.data-type.user-analytics")
-                },
-                {
-                    value: "technology",
-                    label: this.i18n("dashboards.data-type.technology")
-                },
-                {
-                    value: "geo",
-                    label: this.i18n("dashboards.data-type.geo")
-                }
-            ];
-            if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("views") > -1) {
+            var allTypes = [];
+
+            if (countlyAuth.validateRead("core")) {
+                allTypes.push(
+                    {
+                        value: "session",
+                        label: this.i18n("dashboards.data-type.session")
+                    },
+                    {
+                        value: "user-analytics",
+                        label: this.i18n("dashboards.data-type.user-analytics")
+                    },
+                    {
+                        value: "technology",
+                        label: this.i18n("dashboards.data-type.technology")
+                    }
+                );
+            }
+
+            if (countlyAuth.validateRead("geo")) {
+                allTypes.push({value: "geo", label: this.i18n("dashboards.data-type.geo")});
+            }
+
+            if (countlyAuth.validateRead("views") && countlyGlobal.plugins && (countlyGlobal.plugins.indexOf("views") > -1)) {
                 allTypes.push({ label: this.i18n("dashboards.data-type.views"), value: "views"});
             }
 
-            if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("sources") > -1) {
+            if (countlyAuth.validateRead("sources") && countlyGlobal.plugins && (countlyGlobal.plugins.indexOf("sources") > -1)) {
                 allTypes.push({ label: this.i18n("dashboards.data-type.sources"), value: "sources"});
             }
 
