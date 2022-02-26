@@ -13,12 +13,12 @@
       </template>
       <template v-slot:header-right>
         <div>
-          <div class="is-option-button">
+          <div class="is-option-button" v-if="canUserUpdate || canUserDelete">
             <cly-more-options size="small" @command="handleHookEditCommand($event, hookDetail)">
-               <el-dropdown-item  icon="el-icon-document-copy" command="edit-comment">
+               <el-dropdown-item  icon="el-icon-document-copy" v-if="canUserUpdate" command="edit-comment">
                    Edit
                </el-dropdown-item>
-               <el-dropdown-item icon="el-icon-delete" command="delete-comment">
+               <el-dropdown-item icon="el-icon-delete" v-if="canUserDelete" command="delete-comment">
                    Delete
                </el-dropdown-item>
            </cly-more-options>

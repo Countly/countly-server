@@ -264,6 +264,14 @@
     margin-right: 12px;
 }
 
+.cly-vue-zoom {
+    &__external {
+        .chart-zoom-button {
+            margin: 0;
+        }
+    }
+}
+
 .chart-download-button {
     width: 42px;
     height: 32px;

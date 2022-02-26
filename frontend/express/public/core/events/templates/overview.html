@@ -15,7 +15,7 @@
 		  <div class="bu-mb-4" v-if="eventsOverview.length>0">
 			<el-button disabled icon="el-icon-date">{{i18n('events.overview.last-30days')}}</el-button>
 		  </div>
-		  <cly-section>
+		  <cly-section v-if="eventsOverview.length>0">
 			<cly-metric-cards :multiline="false" v-if="eventsOverview.length>0">
 			  <cly-metric-card formatting="long" :number=eventsOverview[0].value :tooltip="i18n('events.overview.total.event.count')" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 					<span class="has-ellipsis" v-tooltip="eventsOverview[0].name">{{eventsOverview[0].name}}</span>

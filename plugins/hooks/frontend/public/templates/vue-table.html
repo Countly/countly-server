@@ -28,6 +28,7 @@
                 <template v-slot="rowScope">
                     <el-switch :value="rowScope.row.enabled"
                         class="bu-ml-4  bu-mr-2" 
+                        :disabled="!canUserUpdate"
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                     </el-switch>
                 </template>
@@ -78,13 +79,13 @@
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column type="options">
+            <el-table-column type="options"  v-if="canUserUpdate || canUserDelete" >
                 <template v-slot="rowScope">
                     <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleHookEditCommand($event,rowScope)">
-                        <el-dropdown-item icon="el-icon-document-copy" command="edit-comment">
+                        <el-dropdown-item v-if="canUserUpdate" icon="el-icon-document-copy" command="edit-comment">
                             {{i18n('hooks.edit')}}
                         </el-dropdown-item>
-                        <el-dropdown-item icon="el-icon-delete" command="delete-comment">
+                        <el-dropdown-item v-if="canUserDelete" icon="el-icon-delete" command="delete-comment">
                             {{i18n('hooks.delete')}}
                         </el-dropdown-item>
                     </cly-more-options>
