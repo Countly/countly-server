@@ -1754,106 +1754,105 @@
         });
     }
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
 
-        var DashboardsMenu = countlyVue.views.create({
-            template: CV.T('/dashboards/templates/dashboards-menu.html'),
-            mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
-            components: {
-                "dashboards-drawer": DashboardDrawer
-            },
-            data: function() {
-                return {
-                    canCreate: countlyAuth.validateCreate(FEATURE_NAME),
-                    searchQuery: "",
-                };
-            },
-            computed: {
-                selectedDashboard: function() {
-                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+    var DashboardsMenu = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/dashboards-menu.html'),
+        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
+        components: {
+            "dashboards-drawer": DashboardDrawer
+        },
+        data: function() {
+            return {
+                canCreate: countlyAuth.validateCreate(FEATURE_NAME),
+                searchQuery: "",
+            };
+        },
+        computed: {
+            selectedDashboard: function() {
+                var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
-                    if (selected.menu === "dashboards") {
-                        return selected.item;
-                    }
-
-                    return {};
-                },
-                allDashboards: function() {
-                    var query = this.searchQuery;
-
-                    var dashboards = this.$store.getters["countlyDashboards/all"];
-
-                    if (!query) {
-                        return dashboards;
-                    }
-
-                    query = (query + "").trim().toLowerCase();
-
-                    return dashboards.filter(function(option) {
-                        var compareTo = option.name || "";
-                        return compareTo.toLowerCase().indexOf(query) > -1;
-                    });
+                if (selected.menu === "dashboards") {
+                    return selected.item;
                 }
+
+                return {};
             },
-            methods: {
-                onDashboardMenuItemClick: function(dashboard) {
-                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: dashboard});
-                },
-                identifySelected: function() {
-                    var dashboards = this.$store.getters["countlyDashboards/all"];
+            allDashboards: function() {
+                var query = this.searchQuery;
 
-                    var currLink = Backbone.history.fragment;
+                var dashboards = this.$store.getters["countlyDashboards/all"];
 
-                    if (/^\/custom/.test(currLink) === false) {
-                        var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
-                        if (selected.menu === "dashboards") {
-                            /**
-                             * Incase the selected menu is already dashboards, we need to reset
-                             * the selected item to {}. Since we did not find the menu item.
-                             *
-                             * This is important as there are urls in countly like /versions,
-                             * which are not in the sidebar. So for them we don't need to highlight
-                             * anything.
-                             */
-                            this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "dashboards", item: {} });
-                        }
-
-                        return;
-                    }
-
-                    currLink = currLink.split("/");
-                    var id = currLink[currLink.length - 1];
-
-                    var currMenu = dashboards.find(function(d) {
-                        return d._id === id;
-                    });
-
-                    /**
-                     * Even if we don't find a dashboard, we should atleast set the
-                     * menu item to dashboards.
-                     */
-                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
+                if (!query) {
+                    return dashboards;
                 }
-            },
-            beforeCreate: function() {
-                this.module = countlyDashboards.getVuexModule();
-                CV.vuex.registerGlobally(this.module);
-            },
-            beforeMount: function() {
-                var self = this;
-                this.$store.dispatch("countlyDashboards/getAll").then(function() {
-                    self.identifySelected();
+
+                query = (query + "").trim().toLowerCase();
+
+                return dashboards.filter(function(option) {
+                    var compareTo = option.name || "";
+                    return compareTo.toLowerCase().indexOf(query) > -1;
                 });
             }
-        });
+        },
+        methods: {
+            onDashboardMenuItemClick: function(dashboard) {
+                this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: dashboard});
+            },
+            identifySelected: function() {
+                var dashboards = this.$store.getters["countlyDashboards/all"];
 
-        countlyVue.container.registerData("/sidebar/menu/main", {
-            name: "dashboards",
-            icon: "cly-icon-sidebar-dashboards",
-            tooltip: CV.i18n("sidebar.dashboard-tooltip"),
-            component: DashboardsMenu
-        });
-    }
+                var currLink = Backbone.history.fragment;
+
+                if (/^\/custom/.test(currLink) === false) {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                    if (selected.menu === "dashboards") {
+                        /**
+                         * Incase the selected menu is already dashboards, we need to reset
+                         * the selected item to {}. Since we did not find the menu item.
+                         *
+                         * This is important as there are urls in countly like /versions,
+                         * which are not in the sidebar. So for them we don't need to highlight
+                         * anything.
+                         */
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "dashboards", item: {} });
+                    }
+
+                    return;
+                }
+
+                currLink = currLink.split("/");
+                var id = currLink[currLink.length - 1];
+
+                var currMenu = dashboards.find(function(d) {
+                    return d._id === id;
+                });
+
+                /**
+                 * Even if we don't find a dashboard, we should atleast set the
+                 * menu item to dashboards.
+                 */
+                this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
+            }
+        },
+        beforeCreate: function() {
+            this.module = countlyDashboards.getVuexModule();
+            CV.vuex.registerGlobally(this.module);
+        },
+        beforeMount: function() {
+            var self = this;
+            this.$store.dispatch("countlyDashboards/getAll").then(function() {
+                self.identifySelected();
+            });
+        }
+    });
+
+    countlyVue.container.registerData("/sidebar/menu/main", {
+        name: "dashboards",
+        icon: "cly-icon-sidebar-dashboards",
+        tooltip: CV.i18n("sidebar.dashboard-tooltip"),
+        component: DashboardsMenu
+    });
+
 
     countlyVue.container.registerMixin("/manage/export/export-features", {
         beforeCreate: function() {
