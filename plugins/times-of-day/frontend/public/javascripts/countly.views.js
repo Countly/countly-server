@@ -135,6 +135,7 @@ if (countlyAuth.validateRead(featureName)) {
         type: "times-of-day",
         label: CV.i18n("times-of-day.title"),
         priority: 8,
+        feature: featureName,
         primary: true,
         isPluginWidget: true,
         getter: function(widget) {

@@ -386,6 +386,7 @@
         type: "analytics",
         label: CV.i18nM("sources.title"),
         priority: 1,
+        feature: FEATURE_NAME,
         primary: false,
         getter: function(widget) {
             return widget.widget_type === "analytics" && widget.data_type === "sources";

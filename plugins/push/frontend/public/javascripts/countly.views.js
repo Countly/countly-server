@@ -2500,6 +2500,7 @@
     function addWidgetToCustomDashboard() {
         countlyVue.container.registerData('/custom/dashboards/widget', {
             type: 'push',
+            feature: featureName,
             label: CV.i18n('push-notification.title'),
             priority: 6,
             primary: true,

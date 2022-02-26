@@ -163,6 +163,7 @@
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "crash",
+        feature: "crashes",
         label: CV.i18nM("dashboards.widget-type.crash"),
         priority: 11,
         primary: true,

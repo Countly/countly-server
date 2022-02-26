@@ -136,6 +136,7 @@
         type: "note",
         label: CV.i18nM("dashboards.widget-type.note"),
         priority: 5,
+        feature: "core",
         primary: true,
         getter: function(widget) {
             return widget.widget_type === "note";
