@@ -961,7 +961,9 @@
             },
             handleMetaCommands: function(event) {
                 if (event === 'regnerate') {
-                    this.openDrawer("regenerate", {});
+                    this.openDrawer("regenerate", {
+                        selectedDateRange: '30days'
+                    });
                 }
                 else if (event === 'export-schema') {
                     this.$store.dispatch('countlyDataManager/exportSchema');
