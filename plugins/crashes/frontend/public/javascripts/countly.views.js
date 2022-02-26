@@ -1,5 +1,5 @@
 /* eslint-disable no-unreachable */
-/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV, Promise */
+/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV, Promise, countlyAuth */
 
 (function() {
     var groupId, crashId;
@@ -1119,7 +1119,7 @@
             linkTo: {"label": CV.i18n('crashes.go-to-crashes'), "href": "#/crashes"},
             component: CrashesDashboardWidget
         });
-    
+
         countlyVue.container.registerTab("/users/tabs", {
             priority: 7,
             title: 'Crashes',
@@ -1164,11 +1164,11 @@
             })
         });
     }
-    
+
     jQuery(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
             app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
-    
+
             if (app.configurationsView) {
                 app.configurationsView.registerInput("crashes.grouping_strategy", {
                     input: "el-select",
@@ -1183,12 +1183,12 @@
             app.route("/crashes", "crashes", function() {
                 this.renderWhenReady(getOverviewView());
             });
-        
+
             app.route("/crashes/:group", "crashgroup", function(group) {
                 groupId = group;
                 this.renderWhenReady(getCrashgroupView());
             });
-        
+
             app.route("/crashes/:group/binary-images/:crash", "crashgroup", function(group, crash) {
                 groupId = group;
                 crashId = crash;
@@ -1197,4 +1197,3 @@
         }
     });
 })();
-

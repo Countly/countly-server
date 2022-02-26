@@ -313,7 +313,7 @@ plugins.register("/i/hook/delete", function(ob) {
 //  test hook with mock hook config data
 plugins.register("/i/hook/test", function(ob) {
     const paramsInstance = ob.params;
-    
+
     validateCreate(paramsInstance, FEATURE_NAME, async(params) => {
         let hookConfig = params.qstring.hook_config;
         try {
