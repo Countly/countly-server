@@ -12,6 +12,15 @@
      * and not the dashboard settings itself.
      *
      * - prikshit
+     *
+     * If a widget feature is not allowed to the user, he cannot edit or delete the widget.
+     * Nor can he create a widget. We won't show him that respective widget in the drawer
+     * at all. In this case the user can only see the widget in the dashboard grid.
+     * We have key called "isAllowed" in the widget settings object to check if the widget
+     * is allowed to a user or not.
+     * It is also passed to the widget grid component as a prop called "is-allowed".
+     * For those who have their own action buttons in the widget grid, they should
+     * hide them if "is-allowed" is false. For example - drill.
      */
 
     var WidgetsMixin = {
@@ -27,6 +36,22 @@
                     if (!acc[component.type]) {
                         acc[component.type] = [];
                     }
+
+                    var featureName = component.feature;
+                    var allowed = true;
+
+                    if (!featureName) {
+                        allowed = false;
+                    }
+
+                    if (!countlyAuth.validateRead(featureName)) {
+                        allowed = false;
+                        countlyDashboards.factory.log(featureName + " feature is not allowed to this user.");
+                        countlyDashboards.factory.log("Therefore he cannot edit, delete or create a widget of this type.");
+                        countlyDashboards.factory.log("The user can only view the widget in the dashboard grid.");
+                    }
+
+                    component.isAllowed = allowed;
 
                     acc[component.type].push(component);
                     return acc;

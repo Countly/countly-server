@@ -19,6 +19,7 @@
                     @change="reset">
                     <div
                         v-for="(item, index) in widgetTypes"
+                        v-if="item.isAllowed"
                         style="box-sizing: border-box;"
                         :class="['bu-column bu-is-one-quarter bu-m-0 bu-p-0',
                                 {'bu-pr-2': ((index + 1) % 4 !== 0)},

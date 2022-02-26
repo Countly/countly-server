@@ -194,6 +194,7 @@
      */
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
+        feature: "core",
         label: CV.i18nM("dashboards.widget-type.analytics"),
         priority: 1,
         primary: true,
