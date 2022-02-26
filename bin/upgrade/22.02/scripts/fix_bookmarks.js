@@ -39,7 +39,22 @@ function getBookmarkSignature(obj) {
 
 function processBookmark(obj) {
 
-    if (!obj.by_val) {
+    if (obj.by_val) {
+        if (typeof obj.by_val === 'string') {
+            if (obj.by_val.trim().startsWith("[")) {
+                obj.by_val = JSON.parse(obj.by_val);
+            }
+            else {
+                obj.by_val = [obj.by_val];
+            }
+        }
+        else {
+            obj.by_val = obj.by_val;
+        }
+
+        obj.by_val = JSON.stringify(obj.by_val);
+    }
+    else {
         obj.by_val = "[]";
     }
     if (!obj.by_val_text) {
