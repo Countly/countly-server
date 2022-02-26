@@ -16,6 +16,9 @@
     var FEATURE_NAME = "reports";
 
     var TableView = countlyVue.views.BaseView.extend({
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         template: '#reports-table',
         computed: {
             tableRows: function() {
@@ -36,8 +39,6 @@
                 localTableTrackedFields: ['enabled'],
                 isAdmin: countlyGlobal.member.global_admin,
                 deleteElement: null,
-                canUpdate: countlyAuth.validateUpdate(FEATURE_NAME),
-                canDelete: countlyAuth.validateDelete(FEATURE_NAME),
             };
         },
         props: {
@@ -117,7 +118,7 @@
         mixins: [
             countlyVue.container.dataMixin({
                 "externalDataTypeOptions": "/reports/data-type",
-            })
+            }),
         ],
         components: {
         },
@@ -312,7 +313,10 @@
 
     var ReportsHomeViewComponent = countlyVue.views.BaseView.extend({
         template: "#reports-home",
-        mixins: [countlyVue.mixins.hasDrawers("home")],
+        mixins: [
+            countlyVue.mixins.hasDrawers("home"),
+            countlyVue.mixins.auth(FEATURE_NAME),
+        ],
         components: {
             "table-view": TableView,
             "drawer": ReportsDrawer,

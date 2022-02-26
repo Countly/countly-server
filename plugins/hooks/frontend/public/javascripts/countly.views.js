@@ -6,6 +6,9 @@
 
     var TableView = countlyVue.views.BaseView.extend({
         template: '#hooks-table',
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         computed: {
             tableRows: function() {
                 var rows = this.$store.getters["countlyHooks/table/all"];
@@ -693,7 +696,10 @@
 
     var HooksHomeViewComponent = countlyVue.views.BaseView.extend({
         template: "#hooks-home",
-        mixins: [countlyVue.mixins.hasDrawers("home")],
+        mixins: [
+            countlyVue.mixins.hasDrawers("home"),
+            countlyVue.mixins.auth(FEATURE_NAME),
+        ],
         components: {
             "table-view": TableView,
             "drawer": HookDrawer,
@@ -757,7 +763,10 @@
 
     var HooksDetailComponent = countlyVue.views.BaseView.extend({
         template: "#hooks-detail-view",
-        mixins: [countlyVue.mixins.hasDrawers("detail")],
+        mixins: [
+            countlyVue.mixins.hasDrawers("detail"),
+            countlyVue.mixins.auth(FEATURE_NAME),
+        ],
         components: {
             "error-table-view": DetailErrorsTableView,
             "drawer": HookDrawer,
