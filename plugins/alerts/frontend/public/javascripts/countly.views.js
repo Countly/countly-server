@@ -365,6 +365,9 @@
 
     var TableView = countlyVue.views.BaseView.extend({
         template: '#alerts-table',
+        mixins: [
+            countlyVue.mixins.auth(ALERTS_FEATURE_NAME),
+        ],
         computed: {
             tableRows: function() {
                 var rows = this.$store.getters["countlyAlerts/table/all"];
@@ -403,8 +406,6 @@
                 filteredApps: [],
                 localTableTrackedFields: ['enabled'],
                 isAdmin: countlyGlobal.member.global_admin,
-                canUpdate: countlyAuth.validateUpdate(ALERTS_FEATURE_NAME),
-                canDelete: countlyAuth.validateDelete(ALERTS_FEATURE_NAME),
                 deleteElement: null,
             };
         },
@@ -476,7 +477,10 @@
 
     var AlertsHomeViewComponent = countlyVue.views.BaseView.extend({
         template: "#alerts-home",
-        mixins: [countlyVue.mixins.hasDrawers("home")],
+        mixins: [
+            countlyVue.mixins.hasDrawers("home"),
+            countlyVue.mixins.auth(ALERTS_FEATURE_NAME),
+        ],
         components: {
             "table-view": TableView,
             "drawer": AlertDrawer,
