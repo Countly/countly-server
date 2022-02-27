@@ -41,7 +41,13 @@ function pushValues(period, index, map) {
         if (!tableResponse[period].aaData[index][key]) {
             tableResponse[period].aaData[index][key] = 0;
         }
-        tableResponse[period].aaData[index][key] += map[key];
+        
+		if(key ==='view'){
+			tableResponse[period].aaData[index][key] = map[key];
+		}
+		else {
+			tableResponse[period].aaData[index][key] += map[key];
+		}
     }
     if (tableResponse[period].aaData[index]["t"] > 0) {
         tableResponse[period].aaData[index]['d-calc'] = tableResponse[period].aaData[index]["d"] / tableResponse[period].aaData[index]["t"];
@@ -81,6 +87,8 @@ function verifyMetrics(err, ob, done, correct) {
             }
         }
         else if (ob[c] != correct[c]) {
+			console.log("key:"+ c);
+			console.log(correct[c]+" "+ob[c]);
             return false;
         }
     }
@@ -157,27 +165,53 @@ function verifySegments(values) {
 
 }
 
-function verifyTotals(period) {
+function verifyTotals(period, order,orderString) {
     it('checking result(' + period + ')', function(done) {
+		orderString = orderString || "&iSortCol_0=0&sSortDir_0=asc";
         request
-            .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&iSortCol_0=0&sSortDir_0=asc&period=' + period)
+            .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable'+orderString+'&period=' + period)
             .expect(200)
             .end(function(err, res) {
                 var resDecoded = JSON.parse(res.text);
                 resDecoded.iTotalRecords.should.eql(tableResponse[period].iTotalRecords);
                 resDecoded.iTotalDisplayRecords.should.eql(tableResponse[period].iTotalDisplayRecords);
                 if (resDecoded.aaData.length > 0 && tableResponse[period].aaData.length > 0) {
-                    if (!tableResponse[period].aaData[tableResponse[period].aaData.length - 1]._id) {
+                    /*if (!tableResponse[period].aaData[tableResponse[period].aaData.length - 1]._id && tableResponse[period].aaData[tableResponse[period].aaData.length - 1].view == resDecoded.aaData[tableResponse[period].aaData.length - 1].view) {
                         viewsListed.push({"view": resDecoded.aaData[tableResponse[period].aaData.length - 1]._id, "action": ""});
                         tableResponse[period].aaData[tableResponse[period].aaData.length - 1]._id = resDecoded.aaData[tableResponse[period].aaData.length - 1]._id;
                         tableResponse[period].aaData[tableResponse[period].aaData.length - 1].view = resDecoded.aaData[tableResponse[period].aaData.length - 1].view;
-                    }
+                    }*/
+					resDecoded.aaData  = resDecoded.aaData.sort(function(a,b){
+						if (a.view < b.name) {
+							return -1;
+						}
+						if (a.name > b.name) {
+							return 1;
+						}
+						return 0;
+					});
                     for (var i = 0; i < resDecoded.aaData.length; i++) {
-                        if (verifyMetrics(err, resDecoded.aaData[i], done, tableResponse[period].aaData[i]) == false) {
-                            console.log("GOT: " + JSON.stringify(resDecoded.aaData));
-                            console.log("NEED:" + JSON.stringify(tableResponse[period].aaData));
-                            return done("wrong values");
-                        }
+						if(order){
+							if(!tableResponse[period].aaData[order[i]]._id){
+								tableResponse[period].aaData[order[i]]._id = resDecoded.aaData[i]._id;
+							}
+							if (verifyMetrics(err, resDecoded.aaData[order[i]], done, tableResponse[period].aaData[i]) == false) {
+								console.log(JSON.stringify(order));
+								console.log("GOT: " + JSON.stringify(resDecoded.aaData));
+								console.log("NEED:" + JSON.stringify(tableResponse[period].aaData));
+								return done("wrong values");
+							}
+						}
+						else {
+							if(!tableResponse[period].aaData[i]._id){
+								tableResponse[period].aaData[i]._id = resDecoded.aaData[i]._id;
+							}
+							if (verifyMetrics(err, resDecoded.aaData[i], done, tableResponse[period].aaData[i]) == false) {
+								console.log("GOT: " + JSON.stringify(resDecoded.aaData));
+								console.log("NEED:" + JSON.stringify(tableResponse[period].aaData));
+								return done("wrong values");
+							}
+						}
                     }
                     done();
 
@@ -235,12 +269,12 @@ describe('Testing views plugin', function() {
         it('adding view(25 days ago)', function(done) {
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
-            pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
+            pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1, "view":"testview0"});
 
             if (days_this_year > 25) {
                 tableResponse.month.iTotalRecords += 1;
                 tableResponse.month.iTotalDisplayRecords += 1;
-                pushValues("month", 0, {"t": 1, "s": 1, "uvalue": 1, "n": 1});
+                pushValues("month", 0, {"t": 1, "s": 1, "uvalue": 1, "n": 1, "view":"testview0"});
             }
             else {
                 tableResponse.month.iTotalRecords = 1;
@@ -265,13 +299,13 @@ describe('Testing views plugin', function() {
         it('adding view', function(done) {
             tableResponse.yesterday.iTotalRecords += 1;
             tableResponse.yesterday.iTotalDisplayRecords += 1;
-            pushValues("yesterday", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1});
+            pushValues("yesterday", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "view":"testview0"});
 
             pushValues("30days", 0, {"u": 1, "t": 1, "s": 1});
 
             tableResponse["7days"].iTotalRecords += 1;
             tableResponse["7days"].iTotalDisplayRecords += 1;
-            pushValues("7days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1});
+            pushValues("7days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "view":"testview0"});
 
             if (days_this_year > 1) {
                 tableResponse.month.iTotalRecords = 1;
@@ -328,17 +362,15 @@ describe('Testing views plugin', function() {
         it('adding view', function(done) {
             tableResponse.hour.iTotalRecords += 1;
             tableResponse.hour.iTotalDisplayRecords += 1;
-            tableResponse.yesterday.iTotalRecords += 1;
-            tableResponse.yesterday.iTotalDisplayRecords += 1;
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
 
-            pushValues("hour", 1, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
-            pushValues("30days", 1, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
+            pushValues("hour", 1, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1, "view":"testview1"});
+            pushValues("30days", 1, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1,  "view":"testview1"});
 
             tableResponse.month.iTotalRecords = 2;
             tableResponse.month.iTotalDisplayRecords = 2;
-            pushValues("month", 1, {"t": 1, "s": 1, "uvalue": 1, "n": 1});
+            pushValues("month", 1, {"t": 1, "s": 1, "uvalue": 1, "n": 1, "view":"testview1"});
 
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview1", "visit": 1, "start": 1}}]);
             request
@@ -411,7 +443,7 @@ describe('Testing views plugin', function() {
         it('Adding platform(as segment)', function(done) {
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
-            pushValues("30days", 2, {"uvalue": 1, "u": 1, "n": 1, "t": 1, "s": 1});
+            pushValues("30days", 2, {"uvalue": 1, "u": 1, "n": 1, "t": 1, "s": 1,"view":"testview2"});
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview2", "segment": "Android", "visit": 1, "start": 1}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime + 1) + '&events=' + data)
@@ -526,11 +558,12 @@ describe('Testing views plugin', function() {
     });
     describe('checking deleting view', function() {
         it('deleting testview0', function(done) {
+			var iid = tableResponse['30days'].aaData[0]._id;
             tableResponse["30days"].iTotalRecords -= 1;
             tableResponse["30days"].iTotalDisplayRecords -= 1;
             tableResponse["30days"].aaData.splice(0, 1);
             request
-                .get('/i/views?method=delete_view&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&view_id=' + viewsListed[0].view)
+                .get('/i/views?method=delete_view&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&view_id=' + iid)
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
