@@ -72,7 +72,12 @@
                         ids.push(this.selectedViews[k]._id);
                     }
                     this.$store.dispatch("countlyViews/deleteViews", ids.join(",")).then(function() {
-                        CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                        if (self.$store.getters["countlyViews/updateError"]) {
+                            CountlyHelpers.notify({type: "error", title: jQuery.i18n.map["common.error"], message: self.$store.getters["countlyViews/updateError"], sticky: false, clearAll: true});
+                        }
+                        else {
+                            CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                        }
                     });
                 }
             },
@@ -81,6 +86,7 @@
             },
             updateManyViews: function() {
                 var changes = [];
+                var self = this;
                 var rows = this.$refs.editViewsTable.sourceRows;
                 for (var k = 0; k < rows.length; k++) {
                     if (rows[k].editedDisplay !== rows[k].display) {
@@ -94,7 +100,12 @@
                 }
                 if (changes.length > 0) {
                     this.$store.dispatch("countlyViews/updateViews", changes).then(function() {
-                        CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                        if (self.$store.getters["countlyViews/updateError"]) {
+                            CountlyHelpers.notify({type: "error", title: jQuery.i18n.map["common.error"], message: self.$store.getters["countlyViews/updateError"], sticky: false, clearAll: true});
+                        }
+                        else {
+                            CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                        }
                     });
                 }
             }

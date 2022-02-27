@@ -89,25 +89,28 @@
                         multiEvents = false;
                     }
                     for (var myevent in this.data.dashData.data[app]) {
-
+                        var eventName = myevent;
+                        if (this.data.dashData.naming && this.data.dashData.naming[app] && this.data.dashData.naming[app][myevent]) {
+                            eventName = this.data.dashData.naming[app][myevent];
+                        }
                         for (var k = 0; k < this.data.metrics.length; k++) {
                             if (multiApps) {
                                 if (this.data.metrics.length > 1) {
-                                    name = myevent + " " + (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+                                    name = eventName + " " + (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
                                 }
                                 else {
-                                    name = (myevent + " " + countlyGlobal.apps[app].name || "");
+                                    name = (eventName + " " + countlyGlobal.apps[app].name || "");
                                 }
                             }
                             else {
                                 if (multiEvents) {
-                                    name = (myevent + " " + this.map[this.data.metrics[k]] || this.data.metrics[k]);
+                                    name = (eventName + " " + this.map[this.data.metrics[k]] || this.data.metrics[k]);
                                 }
                                 else {
                                     name = this.map[this.data.metrics[k]] || this.data.metrics[k];
                                 }
                             }
-                            series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], "event": myevent, color: countlyCommon.GRAPH_COLORS[series.length]});
+                            series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], "event": eventName, color: countlyCommon.GRAPH_COLORS[series.length]});
                         }
 
                         for (var date in this.data.dashData.data[app][myevent]) {
