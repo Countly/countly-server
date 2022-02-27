@@ -70,7 +70,7 @@
                     "method": "rename_views",
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         deleteViews: function(view) {
             return CV.$.ajax({
@@ -82,7 +82,7 @@
                     "view_id": view
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         }
     };
 
@@ -384,6 +384,7 @@
                 error: null,
                 selectedProperty: "t",
                 selectedSegment: "",
+                updateError: "",
                 selectedSegmentValue: "",
                 selectedViews: [],
                 segments: {},
@@ -436,17 +437,19 @@
                 });
             },
             updateViews: function(context, data) {
-                countlyViews.service.updateViews(data).then(function() {
+                context.dispatch('onUpdateError', "");
+                return countlyViews.service.updateViews(data).then(function() {
                     context.dispatch("fetchViewsEditTable");
                 }).catch(function(error) {
-                    context.dispatch('onFetchError', error);
+                    context.dispatch('onUpdateError', error);
                 });
             },
             deleteViews: function(context, data) {
-                countlyViews.service.deleteViews(data).then(function() {
+                context.dispatch('onUpdateError', "");
+                return countlyViews.service.deleteViews(data).then(function() {
                     context.dispatch("fetchViewsEditTable");
                 }).catch(function(error) {
-                    context.dispatch('onFetchError', error);
+                    context.dispatch('onUpdateError', error);
                 });
             },
             onFetchInit: function(context) {
@@ -454,6 +457,9 @@
             },
             onFetchError: function(context, error) {
                 context.commit('setFetchError', error);
+            },
+            onUpdateError: function(context, error) {
+                context.commit('setUpdateError', error);
             },
             onFetchSuccess: function(context) {
                 context.commit('setFetchSuccess');
@@ -498,6 +504,12 @@
                 state.isLoading = false;
                 state.hasError = true;
                 state.error = error;
+            },
+            setUpdateError: function(state, error) {
+                if (error && error.responseJSON && error.responseJSON.result) {
+                    error = error.responseJSON.result;
+                }
+                state.updateError = error;
             },
             setFetchSuccess: function(state) {
                 state.isLoading = false;
@@ -552,8 +564,10 @@
                         selectedSegment: context.selectedSegment,
                         selectedSegmentValue: context.selectedSegmentValue
                     };
+                },
+                updateError: function(context) {
+                    return context.updateError;
                 }
-
             },
             mutations: ViewsMutations,
             submodules: [viewsTableResource, editTableResource]
