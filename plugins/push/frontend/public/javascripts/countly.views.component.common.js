@@ -831,10 +831,16 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
             },
             previewMessageTitle: function() {
-                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.title);
+                if (this.message.title) {
+                    return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.title);
+                }
+                return "";
             },
             previewMessageContent: function() {
-                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.content);
+                if (this.message.content) {
+                    return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.content);
+                }
+                return "";
             },
             previewAndroidMedia: function() {
                 var result = "";
