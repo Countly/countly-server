@@ -1079,8 +1079,13 @@
                 var data = this.$store.getters["countlyCrashes/overview/dashboardData"] || {};
                 var blocks = [];
 
-                var getUs = [{"name": CV.i18n('crashes.total-crashes'), "info": "", "prop": "cr", "r": true}, {"name": CV.i18n('crashes.unique'), "info": "", "prop": "cru", "r": true}, {"name": CV.i18n('crashes.total-per-session'), "info": "", "prop": "cr-session", "r": true}, {"name": CV.i18n('crashes.free-users'), "info": "", "prop": "crau", "p": true}, {"name": CV.i18n('crashes.free-sessions'), "info": "", "prop": "crses", "p": true}];
-
+                var getUs = [
+                    {"name": CV.i18n('crashes.total-crashes'), "info": CV.i18n('crashes.home.total'), "prop": "cr", "r": true},
+                    {"name": CV.i18n('crashes.unique'), "info": CV.i18n('crashes.home.unique'), "prop": "cru", "r": true},
+                    {"name": CV.i18n('crashes.total-per-session'), "info": CV.i18n('crashes.home.per-session'), "prop": "cr-session", "r": true},
+                    {"name": CV.i18n('crashes.free-users'), "info": CV.i18n('crashes.help-free-users'), "prop": "crau", "p": true},
+                    {"name": CV.i18n('crashes.free-sessions'), "info": CV.i18n('crashes.help-free-sessions'), "prop": "crses", "p": true}
+                ];
 
                 for (var k = 0; k < getUs.length; k++) {
                     data[getUs[k].prop] = data[getUs[k].prop] || {};
@@ -1110,7 +1115,7 @@
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         countlyVue.container.registerData("/home/widgets", {
             _id: "crashes-dashboard-widget",
-            label: CV.i18n('crashes.app-performance'),
+            label: CV.i18n('crashes.crash-statistics'),
             description: CV.i18n('crashes.plugin-description'),
             enabled: {"default": true}, //object. For each type set if by default enabled
             available: {"default": true}, //object. default - for all app types. For other as specified.

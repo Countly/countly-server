@@ -7,11 +7,11 @@ var LanguageView = countlyVue.views.create({
         };
     },
     mounted: function() {
-        this.$store.dispatch('countlyLanguage/fetchAll',true);
+        this.$store.dispatch('countlyLanguage/fetchAll', true);
     },
     methods: {
         refresh: function(force) {
-            this.$store.dispatch('countlyLanguage/fetchAll',force);
+            this.$store.dispatch('countlyLanguage/fetchAll', force);
         }
     },
     computed: {
@@ -72,7 +72,7 @@ var LanguageView = countlyVue.views.create({
             return this.data.table || [];
         },
         isLoading: function() {
-            return this.$store.getters["countlyLanguage/isLoading"]
+            return this.$store.getters["countlyLanguage/isLoading"];
         },
         topDropdown: function() {
             if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
