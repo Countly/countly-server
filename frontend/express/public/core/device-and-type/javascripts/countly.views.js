@@ -477,7 +477,6 @@ var DrawerComponent = countlyVue.views.create({
 
 countlyVue.container.registerData("/custom/dashboards/widget", {
     type: "analytics",
-    feature: "core",
     label: CV.i18n("sidebar.analytics.technology"),
     priority: 1,
     primary: false,
