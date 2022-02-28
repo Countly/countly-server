@@ -275,7 +275,7 @@
                     days: 7,
                     hours: 0
                 },
-                dashboard: this.getInitialModelDashboard()
+                dashboard: {}
             };
         },
         getInitialOneTimeModel: function() {
@@ -1298,16 +1298,15 @@
             },
             mapDashboard: function(dto) {
                 var model = {};
-                model[PlatformEnum.ANDROID] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
-                model[PlatformEnum.IOS] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
-                model[PlatformEnum.ALL] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
                 if (dto.result.subs && dto.result.subs[PlatformDtoEnum.ANDROID]) {
                     model[PlatformEnum.ANDROID] = this.mapAndroidDashboard(dto);
                 }
                 if (dto.result.subs && dto.result.subs[PlatformDtoEnum.IOS]) {
                     model[PlatformEnum.IOS] = this.mapIosDashboard(dto);
                 }
-                model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
+                if (model[PlatformEnum.ANDROID] && model[PlatformEnum.IOS]) {
+                    model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
+                }
                 return model;
             },
             mapDtoToBaseModel: function(dto) {
@@ -2474,7 +2473,8 @@
         messageSettings[PlatformEnum.ANDROID] = {};
         return {
             pushNotification: countlyPushNotification.helper.getInitialModel(TypeEnum.ONE_TIME),
-            platformFilter: PlatformEnum.ALL,
+            platformFilter: null,
+            platformFilterOptions: [],
             localeFilter: null,
             messageLocaleFilter: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
             userCommand: {
@@ -2491,6 +2491,7 @@
             countlyPushNotification.service.fetchById(id)
                 .then(function(model) {
                     context.commit('setPushNotification', model);
+                    context.dispatch('onSetPlatformFilterOptions', model);
                     context.dispatch('onFetchSuccess', {useLoader: true});
                 }).catch(function(error) {
                     console.error(error);
@@ -2563,6 +2564,9 @@
         },
         onSetMessageLocaleFilter: function(context, value) {
             context.commit('setMessageLocaleFilter', value);
+        },
+        onSetPlatformFilterOptions: function(context, value) {
+            context.commit('setPlatformFilterOptions', value);
         }
     };
 
@@ -2584,6 +2588,22 @@
         },
         setMessageLocaleFilter: function(state, value) {
             state.messageLocaleFilter = value;
+        },
+        setPlatformFilterOptions: function(state, value) {
+            var filterOptions = [];
+            if (value.dashboard[PlatformEnum.IOS]) {
+                filterOptions.push({label: CV.i18n("push-notification.platform-filter-ios"), value: countlyPushNotification.service.PlatformEnum.IOS});
+                state.platformFilter = PlatformEnum.IOS;
+            }
+            if (value.dashboard[PlatformEnum.ANDROID]) {
+                filterOptions.push({label: CV.i18n("push-notification.platform-filter-android"), value: countlyPushNotification.service.PlatformEnum.ANDROID});
+                state.platformFilter = PlatformEnum.ANDROID;
+            }
+            if (value.dashboard[PlatformEnum.IOS] && value.dashboard[PlatformEnum.ALL]) {
+                filterOptions.push({label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL});
+                state.platformFilter = PlatformEnum.ALL;
+            }
+            state.platformFilterOptions = filterOptions;
         },
     };
 
