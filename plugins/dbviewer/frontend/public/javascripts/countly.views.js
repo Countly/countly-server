@@ -180,11 +180,12 @@ var DBViewerTab = countlyVue.views.create({
             var apiQueryData = {
                 api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
-                path: '/o' + this.dbviewerAPIEndpoint,
-                method: "GET",
                 filename: "DBViewer" + moment().format("DD-MMM-YYYY"),
-                prop: ['aaData'],
-                url: "/o/export/requestQuery"
+                projection: JSON.stringify(this.preparedProjectionFields),
+                query: this.queryFilter,
+                sort: JSON.stringify(this.preparedSortObject),
+                collection: this.collection,
+                url: "/o/export/db"
             };
             return apiQueryData;
         },
