@@ -545,11 +545,6 @@
                             tooltip: "Help Center"
                         },
                         {
-                            name: "notifications",
-                            icon: "cly-icon-sidebar-notifications",
-                            noSelect: true
-                        },
-                        {
                             name: "user",
                             noSelect: true,
                             member: this.member,
