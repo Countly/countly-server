@@ -177,6 +177,9 @@ const CheckHookProperties = function(hookConfig) {
     return rules;
 };
 
+plugins.register("/permissions/features", function(ob) {
+    ob.features.push(FEATURE_NAME);
+});
 
 plugins.register("/i/hook/save", function(ob) {
     let paramsInstance = ob.params;
