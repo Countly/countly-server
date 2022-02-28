@@ -755,15 +755,11 @@
         },
         computed: {
             hasAllEmptyValues: function() {
-                var options = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var options = this.mergedOptions;
                 if (options.series) {
                     for (var i = 0; i < options.series.length; i++) {
-                        if (options.series[i].data) {
-                            for (var z = 0; z < options.series[i].data.length; z++) {
-                                if (options.series[i].data[z].value > 0) {
-                                    return false;
-                                }
-                            }
+                        if (!options.series[i].isEmptySeries) {
+                            return false;
                         }
                     }
                 }
@@ -786,6 +782,7 @@
                         return el.value > 0;
                     });
                     if (series[i].data.length === 0) {
+                        series[i].isEmptySeries = true;
                         series[i].data.push({"label": "empty", "value": 100});
                         opt.legend.show = false;
                         opt.tooltip.show = false;
