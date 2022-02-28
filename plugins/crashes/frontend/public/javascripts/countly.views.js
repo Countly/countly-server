@@ -134,7 +134,7 @@
                     }),
                     new countlyQueryBuilder.Property({
                         id: "reports",
-                        name: "Occurances",
+                        name: "Occurrences",
                         type: countlyQueryBuilder.PropertyType.NUMBER,
                         group: "Detail",
                     }),
@@ -334,7 +334,7 @@
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
                 currentTab: (this.$route.params && this.$route.params.tab) || "crash-groups",
-                statisticsGraphTab: "total-occurances",
+                statisticsGraphTab: "total-occurrences",
                 selectedCrashgroups: [],
                 tablePersistKey: 'crashGroupsTable_' + countlyCommon.ACTIVE_APP_ID,
                 tableDynamicCols: [{
@@ -427,7 +427,7 @@
                 ] : [],
                 formatDate: function(row, col, cell) {
                     return moment(cell * 1000).format("lll");
-                },
+                }
             };
         },
         computed: {
@@ -496,7 +496,10 @@
             errorColumnLabel: function() {
                 var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
                 return appType === 'mobile' ? CV.i18n('crashes.crash-group') : CV.i18n('crashes.error');
-            }
+            },
+            isLoading: function() {
+                return this.$store.getters['countlyCrashes/overview/isLoading'];
+            },
         },
         methods: {
             refresh: function() {
@@ -678,6 +681,9 @@
                         default: "all"
                     },
                 ];
+            },
+            isLoading: function() {
+                return this.$store.getters['countlyCrashes/crashgroup/isLoading'];
             },
         },
         methods: {
