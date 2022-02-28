@@ -8,6 +8,14 @@ const plugins = require('../../pluginManager'),
 
 const FEATURE_NAME = 'slipping_away_users';
 
+var cohorts;
+try {
+    cohorts = require("../../cohorts/api/parts/cohorts.js");
+}
+catch (ex) {
+    cohorts = null;
+}
+
 (function() {
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -32,6 +40,11 @@ const FEATURE_NAME = 'slipping_away_users';
             catch (e) {
                 console.log(e);
             }
+        }
+
+        if (cohorts) {
+            var cohortQuery = cohorts.preprocessQuery(user_query);
+            user_query = Object.assign(user_query, cohortQuery);
         }
 
         const countlyDb = common.db;
