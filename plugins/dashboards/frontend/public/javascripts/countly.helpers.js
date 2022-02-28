@@ -818,7 +818,7 @@
         template: CV.T('/dashboards/templates/helpers/drawer/period.html'),
         props: {
             value: {
-                type: String,
+                type: [Array, String],
                 default: ""
             }
         },
