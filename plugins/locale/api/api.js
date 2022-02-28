@@ -51,7 +51,9 @@ const FEATURE_NAME = 'locale';
         var params = ob.params;
 
         if (params.qstring.method === "langs") {
+		setTimeout(function(){
             validateRead(params, FEATURE_NAME, fetch.fetchTimeObj, 'langs');
+		},5000);
             return true;
         }
         return false;
