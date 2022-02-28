@@ -126,7 +126,7 @@
                 </div>
                 <cly-section class="crashes-statistics-graph">
                     <el-tabs v-model="statisticsGraphTab" type="card" stretch>
-                        <el-tab-pane name="total-occurances" style="border-top-left-radius: 4px;">
+                        <el-tab-pane name="total-occurrences" style="border-top-left-radius: 4px;">
                             <div class="bu-p-5" slot="label">
                                 <crash-tab-label :title="i18n('crashes.total')" :tooltip="i18n('crashes.help-total')" :data="dashboardData[{'both': 'cr', 'fatal': 'crf', 'nonfatal': 'crnf'}[activeFilter.fatality]]">
                                 </crash-tab-label>
