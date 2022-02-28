@@ -554,7 +554,19 @@
                     if (id) {
                         if (__action === "duplicate" ||
                         __action === "create") {
+                            CountlyHelpers.notify({
+                                message: "Dashboard created successfully!",
+                                type: "success"
+                            });
+
                             app.navigate('#/custom/' + id, true);
+                        }
+
+                        if (__action === "edit") {
+                            CountlyHelpers.notify({
+                                message: "Dashboard edited successfully!",
+                                type: "success"
+                            });
                         }
                     }
                 });
@@ -776,11 +788,19 @@
                             self.$store.dispatch("countlyDashboards/widgets/get", doc._id).then(function() {
                                 self.$store.dispatch("countlyDashboards/requests/isProcessing", false);
                             });
+                            CountlyHelpers.notify({
+                                message: "Widget edited successfully!",
+                                type: "success"
+                            });
                         }
                         else {
                             obj.id = id;
                             self.$store.dispatch("countlyDashboards/requests/isProcessing", true);
                             self.$emit("add-widget", obj);
+                            CountlyHelpers.notify({
+                                message: "Widget created successfully!",
+                                type: "success"
+                            });
                         }
                     }
                 });
@@ -898,6 +918,10 @@
                                 var node = document.getElementById(d._id);
                                 self.removeGridWidget(node);
                                 self.$store.dispatch("countlyDashboards/widgets/remove", d._id);
+                                CountlyHelpers.notify({
+                                    message: "Widget deleted successfully!",
+                                    type: "success"
+                                });
                             }
                         });
 
@@ -1675,6 +1699,11 @@
 
                         self.$store.dispatch("countlyDashboards/delete", d._id).then(function(res) {
                             if (res) {
+                                CountlyHelpers.notify({
+                                    message: "Dashboard deleted successfully!",
+                                    type: "success"
+                                });
+
                                 app.navigate('#/custom');
                                 /**
                                  * Set the current dashboard id to null
