@@ -161,13 +161,13 @@
 
                 if (typeof metricChartConfig !== "undefined") {
                     chartData = [
-                        {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: "#DDDDDD", mode: "ghost" },
+                        {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: "#52a3ef", mode: "ghost" },
                         {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: countlyCommon.GRAPH_COLORS[metricChartConfig.colorIndex]}
                     ];
                 }
                 else {
                     chartData = [
-                        {data: [], label: name, color: "#DDDDDD", mode: "ghost" },
+                        {data: [], label: name, color: "#52a3ef", mode: "ghost" },
                         {data: [], label: name, color: "#333933"}
                     ];
                 }
