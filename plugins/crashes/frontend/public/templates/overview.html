@@ -6,7 +6,7 @@
                 <template v-slot:header-left>
                     <h2>
                         {{i18n("crashes.crash-groups")}}
-                        <cly-tooltip-icon></cly-tooltip-icon>
+                        <cly-tooltip-icon :tooltip="i18n('crashes.help-crash-group')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
                     </h2>
                 </template>
             </cly-header>
@@ -54,7 +54,7 @@
                 <template v-slot:header-left>
                     <h2>
                         {{i18n("crashes.crash-statistics")}}
-                        <cly-tooltip-icon></cly-tooltip-icon>
+                        <cly-tooltip-icon :tooltip="i18n('crashes.help-crash-statistics')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
                     </h2>
                 </template>
             </cly-header>
@@ -63,7 +63,7 @@
                     <div class="crashes-statistics-dashboard__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                         <cly-crashes-dashboard-tile v-if="Object.keys(statistics).length > 0">
                             <div class="crashes-tile__content--fill bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column">
-                                <cly-metric-card :is-percentage="true" color="#CDAD7A" :number="statistics.users.affected.totalPercent">
+                                <cly-metric-card :is-percentage="true" color="#CDAD7A" :number="statistics.users.affected.totalPercent" :tooltip="i18n('crashes.help-affected')">
                                     {{i18n('crashes.affected-users')}}
                                     <template v-slot:description>
                                         <span class="text-medium" style="white-space: initial;">{{getShortNumber(statistics.users.affected.total)}} of {{getShortNumber(statistics.users.total)}} Total Users</span>
@@ -76,7 +76,7 @@
                                     </template>
                                 </cly-metric-card>
                                 <div class="cly-divider"></div>
-                                <cly-metric-card :label="i18n('crashes.fatality')" :is-percentage="true" color="#F62404" :number="parseFloat(statistics.crashes.fatalPercent.toFixed(2))">
+                                <cly-metric-card :label="i18n('crashes.fatality')" :tooltip="i18n('crashes.help-crash-fatality')" :is-percentage="true" color="#F62404" :number="parseFloat(statistics.crashes.fatalPercent.toFixed(2))">
                                     <template v-slot:description>
                                         <span class="text-medium" style="white-space: initial;">{{getShortNumber(statistics.crashes.fatal)}} Fatal of {{getShortNumber(statistics.crashes.total)}} Total Crashes</span>
                                     </template>
@@ -103,15 +103,15 @@
                         </cly-crashes-dashboard-tile>
                         <cly-crashes-dashboard-tile>
                             <div class="crashes-tile__content--fill bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column" v-if="!!statistics.crashes">
-                                <cly-crashes-dashboard-tile isVertical>
+                                <cly-crashes-dashboard-tile isVertical :tooltip="i18n('crashes.help-new')">
                                     <template v-slot:title>{{i18n("crashes.new-crashes")}}</template>
                                     <template v-slot:value>{{statistics.crashes.new}}</template>
                                 </cly-crashes-dashboard-tile>
-                                <cly-crashes-dashboard-tile isVertical>
+                                <cly-crashes-dashboard-tile isVertical :tooltip="i18n('crashes.help-reoccurred')">
                                     <template v-slot:title>{{i18n("crashes.renew-crashes")}}</template>
                                     <template v-slot:value>{{statistics.crashes.reoccured}}</template>
                                 </cly-crashes-dashboard-tile>
-                                <cly-crashes-dashboard-tile isVertical>
+                                <cly-crashes-dashboard-tile isVertical :tooltip="i18n('crashes.help-loss')">
                                     <template v-slot:title>{{i18n("crashes.loss")}}</template>
                                     <template v-slot:value>{{statistics.revenueLoss}}</template>
                                 </cly-crashes-dashboard-tile>
@@ -128,35 +128,35 @@
                     <el-tabs v-model="statisticsGraphTab" type="card" stretch>
                         <el-tab-pane name="total-occurances" style="border-top-left-radius: 4px;">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.total')" tooltip="Hello" :data="dashboardData[{'both': 'cr', 'fatal': 'crf', 'nonfatal': 'crnf'}[activeFilter.fatality]]">
+                                <crash-tab-label :title="i18n('crashes.total')" :tooltip="i18n('crashes.help-total')" :data="dashboardData[{'both': 'cr', 'fatal': 'crf', 'nonfatal': 'crnf'}[activeFilter.fatality]]">
                                 </crash-tab-label>
                             </div>
                             <cly-chart-line :option="chartData('cr')"></cly-chart-line>
                         </el-tab-pane>
                         <el-tab-pane name="unique-crashes">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.unique')" tooltip="Hello" :data="dashboardData[{'both': 'cru', 'fatal': 'cruf', 'nonfatal': 'crunf'}[activeFilter.fatality]]">
+                                <crash-tab-label :title="i18n('crashes.unique')" :tooltip="i18n('crashes.help-unique')" :data="dashboardData[{'both': 'cru', 'fatal': 'cruf', 'nonfatal': 'crunf'}[activeFilter.fatality]]">
                                 </crash-tab-label>
                             </div>
                             <cly-chart-line :option="chartData('cru')"></cly-chart-line>
                         </el-tab-pane>
                         <el-tab-pane name="crashes-per-session">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.total-per-session')" tooltip="Hello" :data="dashboardData[{'both': 'cr-session', 'fatal': 'crtf', 'nonfatal': 'crtnf'}[activeFilter.fatality]]">
+                                <crash-tab-label :title="i18n('crashes.total-per-session')" :tooltip="i18n('crashes.help-frequency-short')" :data="dashboardData[{'both': 'cr-session', 'fatal': 'crtf', 'nonfatal': 'crtnf'}[activeFilter.fatality]]">
                                 </crash-tab-label>
                             </div>
                             <cly-chart-line :option="chartData('cr-session')"></cly-chart-line>
                         </el-tab-pane>
                         <el-tab-pane name="crashfree-users">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.free-users')" tooltip="Hello" :data="dashboardData[{'both': 'crau', 'fatal': 'crauf', 'nonfatal': 'craunf'}[activeFilter.fatality]]" negateTrend>
+                                <crash-tab-label :title="i18n('crashes.free-users')" :tooltip="i18n('crashes.help-free-users')" :data="dashboardData[{'both': 'crau', 'fatal': 'crauf', 'nonfatal': 'craunf'}[activeFilter.fatality]]" negateTrend>
                                 </crash-tab-label>
                             </div>
                             <cly-chart-line :option="chartData('crau')"></cly-chart-line>
                         </el-tab-pane>
                         <el-tab-pane name="crashfree-sessions" style="border-top-right-radius: 4px;">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.free-sessions')" tooltip="Hello" :data="dashboardData[{'both': 'crses', 'fatal': 'crfses', 'nonfatal': 'crnfses'}[activeFilter.fatality]]" negateTrend>
+                                <crash-tab-label :title="i18n('crashes.free-sessions')" :tooltip="i18n('crashes.help-free-sessions')" :data="dashboardData[{'both': 'crses', 'fatal': 'crfses', 'nonfatal': 'crnfses'}[activeFilter.fatality]]" negateTrend>
                                 </crash-tab-label>
                             </div>
                             <cly-chart-line :option="chartData('crses')"></cly-chart-line>
