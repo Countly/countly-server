@@ -4,7 +4,6 @@
             <h2 v-if="currentSecondaryTab === 'validations'"> {{i18n('data-manager.manage-validations')}} </h2>
             <h2 v-else-if="currentSecondaryTab === 'segmentation'"> {{i18n('data-manager.manage-event-segmentation')}} </h2>
             <h2 v-else> {{i18n('data-manager.manage-events')}} </h2>
-            <cly-tooltip-icon class="bu-ml-2" icon="ion-help-circled" :tooltip="i18n('data-manager.manage-events')"></cly-tooltip-icon>
         </template>
         <template v-slot:header-tabs>
             <cly-dynamic-tabs :no-history=true v-model="currentSecondaryTab" :tabs="secondaryTabs" skin="secondary"></cly-dynamic-tabs>
