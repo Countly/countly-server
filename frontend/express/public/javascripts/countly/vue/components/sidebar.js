@@ -547,8 +547,7 @@
                         {
                             name: "notifications",
                             icon: "cly-icon-sidebar-notifications",
-                            noSelect: true,
-                            tooltip: "Assistant"
+                            noSelect: true
                         },
                         {
                             name: "user",
