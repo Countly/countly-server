@@ -64,6 +64,7 @@
                 }
             },
             submitDeleteForm: function() {
+                var self = this;
                 this.showDeleteDialog = false;
 
                 if (this.selectedViews && this.selectedViews.length > 0) {
