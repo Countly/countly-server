@@ -231,6 +231,24 @@
         };
 
         /**
+         * 
+         * @param {name} name drawer name
+         * @returns {object}  drawer data used by hasDrawers() mixin
+         */
+        countlyCommon.getExternalDrawerData = function(name) {
+            var result = {};
+            result[name] = {
+                name: name,
+                isOpened: false,
+                initialEditedObject: {},
+            };
+            result[name].closeFn = function() {
+                result[name].isOpened = false;
+            };
+            return result;
+        };
+
+        /**
         * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first and all . (dot) symbols to &#46; in the string
         * @memberof countlyCommon
         * @param {string} str - value to encode
