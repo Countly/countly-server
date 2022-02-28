@@ -98,11 +98,12 @@
   }
 }
 .cly-vue-remote-config-percentages-breakdown {
+  table-layout: fixed;
   width: 100%;
   padding: 15px 24px 10px;
   border-collapse: unset;
   &__data {
-    width: max-content;
+    max-width: min-content;
     border-radius: 4px;
   }
   &__default-value {
@@ -113,10 +114,21 @@
     }
   }
   &__condition {
+    &__heading {
+        width: 60%;
+    }
     &__value {
       background-color: map.get(c.$colors, "white");
       border-radius: 4px;
     }
+    &__vertical-align {
+      vertical-align: middle;
+    }
+  }
+  &__percentage {
+      &__heading{
+          width: 30%;
+      }
   }
   th {
     background-color: transparent !important;
