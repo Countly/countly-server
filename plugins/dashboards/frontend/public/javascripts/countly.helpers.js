@@ -818,7 +818,7 @@
         template: CV.T('/dashboards/templates/helpers/drawer/period.html'),
         props: {
             value: {
-                type: String,
+                type: [Array, String],
                 default: ""
             }
         },
@@ -932,11 +932,13 @@
         },
         computed: {
             period: function() {
+                var globalPeriod = this.$store.getters["countlyCommon/period"];
+
                 if (this.customPeriod) {
                     return this.formatPeriodString(this.customPeriod);
                 }
                 else {
-                    return this.formatPeriodString(countlyCommon.getPeriod());
+                    return this.formatPeriodString(globalPeriod);
                 }
             }
         },
@@ -1044,6 +1046,48 @@
 
                 return appData;
             }
+        },
+        methods: {
+            appBlockStyles: function(allApps, index) {
+                var maxWidth = '50%';
+                var paddingRight = '0';
+
+                var rem = allApps.length % 2;
+
+                if (((index + 1) % 2) !== 0) {
+                    paddingRight = '8px';
+                }
+
+                if (rem !== 0) {
+                    //There are odd numbers of apps.
+                    //In this case, the last app should have max-width: 100%
+                    if ((index + 1) === (allApps.length)) {
+                        maxWidth = '100%';
+                        paddingRight = '0';
+                    }
+                }
+
+                var styles = {
+                    minWidth: 0,
+                    boxSizing: 'border-box',
+                    maxWidth: maxWidth,
+                    paddingRight: paddingRight
+                };
+
+                return styles;
+            }
+        }
+    });
+
+    var TitleLabelsComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/widget/title-labels.html'),
+        props: {
+            labels: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
         }
     });
 
@@ -1068,5 +1112,6 @@
     Vue.component("clyd-legend-period", WidgetPeriodComponent);
     Vue.component("clyd-primary-legend", PrimaryWidgetLegend);
     Vue.component("clyd-secondary-legend", SecondaryWidgetLegend);
+    Vue.component("clyd-title-labels", TitleLabelsComponent);
 
 })();

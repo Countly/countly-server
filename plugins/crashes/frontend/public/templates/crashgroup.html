@@ -47,7 +47,7 @@
     <cly-main>
         <cly-section class="crashgroup-common-metrics" v-if="!!commonMetrics">
             <div class="crashgroup-common-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-platform')">
                     <template v-slot:title>Platform</template>
                     <template v-slot:value>{{commonMetrics.platform}}</template>
                 </cly-crashes-dashboard-tile>
@@ -55,15 +55,15 @@
                     <template v-slot:title>Occurances</template>
                     <template v-slot:value>{{getShortNumber(commonMetrics.occurances)}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-affected')">
                     <template v-slot:title>Affected Users</template>
                     <template v-slot:value>{{getShortNumber(commonMetrics.affectedUsers)}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-frequency-short')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-frequency')">
                     <template v-slot:title>Crash Frequency</template>
                     <template v-slot:value>{{commonMetrics.crashFrequency.toFixed(2)}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-latest-version')">
                     <template v-slot:title>Latest App Version</template>
                     <template v-slot:value>{{commonMetrics.latestAppVersion}}</template>
                 </cly-crashes-dashboard-tile>

@@ -722,7 +722,7 @@ var AppRouter = Backbone.Router.extend({
         "remote-config": "remote_config",
         "ab-testing": "ab_testing",
         "revenue": "revenue",
-        "logger": "logger",
+        "logger": "admin",
         "populate": "populator",
         "reports": "reports",
         "crash": "crashes",
@@ -731,7 +731,7 @@ var AppRouter = Backbone.Router.extend({
         "profiles": "users",
         "star-rating": "star_rating",
         "alerts": "alerts",
-        "data-points": "admin",
+        "data-point": "core",
         "db": "dbviewer",
         "symbols": "crashes",
         "symbol_jobs": "crashes",
@@ -739,7 +739,8 @@ var AppRouter = Backbone.Router.extend({
         "performance-monitoring": "performance_monitoring",
         "hooks": "hooks",
         "attribution": "attribution",
-        "data-migration": "data_migration"
+        "data-migration": "data_migration",
+        "export": "config_transfer"
     },
     _menuDependencies: {
         "events": ["events"],
