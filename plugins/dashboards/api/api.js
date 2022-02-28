@@ -1061,7 +1061,7 @@ plugins.setConfigs("dashboards", {
                                 options.dimensions = {width: 750, padding: 100};
                                 options.token = token;
                                 options.source = "dashboards/" + imageName;
-                                options.timeout = 60000;
+                                options.timeout = 120000;
                                 options.cbFn = function(opt) {
                                     var rep = opt.report || {};
                                     var reportDateRange = rep.date_range || "30days";
