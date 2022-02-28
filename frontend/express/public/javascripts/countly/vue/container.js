@@ -9,9 +9,15 @@
         this.dict = {};
     }
 
-    Container.prototype.registerData = function(id, value) {
+    Container.prototype.registerData = function(id, value, type) {
         if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
             this.dict[id] = {};
+        }
+        // Note: type property is used when registring data value as object type. By default, container keeps array type.
+        if (type === 'object') {
+            this.dict[id].data = {};
+            Object.assign(this.dict[id].data, value);
+            return;
         }
 
         if (!Object.prototype.hasOwnProperty.call(this.dict[id], "data")) {
