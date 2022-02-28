@@ -932,11 +932,13 @@
         },
         computed: {
             period: function() {
+                var globalPeriod = this.$store.getters["countlyCommon/period"];
+
                 if (this.customPeriod) {
                     return this.formatPeriodString(this.customPeriod);
                 }
                 else {
-                    return this.formatPeriodString(countlyCommon.getPeriod());
+                    return this.formatPeriodString(globalPeriod);
                 }
             }
         },
