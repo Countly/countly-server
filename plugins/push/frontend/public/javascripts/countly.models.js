@@ -1267,6 +1267,9 @@
             },
             mapAllDashboardLocales: function(locales, dto, platformDto, platform) {
                 var allLocales = Object.assign({}, locales);
+                if (dto.result.subs[platformDto] && !dto.result.subs[platformDto].subs) {
+                    return allLocales;
+                }
                 Object.keys(dto.result.subs[platformDto].subs).forEach(function(key) {
                     if (!allLocales[platform]) {
                         allLocales[key] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
