@@ -555,9 +555,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var app_id = settings.app_id;
         var pipeline = createAggregatePipeline(params, settings);
 
-        if (settings.sortcol !== 'name') {
+        if (settings.depends) {
+            pipeline.push({"$match": settings.depends}); //filter only those which has some value in choosen column
+        }
 
-            var facetLine = [];
+        var facetLine = [];
+
+        if (settings.sortcol !== 'name') {
             facetLine.push(settings.sortby); //sort values*/
             if (settings.startPos) {
                 facetLine.push({$skip: settings.startPos});
@@ -577,6 +581,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var project2 = {vw: true, uvalue: true, "view_meta": {"$first": "$view_meta"}};
             for (let i = 0; i < settings.levels.daily.length; i++) {
                 project2[settings.levels.daily[i]] = "$" + settings.levels.daily[i];
+                if (settings.levels.daily[i] === "scr" || settings.levels.daily[i] === "d") {
+                    project2[settings.levels.daily[i] + "-calc"] = "$" + settings.levels.daily[i] + "-calc";
+                }
             }
 
             facetLine.push({
@@ -587,6 +594,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var project3 = {vw: true, uvalue: true};
             for (let i = 0; i < settings.levels.daily.length; i++) {
                 project3[settings.levels.daily[i]] = "$" + settings.levels.daily[i];
+                if (settings.levels.daily[i] === "scr" || settings.levels.daily[i] === "d") {
+                    project3[settings.levels.daily[i] + "-calc"] = "$" + settings.levels.daily[i] + "-calc";
+                }
             }
             project3.view = "$view_meta.view";
             project3.display = {"$ifNull": ["$view_meta.display", "$view_meta.view"]};
@@ -597,6 +607,69 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 "$project": project3
             });
 
+
+            pipeline.push({$facet: {data: facetLine, count: [{$count: 'count'}]}});
+            common.db.collection(collectionName).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
+                var cn = 0;
+                var data = [];
+                if (err) {
+                    log.e(err);
+                }
+                if (res && res[0]) {
+                    if (res[0].count && res[0].count[0]) {
+                        cn = res[0].count[0].count || 0;
+                    }
+                    data = res[0].data || [];
+                }
+                callback(data, cn);
+            });
+        }
+        else if (settings.sortcol === "name" && settings.depends) {
+            facetLine.push({
+                $lookup: {
+                    from: "app_viewsmeta" + app_id,
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "view_meta"
+                }
+            });
+
+            var project_items = {vw: true, uvalue: true, "view_meta": {"$first": "$view_meta"}};
+            for (let i = 0; i < settings.levels.daily.length; i++) {
+                project_items[settings.levels.daily[i]] = "$" + settings.levels.daily[i];
+                if (settings.levels.daily[i] === "scr" || settings.levels.daily[i] === "d") {
+                    project_items[settings.levels.daily[i] + "-calc"] = "$" + settings.levels.daily[i] + "-calc";
+                }
+            }
+
+            facetLine.push({
+                "$project": project_items
+            });
+
+
+            var project_names = {vw: true, uvalue: true};
+            for (let i = 0; i < settings.levels.daily.length; i++) {
+                project_names[settings.levels.daily[i]] = "$" + settings.levels.daily[i];
+                if (settings.levels.daily[i] === "scr" || settings.levels.daily[i] === "d") {
+                    project_names[settings.levels.daily[i] + "-calc"] = "$" + settings.levels.daily[i] + "-calc";
+                }
+            }
+            project_names.view = "$view_meta.view";
+            project_names.display = {"$ifNull": ["$view_meta.display", "$view_meta.view"]};
+            project_names.url = "$view_meta.url";
+            project_names.domain = "$view_meta.domain";
+
+            facetLine.push({
+                "$project": project_names
+            });
+
+            facetLine.push(settings.sortby); //sort values*/
+            if (settings.startPos) {
+                facetLine.push({$skip: settings.startPos});
+            }
+            if (settings.dataLength !== 0) {
+                facetLine.push({$limit: settings.dataLength || 50}); //limit count
+            }
 
             pipeline.push({$facet: {data: facetLine, count: [{$count: 'count'}]}});
             common.db.collection(collectionName).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
@@ -739,14 +812,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     for (let i = 0; i < settingsList.length; i++) {
                         pp[settingsList[i]] = true;
                     }
-
                     common.returnOutput(params, {db: "countly", "pipeline": pipeline, "collection": colName, "projection": pp});
-
                 }
                 if (params.qstring.action === 'getTable') {
                     colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
                     columns = ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'uvc', 'scr'];
                     sortby = {$sort: {"t": -1}};
+                    var depends = {"t": {"$gt": 0}};
                     if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
                         sortby.$sort = {};
                         sortcol = columns[parseInt(params.qstring.iSortCol_0, 10)];
@@ -768,11 +840,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             }
                         }
                         else if (sortcol === "name") {
+
                             if (params.qstring.sSortDir_0 === "asc") {
-                                sortby.$sort.sortcol = 1;
+                                sortby.$sort.display = 1;
                             }
                             else {
-                                sortby.$sort.sortcol = -1;
+                                sortby.$sort.display = -1;
                             }
                         }
                         else {
@@ -793,9 +866,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                     //var rightNow = Date.now();
 
-                    selOptions = {app_id: params.qstring.app_id, startPos: startPos, dataLength: dataLength, sortby: sortby, sortcol: sortcol, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "br", "scr", "uvc"], monthly: ["u", "t", "s", "b", "e", "d", "n", "br", "scr", "uvc"]}};
+                    selOptions = {app_id: params.qstring.app_id, startPos: startPos, dataLength: dataLength, sortby: sortby, depends: depends, sortcol: sortcol, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "br", "scr", "uvc"], monthly: ["u", "t", "s", "b", "e", "d", "n", "br", "scr", "uvc"]}};
 
-                    if (sortcol === 'name' || (params.qstring.sSearch && params.qstring.sSearch !== "")) {
+                    if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                         selOptions.count_query = {};
                         query = [{$addFields: {"sortcol": { $cond: [ "$display", "$display", "$view"] }}}];
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
@@ -807,6 +880,14 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             selOptions.count_query = {"view": {$regex: params.qstring.sSearch, $options: 'i'}};
                         }
                         if (sortcol === 'name') {
+                            sortby.$sort = {};
+                            if (params.qstring.sSortDir_0 === "asc") {
+                                sortby.$sort.sortcol = 1;
+                            }
+                            else {
+                                sortby.$sort.sortcol = -1;
+                            }
+
                             query.push(sortby);
                             query.push({$skip: startPos});
 
@@ -941,8 +1022,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 total = res[0].count[0].count || 0;
                             }
                         }
-
-
                         common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total || data.length, iTotalDisplayRecords: total || data.length, aaData: data});
                     });
                 }

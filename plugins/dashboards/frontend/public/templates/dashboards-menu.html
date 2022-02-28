@@ -18,11 +18,12 @@
         </form>
     </div>
     <div class="cly-vue-sidebar__main-menu">
-        <vue-scroll>
+        <vue-scroll :ops="{scrollPanel: { scrollingX: false }}">
             <ul>
-                <li v-for="(dashboard, idx) in allDashboards" :key="dashboard.id" :class="['bu-px-3 bu-mb-1 bu-is-clickable']">
+                <li v-for="(dashboard, idx) in allDashboards" :key="dashboard.id" :class="['bu-px-3 bu-mb-1 bu-is-clickable', {'bu-mb-6': (idx === (allDashboards.length - 1) ? true: false)}]">
                     <a :href="'#/custom/' + dashboard._id">
                         <div
+                            style="width: calc(100% - 24px);"
                             :class="['cly-vue-sidebar__menu-items has-ellipsis',
                             {'cly-vue-sidebar__menu-items--selected': selectedDashboard._id === dashboard._id}]"
                             @click="onDashboardMenuItemClick(dashboard)">

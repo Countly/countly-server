@@ -1,7 +1,9 @@
-/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyGlobal, countlyVue, countlyCrashesEventLogs, CV, Promise, $ */
+/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, CV, Promise, $ */
 
 (function(countlyCrashes) {
     var _list = {};
+    var FEATURE_NAME = 'crashes';
+
     countlyCrashes.getVuexModule = function() {
         var _overviewSubmodule = {
             state: function() {
@@ -159,13 +161,13 @@
 
                 if (typeof metricChartConfig !== "undefined") {
                     chartData = [
-                        {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: "#DDDDDD", mode: "ghost" },
+                        {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: "#52a3ef", mode: "ghost" },
                         {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: countlyCommon.GRAPH_COLORS[metricChartConfig.colorIndex]}
                     ];
                 }
                 else {
                     chartData = [
-                        {data: [], label: name, color: "#DDDDDD", mode: "ghost" },
+                        {data: [], label: name, color: "#52a3ef", mode: "ghost" },
                         {data: [], label: name, color: "#333933"}
                     ];
                 }
@@ -1021,12 +1023,12 @@
         });
     };
 
-    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0) {
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME)) {
         countlyCrashes.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 
     app.addAppSwitchCallback(function(appId) {
-        if (app._isFirstLoad !== true) {
+        if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME)) {
             countlyCrashes.loadList(appId);
         }
     });

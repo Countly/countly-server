@@ -45,7 +45,7 @@
 
 .ratings-popup #comment-section, .ratings-popup #contact-section {
   margin: 10px 0px;
-  border: 1px solid blue;
+  border: 1px solid #0166D6;
   border-radius: 3px;
   padding: 10px 5px;
 }
@@ -95,10 +95,20 @@
   padding: 20px;
 }
 
+.countly-feedback-checkbox-wrapper {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  input {
+    margin-right: 5px;
+  }
+}
+
 #countly-feedback-comment-textarea {
   display: none;
-  width: calc(100% - 10px);
-  margin: 10px 0px;
+  width: calc(100% - 20px);
+  margin: 10px 4px 0px 4px;
   border: 1px solid #ebebeb;
   border-radius: 4px;
   padding: 5px;
@@ -108,9 +118,9 @@
 
 #countly-feedback-contact-me-email {
   display: none;
-  width: calc(100% - 10px);
+  width: calc(100% - 20px);
   padding: 5px;
-  margin: 10px 0px;
+  margin: 10px 4px 0px 4px;
   border: 1px solid #ebebeb;
   border-radius: 4px;
   resize: none;

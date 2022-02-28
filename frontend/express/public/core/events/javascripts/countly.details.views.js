@@ -205,7 +205,20 @@
             var self = this;
             this.$store.dispatch('countlyAllEvents/setTableLoading', true);
             this.$store.dispatch('countlyAllEvents/setChartLoading', true);
-            var currEvent = (this.$route.params && this.$route.params.eventKey) || localStorage.getItem("eventKey");
+            var appId = countlyCommon.ACTIVE_APP_ID;
+            var currEvent = this.$route.params && this.$route.params.eventKey;
+            if (!currEvent) {
+                var eventKey = localStorage.getItem("eventKey");
+                try {
+                    if (eventKey) {
+                        eventKey = JSON.parse(eventKey);
+                        currEvent = eventKey[appId];
+                    }
+                }
+                catch (err) {
+                    currEvent = undefined;
+                }
+            }
             if (currEvent) {
                 this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', currEvent);
             }

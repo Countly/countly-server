@@ -22,15 +22,16 @@
 				<div style="width:256px;">
 					<cly-radio-block v-bind:items="chooseProperties" v-model="selectedProperty"></cly-radio-block>
 				</div>
-				<div class="bu-column" style="position:relative">
+				<div class="bu-column leaflet-noclick-map" style="position:relative">
 					<cly-worldmap
                         style="height: 100%;"
 						external-country=""
 						external-detail-mode="world"
-						value-type="Sessions"
+						:value-type="selectedPropertyTitle"
 						:show-detail-mode-select="false"
 						:show-navigation="false"
 						:prevent-going-to-country="true"
+                        :preventLayerClick="true"
 						:countries-data="countriesData"
 						@country-click="regionClick"
 						>

@@ -1,4 +1,4 @@
-/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal, countlyDashboards, moment*/
+/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal, countlyDashboards, moment, countlyAuth*/
 
 (function() {
     /**
@@ -238,7 +238,7 @@
                         var eventKey = event.split(countlyDashboards.factory.events.separator)[1];
                         appId = event.split(countlyDashboards.factory.events.separator)[0];
 
-                        var allSegments = this.store.getters["countlyDashboards/allSegments"]([appId]);
+                        var allSegments = this.$store.getters["countlyDashboards/allSegments"]([appId]);
 
                         var eventSegments = allSegments[eventKey] || [];
 
@@ -258,13 +258,12 @@
                 case "user-analytics":
                     breakdowns.push({ label: this.i18n("user-analytics.overview-title"), value: "overview"});
 
-                    if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("active_users") > -1) {
+                    if (countlyAuth.validateRead("active_users") && countlyGlobal.plugins && countlyGlobal.plugins.indexOf("active_users") > -1) {
                         breakdowns.push({ label: this.i18n("active_users.title"), value: "active"});
                     }
-                    if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("concurrent_users") > -1) {
+                    if (countlyAuth.validateRead("concurrent_users") && countlyGlobal.plugins && countlyGlobal.plugins.indexOf("concurrent_users") > -1) {
                         breakdowns.push({ label: this.i18n("concurrent-users.title"), value: "online"});
                     }
-
 
                     break;
                 case "geo":
@@ -331,25 +330,23 @@
         watch: {
             event: {
                 immediate: true,
-                handler: function(newVal) {
+                handler: function(newVal, oldVal) {
                     var event = newVal;
 
                     if (this.type !== "events") {
                         return;
                     }
 
-                    if (this.store && event && event.length) {
+                    if (this.$store && event && event.length) {
                         var appId = event.split(countlyDashboards.factory.events.separator)[0];
 
-                        this.store.dispatch("countlyDashboards/getEvents", {appIds: [appId]});
+                        this.$store.dispatch("countlyDashboards/getEvents", {appIds: [appId]});
                     }
-
-                    this.$emit("input", []);
+                    if (oldVal) {
+                        this.$emit("input", []);
+                    }
                 }
             }
-        },
-        beforeMount: function() {
-            this.store = countlyVue.vuex.getGlobalStore();
         }
     });
 
@@ -402,7 +399,7 @@
             },
             allEvents: function() {
                 var appIds = this.appIds;
-                return this.store.getters["countlyDashboards/allEvents"](appIds);
+                return this.$store.getters["countlyDashboards/allEvents"](appIds);
             },
             selectedEvents: {
                 get: function() {
@@ -442,15 +439,17 @@
         watch: {
             appIds: {
                 immediate: true,
-                handler: function(newVal) {
+                handler: function(newVal, oldVal) {
                     var appIds = newVal;
 
-                    if (this.store && Array.isArray(appIds) && appIds.length) {
-                        this.store.dispatch("countlyDashboards/getEvents", {appIds: appIds});
+                    if (this.$store && Array.isArray(appIds) && appIds.length) {
+                        this.$store.dispatch("countlyDashboards/getEvents", {appIds: appIds});
                     }
 
                     this.rerender = "_id_" + this.multiple + "_" + this.appIds;
-                    this.$emit("input", []);
+                    if (oldVal) {
+                        this.$emit("input", []);
+                    }
                 }
             },
             multiple: {
@@ -469,9 +468,6 @@
                     }
                 }
             }
-        },
-        beforeMount: function() {
-            this.store = countlyVue.vuex.getGlobalStore();
         }
     });
 
@@ -495,29 +491,34 @@
             }
         },
         data: function() {
-            var allTypes = [
-                {
-                    value: "session",
-                    label: this.i18n("dashboards.data-type.session")
-                },
-                {
-                    value: "user-analytics",
-                    label: this.i18n("dashboards.data-type.user-analytics")
-                },
-                {
-                    value: "technology",
-                    label: this.i18n("dashboards.data-type.technology")
-                },
-                {
-                    value: "geo",
-                    label: this.i18n("dashboards.data-type.geo")
-                }
-            ];
-            if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("views") > -1) {
+            var allTypes = [];
+
+            if (countlyAuth.validateRead("core")) {
+                allTypes.push(
+                    {
+                        value: "session",
+                        label: this.i18n("dashboards.data-type.session")
+                    },
+                    {
+                        value: "user-analytics",
+                        label: this.i18n("dashboards.data-type.user-analytics")
+                    },
+                    {
+                        value: "technology",
+                        label: this.i18n("dashboards.data-type.technology")
+                    }
+                );
+            }
+
+            if (countlyAuth.validateRead("geo")) {
+                allTypes.push({value: "geo", label: this.i18n("dashboards.data-type.geo")});
+            }
+
+            if (countlyAuth.validateRead("views") && countlyGlobal.plugins && (countlyGlobal.plugins.indexOf("views") > -1)) {
                 allTypes.push({ label: this.i18n("dashboards.data-type.views"), value: "views"});
             }
 
-            if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("sources") > -1) {
+            if (countlyAuth.validateRead("sources") && countlyGlobal.plugins && (countlyGlobal.plugins.indexOf("sources") > -1)) {
                 allTypes.push({ label: this.i18n("dashboards.data-type.sources"), value: "sources"});
             }
 
@@ -817,7 +818,7 @@
         template: CV.T('/dashboards/templates/helpers/drawer/period.html'),
         props: {
             value: {
-                type: String,
+                type: [Array, String],
                 default: ""
             }
         },
@@ -827,7 +828,7 @@
             };
         },
         computed: {
-            custom_period: {
+            customPeriod: {
                 get: function() {
                     return this.value || "30days";
                 },
@@ -925,17 +926,19 @@
     var WidgetPeriodComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/widget/period.html'),
         props: {
-            custom_period: {
+            customPeriod: {
                 type: [Array, String],
             }
         },
         computed: {
             period: function() {
-                if (this.custom_period) {
-                    return this.formatPeriodString(this.custom_period);
+                var globalPeriod = this.$store.getters["countlyCommon/period"];
+
+                if (this.customPeriod) {
+                    return this.formatPeriodString(this.customPeriod);
                 }
                 else {
-                    return this.formatPeriodString(countlyCommon.getPeriod());
+                    return this.formatPeriodString(globalPeriod);
                 }
             }
         },
@@ -975,8 +978,16 @@
                     return [];
                 }
             },
-            custom_period: {
+            customPeriod: {
                 type: [Array, String],
+            },
+            showPeriod: {
+                type: Boolean,
+                default: true
+            },
+            showApps: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
@@ -1035,6 +1046,48 @@
 
                 return appData;
             }
+        },
+        methods: {
+            appBlockStyles: function(allApps, index) {
+                var maxWidth = '50%';
+                var paddingRight = '0';
+
+                var rem = allApps.length % 2;
+
+                if (((index + 1) % 2) !== 0) {
+                    paddingRight = '8px';
+                }
+
+                if (rem !== 0) {
+                    //There are odd numbers of apps.
+                    //In this case, the last app should have max-width: 100%
+                    if ((index + 1) === (allApps.length)) {
+                        maxWidth = '100%';
+                        paddingRight = '0';
+                    }
+                }
+
+                var styles = {
+                    minWidth: 0,
+                    boxSizing: 'border-box',
+                    maxWidth: maxWidth,
+                    paddingRight: paddingRight
+                };
+
+                return styles;
+            }
+        }
+    });
+
+    var TitleLabelsComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/widget/title-labels.html'),
+        props: {
+            labels: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
         }
     });
 
@@ -1059,5 +1112,6 @@
     Vue.component("clyd-legend-period", WidgetPeriodComponent);
     Vue.component("clyd-primary-legend", PrimaryWidgetLegend);
     Vue.component("clyd-secondary-legend", SecondaryWidgetLegend);
+    Vue.component("clyd-title-labels", TitleLabelsComponent);
 
 })();

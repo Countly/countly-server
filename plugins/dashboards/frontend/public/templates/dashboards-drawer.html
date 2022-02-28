@@ -1,6 +1,7 @@
 <cly-drawer
     @submit="onSubmit"
     @copy="onCopy"
+    @close="onClose"
     :title="title"
     :saveButtonLabel="saveButtonLabel"
     v-bind="controls">
@@ -17,7 +18,7 @@
                 <cly-tooltip-icon tooltip="Select the dashboard sharing option"></cly-tooltip-icon>
             </div>
             <cly-form-field name="share_with" rules="required">
-                <el-radio-group v-model="drawerScope.editedObject.share_with" style="width: 100%;">
+                <el-radio-group :disabled="!canShare" v-model="drawerScope.editedObject.share_with" style="width: 100%;">
                     <el-radio
                         border
                         class="is-autosized-vstack"
@@ -40,10 +41,10 @@
                     <cly-tooltip-icon tooltip="Set the User permissions"></cly-tooltip-icon>
                 </div>
                 <cly-form-field :label="i18n('dashboards.users-edit-permission')" :subheading="i18n('dashboards.users-edit-description')">
-                    <cly-select-email :disabled="!sharingAllowed" v-model="drawerScope.editedObject.shared_email_edit" :placeholder="sharingAllowed ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
+                    <cly-select-email :disabled="!canShare" v-model="sharedEmailEdit" :placeholder="canShare ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
                 </cly-form-field>
                 <cly-form-field :label="i18n('dashboards.users-view-permission')" :subheading="i18n('dashboards.users-view-description')">
-                    <cly-select-email :disabled="!sharingAllowed" v-model="drawerScope.editedObject.shared_email_view" :placeholder="sharingAllowed ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
+                    <cly-select-email :disabled="!canShare" v-model="sharedEmailView" :placeholder="canShare ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
                 </cly-form-field>
             </div>
 
@@ -57,16 +58,17 @@
                     :label="i18n('dashboards.users-edit-permission')"
                     :subheading="i18n('dashboards.users-edit-description')">
                     <el-select
+                        :key="elSelectKey"
                         multiple
-                        :disabled="!sharingAllowed"
-                        v-model="drawerScope.editedObject.shared_user_groups_edit"
-                        :placeholder="sharingAllowed ? i18n('placeholder.dashboards.select-user-group') : i18n('dashbaords.sharing-disabled')"
+                        :disabled="!canShare"
+                        v-model="sharedGroupEdit"
+                        :placeholder="canShare ? i18n('placeholder.dashboards.select-user-group') : i18n('dashbaords.sharing-disabled')"
                         style="width: 100%;">
                         <el-option
                             v-for="(item) in allGroups"
-                            :value="item._id"
+                            :value="item.value"
                             :label="item.name"
-                            :key="item.id">
+                            :key="item.value">
                         </el-option>
                     </el-select>
                 </cly-form-field>
@@ -75,16 +77,17 @@
                     :label="i18n('dashboards.users-view-permission')"
                     :subheading="i18n('dashboards.users-view-description')">
                     <el-select
+                        :key="elSelectKey"
                         multiple
-                        :disabled="!sharingAllowed"
-                        v-model="drawerScope.editedObject.shared_user_groups_view"
-                        :placeholder="sharingAllowed ? i18n('placeholder.dashboards.select-user-group') : i18n('dashbaords.sharing-disabled')"
+                        :disabled="!canShare"
+                        v-model="sharedGroupView"
+                        :placeholder="canShare ? i18n('placeholder.dashboards.select-user-group') : i18n('dashbaords.sharing-disabled')"
                         style="width: 100%;">
                         <el-option
                             v-for="(item) in allGroups"
-                            :value="item._id"
+                            :value="item.value"
                             :label="item.name"
-                            :key="item.id">
+                            :key="item.value">
                         </el-option>
                     </el-select>
                 </cly-form-field>

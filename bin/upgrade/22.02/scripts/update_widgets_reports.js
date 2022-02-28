@@ -281,13 +281,13 @@ pluginManager.dbConnection().then((countlyDb) => {
             }
             function upgrade(widget, done) {
                 console.log("Upgrading widgets", widget._id, widget.type);
-                if (widget.drill_report && widget.drill_report.length) {
+                if (widget.drill_report && widget.drill_report.length && !widget.drill_query) {
                     console.log("This is a drill widget");
                     asyncjs.eachSeries(widget.drill_report, function(report_id, callback){
                         upgradeDrillReport(widget, report_id, countlyDb, countlyDrill, callback);
                     }, done);
                 }
-                else if (widget.cmetrics && widget.cmetrics.length) {
+                else if (widget.cmetrics && widget.cmetrics.length && !widget.cmetric_refs) {
                     console.log("This is a formula widget");
                     asyncjs.eachSeries(widget.cmetrics, function(report_id, callback){
                         upgradeFormulaReport(widget, report_id, countlyDb, countlyDrill, callback);

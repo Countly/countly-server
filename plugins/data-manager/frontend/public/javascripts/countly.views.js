@@ -214,7 +214,8 @@
                         }
                     });
                     this.$refs.eventDrawer.editedObject.omit_list = list;
-                }
+                },
+                cache: false
             },
             title: function() {
                 if (this.controls && this.controls.initialEditedObject && this.controls.initialEditedObject.isEditMode) {
@@ -307,7 +308,8 @@
     var EventGroupDetailView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-group-detail.html'),
         mixins: [
-            countlyVue.mixins.hasDrawers(["eventgroup"])
+            countlyVue.mixins.hasDrawers(["eventgroup"]),
+            countlyVue.mixins.auth(FEATURE_NAME)
         ],
         components: {
             'event-group-drawer': EventGroupDrawer,
@@ -363,6 +365,9 @@
 
     var EventsDefaultTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events-default.html'),
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         components: {
             'data-manager-manage-category': ManageCategory
         },
@@ -406,12 +411,6 @@
                         sort: 'custom'
                     },
                     {
-                        label: CV.i18n("data-manager.last-triggered"),
-                        value: 'lts',
-                        default: true,
-                        sort: 'custom'
-                    },
-                    {
                         label: 'Event key',
                         value: 'e',
                         default: false,
@@ -421,6 +420,12 @@
             };
         },
         computed: {
+            hasCreateRight: function() {
+                return countlyAuth.validateCreate(FEATURE_NAME);
+            },
+            hasDeleteRight: function() {
+                return countlyAuth.validateDelete(FEATURE_NAME);
+            },
             isLoading: {
                 get: function() {
                     return this.$store.getters["countlyDataManager/isLoading"];
@@ -430,6 +435,20 @@
             dynamicEventCols: function() {
                 var cols = this.baseColumns;
                 var colMap = {};
+                var ltsAdded = false;
+                cols.forEach(function(col) {
+                    if (col.value === 'lts') {
+                        ltsAdded = true;
+                    }
+                });
+                if (this.isDrill && !ltsAdded) {
+                    cols.push({
+                        label: CV.i18n("data-manager.last-triggered"),
+                        value: 'lts',
+                        default: true,
+                        sort: 'custom'
+                    });
+                }
                 this.events.forEach(function(ev) {
                     for (var key in ev) {
                         if (key.indexOf('[CLY_input]_') === 0) {
@@ -483,14 +502,17 @@
                             var currentVisibility = e.is_visible !== false;
                             isVisiblityFilter = currentVisibility === visibility;
                         }
-                        if (!e.status) {
+                        if (!e.status || e.status === "unplanned") {
                             var config = countlyPlugins.getConfigsData()['data-manager'] || {};
-                            if (config.allowUnexpectedEvents) {
+                            if (config.showUnplannedEventsUI) {
                                 defaultUnexpectedFilter = true;
                                 e.status = 'unplanned';
                             }
                             else {
                                 defaultUnexpectedFilter = false;
+                            }
+                            if (!self.isDrill) {
+                                defaultUnexpectedFilter = true;
                             }
                         }
                         return defaultUnexpectedFilter && isCategoryFilter && isStatusFilter && isVisiblityFilter;
@@ -723,6 +745,9 @@
 
     var EventsGroupsTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-groups.html'),
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         data: function() {
             return {
                 eventsGroupTablePersistKey: "dm_event_groups_table_" + countlyCommon.ACTIVE_APP_ID,
@@ -839,6 +864,7 @@
     var EventsView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events.html'),
         mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME),
             countlyVue.mixins.hasDrawers(["events", "transform", "segments", "eventgroup", "regenerate"]),
             countlyVue.container.tabsMixin({
                 "externalTabs": "/manage/data-manager/events"
@@ -936,7 +962,9 @@
             },
             handleMetaCommands: function(event) {
                 if (event === 'regnerate') {
-                    this.openDrawer("regenerate", {});
+                    this.openDrawer("regenerate", {
+                        selectedDateRange: '30days'
+                    });
                 }
                 else if (event === 'export-schema') {
                     this.$store.dispatch('countlyDataManager/exportSchema');
@@ -1087,7 +1115,8 @@
     var EventDetailView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-detail.html'),
         mixins: [
-            countlyVue.mixins.hasDrawers(["events", "segments"])
+            countlyVue.mixins.hasDrawers(["events", "segments"]),
+            countlyVue.mixins.auth(FEATURE_NAME)
         ],
         components: {
             'events-drawer': EventsDrawer,

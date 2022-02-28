@@ -57,9 +57,6 @@
               <div class="user-management-drawer-content__input-wrapper bu-mt-5">
                 <div class="user-management-drawer-content__label">
                   <div class="text-small text-heading">{{ i18n('management-users.email') }}</div>
-                  <div class="user-management-drawer-content__help-text bu-mb-1">
-                    Some short description can be placed here.
-                  </div>
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required|email" v-slot="v">
@@ -108,11 +105,6 @@
                 <div>
                   <span class="user-management-drawer-content__section-header">{{ i18n('management-users.role') }}</span>
                 </div>
-                <div>
-                  <span class="user-management-drawer-content__help-text bu-mb-1">
-                    Some short description can be placed here.
-                  </span>
-                </div>
               </div>
               <div class="user-management-drawer-content__section-content user-management-drawer-content__role-section">
                 <el-checkbox class="bu-mt-2" v-model="drawerScope.editedObject.global_admin">{{ i18n('management-users.global-administrator') }}</el-checkbox>
@@ -159,7 +151,7 @@
               </div>
               <div class="user-management-drawer-content__section-content">
                 <div class="user-management-drawer-content__label user-management-drawer-content__label--pl-10">
-                  <div class="user-management-drawer-content__help-text bu-px-4">Some app selection related description can be placed here</div>
+                  <div class="user-management-drawer-content__help-text bu-px-4">{{ i18n('management-users.grant-user-access-to-apps-desc') }}</div>
                 </div>
                 <div class="user-management-drawer-content__input bu-px-4">
                   <cly-select-x

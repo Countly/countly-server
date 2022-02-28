@@ -12,7 +12,8 @@
                     shared_user_groups_edit: [],
                     shared_user_groups_view: [],
                     share_with: "all-users",
-                    theme: 0
+                    theme: 0,
+                    is_owner: true
                 };
             }
         },
@@ -27,6 +28,18 @@
                 }
             },
             separator: "***"
+        },
+        request: {
+            getEmpty: function() {
+                return {
+                    isInit: true,
+                    isRefresh: false,
+                    isDrawerOpen: false,
+                    isGridInteraction: false,
+                    isProcessing: false,
+                    isSane: true
+                };
+            }
         },
         log: function(e) {
             var DEBUG = true;
@@ -188,15 +201,6 @@
             getters: {
                 all: function(state) {
                     return state.all;
-                },
-                allGeography: function(state) {
-                    return state.all.map(function(w) {
-                        return {
-                            _id: w._id,
-                            size: w.size,
-                            position: w.position
-                        };
-                    });
                 }
             },
             mutations: {
@@ -242,6 +246,7 @@
                 },
                 syncGeography: function(state, widget) {
                     var index = -1;
+                    var settings = widget.settings || {};
 
                     for (var i = 0; i < state.all.length; i++) {
                         if (state.all[i]._id === widget._id) {
@@ -250,15 +255,15 @@
                         }
                     }
 
-                    if ((index > -1) && (widget.size || widget.position)) {
+                    if ((index > -1) && (settings.size || settings.position)) {
                         var obj = JSON.parse(JSON.stringify(state.all[index]));
 
-                        if (widget.size) {
-                            obj.size = widget.size;
+                        if (settings.size) {
+                            obj.size = settings.size;
                         }
 
-                        if (widget.position) {
-                            obj.position = widget.position;
+                        if (settings.position) {
+                            obj.position = settings.position;
                         }
 
                         state.all.splice(index, 1, obj);
@@ -279,15 +284,29 @@
                         /*
                             Update the widget in the widget store.
                         */
+                        var selectedDashbaordId = context.rootGetters["countlyDashboards/selected"].id;
+                        if (dashboardId !== selectedDashbaordId) {
+                            /**
+                             * For some reason lets say view was changed and there was a
+                             * widget request in background.
+                             */
+                            return;
+                        }
+
                         var widget = w && w[0];
                         context.commit("update", widget);
                         return widget;
                     }).catch(function(e) {
                         log(e);
+
+                        /*
+
                         CountlyHelpers.notify({
                             message: "Something went wrong while getting the widget!",
                             type: "error"
                         });
+
+                        */
 
                         return false;
                     });
@@ -503,8 +522,10 @@
             },
             getDashboard: function(context, params) {
                 var dashboardId = context.getters.selected.id;
+                var isRefresh = params && params.isRefresh;
 
-                countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(res) {
+                return countlyDashboards.service.dashboards.get(dashboardId, isRefresh).then(function(res) {
+                    var isSane = context.getters["requests/isSane"];
                     var dashbaord = null;
                     var widgets = [];
                     var dId = null;
@@ -521,25 +542,28 @@
                         }
                     }
 
-                    /*
-                        On getting the dashboard, Set the selected dashboard data
-                        as well as update the local list of all dashboards.
-                        If the dashboard is not present in the local list, add it there
-                    */
+                    if (isSane) {
 
-                    context.commit("setSelectedDashboard", {id: dId, data: dashbaord});
+                        /**
+                         * We will only update the vuex if the request is sane.
+                         * Requset will not be considered sane if during refresh
+                         * the widget geography (size and position) was changed.
+                         *
+                         * On getting the dashboard, Set the selected dashboard data
+                         * as well as update the local list of all dashboards.
+                         * If the dashboard is not present in the local list, add it there.
+                         *
+                         * Set all widgets of this dashboard here in the vuex store.
+                         */
 
-                    if (dashbaord) {
-                        context.commit("addOrUpdateDashboard", dashbaord);
+                        context.commit("setSelectedDashboard", {id: dId, data: dashbaord});
+
+                        if (dashbaord) {
+                            context.commit("addOrUpdateDashboard", dashbaord);
+                        }
+
+                        context.dispatch("widgets/setAll", widgets);
                     }
-
-                    /*
-                        Set all widgets of this dashboard here in the vuex store - Start
-                    */
-                    context.dispatch("widgets/setAll", widgets);
-                    /*
-                        Set all widgets of this dashboard here in the vuex store - End
-                    */
 
                     return dashbaord;
                 }).catch(function(e) {
@@ -589,8 +613,10 @@
                 */
 
                 if (dashboardId) {
-                    context.dispatch("getDashboard", params);
+                    return context.dispatch("getDashboard", params);
                 }
+
+                return false;
             },
 
             /*
@@ -710,12 +736,88 @@
             }
         };
 
+        var requestResource = countlyVue.vuex.Module("requests", {
+            state: function() {
+                var empty = countlyDashboards.factory.request.getEmpty();
+                return empty;
+            },
+            getters: {
+                isInitializing: function(state) {
+                    return state.isInit;
+                },
+                isRefreshing: function(state) {
+                    return state.isRefresh;
+                },
+                drawerOpenStatus: function(state) {
+                    return state.isDrawerOpen;
+                },
+                gridInteraction: function(state) {
+                    return state.isGridInteraction;
+                },
+                isProcessing: function(state) {
+                    return state.isProcessing;
+                },
+                isSane: function(state) {
+                    return state.isSane;
+                }
+            },
+            mutations: {
+                setIsInit: function(state, value) {
+                    state.isInit = value;
+                },
+                setIsRefresh: function(state, value) {
+                    state.isRefresh = value;
+                },
+                setIsDrawerOpen: function(state, value) {
+                    state.isDrawerOpen = value;
+                },
+                setIsGridInteraction: function(state, value) {
+                    state.isGridInteraction = value;
+                },
+                setIsProcessing: function(state, value) {
+                    state.isProcessing = value;
+                },
+                setIsSane: function(state, value) {
+                    state.isSane = value;
+                },
+                reset: function(state) {
+                    var empty = countlyDashboards.factory.request.getEmpty();
+                    for (var key in empty) {
+                        state[key] = empty[key];
+                    }
+                }
+            },
+            actions: {
+                isInitializing: function(context, status) {
+                    context.commit("setIsInit", status);
+                },
+                isRefreshing: function(context, status) {
+                    context.commit("setIsRefresh", status);
+                },
+                drawerOpenStatus: function(context, status) {
+                    context.commit("setIsDrawerOpen", status);
+                },
+                gridInteraction: function(context, status) {
+                    context.commit("setIsGridInteraction", status);
+                },
+                isProcessing: function(context, status) {
+                    context.commit("setIsProcessing", status);
+                },
+                markSanity: function(context, status) {
+                    context.commit("setIsSane", status);
+                },
+                reset: function(context) {
+                    context.commit("reset");
+                }
+            }
+        });
+
         return countlyVue.vuex.Module("countlyDashboards", {
             state: getEmptyState,
             getters: getters,
             mutations: mutations,
             actions: actions,
-            submodules: [widgetsResource],
+            submodules: [widgetsResource, requestResource],
             destroy: false
         });
     };

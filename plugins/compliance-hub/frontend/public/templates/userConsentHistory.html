@@ -1,4 +1,4 @@
-<div>
+<div class="cly-vue-compliance__user_consent_history">
 <div class="bu-mt-5">
         <div class="bu-is-flex bu-my-4">
             <div class="bu-mr-2 text-big font-weight-bold"> User Consent History </div>
@@ -8,7 +8,7 @@
         </div>
     </div>
     <cly-section>
-        <cly-datatable-n :data-source="userConsentHistoryTableSource" :displaySearch= "false" :default-sort="{prop: 'ts', order: 'descending'}">
+        <cly-datatable-n :force-loading="isLoading" :data-source="userConsentHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}">
             <template v-slot="scope">
                 <el-table-column type="expand">
                     <template slot-scope="props">

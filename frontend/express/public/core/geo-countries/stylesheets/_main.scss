@@ -9,3 +9,9 @@
 .routename-analytics-geo .radio-column{
 	width: 256px;
 }
+
+.leaflet-noclick-map .leaflet-interactive {
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+    cursor: grab;
+}

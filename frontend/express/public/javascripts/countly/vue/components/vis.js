@@ -154,7 +154,11 @@
     var ZoomMixin = {
         methods: {
             onDataZoom: function(event) {
-                this.$refs.header.$refs.zoom.onZoomFinished(event);
+                if (this.$refs.header && this.$refs.header.$refs.zoom) {
+                    this.$refs.header.$refs.zoom.onZoomFinished(event);
+                }
+
+                this.$emit("datazoom", event);
             },
             patchZoom: function(chartOpt) {
                 var echartRef = this.$refs.echarts;
@@ -177,7 +181,10 @@
                             var self = this;
                             this.$nextTick(function() {
                                 self.$nextTick(function() {
-                                    header.$refs.zoom.patchZoom(false);
+                                    if (header.$refs.zoom) {
+                                        header.$refs.zoom.patchZoom(false);
+                                    }
+                                    self.$emit("patchzoom");
                                 });
                             });
                         }
@@ -185,6 +192,79 @@
                 }
 
                 return chartOpt;
+            }
+        }
+    };
+
+    var ExternalZoomMixin = {
+        data: function() {
+            /**
+             * Usage of external zoom component -
+             * <cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef && $refs.echartRef.$refs && $refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
+             * <cly-chart-line ref="echartRef" @patchzoom="onPatchZoom" @datazoom="onDataZoom" :show-zoom="false"></cly-chart-line>
+             *
+             * For external zoom to work, you need to ensure following things -
+             * 1. Refer to the usage above for using the chart zoom component.
+             * 2. Hide anything that should not be visible in the zoomed view in the same row as zoom status.
+             * 3. Add a ref to your chart titled as 'echartRef' as mentioned above.
+             * 4. On your chart listen to these events - 'patchzoom' and 'datazoom' as mentioned above.
+             * 5. Default zoom of the chart should be disabled by setting :show-zoom="false"
+             */
+            return {
+                showZoom: false,
+            };
+        },
+        methods: {
+            triggerZoom: function() {
+                var self = this;
+                this.showZoom = true;
+                setTimeout(function() {
+                    self.$nextTick(function() {
+                        self.$nextTick(function() {
+                            if (self.$refs.zoomRef) {
+                                self.onTriggerZoom();
+                            }
+                            else {
+                                var interval = setInterval(function() {
+                                    if (self.$refs.zoomRef) {
+                                        self.onTriggerZoom();
+                                        clearInterval(interval);
+                                    }
+                                }, 50);
+                            }
+                        });
+                    });
+                }, 0);
+            },
+            onTriggerZoom: function() {
+                /**
+                 * Its very important to set headers isZoom to true.
+                 * Bcz it triggers the internal chartOptions computed property
+                 * of the chart.
+                 * Which inturn dispatches patchzoom.
+                 */
+                this.$refs.zoomRef.onZoomTrigger();
+                if (this.$refs.echartRef && this.$refs.echartRef.$refs.header) {
+                    this.$refs.echartRef.$refs.header.isZoom = true;
+                }
+            },
+            onZoomReset: function() {
+                /**
+                 * Its very important to set headers isZoom to true.
+                 * Bcz it triggers the internal chartOptions computed property
+                 * of the chart.
+                 * Which inturn dispatches patchzoom.
+                 */
+                if (this.$refs.echartRef && this.$refs.echartRef.$refs.header) {
+                    this.$refs.echartRef.$refs.header.isZoom = false;
+                }
+                this.showZoom = false;
+            },
+            onDataZoom: function() {
+                this.$refs.zoomRef.onZoomFinished();
+            },
+            onPatchZoom: function() {
+                this.$refs.zoomRef.patchZoom();
             }
         }
     };
@@ -212,6 +292,8 @@
             }
         }
     };
+
+    countlyVue.mixins.zoom = ExternalZoomMixin;
 
     /*
         Use xAxis.axisLabel.showMinLabel to change visibility of minimum label
@@ -348,6 +430,7 @@
                         itemSize: 0
                     },
                     tooltip: {
+                        appendToBody: true,
                         show: true,
                         trigger: 'axis',
                         axisPointer: {
@@ -387,7 +470,7 @@
                                                     <div class="chart-tooltip__series">\
                                                             <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
                                                         <div class="chart-tooltip__value">\
-                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter(params[i].value[1], params[i].value, i) : self.valFormatter(params[i].value, null, i)) + '</span>\
+                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
                                                         </div>\
                                                     </div>\
                                                 </div>';
@@ -443,7 +526,13 @@
                         axisLabel: {
                             show: true,
                             color: "#81868D",
-                            fontSize: 12
+                            fontSize: 12,
+                            formatter: function(value) {
+                                if (typeof value === "number") {
+                                    return countlyCommon.getShortNumber(value);
+                                }
+                                return value;
+                            }
                         },
                         splitLine: {
                             show: true,
@@ -747,9 +836,19 @@
             };
         },
         computed: {
+            hasAllEmptyValues: function() {
+                var options = this.mergedOptions;
+                if (options.series) {
+                    for (var i = 0; i < options.series.length; i++) {
+                        if (!options.series[i].isEmptySeries) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            },
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
-
                 var series = opt.series || [];
 
                 var sumOfOthers;
@@ -760,8 +859,25 @@
                     sumOfOthers = 0;
 
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    var seriesData = series[i].data;
 
+                    series[i].data = series[i].data.filter(function(el) {
+                        return el.value > 0;
+                    });
+                    if (series[i].data.length === 0) {
+                        series[i].isEmptySeries = true;
+                        series[i].data.push({"label": "empty", "value": 100});
+                        opt.legend.show = false;
+                        opt.tooltip.show = false;
+                        series[i].color = "#ECECEC";
+                        series[i].name = "empty";
+                        series[i].emphasis = {
+                            itemStyle: {
+                                color: "#ECECEC"
+                            }
+                        };
+                    }
+
+                    var seriesData = series[i].data;
                     seriesData.sort(function(a, b) {
                         return b.value - a.value;
                     });
@@ -880,8 +996,15 @@
         props: {
             echartRef: {
                 type: Object
+            },
+            zoomInfo: {
+                type: Boolean,
+                default: true
             }
         },
+        mixins: [
+            countlyVue.mixins.i18n
+        ],
         data: function() {
             return {
                 zoomStatus: "reset"
@@ -889,49 +1012,57 @@
         },
         methods: {
             onZoomTrigger: function(e) {
-                this.echartRef.setOption({tooltip: {show: false}}, {notMerge: false});
+                if (this.echartRef) {
+                    this.echartRef.setOption({tooltip: {show: false}}, {notMerge: false});
 
-                this.echartRef.dispatchAction({
-                    type: "takeGlobalCursor",
-                    key: 'dataZoomSelect',
-                    dataZoomSelectActive: true
-                });
+                    this.echartRef.dispatchAction({
+                        type: "takeGlobalCursor",
+                        key: 'dataZoomSelect',
+                        dataZoomSelectActive: true
+                    });
+                }
 
                 this.zoomStatus = "triggered";
                 if (e) {
-                    this.$parent.onZoomTrigger();
+                    this.$emit("zoom-triggered", e);
                 }
             },
             onZoomReset: function() {
-                this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
+                if (this.echartRef) {
+                    this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
 
-                this.echartRef.dispatchAction({
-                    type: "restore",
-                });
+                    this.echartRef.dispatchAction({
+                        type: "restore",
+                    });
+                }
 
                 this.zoomStatus = "reset";
-                this.$parent.onZoomReset();
+                this.$emit("zoom-reset");
             },
             onZoomCancel: function() {
-                this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
+                if (this.echartRef) {
+                    this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
 
-                this.echartRef.dispatchAction({
-                    type: "takeGlobalCursor",
-                    key: 'dataZoomSelect',
-                    dataZoomSelectActive: false
-                });
+                    this.echartRef.dispatchAction({
+                        type: "takeGlobalCursor",
+                        key: 'dataZoomSelect',
+                        dataZoomSelectActive: false
+                    });
+                }
 
                 this.zoomStatus = "reset";
-                this.$parent.onZoomReset();
+                this.$emit("zoom-reset");
             },
             onZoomFinished: function() {
-                this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
+                if (this.echartRef) {
+                    this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
 
-                this.echartRef.dispatchAction({
-                    type: "takeGlobalCursor",
-                    key: 'dataZoomSelect',
-                    dataZoomSelectActive: false
-                });
+                    this.echartRef.dispatchAction({
+                        type: "takeGlobalCursor",
+                        key: 'dataZoomSelect',
+                        dataZoomSelectActive: false
+                    });
+                }
 
                 this.zoomStatus = "done";
             },
@@ -942,18 +1073,18 @@
             }
         },
         template: '<div>\
-                        <div v-if="zoomStatus === \'triggered\'" class="bu-mr-3 color-cool-gray-50 text-smallish">\
-                            Select an area in the chart to zoom\
+                        <div v-if="zoomInfo && zoomStatus === \'triggered\'" class="bu-mr-3 color-cool-gray-50 text-smallish">\
+                            {{i18nM(\'common.zoom-info\')}}\
                         </div>\
                         <el-button class="chart-zoom-button" @click="onZoomTrigger" v-if="zoomStatus === \'reset\'"\
                             size="small"\
                             icon="cly-icon-btn cly-icon-zoom">\
                         </el-button>\
                         <el-button class="chart-zoom-button" @click="onZoomCancel" v-if="zoomStatus === \'triggered\'" size="small">\
-                            Cancel Zoom\
+                            {{i18nM(\'common.cancel-zoom\')}}\
                         </el-button>\
                         <el-button class="chart-zoom-button" @click="onZoomReset" v-if="zoomStatus === \'done\'" size="small">\
-                            Reset Zoom\
+                            {{i18nM(\'common.zoom-reset\')}}\
                         </el-button>\
                     </div>'
     });
@@ -1071,7 +1202,7 @@
                             <div class="bu-level-item" v-if="showToggle && !isZoom">\
                                 <chart-toggle :chart-type="chartType" v-on="$listeners"></chart-toggle>\
                             </div>\
-                            <zoom-interactive ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
+                            <zoom-interactive @zoom-reset="onZoomReset" @zoom-triggered="onZoomTrigger" ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
                         </div>\
                     </div>'
     });
@@ -1307,6 +1438,8 @@
                         </template>\
                     </div>'
     });
+
+    Vue.component("cly-chart-zoom", ZoomInteractive);
 
     Vue.component("cly-chart-generic", BaseChart.extend({
         data: function() {
@@ -1603,19 +1736,38 @@
                     </div>'
     }));
 
-    var handleXAxisOverflow = function(options) {
-        if (!options || !options.xAxis || !options.xAxis.data) {
+    var handleXAxisOverflow = function(options, strategy) {
+        if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
             return null;
         }
         var xAxis = options.xAxis;
 
         // Early return, no need to analyze the array
-        if (xAxis.data.length >= 15) {
+        if (xAxis.data.length > 15) {
+            // no need to force all points to be present
+            // if there are too many of them
             return {
-                width: 100,
-                overflow: "truncate",
-                interval: 0,
-                rotate: 45,
+                grid: {containLabel: false, bottom: 90, left: 75},
+                xAxis: {
+                    axisLabel: {
+                        width: 100,
+                        overflow: "truncate",
+                        rotate: 45,
+                    }
+                }
+            };
+        }
+        else if (xAxis.data.length >= 5) {
+            return {
+                grid: {containLabel: false, bottom: 90, left: 75},
+                xAxis: {
+                    axisLabel: {
+                        width: 100,
+                        overflow: "truncate",
+                        interval: 0,
+                        rotate: 45,
+                    }
+                }
             };
         }
 
@@ -1632,22 +1784,36 @@
             maxLen = Math.max(maxLen, str.length);
         });
 
-        if (maxLen > 25) {
+        if (maxLen > 25 && xAxis.data.length >= 2) {
             return {
-                width: 150,
-                overflow: "truncate",
-                interval: 0,
-                rotate: 30,
+                grid: {containLabel: false, bottom: 90, left: 75},
+                xAxis: {
+                    axisLabel: {
+                        width: 150,
+                        overflow: "truncate",
+                        interval: 0,
+                        rotate: 30,
+                    }
+                }
             };
         }
-        else if (xAxis.data.length >= 5) {
+        else if (xAxis.data.length >= 2) {
             return {
-                width: 150,
-                overflow: "break",
-                interval: 0
+                grid: {
+                    bottom: 50
+                },
+                xAxis: {
+                    axisLabel: {
+                        width: 150,
+                        overflow: "break",
+                        interval: 0
+                    }
+                }
             };
         }
-        return {interval: 0};
+        return {
+            xAxis: {axisLabel: {interval: 0}}
+        };
     };
 
     Vue.component("cly-chart-bar", BaseBarChart.extend({
@@ -1656,6 +1822,13 @@
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
+        props: {
+            xAxisLabelOverflow: {
+                type: String,
+                default: 'auto',
+                required: false
+            }
+        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
@@ -1663,11 +1836,11 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
-                var xAxisOverflowPatch = handleXAxisOverflow(opt);
-                if (xAxisOverflowPatch) {
-                    opt.xAxis.axisLabel = _merge(opt.xAxis.axisLabel, xAxisOverflowPatch);
-                }
                 opt = this.patchChart(opt);
+                var xAxisOverflowPatch = handleXAxisOverflow(opt, this.xAxisLabelOverflow);
+                if (xAxisOverflowPatch) {
+                    opt = _merge(opt, xAxisOverflowPatch);
+                }
                 return opt;
             }
         },
@@ -1771,9 +1944,16 @@
                                     ref="legend"\
                                     :options="pieLegendOptions"\
                                     :seriesType="seriesType"\
-                                    v-if="pieLegendOptions.show && !isChartEmpty"\
+                                    v-if="pieLegendOptions.show && !isChartEmpty && !hasAllEmptyValues"\
                                     :class="classes" class="shadow-container">\
                                 </custom-legend>\
+								<div v-if="!isChartEmpty && hasAllEmptyValues" :class="classes" class="shadow-container">\
+									<div class="cly-vue-chart-legend__secondary" >\
+										<div style="height: 100%; display: flex; flex-direction: column; justify-content: center;">\
+											<div class="bu-p-4">{{i18n("common.bar.no-data")}}</div>\
+										</div>\
+									</div>\
+								</div>\
                             </div>\
                         </div>\
                     </div>'
@@ -2013,6 +2193,11 @@
                 default: false,
                 required: false
             },
+            preventLayerClick: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
             options: {
                 type: Object,
                 default: function() {
@@ -2085,7 +2270,9 @@
                 },
                 defaultMapOptions: {
                     attributionControl: false,
-                    zoomControl: false
+                    zoomControl: false,
+                    zoomSnap: 0.1,
+                    zoom: 1.3
                 }
             };
         },
@@ -2155,9 +2342,11 @@
             onEachFeatureFunction: function(/*params*/) {
                 var self = this;
                 return function(feature, layer) {
-                    layer.on('click', function() {
-                        self.goToCountry(feature.properties.code);
-                    });
+                    if (!self.preventLayerClick) {
+                        layer.on('click', function() {
+                            self.goToCountry(feature.properties.code);
+                        });
+                    }
                 };
             },
             onEachFeatureFunctionDetail: function() {
@@ -2428,7 +2617,7 @@
                 });
             },
             onMarkerClick: function(code) {
-                if (!this.inDetail) {
+                if (!this.inDetail && !this.preventLayerClick) {
                     this.goToCountry(code);
                 }
             },

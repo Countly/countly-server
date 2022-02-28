@@ -372,6 +372,8 @@ function uploadFile(myfile, id, callback) {
         }
         var widget = validatedArgs.obj;
         var type = "rating";
+        // yes it should be string, not boolean
+        widget.is_active = widget.status ? "true" : "false";
         widget.type = type;
         widget.created_at = Date.now();
         widget.timesShown = 0;
@@ -379,6 +381,11 @@ function uploadFile(myfile, id, callback) {
         widget.ratingsSum = 0;
         widget.showPolicy = "afterPageLoad";
         widget.appearance = {};
+        widget.target_devices = {
+            desktop: true,
+            phone: true,
+            tablet: true
+        };
 
         //widget.created_by = common.db.ObjectID(obParams.member._id);
         validateCreate(obParams, FEATURE_NAME, function(params) {
@@ -495,6 +502,10 @@ function uploadFile(myfile, id, callback) {
                 return false;
             }
             var changes = validatedArgs.obj;
+
+            if (changes.status) {
+                changes.is_active = changes.status ? "true" : "false";
+            }
 
             common.db.collection("feedback_widgets").findAndModify({"_id": widgetId }, {}, {$set: changes}, function(err, widget) {
                 if (!err && widget) {

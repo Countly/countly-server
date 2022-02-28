@@ -320,49 +320,49 @@
             if (!fetchedTasks || !fetchedTasks.length) {
                 return;
             }
-            var assistantAvailable = typeof countlyAssistant !== "undefined";
-            if (!assistantAvailable) {
-                CountlyHelpers.notify({
-                    title: CV.i18n("assistant.taskmanager.completed.title"),
-                    message: CV.i18n("assistant.taskmanager.completed.message", fetchedTasks.length),
-                    sticky: true
-                    // onClick: function() {
-                    //     app.navigate(fetchedTask.view + id, true);
-                    // }
-                });
-            }
-            else {
-                countlyTaskManager.makeTaskNotification(
-                    CV.i18n("assistant.taskmanager.completed.title"),
-                    CV.i18n("assistant.taskmanager.completed.message", fetchedTasks.length),
-                    CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
-                    "", 3, "assistant.taskmanager.completed", 1);
-            }
+            // var assistantAvailable = typeof countlyAssistant !== "undefined";
+            // if (!assistantAvailable) {
+            CountlyHelpers.notify({
+                title: CV.i18n("assistant.taskmanager.completed.title"),
+                message: CV.i18n("assistant.taskmanager.completed.message", fetchedTasks.length),
+                sticky: true
+                // onClick: function() {
+                //     app.navigate(fetchedTask.view + id, true);
+                // }
+            });
+            // }
+            // else {
+            //     countlyTaskManager.makeTaskNotification(
+            //         CV.i18n("assistant.taskmanager.completed.title"),
+            //         CV.i18n("assistant.taskmanager.completed.message", fetchedTasks.length),
+            //         CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
+            //         "", 3, "assistant.taskmanager.completed", 1);
+            // }
         },
         errored: function(fetchedTasks) {
             if (!fetchedTasks || !fetchedTasks.length) {
                 return;
             }
-            var assistantAvailable = typeof countlyAssistant !== "undefined";
-            if (!assistantAvailable) {
-                CountlyHelpers.notify({
-                    title: CV.i18n("assistant.taskmanager.errored.title"),
-                    message: CV.i18n("assistant.taskmanager.errored.message", fetchedTasks.length),
-                    info: CV.i18n("assistant.taskmanager.errored.info"),
-                    type: "error",
-                    sticky: true
-                    // onClick: function() {
-                    //     app.navigate("#/manage/tasks", true);
-                    // }
-                });
-            }
-            else {
-                countlyTaskManager.makeTaskNotification(
-                    CV.i18n("assistant.taskmanager.errored.title"),
-                    CV.i18n("assistant.taskmanager.errored.message", fetchedTasks.length),
-                    CV.i18n("assistant.taskmanager.errored.info"),
-                    "", 4, "assistant.taskmanager.errored", 1);
-            }
+            // var assistantAvailable = typeof countlyAssistant !== "undefined";
+            // if (!assistantAvailable) {
+            CountlyHelpers.notify({
+                title: CV.i18n("assistant.taskmanager.errored.title"),
+                message: CV.i18n("assistant.taskmanager.errored.message", fetchedTasks.length),
+                info: CV.i18n("assistant.taskmanager.errored.info"),
+                type: "error",
+                sticky: true
+                // onClick: function() {
+                //     app.navigate("#/manage/tasks", true);
+                // }
+            });
+            // }
+            // else {
+            //     countlyTaskManager.makeTaskNotification(
+            //         CV.i18n("assistant.taskmanager.errored.title"),
+            //         CV.i18n("assistant.taskmanager.errored.message", fetchedTasks.length),
+            //         CV.i18n("assistant.taskmanager.errored.info"),
+            //         "", 4, "assistant.taskmanager.errored", 1);
+            // }
         }
     };
 

@@ -35,6 +35,7 @@
                 var data = ob.data;
                 for (var i = 0; i < ob.data.length; i++) {
                     var event = {};
+                    event.key = data[i].name;
                     event.name = countlyEventsOverview.helpers.getEventLongName(data[i].name, map);
                     event.value = countlyCommon.formatNumber((data[i].count));
                     event.change = data[i].change;
@@ -396,11 +397,11 @@
                                 });
                             countlyEventsOverview.service.fetchEvents()
                                 .then(function(response) {
+                                    context.dispatch("setTableLoading", false);
                                     if (response) {
                                         context.commit("setDetailEvents", response || {});
                                         context.commit("setEventOverview", countlyEventsOverview.helpers.getEventOverview(response) || []);
                                         context.commit("setTableRows", countlyEventsOverview.helpers.getTableRows(response.data, res.map) || []);
-                                        context.dispatch("setTableLoading", false);
                                         return;
                                     }
                                 });

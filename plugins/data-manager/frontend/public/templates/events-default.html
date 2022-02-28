@@ -5,7 +5,6 @@
     :rows="events"
     :keyFn="function(row) {return row.key}"
     :indent=0
-    :height=550
     :force-loading="isLoading"
     :tracked-fields="trackedFields"
     @select-all="handleAllChange"
@@ -31,7 +30,7 @@
         </template>
 
         <template v-slot="scope">   
-            <el-table-column fixed="left" type="selection" :reserve-selection="true" width="55" prop="isSelected">
+            <el-table-column v-if="canUserUpdate || canUserDelete" fixed="left" type="selection" :reserve-selection="true" width="55" prop="isSelected">
             </el-table-column>
 
             <el-table-column fixed="left" min-width="330" sortable="custom" prop="name" :label="i18n('data-manager.event-name')">
@@ -117,16 +116,16 @@
 
             <el-table-column type="options" align="center">
                 <template v-slot="rowScope">
-                    <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
-                        <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-                        <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                    <cly-more-options v-if="(canUserUpdate || canUserDelete) && rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
+                        <el-dropdown-item v-if="canUserUpdate" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                        <el-dropdown-item v-if="canUserDelete" command="delete">{{i18n('common.delete')}}</el-dropdown-item>
                     </cly-more-options>
                 </template>
             </el-table-column>
 
         </template>
         <template v-slot:bottomline="scope">
-            <cly-diff-helper class="action-bar" :diff="scope.diff" @discard="scope.unpatch()">
+            <cly-diff-helper v-if="canUserUpdate || canUserDelete" class="action-bar" :diff="scope.diff" @discard="scope.unpatch()">
                 <template v-slot:main>
                     <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center" style="height: 100%;">
                         <cly-more-options class="bu-mr-3" size="small" :text="i18n('data-manager.change-category')" type="default" icon="el-icon-crop" @command="handleChangeCategory($event, scope.diff)">
@@ -145,7 +144,7 @@
                             <el-dropdown-item command="hidden">{{ i18n('data-manager.hidden') }}</el-dropdown-item>
                         </cly-more-options>
                         
-                        <el-button class="bu-mr-3" size="small" type="default" icon="el-icon-delete-solid" @click="handleDelete(scope.diff)">{{ i18n('common.delete') }}</el-button>
+                        <el-button v-if="canUserDelete" class="bu-mr-3" size="small" type="default" icon="el-icon-delete-solid" @click="handleDelete(scope.diff)">{{ i18n('common.delete') }}</el-button>
                     </div>
                 </template>
             </cly-diff-helper>

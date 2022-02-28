@@ -5,10 +5,10 @@
         HOURS: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
         WEEK_DAYS: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
         DateBucketEnum: {
-            PREV_MONTH: "prevMonth",
-            THIS_MONTH: "thisMonth",
-            LAST_THREE_MONTHS: "lastThreeMonths",
-            ALL_TIME: 'allTime',
+            PREV_MONTH: "previous",
+            THIS_MONTH: "current",
+            LAST_THREE_MONTHS: "last_3",
+            ALL_TIME: 'all',
         },
         findEventKeyByName: function(name) {
             return countlyEvent.getEvents().find(function(item) {

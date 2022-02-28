@@ -1,7 +1,30 @@
-/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, Backbone, GridStack, CountlyHelpers */
+/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull */
 
 (function() {
-    var FEATURE_NAME = "dashboards";
+    var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
+
+    /**
+     * To whom it may concern,
+     * Dashboard sharing is only allowed for global admins or dashboard owners.
+     * Other people cannot edit the dashbaord.
+     * The users with whom the dashboard is shared with, can only update its widgets,
+     * and not the dashboard settings itself.
+     *
+     * - prikshit
+     *
+     * If a widget feature is not allowed to the user, he cannot edit or delete the widget.
+     * Nor can he create a widget of that feature. We won't show him that respective widget in the drawer
+     * at all. In this case the user can only see the widget in the dashboard grid.
+     * The user can only create widgets of features he has access to.
+     *
+     * We have key called "isAllowed" in the widget settings object to check if the widget
+     * is allowed to a user or not.
+     * It is also passed to the widget grid component as a prop called "is-allowed".
+     * For those who have their own action buttons in the widget grid, they should
+     * hide them if "is-allowed" is false. For example - drill.
+     *
+     * A user with view only permission cannot edit, resize or move widgets in the dashboard.
+     */
 
     var WidgetsMixin = {
         computed: {
@@ -16,6 +39,22 @@
                     if (!acc[component.type]) {
                         acc[component.type] = [];
                     }
+
+                    var featureName = component.feature;
+                    var allowed = true;
+
+                    if (!featureName) {
+                        allowed = false;
+                    }
+
+                    if (!countlyAuth.validateRead(featureName)) {
+                        allowed = false;
+                        countlyDashboards.factory.log(featureName + " feature is not allowed to this user.");
+                        countlyDashboards.factory.log("Therefore he cannot edit, delete or create a widget of this type.");
+                        countlyDashboards.factory.log("The user can only view the widget in the dashboard grid.");
+                    }
+
+                    component.isAllowed = allowed;
 
                     acc[component.type].push(component);
                     return acc;
@@ -45,7 +84,13 @@
                     this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
                 }
             },
-            widgetSettingsGetter: function(widget) {
+            widgetSettingsGetter: function(widget, def) {
+                /**
+                 * def should be true only when the settings are required by the grid.
+                 * We want to set it to true then so that we can show a widget in the grid.
+                 * This covers the case when the widget data is invalid or widget is disabled.
+                 */
+                var self = this;
                 var widgets = this.__widgets;
 
                 if (!widget.widget_type) {
@@ -53,14 +98,36 @@
                     return false;
                 }
 
+                var defaultSetting = {
+                    type: widget.widget_type,
+                    grid: {
+                        dimensions: function() {
+                            var width = widget.size && widget.size[0] || self.DEFAULT_MIN_WIDTH;
+                            var height = widget.size && widget.size[1] || self.DEFAULT_MIN_HEIGHT;
+                            return {
+                                width: width,
+                                height: height,
+                                minWidth: self.DEFAULT_MIN_WIDTH,
+                                minHeight: self.DEFAULT_MIN_HEIGHT
+                            };
+                        }
+                    },
+                    drawer: {
+                        getEmpty: function() {
+                            return {};
+                        }
+                    }
+                };
+
                 var registrations = widgets[widget.widget_type];
 
                 if (!registrations) {
                     countlyDashboards.factory.log("Soooo, unfortunately, we don't have any widget settings for " + widget.widget_type);
                     countlyDashboards.factory.log("Possible reason is - The widget wasn't registered correctly in the UI.");
                     countlyDashboards.factory.log("Please check the widget registration. Thanks :)");
+                    countlyDashboards.factory.log("Also it could be that the plugin associated with the widget is disabled.");
 
-                    return false;
+                    return def ? defaultSetting : false;
                 }
 
                 var setting = registrations.find(function(registration) {
@@ -69,6 +136,7 @@
 
                 if (!setting) {
                     countlyDashboards.factory.log("No setting found for the " + widget.widget_type + " widget type based on the widget getter. Please register the widget settings correctly.");
+                    return def ? defaultSetting : false;
                 }
 
 
@@ -116,6 +184,7 @@
             return {
                 GRID_COLUMNS: 4,
                 DEFAULT_MIN_WIDTH: 2,
+                DEFAULT_MIN_HEIGHT: 4,
                 MAX_ROW_X_SUM: 6
             };
         },
@@ -226,6 +295,10 @@
                 return h;
             },
             isWidgetLocked: function(widget) {
+                /**
+                 * Method not used anymore.
+                 * No widget will be locked.
+                 */
                 var disabled = this.isWidgetDisabled(widget);
 
                 if (disabled) {
@@ -241,6 +314,10 @@
                 return false;
             },
             widgetResizeNotAllowed: function(widget) {
+                /**
+                 * Method not used anymore.
+                 * All widgets can be resized.
+                 */
                 var disabled = this.isWidgetDisabled(widget);
 
                 if (disabled) {
@@ -256,6 +333,10 @@
                 return false;
             },
             widgetMoveNotAllowed: function(widget) {
+                /**
+                 * Method not used anymore.
+                 * All widgets can be moved.
+                 */
                 var disabled = this.isWidgetDisabled(widget);
 
                 if (disabled) {
@@ -299,6 +380,7 @@
             addDashboard: function() {
                 var empty = countlyDashboards.factory.dashboards.getEmpty();
                 empty.__action = "create";
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                 this.openDrawer("dashboards", empty);
             }
         }
@@ -339,8 +421,8 @@
             return {
                 title: "",
                 saveButtonLabel: "",
-                sharingAllowed: countlyGlobal.sharing_status || (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0)),
-                groupSharingAllowed: countlyGlobal.plugins.indexOf("groups") > -1 && countlyGlobal.member.global_admin,
+                sharingAllowed: countlyGlobal.sharing_status || AUTHENTIC_GLOBAL_ADMIN,
+                groupSharingAllowed: countlyGlobal.plugins.indexOf("groups") > -1 && AUTHENTIC_GLOBAL_ADMIN,
                 constants: {
                     sharingOptions: [
                         {
@@ -359,12 +441,25 @@
                             description: this.i18nM("dashboards.share.none.description"),
                         }
                     ]
-                }
+                },
+                sharedEmailEdit: [],
+                sharedEmailView: [],
+                sharedGroupEdit: [],
+                sharedGroupView: [],
+                allGroups: []
             };
         },
         computed: {
-            allGroups: function() {
-                return [];
+            canShare: function() {
+                var canShare = this.sharingAllowed && (this.controls.initialEditedObject.is_owner || AUTHENTIC_GLOBAL_ADMIN);
+                return canShare;
+            },
+            elSelectKey: function() {
+                var key = this.allGroups.map(function(g) {
+                    return g._id;
+                }).join(",");
+
+                return key;
             }
         },
         methods: {
@@ -383,15 +478,95 @@
                 var empty = countlyDashboards.factory.dashboards.getEmpty();
                 var obj = {};
 
-                for (var key in empty) {
-                    obj[key] = doc[key];
+                var deleteShares = false;
+
+                if (this.sharingAllowed) {
+                    if (this.canShare) {
+                        if (doc.share_with === "selected-users") {
+                            doc.shared_email_edit = this.sharedEmailEdit;
+                            doc.shared_email_view = this.sharedEmailView;
+
+                            if (this.groupSharingAllowed) {
+                                doc.shared_user_groups_edit = this.sharedGroupEdit;
+                                doc.shared_user_groups_view = this.sharedGroupView;
+                            }
+                            else {
+                                delete doc.shared_user_groups_edit;
+                                delete doc.shared_user_groups_view;
+                            }
+                        }
+                        else {
+                            deleteShares = true;
+                        }
+                    }
+                    else {
+                        /**
+                         * If the user cannot share, then the dashbaord should stay in none
+                         * sharing mode or whatever is already present (set by the original
+                         * dashboard owner).
+                         */
+
+                        if (__action === "create" || __action === "duplicate") {
+                            doc.share_with = "none";
+                        }
+
+                        deleteShares = true;
+                    }
                 }
+                else {
+                    /**
+                     * Sharing is disabled globally
+                     */
+                    if (__action === "create" || __action === "duplicate") {
+                        doc.share_with = "none";
+                    }
+
+                    deleteShares = true;
+                }
+
+                if (deleteShares) {
+                    delete doc.shared_email_edit;
+                    delete doc.shared_email_view;
+                    delete doc.shared_user_groups_edit;
+                    delete doc.shared_user_groups_view;
+                }
+
+                for (var key in empty) {
+                    /**
+                     * This check is important since we don't want to send all the keys
+                     * to the server.
+                     * Especially in case where the user doesn't have the sharing permission.
+                     * In that case we don't want to send the sharing fields to the server.
+                     * Otherwise the existing keys will be overwritten.
+                     */
+                    if (Object.prototype.hasOwnProperty.call(doc, key)) {
+                        obj[key] = doc[key];
+                    }
+                }
+
+                /**
+                 * This is just a runtime only key.
+                 * Should not be sent back to the server.
+                 */
+                delete obj.is_owner;
 
                 this.$store.dispatch(action, obj).then(function(id) {
                     if (id) {
                         if (__action === "duplicate" ||
                         __action === "create") {
+                            CountlyHelpers.notify({
+                                message: "Dashboard created successfully!",
+                                type: "success"
+                            });
+
                             app.navigate('#/custom/' + id, true);
+                        }
+
+                        if (__action === "edit") {
+                            CountlyHelpers.notify({
+                                message: "Dashboard edited successfully!",
+                                type: "success"
+                            });
                         }
                     }
                 });
@@ -409,12 +584,50 @@
                     this.title = this.i18nM("dashboards.duplicate-dashboard-heading");
                     this.saveButtonLabel = this.i18nM("dashboards.create-dashboard");
                 }
+
+                this.sharedEmailEdit = doc.shared_email_edit || [];
+                this.sharedEmailView = doc.shared_email_view || [];
+                this.sharedGroupEdit = doc.shared_user_groups_edit || [];
+                this.sharedGroupView = doc.shared_user_groups_view || [];
+
+                if (!this.sharingAllowed) {
+                    if (doc.__action === "create" ||
+                        doc.__action === "duplicate") {
+                        doc.share_with = "none";
+                    }
+                }
+            },
+            onClose: function() {
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", false);
+            },
+        },
+        mounted: function() {
+            if (this.groupSharingAllowed) {
+                var self = this;
+                groupsModel.initialize().then(function() {
+                    var groups = _.sortBy(groupsModel.data(), 'name');
+
+                    var userGroups = groups.map(function(g) {
+                        return {
+                            name: g.name,
+                            value: g._id
+                        };
+                    });
+
+                    self.allGroups = userGroups;
+                });
             }
         }
     });
 
     var NoWidget = countlyVue.views.BaseView.extend({
         template: '#dashboards-nowidget',
+        props: {
+            canUpdate: {
+                type: Boolean,
+                default: true
+            }
+        },
         methods: {
             newWidget: function() {
                 this.$emit("new-widget");
@@ -467,9 +680,9 @@
             "widget-invalid": InvalidWidget
         },
         computed: {
-            canUpdate: function() {
+            canUpdateGrid: function() {
                 var dashboard = this.$store.getters["countlyDashboards/selected"];
-                return dashboard.data && dashboard.data.is_editable;
+                return (dashboard.data && dashboard.data.is_editable) ? true : false;
             }
         },
         mounted: function() {
@@ -571,11 +784,23 @@
                 this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function(id) {
                     if (id) {
                         if (isEdited) {
-                            self.$store.dispatch("countlyDashboards/widgets/get", doc._id);
+                            self.$store.dispatch("countlyDashboards/requests/isProcessing", true);
+                            self.$store.dispatch("countlyDashboards/widgets/get", doc._id).then(function() {
+                                self.$store.dispatch("countlyDashboards/requests/isProcessing", false);
+                            });
+                            CountlyHelpers.notify({
+                                message: "Widget edited successfully!",
+                                type: "success"
+                            });
                         }
                         else {
                             obj.id = id;
+                            self.$store.dispatch("countlyDashboards/requests/isProcessing", true);
                             self.$emit("add-widget", obj);
+                            CountlyHelpers.notify({
+                                message: "Widget created successfully!",
+                                type: "success"
+                            });
                         }
                     }
                 });
@@ -613,6 +838,9 @@
                     }
                 }
             },
+            onClose: function() {
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", false);
+            },
             reset: function(v) {
                 this.$emit("reset", v);
             }
@@ -622,6 +850,16 @@
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
         mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, WidgetValidationMixin],
+        props: {
+            loading: {
+                type: Boolean,
+                default: true
+            },
+            canUpdate: {
+                type: Boolean,
+                default: true
+            }
+        },
         components: {
             "widgets-drawer": WidgetDrawer,
             "widget": WidgetComponent
@@ -644,84 +882,6 @@
                 this.validateWidgets(allWidgets);
 
                 return allWidgets;
-            },
-            autoPosition: function() {
-                /**
-                 * This computed property is created for backward compatibility of
-                 * the grid system.
-                 * In the older dashborads, we used 12 column grid system, but in
-                 * new dashboard we are using 4 column grid system.
-                 * In the 4 column grid system, total sum of x coordinates of all
-                 * widgets can be maximum 6. If the sum is greater than that, it means
-                 * the widget is still following the old grid structure.
-                 *
-                 * Widget can be positioned at x = 0, 1, 2, 3. Total sum = 6
-                 *
-                 * We should remove this computed property after all customers are
-                 * moved to the new dashboards and are following the new grid system.
-                 */
-                var allGeography = this.$store.getters["countlyDashboards/widgets/allGeography"];
-                var autoPosition = false;
-
-                var positions = allGeography.map(function(w) {
-                    var position = w.position;
-
-                    if (!Array.isArray(position) || (position.length !== 2)) {
-                        autoPosition = true;
-                        return;
-                    }
-
-                    if (!Number.isInteger(position[0]) || !Number.isInteger(position[1])) {
-                        autoPosition = true;
-                        return;
-                    }
-
-                    return {
-                        x: position[0],
-                        y: position[1],
-                    };
-                });
-
-                if (autoPosition) {
-                    return autoPosition;
-                }
-
-                var sortedGeography = this.sortWidgetByGeography(positions);
-
-                var rowXSum = 0;
-                var Y;
-
-                for (var i = 0; i < sortedGeography.length; i++) {
-                    var node = sortedGeography[i];
-                    var y = node.y;
-                    var x = node.x;
-
-                    if (x > this.GRID_COLUMNS) {
-                        autoPosition = true;
-                        break;
-                    }
-
-                    if (!Number.isInteger(Y)) {
-                        Y = y;
-                    }
-
-                    if (Y !== y) {
-                        /**
-                         * Means its a new row now.
-                         */
-                        Y = y;
-                        rowXSum = 0;
-                    }
-
-                    rowXSum += x;
-
-                    if (rowXSum > this.MAX_ROW_X_SUM) {
-                        autoPosition = true;
-                        break;
-                    }
-                }
-
-                return autoPosition;
             }
         },
         methods: {
@@ -742,7 +902,8 @@
                 switch (command) {
                 case "edit":
                     d.__action = "edit";
-                    self.openDrawer("widgets", Object.assign({}, empty, d));
+                    this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
+                    this.openDrawer("widgets", Object.assign({}, empty, d));
                     break;
 
                 case "delete":
@@ -757,6 +918,10 @@
                                 var node = document.getElementById(d._id);
                                 self.removeGridWidget(node);
                                 self.$store.dispatch("countlyDashboards/widgets/remove", d._id);
+                                CountlyHelpers.notify({
+                                    message: "Widget deleted successfully!",
+                                    type: "success"
+                                });
                             }
                         });
 
@@ -939,7 +1104,6 @@
             },
             initGrid: function() {
                 var self = this;
-                var i;
 
                 this.grid = GridStack.init({
                     cellHeight: 80,
@@ -950,30 +1114,17 @@
                 });
 
                 self.syncWidgetHeights();
+                this.updateAllWidgetsGeography();
 
-                var allGridWidgets = this.savedGrid();
-
-                for (i = 0; i < allGridWidgets.length; i++) {
-                    var n = allGridWidgets[i];
-                    var wId = n.id;
-                    var size = [n.w, n.h];
-                    var position = [n.x, n.y];
-
-                    this.updateWidgetGeography(wId, {size: size, position: position});
+                if (!this.canUpdate) {
+                    this.disableGrid();
                 }
 
-                this.grid.on("change", function(event, items) {
-                    for (i = 0; i < items.length; i++) {
-                        var node = items[i];
-                        var widgetId = node.id;
-
-                        var s = [node.w, node.h];
-                        var p = [node.x, node.y];
-
-                        self.updateWidgetGeography(widgetId, {size: s, position: p});
-                    }
-
-                    self.syncWidgetHeights();
+                this.grid.on("resizestart", function() {
+                    self.$nextTick(function() {
+                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
+                        self.$store.dispatch("countlyDashboards/requests/markSanity", false);
+                    });
                 });
 
                 this.grid.on("resizestop", function(event, element) {
@@ -986,7 +1137,7 @@
                      */
                     self.grid.batchUpdate();
 
-                    var finalRowH = self.updateRowHeight(rowWidgets, node.h);
+                    self.updateRowHeight(rowWidgets, node.h);
 
                     /**
                      * Committing batch update.
@@ -1001,15 +1152,25 @@
                      *
                      * But we need to update the geography of this widget form here itself.
                      * Since the change in this widget does not fire the change event for itself.
-                     * Case - when there is a single widget in the grid, reisizing it does not call
+                     * Case - when there is a single widget in the grid, resizing it does not call
                      * the change event.
                      */
 
-                    var widgetId = node.id;
-                    var s = [node.w, finalRowH];
-                    var p = [node.x, node.y];
+                    self.syncWidgetHeights();
+                    self.updateAllWidgetsGeography();
+                    setTimeout(function() {
+                        /**
+                         * Or we could set grid interaction to false from the then of updateAllWidgetsGeography
+                         */
+                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", false);
+                    }, 500);
+                });
 
-                    self.updateWidgetGeography(widgetId, {size: s, position: p});
+                this.grid.on("dragstart", function() {
+                    self.$nextTick(function() {
+                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
+                        self.$store.dispatch("countlyDashboards/requests/markSanity", false);
+                    });
                 });
 
                 this.grid.on("dragstop", function(event, element) {
@@ -1047,10 +1208,14 @@
                      */
                     self.grid.commit();
 
-                    /**
-                     * After dragstop event, change event is also fired.
-                     * In the change event we sync heights of all rows, so no need to do that here.
-                     */
+                    self.syncWidgetHeights();
+                    self.updateAllWidgetsGeography();
+                    setTimeout(function() {
+                        /**
+                         * Or we could set grid interaction to false from the then of updateAllWidgetsGeography
+                         */
+                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", false);
+                    }, 500);
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -1118,7 +1283,7 @@
                             if (res) {
                                 self.$store.dispatch("countlyDashboards/widgets/get", widgetId).then(function() {
                                     self.removeGridWidget(node.el);
-                                    self.$emit("widget-added", widgetId);
+                                    self.$store.dispatch("countlyDashboards/requests/isProcessing", false);
                                 });
                             }
                         });
@@ -1128,14 +1293,107 @@
             updateWidgetGeography: function(widgetId, settings) {
                 var self = this;
 
-                this.syncWidgetGeography({_id: widgetId, size: settings.size, position: settings.position});
-
+                this.$store.dispatch("countlyDashboards/widgets/syncGeography", {_id: widgetId, settings: settings});
                 setTimeout(function() {
                     self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
-                }, 50);
+                }, 10);
             },
-            syncWidgetGeography: function(widget) {
-                this.$store.dispatch("countlyDashboards/widgets/syncGeography", widget);
+            updateAllWidgetsGeography: function() {
+                var allGridWidgets = this.savedGrid();
+
+                for (var i = 0; i < allGridWidgets.length; i++) {
+                    var n = allGridWidgets[i];
+                    var wId = n.id;
+                    var size = [n.w, n.h];
+                    var position = [n.x, n.y];
+
+                    this.updateWidgetGeography(wId, {size: size, position: position});
+                }
+            },
+            autoPosition: function(allWidgets) {
+                /**
+                 * This function is created for backward compatibility of
+                 * the grid system.
+                 * In the older dashborads, we used 12 column grid system, but in
+                 * new dashboard we are using 4 column grid system.
+                 * In the 4 column grid system, total sum of x coordinates of all
+                 * widgets can be maximum 6. If the sum is greater than that, it means
+                 * the widget is still following the old grid structure.
+                 *
+                 * Widget can be positioned at x = 0, 1, 2, 3. Total sum = 6
+                 *
+                 * We should remove this computed property after all customers are
+                 * moved to the new dashboards and are following the new grid system.
+                 */
+                var allGeography = allWidgets.map(function(w) {
+                    return {
+                        _id: w._id,
+                        size: w.size,
+                        position: w.position
+                    };
+                });
+
+                var autoPosition = false;
+
+                var positions = allGeography.map(function(w) {
+                    var position = w.position;
+
+                    if (!Array.isArray(position) || (position.length !== 2)) {
+                        autoPosition = true;
+                        return;
+                    }
+
+                    if (!Number.isInteger(position[0]) || !Number.isInteger(position[1])) {
+                        autoPosition = true;
+                        return;
+                    }
+
+                    return {
+                        x: position[0],
+                        y: position[1],
+                    };
+                });
+
+                if (autoPosition) {
+                    return autoPosition;
+                }
+
+                var sortedGeography = this.sortWidgetByGeography(positions);
+
+                var rowXSum = 0;
+                var Y;
+
+                for (var i = 0; i < sortedGeography.length; i++) {
+                    var node = sortedGeography[i];
+                    var y = node.y;
+                    var x = node.x;
+
+                    if (x > this.GRID_COLUMNS) {
+                        autoPosition = true;
+                        break;
+                    }
+
+                    if (!Number.isInteger(Y)) {
+                        Y = y;
+                    }
+
+                    if (Y !== y) {
+                        /**
+                         * Means its a new row now.
+                         */
+                        Y = y;
+                        rowXSum = 0;
+                    }
+
+                    rowXSum += x;
+
+                    if (rowXSum > this.MAX_ROW_X_SUM) {
+                        autoPosition = true;
+                        break;
+                    }
+                }
+
+                return autoPosition;
             },
             savedGrid: function() {
                 return this.grid.save(false);
@@ -1161,11 +1419,17 @@
                             var widget = allWidgets[i];
                             var widgetId = widget._id;
 
-                            var locked = self.isWidgetLocked(widget);
-                            var noResize = self.widgetResizeNotAllowed(widget);
-                            var noMove = self.widgetMoveNotAllowed(widget);
+                            var locked = false;
+                            var noResize = false;
+                            var noMove = false;
 
                             var nodeEl = document.getElementById(widgetId);
+
+                            if (!self.canUpdate) {
+                                locked = true;
+                                noResize = true;
+                                noMove = true;
+                            }
 
                             var setting = {
                                 locked: locked,
@@ -1225,6 +1489,9 @@
                     this.grid.makeWidget("#" + id);
                 }
             },
+            disableGrid: function() {
+                this.grid.disable();
+            },
             compactGrid: function() {
                 this.grid.compact();
             },
@@ -1260,11 +1527,12 @@
         data: function() {
             return {
                 dashboardId: this.$route.params && this.$route.params.dashboardId,
-                ADDING_WIDGET: false,
+                fullscreen: false,
+                preventTimeoutInterval: null
             };
         },
         computed: {
-            noDashboards: function() {
+            noSelectedDashboard: function() {
                 var selected = this.$store.getters["countlyDashboards/selected"];
                 return !(selected.id && selected.data);
             },
@@ -1288,43 +1556,138 @@
 
                 return dashboard;
             },
-            canUpdate: function() {
-                return this.dashboard.is_editable;
+            canUpdateGrid: function() {
+                return !!this.dashboard.is_editable;
+            },
+            canUpdateDashboard: function() {
+                return !!(AUTHENTIC_GLOBAL_ADMIN || this.dashboard.is_owner);
+            },
+            isInitLoad: function() {
+                var isInit = this.$store.getters["countlyDashboards/requests/isInitializing"];
+                return isInit;
+            },
+            isRefreshing: function() {
+                var isRefreshing = this.$store.getters["countlyDashboards/requests/isRefreshing"];
+                return isRefreshing;
+            },
+            isDrawerOpen: function() {
+                var isOpen = this.$store.getters["countlyDashboards/requests/drawerOpenStatus"];
+                return isOpen;
+            },
+            isWidgetProcessing: function() {
+                var isProcessing = this.$store.getters["countlyDashboards/requests/isProcessing"];
+                return isProcessing;
+            },
+            isGridInteraction: function() {
+                var isInteraction = this.$store.getters["countlyDashboards/requests/gridInteraction"];
+                return isInteraction;
+            },
+            isRequestSane: function() {
+                var isSane = this.$store.getters["countlyDashboards/requests/isSane"];
+                return isSane;
             }
+        },
+        created: function() {
+            var self = this;
+            var fullscreeToggle = function() {
+                if (document.fullscreenElement) {
+                    $("html").addClass("full-screen");
+                    self.preventTimeoutInterval = setInterval(function() {
+                        $(document).trigger("extend-dashboard-user-session");
+                    }, 1000);
+                    $(document).idleTimer("pause");
+                    self.fullscreen = true;
+                }
+                else {
+                    $("html").removeClass("full-screen");
+                    clearInterval(self.preventTimeoutInterval);
+                    $(document).idleTimer("reset");
+                    self.fullscreen = false;
+                }
+            };
+            document.removeEventListener('fullscreenchange', fullscreeToggle);
+            document.addEventListener('fullscreenchange', fullscreeToggle);
         },
         methods: {
             refresh: function() {
-                if (this.ADDING_WIDGET) {
+                var isRefreshing = this.isRefreshing;
+                var isInitializing = this.isInitLoad;
+                var isDrawerOpen = this.isDrawerOpen;
+                var isWidgetProcessing = this.isWidgetProcessing;
+                var isGridInteraction = this.isGridInteraction;
+                var isRequestSane = this.isRequestSane;
+
+                if (!isRequestSane) {
+                    /**
+                     * So turns out that the previous request wasn't sane. This happens
+                     * if grid interaction takes place while the request is in progress.
+                     *
+                     * Lets return and skip this refresh request just as a safety measure.
+                     */
+
+                    if (!isRefreshing && !isInitializing && !isGridInteraction && !isWidgetProcessing) {
+                        /**
+                         * We can mark requset sanity as true now. Since the previous request
+                         * is not in progress anymore. And since it wasn't sane, no updates
+                         * would have followed through on the vuex store. Check getDashboard action.
+                         * It doesn't update the vuex if the request is not sane.
+                         */
+                        this.$store.dispatch("countlyDashboards/requests/markSanity", true);
+                    }
+
                     return;
                 }
 
-                if (!this.drawers.dashboards.isOpened && !this.drawers.widgets.isOpened) {
-                    /**
-                     * Refresh only if the drawers are not open at the moment.
-                     */
-                    this.dateChanged(true);
+                if (isInitializing || isRefreshing || isDrawerOpen || isWidgetProcessing || isGridInteraction) {
+                    return;
                 }
+
+                this.dateChanged(true);
             },
             dateChanged: function(isRefresh) {
-                this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh});
-            },
-            getDashboardData: function() {
-                this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false});
+                var self = this;
+                this.$store.dispatch("countlyDashboards/requests/isRefreshing", true);
+
+                this.$store.dispatch("countlyDashboards/getDashboard", {id: this.dashboardId, isRefresh: isRefresh}).then(function() {
+                    self.$store.dispatch("countlyDashboards/requests/isRefreshing", false);
+                });
             },
             onDashboardAction: function(command, data) {
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
 
                 switch (command) {
+                case "fullscreen":
+                    if (screenfull.enabled && !screenfull.isFullscreen) {
+                        screenfull.request();
+                    }
+                    else {
+                        screenfull.exit();
+                    }
+                    break;
                 case "edit":
                     d.__action = "edit";
+                    this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                     self.openDrawer("dashboards", d);
                     break;
 
                 case "duplicate":
-                    d.__action = "duplicate";
                     d.name = "Copy - " + d.name;
-                    self.openDrawer("dashboards", d);
+                    var empty = countlyDashboards.factory.dashboards.getEmpty();
+
+                    var obj = {};
+                    for (var key in empty) {
+                        /**
+                         * Copy the keys from existing dashboard.
+                         * Otherwise fallback to the default ones.
+                         */
+                        obj[key] = d[key] || empty[key];
+                    }
+
+                    obj.__action = "duplicate";
+
+                    this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
+                    self.openDrawer("dashboards", obj);
                     break;
 
                 case "delete":
@@ -1336,6 +1699,11 @@
 
                         self.$store.dispatch("countlyDashboards/delete", d._id).then(function(res) {
                             if (res) {
+                                CountlyHelpers.notify({
+                                    message: "Dashboard deleted successfully!",
+                                    type: "success"
+                                });
+
                                 app.navigate('#/custom');
                                 /**
                                  * Set the current dashboard id to null
@@ -1355,18 +1723,25 @@
                 var defaultEmpty = setting.drawer.getEmpty();
 
                 empty.__action = "create";
+                this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
             },
             addWidgetToGrid: function(widget) {
-                this.ADDING_WIDGET = true;
                 this.$refs.grid.addWidget(widget);
             },
-            onWidgetAdded: function() {
-                this.ADDING_WIDGET = false;
+            exitFullScreen: function() {
+                screenfull.exit();
             }
         },
         beforeMount: function() {
-            this.getDashboardData();
+            var self = this;
+
+            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function() {
+                self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
+            });
+        },
+        beforeDestroy: function() {
+            this.$store.dispatch("countlyDashboards/requests/reset");
         }
     });
 
@@ -1419,106 +1794,120 @@
         });
     };
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route("/custom", '', function() {
-            var mainView = getMainView();
-            this.renderWhenReady(mainView);
-        });
+    app.route("/custom", '', function() {
+        var mainView = getMainView();
+        this.renderWhenReady(mainView);
+    });
 
-        app.route('/custom/*dashboardId', '', function(dashboardId) {
-            var mainView = getMainView();
-            var params = {
-                dashboardId: dashboardId
+    app.route('/custom/*dashboardId', '', function(dashboardId) {
+        var mainView = getMainView();
+        var params = {
+            dashboardId: dashboardId
+        };
+
+        mainView.params = params;
+        this.renderWhenReady(mainView);
+    });
+
+
+    var DashboardsMenu = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/dashboards-menu.html'),
+        mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
+        components: {
+            "dashboards-drawer": DashboardDrawer
+        },
+        data: function() {
+            return {
+                canCreate: true,
+                searchQuery: "",
             };
+        },
+        computed: {
+            selectedDashboard: function() {
+                var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
-            mainView.params = params;
-            this.renderWhenReady(mainView);
-        });
-    }
-
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-
-        var DashboardsMenu = countlyVue.views.create({
-            template: CV.T('/dashboards/templates/dashboards-menu.html'),
-            mixins: [countlyVue.mixins.hasDrawers("dashboards"), DashboardMixin],
-            components: {
-                "dashboards-drawer": DashboardDrawer
-            },
-            data: function() {
-                return {
-                    canCreate: countlyAuth.validateCreate(FEATURE_NAME),
-                    searchQuery: "",
-                };
-            },
-            computed: {
-                selectedDashboard: function() {
-                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
-
-                    if (selected.menu === "dashboards") {
-                        return selected.item;
-                    }
-
-                    return {};
-                },
-                allDashboards: function() {
-                    var query = this.searchQuery;
-
-                    var dashboards = this.$store.getters["countlyDashboards/all"];
-                    this.identifySelectedDashboard(dashboards);
-
-                    if (!query) {
-                        return dashboards;
-                    }
-
-                    query = (query + "").trim().toLowerCase();
-
-                    return dashboards.filter(function(option) {
-                        var compareTo = option.name || "";
-                        return compareTo.toLowerCase().indexOf(query) > -1;
-                    });
+                if (selected.menu === "dashboards") {
+                    return selected.item;
                 }
+
+                return {};
             },
-            methods: {
-                onDashboardMenuItemClick: function(dashboard) {
-                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: dashboard});
-                },
-                identifySelectedDashboard: function(dashboards) {
-                    var currLink = Backbone.history.fragment;
+            allDashboards: function() {
+                var query = this.searchQuery;
 
-                    if (/^\/custom/.test(currLink) === false) {
-                        return;
-                    }
+                var dashboards = this.$store.getters["countlyDashboards/all"];
 
-                    currLink = currLink.split("/");
-                    var id = currLink[currLink.length - 1];
-
-                    var currMenu = dashboards.find(function(d) {
-                        return d._id === id;
-                    });
-
-                    if (!currMenu) {
-                        countlyDashboards.factory.log("Dashboard not found - " + id + ", Dashboards = " + JSON.stringify(dashboards));
-                    }
-
-                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
+                if (!query) {
+                    return dashboards;
                 }
-            },
-            beforeCreate: function() {
-                this.module = countlyDashboards.getVuexModule();
-                CV.vuex.registerGlobally(this.module);
-            },
-            beforeMount: function() {
-                this.$store.dispatch("countlyDashboards/getAll");
+
+                query = (query + "").trim().toLowerCase();
+
+                return dashboards.filter(function(option) {
+                    var compareTo = option.name || "";
+                    return compareTo.toLowerCase().indexOf(query) > -1;
+                });
             }
-        });
+        },
+        methods: {
+            onDashboardMenuItemClick: function(dashboard) {
+                this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: dashboard});
+            },
+            identifySelected: function() {
+                var dashboards = this.$store.getters["countlyDashboards/all"];
 
-        countlyVue.container.registerData("/sidebar/menu/main", {
-            name: "dashboards",
-            icon: "cly-icon-sidebar-dashboards",
-            tooltip: CV.i18n("sidebar.dashboard-tooltip"),
-            component: DashboardsMenu
-        });
-    }
+                var currLink = Backbone.history.fragment;
+
+                if (/^\/custom/.test(currLink) === false) {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                    if (selected.menu === "dashboards") {
+                        /**
+                         * Incase the selected menu is already dashboards, we need to reset
+                         * the selected item to {}. Since we did not find the menu item.
+                         *
+                         * This is important as there are urls in countly like /versions,
+                         * which are not in the sidebar. So for them we don't need to highlight
+                         * anything.
+                         */
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "dashboards", item: {} });
+                    }
+
+                    return;
+                }
+
+                currLink = currLink.split("/");
+                var id = currLink[currLink.length - 1];
+
+                var currMenu = dashboards.find(function(d) {
+                    return d._id === id;
+                });
+
+                /**
+                 * Even if we don't find a dashboard, we should atleast set the
+                 * menu item to dashboards.
+                 */
+                this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
+            }
+        },
+        beforeCreate: function() {
+            this.module = countlyDashboards.getVuexModule();
+            CV.vuex.registerGlobally(this.module);
+        },
+        beforeMount: function() {
+            var self = this;
+            this.$store.dispatch("countlyDashboards/getAll").then(function() {
+                self.identifySelected();
+            });
+        }
+    });
+
+    countlyVue.container.registerData("/sidebar/menu/main", {
+        name: "dashboards",
+        icon: "cly-icon-sidebar-dashboards",
+        tooltip: CV.i18n("sidebar.dashboard-tooltip"),
+        component: DashboardsMenu
+    });
+
 
     countlyVue.container.registerMixin("/manage/export/export-features", {
         beforeCreate: function() {
@@ -1549,3 +1938,22 @@
     });
 
 })();
+
+/**
+ * Race conditions in dashbaords -
+ *
+ * 1. Someone tries to drag or resize widgets and as soon as they do so, there is a refresh
+ * call initiated which fetches the old positions and sizes of widgets. So even though the
+ * positions and sizes were updated on the server, the widgets are not updated on the client.
+ * The solution to this would be not to initiatite a refresh while users are interacting
+ * with the dashboard.
+ *
+ * 2. Maybe the refresh was initiated earlier than the widget was being resized or repositioned.
+ * But the api is taking a very long time to respond. Meanwhile, even though we updated the
+ * positions, the widgets are not updated on the client as the refresh call that was initiated,
+ * sends old values for positions and sizes. This is the case when refresh initiated,
+ * widgets resized or dragged and the api sends response after that with old widget
+ * positions and sizes. This can heppen since we fetch the widgets data in the very
+ * beginning in the api.
+ * We have fixed this by marking request sanity and checking for it before updating vuex.
+ */

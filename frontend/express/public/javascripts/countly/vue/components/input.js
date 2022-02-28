@@ -60,8 +60,8 @@
                                 '<img src="/images/icons/blob.svg"/>\n' +
                             '</div>\n' +
                             '<input class="color-input" v-model="localValue" type="text"/>\n' +
-                            '<img v-if="!isOpened" src="/images/icons/arrow_drop_down_.svg"/>\n' +
-                            '<img v-if="isOpened" src="/images/icons/arrow_drop_up_.svg"/>\n' +
+                            '<img height="12px" width="10px" class="bu-pt-2" v-if="!isOpened" src="/images/icons/arrow_drop_down_.svg"/>\n' +
+                            '<img height="12px" width="10px" class="bu-pt-2" v-if="isOpened" src="/images/icons/arrow_drop_up_.svg"/>\n' +
                         '</div>\n' +
                         '<div class="picker-body" v-if="isOpened" v-click-outside="close">\n' +
                             '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +

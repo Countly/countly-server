@@ -99,7 +99,7 @@ var DBViewerTab = countlyVue.views.create({
             isRefresh: false,
             showFilterDialog: false,
             showDetailDialog: false,
-            rowDetail: "{}"
+            rowDetail: '{ "_id":"Document Detail", "name": "Index Detail" }'
         };
     },
     watch: {
@@ -207,6 +207,9 @@ var DBViewerTab = countlyVue.views.create({
             }
             if (this.sortEnabled) {
                 url += '&sort=' + JSON.stringify(this.preparedSortObject);
+            }
+            if (this.index) {
+                url += '&action=get_indexes';
             }
             return url;
         },

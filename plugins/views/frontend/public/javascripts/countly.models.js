@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, Promise, CV, countlyVue, app*/
+/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, Promise, CV, countlyVue, app, countlyAuth */
 
 (function(countlyViews) {
 
@@ -16,7 +16,8 @@
         _selectedViews = [],
         _graphDataObj = {},
         _viewsCount = 0,
-        _viewsNames = {};
+        _viewsNames = {},
+        FEATURE_NAME = 'views';
 
 
     CountlyHelpers.createMetricModel(countlyViews, {name: "views"}, jQuery);
@@ -70,7 +71,7 @@
                     "method": "rename_views",
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         deleteViews: function(view) {
             return CV.$.ajax({
@@ -82,7 +83,7 @@
                     "view_id": view
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         }
     };
 
@@ -121,7 +122,7 @@
 
     var viewsTableResource = countlyVue.vuex.ServerDataTable("viewsMainTable", {
         columns: ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'uvc', 'scr', 'actionLink'],
-        onRequest: function(context, params) {
+        onRequest: function(context) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'views',
@@ -130,8 +131,9 @@
                 period: countlyCommon.getPeriodForAjax(),
             };
             data = data || {};
-            var selectedKey = params.segmentKey || "";//context.state.countlyViews.selectedSegment;
-            var selectedValue = params.segmentValue || "";//context.state.countlyViews.selectedSegmentValue;
+            var selectedInfo = context.getters.selectedData;
+            var selectedKey = selectedInfo.selectedSegment || "";//context.state.countlyViews.selectedSegment;
+            var selectedValue = selectedInfo.selectedSegmentValue || "";//context.state.countlyViews.selectedSegmentValue;
 
             if (selectedKey !== "" && selectedValue !== "") {
                 data.segment = selectedKey;
@@ -383,6 +385,7 @@
                 error: null,
                 selectedProperty: "t",
                 selectedSegment: "",
+                updateError: "",
                 selectedSegmentValue: "",
                 selectedViews: [],
                 segments: {},
@@ -435,17 +438,19 @@
                 });
             },
             updateViews: function(context, data) {
-                countlyViews.service.updateViews(data).then(function() {
+                context.dispatch('onUpdateError', "");
+                return countlyViews.service.updateViews(data).then(function() {
                     context.dispatch("fetchViewsEditTable");
                 }).catch(function(error) {
-                    context.dispatch('onFetchError', error);
+                    context.dispatch('onUpdateError', error);
                 });
             },
             deleteViews: function(context, data) {
-                countlyViews.service.deleteViews(data).then(function() {
+                context.dispatch('onUpdateError', "");
+                return countlyViews.service.deleteViews(data).then(function() {
                     context.dispatch("fetchViewsEditTable");
                 }).catch(function(error) {
-                    context.dispatch('onFetchError', error);
+                    context.dispatch('onUpdateError', error);
                 });
             },
             onFetchInit: function(context) {
@@ -453,6 +458,9 @@
             },
             onFetchError: function(context, error) {
                 context.commit('setFetchError', error);
+            },
+            onUpdateError: function(context, error) {
+                context.commit('setUpdateError', error);
             },
             onFetchSuccess: function(context) {
                 context.commit('setFetchSuccess');
@@ -497,6 +505,12 @@
                 state.isLoading = false;
                 state.hasError = true;
                 state.error = error;
+            },
+            setUpdateError: function(state, error) {
+                if (error && error.responseJSON && error.responseJSON.result) {
+                    error = error.responseJSON.result;
+                }
+                state.updateError = error;
             },
             setFetchSuccess: function(state) {
                 state.isLoading = false;
@@ -545,6 +559,15 @@
                         }
                     }
                     return rows;
+                },
+                selectedData: function(context) {
+                    return {
+                        selectedSegment: context.selectedSegment,
+                        selectedSegmentValue: context.selectedSegmentValue
+                    };
+                },
+                updateError: function(context) {
+                    return context.updateError;
                 }
             },
             mutations: ViewsMutations,
@@ -646,7 +669,7 @@
         });
     };
 
-    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0) {
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME)) {
         countlyViews.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 

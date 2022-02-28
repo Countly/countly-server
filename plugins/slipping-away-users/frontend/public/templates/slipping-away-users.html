@@ -6,7 +6,7 @@
         </template>
     </cly-header>
     <cly-main>
-        <cly-qb-bar v-model="slippingAwayUsersFilters" queryStore="slipping-away-users" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}"></cly-qb-bar>
+        <cly-qb-bar feature="slipping_away_users" v-model="slippingAwayUsersFilters" queryStore="slipping-away-users" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}"></cly-qb-bar>
         <cly-section>
             <cly-chart-bar :option="slippingAwayUsersOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
@@ -33,7 +33,7 @@
                     <el-table-column prop="timeStamp"  align="center">
                         <template slot-scope="scope">
                             <div class="bu-level-right">
-                                <el-link type="primary" @click="onUserListClick(scope.row.timeStamp)" :underline="false" class="slipping-away-users-table__link">{{i18n('slipping-away-users.table-user-list')}} <span class="el-icon-right"></span></el-link>
+                                <el-link type="primary" @click="onUserListClick(scope.row.timeStamp)" :underline="false" class="slipping-away-users-table__link">{{i18n('slipping-away-users.table-user-list')}}</el-link>
                             </div>
                         </template>
                     </el-table-column>

@@ -15,7 +15,7 @@
                     </el-input>
             </cly-form-field>
 
-            <cly-form-field :label="i18n('data-manager.events.key')" rules="required" :tooltip="i18n('data-manager.events.key.tooltip')">
+            <cly-form-field :label="i18n('data-manager.events.key')" rules="required">
                 <el-input
                 :disabled="drawerScope.editedObject.isEditMode"
                 class="bu-mb-3" 
@@ -36,7 +36,7 @@
             </cly-form-field>
 
             <div v-if="isDrill">
-                <cly-form-field :label="i18n('data-manager.category')" :optional="true" :tooltip="i18n('data-manager.category.tooltip')">
+                <cly-form-field :label="i18n('data-manager.category')" :optional="true">
                     <cly-select-x
                         class="bu-pt-1"
                         :search-placeholder="i18n('data-manager.search-category')"

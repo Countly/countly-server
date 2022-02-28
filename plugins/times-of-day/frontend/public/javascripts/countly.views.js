@@ -135,6 +135,7 @@ if (countlyAuth.validateRead(featureName)) {
         type: "times-of-day",
         label: CV.i18n("times-of-day.title"),
         priority: 8,
+        feature: featureName,
         primary: true,
         isPluginWidget: true,
         getter: function(widget) {
@@ -164,6 +165,9 @@ if (countlyAuth.validateRead(featureName)) {
                 if (doc.data_type === 'event') {
                     var eventItem = countlyTimesOfDay.service.findEventKeyByName(doc.events);
                     doc.events = [eventItem.key + '***' + eventItem.name];
+                }
+                if (doc.data_type === 'session') {
+                    doc.events = undefined;
                 }
             }
         },

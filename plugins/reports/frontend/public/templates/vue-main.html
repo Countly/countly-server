@@ -6,7 +6,7 @@
             </h2><span class="cly-vue-tooltip-icon ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('reports.tips')"/>
         </template>
         <template v-slot:header-right>
-            <el-button id="create-report-button" type="success" icon="el-icon-circle-plus" @click="createReport">{{i18n('reports.create')}}</el-button>
+            <el-button id="create-report-button" type="success" icon="el-icon-circle-plus" v-if="canUserCreate" @click="createReport">{{i18n('reports.create')}}</el-button>
         </template>
     </cly-header>
 
@@ -25,7 +25,7 @@
     :title="i18n('reports.empty-title')"
     :subTitle="i18n('reports.empty-subtitle')"
     :actionTitle="i18n('reports.empty-action-button-title')"
-    :hasAction="true"
+    :hasAction="canUserCreate"
     :actionFunc="createReport"
 />
 <cly-section v-else>
@@ -37,7 +37,7 @@
         <template v-slot="scope">
             <el-table-column type="switch" fixed="left" width="88" prop="enabled">
                 <template v-slot="rowScope">
-                    <el-switch :value="rowScope.row.enabled" class="bu-ml-4  bu-mr-2" :disabled="!canUpdate"
+                    <el-switch :value="rowScope.row.enabled" class="bu-ml-4  bu-mr-2" :disabled="!canUserUpdate"
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                     </el-switch>
                 </template>
@@ -81,10 +81,10 @@
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column type="options"  v-if="canUpdate || canDelete">
+            <el-table-column type="options">
                 <template v-slot="rowScope">
                     <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleReportEditCommand($event,rowScope)">
-                        <el-dropdown-item v-if="canUpdate" icon="el-icon-document-copy" command="edit-comment">
+                        <el-dropdown-item v-if="canUserUpdate" icon="el-icon-document-copy" command="edit-comment">
                             Edit
                         </el-dropdown-item>
                         <el-dropdown-item  icon="el-icon-position" command="send-comment">
@@ -93,7 +93,7 @@
                         <el-dropdown-item  icon="el-icon-chat-dot-square" command="preview-comment">
                             Preview
                         </el-dropdown-item>
-                        <el-dropdown-item v-if="canDelete" icon="el-icon-delete" command="delete-comment">
+                        <el-dropdown-item v-if="canUserDelete" icon="el-icon-delete" command="delete-comment">
                             Delete
                         </el-dropdown-item>
                     </cly-more-options>

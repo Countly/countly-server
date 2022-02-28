@@ -2481,20 +2481,20 @@
      * addDrawerToDrillmainView - adds push notification drawer to drill main view.
      */
     function addDrawerToDrillMainView() {
-        countlyVue.container.registerMixin("/drill/external/mixins", countlyVue.mixins.hasDrawers("pushNotificationDrawer"));
         countlyVue.container.registerTemplate("/drill/external/templates", "/push/templates/common-components.html");
         countlyVue.container.registerData("/drill/external/events", getCreateNewMessageEventContainerData());
         countlyVue.container.registerData("/drill/external/drawers", getDrawerContainerData());
+        countlyVue.container.registerData('/drill/external/drawers/data', countlyCommon.getExternalDrawerData('pushNotificationDrawer'), 'object');
     }
 
     /**
      * addDrawerToUserProfilesMainView - adds push notification drawer to user profiles main view.
      */
     function addDrawerToUserProfilesMainView() {
-        countlyVue.container.registerMixin("/users/external/mixins", countlyVue.mixins.hasDrawers("pushNotificationDrawer"));
         countlyVue.container.registerTemplate("/users/external/templates", "/push/templates/common-components.html");
         countlyVue.container.registerData("/users/external/events", getCreateNewMessageEventContainerData());
         countlyVue.container.registerData("/users/external/drawers", getDrawerContainerData());
+        countlyVue.container.registerData('/users/external/drawers/data', countlyCommon.getExternalDrawerData('pushNotificationDrawer'), 'object');
     }
 
     /**
@@ -2503,6 +2503,7 @@
     function addWidgetToCustomDashboard() {
         countlyVue.container.registerData('/custom/dashboards/widget', {
             type: 'push',
+            feature: featureName,
             label: CV.i18n('push-notification.title'),
             priority: 6,
             primary: true,

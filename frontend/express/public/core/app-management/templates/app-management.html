@@ -82,19 +82,6 @@
                                             </cly-inline-form-field>
                                         </div>
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-key')" :help="i18n('management-applications.app-key.hint')" class="has-ellipsis">
-                                                {{formScope.editedObject.key}}
-                                            </cly-inline-form-field>
-                                            <cly-inline-form-field v-else :rules="(!newApp) ? 'required' : ''" :label="i18n('management-applications.app-key')" prop="key" :help="i18n('management-applications.app-key.hint')">
-                                                <el-input 
-                                                    :readonly="isDisabled()"
-                                                    onclick="select()"
-                                                    :placeholder="i18n(newApp ? 'management-applications.app-key.generate' : 'management-applications.app-key')" 
-                                                    v-model="formScope.editedObject.key">
-                                                </el-input>
-                                            </cly-inline-form-field>
-                                        </div>
-                                        <div>
                                             <cly-inline-form-field v-if="edited" :label="i18n('countries.table.country')" :help="i18n('management-applications.country.hint')">
                                                 {{formScope.editedObject.country}}
                                             </cly-inline-form-field>
@@ -133,7 +120,7 @@
                                             </cly-inline-form-field>
                                         </div>  
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-id')" :help="i18n('management-applications.app-id.hint')" class="has-ellipsis">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-id')" :help="i18n('management-applications.app-id.hint')">
                                                 {{formScope.editedObject._id}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field v-if="!newApp && !edited" :label="i18n('management-applications.app-id')" prop="_id"  :help="i18n('management-applications.app-id.hint')">
@@ -142,6 +129,19 @@
                                                     onclick="select()"
                                                     :placeholder="i18n('management-applications.app-id')" 
                                                     v-model="formScope.editedObject._id">
+                                                </el-input>
+                                            </cly-inline-form-field>
+                                        </div>
+                                        <div>
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-key')" :help="i18n('management-applications.app-key.hint')">
+                                                {{formScope.editedObject.key}}
+                                            </cly-inline-form-field>
+                                            <cly-inline-form-field v-else :rules="(!newApp) ? 'required' : ''" :label="i18n('management-applications.app-key')" prop="key" :help="i18n('management-applications.app-key.hint')">
+                                                <el-input 
+                                                    :readonly="isDisabled()"
+                                                    onclick="select()"
+                                                    :placeholder="i18n(newApp ? 'management-applications.app-key.generate' : 'management-applications.app-key')" 
+                                                    v-model="formScope.editedObject.key">
                                                 </el-input>
                                             </cly-inline-form-field>
                                         </div>
@@ -199,19 +199,13 @@
                                 </cly-inline-form-field>
                                 <h6 class="bu-mt-5 bu-ml-6 text-uppercase">{{i18n("management-applications.app-users")}}</h6>
                                 <cly-inline-form-field :label="i18n('management-applications.global_admins')">
-                                    <a :href="'#/manage/users/' + user._id" v-for="user in appDetails.global_admin" class="el-button el-button--primary is-plain">
-                                    {{user.full_name || user.username || user._id}}
-                                    </a>&nbsp;
+                                    {{ joinNameList(appDetails.global_admin) }}
                                 </cly-inline-form-field>
                                 <cly-inline-form-field :label="i18n('management-applications.admins')">
-                                    <a :href="'#/manage/users/' + user._id" v-for="user in appDetails.admin" class="el-button el-button--primary is-plain">
-                                    {{user.full_name || user.username || user._id}}
-                                    </a>&nbsp;
+                                    {{ joinNameList(appDetails.admin) }}
                                 </cly-inline-form-field>
                                 <cly-inline-form-field :label="i18n('management-applications.users')">
-                                    <a :href="'#/manage/users/' + user._id" v-for="user in appDetails.user" class="el-button el-button--primary is-plain">
-                                    {{user.full_name || user.username || user._id}}
-                                    </a>&nbsp;
+                                    {{ joinNameList(appDetails.user) }}
                                 </cly-inline-form-field>
                             </div>
                             <div v-else v-loading="true" style="height: 500px;"></div>
@@ -280,8 +274,10 @@
                     <p>{{i18n('common.integrate-sdks')}}</p>
                     <p><a href='https://code.count.ly' target='_blank'>Countly Code Generator </a>{{i18n('common.integrate-sdks-text')}}</p>
                     <p class="select-platforms">{{i18n('common.integrate-sdks-platforms')}}</p>
-                    <div v-if="sdks" class="sdks">
-                        <a :href="'http://code.count.ly/integration-' + code + '.html?server=' + server + '&app_key=' + apps[selectedApp].key" target='_blank' v-for="(value, code) in sdks" class="el-button el-button--primary is-plain">{{value.name.replace("SDK", "")}}</a>&nbsp;
+                    <div v-if="sdks" class="sdks" style="text-align: right">
+                        <a :href="'http://code.count.ly/integration-' + code + '.html?server=' + server + '&app_key=' + apps[selectedApp].key" target='_blank' v-for="(value, code) in sdks" class="el-button el-button--primary is-plain">
+                            {{value.name.replace("SDK", "")}}
+                        </a>&nbsp;
                     </div>
                 </el-card>
             </div>

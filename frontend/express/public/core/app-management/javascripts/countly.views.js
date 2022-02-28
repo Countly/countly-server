@@ -142,6 +142,11 @@
                 });
         },
         methods: {
+            joinNameList: function(names) {
+                return (names || []).map(function(user) {
+                    return user.full_name || user.username || user._id;
+                }).join(", ");
+            },
             edit: function() {
                 this.edited = false;
             },
