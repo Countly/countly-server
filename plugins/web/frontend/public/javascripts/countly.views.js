@@ -541,6 +541,13 @@ $(document).ready(function() {
             jQuery.i18n.map["crashes.fatality"] = jQuery.i18n.map["web.crashes.fatality"];
             jQuery.i18n.map["crashes.nonfatal-crashes"] = jQuery.i18n.map["web.crashes.nonfatal-crashes"];
             jQuery.i18n.map["crashes.confirm-delete"] = jQuery.i18n.map["web.crashes.confirm-delete"];
+            jQuery.i18n.map["crashes.total-per-session"] = jQuery.i18n.map["web.crashes.total-per-session"];
+            jQuery.i18n.map["crashes.crash-group"] = jQuery.i18n.map["web.crashes.crash-group"];
+            jQuery.i18n.map["crashes.crash-groups"] = jQuery.i18n.map["web.crashes.crash-groups"];
+            jQuery.i18n.map["crashes.rate"] = jQuery.i18n.map["web.crashes.rate"];
+            jQuery.i18n.map["crashes.fatal_crash_count"] = jQuery.i18n.map["web.crashes.fatal_crash_count"];
+            jQuery.i18n.map["crashes.crash-occurences-by"] = jQuery.i18n.map["web.crashes.crash-occurences-by"];
+            jQuery.i18n.map["crashes.crash-occurences"] = jQuery.i18n.map["web.crashes.crash-occurences"];
             jQuery.i18n.map["drill.crash"] = jQuery.i18n.map["web.drill.crash"];
             jQuery.i18n.map["drill.crash-segments"] = jQuery.i18n.map["web.drill.crash-segments"];
             jQuery.i18n.map["userdata.crashes"] = jQuery.i18n.map["web.userdata.crashes"];
