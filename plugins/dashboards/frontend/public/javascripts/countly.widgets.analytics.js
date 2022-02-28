@@ -3,7 +3,7 @@
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
@@ -124,6 +124,13 @@
         methods: {
             beforeCopy: function(data) {
                 return data;
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                return this.$emit('command', event);
             }
         }
     });
