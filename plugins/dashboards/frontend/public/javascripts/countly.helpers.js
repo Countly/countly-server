@@ -1079,6 +1079,18 @@
         }
     });
 
+    var TitleLabelsComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/widget/title-labels.html'),
+        props: {
+            labels: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
+        }
+    });
+
     /**
      * DRAWER HELPERS REGISTRATION
      */
@@ -1100,5 +1112,6 @@
     Vue.component("clyd-legend-period", WidgetPeriodComponent);
     Vue.component("clyd-primary-legend", PrimaryWidgetLegend);
     Vue.component("clyd-secondary-legend", SecondaryWidgetLegend);
+    Vue.component("clyd-title-labels", TitleLabelsComponent);
 
 })();
