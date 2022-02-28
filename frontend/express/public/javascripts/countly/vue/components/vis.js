@@ -836,9 +836,19 @@
             };
         },
         computed: {
+            hasAllEmptyValues: function() {
+                var options = this.mergedOptions;
+                if (options.series) {
+                    for (var i = 0; i < options.series.length; i++) {
+                        if (!options.series[i].isEmptySeries) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            },
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
-
                 var series = opt.series || [];
 
                 var sumOfOthers;
@@ -849,8 +859,25 @@
                     sumOfOthers = 0;
 
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    var seriesData = series[i].data;
 
+                    series[i].data = series[i].data.filter(function(el) {
+                        return el.value > 0;
+                    });
+                    if (series[i].data.length === 0) {
+                        series[i].isEmptySeries = true;
+                        series[i].data.push({"label": "empty", "value": 100});
+                        opt.legend.show = false;
+                        opt.tooltip.show = false;
+                        series[i].color = "#ECECEC";
+                        series[i].name = "empty";
+                        series[i].emphasis = {
+                            itemStyle: {
+                                color: "#ECECEC"
+                            }
+                        };
+                    }
+
+                    var seriesData = series[i].data;
                     seriesData.sort(function(a, b) {
                         return b.value - a.value;
                     });
@@ -1917,9 +1944,16 @@
                                     ref="legend"\
                                     :options="pieLegendOptions"\
                                     :seriesType="seriesType"\
-                                    v-if="pieLegendOptions.show && !isChartEmpty"\
+                                    v-if="pieLegendOptions.show && !isChartEmpty && !hasAllEmptyValues"\
                                     :class="classes" class="shadow-container">\
                                 </custom-legend>\
+								<div v-if="!isChartEmpty && hasAllEmptyValues" :class="classes" class="shadow-container">\
+									<div class="cly-vue-chart-legend__secondary" >\
+										<div style="height: 100%; display: flex; flex-direction: column; justify-content: center;">\
+											<div class="bu-p-4">{{i18n("common.bar.no-data")}}</div>\
+										</div>\
+									</div>\
+								</div>\
                             </div>\
                         </div>\
                     </div>'

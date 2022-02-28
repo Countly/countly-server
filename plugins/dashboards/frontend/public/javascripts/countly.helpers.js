@@ -818,7 +818,7 @@
         template: CV.T('/dashboards/templates/helpers/drawer/period.html'),
         props: {
             value: {
-                type: String,
+                type: [Array, String],
                 default: ""
             }
         },
@@ -932,11 +932,13 @@
         },
         computed: {
             period: function() {
+                var globalPeriod = this.$store.getters["countlyCommon/period"];
+
                 if (this.customPeriod) {
                     return this.formatPeriodString(this.customPeriod);
                 }
                 else {
-                    return this.formatPeriodString(countlyCommon.getPeriod());
+                    return this.formatPeriodString(globalPeriod);
                 }
             }
         },

@@ -3,7 +3,6 @@ var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     customDashboards = require('./parts/dashboards.js'),
     path = require('path'),
-    ejs = require("ejs"),
     fs = require('fs'),
     log = common.log('dashboards:api'),
     authorize = require('../../../api/utils/authorizer'),
@@ -1121,8 +1120,10 @@ plugins.setConfigs("dashboards", {
                                                     name: report.imageName
                                                 };
 
-                                                var message = ejs.render(template, {"host": host, "report": report, "version": versionInfo, "properties": props, "image": image});
-
+                                                var message = {
+                                                    template: template,
+                                                    data: {"host": host, "report": report, "version": versionInfo, "properties": props, "image": image}
+                                                };
                                                 var sDate = new Date();
                                                 sDate.setHours(23, 59);
                                                 var startDate = new Date(sDate.getTime());
