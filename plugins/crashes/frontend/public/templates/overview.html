@@ -105,15 +105,15 @@
                             <div class="crashes-tile__content--fill bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column" v-if="!!statistics.crashes">
                                 <cly-crashes-dashboard-tile isVertical :tooltip="i18n('crashes.help-new')">
                                     <template v-slot:title>{{i18n("crashes.new-crashes")}}</template>
-                                    <template v-slot:value>{{statistics.crashes.new}}</template>
+                                    <template v-slot:value>{{getShortNumber(statistics.crashes.new)}}</template>
                                 </cly-crashes-dashboard-tile>
                                 <cly-crashes-dashboard-tile isVertical :tooltip="i18n('crashes.help-reoccurred')">
                                     <template v-slot:title>{{i18n("crashes.renew-crashes")}}</template>
-                                    <template v-slot:value>{{statistics.crashes.reoccured}}</template>
+                                    <template v-slot:value>{{getShortNumber(statistics.crashes.reoccured)}}</template>
                                 </cly-crashes-dashboard-tile>
                                 <cly-crashes-dashboard-tile isVertical :tooltip="i18n('crashes.help-loss')">
                                     <template v-slot:title>{{i18n("crashes.loss")}}</template>
-                                    <template v-slot:value>{{statistics.revenueLoss}}</template>
+                                    <template v-slot:value>{{getShortNumber(statistics.revenueLoss)}}</template>
                                 </cly-crashes-dashboard-tile>
                             </div>
                         </cly-crashes-dashboard-tile>
