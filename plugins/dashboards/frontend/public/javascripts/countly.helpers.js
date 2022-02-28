@@ -1046,6 +1046,36 @@
 
                 return appData;
             }
+        },
+        methods: {
+            appBlockStyles: function(allApps, index) {
+                var maxWidth = '50%';
+                var paddingRight = '0';
+
+                var rem = allApps.length % 2;
+
+                if (((index + 1) % 2) !== 0) {
+                    paddingRight = '8px';
+                }
+
+                if (rem !== 0) {
+                    //There are odd numbers of apps.
+                    //In this case, the last app should have max-width: 100%
+                    if ((index + 1) === (allApps.length)) {
+                        maxWidth = '100%';
+                        paddingRight = '0';
+                    }
+                }
+
+                var styles = {
+                    minWidth: 0,
+                    boxSizing: 'border-box',
+                    maxWidth: maxWidth,
+                    paddingRight: paddingRight
+                };
+
+                return styles;
+            }
         }
     });
 
