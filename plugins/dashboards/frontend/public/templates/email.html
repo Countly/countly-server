@@ -119,9 +119,14 @@
                         <!-- UNSUBSCRIBE COPY -->
                         <table width="500" border="0" cellspacing="0" cellpadding="0" align="center" class="responsive-table">
                             <tr>
-                                <td align="center" style="font-size: 12px; line-height: 18px; font-family: Helvetica, Arial, sans-serif; color:#666666;">
-                                    <a style="color: #3a9d3e; text-decoration: none;" href="<%= host %>/dashboard#/manage/reports" target="_blank"><%= properties["reports.settings"] %></a> | 
-                                    <a style="color: #3a9d3e; text-decoration: none;" href="<%= version.page %>" target="_blank"><%= version.title %></a>
+                                <td align="left" style="font-size: 12px; line-height: 18px; font-family: Helvetica, Arial, sans-serif; color:#666666;">
+                                    <span style="color: #979797;"><%= properties["reports.sent-by"] %></span>
+                                    <a style="color: #979797;" href="https://count.ly" target="_blank"><%= version.title %></a> | 
+                                    <a style="color: #979797;" href="<%= unsubscribe_link %>" target="_blank">Unsubscribe</a>
+                                </td>
+                                <td align="right" style="font-size: 12px; line-height: 18px; font-family: Helvetica, Arial, sans-serif; color:#666666;">
+                                    <a style="color: #979797;padding:0 5px;" href="<%= host %>/dashboard#/manage/reports" target="_blank"><%= properties["reports.settings"] %></a> |
+                                    <a style="color: #979797; padding:0 5px;" href="https://support.count.ly/hc/en-us/articles/360037876031-Email-reports" target="_blank"><%= properties["reports.get-help"] %></a> 
                                 </td>
                             </tr>
                         </table>
