@@ -573,6 +573,9 @@
         props: {
             code: {type: String, required: true}
         },
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         computed: {
             hasHeaderLeft: function() {
                 return !!(this.$scopedSlots["header-left"] || this.$slots["header-left"]);
@@ -595,6 +598,9 @@
     var CrashgroupView = countlyVue.views.create({
         template: "#crashes-crashgroup",
         components: {"crash-stacktrace": CrashStacktraceView, "crash-badge": CrashBadgeView},
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
