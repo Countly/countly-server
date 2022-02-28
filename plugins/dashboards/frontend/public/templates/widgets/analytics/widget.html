@@ -24,7 +24,7 @@
     <clyd-primary-legend :apps="data.apps" :showApps="data.visualization !== 'time-series'" :custom-period="data.custom_period"></clyd-primary-legend>
 
 	<div class="clyd-widget__content" :class="'clyd-widget__content--vis-' + data.visualization">
-		<cly-chart-time v-if="data.visualization === 'time-series'" :showZoom="false" :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}">
+		<cly-chart-time v-if="data.visualization === 'time-series'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}">
 		</cly-chart-time>
 		<div v-else-if="data.visualization === 'number'" >
 			<h1 class="bu-pb-2">{{formatNumber(number.total)}}</h1>
@@ -54,7 +54,7 @@
             </cly-datatable-n>
             <cly-blank :classes="{'bu-p-0': true}" v-else></cly-blank>
         </div>
-		<cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}"></cly-chart-bar>
+		<cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}"></cly-chart-bar>
 		<cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
 	</div>
 

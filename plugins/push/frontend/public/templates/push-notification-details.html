@@ -47,7 +47,7 @@
                     </div>
                     <div class="bu-level-item">
                         <el-select v-model="selectedPlatformFilter">
-                            <el-option v-for="item in platformFilters" :key="item.value" :value="item.value" :label="item.label"></el-option>
+                            <el-option v-for="item in platformFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
                     <div class="bu-level-item">
@@ -57,7 +57,7 @@
                     </div>
                     <div class="bu-level-item">
                         <el-select v-model="selectedLocaleFilter">
-                            <el-option v-for="item in localizations" :key="item.value" :value="item.value" :label="item.label"></el-option>
+                            <el-option v-for="item in localeFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
                 </div>
