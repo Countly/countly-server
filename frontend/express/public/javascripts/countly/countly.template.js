@@ -739,7 +739,8 @@ var AppRouter = Backbone.Router.extend({
         "performance-monitoring": "performance_monitoring",
         "hooks": "hooks",
         "attribution": "attribution",
-        "data-migration": "data_migration"
+        "data-migration": "data_migration",
+        "export": "config_transfer"
     },
     _menuDependencies: {
         "events": ["events"],
