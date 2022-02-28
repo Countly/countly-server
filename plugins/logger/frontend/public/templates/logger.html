@@ -32,8 +32,8 @@
             <cly-notification v-if="showTurnedOff" :text="i18n('logger.state-off-warning', appId)"></cly-notification>
         </div>
         <cly-section>
-            <cly-datatable-n :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :rows="logsData"
-                :resizable="false" :force-loading="isLoading" class="is-clickable">
+            <cly-datatable-n ref="requestLogTable" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :rows="logsData"
+                :resizable="false" :force-loading="isLoading" :export-query="getExportQuery" class="is-clickable">
                 <template v-slot:header-left="filterScope">
                     <el-select v-model="loggerFilter" placeholder="Select" @change="filterChange()">
                         <el-option v-for="filter in filterOptions" :key="filter.value" :label="filter.label"

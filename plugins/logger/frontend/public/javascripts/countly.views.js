@@ -143,6 +143,22 @@
             })
         ],
         methods: {
+            getExportQuery: function() {
+                /*var projection = {};
+                this.$refs.requestLogTable.exportColumns.forEach(function(col) {
+                    projection[col] = true;
+                });*/
+                var apiQueryData = {
+                    api_key: countlyGlobal.member.api_key,
+                    db: 'countly',
+                    collection: 'logs' + countlyCommon.ACTIVE_APP_ID,
+                    //query: this.$store.getters["countlyUsers/query"] || "{}",
+                    limit: '',
+                    skip: 0,
+                    //projection: JSON.stringify(projection)
+                };
+                return apiQueryData;
+            },
             getTitleTooltip: function() {
                 return this.i18n('logger.description');
             },
