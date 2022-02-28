@@ -641,12 +641,19 @@ var metricProps = {
     reports.send = function(report, message, callback) {
         if (report.emails) {
             for (let i = 0; i < report.emails.length; i++) {
+                let unsubscribeLink = report.messages && report.messages[i] && report.messages[i].unsubscribeLink;
+                let html = report.messages && report.messages[i] && report.messages[i].html;
+                if (!html && message.data && message.template) { // report from dashboard
+                    const msg = reports.genUnsubscribeCode(report, report.emails[i]);
+                    message.data.unsubscribe_link = message.data.host + "/unsubscribe_report?data=" + encodeURIComponent(msg);
+                    html = ejs.render(message.template, message.data);
+                }
                 const msg = {
                     to: report.emails[i],
                     from: versionInfo.title,
                     subject: report.subject,
                     // if report contains customize message for each email address, use reports.messages[i]
-                    html: report.messages && report.messages[i] && report.messages[i].html || message,
+                    html: html,
                 };
 
                 const options = { "directory": "/tmp", "width": "1028px", height: "1000px", phantomArgs: ["--ignore-ssl-errors=yes"] };
@@ -654,7 +661,7 @@ var metricProps = {
                 if (report.messages && report.messages[i]) {
                     msg.list = {
                         unsubscribe: {
-                            url: report.messages[i].unsubscribeLink,
+                            url: unsubscribeLink,
                             comment: report.unsubscribe_local_string || 'Unsubscribe'
                         }
                     };

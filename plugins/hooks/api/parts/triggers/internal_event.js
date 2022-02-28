@@ -53,7 +53,6 @@ class InternalEventTrigger {
         }
         if (eventType === '/master') {
             this._rules = await common.db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray();
-            console.log(this._rules, "rrrmmm");
         }
         this._rules.forEach((r) => {
             if (r.trigger.configuration.eventType === eventType) {
