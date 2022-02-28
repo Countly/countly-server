@@ -239,8 +239,14 @@
         },
         created: function() {
             this.getTemplateList();
+            if (!this.canUserCreate) {
+                this.currentTab = "templates";
+            }
         },
-        mixins: [countlyVue.mixins.hasDrawers("populatorTemplate")]
+        mixins: [
+            countlyVue.mixins.hasDrawers("populatorTemplate"),
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ]
     });
 
     var AppLockedView = countlyVue.views.create({
