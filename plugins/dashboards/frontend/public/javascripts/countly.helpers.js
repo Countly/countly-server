@@ -830,15 +830,6 @@
         computed: {
             customPeriod: {
                 get: function() {
-                    if (Array.isArray(this.value)) {
-                        if ((this.value[0] + "").length === 10) {
-                            this.value[0] *= 1000;
-                        }
-                        if ((this.value[1] + "").length === 10) {
-                            this.value[1] *= 1000;
-                        }
-                    }
-
                     return this.value || "30days";
                 },
                 set: function(t) {
