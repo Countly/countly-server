@@ -100,8 +100,7 @@
 
             var approx = false;
             var total = ((periodData.sessions || 0) + (periodData.events || 0) + (periodData.push || 0));
-
-            if ((app !== "all-apps" || app !== "natural-dp" || app !== "[CLY]_consolidated") && total < periodData.dp) {
+            if (app !== "all-apps" && app !== "natural-dp" && app !== "[CLY]_consolidated" && total < periodData.dp) {
                 //var subtotal = (periodData.sessions + periodData.events) || 1;
                 periodData.sessions = null;
                 periodData.events = null;
