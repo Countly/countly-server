@@ -23,7 +23,7 @@
                     :task-id="scope.row._id" 
                     :app-id="scope.row.app_id">
                 </unread-pin>
-                {{ scope.row.report_name || "-" }}
+                {{ scope.row.report_name || scope.row.name || "-" }}
                 <div class="report-manager-report-desc"> {{ scope.row.report_desc || "-" }}</div>
             </template>
         </el-table-column>
