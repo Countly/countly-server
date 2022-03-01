@@ -1185,7 +1185,7 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
  * @param {object} current - current permission object
  * @param {object} addition - permission object to merge
  */
- membersUtility.mergePermissions = (current, addition) => {
+membersUtility.mergePermissions = (current, addition) => {
     var crud = {"c": true, "r": true, "u": true, "d": true};
     for (var p in addition) {
         //permission does not exist yet, just copy it
