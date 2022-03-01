@@ -1740,7 +1740,6 @@
                 viewModel: JSON.parse(JSON.stringify(initialAppLevelConfig)),
                 modelUnderEdit: Object.assign({}, { rate: "", period: ""}),
                 uploadedIOSKeyFilename: '',
-                selectedAppId: this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID,
                 isHuaweiConfigTouched: false,
                 isIOSConfigTouched: false,
                 AddTestUserDefinitionTypeEnum: countlyPushNotification.service.AddTestUserDefinitionTypeEnum,
@@ -1769,6 +1768,16 @@
             },
             selectedTestUsersRows: function() {
                 return this.testUsersRows[this.selectedTestUsersListOption];
+            },
+            selectedAppId: function() {
+                return this.$store.state.countlyAppManagement.selectedAppId;
+            }
+        },
+        watch: {
+            selectedAppId: function() {
+                this.iosAuthConfigType = countlyPushNotification.service.IOSAuthConfigTypeEnum.P8;
+                this.resetConfig();
+                this.reconcilate();
             }
         },
         methods: {
@@ -1874,12 +1883,6 @@
                 this.dispatchAppLevelConfigChangeEvent(property, platform);
             },
             onDiscard: function() {
-                this.resetConfig();
-                this.reconcilate();
-            },
-            onSelectApp: function(appId) {
-                this.selectedAppId = appId;
-                this.iosAuthConfigType = countlyPushNotification.service.IOSAuthConfigTypeEnum.P8;
                 this.resetConfig();
                 this.reconcilate();
             },
@@ -2149,10 +2152,9 @@
         mounted: function() {
             this.addKeyFileReaderLoadListener(this.onKeyFileReady);
             this.addDiscardEventListener(this.onDiscard);
-            this.addSelectedAppEventListener(this.onSelectApp);
             this.reconcilate();
         },
-        destroyed: function() {
+        beforeDestroy: function() {
             this.removeKeyFileReaderLoadListener(this.onKeyFileReady);
         }
     });
