@@ -13,7 +13,7 @@
                 {
                     "name": "country",
                     "func": function(rangeArr) {
-                        return rangeArr;
+                        return (rangeArr + "").toUpperCase();
                     }
                 },
                 {
@@ -35,6 +35,7 @@
 
             locationData = locationData || {};
             locationData = locationData.chartData || [];
+            locationData = countlyCommon.mergeMetricsByName(locationData, "country");
             var totals = countlyCommon.getDashboardData(countlyCountry.getDb(), ["u", "t", "n"], ["u"], {"u": "countries"}, countlyCountry.clearObject); //get totals with change
 
             return {"table": locationData, "totals": totals};

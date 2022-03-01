@@ -1059,7 +1059,7 @@
                 var self = this;
                 return this.$store.state.countlyPushNotification.main.dashboard.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
                     return {
-                        data: pushNotificationSerie.data[self.selectedPlatformFilter],
+                        data: pushNotificationSerie.data[self.selectedPlatformFilter] || [],
                         name: pushNotificationSerie.label
                     };
                 });
@@ -1354,7 +1354,6 @@
                 StatusEnum: countlyPushNotification.service.StatusEnum,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
-                platformFilters: platformFilterOptions,
                 statusOptions: countlyPushNotification.service.statusOptions,
                 currentSummaryTab: "message",
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
@@ -1396,6 +1395,17 @@
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
+            platformFilterOptions: function() {
+                return this.$store.state.countlyPushNotification.details.platformFilterOptions;
+            },
+            localeFilterOptions: function() {
+                if (this.pushNotification.dashboard[this.selectedPlatformFilter]) {
+                    return Object.keys(this.pushNotification.dashboard[this.selectedPlatformFilter].locales).map(function(localeKey) {
+                        return countlyPushNotification.mapper.incoming.mapLocalizationByKey(localeKey);
+                    });
+                }
+                return [];
+            },
             selectedMessageLocaleFilter: function() {
                 return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
             },
@@ -1403,11 +1413,14 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocaleFilter];
             },
             selectedDashboard: function() {
-                var selectedDashboard = this.pushNotification.dashboard[this.selectedPlatformFilter];
+                var selectedDashboardFilter = this.pushNotification.dashboard[this.selectedPlatformFilter];
                 if (this.selectedLocaleFilter) {
-                    selectedDashboard = selectedDashboard.locales[this.selectedLocaleFilter];
+                    return selectedDashboardFilter.locales[this.selectedLocaleFilter];
                 }
-                return selectedDashboard;
+                if (!selectedDashboardFilter) {
+                    return {};
+                }
+                return selectedDashboardFilter;
             },
             targetedUsers: function() {
                 if (!this.selectedDashboard.processed) {
@@ -1448,11 +1461,6 @@
             },
             isLoading: function() {
                 return this.$store.getters['countlyPushNotification/details/isLoading'];
-            },
-            localizations: function() {
-                return Object.keys(this.pushNotification.dashboard[this.selectedPlatformFilter].locales).map(function(localeKey) {
-                    return countlyPushNotification.mapper.incoming.mapLocalizationByKey(localeKey);
-                });
             },
             hasApproverPermission: function() {
                 return countlyPushNotification.service.hasApproverPermission();
