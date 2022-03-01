@@ -1,4 +1,4 @@
-/*global countlyAuth, ELEMENT, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment, sdks, countlyPlugins, countlySession, countlyLocation, countlyCity, countlyDevice, countlyCarrier, countlyDeviceDetails, countlyAppVersion, countlyEvent, _ ,*/
+/*global countlyAuth, ELEMENT, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment, sdks, countlyPlugins, countlySession, countlyLocation, countlyCity, countlyDevice, countlyCarrier, countlyDeviceDetails, countlyAppVersion, countlyEvent, _ , countlyAppManagement*/
 (function() {
     var ManageAppsView = countlyVue.views.create({
         mixins: [ELEMENT.utils.Emitter],
@@ -11,7 +11,7 @@
                 set: function(value) {
                     this.newApp = false;
                     this.selectedApp = value;
-                    this.broadcast('AppSettingsContainerObservable', 'selectedApp', value);
+                    this.$store.dispatch('countlyAppManagement/setSelectedAppId', value);
                     this.uploadData.app_image_id = countlyGlobal.apps[this.selectedApp]._id + "";
                     this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png")';
                     this.unpatch();
@@ -528,7 +528,7 @@
 
                                 //find next app
                                 var nextAapp = (self.appList[index2]) ? self.appList[index2].value : self.appList[0].value;
-                                self.$store.dispatch("countlyCommon/setActiveApp", nextAapp);
+                                self.$store.dispatch("countlyCommon/updateActiveApp", nextAapp);
                                 self.selectedApp = nextAapp;
                                 self.uploadData.app_image_id = countlyGlobal.apps[self.selectedApp]._id + "";
                                 self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png")';
@@ -726,14 +726,14 @@
         },
         mounted: function() {
             var appId = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
-            this.broadcast('AppSettingsContainerObservable', 'selectedApp', appId);
+            this.$store.dispatch('countlyAppManagement/setSelectedAppId', appId);
         }
     });
 
     var getMainView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: ManageAppsView,
-            vuex: []
+            vuex: [{clyModel: countlyAppManagement}]
         });
     };
 
