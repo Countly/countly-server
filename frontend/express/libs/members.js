@@ -39,6 +39,23 @@ if (membersUtility.countlyConfig.web && membersUtility.countlyConfig.web.track =
     membersUtility.countlyConfig.web.track = null;
 }
 
+/**
+ * @property {object} emptyPermission - empty crud permission
+ */
+membersUtility.emptyPermission = {
+    "permission": {
+        "c": {},
+        "r": {},
+        "u": {},
+        "d": {},
+        "_": {
+            "a": [],
+            "u": [
+                []
+            ]
+        }
+    }
+};
 
 /** Checks remote configuration and sets variables to configuration object
  * @param {object} countlyConfigOrig - configuration settings object. Original(ar read from file)
@@ -689,18 +706,7 @@ membersUtility.setup = function(req, callback) {
                     "global_admin": true,
                     created_at: Math.floor(((new Date()).getTime()) / 1000),
                     password_changed: Math.floor(((new Date()).getTime()) / 1000),
-                    permission: {
-                        "c": {},
-                        "r": {},
-                        "u": {},
-                        "d": {},
-                        "_": {
-                            "a": [],
-                            "u": [
-                                []
-                            ]
-                        }
-                    }
+                    permission: membersUtility.emptyPermission
                 };
                 if (req.body.lang) {
                     doc.lang = req.body.lang;
@@ -1125,18 +1131,7 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     user.user_of = data.user_of || [];
     user.restrict = data.restrict || [];
     user.app_restrict = data.app_restrict || {};
-    user.permission = data.permission || {
-        "c": {},
-        "r": {},
-        "u": {},
-        "d": {},
-        "_": {
-            "a": [],
-            "u": [
-                []
-            ]
-        }
-    };
+    user.permission = data.permission || membersUtility.emptyPermission;
 
     if (data.admin_of && data.admin_of.length) {
         user.user_of = [...new Set([...data.admin_of, ...data.user_of])];
@@ -1181,6 +1176,66 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     catch (error) {
         console.error(`create member error ${provider} ${error.message}`, error);
         throw new Error(error);
+    }
+};
+
+/**
+ * Merge permission objects
+ * @method mergePermissions
+ * @param {object} current - current permission object
+ * @param {object} addition - permission object to merge
+ */
+ membersUtility.mergePermissions = (current, addition) => {
+    var crud = {"c": true, "r": true, "u": true, "d": true};
+    for (var p in addition) {
+        //permission does not exist yet, just copy it
+        if (!current[p]) {
+            current[p] = addition[p];
+        }
+        else if (crud[p]) {
+            //iterating through the apps
+            if (addition[p]) {
+                if (!current[p]) {
+                    current[p] = {};
+                }
+                for (var app in addition[p]) {
+                    if (addition[p][app]) {
+                        if (!current[p][app]) {
+                            current[p][app] = {};
+                        }
+                        if (addition[p][app].all) {
+                            current[p][app].all = true;
+                        }
+                        if (addition[p][app].allowed) {
+                            current[p][app].allowed = current[p][app].allowed || {};
+                            for (var feat in addition[p][app].allowed) {
+                                if (addition[p][app].allowed[feat]) {
+                                    current[p][app].allowed[feat] = true;
+                                }
+                                else if (typeof current[p][app].allowed[feat] === "undefined") {
+                                    current[p][app].allowed[feat] = addition[p][app].allowed[feat];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else if (p === "_") {
+            //merge admin by merging arrays
+            if (addition[p].a) {
+                if (!current[p].a) {
+                    current[p].a = [];
+                }
+                current[p].a = [...(new Set([...current[p].a, ...addition[p].a]))];
+            }
+            if (addition[p].u) {
+                if (!current[p].u) {
+                    current[p].u = [];
+                }
+                current[p].u = [...(new Set([...current[p].u, ...addition[p].u]))];
+            }
+        }
     }
 };
 
