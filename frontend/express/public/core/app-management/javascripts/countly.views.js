@@ -528,7 +528,7 @@
 
                                 //find next app
                                 var nextAapp = (self.appList[index2]) ? self.appList[index2].value : self.appList[0].value;
-                                self.$store.dispatch("countlyCommon/setActiveApp", nextAapp);
+                                self.$store.dispatch("countlyCommon/updateActiveApp", nextAapp);
                                 self.selectedApp = nextAapp;
                                 self.uploadData.app_image_id = countlyGlobal.apps[self.selectedApp]._id + "";
                                 self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png")';
