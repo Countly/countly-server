@@ -264,19 +264,19 @@
                             </el-card>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="ts" :label="i18n('crashes.crashed')" width="210" sortable>
+                    <el-table-column prop="ts" :label="i18n('crashes.crashed')" sortable>
                         <template slot-scope="col">
                             <span v-html="formatTimeAgo(col.row.ts)"></span>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="os" :label="i18n('crashes.os_version')" width="250">
+                    <el-table-column prop="os" :label="i18n('crashes.os_version')">
                         <template slot-scope="col">
                             {{col.row.os}} {{col.row.os_version}}
                         </template>
                     </el-table-column>
-                    <el-table-column prop="device" :label="i18n('crashes.device')" width="199px" sortable></el-table-column>
-                    <el-table-column prop="app_version" :label="i18n('crashes.app_version')" width="161" sortable></el-table-column>
-                    <el-table-column :label="i18n('crashes.user')">
+                    <el-table-column prop="device" :label="i18n('crashes.device')" sortable></el-table-column>
+                    <el-table-column prop="app_version" :label="i18n('crashes.app_version')" sortable></el-table-column>
+                    <el-table-column v-if="hasUserPermission" :label="i18n('crashes.user')">
                         <template slot-scope="col">
                             {{col.row.user && col.row.user.name || col.row.uid}}
                             <a class="crash-user-profile-link" :href="'/#/users/' + col.row.uid"><i class="fas fa-arrow-circle-right"></i></a>

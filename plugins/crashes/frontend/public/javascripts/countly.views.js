@@ -279,16 +279,19 @@
                 );
             }
 
-            if (typeof countlyDrillMeta !== "undefined") {
-                var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
-                var getFilterValues = function(segmentationKey) {
-                    return function() {
-                        return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
-                            var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
-                            return {name: name, value: value};
-                        });
+            if (countlyAuth.validateRead('drill')) {
+                if (typeof countlyDrillMeta !== "undefined") {
+                    var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
+                    var getFilterValues = function(segmentationKey) {
+                        return function() {
+                            return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
+                                var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
+                                return {name: name, value: value};
+                            });
+                        };
                     };
-                };
+                }
+
 
                 crashMeta.initialize().then(function() {
                     if (window.countlyQueryBuilder) {
@@ -428,6 +431,7 @@
                 formatDate: function(row, col, cell) {
                     return moment(cell * 1000).format("lll");
                 },
+                hasDrillPermission: countlyAuth.validateRead('drill')
             };
         },
         computed: {
@@ -617,7 +621,8 @@
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
-                jiraIntegrationEnabled: countlyGlobal.plugins.includes("crashes-jira")
+                jiraIntegrationEnabled: countlyGlobal.plugins.includes("crashes-jira"),
+                hasUserPermission: countlyAuth.validateRead('users')
             };
         },
         computed: {

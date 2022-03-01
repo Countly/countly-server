@@ -632,24 +632,26 @@
                                 }
                             });
 
-                            Object.keys(userIds).forEach(function(uid) { //
-                                ajaxPromises.push(countlyVue.$.ajax({
-                                    type: "GET",
-                                    url: countlyCommon.API_PARTS.data.r,
-                                    data: {
-                                        "app_id": countlyCommon.ACTIVE_APP_ID,
-                                        "method": "user_details",
-                                        "uid": uid,
-                                        "period": countlyCommon.getPeriodForAjax(),
-                                        "return_groups": "basic",
-                                    },
-                                    success: function(userJson) {
-                                        userIds[uid].forEach(function(crashIndex) {
-                                            crashgroupJson.data[crashIndex].user = userJson;
-                                        });
-                                    }
-                                }));
-                            });
+                            if (countlyAuth.validateRead('users')) {
+                                Object.keys(userIds).forEach(function(uid) { //
+                                    ajaxPromises.push(countlyVue.$.ajax({
+                                        type: "GET",
+                                        url: countlyCommon.API_PARTS.data.r,
+                                        data: {
+                                            "app_id": countlyCommon.ACTIVE_APP_ID,
+                                            "method": "user_details",
+                                            "uid": uid,
+                                            "period": countlyCommon.getPeriodForAjax(),
+                                            "return_groups": "basic",
+                                        },
+                                        success: function(userJson) {
+                                            userIds[uid].forEach(function(crashIndex) {
+                                                crashgroupJson.data[crashIndex].user = userJson;
+                                            });
+                                        }
+                                    }));
+                                });
+                            }
 
                             if (typeof countlyCrashSymbols !== "undefined") {
                                 var crashes = [{
