@@ -591,10 +591,13 @@
                 }, {disableAutoCatch: true});
             });
         },
-        getDashboard: function() {
+        getDashboard: function(echo) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
+            if (echo) {
+                data.echo = echo;
+            }
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "GET",
@@ -2213,9 +2216,9 @@
                 });
             });
         },
-        fetchDashboard: function(type) {
+        fetchDashboard: function(type, echo) {
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.getDashboard()
+                countlyPushNotification.api.getDashboard(echo)
                     .then(function(response) {
                         try {
                             resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));

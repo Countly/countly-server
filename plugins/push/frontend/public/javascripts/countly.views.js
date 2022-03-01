@@ -912,7 +912,7 @@
             },
             fetchDashboard: function() {
                 var self = this;
-                countlyPushNotification.service.fetchDashboard(this.type)
+                countlyPushNotification.service.fetchDashboard(this.type, countlyCommon.generateId())
                     .then(function(response) {
                         self.setTotalAppUsers(response.totalAppUsers);
                         self.setEnabledUsers(response.enabledUsers);
