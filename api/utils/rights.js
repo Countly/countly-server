@@ -498,7 +498,7 @@ exports.dbLoadEventsData = dbLoadEventsData;
 * @returns {function} returns callback
 **/
 exports.dbUserHasAccessToCollection = function(params, collection, callback) {
-    if (params.member.global_admin && !params.qstring.app_id) {
+    if (params.member.global_admin) {
         //global admin without app_id restriction just has access to everything
         return callback(true);
     }
