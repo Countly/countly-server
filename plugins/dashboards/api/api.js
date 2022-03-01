@@ -119,7 +119,7 @@ plugins.setConfigs("dashboards", {
                             return callback(null, {widgets: [], apps: []});
                         }
 
-                        fetchWidgetsMeta(params, dashboard.widgets, function(metaerr, meta) {
+                        fetchWidgetsMeta(params, dashboard.widgets, false, function(metaerr, meta) {
                             if (metaerr) {
                                 return callback(metaerr);
                             }
@@ -215,7 +215,7 @@ plugins.setConfigs("dashboards", {
                             return common.returnOutput(params, {error: true, dashboard_access_denied: true});
                         }
 
-                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], function(e, meta) {
+                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], false, function(e, meta) {
                             var widgets = meta[0] || [];
                             customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
                                 common.returnOutput(params, data);
@@ -287,7 +287,7 @@ plugins.setConfigs("dashboards", {
                 async.forEach(dashboards, function(dashboard, done) {
                     async.parallel([
                         hasEditAccessToDashboard.bind(null, member, dashboard),
-                        fetchWidgetsMeta.bind(null, params, dashboard.widgets),
+                        fetchWidgetsMeta.bind(null, params, dashboard.widgets, false),
                         fetchMembersData.bind(null, [dashboard.owner_id], [])
                     ], function(perr, result) {
                         if (perr) {
@@ -1212,9 +1212,10 @@ plugins.setConfigs("dashboards", {
      * Function to fetch widget meta
      * @param  {object} params - params object
      * @param  {Array} widgetIds - widget id array
+     * @param  {Boolean} allProps - send all props or not
      * @param  {Function} callback - callback function
      */
-    function fetchWidgetsMeta(params, widgetIds = [], callback) {
+    function fetchWidgetsMeta(params, widgetIds = [], allProps, callback) {
         common.db.collection("widgets").find({_id: {$in: widgetIds}}).toArray(function(e, widgets = []) {
             if (e) {
                 log.e("Could not fetch widgets", e, widgetIds);
@@ -1227,7 +1228,12 @@ plugins.setConfigs("dashboards", {
             customDashboards.fetchWidgetApps(params, widgets, function(err, apps = {}) {
                 var allApps = [];
                 for (var appId in apps) {
-                    allApps.push({_id: apps[appId]._id, name: apps[appId].name});
+                    if (allProps) {
+                        allApps.push(apps[appId]);
+                    }
+                    else {
+                        allApps.push({_id: apps[appId]._id, name: apps[appId].name});
+                    }
                 }
 
                 return callback(null, [widgets, allApps]);
@@ -1500,21 +1506,65 @@ plugins.setConfigs("dashboards", {
         }
     });
 
-    plugins.register("/dashboard/data", async function({widget}) {
-        try {
-            if (widget.widget_type === 'analytics') {
-                if (widget.data_type === 'geo') {
-                    widget.dashData = {
-                        isValid: true,
-                        data: {}
-                    };
+    plugins.register("/o/dashboard/data", function(ob) {
+        var params = ob.params,
+            dashboardId = params.qstring.dashboard_id,
+            widgetId = params.qstring.widget_id;
+
+        if (typeof dashboardId === "undefined" || dashboardId.length !== 24) {
+            common.returnMessage(params, 401, 'Invalid parameter: dashboard_id');
+            return true;
+        }
+
+        if (typeof widgetId === "undefined" || widgetId.length !== 24) {
+            common.returnMessage(params, 401, 'Invalid parameter: widget_id');
+            return true;
+        }
+
+        validateUser(params, function() {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
+                if (!err && dashboard) {
+                    hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
+                        if (er || !status) {
+                            return common.returnOutput(params, {error: true, dashboard_access_denied: true});
+                        }
+
+                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], true, function(e, meta) {
+                            var widgets = meta[0] || [];
+                            var allApps = meta[1] || [];
+
+                            var apps = {};
+
+                            if (allApps) {
+                                for (var k = 0; k < allApps.length; k++) {
+                                    apps[allApps[k]._id + ""] = allApps[k];
+                                }
+                            }
+
+                            var newParams = {
+                                qstring: params.qstring,
+                                member: params.member
+                            };
+
+                            var widget = widgets[0] || {};
+
+                            plugins.dispatch("/dashboard/data", {
+                                params: JSON.parse(JSON.stringify(newParams)),
+                                apps: JSON.parse(JSON.stringify(apps)),
+                                widget: widget
+                            }, function() {
+                                common.returnOutput(params, widget);
+                            });
+                        });
+                    });
                 }
-            }
-        }
-        catch (e) {
-            log.d("Error while fetching data for widget - ", widget);
-            log.d("Error - ", e);
-        }
+                else {
+                    common.returnMessage(params, 404, "Such dashboard and widget combination does not exist.");
+                }
+            });
+        });
+
+        return true;
     });
 
     /**
