@@ -17,39 +17,6 @@ var dashboard = {};
 var separator = "***";
 
 /**
- *  @brief Brief description
- *  
- *  @param {object} ob  - object
- *  @param {string} collection  - collection
- *  @param {string} metric - metric
- *  @param {object} widget  - widget
- *  @return {object}  - object
- */
-function addWidget(ob, collection, metric, widget) {
-    if (!ob[collection]) {
-        ob[collection] = {};
-    }
-    metric = toSegment(metric);
-    if (!ob[collection][metric]) {
-        ob[collection][metric] = [];
-    }
-    ob[collection][metric].push(widget);
-    return ob;
-}
-/**
- *  @param {object}  ob - objec
- *  @param {string} name -name
- *  @param {string} widget - widget
- *  @return {object}  - object
- */
-function addPluginWidget(ob, name, widget) {
-    if (!ob[name]) {
-        ob[name] = [];
-    }
-    ob[name].push(widget);
-    return ob;
-}
-/**
  *  Gets collection name to select data from
  *  @param {string} val - data index
  *  @return {string} collection name
