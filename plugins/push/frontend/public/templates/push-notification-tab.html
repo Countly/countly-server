@@ -48,7 +48,7 @@
                 </cly-chart-time>
             </cly-section>
             <cly-section>
-                <cly-datatable-n  :rows="pushNotificationRows" v-loading="areRowsLoading || isUserCommandLoading" :force-loading="areRowsLoading || isUserCommandLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true" class="is-clickable">
+                <cly-datatable-n :rows="pushNotificationRows" v-loading="areRowsLoading || isUserCommandLoading" :force-loading="areRowsLoading || isUserCommandLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true" class="is-clickable cly-vue-push-notification-table">
                     <template v-slot:header-left>
                         <el-select v-model="selectedStatusFilter">
                             <el-option
@@ -99,22 +99,6 @@
                                 <cly-status-tag :text="statusOptions[scope.row.status] && statusOptions[scope.row.status].label || '' " :color="getStatusBackgroundColor(scope.row.status)"> </cly-status-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column width="220" sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')"  class="cly-vue-push-notification-table-column">
-                            <template slot-scope="scope">
-                                <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.createdDateTime.date}}</span>
-                                    <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.createdDateTime.time}}</span>
-                                </div>
-                            </template>
-                        </el-table-column>
-                        <el-table-column  width="280" sortable="custom" prop="sentDateTime" :label="i18n('push-notification.table-date-sent')" class="cly-vue-push-notification-table-column">
-                            <template slot-scope="scope">
-                                <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.sentDateTime.date}}</span>
-                                    <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.sentDateTime.time}}</span>
-                                </div>
-                            </template>
-                        </el-table-column>
                         <el-table-column sortable="custom":label="i18n('push-notification.table-sent')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <span class="cly-vue-push-notification-table-column__numbers-only"> {{scope.row.sent}} </span>
@@ -128,6 +112,22 @@
                                         <span class="bu-mr-1">|</span>
                                         <span>{{formatPercentage(scope.row.actioned/scope.row.sent)}} %</span>
                                     </div>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column width="220" sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')"  class="cly-vue-push-notification-table-column">
+                            <template slot-scope="scope">
+                                <div class="bu-is-flex bu-is-flex-direction-column">
+                                    <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.createdDateTime.date}}</span>
+                                    <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.createdDateTime.time}}</span>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column  width="280" sortable="custom" prop="sentDateTime" :label="i18n('push-notification.table-date-sent')" class="cly-vue-push-notification-table-column">
+                            <template slot-scope="scope">
+                                <div class="bu-is-flex bu-is-flex-direction-column">
+                                    <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.sentDateTime.date}}</span>
+                                    <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.sentDateTime.time}}</span>
                                 </div>
                             </template>
                         </el-table-column>
