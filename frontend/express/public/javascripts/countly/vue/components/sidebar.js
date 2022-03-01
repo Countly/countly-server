@@ -3,6 +3,39 @@
 (function(countlyVue, $) {
 
     $(document).ready(function() {
+        var AppsMixin = {
+            computed: {
+                allApps: {
+                    get: function() {
+                        var storedApp = this.$store.getters["countlyCommon/getAllApps"];
+                        var apps = _.sortBy(storedApp, function(app) {
+                            return (app.name + "").toLowerCase();
+                        });
+                        if (countlyGlobal.member.appSortList) {
+                            apps = this.sortBy(apps, countlyGlobal.member.appSortList);
+                        }
+                        apps = apps.map(function(a) {
+                            a.label = a.name;
+                            a.value = a._id;
+                            return a;
+                        });
+                        return apps;
+                    },
+                },
+                activeApp: function() {
+                    var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"] && this.$store.getters["countlyCommon/getActiveApp"]._id;
+                    var active = this.allApps.find(function(a) {
+                        return a._id === selectedAppId;
+                    });
+
+                    if (active) {
+                        active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
+                    }
+                    return active || {};
+                },
+            }
+        };
+
         var AppSelector = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/app-selector.html'),
             data: function() {
@@ -119,7 +152,8 @@
                     "categories": "/sidebar/analytics/menuCategory",
                     "menus": "/sidebar/analytics/menu",
                     "submenus": "/sidebar/analytics/submenu"
-                })
+                }),
+                AppsMixin
             ],
             components: {
                 "app-selector": AppSelector
@@ -131,36 +165,8 @@
                 };
             },
             computed: {
-                allApps: {
-                    get: function() {
-                        var storedApp = this.$store.getters["countlyCommon/getAllApps"];
-                        var apps = _.sortBy(storedApp, function(app) {
-                            return (app.name + "").toLowerCase();
-                        });
-                        if (countlyGlobal.member.appSortList) {
-                            apps = this.sortBy(apps, countlyGlobal.member.appSortList);
-                        }
-                        apps = apps.map(function(a) {
-                            a.label = a.name;
-                            a.value = a._id;
-                            return a;
-                        });
-                        return apps;
-                    },
-                },
-                activeApp: function() {
-                    var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"] && this.$store.getters["countlyCommon/getActiveApp"]._id;
-                    var active = this.allApps.find(function(a) {
-                        return a._id === selectedAppId;
-                    });
-
-                    if (active) {
-                        active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
-                    }
-                    return active || {};
-                },
                 categorizedMenus: function() {
-                    if (!this.activeApp) {
+                    if (!this.activeApp || !this.activeApp._id) {
                         return {};
                     }
                     var self = this;
@@ -173,7 +179,7 @@
                     return menus;
                 },
                 categorizedSubmenus: function() {
-                    if (!this.activeApp) {
+                    if (!this.activeApp || !this.activeApp._id) {
                         return {};
                     }
                     var self = this;
@@ -332,16 +338,22 @@
             mixins: [
                 countlyVue.container.dataMixin({
                     "menus": "/sidebar/analytics/menu"
-                })
+                }),
+                AppsMixin
             ],
             computed: {
                 menu: function() {
+                    if (!this.activeApp || !this.activeApp._id) {
+                        return [];
+                    }
+
                     var menu = this.menus.filter(function(val) {
                         if (val.category === "management") {
                             return true;
                         }
                         return false;
                     });
+
                     return menu;
                 },
                 selectedMenuItem: function() {
