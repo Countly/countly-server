@@ -384,7 +384,7 @@ exports.validateUser = function(params, callback, callbackParam) {
 */
 function wrapCallback(params, callback, callbackParam, func) {
     var promise = new Promise(func);
-    if (callback) {
+    if (typeof callback === "function") {
         promise.asCallback(function(err) {
             if (!err) {
                 let ret;
@@ -403,6 +403,9 @@ function wrapCallback(params, callback, callbackParam, func) {
                 }
             }
         });
+    }
+    else if (callback) {
+        console.log("Incorrect callback function", callback);
     }
     return promise;
 }

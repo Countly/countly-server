@@ -2023,7 +2023,7 @@ const processRequest = (params) => {
 
                 switch (params.qstring.method) {
                 case 'jobs':
-                    validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs('jobs', params));
+                    validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
                     break;
                 case 'total_users':
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');

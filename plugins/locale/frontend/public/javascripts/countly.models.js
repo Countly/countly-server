@@ -93,15 +93,15 @@
             return {
                 Language: {"pie": {"newUsers": [], "totalSessions": []}, "totals": {}, "table": []},
                 seriesTotal: {},
-                isLoading: false,
+                isLoading: true,
                 hasError: false,
                 error: null
             };
         };
 
         var LanguageActions = {
-            fetchAll: function(context) {
-                context.dispatch('onFetchInit');
+            fetchAll: function(context, force) {
+                context.dispatch('onFetchInit', force);
                 countlyLanguage.service.fetchData()
                     .then(function(response) {
                         var dataModel = countlyLanguage.service.mapLanguageDtoToModel(response);
@@ -111,8 +111,8 @@
                         context.dispatch('onFetchError', error);
                     });
             },
-            onFetchInit: function(context) {
-                context.commit('setFetchInit');
+            onFetchInit: function(context, force) {
+                context.commit('setFetchInit', force);
             },
             onFetchError: function(context, error) {
                 context.commit('setFetchError', error);
@@ -128,8 +128,10 @@
                 state.Language.pie = state.Language.pie || {};
                 state.Language.table = state.Language.table || [];
             },
-            setFetchInit: function(state) {
-                state.isLoading = true;
+            setFetchInit: function(state, force) {
+                if (force) {
+                    state.isLoading = true;
+                }
                 state.hasError = false;
                 state.error = null;
             },
@@ -147,7 +149,12 @@
         return countlyVue.vuex.Module("countlyLanguage", {
             state: getInitialState,
             actions: LanguageActions,
-            mutations: LanguageMutations
+            mutations: LanguageMutations,
+            getters: {
+                isLoading: function(state) {
+                    return state.isLoading;
+                }
+            }
         });
     };
     countlyLanguage.service.loadLangMap(); //calling language map load. used for other plugins

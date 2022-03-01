@@ -90,30 +90,8 @@
         }
     ));
 
-    // @vue/component
-    var hasDrawersMixin = function(names) {
-        if (!Array.isArray(names)) {
-            names = [names];
-        }
-
+    var hasDrawersMethodsMixin = function() {
         return {
-            data: function() {
-                return {
-                    drawers: names.reduce(function(acc, val) {
-                        acc[val] = {
-                            name: val,
-                            isOpened: false,
-                            initialEditedObject: {},
-                        };
-
-                        acc[val].closeFn = function() {
-                            acc[val].isOpened = false;
-                        };
-
-                        return acc;
-                    }, {})
-                };
-            },
             methods: {
                 openDrawer: function(name, initialEditedObject) {
                     /**
@@ -142,7 +120,37 @@
         };
     };
 
-    countlyVue.mixins.hasDrawers = hasDrawersMixin;
+    // @vue/component
+    var hasDrawersMixin = function(names) {
+        if (!Array.isArray(names)) {
+            names = [names];
+        }
 
+        var result = {
+            data: function() {
+                return {
+                    drawers: names.reduce(function(acc, val) {
+                        acc[val] = {
+                            name: val,
+                            isOpened: false,
+                            initialEditedObject: {},
+                        };
+
+                        acc[val].closeFn = function() {
+                            acc[val].isOpened = false;
+                        };
+
+                        return acc;
+                    }, {})
+                };
+            },
+        };
+        Object.assign(result, hasDrawersMethodsMixin());
+        return result;
+    };
+
+
+    countlyVue.mixins.hasDrawers = hasDrawersMixin;
+    countlyVue.mixins.hasDrawersMethods = hasDrawersMethodsMixin;
 
 }(window.countlyVue = window.countlyVue || {}));

@@ -355,7 +355,7 @@ var TechnologyHomeWidget = countlyVue.views.create({
 
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+    mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
     props: {
         data: {
             type: Object,
@@ -398,6 +398,13 @@ var GridComponent = countlyVue.views.create({
         refresh: function() {
 
         },
+        onWidgetCommand: function(event) {
+            if (event === 'zoom') {
+                this.triggerZoom();
+                return;
+            }
+            return this.$emit('command', event);
+        }
     },
     computed: {
         title: function() {

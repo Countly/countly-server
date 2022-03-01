@@ -15,13 +15,18 @@
                         fatality: "both"
                     },
                     rawData: {},
-                    filteredData: {}
+                    filteredData: {},
+                    isLoading: false,
                 };
             },
             getters: {},
             actions: {},
             mutations: {},
             submodules: []
+        };
+
+        _overviewSubmodule.getters.isLoading = function(state) {
+            return state.isLoading;
         };
 
         _overviewSubmodule.getters.crashgroupsFilter = function(state) {
@@ -133,6 +138,7 @@
         };
 
         _overviewSubmodule.getters.chartData = function(state) {
+            state.isLoading = true;
             /**
             *  Crash metric calculations
             *  Total occurences ("cr")         - crf, crnf
@@ -161,13 +167,13 @@
 
                 if (typeof metricChartConfig !== "undefined") {
                     chartData = [
-                        {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: "#DDDDDD", mode: "ghost" },
+                        {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: "#52a3ef", mode: "ghost" },
                         {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: countlyCommon.GRAPH_COLORS[metricChartConfig.colorIndex]}
                     ];
                 }
                 else {
                     chartData = [
-                        {data: [], label: name, color: "#DDDDDD", mode: "ghost" },
+                        {data: [], label: name, color: "#52a3ef", mode: "ghost" },
                         {data: [], label: name, color: "#333933"}
                     ];
                 }
@@ -246,6 +252,8 @@
                     seriesData.lineStyle.color = results.chartDP[index].color;
                     chartOptions.series.push(seriesData);
                 });
+
+                state.isLoading = false;
 
                 return chartOptions;
             };
@@ -363,7 +371,6 @@
                                 json.crashes[crashKey] = "None";
                             }
                         });
-
                         context.state.filteredData = json;
                     }
                 }));
@@ -427,12 +434,17 @@
                         platform: "all",
                         version: "all",
                     },
+                    isLoading: false,
                 };
             },
             getters: {},
             actions: {},
             mutations: {},
             submodules: []
+        };
+
+        _crashgroupSubmodule.getters.isLoading = function(state) {
+            return state.isLoading;
         };
 
         _crashgroupSubmodule.getters.crashgroup = function(state) {
@@ -461,7 +473,7 @@
             if (typeof state.crashgroup._id !== "undefined") {
                 return {
                     platform: state.crashgroup.os,
-                    occurances: state.crashgroup.total,
+                    occurrences: state.crashgroup.total,
                     affectedUsers: state.crashgroup.users,
                     crashFrequency: ("session" in state.crashgroup) ? state.crashgroup.session.total / state.crashgroup.session.count : 0,
                     latestAppVersion: state.crashgroup.latest_version
@@ -537,6 +549,7 @@
         };
 
         _crashgroupSubmodule.getters.chartData = function(state) {
+            state.isLoading = true;
             return function(chartBy) {
                 var mapObj = countlyCommon.dot(state.crashgroup, chartBy) || {};
                 var mapKeys = Object.keys(mapObj);
@@ -555,6 +568,8 @@
                         {data: Object.values(mapObj), color: "#F96300", name: CV.i18n("crashes.fatal_crash_count") + ' by ' + chartBy}
                     ]
                 };
+
+                state.isLoading = false;
 
                 return chartOptions;
             };
@@ -586,11 +601,13 @@
         };
 
         _crashgroupSubmodule.actions.initialize = function(context, groupId) {
+            context.state.isLoading = false;
             context.state.crashgroup._id = groupId;
             return context.dispatch("refresh");
         };
 
         _crashgroupSubmodule.actions.refresh = function(context) {
+            context.state.isLoading = true;
             if (typeof context.state.crashgroup._id === "undefined") {
                 return;
             }
@@ -680,6 +697,7 @@
 
                             Promise.all(ajaxPromises)
                                 .finally(function() {
+                                    context.state.isLoading = false;
                                     context.state.crashgroup = crashgroupJson;
                                     resolve(context.state.crashgroup);
                                 })
@@ -688,6 +706,7 @@
                                 });
                         }
                         else {
+                            context.state.isLoading = false;
                             context.state.crashgroup = crashgroupJson;
                             resolve(context.state.crashgroup);
                         }
@@ -699,6 +718,7 @@
         };
 
         _crashgroupSubmodule.actions.generateEventLogs = function(context, crashIds) {
+            context.state.isLoading = true;
             return new Promise(function(resolve, reject) {
                 countlyVue.$.ajax({
                     type: "GET",
@@ -711,6 +731,7 @@
                     },
                     dataType: "json",
                     success: function(json) {
+                        context.state.isLoading = false;
                         Object.keys(json).forEach(function(crashId) {
                             var crashIndex = context.state.crashgroup.data.findIndex(function(crash) {
                                 return crash._id === crashId;
@@ -735,13 +756,16 @@
                     reject(null);
                 }
                 else {
+                    context.state.isLoading = true;
                     countlyCrashSymbols.fetchSymbols(false).then(function(symbolIndexing) {
                         var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
                         countlyCrashSymbols.symbolicate(crash._id, symbol_id)
                             .then(function(json) {
+                                context.state.isLoading = false;
                                 resolve(json);
                             })
                             .catch(function(xhr) {
+                                context.state.isLoading = false;
                                 reject(xhr);
                             });
                     });
@@ -854,6 +878,7 @@
         };
 
         _crashSubmodule.actions.refresh = function(context) {
+            context.state.isLoading = true;
             return countlyVue.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -864,6 +889,7 @@
                 },
                 dataType: "json",
                 success: function(json) {
+                    context.state.isLoading = false;
                     context.state.crash = json[context.state.crash._id];
                 }
             });

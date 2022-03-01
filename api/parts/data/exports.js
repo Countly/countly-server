@@ -609,6 +609,9 @@ exports.fromData = function(data, options) {
     if (!data) {
         data = [];
     }
+    if (typeof data === "object") {
+        data = Object.values(data);
+    }
     if (typeof data === "string") {
         options.output(data);
     }

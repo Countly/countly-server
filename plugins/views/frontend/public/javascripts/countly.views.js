@@ -987,7 +987,7 @@
 
         var GridComponent = countlyVue.views.create({
             template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-            mixins: [countlyVue.mixins.commonFormatters],
+            mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.zoom],
             props: {
                 data: {
                     type: Object,
@@ -1000,6 +1000,13 @@
             },
             methods: {
                 refresh: function() {
+                },
+                onWidgetCommand: function(event) {
+                    if (event === 'zoom') {
+                        this.triggerZoom();
+                        return;
+                    }
+                    return this.$emit('command', event);
                 }
             },
             computed: {
