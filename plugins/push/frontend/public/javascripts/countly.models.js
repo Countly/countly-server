@@ -40,6 +40,7 @@
         SENT: "sent",
         STOPPED: "stopped",
         FAILED: "failed",
+        REJECT: 'reject',
     });
     var UserCommandEnum = Object.freeze({
         RESEND: 'resend',
@@ -1800,7 +1801,7 @@
             },
             mapFilters: function(model, options) {
                 var result = {};
-                if (options.queryFilter && options.from === 'user') {
+                if (options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length) {
                     result.user = JSON.stringify(options.queryFilter.queryObject);
                 }
                 if (options.queryFilter && options.from === 'drill') {

@@ -129,7 +129,7 @@
                             <el-option
                                 v-for="userIdOption in userIdOptions"
                                 :key="userIdOption._id"
-                                :label="userIdOption._id"
+                                :label="userIdOption.did"
                                 :value="userIdOption.uid">
                             </el-option>
                         </el-select>
@@ -182,7 +182,7 @@
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column :label="i18n('push-notification.user-id')" prop="_id"  v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID" ></el-table-column>
+                    <el-table-column :label="i18n('push-notification.user-id')" prop="did"  v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID" ></el-table-column>
                     <el-table-column :label="i18n('push-notification.cohort-name')" v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.COHORT">
                         <template v-slot="rowScope">
                             <span class="has-ellipsis">{{rowScope.row.name}}</span>
