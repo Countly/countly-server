@@ -368,6 +368,10 @@
             skin: {
                 type: String,
                 default: "padded"
+            },
+            noEmpty: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
@@ -615,6 +619,9 @@
                 return styles;
             },
             isChartEmpty: function() {
+                if (this.noEmpty) {
+                    return false;
+                }
                 var isEmpty = true;
                 var options = _merge({}, this.option);
 
