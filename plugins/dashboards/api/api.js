@@ -119,7 +119,7 @@ plugins.setConfigs("dashboards", {
                             return callback(null, {widgets: [], apps: []});
                         }
 
-                        fetchWidgetsMeta(params, dashboard.widgets, function(metaerr, meta) {
+                        fetchWidgetsMeta(params, dashboard.widgets, false, function(metaerr, meta) {
                             if (metaerr) {
                                 return callback(metaerr);
                             }
@@ -215,7 +215,7 @@ plugins.setConfigs("dashboards", {
                             return common.returnOutput(params, {error: true, dashboard_access_denied: true});
                         }
 
-                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], function(e, meta) {
+                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], false, function(e, meta) {
                             var widgets = meta[0] || [];
                             customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
                                 common.returnOutput(params, data);
@@ -287,7 +287,7 @@ plugins.setConfigs("dashboards", {
                 async.forEach(dashboards, function(dashboard, done) {
                     async.parallel([
                         hasEditAccessToDashboard.bind(null, member, dashboard),
-                        fetchWidgetsMeta.bind(null, params, dashboard.widgets),
+                        fetchWidgetsMeta.bind(null, params, dashboard.widgets, false),
                         fetchMembersData.bind(null, [dashboard.owner_id], [])
                     ], function(perr, result) {
                         if (perr) {
@@ -1212,9 +1212,10 @@ plugins.setConfigs("dashboards", {
      * Function to fetch widget meta
      * @param  {object} params - params object
      * @param  {Array} widgetIds - widget id array
+     * @param  {Boolean} allProps - send all props or not
      * @param  {Function} callback - callback function
      */
-    function fetchWidgetsMeta(params, widgetIds = [], callback) {
+    function fetchWidgetsMeta(params, widgetIds = [], allProps, callback) {
         common.db.collection("widgets").find({_id: {$in: widgetIds}}).toArray(function(e, widgets = []) {
             if (e) {
                 log.e("Could not fetch widgets", e, widgetIds);
@@ -1227,7 +1228,12 @@ plugins.setConfigs("dashboards", {
             customDashboards.fetchWidgetApps(params, widgets, function(err, apps = {}) {
                 var allApps = [];
                 for (var appId in apps) {
-                    allApps.push({_id: apps[appId]._id, name: apps[appId].name});
+                    if (allProps) {
+                        allApps.push(apps[appId]);
+                    }
+                    else {
+                        allApps.push({_id: apps[appId]._id, name: apps[appId].name});
+                    }
                 }
 
                 return callback(null, [widgets, allApps]);
@@ -1523,7 +1529,7 @@ plugins.setConfigs("dashboards", {
                             return common.returnOutput(params, {error: true, dashboard_access_denied: true});
                         }
 
-                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], function(e, meta) {
+                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], true, function(e, meta) {
                             var widgets = meta[0] || [];
                             var allApps = meta[1] || [];
 
