@@ -3,6 +3,108 @@
 (function(countlyVue, $) {
 
     $(document).ready(function() {
+        var _featureMapper = {
+            "overview": "core",
+            "analytics": "core",
+            "events": "events",
+            "events-overview": "events",
+            "all-events": "events",
+            "management": "core",
+            "applications": "admin",
+            "users": "admin",
+            "jobs": "admin",
+            "feedback": "core",
+            "crashes": "crashes",
+            "logs": "admin",
+            "plugins": "admin",
+            "configurations": "admin",
+            "analytics-views": (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile",
+            "analytics-users": "core",
+            "analytics-loyalty": "core",
+            "analytics-sessions": "core",
+            "analytics-technology": "core",
+            "analytics-sessions": "core",
+            "analytics-geo": "core",
+            "drill": "drill",
+            "funnels": "funnels",
+            "retention": "retention_segments",
+            "flows": "flows",
+            "cohorts": "cohorts",
+            "ias": "surveys",
+            "nps": "surveys",
+            "formulas": "formulas",
+            "remote-config": "remote_config",
+            "ab-testing": "ab_testing",
+            "revenue": "revenue",
+            "logger": "admin",
+            "populate": "populator",
+            "reports": "reports",
+            "crash": "crashes",
+            "geo": "geo",
+            "blocks": "block",
+            "profiles": "users",
+            "star-rating": "star_rating",
+            "alerts": "alerts",
+            "data-point": "core",
+            "db": "dbviewer",
+            "symbols": "crashes",
+            "symbol_jobs": "crashes",
+            "compliance": "compliance_hub",
+            "performance-monitoring": "performance_monitoring",
+            "hooks": "hooks",
+            "attribution": "attribution",
+            "data-migration": "data_migration",
+            "export": "config_transfer"
+        },
+        _menuDependencies = {
+            "events": ["events"],
+            "retention": ["retention_segments"],
+            "feedback": ["star_rating", "surveys"],
+            "crashes": ["crashes"],
+            "overview": ["core"],
+            "analytics": ["core"],
+            "management": ["populator","config_transfer","crashes","blocks", "logger","compliance_hub"]
+        };
+
+        /**
+        * Check feature permission before adding sidebar
+        * @memberof app
+        * @param {string} code - code text of menu item
+        * @returns {boolean} - true if permission granted
+        **/
+        var checkMenuPermission = function(code) {
+            if (_menuDependencies[code] && _menuDependencies[code].length) {
+                var granted = false;
+                for (var i = 0; i < _menuDependencies[code].length; i++) {
+                    if (_menuDependencies[code][i] !== "admin" && countlyAuth.validateRead(_menuDependencies[code][i])) {
+                        granted = true;
+                        break;
+                    }
+                    else if (_menuDependencies[code][i] === "admin" && countlyAuth.validateGlobalAdmin()) {
+                        granted = true;
+                        break;
+                    }
+                }
+                return granted;
+            }
+            return checkSubMenuPermission(code);
+        };
+
+        /**
+        * Check feature permission before adding sidebar
+        * @memberof app
+        * @param {string} code - code text of menu item
+        * @returns {boolean} - true if permission granted
+        **/
+        var checkSubMenuPermission = function(code) {
+            if (_featureMapper[code] !== "admin") {
+                return countlyAuth.validateRead(_featureMapper[code]);
+            }
+            else {
+                return countlyAuth.validateGlobalAdmin();
+            }
+        };
+
         var AppsMixin = {
             computed: {
                 allApps: {
@@ -171,7 +273,7 @@
                     }
                     var self = this;
                     var menus = this.menus.reduce(function(acc, val) {
-                        if (val.app_type === self.activeApp.type) {
+                        if (val.app_type === self.activeApp.type && checkMenuPermission(val.name)) {
                             (acc[val.category] = acc[val.category] || []).push(val);
                         }
                         return acc;
@@ -184,7 +286,7 @@
                     }
                     var self = this;
                     var submenus = this.submenus.reduce(function(acc, val) {
-                        if (val.app_type === self.activeApp.type) {
+                        if (val.app_type === self.activeApp.type && checkSubMenuPermission(val.name)) {
                             (acc[val.parent_code] = acc[val.parent_code] || []).push(val);
                         }
                         return acc;
@@ -346,9 +448,9 @@
                     if (!this.activeApp || !this.activeApp._id) {
                         return [];
                     }
-
+                    
                     var menu = this.menus.filter(function(val) {
-                        if (val.category === "management") {
+                        if (val.category === "management" && checkSubMenuPermission(val.name)) {
                             return true;
                         }
                         return false;
