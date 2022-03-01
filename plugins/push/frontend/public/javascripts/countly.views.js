@@ -1775,7 +1775,6 @@
         },
         watch: {
             selectedAppId: function() {
-                console.log('on selected app id change');
                 this.iosAuthConfigType = countlyPushNotification.service.IOSAuthConfigTypeEnum.P8;
                 this.resetConfig();
                 this.reconcilate();
