@@ -14,6 +14,16 @@
     }
 }
 
+.cly-vue-push-notification-table {
+    td.el-table-column--clickable .cell:hover{
+        text-decoration: unset!important;
+    }
+    td.el-table-column--clickable .cell:hover .cly-vue-push-notification-table-column__first-line {
+        color: #1A75DA;
+        text-decoration: underline;
+    }
+}
+
 .cly-vue-push-notification-table-column {
     &__first-line {
         margin-bottom: 6px;
