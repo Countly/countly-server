@@ -695,98 +695,6 @@ var AppRouter = Backbone.Router.extend({
     _subMenuForCodes: {},
     _subMenus: {},
     _internalMenuCategories: ["management", "user"],
-    _featureMapper: {
-        "overview": "core",
-        "analytics": "core",
-        "events": "events",
-        "events-overview": "events",
-        "all-events": "events",
-        "management": "core",
-        "applications": "admin",
-        "users": "admin",
-        "jobs": "admin",
-        "feedback": "core",
-        "crashes": "crashes",
-        "logs": "admin",
-        "plugins": "admin",
-        "configurations": "admin",
-        "analytics-views": (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile",
-        "drill": "drill",
-        "funnels": "funnels",
-        "retention": "retention_segments",
-        "flows": "flows",
-        "cohorts": "cohorts",
-        "ias": "surveys",
-        "nps": "surveys",
-        "formulas": "formulas",
-        "remote-config": "remote_config",
-        "ab-testing": "ab_testing",
-        "revenue": "revenue",
-        "logger": "admin",
-        "populate": "populator",
-        "reports": "reports",
-        "crash": "crashes",
-        "geo": "geo",
-        "blocks": "block",
-        "profiles": "users",
-        "star-rating": "star_rating",
-        "alerts": "alerts",
-        "data-point": "core",
-        "db": "dbviewer",
-        "symbols": "crashes",
-        "symbol_jobs": "crashes",
-        "compliance": "compliance_hub",
-        "performance-monitoring": "performance_monitoring",
-        "hooks": "hooks",
-        "attribution": "attribution",
-        "data-migration": "data_migration",
-        "export": "config_transfer"
-    },
-    _menuDependencies: {
-        "events": ["events"],
-        "retention": ["retention_segments"],
-        "feedback": ["star_rating", "surveys"],
-        "crashes": ["crashes"],
-        "overview": ["core"],
-        "analytics": ["core"]
-    },
-    /**
-    * Check feature permission before adding sidebar
-    * @memberof app
-    * @param {string} code - code text of menu item
-    * @returns {boolean} - true if permission granted
-    **/
-    checkMenuPermission: function(code) {
-        if (this._menuDependencies[code] && this._menuDependencies[code].length) {
-            var granted = false;
-            for (var i = 0; i < this._menuDependencies[code].length; i++) {
-                if (this._menuDependencies[code][i] !== "admin" && countlyAuth.validateRead(this._menuDependencies[code][i])) {
-                    granted = true;
-                    break;
-                }
-                else if (this._menuDependencies[code][i] === "admin" && countlyAuth.validateGlobalAdmin()) {
-                    granted = true;
-                    break;
-                }
-            }
-            return granted;
-        }
-        return this.checkSubMenuPermission(code);
-    },
-    /**
-    * Check feature permission before adding sidebar
-    * @memberof app
-    * @param {string} code - code text of menu item
-    * @returns {boolean} - true if permission granted
-    **/
-    checkSubMenuPermission: function(code) {
-        if (this._featureMapper[code] !== "admin") {
-            return countlyAuth.validateRead(this._featureMapper[code]);
-        }
-        else {
-            return countlyAuth.validateGlobalAdmin();
-        }
-    },
     /**
     * Add menu category. Categories will be copied for all app types and its visibility should be controled from the app type plugin
     * @memberof app
@@ -1097,9 +1005,6 @@ var AppRouter = Backbone.Router.extend({
     * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addMenu: function(category, node) {
-        if (!this.checkMenuPermission(node.code)) {
-            return;
-        }
         if (category === "management" || category === "users") {
             this.addMenuForType("default", category, node);
         }
@@ -1127,10 +1032,6 @@ var AppRouter = Backbone.Router.extend({
     * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addSubMenu: function(parent_code, node) {
-        if (!this.checkSubMenuPermission(node.code)) {
-            return;
-        }
-
         for (var type in this.appTypes) {
             this.addSubMenuForType(type, parent_code, node);
         }
@@ -1466,6 +1367,7 @@ var AppRouter = Backbone.Router.extend({
             // if (countlyAuth.validateUpdate('events') || countlyAuth.validateDelete('events')) {
             //     self.addSubMenu("events", {code: "manage-events", url: "#/analytics/manage-events", text: "sidebar.events.blueprint", priority: 100});
             // }
+
             self.addMenu("utilities", {
                 code: "management",
                 text: "sidebar.utilities",
