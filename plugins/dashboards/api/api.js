@@ -1527,6 +1527,14 @@ plugins.setConfigs("dashboards", {
                             var widgets = meta[0] || [];
                             var allApps = meta[1] || [];
 
+                            var apps = {};
+
+                            if (allApps) {
+                                for (var k = 0; k < allApps.length; k++) {
+                                    apps[allApps[k]._id + ""] = allApps[k];
+                                }
+                            }
+
                             var newParams = {
                                 qstring: params.qstring,
                                 member: params.member
@@ -1536,7 +1544,7 @@ plugins.setConfigs("dashboards", {
 
                             plugins.dispatch("/dashboard/data", {
                                 params: JSON.parse(JSON.stringify(newParams)),
-                                apps: JSON.parse(JSON.stringify(allApps)),
+                                apps: JSON.parse(JSON.stringify(apps)),
                                 widget: widget
                             }, function() {
                                 common.returnOutput(params, widget);
