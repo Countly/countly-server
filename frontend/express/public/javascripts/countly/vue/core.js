@@ -406,9 +406,6 @@
                             context.commit("removeFromAllApps", appToRemoveId);
                         }
                     },
-                    setActiveApp: function(context, payload) {
-                        context.commit('setActiveApp', payload);
-                    },
                     deleteAllApps: function(context) {
                         context.commit("deleteAllApps");
                     },
