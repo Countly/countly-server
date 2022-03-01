@@ -1,4 +1,6 @@
-/* global countlyVue,CV,countlyCommon*/
+/* global countlyAuth,countlyVue,CV,countlyCommon*/
+
+var FEATURE_NAME = "density";
 var AppDensityView = countlyVue.views.create({
     template: CV.T("/density/templates/density.html"),
     data: function() {
@@ -253,13 +255,14 @@ var AppDensityView = countlyVue.views.create({
             'externalLinks': '/analytics/densities/links'
         })
     ],
-
 });
 
-countlyVue.container.registerTab("/analytics/technology", {
-    priority: 7,
-    name: "densities",
-    route: "#/analytics/technology/densities",
-    title: CV.i18n('density.title'),
-    component: AppDensityView
-});
+if (countlyAuth.validateRead(FEATURE_NAME)) {
+    countlyVue.container.registerTab("/analytics/technology", {
+        priority: 7,
+        name: "densities",
+        route: "#/analytics/technology/densities",
+        title: CV.i18n('density.title'),
+        component: AppDensityView
+    });
+}
