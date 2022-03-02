@@ -956,6 +956,23 @@ exports.getUserApps = function(member) {
     }
 };
 
+exports.getUserAppsForFeaturePermission = function(member, feature, permissionType) {
+    let userApps = [];
+    if (member.global_admin) {
+        return userApps;
+    }
+    if (typeof member.permission !== "undefined") {
+        const permissionList = member.permission[permissionType];
+        for (var appId in permissionList) {
+            const targetPermissionForApp = permissionList[appId];
+            if (targetPermissionForApp.all === true || targetPermissionForApp.allowed[feature] === true) {
+                userApps.push(appId);
+            }
+        }
+    }
+    return userApps;
+};
+
 exports.getAdminApps = function(member) {
     if (member.global_admin) {
         return [];
