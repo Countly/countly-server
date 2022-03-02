@@ -46,8 +46,9 @@
 }
 
 .cly-vue-platform-filter-label {
-    font-size: typography.$heading-3-size;
+    font-size: typography.$heading-4-size;
     font-weight: typography.$font-weight-primary;
+    color: map.get(colors.$colors,"cool-gray-100");
 }
 
 .blinker-wrapper {
