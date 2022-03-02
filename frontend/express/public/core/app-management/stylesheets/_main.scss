@@ -1,7 +1,19 @@
 .app-management-view {
   h2{letter-spacing: 0.3px;}
   h3{letter-spacing: 0.3px;}
-
+  .app-management-details .el-collapse-item__content{
+    .cly-vue-drawer__steps-wrapper {
+      .cly-vue-drawer__steps-container{
+      margin-top: 12px;
+        .cly-vue-form-step__section{
+          padding-left: 24px !important;
+          padding-right: 24px !important;
+          padding-top: 12px !important;
+          padding-bottom: 12px !important;
+        }
+      }
+    }
+  }
   .cly-vue-section__content{
     border: 1px solid #ececec;
     border-radius: 4px;
