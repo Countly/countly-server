@@ -187,7 +187,8 @@
                     app_count: 'single',
                     apps: [],
                     metrics: [],
-                    visualization: ""
+                    visualization: "",
+                    isPluginWidget: true
                 };
             },
         },

@@ -74,7 +74,7 @@ function toSegment(val) {
 }
 
 dashboard.mapWidget = function(widget) {
-    var widgetType, visualization, dataType, appcount, breakdowns;
+    var widgetType, visualization, dataType, appcount, breakdowns, isPluginWidget;
 
     switch (widget.widget_type) {
     case "time-series":
@@ -113,13 +113,13 @@ dashboard.mapWidget = function(widget) {
         widgetType = "analytics";
         dataType = "user-analytics";
         breakdowns = ["online"];
-        delete widget.isPluginWidget;
+
         break;
     case "active_users":
         widgetType = "analytics";
         dataType = "user-analytics";
         breakdowns = ["active"];
-        delete widget.isPluginWidget;
+
         break;
     case "retention_segments":
         if (widget.interval) {
@@ -154,7 +154,6 @@ dashboard.mapWidget = function(widget) {
             widget.metrics = widget.views;
         }
         visualization = "table";
-        delete widget.isPluginWidget;
 
         break;
     case "funnels":
@@ -177,10 +176,12 @@ dashboard.mapWidget = function(widget) {
     case "table":
         if (widget.data_type === "push") {
             widgetType = "push";
+            isPluginWidget = true;
             delete widget.data_type;
         }
         else if (widget.data_type === "crash") {
             widgetType = "crash";
+            isPluginWidget = true;
             delete widget.data_type;
         }
         else if (widget.data_type === "event") {
@@ -215,6 +216,10 @@ dashboard.mapWidget = function(widget) {
 
     if (breakdowns) {
         widget.breakdowns = breakdowns;
+    }
+
+    if (isPluginWidget) {
+        widget.isPluginWidget = true;
     }
 
     return widget;

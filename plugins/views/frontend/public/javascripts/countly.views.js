@@ -1157,7 +1157,8 @@
                         metrics: [],
                         apps: [],
                         custom_period: "30days",
-                        visualization: "table"
+                        visualization: "table",
+                        isPluginWidget: true
                     };
                 },
                 beforeLoadFn: function(/*doc, isEdited*/) {
