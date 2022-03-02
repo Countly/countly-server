@@ -314,6 +314,9 @@
 
 .cly-vue-push-notification-details-summary-card {
     min-height: 600px;
+    > .el-card__header {
+        padding: 12px 24px;
+    }
 }
 
 .cly-vue-push-notification-details-sub-header {

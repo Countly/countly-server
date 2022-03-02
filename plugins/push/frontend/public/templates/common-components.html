@@ -272,7 +272,7 @@
     <el-card class="box-card cly-vue-push-notification-details-summary-card">
         <template v-if="pushNotification.messageType === MessageTypeEnum.CONTENT">
             <div slot="header" class="clearfix">
-                <span class="color-cool-gray-50 font-weight-bold text-small">{{i18n('push-notification-details.localization-filter-label')}}</span>
+                <span class="bu-mr-1 color-cool-gray-50 font-weight-bold text-small">{{i18n('push-notification-details.localization-filter-label')}}</span>
                 <el-select v-model="selectedMessageLocale">
                     <el-option v-for="item in localizations" :key="item.value" :value="item.value" :label="item.label">
                     </el-option>
