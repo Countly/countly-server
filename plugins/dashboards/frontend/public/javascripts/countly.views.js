@@ -363,7 +363,16 @@
                      * For all plugin widgets, feature name is the plugin name.
                      */
                     var feature = widget.feature;
-                    disabled = countlyGlobal.plugins.indexOf(feature) < 0;
+
+                    /**
+                     * In feature names we don't have hyphens. Hyphens are repalced with underscores.
+                     * Also feature names should be same as plugin folder name.
+                     * If it isn't talk to furkan.
+                     */
+
+                    disabled = countlyGlobal.plugins.map(function(p) {
+                        return p.replaceAll("-", "_");
+                    }).indexOf(feature) < 0;
                     disabled = !!disabled;
                 }
 
