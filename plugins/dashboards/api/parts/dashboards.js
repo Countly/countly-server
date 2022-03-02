@@ -146,6 +146,7 @@ dashboard.mapWidget = function(widget) {
         else if (widget.vis_type === "table") {
             widget.visualization_type = "table";
         }
+
         break;
     case "views":
         widgetType = "analytics";
@@ -181,7 +182,7 @@ dashboard.mapWidget = function(widget) {
             delete widget.data_type;
         }
         else if (widget.data_type === "crash") {
-            widgetType = "crash";
+            widgetType = "crashes";
             isPluginWidget = true;
             feature = "crashes";
             delete widget.data_type;
