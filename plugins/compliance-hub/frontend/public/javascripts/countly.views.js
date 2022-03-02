@@ -100,6 +100,9 @@
             },
         },
         methods: {
+            dateChanged: function() {
+                this.initializeStoreData();
+            },
             initializeStoreData: function() {
                 var newValue = this.selectedfilter0;
                 if (this.selectedfilter0 === 'all') {
@@ -115,6 +118,7 @@
                     self.$store.dispatch("countlyConsentManager/_exportDP", payload);
                     self.$store.dispatch("countlyConsentManager/_purgeDP");
                     self.$store.dispatch("countlyConsentManager/_ePData");
+                    self.$store.dispatch("countlyConsentManager/fetchConsentHistoryResource");
 
                 });
             },
@@ -210,6 +214,9 @@
             },
         },
         methods: {
+            dateChanged: function() {
+                this.initializeStoreData();
+            },
             initializeStoreData: function() {
                 var newValue = this.selectedfilter0;
                 if (this.selectedfilter0 === 'all') {
@@ -225,6 +232,7 @@
                     self.$store.dispatch("countlyConsentManager/_exportDP", payload);
                     self.$store.dispatch("countlyConsentManager/_purgeDP");
                     self.$store.dispatch("countlyConsentManager/_ePData");
+                    this.$store.dispatch("countlyConsentManager/fetchExportHistoryDataResource");
 
                 });
             },
@@ -453,6 +461,9 @@
 
         },
         methods: {
+            dateChanged: function() {
+                this.initializeStoreData();
+            },
             formatTableNumber: function(data) {
                 if (Math.abs(data) >= 10000) {
                     return this.getShortNumber(data);

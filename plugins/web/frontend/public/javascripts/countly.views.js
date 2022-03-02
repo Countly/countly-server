@@ -548,6 +548,8 @@ $(document).ready(function() {
             jQuery.i18n.map["crashes.fatal_crash_count"] = jQuery.i18n.map["web.crashes.fatal_crash_count"];
             jQuery.i18n.map["crashes.crash-occurences-by"] = jQuery.i18n.map["web.crashes.crash-occurences-by"];
             jQuery.i18n.map["crashes.crash-occurences"] = jQuery.i18n.map["web.crashes.crash-occurences"];
+            jQuery.i18n.map["crashes.free-users"] = jQuery.i18n.map["web.crashes.free-users"];
+            jQuery.i18n.map["crashes.free-sessions"] = jQuery.i18n.map["web.crashes.free-sessions"];
             jQuery.i18n.map["drill.crash"] = jQuery.i18n.map["web.drill.crash"];
             jQuery.i18n.map["drill.crash-segments"] = jQuery.i18n.map["web.drill.crash-segments"];
             jQuery.i18n.map["userdata.crashes"] = jQuery.i18n.map["web.userdata.crashes"];

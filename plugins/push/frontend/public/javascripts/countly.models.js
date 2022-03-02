@@ -40,6 +40,7 @@
         SENT: "sent",
         STOPPED: "stopped",
         FAILED: "failed",
+        REJECT: 'reject',
     });
     var UserCommandEnum = Object.freeze({
         RESEND: 'resend',
@@ -591,10 +592,13 @@
                 }, {disableAutoCatch: true});
             });
         },
-        getDashboard: function() {
+        getDashboard: function(echo) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
+            if (echo) {
+                data.echo = echo;
+            }
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "GET",
@@ -1797,7 +1801,7 @@
             },
             mapFilters: function(model, options) {
                 var result = {};
-                if (options.queryFilter && options.from === 'user') {
+                if (options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length) {
                     result.user = JSON.stringify(options.queryFilter.queryObject);
                 }
                 if (options.queryFilter && options.from === 'drill') {
@@ -2213,9 +2217,9 @@
                 });
             });
         },
-        fetchDashboard: function(type) {
+        fetchDashboard: function(type, echo) {
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.getDashboard()
+                countlyPushNotification.api.getDashboard(echo)
                     .then(function(response) {
                         try {
                             resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));
