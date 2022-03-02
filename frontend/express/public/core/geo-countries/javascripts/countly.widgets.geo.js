@@ -124,7 +124,7 @@
                     data_type: "geo",
                     apps: [],
                     visualization: "",
-                    custom_period: "30days",
+                    custom_period: null,
                     metrics: ["t"],
                     breakdowns: ["countries"],
                     bar_color: 1

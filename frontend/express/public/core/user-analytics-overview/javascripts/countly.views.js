@@ -401,7 +401,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
                 apps: [],
                 visualization: "",
                 breakdowns: ['overview'],
-                custom_period: "30days"
+                custom_period: null
             };
         },
         beforeLoadFn: function(/*doc, isEdited*/) {
