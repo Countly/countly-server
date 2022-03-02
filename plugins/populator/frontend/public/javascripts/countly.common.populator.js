@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyGlobal, faker, _, $, Vue, countlyVue */
+/* global countlyCommon, countlyGlobal, faker, _, $, Vue, countlyVue, CountlyHelpers, CV */
 
 (function(countlyPopulator) {
     var metricProps = {
@@ -982,6 +982,12 @@
             };
         },
         methods: {
+            isAddEventDisabled: function(editedObject) {
+                return editedObject.events && editedObject.events.length && editedObject.events.slice(-1)[0].eventName === '';
+            },
+            isAddSegmentationDisabled: function(editedObject, index) {
+                return (editedObject.events[index].segments.slice(-1)[0].key === '' || editedObject.events[index].segments[0].value.length === 0);
+            },
             addUserProperty: function(editedObject) {
                 if (editedObject.up[0].key === '' && editedObject.up[0].value.length === 0) {
                     Vue.set(editedObject, "up", [{key: "", value: []}]);
@@ -996,7 +1002,9 @@
             },
             addEventProperty: function(editedObject) {
                 if (editedObject.events[0].eventName === '') {
-                    Vue.set(editedObject, "events", [{eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}}]);
+                    if (!editedObject.events.length) {
+                        Vue.set(editedObject, "events", [{eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}}]);
+                    }
                 }
                 else if (editedObject.events.slice(-1)[0].eventName === '') {
                     return;
@@ -1007,10 +1015,7 @@
                 }
             },
             addSegmentationProperty: function(editedObject, index) {
-                if (editedObject.events[index].segments[0].key === '' && editedObject.events[index].segments[0].value.length === 0) {
-                    return;
-                }
-                else if (editedObject.events[index].segments.slice(-1)[0].key === '') {
+                if (editedObject.events[index].segments.slice(-1)[0].key === '' || editedObject.events[index].segments[0].value.length === 0) {
                     return;
                 }
                 else {
@@ -1018,19 +1023,19 @@
                 }
             },
             removeLineProperty: function(editedObject, index, type) {
-                if (index === 0) {
-                    return;
-                }
                 type === 'custom' ? editedObject.up.splice(index, 1) : editedObject.events.splice(index, 1);
             },
             removeSegmentationProperty: function(editedObject, index, segmentIndex) {
-                if (segmentIndex === 0 && editedObject.events[index].segments[segmentIndex].key === '') {
+                /*
+                if (editedObject.events[index].segments[segmentIndex].key === '') {
                     return;
                 }
+                */
+                /*
                 else if (segmentIndex === 0 && editedObject.events[index].segments[segmentIndex].key !== '') {
                     editedObject.events[index].segments.push({ key: "", value: []});
                 }
-
+                */
                 editedObject.events[index].segments.splice(segmentIndex, 1);
             },
             onSubmit: function(editedObject) {
@@ -1075,6 +1080,9 @@
                 editedObject.events = preparedEventObject;
                 if (isEdit && !isDuplicate) {
                     countlyPopulator.editTemplate(editedObject._id, editedObject, function(res) {
+                        if (res.result) {
+                            CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n("populator-success-edit-template"), sticky: false, clearAll: true});
+                        }
                         self.$emit('closeHandler', res);
                     });
                 }
