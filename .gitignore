@@ -19,6 +19,7 @@ frontend/express/public/sdk/
 **/node_modules
 bin/scripts/nghttp2
 frontend/express/public/images/*/
+!frontend/express/public/images/leaflet/
 !frontend/express/public/images/dashboard/
 !frontend/express/public/images/flags/
 !frontend/express/public/images/management/

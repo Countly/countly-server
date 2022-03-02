@@ -1,4 +1,4 @@
-/* global Promise, Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
+/* global Promise, Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
 
 // _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
 
@@ -368,6 +368,10 @@
             skin: {
                 type: String,
                 default: "padded"
+            },
+            noEmpty: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
@@ -615,6 +619,9 @@
                 return styles;
             },
             isChartEmpty: function() {
+                if (this.noEmpty) {
+                    return false;
+                }
                 var isEmpty = true;
                 var options = _merge({}, this.option);
 
@@ -836,9 +843,19 @@
             };
         },
         computed: {
+            hasAllEmptyValues: function() {
+                var options = this.mergedOptions;
+                if (options.series) {
+                    for (var i = 0; i < options.series.length; i++) {
+                        if (!options.series[i].isEmptySeries) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            },
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
-
                 var series = opt.series || [];
 
                 var sumOfOthers;
@@ -849,8 +866,25 @@
                     sumOfOthers = 0;
 
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    var seriesData = series[i].data;
 
+                    series[i].data = series[i].data.filter(function(el) {
+                        return el.value > 0;
+                    });
+                    if (series[i].data.length === 0) {
+                        series[i].isEmptySeries = true;
+                        series[i].data.push({"label": "empty", "value": 100});
+                        opt.legend.show = false;
+                        opt.tooltip.show = false;
+                        series[i].color = "#ECECEC";
+                        series[i].name = "empty";
+                        series[i].emphasis = {
+                            itemStyle: {
+                                color: "#ECECEC"
+                            }
+                        };
+                    }
+
+                    var seriesData = series[i].data;
                     seriesData.sort(function(a, b) {
                         return b.value - a.value;
                     });
@@ -1917,9 +1951,16 @@
                                     ref="legend"\
                                     :options="pieLegendOptions"\
                                     :seriesType="seriesType"\
-                                    v-if="pieLegendOptions.show && !isChartEmpty"\
+                                    v-if="pieLegendOptions.show && !isChartEmpty && !hasAllEmptyValues"\
                                     :class="classes" class="shadow-container">\
                                 </custom-legend>\
+								<div v-if="!isChartEmpty && hasAllEmptyValues" :class="classes" class="shadow-container">\
+									<div class="cly-vue-chart-legend__secondary" >\
+										<div style="height: 100%; display: flex; flex-direction: column; justify-content: center;">\
+											<div class="bu-p-4">{{i18n("common.bar.no-data")}}</div>\
+										</div>\
+									</div>\
+								</div>\
                             </div>\
                         </div>\
                     </div>'
@@ -1966,6 +2007,11 @@
                 userCenterCoordinates: null,
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+                markerIcon: L.icon({
+                    iconUrl: '/images/leaflet/marker-icon.svg',
+                    iconSize: [32, 32],
+                    iconAnchor: [ 16, 32],
+                }),
                 MI_TO_KM_RATIO: 1.60934,
                 KM_TO_M_RATIO: 1000,
                 RadiusUnitEnum: {

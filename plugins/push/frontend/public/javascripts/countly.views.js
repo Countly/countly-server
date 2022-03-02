@@ -912,7 +912,7 @@
             },
             fetchDashboard: function() {
                 var self = this;
-                countlyPushNotification.service.fetchDashboard(this.type)
+                countlyPushNotification.service.fetchDashboard(this.type, countlyCommon.generateId())
                     .then(function(response) {
                         self.setTotalAppUsers(response.totalAppUsers);
                         self.setEnabledUsers(response.enabledUsers);
@@ -1059,7 +1059,7 @@
                 var self = this;
                 return this.$store.state.countlyPushNotification.main.dashboard.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
                     return {
-                        data: pushNotificationSerie.data[self.selectedPlatformFilter],
+                        data: pushNotificationSerie.data[self.selectedPlatformFilter] || [],
                         name: pushNotificationSerie.label
                     };
                 });
@@ -1354,7 +1354,6 @@
                 StatusEnum: countlyPushNotification.service.StatusEnum,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
-                platformFilters: platformFilterOptions,
                 statusOptions: countlyPushNotification.service.statusOptions,
                 currentSummaryTab: "message",
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
@@ -1396,6 +1395,17 @@
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
+            platformFilterOptions: function() {
+                return this.$store.state.countlyPushNotification.details.platformFilterOptions;
+            },
+            localeFilterOptions: function() {
+                if (this.pushNotification.dashboard[this.selectedPlatformFilter]) {
+                    return Object.keys(this.pushNotification.dashboard[this.selectedPlatformFilter].locales).map(function(localeKey) {
+                        return countlyPushNotification.mapper.incoming.mapLocalizationByKey(localeKey);
+                    });
+                }
+                return [];
+            },
             selectedMessageLocaleFilter: function() {
                 return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
             },
@@ -1403,11 +1413,14 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocaleFilter];
             },
             selectedDashboard: function() {
-                var selectedDashboard = this.pushNotification.dashboard[this.selectedPlatformFilter];
+                var selectedDashboardFilter = this.pushNotification.dashboard[this.selectedPlatformFilter];
                 if (this.selectedLocaleFilter) {
-                    selectedDashboard = selectedDashboard.locales[this.selectedLocaleFilter];
+                    return selectedDashboardFilter.locales[this.selectedLocaleFilter];
                 }
-                return selectedDashboard;
+                if (!selectedDashboardFilter) {
+                    return {};
+                }
+                return selectedDashboardFilter;
             },
             targetedUsers: function() {
                 if (!this.selectedDashboard.processed) {
@@ -1448,11 +1461,6 @@
             },
             isLoading: function() {
                 return this.$store.getters['countlyPushNotification/details/isLoading'];
-            },
-            localizations: function() {
-                return Object.keys(this.pushNotification.dashboard[this.selectedPlatformFilter].locales).map(function(localeKey) {
-                    return countlyPushNotification.mapper.incoming.mapLocalizationByKey(localeKey);
-                });
             },
             hasApproverPermission: function() {
                 return countlyPushNotification.service.hasApproverPermission();
@@ -1732,7 +1740,6 @@
                 viewModel: JSON.parse(JSON.stringify(initialAppLevelConfig)),
                 modelUnderEdit: Object.assign({}, { rate: "", period: ""}),
                 uploadedIOSKeyFilename: '',
-                selectedAppId: this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID,
                 isHuaweiConfigTouched: false,
                 isIOSConfigTouched: false,
                 AddTestUserDefinitionTypeEnum: countlyPushNotification.service.AddTestUserDefinitionTypeEnum,
@@ -1761,6 +1768,16 @@
             },
             selectedTestUsersRows: function() {
                 return this.testUsersRows[this.selectedTestUsersListOption];
+            },
+            selectedAppId: function() {
+                return this.$store.state.countlyAppManagement.selectedAppId;
+            }
+        },
+        watch: {
+            selectedAppId: function() {
+                this.iosAuthConfigType = countlyPushNotification.service.IOSAuthConfigTypeEnum.P8;
+                this.resetConfig();
+                this.reconcilate();
             }
         },
         methods: {
@@ -1866,12 +1883,6 @@
                 this.dispatchAppLevelConfigChangeEvent(property, platform);
             },
             onDiscard: function() {
-                this.resetConfig();
-                this.reconcilate();
-            },
-            onSelectApp: function(appId) {
-                this.selectedAppId = appId;
-                this.iosAuthConfigType = countlyPushNotification.service.IOSAuthConfigTypeEnum.P8;
                 this.resetConfig();
                 this.reconcilate();
             },
@@ -2141,10 +2152,9 @@
         mounted: function() {
             this.addKeyFileReaderLoadListener(this.onKeyFileReady);
             this.addDiscardEventListener(this.onDiscard);
-            this.addSelectedAppEventListener(this.onSelectApp);
             this.reconcilate();
         },
-        destroyed: function() {
+        beforeDestroy: function() {
             this.removeKeyFileReaderLoadListener(this.onKeyFileReady);
         }
     });
@@ -2478,20 +2488,20 @@
      * addDrawerToDrillmainView - adds push notification drawer to drill main view.
      */
     function addDrawerToDrillMainView() {
-        countlyVue.container.registerMixin("/drill/external/mixins", countlyVue.mixins.hasDrawers("pushNotificationDrawer"));
         countlyVue.container.registerTemplate("/drill/external/templates", "/push/templates/common-components.html");
         countlyVue.container.registerData("/drill/external/events", getCreateNewMessageEventContainerData());
         countlyVue.container.registerData("/drill/external/drawers", getDrawerContainerData());
+        countlyVue.container.registerData('/drill/external/drawers/data', countlyCommon.getExternalDrawerData('pushNotificationDrawer'), 'object');
     }
 
     /**
      * addDrawerToUserProfilesMainView - adds push notification drawer to user profiles main view.
      */
     function addDrawerToUserProfilesMainView() {
-        countlyVue.container.registerMixin("/users/external/mixins", countlyVue.mixins.hasDrawers("pushNotificationDrawer"));
         countlyVue.container.registerTemplate("/users/external/templates", "/push/templates/common-components.html");
         countlyVue.container.registerData("/users/external/events", getCreateNewMessageEventContainerData());
         countlyVue.container.registerData("/users/external/drawers", getDrawerContainerData());
+        countlyVue.container.registerData('/users/external/drawers/data', countlyCommon.getExternalDrawerData('pushNotificationDrawer'), 'object');
     }
 
     /**

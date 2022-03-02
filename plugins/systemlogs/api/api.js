@@ -2,7 +2,7 @@ var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    { validateRead } = require('../../../api/utils/rights.js');
+    { validateRead, validateUser } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'systemlogs';
 plugins.setConfigs("systemlogs", {
@@ -112,7 +112,7 @@ plugins.setConfigs("systemlogs", {
 
     plugins.register("/i/systemlogs", function(ob) {
         var params = ob.params;
-        ob.validateUserForWriteAPI(params, function() {
+        validateUser(params, function() {
             if (typeof params.qstring.data === "string") {
                 try {
                     params.qstring.data = JSON.parse(params.qstring.data);
@@ -122,7 +122,7 @@ plugins.setConfigs("systemlogs", {
                 }
             }
             if (typeof params.qstring.action === "string") {
-                processRecording({params: params, action: params.qstring.action, user: {}, data: params.qstring.data || {}});
+                processRecording({params: params, action: params.qstring.action, user: params.member || {}, data: params.qstring.data || {}});
                 //recordAction(params, {}, params.qstring.action, params.qstring.data || {});
             }
 

@@ -1869,7 +1869,9 @@
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/populator/templates",
-            data: {},
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID
+            },
             success: function(templates) {
                 callback(templates.concat(defaultTemplates));
             },
