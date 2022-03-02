@@ -415,7 +415,7 @@
                     data_type: "sources",
                     apps: [],
                     visualization: "table",
-                    custom_period: "30days",
+                    custom_period: null,
                     metrics: ["t"],
                     bar_color: 1,
                     isPluginWidget: true

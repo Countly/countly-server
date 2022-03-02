@@ -1147,7 +1147,7 @@
                         app_count: 'single',
                         metrics: [],
                         apps: [],
-                        custom_period: "30days",
+                        custom_period: null,
                         visualization: "table",
                         isPluginWidget: true
                     };
