@@ -1,4 +1,4 @@
-/* global Promise, Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
+/* global Promise, Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
 
 // _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
 
@@ -1965,6 +1965,7 @@
             'l-tile-layer': Vue2Leaflet.LTileLayer,
             'l-marker': Vue2Leaflet.LMarker,
             'l-circle': Vue2Leaflet.LCircle,
+            'l-icon': Vue2Leaflet.LIcon,
         },
         props: {
             value: {
@@ -2000,6 +2001,11 @@
                 userCenterCoordinates: null,
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+                markerIcon: L.icon({
+                    iconUrl: '/images/leaflet/marker-icon.svg',
+                    iconSize: [32, 32],
+                    iconAnchor: [ 16, 32],
+                }),
                 MI_TO_KM_RATIO: 1.60934,
                 KM_TO_M_RATIO: 1000,
                 RadiusUnitEnum: {
