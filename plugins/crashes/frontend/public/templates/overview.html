@@ -11,7 +11,7 @@
                 </template>
             </cly-header>
             <cly-main>
-                <cly-qb-bar feature="crashes" class="bu-mb-5" v-model="crashgroupsFilter" :property-source-config="{drill: false}" queryStore="crashgroups" :additionalProperties="crashgroupsFilterProperties" :additionalRules="crashgroupsFilterRules"></cly-qb-bar>
+                <cly-qb-bar v-if="hasDrillPermission" feature="crashes" class="bu-mb-5" v-model="crashgroupsFilter" :property-source-config="{drill: false}" queryStore="crashgroups" :additionalProperties="crashgroupsFilterProperties" :additionalRules="crashgroupsFilterRules" format="crashgroups"></cly-qb-bar>
                 <cly-datatable-n :data-source="remoteTableDataSource" @selection-change="handleSelectionChange" @row-click="handleRowClick" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey">
                     <template v-slot="scope">
                         <el-table-column type="selection" reserve-selection width="65" fixed="left"></el-table-column>
@@ -34,13 +34,13 @@
                         </template>
                     </template>
                     <template v-slot:bottomline="scope">
-                        <div class="crashes-action-bar" v-if="selectedCrashgroups.length > 0">
-                            <el-button @click="setSelectedAs('unresolved')" icon="fas fa-circle crash-icon-color-orange"> {{i18n("crashes.action-unresolved")}}</el-button>
-                            <el-button @click="setSelectedAs('delete')" icon="el-icon-delete">{{i18n("crashes.action-delete")}}</el-button>
-                            <el-button @click="setSelectedAs('hide')" icon="fas fa-eye-slash crash-icon-color-gray"> {{i18n("crashes.action-hide")}}</el-button>
-                            <el-button @click="setSelectedAs('show')" icon="fas fa-eye crash-icon-color-gray"> {{i18n("crashes.action-view")}}</el-button>
-                            <el-button @click="setSelectedAs('resolved')" icon="fas fa-circle crash-icon-color-green"> {{i18n("crashes.action-resolved")}}</el-button>
-                            <el-button @click="setSelectedAs('resolving')" icon="fas fa-circle crash-icon-color-blue"> {{i18n("crashes.action-resolving")}}</el-button>
+                        <div class="crashes-action-bar" v-if="selectedCrashgroups.length > 0 && (canUserDelete || canUserUpdate)">
+                            <el-button v-if="canUserUpdate"  @click="setSelectedAs('unresolved')" icon="fas fa-circle crash-icon-color-orange"> {{i18n("crashes.action-unresolved")}}</el-button>
+                            <el-button v-if="canUserDelete" @click="setSelectedAs('delete')" icon="el-icon-delete">{{i18n("crashes.action-delete")}}</el-button>
+                            <el-button v-if="canUserUpdate" @click="setSelectedAs('hide')" icon="fas fa-eye-slash crash-icon-color-gray"> {{i18n("crashes.action-hide")}}</el-button>
+                            <el-button v-if="canUserUpdate" @click="setSelectedAs('show')" icon="fas fa-eye crash-icon-color-gray"> {{i18n("crashes.action-view")}}</el-button>
+                            <el-button v-if="canUserUpdate" @click="setSelectedAs('resolved')" icon="fas fa-circle crash-icon-color-green"> {{i18n("crashes.action-resolved")}}</el-button>
+                            <el-button v-if="canUserUpdate" @click="setSelectedAs('resolving')" icon="fas fa-circle crash-icon-color-blue"> {{i18n("crashes.action-resolving")}}</el-button>
                         </div>
                     </template>
                 </cly-datatable-n>
