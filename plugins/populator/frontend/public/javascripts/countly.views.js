@@ -63,7 +63,7 @@
                 }
 
                 if (command === "edit" || command === "duplicate") {
-                    this.titleDescription = {header: CV.i18n('populator.drawer-title-edit'), button: CV.i18n('populator.edit')};
+                    this.titleDescription = {header: CV.i18n('populator.drawer-title-edit'), button: CV.i18n('populator.save')};
 
                     var preparedDrawerUpObject = [{key: "", value: []}];
                     var preparedDrawerEventObject = [{eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}}];
@@ -115,6 +115,9 @@
                     }
 
                     template.up = preparedDrawerUpObject;
+                    if (preparedDrawerEventObject.length > 1 && preparedDrawerEventObject[0].eventName === "") {
+                        preparedDrawerEventObject = preparedDrawerEventObject.slice(1);
+                    }
                     template.events = preparedDrawerEventObject;
                     this.openDrawer("populatorTemplate", template);
                 }
