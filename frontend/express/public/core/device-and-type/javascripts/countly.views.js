@@ -394,11 +394,6 @@ var GridComponent = countlyVue.views.create({
             }
         };
     },
-    methods: {
-        refresh: function() {
-
-        }
-    },
     computed: {
         title: function() {
             if (this.data.title) {

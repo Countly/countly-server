@@ -998,10 +998,6 @@
             },
             mounted: function() {
             },
-            methods: {
-                refresh: function() {
-                }
-            },
             computed: {
                 title: function() {
                     if (this.data.title) {
