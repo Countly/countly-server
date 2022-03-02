@@ -47,7 +47,7 @@
                     </div>
                     <div class="bu-level-item">
                         <el-select v-model="selectedPlatformFilter">
-                            <el-option v-for="item in platformFilters" :key="item.value" :value="item.value" :label="item.label"></el-option>
+                            <el-option v-for="item in platformFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
                     <div class="bu-level-item">
@@ -57,7 +57,7 @@
                     </div>
                     <div class="bu-level-item">
                         <el-select v-model="selectedLocaleFilter">
-                            <el-option v-for="item in localizations" :key="item.value" :value="item.value" :label="item.label"></el-option>
+                            <el-option v-for="item in localeFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
                 </div>
@@ -107,8 +107,8 @@
                 </div>
             </cly-section>
             <div class="cly-vue-push-notification-details-summary">
-                <div class="bu-columns">
-                    <div class="bu-column bu-is-10">
+                <div style="width: calc(100% - 72px); display: flex">
+                    <div style="width: 83.133333%; padding-right: 24px">
                         <cly-header class="cly-vue-push-notification-details-summary__header">
                             <template v-slot:header-left>
                                 <h2> {{i18n('push-notification-details.summary-header')}} </h2>
@@ -119,7 +119,7 @@
                             </template>
                         </cly-header>
                     </div>
-                    <div class="bu-column">
+                    <div style="width: 16.166667%; padding-right: 24px">
                         <mobile-message-preview :title="message.title" :content="message.content" :platforms="pushNotification.platforms" :media="previewMessageMedia" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
                     </div>
                 </div>

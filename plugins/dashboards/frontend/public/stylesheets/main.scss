@@ -34,6 +34,7 @@
 		}
 	}
 }
+
 .dashboards-notes-widget:hover .notes-widget-button {
 	visibility:visible;
 }
@@ -102,13 +103,14 @@
         }
     }
 	
-	.dashboard-widget-metric-labels span {
-		background-color: #E2E4E8;
-		color: #333C48;
-		border-radius: 4px;
-		text-transform: uppercase;
-		font-weight: 500;
-		font-size: 10px;
+	.clyd-title-labels {
+        div {
+            background-color: #E2E4E8;
+            color: #333C48;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
 	}
 
 	.clyd-legend-app {

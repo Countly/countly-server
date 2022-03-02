@@ -384,7 +384,7 @@ exports.validateUser = function(params, callback, callbackParam) {
 */
 function wrapCallback(params, callback, callbackParam, func) {
     var promise = new Promise(func);
-    if (callback) {
+    if (typeof callback === "function") {
         promise.asCallback(function(err) {
             if (!err) {
                 let ret;
@@ -403,6 +403,9 @@ function wrapCallback(params, callback, callbackParam, func) {
                 }
             }
         });
+    }
+    else if (callback) {
+        console.log("Incorrect callback function", callback);
     }
     return promise;
 }
@@ -498,7 +501,7 @@ exports.dbLoadEventsData = dbLoadEventsData;
 * @returns {function} returns callback
 **/
 exports.dbUserHasAccessToCollection = function(params, collection, callback) {
-    if (params.member.global_admin && !params.qstring.app_id) {
+    if (params.member.global_admin) {
         //global admin without app_id restriction just has access to everything
         return callback(true);
     }

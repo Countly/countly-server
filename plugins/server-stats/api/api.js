@@ -96,7 +96,7 @@ var log = common.log('data-points:api');
         }
         else if (period === "day") {
             utcMoment = common.moment.utc(periodObj.start);
-            mm = utcMoment.format("YYYY:MM");
+            mm = utcMoment.format("YYYY:M");
             dateObj[mm] = {"full": true};
             periodsToFetch.push(mm);
 

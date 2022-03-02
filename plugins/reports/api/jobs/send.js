@@ -57,11 +57,16 @@ class ReportsJob extends job.Job {
                             ((report.frequency === "weekly") && (report.r_day + '' === dow + '')) ||
                             ((report.frequency === "monthly") && (dom === 1))
                         )) {
+                        if (report.last_sent && report.last_send.hour === hour && report.last_send.dow === dow && report.last_send.dom === dom) {
+                            return done();
+                        }
                         reports.getReport(countlyDb, report, function(err2, ob) {
                             if (!err2) {
                                 reports.send(ob.report, ob.message, function() {
                                     log.d("sent to", ob.report.emails);
-                                    done(null, null);
+                                    countlyDb.collection("reports").updateOne({_id: countlyDb.ObjectID(report._id)}, {$set: {last_sent: {hour: hour, dow: dow, dom: dom}}}, function() {
+                                        done(null, null);
+                                    });
                                 });
                             }
                             else {

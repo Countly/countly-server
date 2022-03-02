@@ -308,7 +308,8 @@
     var EventGroupDetailView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-group-detail.html'),
         mixins: [
-            countlyVue.mixins.hasDrawers(["eventgroup"])
+            countlyVue.mixins.hasDrawers(["eventgroup"]),
+            countlyVue.mixins.auth(FEATURE_NAME)
         ],
         components: {
             'event-group-drawer': EventGroupDrawer,
@@ -1114,7 +1115,8 @@
     var EventDetailView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-detail.html'),
         mixins: [
-            countlyVue.mixins.hasDrawers(["events", "segments"])
+            countlyVue.mixins.hasDrawers(["events", "segments"]),
+            countlyVue.mixins.auth(FEATURE_NAME)
         ],
         components: {
             'events-drawer': EventsDrawer,

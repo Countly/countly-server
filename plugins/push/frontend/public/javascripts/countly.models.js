@@ -40,6 +40,7 @@
         SENT: "sent",
         STOPPED: "stopped",
         FAILED: "failed",
+        REJECT: 'reject',
     });
     var UserCommandEnum = Object.freeze({
         RESEND: 'resend',
@@ -275,7 +276,7 @@
                     days: 7,
                     hours: 0
                 },
-                dashboard: this.getInitialModelDashboard()
+                dashboard: {}
             };
         },
         getInitialOneTimeModel: function() {
@@ -591,10 +592,13 @@
                 }, {disableAutoCatch: true});
             });
         },
-        getDashboard: function() {
+        getDashboard: function(echo) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
+            if (echo) {
+                data.echo = echo;
+            }
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "GET",
@@ -1267,6 +1271,9 @@
             },
             mapAllDashboardLocales: function(locales, dto, platformDto, platform) {
                 var allLocales = Object.assign({}, locales);
+                if (dto.result.subs[platformDto] && !dto.result.subs[platformDto].subs) {
+                    return allLocales;
+                }
                 Object.keys(dto.result.subs[platformDto].subs).forEach(function(key) {
                     if (!allLocales[platform]) {
                         allLocales[key] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
@@ -1298,16 +1305,15 @@
             },
             mapDashboard: function(dto) {
                 var model = {};
-                model[PlatformEnum.ANDROID] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
-                model[PlatformEnum.IOS] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
-                model[PlatformEnum.ALL] = countlyPushNotification.helper.getInitialModelDashboardPlatform();
                 if (dto.result.subs && dto.result.subs[PlatformDtoEnum.ANDROID]) {
                     model[PlatformEnum.ANDROID] = this.mapAndroidDashboard(dto);
                 }
                 if (dto.result.subs && dto.result.subs[PlatformDtoEnum.IOS]) {
                     model[PlatformEnum.IOS] = this.mapIosDashboard(dto);
                 }
-                model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
+                if (model[PlatformEnum.ANDROID] && model[PlatformEnum.IOS]) {
+                    model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
+                }
                 return model;
             },
             mapDtoToBaseModel: function(dto) {
@@ -1795,7 +1801,7 @@
             },
             mapFilters: function(model, options) {
                 var result = {};
-                if (options.queryFilter && options.from === 'user') {
+                if (options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length) {
                     result.user = JSON.stringify(options.queryFilter.queryObject);
                 }
                 if (options.queryFilter && options.from === 'drill') {
@@ -2211,9 +2217,9 @@
                 });
             });
         },
-        fetchDashboard: function(type) {
+        fetchDashboard: function(type, echo) {
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.getDashboard()
+                countlyPushNotification.api.getDashboard(echo)
                     .then(function(response) {
                         try {
                             resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));
@@ -2474,7 +2480,8 @@
         messageSettings[PlatformEnum.ANDROID] = {};
         return {
             pushNotification: countlyPushNotification.helper.getInitialModel(TypeEnum.ONE_TIME),
-            platformFilter: PlatformEnum.ALL,
+            platformFilter: null,
+            platformFilterOptions: [],
             localeFilter: null,
             messageLocaleFilter: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
             userCommand: {
@@ -2491,6 +2498,7 @@
             countlyPushNotification.service.fetchById(id)
                 .then(function(model) {
                     context.commit('setPushNotification', model);
+                    context.dispatch('onSetPlatformFilterOptions', model);
                     context.dispatch('onFetchSuccess', {useLoader: true});
                 }).catch(function(error) {
                     console.error(error);
@@ -2563,6 +2571,9 @@
         },
         onSetMessageLocaleFilter: function(context, value) {
             context.commit('setMessageLocaleFilter', value);
+        },
+        onSetPlatformFilterOptions: function(context, value) {
+            context.commit('setPlatformFilterOptions', value);
         }
     };
 
@@ -2584,6 +2595,22 @@
         },
         setMessageLocaleFilter: function(state, value) {
             state.messageLocaleFilter = value;
+        },
+        setPlatformFilterOptions: function(state, value) {
+            var filterOptions = [];
+            if (value.dashboard[PlatformEnum.IOS]) {
+                filterOptions.push({label: CV.i18n("push-notification.platform-filter-ios"), value: countlyPushNotification.service.PlatformEnum.IOS});
+                state.platformFilter = PlatformEnum.IOS;
+            }
+            if (value.dashboard[PlatformEnum.ANDROID]) {
+                filterOptions.push({label: CV.i18n("push-notification.platform-filter-android"), value: countlyPushNotification.service.PlatformEnum.ANDROID});
+                state.platformFilter = PlatformEnum.ANDROID;
+            }
+            if (value.dashboard[PlatformEnum.IOS] && value.dashboard[PlatformEnum.ALL]) {
+                filterOptions.push({label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL});
+                state.platformFilter = PlatformEnum.ALL;
+            }
+            state.platformFilterOptions = filterOptions;
         },
     };
 

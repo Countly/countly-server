@@ -176,6 +176,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/events/javascripts/countly.details.views.js',
                     'frontend/express/public/core/user-management/javascripts/countly.overview.models.js',
                     'frontend/express/public/core/user-management/javascripts/countly.overview.views.js',
+                    'frontend/express/public/core/app-management/javascripts/countly.models.js',
                     'frontend/express/public/core/app-management/javascripts/countly.views.js',
                     'frontend/express/public/core/logs/javascripts/countly.views.js',
                     'frontend/express/public/core/token-manager/javascripts/countly.views.js',

@@ -1,4 +1,6 @@
-/* global countlyVue,CV,countlyCommon*/
+/* global countlyAuth, countlyVue,CV,countlyCommon*/
+
+var FEATURE_NAME = 'browser';
 var AppBrowserView = countlyVue.views.create({
     template: CV.T("/browser/templates/browser.html"),
     data: function() {
@@ -252,12 +254,13 @@ var AppBrowserView = countlyVue.views.create({
     ],
 
 });
-
-countlyVue.container.registerTab("/analytics/technology", {
-    type: "web",
-    priority: 6,
-    name: "browsers",
-    route: "#/analytics/technology/browsers",
-    title: CV.i18n('browser.title'),
-    component: AppBrowserView
-});
+if (countlyAuth.validateRead(FEATURE_NAME)) {
+    countlyVue.container.registerTab("/analytics/technology", {
+        type: "web",
+        priority: 6,
+        name: "browsers",
+        route: "#/analytics/technology/browsers",
+        title: CV.i18n('browser.title'),
+        component: AppBrowserView
+    });
+}
