@@ -28,7 +28,7 @@
   "dependencies": {    
     "apidoc": "^0.50.2",
     "apidoc-template": "github:kanwarujjaval/dash-apidoc-template",
-    "argon2": "0.28.4",
+    "argon2": "0.28.5",
     "async": "3.2.3",
     "basic-auth": "2.0.1",
     "bluebird": "3.7.2",
