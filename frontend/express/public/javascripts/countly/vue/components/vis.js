@@ -1972,7 +1972,6 @@
             'l-tile-layer': Vue2Leaflet.LTileLayer,
             'l-marker': Vue2Leaflet.LMarker,
             'l-circle': Vue2Leaflet.LCircle,
-            'l-icon': Vue2Leaflet.LIcon,
         },
         props: {
             value: {
