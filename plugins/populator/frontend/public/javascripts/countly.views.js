@@ -33,7 +33,6 @@
         methods: {
             refreshTable: function(res) {
                 if (res.result) {
-                    CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), sticky: false, clearAll: true});
                     this.refresh(true);
                 }
             },
