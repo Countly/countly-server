@@ -162,12 +162,12 @@
     });
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
-        type: "crash",
+        type: "crashes",
         label: CV.i18nM("dashboards.widget-type.crash"),
         priority: 11,
         primary: true,
         getter: function(widget) {
-            return widget.widget_type === "crash";
+            return widget.widget_type === "crashes";
         },
         templates: [
             {
@@ -183,7 +183,7 @@
                 return {
                     title: "",
                     feature: "crashes",
-                    widget_type: "crash",
+                    widget_type: "crashes",
                     app_count: 'single',
                     apps: [],
                     metrics: [],

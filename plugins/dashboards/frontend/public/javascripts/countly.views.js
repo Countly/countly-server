@@ -854,6 +854,9 @@
             onClose: function() {
                 this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", false);
             },
+            onWidgetTypeReset: function(v) {
+                this.reset({widget_type: v});
+            },
             reset: function(widget) {
                 this.$emit("reset", widget);
             }
