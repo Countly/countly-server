@@ -523,7 +523,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
 
             if (settings.levels.daily[i] === 'br') {
-                pulling_attributes[settings.levels.daily[i]] = { $cond: [ { $or: [{$eq: ["$s", 0]}, {$eq: ['$b', 0]}]}, 0, {'$divide': ['$b', "$s"]}] } ;
+                pulling_attributes[settings.levels.daily[i]] = { $cond: [ { $or: [{$eq: ["$s", 0]}, {$eq: ['$b', 0]}]}, 0, {'$divide': [{"$min": ['$b', "$s"]}, "$s"]}] } ;
+            }
+            else if (settings.levels.daily[i] === 'b') {
+                pulling_attributes[settings.levels.daily[i]] = {"$min": [{"$ifNull": ["$b", 0]}, {"$ifNull": ["$s", 0]}]};
             }
             else {
                 pulling_attributes[settings.levels.daily[i]] = {"$ifNull": ["$" + settings.levels.daily[i], 0]};
