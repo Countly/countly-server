@@ -801,7 +801,7 @@
                                                         .then(function(resp) {
                                                             if (resp) {
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
-                                                                context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                                context.commit("setLegendData", countlyAllEvents.helpers.getSelectedEventsLegend(context, response));
                                                                 context.dispatch('setTableLoading', false);
                                                                 context.dispatch('setChartLoading', false);
                                                             }
