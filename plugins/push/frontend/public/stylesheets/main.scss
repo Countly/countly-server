@@ -291,6 +291,8 @@
 }
 
 .cly-vue-push-notification-details-summary {
+
+    margin-top: 64px;
     
     &__header {
         margin-top: 64px;
@@ -305,13 +307,13 @@
         }
     }
 
-    &__message-preview {
-        margin-top:214px;
-    }
+    // &__message-preview {
+    //     margin-top:214px;
+    // }
 }
 
 .cly-vue-push-notification-details-summary-card {
-    min-height: 609px;
+    min-height: 600px;
 }
 
 .cly-vue-push-notification-details-sub-header {
