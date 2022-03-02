@@ -40,23 +40,23 @@
         <cly-main>
             <div>
                 <div class="bu-level-left" style="margin-bottom:32px">
-                    <div class="bu-level-item">
+                    <div class="bu-level-item bu-mr-1">
                         <div class="cly-vue-platform-filter-label"> 
                             {{i18n('push-notification-details.results-for')}}
                         </div>
                     </div>
-                    <div class="bu-level-item">
-                        <el-select v-model="selectedPlatformFilter">
+                    <div class="bu-level-item bu-mr-1">
+                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedPlatformFilter">
                             <el-option v-for="item in platformFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
-                    <div class="bu-level-item">
+                    <div class="bu-level-item bu-mr-1">
                         <div class="cly-vue-platform-filter-label"> 
                             {{i18n('push-notification-details.and-label')}}
                         </div>
                     </div>
-                    <div class="bu-level-item">
-                        <el-select v-model="selectedLocaleFilter">
+                    <div class="bu-level-item bu-mr-1">
+                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedLocaleFilter">
                             <el-option v-for="item in localeFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
