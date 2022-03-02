@@ -1104,9 +1104,11 @@
                     return metrics;
                 }
             },
-            mounted: function() {
-            },
             methods: {
+                onDataTypeChange: function(v) {
+                    var widget = this.scope.editedObject;
+                    this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+                }
             },
             props: {
                 scope: {

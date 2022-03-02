@@ -456,9 +456,10 @@ var DrawerComponent = countlyVue.views.create({
         }
     },
     methods: {
-    },
-    watch: {
-
+        onDataTypeChange: function(v) {
+            var widget = this.scope.editedObject;
+            this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+        }
     },
     props: {
         scope: {

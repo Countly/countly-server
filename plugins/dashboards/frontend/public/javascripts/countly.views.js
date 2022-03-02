@@ -64,11 +64,7 @@
             }
         },
         methods: {
-            onReset: function(widgetType) {
-                var widget = {
-                    widget_type: widgetType
-                };
-
+            onReset: function(widget) {
                 /**
                  * First we will get widget settings based on getter function.
                  * If nothing is returned, we will resort to getting primary widget settings.
@@ -841,8 +837,8 @@
             onClose: function() {
                 this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", false);
             },
-            reset: function(v) {
-                this.$emit("reset", v);
+            reset: function(widget) {
+                this.$emit("reset", widget);
             }
         }
     });
@@ -903,7 +899,8 @@
                 case "edit":
                     d.__action = "edit";
                     this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
-                    this.openDrawer("widgets", Object.assign({}, empty, d));
+                    var settings = Object.assign({}, empty, d);
+                    this.openDrawer("widgets", settings);
                     break;
 
                 case "delete":
