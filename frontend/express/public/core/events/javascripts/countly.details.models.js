@@ -479,6 +479,164 @@
                     selectedEventsData.meta[metaObj] = countlyCommon.union(prevState.meta[metaObj], selectedEventsData.meta[metaObj]);
                 }
             }
+        },
+        getSelectedEventsLegend: function(context, currentEventData) {
+            var periodObj = countlyCommon.periodObj;
+            var currentSegment = context.currentActiveSegmentation;
+            var lineLegend = {};
+            var legendData = [];
+            var labels = context.state.labels;
+            var count = {};
+            var tempX,
+                tempY,
+                currentTotal = 0,
+                previousTotal = 0,
+                currentSum = 0,
+                previousSum = 0,
+                currentDur = 0,
+                previousDur = 0;
+            var segment = "";
+            var tmpCurrCount = 0,
+                tmpCurrSum = 0,
+                tmpCurrDur = 0,
+                tmpPrevCount = 0,
+                tmpPrevSum = 0,
+                tmpPrevDur = 0;
+            if (periodObj.isSpecialPeriod) {
+                for (var i = 0; i < (periodObj.currentPeriodArr.length); i++) {
+                    tempX = countlyCommon.getDescendantProp(currentEventData, periodObj.currentPeriodArr[i]);
+                    tempY = countlyCommon.getDescendantProp(currentEventData, periodObj.previousPeriodArr[i]);
+                    tempX = countlyAllEvents.helpers.clearEventsObject(tempX);
+                    tempY = countlyAllEvents.helpers.clearEventsObject(tempY);
+
+                    if (currentSegment !== "segment") {
+                        tmpCurrCount = 0,
+                        tmpCurrSum = 0,
+                        tmpCurrDur = 0,
+                        tmpPrevCount = 0,
+                        tmpPrevSum = 0,
+                        tmpPrevDur = 0;
+                        for (segment in tempX) {
+                            tmpCurrCount += tempX[segment].c || 0;
+                            tmpCurrSum += tempX[segment].s || 0;
+                            tmpCurrDur += tempX[segment].dur || 0;
+
+                            if (tempY[segment]) {
+                                tmpPrevCount += tempY[segment].c || 0;
+                                tmpPrevSum += tempY[segment].s || 0;
+                                tmpPrevDur += tempY[segment].dur || 0;
+                            }
+                        }
+
+                        tempX = {
+                            "c": tmpCurrCount,
+                            "s": tmpCurrSum,
+                            "dur": tmpCurrDur
+                        };
+
+                        tempY = {
+                            "c": tmpPrevCount,
+                            "s": tmpPrevSum,
+                            "dur": tmpPrevDur
+                        };
+                    }
+
+                    currentTotal += tempX.c;
+                    previousTotal += tempY.c;
+                    currentSum += tempX.s;
+                    previousSum += tempY.s;
+                    currentDur += tempX.dur;
+                    previousDur += tempY.dur;
+                }
+            }
+            else {
+                tempX = countlyCommon.getDescendantProp(currentEventData, periodObj.activePeriod);
+                tempY = countlyCommon.getDescendantProp(currentEventData, periodObj.previousPeriod);
+                tempX = countlyAllEvents.helpers.clearEventsObject(tempX);
+                tempY = countlyAllEvents.helpers.clearEventsObject(tempY);
+
+                if (currentSegment !== "segment") {
+                    tmpCurrCount = 0,
+                    tmpCurrSum = 0,
+                    tmpCurrDur = 0,
+                    tmpPrevCount = 0,
+                    tmpPrevSum = 0,
+                    tmpPrevDur = 0;
+                    for (segment in tempX) {
+                        if (typeof tempX[segment].c === 'number') {
+                            tmpCurrCount += tempX[segment].c || 0;
+                        }
+                        if (typeof tempX[segment].s === 'number') {
+                            tmpCurrSum += tempX[segment].s || 0;
+                        }
+                        if (typeof tempX[segment].dur === 'number') {
+                            tmpCurrDur += tempX[segment].dur || 0;
+                        }
+
+                        if (tempY[segment]) {
+                            if (typeof tempY[segment].c === 'number') {
+                                tmpPrevCount += tempY[segment].c || 0;
+                            }
+                            if (typeof tempY[segment].s === 'number') {
+                                tmpPrevSum += tempY[segment].s || 0;
+                            }
+                            if (typeof tempY[segment].dur === 'number') {
+                                tmpPrevDur += tempY[segment].dur || 0;
+                            }
+                        }
+                    }
+
+                    tempX = {
+                        "c": tmpCurrCount,
+                        "s": tmpCurrSum,
+                        "dur": tmpCurrDur
+                    };
+
+                    tempY = {
+                        "c": tmpPrevCount,
+                        "s": tmpPrevSum,
+                        "dur": tmpPrevDur
+                    };
+                }
+
+                currentTotal = tempX.c;
+                previousTotal = tempY.c;
+                currentSum = tempX.s;
+                previousSum = tempY.s;
+                currentDur = tempX.dur;
+                previousDur = tempY.dur;
+            }
+
+            var	changeCount = countlyCommon.getPercentChange(previousTotal, currentTotal),
+                changeSum = countlyCommon.getPercentChange(previousSum, currentSum),
+                changeDur = countlyCommon.getPercentChange(previousDur, currentDur);
+            if (currentTotal > 0) {
+                count.name = labels.count;
+                count.value = countlyCommon.formatNumber(currentTotal);
+                count.trend = changeCount.trend === "u" ? "up" : "down";
+                count.percentage = changeCount.percent;
+                legendData.push(count);
+            }
+            var sum = {};
+            if (currentSum > 0) {
+                sum.name = labels.sum;
+                sum.value = countlyCommon.formatNumber(currentSum);
+                sum.trend = changeSum.trend === "u" ? "up" : "down";
+                sum.percentage = changeSum.percent;
+                legendData.push(sum);
+            }
+            var dur = {};
+            if (currentDur > 0) {
+                dur.name = labels.dur;
+                dur.value = countlyCommon.formatSecond(currentDur);
+                dur.trend = changeDur.trend === "u" ? "up" : "down";
+                dur.percentage = changeDur.percent;
+                legendData.push(dur);
+            }
+            lineLegend.show = true;
+            lineLegend.type = "primary";
+            lineLegend.data = legendData;
+            return lineLegend;
         }
     };
 
@@ -694,6 +852,7 @@
                             context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
                             context.dispatch('setTableLoading', false);
                             context.dispatch('setChartLoading', false);
+                            context.commit("setLegendData", countlyAllEvents.helpers.getSelectedEventsLegend(context, res));
                         }
                     }).catch(function() {
                         context.dispatch('setTableLoading', false);
