@@ -432,7 +432,6 @@
                     return moment(cell * 1000).format("lll");
                 },
                 hasDrillPermission: countlyAuth.validateRead('drill')
-                }
             };
         },
         computed: {
