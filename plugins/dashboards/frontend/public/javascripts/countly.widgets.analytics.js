@@ -124,13 +124,6 @@
         methods: {
             beforeCopy: function(data) {
                 return data;
-            },
-            onWidgetCommand: function(event) {
-                if (event === 'zoom') {
-                    this.triggerZoom();
-                    return;
-                }
-                return this.$emit('command', event);
             }
         }
     });

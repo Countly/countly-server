@@ -265,6 +265,13 @@
             },
             onPatchZoom: function() {
                 this.$refs.zoomRef.patchZoom();
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                return this.$emit('command', event);
             }
         }
     };

@@ -318,15 +318,6 @@
                 }
             };
         },
-        methods: {
-            onWidgetCommand: function(event) {
-                if (event === 'zoom') {
-                    this.triggerZoom();
-                    return;
-                }
-                return this.$emit('command', event);
-            }
-        },
         computed: {
             title: function() {
                 if (this.data.title) {

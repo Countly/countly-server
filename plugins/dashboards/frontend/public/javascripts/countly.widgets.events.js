@@ -12,15 +12,6 @@
                 }
             }
         },
-        methods: {
-            onWidgetCommand: function(event) {
-                if (event === 'zoom') {
-                    this.triggerZoom();
-                    return;
-                }
-                return this.$emit('command', event);
-            }
-        },
         data: function() {
             return {
                 selectedBucket: "daily",
