@@ -71,7 +71,7 @@
                                     </div>
                                 </div>
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-ml-2 bu-is-justify-content-center">
-                                    <el-button class="bu-mt-4" type="danger" size="mini" icon="el-icon-delete" circle :disabled="drawerScope.editedObject.events[index].segments[segmentIndex].key.length === 0" @click="removeSegmentationProperty(drawerScope.editedObject, index, segmentIndex)"></el-button>
+                                    <el-button class="bu-mt-4" type="danger" size="mini" v-bind:style="[drawerScope.editedObject.events[index].segments.length < 2 ? {'opacity': '.5'} : {}]" icon="el-icon-delete" circle :disabled="drawerScope.editedObject.events[index].segments.length < 2" @click="removeSegmentationProperty(drawerScope.editedObject, index, segmentIndex)"></el-button>
                                 </div>
                             </div>
                             <div>
