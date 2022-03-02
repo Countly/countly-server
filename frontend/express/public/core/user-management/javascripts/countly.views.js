@@ -615,6 +615,14 @@
                 this.roles[role.name] = role;
             }
         },
+        watch: {
+            'group._id': function() {
+                if (typeof this.group._id === "undefined") {
+                    this.$refs.userDrawer.editedObject.permission._.u = [[]];
+                    this.$refs.userDrawer.editedObject.permission._.a = [];
+                }
+            }
+        },
         created: function() {
             for (var app in countlyGlobal.apps) {
                 this.apps.push({value: countlyGlobal.apps[app]._id, label: countlyGlobal.apps[app].name });
