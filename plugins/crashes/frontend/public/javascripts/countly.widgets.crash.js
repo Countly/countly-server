@@ -163,7 +163,6 @@
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "crash",
-        feature: "crashes",
         label: CV.i18nM("dashboards.widget-type.crash"),
         priority: 11,
         primary: true,
@@ -183,6 +182,7 @@
             getEmpty: function() {
                 return {
                     title: "",
+                    feature: "crashes",
                     widget_type: "crash",
                     app_count: 'single',
                     apps: [],

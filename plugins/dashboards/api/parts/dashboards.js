@@ -74,7 +74,7 @@ function toSegment(val) {
 }
 
 dashboard.mapWidget = function(widget) {
-    var widgetType, visualization, dataType, appcount, breakdowns, isPluginWidget;
+    var widgetType, visualization, dataType, appcount, breakdowns, isPluginWidget, feature;
 
     switch (widget.widget_type) {
     case "time-series":
@@ -177,24 +177,38 @@ dashboard.mapWidget = function(widget) {
         if (widget.data_type === "push") {
             widgetType = "push";
             isPluginWidget = true;
+            feature = "push";
             delete widget.data_type;
         }
         else if (widget.data_type === "crash") {
             widgetType = "crash";
             isPluginWidget = true;
+            feature = "crashes";
             delete widget.data_type;
         }
         else if (widget.data_type === "event") {
             widgetType = "events";
+            feature = "events";
             delete widget.data_type;
         }
         else if (widget.data_type === "session") {
             dataType = "session";
+            feature = "core";
             delete widget.data_type;
         }
 
         break;
+    case "note":
+        if (!widget.feature) {
+            feature = "core";
+        }
+        break;
     default:
+        if (!widget.feature) {
+            if (widget.isPluginWidget) {
+                feature = widget.widget_type;
+            }
+        }
         break;
     }
 
@@ -220,6 +234,10 @@ dashboard.mapWidget = function(widget) {
 
     if (isPluginWidget) {
         widget.isPluginWidget = true;
+    }
+
+    if (feature) {
+        widget.feature = feature;
     }
 
     return widget;

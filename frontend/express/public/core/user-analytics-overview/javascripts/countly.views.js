@@ -368,7 +368,6 @@ var DrawerComponent = countlyVue.views.create({
 
 countlyVue.container.registerData("/custom/dashboards/widget", {
     type: "analytics",
-    feature: "core",
     label: CV.i18n("user-analytics.overview-title"),
     priority: 1,
     primary: false,
@@ -394,6 +393,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
         getEmpty: function() {
             return {
                 title: "",
+                feature: "core",
                 widget_type: "analytics",
                 data_type: "user-analytics",
                 app_count: 'single',

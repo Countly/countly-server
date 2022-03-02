@@ -1122,7 +1122,6 @@
 
         countlyVue.container.registerData("/custom/dashboards/widget", {
             type: "analytics",
-            feature: FEATURE_NAME,
             label: CV.i18n("views.widget-type"),
             priority: 1,
             primary: false,
@@ -1142,6 +1141,7 @@
                 getEmpty: function() {
                     return {
                         title: "",
+                        feature: FEATURE_NAME,
                         widget_type: "analytics",
                         data_type: "views",
                         app_count: 'single',
