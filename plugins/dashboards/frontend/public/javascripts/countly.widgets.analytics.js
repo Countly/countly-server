@@ -124,13 +124,6 @@
         methods: {
             beforeCopy: function(data) {
                 return data;
-            },
-            onWidgetCommand: function(event) {
-                if (event === 'zoom') {
-                    this.triggerZoom();
-                    return;
-                }
-                return this.$emit('command', event);
             }
         }
     });
@@ -183,6 +176,12 @@
             showPeriod: function() {
                 return true;
             }
+        },
+        methods: {
+            onDataTypeChange: function(v) {
+                var widget = this.scope.editedObject;
+                this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+            }
         }
     });
 
@@ -201,7 +200,6 @@
      */
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
-        feature: "core",
         label: CV.i18nM("dashboards.widget-type.analytics"),
         priority: 1,
         primary: true,
@@ -221,6 +219,7 @@
             getEmpty: function() {
                 return {
                     title: "",
+                    feature: "core",
                     widget_type: "analytics",
                     app_count: 'single',
                     data_type: "session",

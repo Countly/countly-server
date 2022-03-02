@@ -2345,7 +2345,7 @@
 
     var PushNotificationWidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
@@ -2510,7 +2510,6 @@
     function addWidgetToCustomDashboard() {
         countlyVue.container.registerData('/custom/dashboards/widget', {
             type: 'push',
-            feature: featureName,
             label: CV.i18n('push-notification.title'),
             priority: 6,
             primary: true,
@@ -2522,6 +2521,7 @@
                 getEmpty: function() {
                     return {
                         title: "",
+                        feature: featureName,
                         widget_type: "push",
                         isPluginWidget: true,
                         apps: [],
