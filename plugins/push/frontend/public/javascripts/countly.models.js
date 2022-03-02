@@ -471,17 +471,6 @@
             }
             return moment(dateTime).format(format);
         },
-        unwrapUserProperties: function(queryFilter) {
-            var result = {};
-            Object.keys(queryFilter).forEach(function(filterKey) {
-                var splittedKey = filterKey.split('.');
-                if (splittedKey.length === 2) {
-                    var keyWithoutPrefix = splittedKey[1];
-                    result[keyWithoutPrefix] = queryFilter[filterKey];
-                }
-            });
-            return result;
-        },
         shouldAddFilter: function(model, options) {
             if (options.queryFilter && options.from) {
                 return true;
@@ -2164,7 +2153,7 @@
                 countlyEventsOverview.service.fetchAllEvents()
                     .then(function(events) {
                         try {
-                            resolve(countlyPushNotification.mapper.incoming.mapEvents(events.list));
+                            resolve(countlyPushNotification.mapper.incoming.mapEvents(events.list || []));
                         }
                         catch (error) {
                             console.error(error);
