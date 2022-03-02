@@ -291,6 +291,8 @@
 }
 
 .cly-vue-push-notification-details-summary {
+
+    margin-top: 64px;
     
     &__header {
         margin-top: 64px;
@@ -305,13 +307,16 @@
         }
     }
 
-    &__message-preview {
-        margin-top:214px;
-    }
+    // &__message-preview {
+    //     margin-top:214px;
+    // }
 }
 
 .cly-vue-push-notification-details-summary-card {
-    min-height: 715px;
+    min-height: 600px;
+    > .el-card__header {
+        padding: 12px 24px;
+    }
 }
 
 .cly-vue-push-notification-details-sub-header {
@@ -331,8 +336,8 @@
 .cly-vue-push-notification-details-summary {
 
     &__header {
-        font-weight: typography.$heading-3-weight;
-        font-size: typography.$heading-3-size;
+        font-weight: typography.$heading-4-weight;
+        font-size: typography.$heading-4-size;
     }
 
     &__label {
