@@ -279,16 +279,19 @@
                 );
             }
 
-            if (typeof countlyDrillMeta !== "undefined") {
-                var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
-                var getFilterValues = function(segmentationKey) {
-                    return function() {
-                        return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
-                            var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
-                            return {name: name, value: value};
-                        });
+            if (countlyAuth.validateRead('drill')) {
+                if (typeof countlyDrillMeta !== "undefined") {
+                    var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
+                    var getFilterValues = function(segmentationKey) {
+                        return function() {
+                            return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
+                                var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
+                                return {name: name, value: value};
+                            });
+                        };
                     };
-                };
+                }
+
 
                 crashMeta.initialize().then(function() {
                     if (window.countlyQueryBuilder) {
@@ -427,7 +430,8 @@
                 ] : [],
                 formatDate: function(row, col, cell) {
                     return moment(cell * 1000).format("lll");
-                }
+                },
+                hasDrillPermission: countlyAuth.validateRead('drill')
             };
         },
         computed: {
@@ -576,6 +580,9 @@
         props: {
             code: {type: String, required: true}
         },
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         computed: {
             hasHeaderLeft: function() {
                 return !!(this.$scopedSlots["header-left"] || this.$slots["header-left"]);
@@ -598,6 +605,9 @@
     var CrashgroupView = countlyVue.views.create({
         template: "#crashes-crashgroup",
         components: {"crash-stacktrace": CrashStacktraceView, "crash-badge": CrashBadgeView},
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
@@ -614,7 +624,8 @@
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
-                jiraIntegrationEnabled: countlyGlobal.plugins.includes("crashes-jira")
+                jiraIntegrationEnabled: countlyGlobal.plugins.includes("crashes-jira"),
+                hasUserPermission: countlyAuth.validateRead('users')
             };
         },
         computed: {

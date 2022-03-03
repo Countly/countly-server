@@ -998,17 +998,6 @@
             },
             mounted: function() {
             },
-            methods: {
-                refresh: function() {
-                },
-                onWidgetCommand: function(event) {
-                    if (event === 'zoom') {
-                        this.triggerZoom();
-                        return;
-                    }
-                    return this.$emit('command', event);
-                }
-            },
             computed: {
                 title: function() {
                     if (this.data.title) {
@@ -1115,9 +1104,11 @@
                     return metrics;
                 }
             },
-            mounted: function() {
-            },
             methods: {
+                onDataTypeChange: function(v) {
+                    var widget = this.scope.editedObject;
+                    this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+                }
             },
             props: {
                 scope: {
@@ -1131,7 +1122,6 @@
 
         countlyVue.container.registerData("/custom/dashboards/widget", {
             type: "analytics",
-            feature: FEATURE_NAME,
             label: CV.i18n("views.widget-type"),
             priority: 1,
             primary: false,
@@ -1151,13 +1141,15 @@
                 getEmpty: function() {
                     return {
                         title: "",
+                        feature: FEATURE_NAME,
                         widget_type: "analytics",
                         data_type: "views",
                         app_count: 'single',
                         metrics: [],
                         apps: [],
-                        custom_period: "30days",
-                        visualization: "table"
+                        custom_period: null,
+                        visualization: "table",
+                        isPluginWidget: true
                     };
                 },
                 beforeLoadFn: function(/*doc, isEdited*/) {

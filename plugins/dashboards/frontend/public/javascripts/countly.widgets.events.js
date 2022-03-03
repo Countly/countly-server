@@ -12,15 +12,6 @@
                 }
             }
         },
-        methods: {
-            onWidgetCommand: function(event) {
-                if (event === 'zoom') {
-                    this.triggerZoom();
-                    return;
-                }
-                return this.$emit('command', event);
-            }
-        },
         data: function() {
             return {
                 selectedBucket: "daily",
@@ -261,7 +252,6 @@
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "events",
-        feature: "events",
         label: CV.i18nM("dashboards.widget-type.events"),
         priority: 2,
         primary: true,
@@ -281,6 +271,7 @@
             getEmpty: function() {
                 return {
                     title: "",
+                    feature: "events",
                     widget_type: "events",
                     app_count: 'single',
                     apps: [],
