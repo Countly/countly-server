@@ -72,9 +72,9 @@
                 </template>
             </cly-header>
                 <cly-main>
-                    <cly-datatable-n :rows="templates">
+                    <cly-datatable-n :rows="templates" class="populator-wrapper__table">
                         <template v-slot="scope">
-                            <el-table-column prop="name" fixed="left" :label="i18n('populator.template')" sortable></el-table-column>
+                            <el-table-column prop="name" :label="i18n('populator.template')" sortable></el-table-column>
                             <el-table-column prop="isDefault" :label="i18n('populator.template-type')" sortable></el-table-column>
                             <el-table-column prop="upCount" :label="i18n('populator.number-of-user-props')" sortable></el-table-column>
                             <el-table-column prop="eventCount" :label="i18n('populator.number-of-events')" sortable></el-table-column>
