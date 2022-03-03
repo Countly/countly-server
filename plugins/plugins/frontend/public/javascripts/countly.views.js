@@ -361,7 +361,7 @@
                     });
                     var plugins = [];
                     for (var key in self.configsData) {
-                        if (self.coreDefaults.indexOf(key) === -1) {
+                        if (self.coreDefaults.indexOf(key) === -1 && countlyGlobal.plugins.indexOf(key) !== -1) {
                             plugins.push(key);
                         }
                         if (!self.predefinedStructure[key]) {
@@ -893,6 +893,9 @@
             }
             else if (jQuery.i18n.map[id + ".title"]) {
                 return jQuery.i18n.map[id + ".title"];
+            }
+            else if (jQuery.i18n.map[id + ".plugin-title"]) {
+                return jQuery.i18n.map[id + ".plugin-title"];
             }
             else if (jQuery.i18n.map["configs." + id]) {
                 return jQuery.i18n.map["configs." + id];
