@@ -1,4 +1,6 @@
-/* global countlyVue,CV,countlyCommon,countlyLanguage*/
+/* global countlyAuth, countlyVue,CV,countlyCommon,countlyLanguage*/
+
+var FEATURE_NAME = 'locale';
 var LanguageView = countlyVue.views.create({
     template: CV.T("/locale/templates/language.html"),
     data: function() {
@@ -90,14 +92,15 @@ var LanguageView = countlyVue.views.create({
         })
     ]
 });
-
-countlyVue.container.registerTab("/analytics/geo", {
-    priority: 10,
-    name: "languages",
-    title: CV.i18n('sidebar.analytics.languages'),
-    route: "#/analytics/geo/languages",
-    component: LanguageView,
-    vuex: [{
-        clyModel: countlyLanguage
-    }]
-});
+if (countlyAuth.validateRead(FEATURE_NAME)) {
+    countlyVue.container.registerTab("/analytics/geo", {
+        priority: 10,
+        name: "languages",
+        title: CV.i18n('sidebar.analytics.languages'),
+        route: "#/analytics/geo/languages",
+        component: LanguageView,
+        vuex: [{
+            clyModel: countlyLanguage
+        }]
+    });
+}
