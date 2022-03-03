@@ -145,7 +145,7 @@
                 countlyCommon.periodObj = calculatePeriodObject(period);
             }
 
-            if (window.app && window.app.recordEvent) {
+            if (window.countlyCommon === this && window.app && window.app.recordEvent) {
                 window.app.recordEvent({
                     "key": "period-change",
                     "count": 1,

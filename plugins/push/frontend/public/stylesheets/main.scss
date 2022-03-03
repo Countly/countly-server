@@ -46,8 +46,9 @@
 }
 
 .cly-vue-platform-filter-label {
-    font-size: typography.$heading-3-size;
+    font-size: typography.$heading-4-size;
     font-weight: typography.$font-weight-primary;
+    color: map.get(colors.$colors,"cool-gray-100");
 }
 
 .blinker-wrapper {
@@ -291,6 +292,8 @@
 }
 
 .cly-vue-push-notification-details-summary {
+
+    margin-top: 64px;
     
     &__header {
         margin-top: 64px;
@@ -305,13 +308,16 @@
         }
     }
 
-    &__message-preview {
-        margin-top:214px;
-    }
+    // &__message-preview {
+    //     margin-top:214px;
+    // }
 }
 
 .cly-vue-push-notification-details-summary-card {
-    min-height: 715px;
+    min-height: 600px;
+    > .el-card__header {
+        padding: 12px 24px;
+    }
 }
 
 .cly-vue-push-notification-details-sub-header {
@@ -331,8 +337,8 @@
 .cly-vue-push-notification-details-summary {
 
     &__header {
-        font-weight: typography.$heading-3-weight;
-        font-size: typography.$heading-3-size;
+        font-weight: typography.$heading-4-weight;
+        font-size: typography.$heading-4-size;
     }
 
     &__label {
@@ -468,6 +474,7 @@
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
     }
 
     &__subsection-left {
@@ -579,6 +586,7 @@
         display: inline-block;
         color: map.get(colors.$colors,"text-primary");
         white-space: break-spaces;
+        font-weight: 400;
     }
 
     &__content {
@@ -600,6 +608,7 @@
         display: inline-block;
         color: map.get(colors.$colors,"text-primary");
         white-space: pre-wrap;
+        font-weight: 400;
     }
 
     &__content {

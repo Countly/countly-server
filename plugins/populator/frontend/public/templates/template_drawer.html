@@ -12,7 +12,7 @@
                 <div :key="index" class="populator-template-drawer__main-container bu-py-3 bu-px-4" v-for="(upItem, index) in drawerScope.editedObject.up" >
                     <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mb-3">
                         <div class="text-small text-uppercase populator-template-drawer__text-custom-detail" >{{ i18n('populator-add-custom-prop-detail') }}</div>
-                        <el-button @click="removeLineProperty(drawerScope.editedObject, index, 'custom')" :disabled="drawerScope.editedObject.up[index].key.length === 0" class="text-medium populator-template-drawer__btn-delete" type="text">{{ i18n('populator.delete-property')}}</el-button>
+                        <el-button @click="removeLineProperty(drawerScope.editedObject, index, 'custom')" :disabled="drawerScope.editedObject.up[index].length === 0" v-bind:style="[drawerScope.editedObject.up.length < 2 ? {'cursor': 'not-allowed !important', 'background-color': 'transparent !important', 'opacity' : '.5 !important'} : {}]" class="text-medium populator-template-drawer__btn-delete" type="text">{{ i18n('populator.delete-property')}}</el-button>
                     </div>
                     <div class="bu-is-flex populator-template-drawer__property-container bu-mb-2">
                         <div class="populator-template-drawer__key bu-is-flex bu-mb-2 bu-is-flex-direction-column">
@@ -35,12 +35,15 @@
                         </div>
                     </div>
                 </div>
-                <el-button class="populator-template-drawer__btn-add bg-light-blue-100 bu-mt-5 text-smallish font-weight-bold color-blue-100 el-button--text " @click="addUserProperty(drawerScope.editedObject)">{{ i18n('populator.add-custom-prop') }}</el-button>
+                <div v-if="typeof drawerScope.editedObject.up !== 'undefined'">
+                    <el-button class="populator-template-drawer__btn-add bg-light-blue-100 bu-mt-5 text-smallish font-weight-bold color-blue-100 el-button--text" v-bind:style="[drawerScope.editedObject.up[drawerScope.editedObject.up.length-1].key === '' ? {'color' : '#81868d !important' , 'cursor' : 'no-drop'} : {'color' : '#0166d6 !important'}]" @click="addUserProperty(drawerScope.editedObject)">{{ i18n('populator.add-custom-prop') }}</el-button>
+                </div>
+                <!-- <el-button class="populator-template-drawer__btn-add bg-light-blue-100 bu-mt-5 text-smallish font-weight-bold color-blue-100 el-button--text" @click="addUserProperty(drawerScope.editedObject)">{{ i18n('populator.add-custom-prop') }}</el-button> -->
                 <h4 class="bu-mb-4">{{ i18n('populator.events') }}</h4>
-                <div class="populator-template-drawer__main-container bu-py-2 bu-px-4" v-for="(eventItem, index) in drawerScope.editedObject.events">
+                <div class="populator-template-drawer__main-container bu-py-2 bu-px-4 bu-mt-4" v-for="(eventItem, index) in drawerScope.editedObject.events">
                     <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mb-3 bu-mt-2">
                         <div class="text-small text-uppercase populator-template-drawer__text-custom-detail" >{{ i18n('populator.event-details') }}</div>
-                        <el-button class="text-medium populator-template-drawer__btn-delete" :disabled="drawerScope.editedObject.events[index].eventName.length === 0" @click="removeLineProperty(drawerScope.editedObject, index, 'event')" type="text">{{ i18n('populator.delete-event')}}</el-button>
+                        <el-button class="text-medium populator-template-drawer__btn-delete" :disabled="drawerScope.editedObject.events.length < 2" @click="removeLineProperty(drawerScope.editedObject, index, 'event')" type="text">{{ i18n('populator.delete-event')}}</el-button>
                     </div>
                     <div class="populator-template-drawer__property-container bu-mb-4">
                         <div class="populator-template-drawer__key bu-mb-2">
@@ -71,11 +74,11 @@
                                     </div>
                                 </div>
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-ml-2 bu-is-justify-content-center">
-                                    <el-button class="bu-mt-4" type="danger" size="mini" icon="el-icon-delete" circle :disabled="drawerScope.editedObject.events[index].segments[segmentIndex].key.length === 0" @click="removeSegmentationProperty(drawerScope.editedObject, index, segmentIndex)"></el-button>
+                                    <el-button class="bu-mt-4" type="danger" size="mini" v-bind:style="[drawerScope.editedObject.events[index].segments.length < 2 ? {'opacity': '.5'} : {}]" icon="el-icon-delete" circle :disabled="drawerScope.editedObject.events[index].segments.length < 2" @click="removeSegmentationProperty(drawerScope.editedObject, index, segmentIndex)"></el-button>
                                 </div>
                             </div>
                             <div>
-                                <el-button class="bu-mb-4 font-weight-bold populator-template-drawer__btn-segmentation" type="text" @click="addSegmentationProperty(drawerScope.editedObject,index)">{{ i18n('populator.add-segmentation') }}</el-button>
+                                <el-button :disabled="isAddSegmentationDisabled(drawerScope.editedObject, index)" class="bu-mb-4 font-weight-bold populator-template-drawer__btn-segmentation" type="text" @click="addSegmentationProperty(drawerScope.editedObject, index)">{{ i18n('populator.add-segmentation') }}</el-button>
                             </div>
                             <div class="bu-container populator-template-drawer__event-container">
                                 <div class="bu-columns bu-p-3">
@@ -104,7 +107,7 @@
                         </div>
                     </div>
                 </div>
-                <el-button class="bu-mt-4 bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text  el-button--default" @click="addEventProperty(drawerScope.editedObject)">{{ i18n('populator.add-event') }}</el-button>
+                <el-button :disabled="isAddEventDisabled(drawerScope.editedObject)" class="bu-mt-4 bg-light-blue-100 text-smallish font-weight-bold color-blue-100 el-button--text  el-button--default" @click="addEventProperty(drawerScope.editedObject)">{{ i18n('populator.add-event') }}</el-button>
             </div>
         </div>
         </cly-form-step>

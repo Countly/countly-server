@@ -27,15 +27,6 @@
                 }
             };
         },
-        methods: {
-            onWidgetCommand: function(event) {
-                if (event === 'zoom') {
-                    this.triggerZoom();
-                    return;
-                }
-                return this.$emit('command', event);
-            }
-        },
         computed: {
             title: function() {
                 if (this.data.title) {
@@ -97,12 +88,17 @@
 
                 return multiple;
             }
+        },
+        methods: {
+            onDataTypeChange: function(v) {
+                var widget = this.scope.editedObject;
+                this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+            }
         }
     });
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
-        feature: "geo",
         label: CV.i18nM("dashboards.widget-type.analytics"),
         priority: 1,
         primary: false,
@@ -122,12 +118,13 @@
             getEmpty: function() {
                 return {
                     title: "",
+                    feature: "geo",
                     widget_type: "analytics",
                     app_count: 'single',
                     data_type: "geo",
                     apps: [],
                     visualization: "",
-                    custom_period: "30days",
+                    custom_period: null,
                     metrics: ["t"],
                     breakdowns: ["countries"],
                     bar_color: 1
