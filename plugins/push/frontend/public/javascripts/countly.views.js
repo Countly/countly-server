@@ -7,14 +7,15 @@
 
     var statusFilterOptions = [
         {label: countlyPushNotification.service.ALL_FILTER_OPTION_LABEL, value: countlyPushNotification.service.ALL_FILTER_OPTION_VALUE},
-        {label: CV.i18n("push-notification.status-created"), value: countlyPushNotification.service.StatusEnum.CREATED},
-        {label: CV.i18n("push-notification.status-scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
-        {label: CV.i18n("push-notification.status-sent"), value: countlyPushNotification.service.StatusEnum.SENT},
-        {label: CV.i18n("push-notification.status-sending"), value: countlyPushNotification.service.StatusEnum.SENDING},
-        {label: CV.i18n("push-notification.status-failed"), value: countlyPushNotification.service.StatusEnum.FAILED},
-        {label: CV.i18n("push-notification.status-stopped"), value: countlyPushNotification.service.StatusEnum.STOPPED},
-        {label: CV.i18n("push-notification.status-draft"), value: countlyPushNotification.service.StatusEnum.DRAFT},
-        {label: CV.i18n("push-notification.status-pending-approval"), value: countlyPushNotification.service.StatusEnum.PENDING_APPROVAL},
+        {label: CV.i18n("push-notification.created"), value: countlyPushNotification.service.StatusEnum.CREATED},
+        {label: CV.i18n("push-notification.scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
+        {label: CV.i18n("push-notification.sent"), value: countlyPushNotification.service.StatusEnum.SENT},
+        {label: CV.i18n("push-notification.sending"), value: countlyPushNotification.service.StatusEnum.SENDING},
+        {label: CV.i18n("push-notification.failed"), value: countlyPushNotification.service.StatusEnum.FAILED},
+        {label: CV.i18n("push-notification.stopped"), value: countlyPushNotification.service.StatusEnum.STOPPED},
+        {label: CV.i18n("push-notification.draft"), value: countlyPushNotification.service.StatusEnum.DRAFT},
+        {label: CV.i18n("push-notification.waiting-for-approval"), value: countlyPushNotification.service.StatusEnum.PENDING_APPROVAL},
+        {label: CV.i18n("push-notification.reject"), value: countlyPushNotification.service.StatusEnum.REJECT},
     ];
 
     var platformFilterOptions = [
@@ -2545,10 +2546,7 @@
         }
 
         if (app.configurationsView) {
-            app.configurationsView.registerLabel("push", "push.plugin-title");
-            app.configurationsView.registerLabel("push.proxyhost", "push.proxyhost");
-            app.configurationsView.registerInput("push.proxypass", {input: "el-input", attrs: {type: "password"}});
-            app.configurationsView.registerLabel("push.proxyport", "push.proxyport");
+            app.configurationsView.registerLabel("push", "push-notification.title");
         }
     });
 }());

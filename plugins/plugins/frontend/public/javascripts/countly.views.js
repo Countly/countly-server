@@ -317,17 +317,11 @@
                 .then(function() {
                     try {
                         self.configsData = JSON.parse(JSON.stringify(countlyPlugins.getConfigsData()));
-                        var arr = Object.entries(self.configsData);
-                        arr.forEach(function(arr2) {
-                            arr2.forEach(function() {
-                                if (arr2[1].use_google || arr2[1].google_maps_api_key) {
-                                    delete arr2[1].use_google;
-                                    delete arr2[1].google_maps_api_key;
-                                }
-                            });
-                        });
+                        self.removeNonGlobalConfigs(self.configsData);
                     }
-                    catch (ex) {
+                    catch (error) {
+                        // eslint-disable-next-line no-console
+                        console.error(error);
                         self.configsData = {};
                     }
 
@@ -411,6 +405,20 @@
                 });
         },
         methods: {
+            removeNonGlobalConfigs: function(configData) {
+                Object.keys(configData).forEach(function(configKey) {
+                    if ((configData[configKey].use_google || configData[configKey].google_maps_api_key) && configKey === 'frontend') {
+                        delete configData[configKey].use_google;
+                        delete configData[configKey].google_maps_api_key;
+                    }
+                    if (configData[configKey].rate && configKey === 'push') {
+                        delete configData[configKey].rate; // Note: push notification rate is app level config only
+                    }
+                    if (configData[configKey].test && configKey === 'push') {
+                        delete configData[configKey].test; // Note: push notification test is app level config only
+                    }
+                });
+            },
             goBack: function() {
                 app.back();
             },
