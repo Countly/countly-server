@@ -10,7 +10,7 @@
     var FONT_FAMILY = "Inter";
 
     /**
-     * legendOptions depends on internalLegend and legend
+     * legendOptions depends on calculatedLegend and legend
      * mergedOptions depends on legendOptions
      * chartOptions depends on mergedOptions
      * chartOptions also calls patchChart which intern calls patchZoom and patchLegend
@@ -31,39 +31,62 @@
     var LegendMixin = {
         data: function() {
             return {
-                internalLegend: {
+                calculatedLegend: {
                     show: true,
                     type: "secondary",
                     data: [],
                     position: "bottom"
-                },
+                }
             };
         },
         computed: {
             legendOptions: function() {
-                var options = _merge({}, this.internalLegend, this.legend || {});
+                var options = _merge({}, this.calculatedLegend, this.legend || {});
+
+                delete options.data;
 
                 if (this.legend && this.legend.data && this.legend.data.length) {
                     options.data = JSON.parse(JSON.stringify(this.legend.data));
                 }
                 else {
-                    options.data = JSON.parse(JSON.stringify(this.internalLegend.data));
+                    options.data = JSON.parse(JSON.stringify(this.calculatedLegend.data));
                 }
 
-                if (this.internalLegend.data.length !== options.data.length) {
-                    options.data = [];
-                }
+                /**
+                 * There is an issue.
+                 *
+                 * So we calculate calculatedLegend.data from the series right.
+                 * And this.legend is independent.
+                 *
+                 * Sometimes what happens is that there is a delay in the change of
+                 * this.legend as compared to the calculatedLegend. So lets say chartOptions
+                 * and legend both are to be changed, but this.legend changes after chartOptions.
+                 * So this creates an inconsistent state between the values of calculatedLegend
+                 * and this.legend. While calculatedLegend is latest, this.legend is old as this.legend
+                 * hasn't changed yet from the parent.
+                 *
+                 * But this inconsistent state is very hard to catch in the UI as shortly
+                 * after this.legend changes and hence both calculatedLegend and this.legend are the same.
+                 */
 
                 for (var i = 0; i < options.data.length; i++) {
-                    options.data[i].color = this.internalLegend.data[i].color;
-                    options.data[i].displayColor = options.data[i].color;
+                    var currLegend = options.data[i];
+                    // eslint-disable-next-line no-loop-func
+                    var legend = this.calculatedLegend.data.find(function(l) {
+                        return l.name === currLegend.name;
+                    });
+
+                    if (legend) {
+                        currLegend.color = legend.color;
+                        currLegend.displayColor = legend.color;
+                    }
                 }
 
                 return options;
             }
         },
         methods: {
-            setInternalLegendData: function(opt, series) {
+            setCalculatedLegendData: function(opt, series) {
                 var data = [];
                 var colorIndex = 0;
                 var obj = {}, color;
@@ -115,7 +138,7 @@
                     }
                 }
 
-                this.internalLegend.data = data;
+                this.calculatedLegend.data = data;
 
                 //Set default legend show to false
                 opt.legend.show = false;
@@ -729,7 +752,7 @@
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
 
-                this.setInternalLegendData(opt, series);
+                this.setCalculatedLegendData(opt, series);
 
                 opt.series = series;
 
@@ -772,7 +795,7 @@
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
 
-                this.setInternalLegendData(opt, series);
+                this.setCalculatedLegendData(opt, series);
 
                 opt.series = series;
 
@@ -906,7 +929,7 @@
                     }
                 }
 
-                this.setInternalLegendData(opt, series);
+                this.setCalculatedLegendData(opt, series);
 
                 opt.series = series;
 
