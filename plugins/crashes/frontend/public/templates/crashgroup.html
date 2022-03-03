@@ -47,23 +47,23 @@
     <cly-main>
         <cly-section class="crashgroup-common-metrics" v-if="!!commonMetrics">
             <div class="crashgroup-common-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-platform')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-platform')" v-loading="commonMetrics.platform == undefined">
                     <template v-slot:title>Platform</template>
                     <template v-slot:value>{{commonMetrics.platform}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-reports')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-reports')" v-loading="commonMetrics.occurrences == undefined">
                     <template v-slot:title>Occurrences</template>
                     <template v-slot:value>{{getShortNumber(commonMetrics.occurrences)}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-affected')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-affected')" v-loading="commonMetrics.affectedUsers == undefined">
                     <template v-slot:title>Affected Users</template>
                     <template v-slot:value>{{getShortNumber(commonMetrics.affectedUsers)}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-frequency')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-frequency')" v-loading="commonMetrics.crashFrequency == undefined">
                     <template v-slot:title>Crash Frequency</template>
                     <template v-slot:value>{{commonMetrics.crashFrequency.toFixed(2)}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-latest-version')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-latest-version')" v-loading="commonMetrics.latestAppVersion == undefined">
                     <template v-slot:title>Latest App Version</template>
                     <template v-slot:value>{{commonMetrics.latestAppVersion}}</template>
                 </cly-crashes-dashboard-tile>
@@ -185,7 +185,7 @@
                     <el-option v-for="item in chartByOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
                 </el-select>
             </template>
-            <cly-chart-bar :loading="isLoading" :option="chartData" :legend="{show: true}"></cly-chart-bar>
+            <cly-chart-bar :option="chartData" :legend="{show: true}" v-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section :title="i18n('crashes.crash-occurences')" class="crash-occurences">
             <cly-datatable-n :force-loading="isLoading" :rows="crashes" ref="tableData" @row-click="handleRowClick">

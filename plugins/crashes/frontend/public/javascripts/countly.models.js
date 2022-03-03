@@ -252,9 +252,7 @@
                     seriesData.lineStyle.color = results.chartDP[index].color;
                     chartOptions.series.push(seriesData);
                 });
-
                 state.isLoading = false;
-
                 return chartOptions;
             };
         };
@@ -341,13 +339,12 @@
 
         _overviewSubmodule.actions.refresh = function(context) {
             var ajaxPromises = [];
-
             var requestParams = {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "period": countlyCommon.getPeriodForAjax(),
                 "method": "crashes",
                 "graph": 1,
-                "display_loader": false,
+                "display_loader": true,
             };
 
             var filterMapping = {"platform": "os", "version": "app_version"};
@@ -434,7 +431,7 @@
                         platform: "all",
                         version: "all",
                     },
-                    isLoading: false,
+                    isLoading: true,
                 };
             },
             getters: {},
@@ -601,13 +598,12 @@
         };
 
         _crashgroupSubmodule.actions.initialize = function(context, groupId) {
-            context.state.isLoading = false;
+            context.state.isLoading = true;
             context.state.crashgroup._id = groupId;
             return context.dispatch("refresh");
         };
 
         _crashgroupSubmodule.actions.refresh = function(context) {
-            context.state.isLoading = true;
             if (typeof context.state.crashgroup._id === "undefined") {
                 return;
             }
@@ -621,7 +617,7 @@
                         "period": countlyCommon.getPeriodForAjax(),
                         "method": "crashes",
                         "group": context.state.crashgroup._id,
-                        "display_loader": false
+                        "display_loader": true
                     },
                     dataType: "json",
                     success: function(crashgroupJson) {
@@ -718,7 +714,6 @@
         };
 
         _crashgroupSubmodule.actions.generateEventLogs = function(context, crashIds) {
-            context.state.isLoading = true;
             return new Promise(function(resolve, reject) {
                 countlyVue.$.ajax({
                     type: "GET",
@@ -731,7 +726,6 @@
                     },
                     dataType: "json",
                     success: function(json) {
-                        context.state.isLoading = false;
                         Object.keys(json).forEach(function(crashId) {
                             var crashIndex = context.state.crashgroup.data.findIndex(function(crash) {
                                 return crash._id === crashId;
@@ -756,16 +750,13 @@
                     reject(null);
                 }
                 else {
-                    context.state.isLoading = true;
                     countlyCrashSymbols.fetchSymbols(false).then(function(symbolIndexing) {
                         var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
                         countlyCrashSymbols.symbolicate(crash._id, symbol_id)
                             .then(function(json) {
-                                context.state.isLoading = false;
                                 resolve(json);
                             })
                             .catch(function(xhr) {
-                                context.state.isLoading = false;
                                 reject(xhr);
                             });
                     });
@@ -878,7 +869,6 @@
         };
 
         _crashSubmodule.actions.refresh = function(context) {
-            context.state.isLoading = true;
             return countlyVue.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -889,7 +879,6 @@
                 },
                 dataType: "json",
                 success: function(json) {
-                    context.state.isLoading = false;
                     context.state.crash = json[context.state.crash._id];
                 }
             });
