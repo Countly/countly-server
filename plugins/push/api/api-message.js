@@ -3,6 +3,21 @@ const { Message, Creds, State, Status, platforms, Audience, ValidationError, Tri
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message');
 
+
+/**
+ * 
+ * @param {string} key mobile platform short key 
+ * @returns {string} full platform name
+ */
+function getPlatformName(key) {
+    if (key === 'i') {
+        return 'iOS';
+    }
+    if (key === 'a') {
+        return 'Android';
+    }
+    return key;
+}
 /**
  * Validate data & construct message out of it, throw in case of error
  * 
@@ -65,7 +80,7 @@ async function validate(args, draft = false) {
             for (let p of msg.platforms) {
                 let id = common.dot(app, `plugins.push.${p}._id`);
                 if (!id || id === 'demo') {
-                    throw new ValidationError(`No push credentials for platform ${p}`);
+                    throw new ValidationError(`No push credentials for ${getPlatformName(p)} platform`);
                 }
             }
 
@@ -388,7 +403,7 @@ module.exports.estimate = async params => {
     for (let p of data.platforms) {
         let id = common.dot(app, `plugins.push.${p}._id`);
         if (!id || id === 'demo') {
-            throw new ValidationError(`No push credentials for platform ${p}`);
+            throw new ValidationError(`No push credentials for ${getPlatformName(p)} platform `);
         }
     }
 
