@@ -201,15 +201,6 @@ var GridComponent = countlyVue.views.create({
             }
         };
     },
-    methods: {
-        onWidgetCommand: function(event) {
-            if (event === 'zoom') {
-                this.triggerZoom();
-                return;
-            }
-            return this.$emit('command', event);
-        }
-    },
     computed: {
         title: function() {
             if (this.data.title) {
@@ -356,9 +347,14 @@ var DrawerComponent = countlyVue.views.create({
         }
     },
     methods: {
-    },
-    watch: {
-
+        onDataTypeChange: function(v) {
+            var widget = this.scope.editedObject;
+            this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+        },
+        onBreakdownChange: function(v) {
+            var widget = this.scope.editedObject;
+            this.$emit("reset", {widget_type: widget.widget_type, data_type: widget.data_type, breakdowns: [v]});
+        }
     },
     props: {
         scope: {
@@ -372,7 +368,6 @@ var DrawerComponent = countlyVue.views.create({
 
 countlyVue.container.registerData("/custom/dashboards/widget", {
     type: "analytics",
-    feature: "core",
     label: CV.i18n("user-analytics.overview-title"),
     priority: 1,
     primary: false,
@@ -398,6 +393,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
         getEmpty: function() {
             return {
                 title: "",
+                feature: "core",
                 widget_type: "analytics",
                 data_type: "user-analytics",
                 app_count: 'single',
@@ -405,7 +401,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
                 apps: [],
                 visualization: "",
                 breakdowns: ['overview'],
-                custom_period: "30days"
+                custom_period: null
             };
         },
         beforeLoadFn: function(/*doc, isEdited*/) {

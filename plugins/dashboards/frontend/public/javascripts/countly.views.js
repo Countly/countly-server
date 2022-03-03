@@ -40,11 +40,19 @@
                         acc[component.type] = [];
                     }
 
-                    var featureName = component.feature;
+                    var drawer = component.drawer.getEmpty();
+                    var featureName = drawer.feature;
+                    var widgetType = drawer.widget_type;
                     var allowed = true;
+
+                    if (!widgetType) {
+                        allowed = false;
+                        countlyDashboards.factory.log("Widget type is mandatory!");
+                    }
 
                     if (!featureName) {
                         allowed = false;
+                        countlyDashboards.factory.log("Feature name is mandatory!");
                     }
 
                     if (!countlyAuth.validateRead(featureName)) {
@@ -64,11 +72,7 @@
             }
         },
         methods: {
-            onReset: function(widgetType) {
-                var widget = {
-                    widget_type: widgetType
-                };
-
+            onReset: function(widget) {
                 /**
                  * First we will get widget settings based on getter function.
                  * If nothing is returned, we will resort to getting primary widget settings.
@@ -352,8 +356,26 @@
                 return false;
             },
             isWidgetDisabled: function(widget) {
-                var disabled = widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
-                disabled = !!disabled;
+                var disabled = false;
+
+                if (widget.isPluginWidget) {
+                    /**
+                     * For all plugin widgets, feature name is the plugin name.
+                     */
+                    var feature = widget.feature;
+
+                    /**
+                     * In feature names we don't have hyphens. Hyphens are repalced with underscores.
+                     * Also feature names should be same as plugin folder name.
+                     * If it isn't talk to furkan.
+                     */
+
+                    disabled = countlyGlobal.plugins.map(function(p) {
+                        return p.replaceAll("-", "_");
+                    }).indexOf(feature) < 0;
+                    disabled = !!disabled;
+                }
+
                 return disabled;
             },
             isWidgetInvalid: function(widget) {
@@ -841,8 +863,11 @@
             onClose: function() {
                 this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", false);
             },
-            reset: function(v) {
-                this.$emit("reset", v);
+            onWidgetTypeReset: function(v) {
+                this.reset({widget_type: v});
+            },
+            reset: function(widget) {
+                this.$emit("reset", widget);
             }
         }
     });
@@ -903,7 +928,8 @@
                 case "edit":
                     d.__action = "edit";
                     this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
-                    this.openDrawer("widgets", Object.assign({}, empty, d));
+                    var settings = Object.assign({}, empty, d);
+                    this.openDrawer("widgets", settings);
                     break;
 
                 case "delete":

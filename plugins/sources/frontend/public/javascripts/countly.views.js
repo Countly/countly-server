@@ -318,15 +318,6 @@
                 }
             };
         },
-        methods: {
-            onWidgetCommand: function(event) {
-                if (event === 'zoom') {
-                    this.triggerZoom();
-                    return;
-                }
-                return this.$emit('command', event);
-            }
-        },
         computed: {
             title: function() {
                 if (this.data.title) {
@@ -388,6 +379,12 @@
 
                 return multiple;
             }
+        },
+        methods: {
+            onDataTypeChange: function(v) {
+                var widget = this.scope.editedObject;
+                this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+            }
         }
     });
 
@@ -395,7 +392,6 @@
         type: "analytics",
         label: CV.i18nM("sources.title"),
         priority: 1,
-        feature: FEATURE_NAME,
         primary: false,
         getter: function(widget) {
             return widget.widget_type === "analytics" && widget.data_type === "sources";
@@ -413,14 +409,16 @@
             getEmpty: function() {
                 return {
                     title: "",
+                    feature: FEATURE_NAME,
                     widget_type: "analytics",
                     app_count: 'single',
                     data_type: "sources",
                     apps: [],
                     visualization: "table",
-                    custom_period: "30days",
+                    custom_period: null,
                     metrics: ["t"],
-                    bar_color: 1
+                    bar_color: 1,
+                    isPluginWidget: true
                 };
             },
             beforeSaveFn: function() {
