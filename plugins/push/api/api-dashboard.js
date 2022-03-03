@@ -15,21 +15,6 @@ function add(from, to) {
     });
 }
 
-/**
- * 
- * @param {string} key mobile platform short key 
- * @returns {string} full platform name
- */
-module.exports.getPlatformName = function(key) {
-    if (key === 'i') {
-        return 'iOS';
-    }
-    if (key === 'a') {
-        return 'Android';
-    }
-    return key;
-};
-
 module.exports.dashboard = async function(params) {
     let app_id = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},

@@ -1,11 +1,23 @@
 const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
     { DEFAULTS } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
-    log = common.log('push:api:message'),
-    { getPlatformName } = require('./api-dashboard');
+    log = common.log('push:api:message');
 
 
-
+/**
+ * 
+ * @param {string} key mobile platform short key 
+ * @returns {string} full platform name
+ */
+function getPlatformName(key) {
+    if (key === 'i') {
+        return 'iOS';
+    }
+    if (key === 'a') {
+        return 'Android';
+    }
+    return key;
+}
 /**
  * Validate data & construct message out of it, throw in case of error
  * 
