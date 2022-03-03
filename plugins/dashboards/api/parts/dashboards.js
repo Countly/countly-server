@@ -74,7 +74,7 @@ function toSegment(val) {
 }
 
 dashboard.mapWidget = function(widget) {
-    var widgetType, visualization, dataType, appcount, breakdowns;
+    var widgetType, visualization, dataType, appcount, breakdowns, isPluginWidget, feature;
 
     switch (widget.widget_type) {
     case "time-series":
@@ -113,13 +113,13 @@ dashboard.mapWidget = function(widget) {
         widgetType = "analytics";
         dataType = "user-analytics";
         breakdowns = ["online"];
-        delete widget.isPluginWidget;
+
         break;
     case "active_users":
         widgetType = "analytics";
         dataType = "user-analytics";
         breakdowns = ["active"];
-        delete widget.isPluginWidget;
+
         break;
     case "retention_segments":
         if (widget.interval) {
@@ -146,6 +146,7 @@ dashboard.mapWidget = function(widget) {
         else if (widget.vis_type === "table") {
             widget.visualization_type = "table";
         }
+
         break;
     case "views":
         widgetType = "analytics";
@@ -154,7 +155,6 @@ dashboard.mapWidget = function(widget) {
             widget.metrics = widget.views;
         }
         visualization = "table";
-        delete widget.isPluginWidget;
 
         break;
     case "funnels":
@@ -177,23 +177,39 @@ dashboard.mapWidget = function(widget) {
     case "table":
         if (widget.data_type === "push") {
             widgetType = "push";
+            isPluginWidget = true;
+            feature = "push";
             delete widget.data_type;
         }
         else if (widget.data_type === "crash") {
-            widgetType = "crash";
+            widgetType = "crashes";
+            isPluginWidget = true;
+            feature = "crashes";
             delete widget.data_type;
         }
         else if (widget.data_type === "event") {
             widgetType = "events";
+            feature = "events";
             delete widget.data_type;
         }
         else if (widget.data_type === "session") {
             dataType = "session";
+            feature = "core";
             delete widget.data_type;
         }
 
         break;
+    case "note":
+        if (!widget.feature) {
+            feature = "core";
+        }
+        break;
     default:
+        if (!widget.feature) {
+            if (widget.isPluginWidget) {
+                feature = widget.widget_type;
+            }
+        }
         break;
     }
 
@@ -215,6 +231,14 @@ dashboard.mapWidget = function(widget) {
 
     if (breakdowns) {
         widget.breakdowns = breakdowns;
+    }
+
+    if (isPluginWidget) {
+        widget.isPluginWidget = true;
+    }
+
+    if (feature) {
+        widget.feature = feature;
     }
 
     return widget;

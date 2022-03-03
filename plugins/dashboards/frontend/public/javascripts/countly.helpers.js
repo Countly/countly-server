@@ -824,13 +824,14 @@
         },
         data: function() {
             return {
-                titleCheckbox: null
+                titleCheckbox: null,
+                default: "30days"
             };
         },
         computed: {
             customPeriod: {
                 get: function() {
-                    return this.value || "30days";
+                    return this.value || this.default;
                 },
                 set: function(t) {
                     this.$emit("input", t);
@@ -851,6 +852,10 @@
                 set: function(v) {
                     if (v === false && this.value && this.value.length) {
                         this.$emit("input", "");
+                    }
+
+                    if (v && (!this.value || !this.value.length)) {
+                        this.$emit("input", this.default);
                     }
 
                     this.titleCheckbox = v;

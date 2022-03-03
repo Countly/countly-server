@@ -3,7 +3,7 @@
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
@@ -163,7 +163,6 @@
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "crash",
-        feature: "crashes",
         label: CV.i18nM("dashboards.widget-type.crash"),
         priority: 11,
         primary: true,
@@ -183,11 +182,13 @@
             getEmpty: function() {
                 return {
                     title: "",
+                    feature: "crashes",
                     widget_type: "crash",
                     app_count: 'single',
                     apps: [],
                     metrics: [],
-                    visualization: ""
+                    visualization: "",
+                    isPluginWidget: true
                 };
             },
         },
@@ -195,10 +196,10 @@
             component: WidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 6,
-                    minHeight: 3,
-                    width: 6,
-                    height: 3
+                    minWidth: 2,
+                    minHeight: 4,
+                    width: 2,
+                    height: 4
                 };
             }
         }

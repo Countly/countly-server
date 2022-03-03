@@ -92,11 +92,6 @@
                 type: Object,
                 default: null,
             },
-            wrappedUserProperties: {
-                type: Boolean,
-                default: false,
-                required: false
-            }
         },
         data: function() {
             return {
@@ -391,11 +386,6 @@
             getQueryFilter: function() {
                 if (!this.queryFilter) {
                     return {};
-                }
-                if (this.wrappedUserProperties) {
-                    var result = Object.assign({}, this.queryFilter);
-                    result.queryObject = countlyPushNotification.helper.unwrapUserProperties(this.queryFilter.queryObject);
-                    return result;
                 }
                 return this.queryFilter;
             },
@@ -2270,11 +2260,6 @@
                 type: Object,
                 default: null,
             },
-            wrappedUserProperties: {
-                type: Boolean,
-                default: false,
-                required: false
-            }
         },
         data: function() {
             return {};
@@ -2296,7 +2281,7 @@
         components: {
             'push-notification-drawer': PushNotificationDrawer
         },
-        template: '<push-notification-drawer v-if="shouldDisplay" :queryFilter="queryFilter" :from="from" :wrappedUserProperties="wrappedUserProperties" :controls="controls" :type="type"></push-notification-drawer>',
+        template: '<push-notification-drawer v-if="shouldDisplay" :queryFilter="queryFilter" :from="from" :controls="controls" :type="type"></push-notification-drawer>',
     });
 
     var PushNotificationWidgetDrawer = countlyVue.views.create({
@@ -2345,7 +2330,7 @@
 
     var PushNotificationWidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+        mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
@@ -2510,7 +2495,6 @@
     function addWidgetToCustomDashboard() {
         countlyVue.container.registerData('/custom/dashboards/widget', {
             type: 'push',
-            feature: featureName,
             label: CV.i18n('push-notification.title'),
             priority: 6,
             primary: true,
@@ -2522,6 +2506,7 @@
                 getEmpty: function() {
                     return {
                         title: "",
+                        feature: featureName,
                         widget_type: "push",
                         isPluginWidget: true,
                         apps: [],

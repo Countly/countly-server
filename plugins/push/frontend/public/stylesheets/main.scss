@@ -46,8 +46,9 @@
 }
 
 .cly-vue-platform-filter-label {
-    font-size: typography.$heading-3-size;
+    font-size: typography.$heading-4-size;
     font-weight: typography.$font-weight-primary;
+    color: map.get(colors.$colors,"cool-gray-100");
 }
 
 .blinker-wrapper {
@@ -473,6 +474,7 @@
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
     }
 
     &__subsection-left {
@@ -584,6 +586,7 @@
         display: inline-block;
         color: map.get(colors.$colors,"text-primary");
         white-space: break-spaces;
+        font-weight: 400;
     }
 
     &__content {
@@ -605,6 +608,7 @@
         display: inline-block;
         color: map.get(colors.$colors,"text-primary");
         white-space: pre-wrap;
+        font-weight: 400;
     }
 
     &__content {

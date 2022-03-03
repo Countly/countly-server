@@ -394,18 +394,6 @@ var GridComponent = countlyVue.views.create({
             }
         };
     },
-    methods: {
-        refresh: function() {
-
-        },
-        onWidgetCommand: function(event) {
-            if (event === 'zoom') {
-                this.triggerZoom();
-                return;
-            }
-            return this.$emit('command', event);
-        }
-    },
     computed: {
         title: function() {
             if (this.data.title) {
@@ -468,9 +456,10 @@ var DrawerComponent = countlyVue.views.create({
         }
     },
     methods: {
-    },
-    watch: {
-
+        onDataTypeChange: function(v) {
+            var widget = this.scope.editedObject;
+            this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+        }
     },
     props: {
         scope: {
@@ -484,7 +473,6 @@ var DrawerComponent = countlyVue.views.create({
 
 countlyVue.container.registerData("/custom/dashboards/widget", {
     type: "analytics",
-    feature: "core",
     label: CV.i18n("sidebar.analytics.technology"),
     priority: 1,
     primary: false,
@@ -509,6 +497,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
         getEmpty: function() {
             return {
                 title: "",
+                feature: "core",
                 widget_type: "analytics",
                 data_type: "technology",
                 app_count: 'single',
@@ -516,7 +505,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
                 apps: [],
                 visualization: "",
                 breakdowns: ['devices'],
-                custom_period: "30days",
+                custom_period: null,
                 bar_color: 1
             };
         },

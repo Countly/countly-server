@@ -134,28 +134,30 @@
                             </el-option>
                         </el-select>
                     </cly-form-field>
-                    <div v-if="formScope.editedObject.definitionType === AddTestUserDefinitionTypeEnum.COHORT" class="cly-vue-drawer-step__section">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.select-one-or-more-cohorts')}}</div>
-                        <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.select-one-or-more-cohorts-description')}}</div>
-                        <validation-provider vid="cohort" v-slot="validation" rules="required">
-                            <el-select
-                                v-model="formScope.editedObject.cohorts"
-                                multiple
-                                filterable
-                                reserve-keyword
-                                :placeholder="i18n('push-notification.select-cohort')"
-                                :loading="isFetchCohortsLoading"
-                                :class="{'is-error': validation.errors.length > 0}"
-                                style="width:100%">
-                                <el-option
-                                    v-for="item in cohortOptions"
-                                    :key="item._id"
-                                    :label="item.name"
-                                    :value="item._id">
-                                </el-option>
-                            </el-select>
-                        </validation-provider>
-                    </div>
+                    <cly-form-field v-if="formScope.editedObject.definitionType === AddTestUserDefinitionTypeEnum.COHORT">
+                        <div>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.select-one-or-more-cohorts')}}</div>
+                            <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.select-one-or-more-cohorts-description')}}</div>
+                            <validation-provider vid="cohort" v-slot="validation" rules="required">
+                                <el-select
+                                    v-model="formScope.editedObject.cohorts"
+                                    multiple
+                                    filterable
+                                    reserve-keyword
+                                    :placeholder="i18n('push-notification.select-cohort')"
+                                    :loading="isFetchCohortsLoading"
+                                    :class="{'is-error': validation.errors.length > 0}"
+                                    style="width:100%">
+                                    <el-option
+                                        v-for="item in cohortOptions"
+                                        :key="item._id"
+                                        :label="item.name"
+                                        :value="item._id">
+                                    </el-option>
+                                </el-select>
+                            </validation-provider>
+                        </div>
+                    </cly-form-field>
                 </cly-form-step>
             </template>
         </cly-drawer>

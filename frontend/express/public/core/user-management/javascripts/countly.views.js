@@ -1,5 +1,10 @@
 /*global countlyAuth, app, countlyGlobal, $, groupsModel, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
+    var featureNameMapper = {
+        'block': 'filtering_rules',
+        'geo': 'location_targeting'
+    };
+
     var DataTable = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/data-table.html"),
         mixins: [countlyVue.mixins.commonFormatters],
@@ -610,6 +615,14 @@
                 this.roles[role.name] = role;
             }
         },
+        watch: {
+            'group._id': function() {
+                if (typeof this.group._id === "undefined") {
+                    this.$refs.userDrawer.editedObject.permission._.u = [[]];
+                    this.$refs.userDrawer.editedObject.permission._.a = [];
+                }
+            }
+        },
         created: function() {
             for (var app in countlyGlobal.apps) {
                 this.apps.push({value: countlyGlobal.apps[app]._id, label: countlyGlobal.apps[app].name });
@@ -677,7 +690,14 @@
                     self.users.push(usersObj[user]);
                 }
                 self.loading = false;
-                self.features = countlyUserManagement.getFeatures().sort();
+                self.features = countlyUserManagement.getFeatures().map(function(f) {
+                    if (featureNameMapper[f]) {
+                        return featureNameMapper[f];
+                    }
+                    else {
+                        return f;
+                    }
+                }).sort();
             });
         }
     });

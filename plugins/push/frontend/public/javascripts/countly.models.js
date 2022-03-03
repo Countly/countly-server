@@ -471,17 +471,6 @@
             }
             return moment(dateTime).format(format);
         },
-        unwrapUserProperties: function(queryFilter) {
-            var result = {};
-            Object.keys(queryFilter).forEach(function(filterKey) {
-                var splittedKey = filterKey.split('.');
-                if (splittedKey.length === 2) {
-                    var keyWithoutPrefix = splittedKey[1];
-                    result[keyWithoutPrefix] = queryFilter[filterKey];
-                }
-            });
-            return result;
-        },
         shouldAddFilter: function(model, options) {
             if (options.queryFilter && options.from) {
                 return true;
@@ -544,8 +533,8 @@
             }
             return result;
         },
-        isInternationalizationFound: function(value) {
-            return value !== CV.i18n(value);
+        isInternationalizationFound: function(key) {
+            return key !== CV.i18n(key);
         }
     };
 
@@ -1021,55 +1010,43 @@
                 }
                 return TargetingEnum.ALL;
             },
-            mapErrorWithoutCode: function(errorsDto, errorKey) {
-                return {
-                    code: CV.i18n('push-notification.error-code.' + errorKey),
-                    codePostfix: '',
-                    affectedUsers: errorsDto[errorKey],
-                    description: CV.i18n('push-notification.error-code.' + errorKey + '.desc', errorsDto[errorKey]),
-                };
-            },
-            mapErrorWithCode: function(errorsDto, errorKey) {
-                var errorCodeParts = errorKey.match(ERROR_MESSAGE_REGEX);
-                var platformError = errorCodeParts[1];
-                var numberError = errorCodeParts[2];
-                var postfixError = errorCodeParts[4];
-                var result = {
-                    code: CV.i18n('push-notification.error-code.' + platformError + numberError),
-                    codePostfix: postfixError,
-                    affectedUsers: errorsDto[errorKey],
-                    description: CV.i18n('push-notification.error-code.' + errorKey + '.desc')
-                };
-                if (!countlyPushNotification.helper.isInternationalizationFound(result.description) && countlyPushNotification.helper.isInternationalizationFound('push-notification.error-code.' + platformError + numberError + '.desc')) {
-                    result.description = CV.i18n('push-notification.error-code.' + platformError + numberError + '.desc');
-                }
-                return result;
-            },
             getExpiredTokenErrorIfFound: function(dto) {
                 if (dto.result && (dto.result.processed > (dto.result.sent + dto.result.errored))) {
                     var affectedUsers = dto.result.processed - (dto.result.sent + dto.result.errored);
-                    return {'expired': affectedUsers};
+                    return {'ExpiredToken': affectedUsers};
                 }
                 return null;
             },
             mapErrors: function(dto) {
-                var self = this;
                 var expiredTokenError = this.getExpiredTokenErrorIfFound(dto);
                 if (expiredTokenError) {
-                    if (!dto.errors) {
-                        dto.errors = {};
+                    if (dto.result && !dto.result.errors) {
+                        dto.result.errors = {};
                     }
-                    Object.assign(dto.errors, expiredTokenError);
+                    Object.assign(dto.result.errors, expiredTokenError);
                 }
-                if (!dto.errors) {
+                if (!(dto.result && dto.result.errors)) {
                     return [];
                 }
-                return Object.keys(dto.errors).map(function(errorKey) {
-                    var errorCodeParts = errorKey.match(ERROR_MESSAGE_REGEX);
-                    if (errorCodeParts && errorCodeParts.length) {
-                        return self.mapErrorWithCode(dto.errors, errorKey);
+                return Object.keys(dto.result.errors).map(function(errorKey) {
+                    var errorCodeParts = errorKey.match(ERROR_MESSAGE_REGEX) || [];
+                    var platformError = errorCodeParts[1];
+                    var numberError = errorCodeParts[2];
+                    var result = {
+                        code: errorKey,
+                        affectedUsers: dto.result.errors[errorKey] || '',
+                        description: CV.i18n('push-notification.error-code.' + errorKey + '.desc')
+                    };
+                    if (countlyPushNotification.helper.isInternationalizationFound('push-notification.error-code.' + errorKey + '.desc')) {
+                        result.description = CV.i18n('push-notification.error-code.' + errorKey + '.desc');
+                        return result;
                     }
-                    return self.mapErrorWithoutCode(dto.errors, errorKey);
+                    if (countlyPushNotification.helper.isInternationalizationFound('push-notification.error-code.' + platformError + numberError + '.desc')) {
+                        result.description = CV.i18n('push-notification.error-code.' + platformError + numberError + '.desc');
+                        return result;
+                    }
+                    result.description = "";
+                    return result;
                 });
             },
             mapAndroidSettings: function(androidSettingsDto) {
@@ -2164,7 +2141,7 @@
                 countlyEventsOverview.service.fetchAllEvents()
                     .then(function(events) {
                         try {
-                            resolve(countlyPushNotification.mapper.incoming.mapEvents(events.list));
+                            resolve(countlyPushNotification.mapper.incoming.mapEvents(events.list || []));
                         }
                         catch (error) {
                             console.error(error);
