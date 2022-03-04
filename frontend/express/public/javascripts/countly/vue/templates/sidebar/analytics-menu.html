@@ -46,7 +46,7 @@
                                 </el-collapse-item>
                             </el-collapse>
                         </div>
-                        <a v-else :href="menu.url">
+                        <a v-else-if="menu.url" :href="menu.url">
                             <div
                                 style="width: calc(100% - 24px);"
                                 :class="['cly-vue-sidebar__menu-items has-ellipsis',
