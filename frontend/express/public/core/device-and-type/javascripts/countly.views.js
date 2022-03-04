@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal*/
+/* global countlyAuth,countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal*/
 var DevicesTabView = countlyVue.views.create({
     template: CV.T("/core/device-and-type/templates/devices-tab.html"),
     mounted: function() {
@@ -326,11 +326,13 @@ var TechnologyHomeWidget = countlyVue.views.create({
                 }];
 
             if (appType === "web") {
-                dd.push({
-                    "title": CV.i18n('common.bar.top-browsers'),
-                    "description": CV.i18n('common.bar.top-browsers.description'),
-                    "data": tops.browser || []
-                });
+                if (countlyAuth.validateRead('browser')) {
+                    dd.push({
+                        "title": CV.i18n('common.bar.top-browsers'),
+                        "description": CV.i18n('common.bar.top-browsers.description'),
+                        "data": tops.browser || []
+                    });
+                }
             }
             else {
                 dd.push({
