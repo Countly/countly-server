@@ -1,5 +1,5 @@
 <div class="cly-vue-sidebar bu-is-flex">
-    <div class="cly-vue-sidebar__menu-options bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-space-between">
+    <div class="cly-vue-sidebar__menu-options bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-space-between" @mouseover="onOptionsMenuMouseOver" @mouseleave="onOptionsMenuMouseLeave">
         <ul class="bu-is-flex bu-is-flex-direction-column bu-is-flex-align-items-center bu-is-flex-justify-content-center">
             <li v-for="item in mainMenuOptions" v-tooltip.right="{content: item.tooltip, container: false}" :key="item.name" @click="onClick(item)" class="cly-vue-sidebar__menu-option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
                 <a v-if="item.name === 'app'" :href="redirectHomePage"><div :class="['cly-icon-btn', item.icon]" style="margin-bottom: 32px;"></div></a>
@@ -37,7 +37,7 @@
     </div>
 
     <transition name="cly-vue-sidebar__slide-transition">
-        <div class="cly-vue-sidebar__menu" v-if="showMainMenu">
+        <div :class="['cly-vue-sidebar__menu', {'cly-vue-sidebar--floating': selectedMenu === 'dashboards'}]" v-show="showMainMenu" @mouseover="onMainMenuMouseOver" @mouseleave="onMainMenuMouseLeave">
             <analytics-menu ref="analytics" v-show="selectedMenuOption === 'analytics'"></analytics-menu>
             <management-menu ref="management" v-show="selectedMenuOption === 'management'"></management-menu>
             <component :ref="item.name" v-for="item in components" :is="item.component" v-show="selectedMenuOption === item.name" :key="item.name"></component>
