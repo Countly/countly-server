@@ -273,7 +273,11 @@
                     var self = this;
                     var menus = this.menus.reduce(function(acc, val) {
                         if (val.app_type === self.activeApp.type && checkMenuPermission(val.name)) {
-                            (acc[val.category] = acc[val.category] || []).push(val);
+                            if (!acc[val.category]) {
+                                acc[val.category] = [];
+                            }
+
+                            acc[val.category].push(val);
                         }
                         return acc;
                     }, {});
@@ -286,7 +290,11 @@
                     var self = this;
                     var submenus = this.submenus.reduce(function(acc, val) {
                         if (val.app_type === self.activeApp.type && checkSubMenuPermission(val.name)) {
-                            (acc[val.parent_code] = acc[val.parent_code] || []).push(val);
+                            if (!acc[val.parent_code]) {
+                                acc[val.parent_code] = [];
+                            }
+
+                            acc[val.parent_code].push(val);
                         }
                         return acc;
                     }, {});
