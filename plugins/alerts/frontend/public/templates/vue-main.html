@@ -61,6 +61,13 @@
                 <el-table-column type="switch" fixed="left" width="88"  prop="enabled">
                     <template v-slot="rowScope">
                         <el-switch :value="rowScope.row.enabled" :disabled="!canUserUpdate"
+                            v-if="(rowScope.row.alertDataType !== 'online-users')"
+                            class="bu-ml-4  bu-mr-2"
+                            @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
+                        </el-switch>
+
+                        <el-switch :value="rowScope.row.enabled" :disabled="!canUpdateConcurrentAlert"
+                            v-if="(rowScope.row.alertDataType === 'online-users')"
                             class="bu-ml-4  bu-mr-2"
                             @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                         </el-switch>
@@ -81,7 +88,7 @@
                         <span>{{scope.row.condtionText}}</span>
                     </template>
                 </el-table-column>
-    
+                
                 <el-table-column  min-width="130" sortable="true"  :label="i18n('alert.CreateBy')">
                     <template slot-scope="scope">
                         <div class="bu-level">
@@ -93,9 +100,11 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column type="options" v-if="canUserUpdate || canUserDelete">
+              
+                
+                <el-table-column type="options">
                     <template v-slot="rowScope">
-                        <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleAlertEditCommand($event,rowScope)">
+                        <cly-more-options v-if="(rowScope.row.alertDataType !== 'online-users') && rowScope.row.hover && (canUserUpdate || canUserDelete)" size="small" @command="handleAlertEditCommand($event,rowScope)">
                             <el-dropdown-item v-if="canUserUpdate" icon="el-icon-document-copy" command="edit-comment">
                                 {{i18n('alert.Edit')}}
                             </el-dropdown-item>
@@ -103,9 +112,17 @@
                                 {{i18n('alert.Delete')}}
                             </el-dropdown-item>
                         </cly-more-options>
+
+                        <cly-more-options v-if="(rowScope.row.alertDataType  === 'online-users') && rowScope.row.hover && (canUpdateConcurrentAlert || canDeleteConcurrentAlert)" size="small" @command="handleAlertEditCommand($event,rowScope)">
+                            <el-dropdown-item v-if="canUpdateConcurrentAlert" icon="el-icon-document-copy" command="edit-comment">
+                                {{i18n('alert.Edit')}}
+                            </el-dropdown-item>
+                            <el-dropdown-item v-if="canDeleteConcurrentAlert" icon="el-icon-delete" command="delete-comment">
+                                {{i18n('alert.Delete')}}
+                            </el-dropdown-item>
+                        </cly-more-options>
                     </template>
                 </el-table-column>
-
             </template>
             <template v-slot:bottomline="scope">
                 <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateStatus(scope)">

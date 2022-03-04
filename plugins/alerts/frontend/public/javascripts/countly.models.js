@@ -7,6 +7,7 @@
    countlyVue,
    jQuery,
    countlyGlobal,
+   countlyAuth,
 */
 
 (function(countlyAlerts, $) {
@@ -333,7 +334,7 @@
                         }
 
 
-                        if (countlyGlobal.plugins.indexOf("concurrent_users") < 0) {
+                        if (countlyGlobal.plugins.indexOf("concurrent_users") < 0 || (!countlyAuth.validateRead("concurrent_users"))) {
                             context.commit("setInitialized", true);
                             context.commit("setAll", tableData);
                             context.commit("setCount", count);
