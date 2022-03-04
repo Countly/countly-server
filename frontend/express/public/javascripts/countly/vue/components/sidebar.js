@@ -760,11 +760,11 @@
                 var self = this;
 
                 /**
-                 * As per official mounted documentation, its likely that refs are not
+                 * As per official vue documentation for mounted, its likely that refs are not
                  * available immediately. Therefore, they suggest to check for the refs
                  * in the nextTick.
                  *
-                 * Following technique of checking refs is just a fullproof way to do it.
+                 * Following technique of checking refs is just a fullproof way of doing it.
                  */
                 setTimeout(function() {
                     self.$nextTick(function() {
@@ -781,11 +781,29 @@
                                  * Lets retry to check refs after a interval.
                                  * Clear the interval when the refs are found.
                                  */
+                                var counter = 0;
                                 var interval = setInterval(function() {
+                                    if (counter > 10) {
+                                        /**
+                                         * Lets only check for the refs 10 times.
+                                         * Bcz this could go on forever although not likely.
+                                         * If refs are not found until then, the its likely
+                                         * that there is some other issue.
+                                         * After that lets clear the interval and return.
+                                         */
+
+                                        // eslint-disable-next-line no-console
+                                        console.log("Refs not found in sidebar yet. Returning...");
+                                        clearInterval(interval);
+                                        return;
+                                    }
+
                                     if (Object.keys(self.$refs).length) {
                                         self.identifySelected();
                                         clearInterval(interval);
                                     }
+
+                                    counter++;
                                 }, 50);
                             }
                         });

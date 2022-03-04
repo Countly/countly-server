@@ -147,6 +147,7 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            min-height: 0;
 
             &--vis-number {
                 text-align: center;

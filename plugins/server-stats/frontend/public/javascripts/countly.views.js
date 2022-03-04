@@ -293,5 +293,5 @@ app.route("/manage/data-points/*id", 'data-points', function(id) {
 });
 
 $(document).ready(function() {
-    app.addMenu("management", {code: "data-point", url: "#/manage/data-points", text: "server-stats.data-points", priority: 25});
+    app.addMenu("management", {code: "data-point", url: "#/manage/data-points", text: "server-stats.data-points", priority: 40});
 });
