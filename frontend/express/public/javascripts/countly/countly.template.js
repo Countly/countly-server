@@ -695,6 +695,7 @@ var AppRouter = Backbone.Router.extend({
     _subMenuForCodes: {},
     _subMenus: {},
     _internalMenuCategories: ["management", "user"],
+    _uniqueMenus: {},
     /**
     * Add menu category. Categories will be copied for all app types and its visibility should be controled from the app type plugin
     * @memberof app
@@ -788,6 +789,22 @@ var AppRouter = Backbone.Router.extend({
         }
         if (!node.text || !node.code || typeof node.priority === "undefined") {
             throw "Provide code, text, icon and priority properties for menu element";
+        }
+
+        if (!this._uniqueMenus[app_type]) {
+            this._uniqueMenus[app_type] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][category]) {
+            this._uniqueMenus[app_type][category] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][category][node.code]) {
+            this._uniqueMenus[app_type][category][node.code] = true;
+        }
+        else {
+            //duplicate menu
+            return;
         }
 
         //New sidebar container hook
@@ -906,6 +923,22 @@ var AppRouter = Backbone.Router.extend({
         }
         if (!node.text || !node.code || !node.url || !node.priority) {
             throw "Provide text, code, url and priority for sub menu";
+        }
+
+        if (!this._uniqueMenus[app_type]) {
+            this._uniqueMenus[app_type] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][parent_code]) {
+            this._uniqueMenus[app_type][parent_code] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][parent_code][node.code]) {
+            this._uniqueMenus[app_type][parent_code][node.code] = true;
+        }
+        else {
+            //duplicate menu
+            return;
         }
 
         //New sidebar container hook
