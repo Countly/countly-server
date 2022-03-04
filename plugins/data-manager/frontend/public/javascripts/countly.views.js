@@ -1,4 +1,4 @@
-/*global app, countlyAuth, countlyVue, CV, $, countlyDataManager, countlyCommon, moment, countlyPlugins, countlyGlobal, CountlyHelpers */
+/*global app, countlyAuth, countlyVue, CV, $, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers */
 
 (function() {
 
@@ -503,14 +503,14 @@
                             isVisiblityFilter = currentVisibility === visibility;
                         }
                         if (!e.status || e.status === "unplanned") {
-                            var config = countlyPlugins.getConfigsData()['data-manager'] || {};
-                            if (config.showUnplannedEventsUI) {
-                                defaultUnexpectedFilter = true;
-                                e.status = 'unplanned';
-                            }
-                            else {
-                                defaultUnexpectedFilter = false;
-                            }
+                            // var config = countlyPlugins.getConfigsData()['data-manager'] || {};
+                            // if (config.showUnplannedEventsUI) {
+                            defaultUnexpectedFilter = true;
+                            e.status = 'unplanned';
+                            // }
+                            // else {
+                            //     defaultUnexpectedFilter = false;
+                            // }
                             if (!self.isDrill) {
                                 defaultUnexpectedFilter = true;
                             }
