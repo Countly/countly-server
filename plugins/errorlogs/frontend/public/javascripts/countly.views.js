@@ -1,4 +1,4 @@
-/*globals $,countlyAuth,countlyErrorLogs,countlyGlobal,jQuery,countlyCommon,CountlyHelpers,app,countlyVue,CV */
+/*globals $,countlyErrorLogs,countlyGlobal,jQuery,countlyCommon,CountlyHelpers,app,countlyVue,CV */
 (function() {
     var FEATURE_NAME = "errorlogs";
     var ErrorLogsView = countlyVue.views.create({
@@ -62,14 +62,13 @@
         }
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        countlyVue.container.registerTab("/manage/logs", {
-            priority: 1,
-            route: "#/manage/logs/errorlogs",
-            component: ErrorLogsView,
-            title: "Server Logs",
-            name: "errorlogs",
-            vuex: []
-        });
-    }
+    countlyVue.container.registerTab("/manage/logs", {
+        priority: 1,
+        route: "#/manage/logs/errorlogs",
+        component: ErrorLogsView,
+        title: "Server Logs",
+        name: "errorlogs",
+        permission: FEATURE_NAME,
+        vuex: []
+    });
 })();

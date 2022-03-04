@@ -253,6 +253,7 @@
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "events",
         label: CV.i18nM("dashboards.widget-type.events"),
+        permission: "events",
         priority: 2,
         primary: true,
         getter: function(widget) {

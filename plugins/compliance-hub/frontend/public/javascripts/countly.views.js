@@ -540,6 +540,7 @@
         priority: 3,
         title: CV.i18n("consent.title"),
         name: 'Consent',
+        permission: "compliance_hub",
         component: countlyVue.components.create({
             template: CV.T("/compliance-hub/templates/userConsentHistory.html"),
             mixins: [countlyVue.mixins.i18n],
@@ -588,7 +589,7 @@
         this.renderWhenReady(renderedView);
     });
     $(document).ready(function() {
-        app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
+        app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
     });
 
 })();

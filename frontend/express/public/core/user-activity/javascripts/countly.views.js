@@ -169,6 +169,7 @@
     countlyVue.container.registerTab("/analytics/loyalty", {
         priority: 1,
         name: "user-activity",
+        permission: "core",
         title: CV.i18n('user-activity.title'),
         route: "#/analytics/loyalty/user-activity",
         component: UserActivityView,

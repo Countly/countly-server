@@ -264,6 +264,7 @@ var SessionHomeWidget = countlyVue.views.create({
 
 countlyVue.container.registerData("/home/widgets", {
     _id: "sessions-dashboard-widget",
+    permission: "core",
     label: CV.i18n('dashboard.audience'),
     description: CV.i18n('session-overview.description'),
     enabled: {"default": true}, //object. For each type set if by default enabled
@@ -292,6 +293,7 @@ app.route("/analytics/sessions/*tab", "sessions-tab", function(tab) {
 countlyVue.container.registerTab("/analytics/sessions", {
     priority: 1,
     name: "overview",
+    permission: "core",
     title: CV.i18n('session-overview.title'),
     route: "#/analytics/sessions/overview",
     component: SessionOverviewView,

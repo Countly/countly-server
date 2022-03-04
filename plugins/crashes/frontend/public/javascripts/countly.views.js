@@ -1132,93 +1132,92 @@
         }
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        countlyVue.container.registerData("/home/widgets", {
-            _id: "crashes-dashboard-widget",
-            label: CV.i18n('crashes.crash-statistics'),
-            description: CV.i18n('crashes.plugin-description'),
-            enabled: {"default": true}, //object. For each type set if by default enabled
-            available: {"default": true}, //object. default - for all app types. For other as specified.
-            placeBeforeDatePicker: false,
-            order: 9,
-            linkTo: {"label": CV.i18n('crashes.go-to-crashes'), "href": "#/crashes"},
-            component: CrashesDashboardWidget
-        });
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "crashes-dashboard-widget",
+        label: CV.i18n('crashes.crash-statistics'),
+        permission: FEATURE_NAME,
+        description: CV.i18n('crashes.plugin-description'),
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: false,
+        order: 9,
+        linkTo: {"label": CV.i18n('crashes.go-to-crashes'), "href": "#/crashes"},
+        component: CrashesDashboardWidget
+    });
 
-        countlyVue.container.registerTab("/users/tabs", {
-            priority: 7,
-            title: 'Crashes',
-            name: 'crashes',
-            component: countlyVue.components.create({
-                mixins: [countlyVue.mixins.i18n],
-                template: CV.T("/crashes/templates/user-crashes.html"),
-                methods: {
-                    getDateAndTime: function(ts) {
-                        if (!ts) {
-                            return "-";
-                        }
-                        var d = new Date(ts);
-                        if (d.getFullYear() <= 1970) {
-                            ts = ts * 1000;
-                            d = new Date(ts);
-                        }
-                        var date = moment(d).utc().format("MMM Do, YYYY");
-                        var time = moment(d).utc().format("H:mm:ss");
-                        return date + " " + time;
-                    },
+    countlyVue.container.registerTab("/users/tabs", {
+        priority: 7,
+        title: 'Crashes',
+        name: 'crashes',
+        permission: FEATURE_NAME,
+        component: countlyVue.components.create({
+            mixins: [countlyVue.mixins.i18n],
+            template: CV.T("/crashes/templates/user-crashes.html"),
+            methods: {
+                getDateAndTime: function(ts) {
+                    if (!ts) {
+                        return "-";
+                    }
+                    var d = new Date(ts);
+                    if (d.getFullYear() <= 1970) {
+                        ts = ts * 1000;
+                        d = new Date(ts);
+                    }
+                    var date = moment(d).utc().format("MMM Do, YYYY");
+                    var time = moment(d).utc().format("H:mm:ss");
+                    return date + " " + time;
                 },
-                data: function() {
-                    return {
-                        uid: '',
-                        userCrashesData: [],
-                        title: CV.i18n('crashes.unresolved-crashes')
-                    };
-                },
-                beforeCreate: function() {
-                    var self = this;
-                    this.uid = this.$route.params.uid;
-                    countlyCrashes.userCrashes(this.uid)
-                        .then(function(res) {
-                            if (res) {
-                                self.userCrashesData = res.aaData.map(function(data) {
-                                    return Object.assign(data, { link: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/crashes/' + data.id});
-                                });
-                            }
-                        });
-                }
-            })
-        });
-    }
+            },
+            data: function() {
+                return {
+                    uid: '',
+                    userCrashesData: [],
+                    title: CV.i18n('crashes.unresolved-crashes')
+                };
+            },
+            beforeCreate: function() {
+                var self = this;
+                this.uid = this.$route.params.uid;
+                countlyCrashes.userCrashes(this.uid)
+                    .then(function(res) {
+                        if (res) {
+                            self.userCrashesData = res.aaData.map(function(data) {
+                                return Object.assign(data, { link: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/crashes/' + data.id});
+                            });
+                        }
+                    });
+            }
+        })
+    });
 
     jQuery(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+        app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+        app.addSubMenu("crashes", {code: "crash", permission: FEATURE_NAME, url: "#/crashes", text: "sidebar.dashboard", priority: 10});
 
-            if (app.configurationsView) {
-                app.configurationsView.registerInput("crashes.grouping_strategy", {
-                    input: "el-select",
-                    attrs: {},
-                    list: [
-                        {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
-                        {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
-                    ]
-                });
-            }
-
-            app.route("/crashes", "crashes", function() {
-                this.renderWhenReady(getOverviewView());
-            });
-
-            app.route("/crashes/:group", "crashgroup", function(group) {
-                groupId = group;
-                this.renderWhenReady(getCrashgroupView());
-            });
-
-            app.route("/crashes/:group/binary-images/:crash", "crashgroup", function(group, crash) {
-                groupId = group;
-                crashId = crash;
-                this.renderWhenReady(getBinaryImagesView());
+        if (app.configurationsView) {
+            app.configurationsView.registerInput("crashes.grouping_strategy", {
+                input: "el-select",
+                attrs: {},
+                list: [
+                    {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
+                    {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
+                ]
             });
         }
+
+        app.route("/crashes", "crashes", function() {
+            this.renderWhenReady(getOverviewView());
+        });
+
+        app.route("/crashes/:group", "crashgroup", function(group) {
+            groupId = group;
+            this.renderWhenReady(getCrashgroupView());
+        });
+
+        app.route("/crashes/:group/binary-images/:crash", "crashgroup", function(group, crash) {
+            groupId = group;
+            crashId = crash;
+            this.renderWhenReady(getBinaryImagesView());
+        });
     });
 })();

@@ -2546,6 +2546,7 @@
         countlyVue.container.registerData('/custom/dashboards/widget', {
             type: 'push',
             label: CV.i18n('push-notification.title'),
+            permission: featureName,
             priority: 6,
             primary: true,
             getter: function(widget) {
@@ -2589,10 +2590,8 @@
 
     //countly.view global management settings
     $(document).ready(function() {
-        if (countlyAuth.validateRead(featureName)) {
-            app.addMenuForType("mobile", "reach", {code: "push", url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
-            addWidgetToCustomDashboard();
-        }
+        app.addMenuForType("mobile", "reach", {code: "push", permission: featureName, url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+        addWidgetToCustomDashboard();
 
         if (app.configurationsView) {
             app.configurationsView.registerLabel("push", "push-notification.title");

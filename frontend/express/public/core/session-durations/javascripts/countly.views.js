@@ -58,6 +58,7 @@ var SessionDurationsView = countlyVue.views.create({
 countlyVue.container.registerTab("/analytics/sessions", {
     priority: 2,
     name: "durations",
+    permission: "core",
     title: CV.i18n('session-durations.title'),
     route: "#/analytics/sessions/durations",
     component: SessionDurationsView,

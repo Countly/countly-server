@@ -101,6 +101,7 @@ var AppResolutionView = countlyVue.views.create({
 
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 3,
+    permission: "core",
     name: "resolutions",
     title: CV.i18n('resolutions.title'),
     route: "#/analytics/technology/resolutions",
