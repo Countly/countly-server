@@ -11,7 +11,8 @@
         ],
         props: {
             value: {type: [String, Object], default: "#FFFFFF"},
-            resetValue: { type: [String, Object], default: "#FFFFFF"}
+            resetValue: { type: [String, Object], default: "#FFFFFF"},
+            placement: {type: String, default: "left"}
         },
         data: function() {
             return {
@@ -34,7 +35,10 @@
                         this.setColor({hex: colorValue});
                     }
                 }
-            }
+            },
+            alignment: function() {
+                return "picker-body--" + this.placement;
+            },
         },
         methods: {
             setColor: function(color) {
@@ -47,6 +51,10 @@
                 this.isOpened = true;
             },
             close: function() {
+                this.isOpened = false;
+            },
+            confirm: function(color) {
+                this.$emit('change', color);
                 this.isOpened = false;
             }
         },
@@ -63,12 +71,12 @@
                             '<img height="12px" width="10px" class="bu-pt-2" v-if="!isOpened" src="/images/icons/arrow_drop_down_.svg"/>\n' +
                             '<img height="12px" width="10px" class="bu-pt-2" v-if="isOpened" src="/images/icons/arrow_drop_up_.svg"/>\n' +
                         '</div>\n' +
-                        '<div class="picker-body" v-if="isOpened" v-click-outside="close">\n' +
+                        '<div class="picker-body" v-if="isOpened" v-click-outside="close" :class="alignment">\n' +
                             '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
                             '<div class="button-controls">\n' +
                                 '<cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
                                 '<cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
-                                '<cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green"></cly-button>\n' +
+                                '<cly-button :label="i18n(\'common.confirm\')" @click="confirm(setColor)" skin="green"></cly-button>\n' +
                             '</div>\n' +
                         '</div>\n' +
                       '</div>'
