@@ -789,7 +789,9 @@
                      *
                      * We need this handler mainly for the case when the user moves away
                      * from the browser window. Basically the window is small and the user
-                     * is moving outside of the window.
+                     * is moving outside of the window from the left side.
+                     * Bcz if he goes to the right side, onMainMenu will be set to true,
+                     * and the main menu will still be visible.
                      */
                     this.$nextTick(function() {
                         this.$nextTick(function() {
