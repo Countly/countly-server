@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyUserActivity,app,CountlyHelpers*/
+/* global countlyAuth, countlyVue,CV,countlyUserActivity,app,CountlyHelpers*/
 (function() {
     var UserActivityView = countlyVue.views.create({
         template: CV.T("/core/user-activity/templates/user-activity.html"),
@@ -15,6 +15,14 @@
             };
         },
         computed: {
+            showDrillFilter: function() {
+                if (countlyAuth.validateRead('drill')) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            },
             userActivity: function() {
                 return this.$store.state.countlyUserActivity.userActivity;
             },
