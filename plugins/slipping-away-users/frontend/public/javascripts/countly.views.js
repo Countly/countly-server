@@ -12,6 +12,14 @@
             };
         },
         computed: {
+            showDrillFilter: function() {
+                if (countlyAuth.validateRead('drill')) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            },
             slippingAwayUsersFilters: {
                 get: function() {
                     return this.$store.state.countlySlippingAwayUsers.filters;
