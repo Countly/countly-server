@@ -3,7 +3,7 @@
 (function(countlyVue, $) {
 
     $(document).ready(function() {
-        var _featureMapper = {
+        /*var _featureMapper = {
                 "overview": "core",
                 "analytics": "core",
                 "events": "events",
@@ -63,45 +63,32 @@
                 "overview": ["core"],
                 "analytics": ["core"],
                 "management": ["populator", "config_transfer", "crashes", "blocks", "logger", "compliance_hub"]
-            };
+            };*/
 
         /**
         * Check feature permission before adding sidebar
         * @memberof app
-        * @param {string} code - code text of menu item
+        * @param {string} permission - permission name
         * @returns {boolean} - true if permission granted
         **/
-        var checkMenuPermission = function(code) {
-            if (_menuDependencies[code] && _menuDependencies[code].length) {
-                var granted = false;
-                for (var i = 0; i < _menuDependencies[code].length; i++) {
-                    if (_menuDependencies[code][i] !== "admin" && countlyAuth.validateRead(_menuDependencies[code][i])) {
-                        granted = true;
-                        break;
-                    }
-                    else if (_menuDependencies[code][i] === "admin" && countlyAuth.validateGlobalAdmin()) {
-                        granted = true;
-                        break;
-                    }
-                }
-                return granted;
+        var checkMenuPermission = function(permission) {
+            if (permission) {
+                return countlyAuth.validateRead(permission);
             }
-            return checkSubMenuPermission(code);
+            return countlyAuth.validateGlobalAdmin();
         };
 
         /**
         * Check feature permission before adding sidebar
         * @memberof app
-        * @param {string} code - code text of menu item
+        * @param {string} permission - permission name
         * @returns {boolean} - true if permission granted
         **/
-        var checkSubMenuPermission = function(code) {
-            if (_featureMapper[code] !== "admin") {
-                return countlyAuth.validateRead(_featureMapper[code]);
+        var checkSubMenuPermission = function(permission) {
+            if (permission) {
+                return countlyAuth.validateRead(permission);
             }
-            else {
-                return countlyAuth.validateGlobalAdmin();
-            }
+            return countlyAuth.validateGlobalAdmin();
         };
 
         var AppsMixin = {
@@ -272,7 +259,7 @@
                     }
                     var self = this;
                     var menus = this.menus.reduce(function(acc, val) {
-                        if (val.app_type === self.activeApp.type && checkMenuPermission(val.name)) {
+                        if (val.app_type === self.activeApp.type && checkMenuPermission(val.permission)) {
                             (acc[val.category] = acc[val.category] || []).push(val);
                         }
                         return acc;
@@ -285,7 +272,7 @@
                     }
                     var self = this;
                     var submenus = this.submenus.reduce(function(acc, val) {
-                        if (val.app_type === self.activeApp.type && checkSubMenuPermission(val.name)) {
+                        if (val.app_type === self.activeApp.type && checkSubMenuPermission(val.permission)) {
                             (acc[val.parent_code] = acc[val.parent_code] || []).push(val);
                         }
                         return acc;
