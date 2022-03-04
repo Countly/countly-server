@@ -1,4 +1,4 @@
-/* global  */
+/* global countlyAuth */
 
 (function(countlyVue) {
 
@@ -99,7 +99,12 @@
         var mixin = {
             data: function() {
                 return Object.keys(mapping).reduce(function(acc, val) {
-                    acc[val] = self.dict[mapping[val]] ? self.dict[mapping[val]].data : [];
+                    acc[val] = (self.dict[mapping[val]] ? self.dict[mapping[val]].data : []).filter(function(data) {
+                        if (data.permission) {
+                            return countlyAuth.validateRead(data.permission);
+                        }
+                        return true;
+                    });
                     return acc;
                 }, {});
             }
@@ -112,7 +117,12 @@
         var mixin = {
             data: function() {
                 return Object.keys(mapping).reduce(function(acc, val) {
-                    acc[val] = self.dict[mapping[val]] ? self.dict[mapping[val]].tabs : [];
+                    acc[val] = (self.dict[mapping[val]] ? self.dict[mapping[val]].tabs : []).filter(function(tab) {
+                        if (tab.permission) {
+                            return countlyAuth.validateRead(tab.permission);
+                        }
+                        return countlyAuth.validateGlobalAdmin();
+                    });
                     return acc;
                 }, {});
             }
@@ -170,7 +180,12 @@
         var vuex = [];
 
         ids.forEach(function(id) {
-            var tabs = self.dict[id] ? self.dict[id].tabs : [];
+            var tabs = (self.dict[id] ? self.dict[id].tabs : []).filter(function(tab) {
+                if (tab.permission) {
+                    return countlyAuth.validateRead(tab.permission);
+                }
+                return countlyAuth.validateGlobalAdmin();
+            });
 
             tabs.forEach(function(t) {
                 if (t.vuex) {
