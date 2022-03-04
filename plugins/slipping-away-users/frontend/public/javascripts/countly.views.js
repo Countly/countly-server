@@ -1,4 +1,4 @@
-/*global app,countlySlippingAwayUsers,countlyVue,$,CV,countlyCommon,CountlyHelpers*/
+/*global app,countlySlippingAwayUsers,countlyVue,$,CV,countlyCommon,CountlyHelpers,countlyAuth*/
 (function() {
 
     var FEATURE_NAME = "slipping_away_users";
