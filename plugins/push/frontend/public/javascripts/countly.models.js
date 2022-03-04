@@ -698,11 +698,7 @@
                     data: JSON.stringify(data),
                     contentType: "application/json",
                     success: function(response) {
-                        if (countlyPushNotification.helper.hasNoUsersToSendPushNotification(response)) {
-                            console.log(response);
-                            reject(new Error('No users were found from selected configuration.'));
-                            return;
-                        }
+
                         resolve(response);
                     },
                     error: function(error) {

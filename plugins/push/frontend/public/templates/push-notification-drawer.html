@@ -59,7 +59,7 @@
                 <div class="cly-vue-push-notification-drawer__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__checkbox-group-header">{{i18n('push-notification.platforms')}}</div>
                     <validation-provider v-slot="validation" rules="required" name="platforms">
-                        <el-checkbox-group v-model="pushNotificationUnderEdit.platforms">
+                        <el-checkbox-group v-model="pushNotificationUnderEdit.platforms" @change="onPlatformChange">
                             <el-checkbox 
                                 type="checkbox" 
                                 :label="PlatformEnum.ANDROID" 

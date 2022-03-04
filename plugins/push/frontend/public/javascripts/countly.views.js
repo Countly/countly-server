@@ -207,18 +207,25 @@
             },
             totalEnabledUsers: function() {
                 var self = this;
-                var total = 0;
+                if (this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.ANDROID;
+                }) &&
+                this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.IOS;
+                })) {
+                    return this.enabledUsers[this.PlatformEnum.ALL];
+                }
                 if (this.pushNotificationUnderEdit.platforms.some(function(selectedPlatform) {
                     return selectedPlatform === self.PlatformEnum.ANDROID;
                 })) {
-                    total += this.enabledUsers[this.PlatformEnum.ANDROID];
+                    return this.enabledUsers[this.PlatformEnum.ANDROID];
                 }
                 if (this.pushNotificationUnderEdit.platforms.some(function(selectedPlatform) {
                     return selectedPlatform === self.PlatformEnum.IOS;
                 })) {
-                    total += this.enabledUsers[this.PlatformEnum.IOS];
+                    return this.enabledUsers[this.PlatformEnum.IOS];
                 }
-                return total;
+                return 0;
             },
             selectedMessageLocale: function() {
                 return this.pushNotificationUnderEdit.message[this.activeLocalization];
@@ -377,6 +384,32 @@
             setCurrentNumberOfUsers: function(value) {
                 this.currentNumberOfUsers = value;
             },
+            updateEnabledNumberOfUsers: function(value) {
+                var self = this;
+                if (this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.ANDROID;
+                }) &&
+                this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.IOS;
+                })) {
+                    this.enabledUsers[this.PlatformEnum.ALL] = value;
+                    return;
+                }
+                if (this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.ANDROID;
+                })) {
+                    this.enabledUsers[this.PlatformEnum.ANDROID] = value;
+                    this.enabledUsers[this.PlatformEnum.IOS] = 0;
+                    return;
+                }
+                if (this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.IOS;
+                })) {
+                    this.enabledUsers[this.PlatformEnum.IOS] = value;
+                    this.enabledUsers[this.PlatformEnum.ANDROID] = 0;
+                    return;
+                }
+            },
             setLocalizationOptions: function(localizations) {
                 this.localizationOptions = localizations;
             },
@@ -401,14 +434,22 @@
                     preparePushNotificationModel.type = self.type;
                     countlyPushNotification.service.estimate(preparePushNotificationModel, options).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
+                        self.setCurrentNumberOfUsers(response.total);
+                        self.updateEnabledNumberOfUsers(response.total);
+                        if (response.total === 0) {
+                            resolve(false);
+                            CountlyHelpers.notify({ message: 'No users were found from selected configuration.', type: "error"});
+                            return;
+                        }
                         if (response._id) {
                             self.setId(response._id);
                         }
-                        self.setCurrentNumberOfUsers(response.total);
                         resolve(true);
                     }).catch(function(error) {
                         console.error(error);
                         self.setLocalizationOptions([]);
+                        self.setCurrentNumberOfUsers(0);
+                        self.updateEnabledNumberOfUsers(0);
                         CountlyHelpers.notify({ message: error.message, type: "error"});
                         resolve(false);
                     }).finally(function() {
@@ -570,9 +611,17 @@
                 this.closeAddUserPropertyPopover();
                 this.$emit('onClose');
             },
+            onPlatformChange: function() {
+                if (this.pushNotificationUnderEdit.platforms.length) {
+                    this.estimate();
+                }
+            },
             onOpen: function() {
                 if (this.id) {
                     this.fetchPushNotificationById();
+                }
+                if (this.from) {
+                    this.estimate();
                 }
             },
             addButton: function() {
