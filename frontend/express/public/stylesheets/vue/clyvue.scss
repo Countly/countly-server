@@ -1099,6 +1099,12 @@
         display: flex;
         height: #{$cp-preview-height};
         .picker-body {
+            &--left{ 
+                left:0
+            }
+            &--right{
+                left: #{-$cp-preview-width};
+            }
             position: relative;
             box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08);
             border: 1px solid #d0d0d0;
@@ -1107,7 +1113,6 @@
             height: 415px;
             background-color: #ffffff;
             top: #{$cp-preview-height};
-            left: #{-$cp-preview-width};
             z-index: 9999;
             > .vc-sketch {
                 background-color: transparent;
@@ -1144,9 +1149,11 @@
             box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08);
             box-sizing: border-box;
             width: 138px;
+            height: 32px;
             cursor: pointer;
             div {
                 margin-top: 5px;
+                position: relative;
                 img {
                     position: absolute;
                 }
