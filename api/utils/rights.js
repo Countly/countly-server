@@ -972,3 +972,86 @@ exports.getAdminApps = function(member) {
         }
     }
 };
+
+/** Unset true marked all flags in permission objects
+* @param {object} row  group or member object
+* @param {string} type  'group' or 'member'
+* @param {function} callback callback function
+*/
+var unsetAllFlags = function(row, type, callback) {
+    // check users who has permission property
+    // loop for all access types
+    // loop for all apps
+    // if access type in this app has true "all" flag, make it false    
+    var types = ["c", "r", "u", "d"];
+    for (var i = 0; i < types.length; i++) {
+        var apps = Object.keys(row.permission[types[i]]);
+        for (var j = 0; j < apps.length; j++) {
+            if (row.permission[types[i]][apps[j]].all) {
+                row.permission[types[i]][apps[j]].all = false;
+            }
+        }
+    }
+    common.db.collection(type + 's').update({
+        _id: row._id
+    },
+    {
+        $set: {
+            permission: row.permission
+        }
+    },
+    function(err) {
+        if (err) {
+            console.log('Error:unsetAllFlags: something went wrong while updating ' + type, err, row._id);
+        }
+        callback();
+    });
+};
+
+exports.newFeatureActivated = function(groupsEnabled) {
+    common.db.collection('members').find({}).toArray(function(err, members) {
+        if (!err) {
+            async.each(members, function(member, callback) {
+                // member should not be in a group
+                if (member.permission && (typeof member.group_id === "undefined" || !member.group_id.length)) {
+                    unsetAllFlags(member, 'member', callback);
+                }
+            });
+        }
+        else {
+            console.log('Error:newFeatureActivated: something went wrong while fetching members', err);
+        }
+    });
+    if (groupsEnabled) {
+        common.db.collection('groups').find({}).toArray(function(err, groups) {
+            if (!err) {
+                async.each(groups, function(group, groupCallback) {
+                    if (group.permission) {
+                        // modify group permission
+                        unsetAllFlags(group, 'group', function() {});
+                    }
+                    if (typeof group.users === "object" && group.users.length) {
+                        // modify members permission inside of group
+                        async.each(group.users, function(memberId, memberCallback) {
+                            common.db.collection('members').findOne({
+                                _id: memberId
+                            },
+                            function(memberUpdateErr, member) {
+                                if (!memberUpdateErr && member) {
+                                    unsetAllFlags(member, 'member', memberCallback);
+                                }
+                                else {
+                                    memberCallback();
+                                }
+                            });
+                        });
+                        groupCallback();
+                    }
+                });
+            }
+            else {
+                console.log('Error:newFeatureActivated: something went wrong while fetching groups', err);
+            }
+        });
+    }
+};

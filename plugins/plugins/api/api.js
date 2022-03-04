@@ -5,7 +5,7 @@ var plugin = {},
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
-    { validateUser, validateGlobalAdmin } = require('../../../api/utils/rights.js');
+    { validateUser, validateGlobalAdmin, newFeatureActivated } = require('../../../api/utils/rights.js');
 
 (function() {
     plugins.register('/i/plugins', function(ob) {
@@ -38,13 +38,14 @@ var plugin = {},
                             before[i] = true;
                         }
                     }
+                    var pluginName = Object.keys(before)[0];
                     plugins.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
                     process.send({ cmd: "startPlugins" });
                     plugins.loadConfigs(common.db, function() {
                         plugins.syncPlugins(params.qstring.plugin, function(err) {
                             if (!err) {
                                 process.send({ cmd: "endPlugins" });
-                                updatePluginState("end");
+                                updatePluginState("end", params.qstring.plugin[pluginName], arr.indexOf('groups') > -1);
                             }
                             else {
                                 updatePluginState("failed");
@@ -315,7 +316,7 @@ var plugin = {},
         return true;
     });
 
-    var updatePluginState = function(state) {
+    var updatePluginState = function(state, newStatus, groupsEnabled) {
         switch (state) {
         case 'start':
             common.db.collection('plugins').remove({"_id": "failed"}, function() {});
@@ -327,6 +328,9 @@ var plugin = {},
             break;
         case 'end':
             common.db.collection('plugins').remove({"_id": "busy"}, function() {});
+            if (newStatus) {
+                newFeatureActivated(groupsEnabled);
+            }
             break;
         }
     };
