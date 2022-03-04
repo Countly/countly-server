@@ -56,7 +56,7 @@
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addMenu("management", {code: "logs", url: "#/manage/logs", text: "Logs", priority: 30});
+            app.addMenu("management", {code: "logs", url: "#/manage/logs", text: "Logs", priority: 50});
         }
     });
 })();

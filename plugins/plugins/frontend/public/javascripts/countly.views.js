@@ -1104,7 +1104,7 @@
     $(document).ready(function() {
         if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateGlobalAdmin()) {
             if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
-                app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 90});
+                app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
             }
         }
         if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateGlobalAdmin()) {

@@ -873,7 +873,7 @@
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 44});
+            app.addMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 110});
 
             //check if configuration view exists
             if (app.configurationsView) {
