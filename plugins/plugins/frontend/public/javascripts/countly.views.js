@@ -317,17 +317,11 @@
                 .then(function() {
                     try {
                         self.configsData = JSON.parse(JSON.stringify(countlyPlugins.getConfigsData()));
-                        var arr = Object.entries(self.configsData);
-                        arr.forEach(function(arr2) {
-                            arr2.forEach(function() {
-                                if (arr2[1].use_google || arr2[1].google_maps_api_key) {
-                                    delete arr2[1].use_google;
-                                    delete arr2[1].google_maps_api_key;
-                                }
-                            });
-                        });
+                        self.removeNonGlobalConfigs(self.configsData);
                     }
-                    catch (ex) {
+                    catch (error) {
+                        // eslint-disable-next-line no-console
+                        console.error(error);
                         self.configsData = {};
                     }
 
@@ -361,7 +355,7 @@
                     });
                     var plugins = [];
                     for (var key in self.configsData) {
-                        if (self.coreDefaults.indexOf(key) === -1) {
+                        if (self.coreDefaults.indexOf(key) === -1 && countlyGlobal.plugins.indexOf(key) !== -1) {
                             plugins.push(key);
                         }
                         if (!self.predefinedStructure[key]) {
@@ -411,6 +405,20 @@
                 });
         },
         methods: {
+            removeNonGlobalConfigs: function(configData) {
+                Object.keys(configData).forEach(function(configKey) {
+                    if ((configData[configKey].use_google || configData[configKey].google_maps_api_key) && configKey === 'frontend') {
+                        delete configData[configKey].use_google;
+                        delete configData[configKey].google_maps_api_key;
+                    }
+                    if (configData[configKey].rate && configKey === 'push') {
+                        delete configData[configKey].rate; // Note: push notification rate is app level config only
+                    }
+                    if (configData[configKey].test && configKey === 'push') {
+                        delete configData[configKey].test; // Note: push notification test is app level config only
+                    }
+                });
+            },
             goBack: function() {
                 app.back();
             },
@@ -893,6 +901,9 @@
             }
             else if (jQuery.i18n.map[id + ".title"]) {
                 return jQuery.i18n.map[id + ".title"];
+            }
+            else if (jQuery.i18n.map[id + ".plugin-title"]) {
+                return jQuery.i18n.map[id + ".plugin-title"];
             }
             else if (jQuery.i18n.map["configs." + id]) {
                 return jQuery.i18n.map["configs." + id];

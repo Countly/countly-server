@@ -44,6 +44,9 @@
     var CrashOverviewView = countlyVue.views.create({
         template: "#crashes-overview",
         components: {"crash-tab-label": CrashStatisticsTabLabelView, "crash-badge": CrashBadgeView},
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         data: function() {
             var filterProperties = [];
             if (window.countlyQueryBuilder) {
