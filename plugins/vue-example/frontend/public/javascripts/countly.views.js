@@ -1126,6 +1126,7 @@
         priority: 1,
         title: 'External tab 1',
         name: 'external1',
+        permission: "core",
         route: "#/vue/example/external1",
         component: countlyVue.components.create({
             data: function() {
@@ -1154,6 +1155,7 @@
         priority: 2,
         title: 'External tab 2',
         name: 'external2',
+        permission: "core",
         route: "#/vue/example/external2",
         vuex: [{
             clyModel: window.foo

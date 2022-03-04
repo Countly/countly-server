@@ -369,6 +369,7 @@ var DrawerComponent = countlyVue.views.create({
 countlyVue.container.registerData("/custom/dashboards/widget", {
     type: "analytics",
     label: CV.i18n("user-analytics.overview-title"),
+    permission: "core",
     priority: 1,
     primary: false,
     getter: function(widget) {
@@ -428,6 +429,7 @@ countlyVue.container.registerTab("/analytics/users", {
     priority: 1,
     route: "#/analytics/users/overview",
     name: "overview",
+    permission: "core",
     title: CV.i18n('user-analytics.overview-title'),
     component: UserAnalyticsOverview,
     vuex: []

@@ -1040,7 +1040,7 @@
         });
     };
 
-    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME)) {
+    if (countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME)) {
         countlyCrashes.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 

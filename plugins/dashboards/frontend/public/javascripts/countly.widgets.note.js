@@ -135,6 +135,7 @@
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "note",
         label: CV.i18nM("dashboards.widget-type.note"),
+        permission: "core",
         priority: 5,
         primary: true,
         getter: function(widget) {

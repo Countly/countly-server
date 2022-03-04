@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCompareEvents, countlyAuth CV*/
+/* global countlyVue, countlyCompareEvents, CV*/
 (function() {
     var FEATURE_NAME = "compare";
     var CompareEventsTable = countlyVue.views.create({
@@ -147,15 +147,14 @@
 
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        countlyVue.container.registerTab("/analytics/events", {
-            priority: 2,
-            name: "compare",
-            title: "Compare Events",
-            component: CompareEvents,
-            vuex: [{
-                clyModel: countlyCompareEvents
-            }]
-        });
-    }
+    countlyVue.container.registerTab("/analytics/events", {
+        priority: 2,
+        name: "compare",
+        permission: FEATURE_NAME,
+        title: "Compare Events",
+        component: CompareEvents,
+        vuex: [{
+            clyModel: countlyCompareEvents
+        }]
+    });
 })();

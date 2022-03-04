@@ -365,6 +365,7 @@
     });
     countlyVue.container.registerData("/home/widgets", {
         _id: "events-dashboard-widget",
+        permission: "core",
         enabled: {"default": true}, //object. For each type set if by default enabled
         available: {"default": true}, //object. default - for all app types. For other as specified.
         placeBeforeDatePicker: true,

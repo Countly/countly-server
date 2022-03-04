@@ -102,6 +102,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     type: "mobile",
     priority: 5,
     name: "carriers",
+    permission: "core",
     title: CV.i18n('carriers.title'),
     route: "#/analytics/technology/carriers",
     component: AppCarrierView,

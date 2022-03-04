@@ -284,9 +284,7 @@
     });
 
     $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.plugin-title", priority: 30, classes: "populator-menu"});
-        }
+        app.addSubMenu("management", {code: "populate", permission: FEATURE_NAME, url: "#/manage/populate", text: "populator.plugin-title", priority: 30, classes: "populator-menu"});
     });
     countlyVue.container.registerMixin("/manage/export/export-features", {
         beforeCreate: function() {

@@ -264,6 +264,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     priority: 2,
     route: "#/analytics/technology/devices-and-types",
     name: "devices-and-types",
+    permission: "core",
     title: CV.i18n('devices.devices-and-types.title'),
     component: AllTabs,
     vuex: [{
@@ -474,6 +475,7 @@ var DrawerComponent = countlyVue.views.create({
 countlyVue.container.registerData("/custom/dashboards/widget", {
     type: "analytics",
     label: CV.i18n("sidebar.analytics.technology"),
+    permission: "core",
     priority: 1,
     primary: false,
     getter: function(widget) {
@@ -531,6 +533,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
 
 countlyVue.container.registerData("/home/widgets", {
     _id: "technology-dashboard-widget",
+    permission: "core",
     label: CV.i18n('sidebar.analytics.technology'),
     description: CV.i18n('sidebar.analytics.technology-description'),
     enabled: {"default": true}, //object. For each type set if by default enabled

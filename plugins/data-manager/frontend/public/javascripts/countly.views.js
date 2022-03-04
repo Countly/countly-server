@@ -1262,44 +1262,41 @@
         });
     };
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
+    app.route("/manage/data-manager/:primaryTab", 'data-manager', function(primaryTab) {
+        var mainView = getMainView();
+        mainView.params = {
+            primaryTab: primaryTab
+        };
+        this.renderWhenReady(mainView);
+    });
 
-        app.route("/manage/data-manager/:primaryTab", 'data-manager', function(primaryTab) {
-            var mainView = getMainView();
-            mainView.params = {
-                primaryTab: primaryTab
-            };
-            this.renderWhenReady(mainView);
-        });
+    app.route("/manage/data-manager/:primaryTab/:secondaryTab", 'data-manager', function(primaryTab, secondaryTab) {
+        var mainView = getMainView();
+        mainView.params = {
+            primaryTab: primaryTab,
+            secondaryTab: secondaryTab
+        };
+        this.renderWhenReady(mainView);
+    });
 
-        app.route("/manage/data-manager/:primaryTab/:secondaryTab", 'data-manager', function(primaryTab, secondaryTab) {
-            var mainView = getMainView();
-            mainView.params = {
-                primaryTab: primaryTab,
-                secondaryTab: secondaryTab
-            };
-            this.renderWhenReady(mainView);
-        });
+    app.route("/manage/data-manager/events/events/:eventId", 'data-manager-event-detail', function(eventId) {
+        var detailView = getEventDetailView();
+        detailView.params = {
+            eventId: eventId
+        };
+        this.renderWhenReady(detailView);
+    });
 
-        app.route("/manage/data-manager/events/events/:eventId", 'data-manager-event-detail', function(eventId) {
-            var detailView = getEventDetailView();
-            detailView.params = {
-                eventId: eventId
-            };
-            this.renderWhenReady(detailView);
-        });
+    app.route("/manage/data-manager/events/event-groups/:eventGroupId", 'data-manager-event-group-detail', function(eventGroupId) {
+        var detailView = getEventGroupDetailView();
+        detailView.params = {
+            eventGroupId: eventGroupId
+        };
+        this.renderWhenReady(detailView);
+    });
 
-        app.route("/manage/data-manager/events/event-groups/:eventGroupId", 'data-manager-event-group-detail', function(eventGroupId) {
-            var detailView = getEventGroupDetailView();
-            detailView.params = {
-                eventGroupId: eventGroupId
-            };
-            this.renderWhenReady(detailView);
-        });
-
-        $(document).ready(function() {
-            app.addSubMenu("management", { code: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
-        });
-    }
+    $(document).ready(function() {
+        app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
+    });
 
 })();
