@@ -767,21 +767,22 @@
 
 .emoji-invoker {
     position: absolute;
-    top: 0.25rem;
-    right: 0.85rem;
+    top: 0.35rem;
+    right: 0.35rem;
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all .2s;
+    transform: scale(0.7);
 }
 
 .emoji-invoker:hover {
-    transform: scale(1.1);
+    transform: scale(1);
 }
 
 .emoji-invoker > svg {
-    fill: #b1c6d0;
+    fill: #81868D;
 }
 
 .emoji-picker {
