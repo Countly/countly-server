@@ -596,7 +596,7 @@
                                             {{i18n('push-notification.message-title')}}
                                         </div>
                                         <div>
-                                            <el-button type="text" @click="onAddUserProperty('title')" class="bu-px-0">{{i18n('push-notification.add-variable')}}</el-button>
+                                            <el-button type="text" @click="onAddUserProperty('title')" class="bu-px-0 cly-text-button" size="small">{{i18n('push-notification.add-variable')}}</el-button>
                                         </div>
                                     </div>
                                     <message-editor-with-emoji-picker 
@@ -615,7 +615,7 @@
                                             {{i18n('push-notification.message-content')}}
                                         </div>
                                         <div>
-                                            <el-button type="text" @click="onAddUserProperty('content')" class="bu-px-0">{{i18n('push-notification.add-variable')}}</el-button>
+                                            <el-button type="text" @click="onAddUserProperty('content')" class="bu-px-0 cly-text-button" size="small">{{i18n('push-notification.add-variable')}}</el-button>
                                         </div>
                                     </div>
                                     <message-editor-with-emoji-picker 
@@ -656,7 +656,7 @@
                                     </div>
                                 </div>
                                 <div class="cly-vue-drawer-step__section bu-pb-1">
-                                    <el-button type="text" :disabled="isAddButtonDisabled" @click="addButton" class="bu-px-0">
+                                    <el-button type="text" :disabled="isAddButtonDisabled" @click="addButton" class="bu-px-0 cly-text-button" size="small">
                                         {{addButtonLabel}}
                                     </el-button>
                                 </div>

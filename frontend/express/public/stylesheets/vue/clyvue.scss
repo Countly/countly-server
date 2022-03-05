@@ -3944,6 +3944,9 @@
         color: map.get(c.$colors, "text-secondary");
         opacity: 0.7;
     }
+    &:hover {
+        background-color: transparent;
+    }
 }
 
 
