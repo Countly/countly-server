@@ -583,7 +583,9 @@
                     selectedMenuOptionLocal: null,
                     versionInfo: countlyGlobal.countlyTypeName,
                     showMainMenu: true,
-                    redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID
+                    redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID,
+                    onOptionsMenu: false,
+                    onMainMenu: false
                 };
             },
             computed: {
@@ -704,13 +706,18 @@
 
                     return member;
                 },
-                selectedMenuOption: function() {
+                pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
                     if (!this.selectedMenuOptionLocal && selected) {
                         return selected.menu;
                     }
 
                     return this.selectedMenuOptionLocal;
+                },
+                selectedMenuOption: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                    return selected && selected.menu;
                 }
             },
             methods: {
@@ -749,6 +756,89 @@
                     if (!selected || !selected.menu) {
                         this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: {}});
                     }
+
+                    if (selected && selected.menu && selected.menu === "dashboards") {
+                        /**
+                         * If the selected menu in vuex is dashboards, the sidebar should be floating.
+                         */
+                        this.showMainMenu = false;
+                    }
+                },
+                onOptionsMenuMouseOver: function() {
+                    this.onOptionsMenu = true;
+
+                    var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    if (selectedOption && selectedOption.menu === "dashboards" && !this.showMainMenu) {
+                        this.showMainMenu = true;
+                    }
+                },
+                onOptionsMenuMouseLeave: function() {
+                    var self = this;
+                    this.onOptionsMenu = false;
+                    var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    /**
+                     * We don't want to run our side effect in this tick.
+                     * We want to check if the user went over the main menu or not.
+                     * If he went over it, onMainMenuMouseOver will be triggered either in this tick or next.
+                     * In the next tick it will be clear to us whether the user went over the main menu or not.
+                     * If it doesn't get triggered in the next two ticks,
+                     * we can safely assume that the user is not over the main menu.
+                     * And thus hide the main menu.
+                     *
+                     * We need this handler mainly for the case when the user moves away
+                     * from the browser window. Basically the window is small and the user
+                     * is moving outside of the window from the left side.
+                     * Bcz if he goes to the right side, onMainMenu will be set to true,
+                     * and the main menu will still be visible.
+                     */
+                    this.$nextTick(function() {
+                        this.$nextTick(function() {
+                            setTimeout(function() {
+                                if (selectedOption && selectedOption.menu === "dashboards") {
+                                    if (!self.onMainMenu) {
+                                        /**
+                                         * If not on the main menu, hide the main menu.
+                                         */
+                                        self.showMainMenu = false;
+                                    }
+                                }
+                            }, 0);
+                        });
+                    });
+                },
+                onMainMenuMouseOver: function() {
+                    this.onMainMenu = true;
+                },
+                onMainMenuMouseLeave: function() {
+                    var self = this;
+                    this.onMainMenu = false;
+                    var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    /**
+                     * We don't want to run our side effect in this tick.
+                     * We want to check if the user went over the options menu or not.
+                     * If he went over it, onOptionsMenuMouseOver will be triggered either in this tick or next.
+                     * In the next tick it will be clear to us whether the user went over the options menu or not.
+                     * If it doesn't get triggered in the next two ticks,
+                     * we can safely assume that the user is not over the options menu.
+                     * And thus hide the main menu.
+                     */
+                    this.$nextTick(function() {
+                        this.$nextTick(function() {
+                            setTimeout(function() {
+                                if (selectedOption && selectedOption.menu === "dashboards") {
+                                    if (!self.onOptionsMenu) {
+                                        /**
+                                         * If not on the options menu, hide the main menu.
+                                         */
+                                        self.showMainMenu = false;
+                                    }
+                                }
+                            }, 0);
+                        });
+                    });
                 }
             },
             mounted: function() {
