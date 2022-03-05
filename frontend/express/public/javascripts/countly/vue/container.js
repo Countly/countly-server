@@ -101,8 +101,11 @@
                 return Object.keys(mapping).reduce(function(acc, val) {
                     var dataOb = self.dict[mapping[val]] ? self.dict[mapping[val]].data : [];
                     if (Array.isArray(dataOb)) {
-                        dataOb = dataOb.filter(function(data) {
-                            if (data.permission) {
+                        acc[val] = dataOb.filter(function(data) {
+                            if (data && data.permission) {
+                                return countlyAuth.validateRead(data.permission);
+                            }
+                            else if (data && data.node && data.node.permission) {
                                 return countlyAuth.validateRead(data.permission);
                             }
                             return true;
@@ -110,7 +113,7 @@
                     }
                     else {
                         for (var key in dataOb) {
-                            if (dataOb[key].permission) {
+                            if (dataOb[key] && dataOb[key].permission) {
                                 if (countlyAuth.validateRead(dataOb[key].permission)) {
                                     acc[val] = dataOb;
                                 }
