@@ -652,7 +652,9 @@
                                                 :class="{'is-error': validation.errors.length > 0}">
                                             </el-input>
                                         </validation-provider>
-                                        <div class="bu-pl-1" @click="removeButton(index)"><i class="fas fa-times"></i></div>
+                                        <div class="bu-ml-1 cly-icon-button cly-icon-button--gray" @click="removeButton(index)">
+                                            <i class="el-icon-close"></i>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="cly-vue-drawer-step__section bu-pb-1">
