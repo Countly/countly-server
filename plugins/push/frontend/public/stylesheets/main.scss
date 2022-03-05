@@ -488,12 +488,21 @@
         overflow-y: auto;
     }
 
+    &__subsection-left-row {
+        padding: 2.5px 0;
+        border-left: 2px solid transparent;
+        .el-checkbox__label {
+            width: 150px;
+        }
+    }
+
     &__subsection-left-row-active {
         background:#F6F6F6;
     }
 
     &__subsection-left-row:hover {
-        background:#cecece;
+        background:#F6F6F6;
+        border-left: 2px solid #0166D6;
     }
 
     &__subsection-left-list-item {

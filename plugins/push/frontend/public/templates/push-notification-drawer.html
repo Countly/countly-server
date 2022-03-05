@@ -577,16 +577,16 @@
                                 <div v-for="localization in localizationOptions" 
                                     v-bind:class="['bu-is-flex','bu-is-align-items-center','cly-vue-push-notification-drawer__subsection-left-row',activeLocalization === localization.value?'cly-vue-push-notification-drawer__subsection-left-row-active':null]">
                                     <el-checkbox 
-                                        class="bu-ml-1"                        
+                                        class="bu-ml-2"
                                         v-tooltip.top-left="isDefaultLocalizationActive? i18n('push-notification.default-message-is-required') : null"
                                         :checked="isLocalizationSelected(localization)" 
                                         :disabled="isDefaultLocalization(localization)" 
                                         :key="localization.value" 
                                         @change="onLocalizationChange(localization)">
+                                        <li class="cly-vue-push-notification-drawer__subsection-left-list-item bu-pr-3 bu-py-2">
+                                            {{localization.label}}
+                                        </li>
                                     </el-checkbox>
-                                    <li  @click="onLocalizationSelect(localization)" class="cly-vue-push-notification-drawer__subsection-left-list-item bu-px-3 bu-py-3">
-                                        {{localization.label}}
-                                    </li>
                                 </div>
                             </div>
                             <div v-bind:class="['bu-is-flex-grow-1', multipleLocalizations?'cly-vue-push-notification-drawer__subsection-right':'cly-vue-push-notification-drawer__subsection-border']">
