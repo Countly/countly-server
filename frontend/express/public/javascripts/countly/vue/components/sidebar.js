@@ -706,7 +706,7 @@
 
                     return member;
                 },
-                selectedMenuOption: function() {
+                pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
                     if (!this.selectedMenuOptionLocal && selected) {
@@ -715,7 +715,7 @@
 
                     return this.selectedMenuOptionLocal;
                 },
-                selectedMenu: function() {
+                selectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
                     return selected && selected.menu;
                 }

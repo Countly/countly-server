@@ -6,11 +6,11 @@
                 <div v-else-if="item.name === 'last-queries'">
                     <cly-report-manager-dialog :disableAutoNavigationToTask="false" :disableRunningCount="true">
                         <template v-slot:trigger="scope">
-                            <i :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]" @click="scope.showDialog"></i>
+                            <i :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === pseudoSelectedMenuOption}]" @click="scope.showDialog"></i>
                         </template>
                     </cly-report-manager-dialog>
                 </div>
-                <i v-else :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
+                <i v-else :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === pseudoSelectedMenuOption}]"></i>
             </li>
         </ul>
         <ul class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">
@@ -31,16 +31,16 @@
                         'cly-vue-sidebar__menu-option-toggle--rotate-right': !showMainMenu
                     }]"></i>
                 <a v-else-if="item.name === 'help-center'" href="https://support.count.ly/" target="_blank"><i :class="['cly-icon-btn', item.icon]"></i></a>
-                <i v-else :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
+                <i v-else :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === pseudoSelectedMenuOption}]"></i>
             </li>
         </ul>
     </div>
 
     <transition name="cly-vue-sidebar__slide-transition">
-        <div :class="['cly-vue-sidebar__menu', {'cly-vue-sidebar--floating': selectedMenu === 'dashboards'}]" v-show="showMainMenu" @mouseover="onMainMenuMouseOver" @mouseleave="onMainMenuMouseLeave">
-            <analytics-menu ref="analytics" v-show="selectedMenuOption === 'analytics'"></analytics-menu>
-            <management-menu ref="management" v-show="selectedMenuOption === 'management'"></management-menu>
-            <component :ref="item.name" v-for="item in components" :is="item.component" v-show="selectedMenuOption === item.name" :key="item.name"></component>
+        <div :class="['cly-vue-sidebar__menu', {'cly-vue-sidebar--floating': selectedMenuOption === 'dashboards'}]" v-show="showMainMenu" @mouseover="onMainMenuMouseOver" @mouseleave="onMainMenuMouseLeave">
+            <analytics-menu ref="analytics" v-show="pseudoSelectedMenuOption === 'analytics'"></analytics-menu>
+            <management-menu ref="management" v-show="pseudoSelectedMenuOption === 'management'"></management-menu>
+            <component :ref="item.name" v-for="item in components" :is="item.component" v-show="pseudoSelectedMenuOption === item.name" :key="item.name"></component>
             <div class="cly-vue-sidebar__version">{{versionInfo}}</div>
         </div>
     </transition>
