@@ -99,12 +99,28 @@
         var mixin = {
             data: function() {
                 return Object.keys(mapping).reduce(function(acc, val) {
-                    acc[val] = (self.dict[mapping[val]] ? self.dict[mapping[val]].data : []).filter(function(data) {
-                        if (data.permission) {
-                            return countlyAuth.validateRead(data.permission);
+                    var dataOb = self.dict[mapping[val]] ? self.dict[mapping[val]].data : [];
+                    if (Array.isArray(dataOb)) {
+                        dataOb = dataOb.filter(function(data) {
+                            if (data.permission) {
+                                return countlyAuth.validateRead(data.permission);
+                            }
+                            return true;
+                        });
+                    }
+                    else {
+                        for (var key in dataOb) {
+                            if (dataOb[key].permission) {
+                                if (countlyAuth.validateRead(dataOb[key].permission)) {
+                                    acc[val] = dataOb;
+                                }
+                            }
+                            else {
+                                acc[val] = dataOb;
+                            }
+                            break;
                         }
-                        return true;
-                    });
+                    }
                     return acc;
                 }, {});
             }
