@@ -2546,7 +2546,6 @@
         countlyVue.container.registerData('/custom/dashboards/widget', {
             type: 'push',
             label: CV.i18n('push-notification.title'),
-            permission: featureName,
             priority: 6,
             primary: true,
             getter: function(widget) {

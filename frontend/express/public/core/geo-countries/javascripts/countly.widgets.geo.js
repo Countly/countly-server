@@ -100,7 +100,6 @@
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
         label: CV.i18nM("dashboards.widget-type.analytics"),
-        permission: "core",
         priority: 1,
         primary: false,
         getter: function(widget) {
