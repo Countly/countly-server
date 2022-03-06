@@ -530,15 +530,11 @@
     alertsView.featureName = ALERTS_FEATURE_NAME;
 
 
-    if (countlyAuth.validateRead(ALERTS_FEATURE_NAME)) {
-        app.route('/manage/alerts', 'alerts', function() {
-            this.renderWhenReady(alertsView);
-        });
-    }
+    app.route('/manage/alerts', 'alerts', function() {
+        this.renderWhenReady(alertsView);
+    });
     $(document).ready(function() {
-        if (countlyAuth.validateRead(ALERTS_FEATURE_NAME)) {
-            app.addMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 100});
-        }
+        app.addMenu("management", {code: "alerts", permission: ALERTS_FEATURE_NAME, url: "#/manage/alerts", text: "alert.plugin-title", priority: 100});
 
         var conUpdateConcurrentUser = countlyAuth.validateUpdate("concurrent_users");
         var canCreateConcurrentUser = countlyAuth.validateCreate("concurrent_users");

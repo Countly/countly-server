@@ -7,7 +7,7 @@
 
             </div>
         </div>
-        <div class="bu-level-right">
+        <div class="bu-level-right" v-if="isAllowed">
             <div class="bu-level-item">
                 <clyd-bucket v-if="showBuckets" :widget-id="data._id" v-model="selectedBucket"></clyd-bucket>
             </div>
@@ -15,7 +15,7 @@
                <cly-more-options @command="onWidgetCommand">
                     <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
                     <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
-                    <el-dropdown-item  v-if="data.visualization === 'time-series' || data.visualization === 'bar-chart'" command="zoom">Zoom</el-dropdown-item>
+                    <el-dropdown-item  v-if="data.visualization === 'time-series' || data.visualization === 'bar-chart'" command="zoom">{{i18n('common.zoom-in')}}</el-dropdown-item>
                 </cly-more-options>
             </div>
         </div>

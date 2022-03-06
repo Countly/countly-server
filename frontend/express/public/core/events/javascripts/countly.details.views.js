@@ -259,6 +259,7 @@
     countlyVue.container.registerTab("/analytics/events", {
         priority: 1,
         name: "detail",
+        permission: "events",
         title: "Event Stats",
         route: "#/analytics/events",
         component: AllEventsView,

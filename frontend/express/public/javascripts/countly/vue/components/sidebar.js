@@ -3,7 +3,7 @@
 (function(countlyVue, $) {
 
     $(document).ready(function() {
-        var _featureMapper = {
+        /*var _featureMapper = {
                 "overview": "core",
                 "analytics": "core",
                 "events": "events",
@@ -63,45 +63,32 @@
                 "overview": ["core"],
                 "analytics": ["core"],
                 "management": ["populator", "config_transfer", "crashes", "blocks", "logger", "compliance_hub"]
-            };
+            };*/
 
         /**
         * Check feature permission before adding sidebar
         * @memberof app
-        * @param {string} code - code text of menu item
+        * @param {string} permission - permission name
         * @returns {boolean} - true if permission granted
         **/
-        var checkMenuPermission = function(code) {
-            if (_menuDependencies[code] && _menuDependencies[code].length) {
-                var granted = false;
-                for (var i = 0; i < _menuDependencies[code].length; i++) {
-                    if (_menuDependencies[code][i] !== "admin" && countlyAuth.validateRead(_menuDependencies[code][i])) {
-                        granted = true;
-                        break;
-                    }
-                    else if (_menuDependencies[code][i] === "admin" && countlyAuth.validateGlobalAdmin()) {
-                        granted = true;
-                        break;
-                    }
-                }
-                return granted;
+        var checkMenuPermission = function(permission) {
+            if (permission) {
+                return countlyAuth.validateRead(permission);
             }
-            return checkSubMenuPermission(code);
+            return countlyAuth.validateGlobalAdmin();
         };
 
         /**
         * Check feature permission before adding sidebar
         * @memberof app
-        * @param {string} code - code text of menu item
+        * @param {string} permission - permission name
         * @returns {boolean} - true if permission granted
         **/
-        var checkSubMenuPermission = function(code) {
-            if (_featureMapper[code] !== "admin") {
-                return countlyAuth.validateRead(_featureMapper[code]);
+        var checkSubMenuPermission = function(permission) {
+            if (permission) {
+                return countlyAuth.validateRead(permission);
             }
-            else {
-                return countlyAuth.validateGlobalAdmin();
-            }
+            return countlyAuth.validateGlobalAdmin();
         };
 
         var AppsMixin = {
@@ -272,8 +259,12 @@
                     }
                     var self = this;
                     var menus = this.menus.reduce(function(acc, val) {
-                        if (val.app_type === self.activeApp.type && checkMenuPermission(val.name)) {
-                            (acc[val.category] = acc[val.category] || []).push(val);
+                        if (val.app_type === self.activeApp.type && checkMenuPermission(val.permission)) {
+                            if (!acc[val.category]) {
+                                acc[val.category] = [];
+                            }
+
+                            acc[val.category].push(val);
                         }
                         return acc;
                     }, {});
@@ -285,8 +276,12 @@
                     }
                     var self = this;
                     var submenus = this.submenus.reduce(function(acc, val) {
-                        if (val.app_type === self.activeApp.type && checkSubMenuPermission(val.name)) {
-                            (acc[val.parent_code] = acc[val.parent_code] || []).push(val);
+                        if (val.app_type === self.activeApp.type && checkSubMenuPermission(val.permission)) {
+                            if (!acc[val.parent_code]) {
+                                acc[val.parent_code] = [];
+                            }
+
+                            acc[val.parent_code].push(val);
                         }
                         return acc;
                     }, {});
@@ -588,7 +583,9 @@
                     selectedMenuOptionLocal: null,
                     versionInfo: countlyGlobal.countlyTypeName,
                     showMainMenu: true,
-                    redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID
+                    redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID,
+                    onOptionsMenu: false,
+                    onMainMenu: false
                 };
             },
             computed: {
@@ -709,13 +706,18 @@
 
                     return member;
                 },
-                selectedMenuOption: function() {
+                pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
                     if (!this.selectedMenuOptionLocal && selected) {
                         return selected.menu;
                     }
 
                     return this.selectedMenuOptionLocal;
+                },
+                selectedMenuOption: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                    return selected && selected.menu;
                 }
             },
             methods: {
@@ -754,6 +756,89 @@
                     if (!selected || !selected.menu) {
                         this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: {}});
                     }
+
+                    if (selected && selected.menu && selected.menu === "dashboards") {
+                        /**
+                         * If the selected menu in vuex is dashboards, the sidebar should be floating.
+                         */
+                        this.showMainMenu = false;
+                    }
+                },
+                onOptionsMenuMouseOver: function() {
+                    this.onOptionsMenu = true;
+
+                    var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    if (selectedOption && selectedOption.menu === "dashboards" && !this.showMainMenu) {
+                        this.showMainMenu = true;
+                    }
+                },
+                onOptionsMenuMouseLeave: function() {
+                    var self = this;
+                    this.onOptionsMenu = false;
+                    var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    /**
+                     * We don't want to run our side effect in this tick.
+                     * We want to check if the user went over the main menu or not.
+                     * If he went over it, onMainMenuMouseOver will be triggered either in this tick or next.
+                     * In the next tick it will be clear to us whether the user went over the main menu or not.
+                     * If it doesn't get triggered in the next two ticks,
+                     * we can safely assume that the user is not over the main menu.
+                     * And thus hide the main menu.
+                     *
+                     * We need this handler mainly for the case when the user moves away
+                     * from the browser window. Basically the window is small and the user
+                     * is moving outside of the window from the left side.
+                     * Bcz if he goes to the right side, onMainMenu will be set to true,
+                     * and the main menu will still be visible.
+                     */
+                    this.$nextTick(function() {
+                        this.$nextTick(function() {
+                            setTimeout(function() {
+                                if (selectedOption && selectedOption.menu === "dashboards") {
+                                    if (!self.onMainMenu) {
+                                        /**
+                                         * If not on the main menu, hide the main menu.
+                                         */
+                                        self.showMainMenu = false;
+                                    }
+                                }
+                            }, 0);
+                        });
+                    });
+                },
+                onMainMenuMouseOver: function() {
+                    this.onMainMenu = true;
+                },
+                onMainMenuMouseLeave: function() {
+                    var self = this;
+                    this.onMainMenu = false;
+                    var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    /**
+                     * We don't want to run our side effect in this tick.
+                     * We want to check if the user went over the options menu or not.
+                     * If he went over it, onOptionsMenuMouseOver will be triggered either in this tick or next.
+                     * In the next tick it will be clear to us whether the user went over the options menu or not.
+                     * If it doesn't get triggered in the next two ticks,
+                     * we can safely assume that the user is not over the options menu.
+                     * And thus hide the main menu.
+                     */
+                    this.$nextTick(function() {
+                        this.$nextTick(function() {
+                            setTimeout(function() {
+                                if (selectedOption && selectedOption.menu === "dashboards") {
+                                    if (!self.onOptionsMenu) {
+                                        /**
+                                         * If not on the options menu, hide the main menu.
+                                         */
+                                        self.showMainMenu = false;
+                                    }
+                                }
+                            }, 0);
+                        });
+                    });
                 }
             },
             mounted: function() {

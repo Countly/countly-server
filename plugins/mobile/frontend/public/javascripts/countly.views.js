@@ -1,4 +1,4 @@
-/*globals countlyAnalyticsAPI, countlyAuth, MobileDashboardView,_,CountlyHelpers, countlyTotalUsers,Handlebars,countlyView,jQuery,$,app,countlyGlobal,countlySession,countlyCommon,countlyLocation */
+/*globals countlyAnalyticsAPI, MobileDashboardView,_,CountlyHelpers, countlyTotalUsers,Handlebars,countlyView,jQuery,$,app,countlyGlobal,countlySession,countlyCommon,countlyLocation */
 window.MobileDashboardView = countlyView.extend({
     featureName: 'mobile',
     selectedView: "#draw-total-sessions",
@@ -334,24 +334,22 @@ app.addAppManagementSwitchCallback(function(appId, type) {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead('core')) {
-        app.addSubMenuForType("mobile", "analytics", {code: "analytics-technology", url: "#/analytics/technology", text: "sidebar.analytics.technology", priority: 30});
-        app.addSubMenuForType("mobile", "analytics", {code: "analytics-geo", url: "#/analytics/geo", text: "sidebar.analytics.geo", priority: 40});
-        app.addSubMenuForType("mobile", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.session", priority: 20});
-        app.addSubMenuForType("mobile", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
-        app.addSubMenuForType("mobile", "analytics", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 15});
+    app.addSubMenuForType("mobile", "analytics", {code: "analytics-technology", permission: "core", url: "#/analytics/technology", text: "sidebar.analytics.technology", priority: 30});
+    app.addSubMenuForType("mobile", "analytics", {code: "analytics-geo", permission: "core", url: "#/analytics/geo", text: "sidebar.analytics.geo", priority: 40});
+    app.addSubMenuForType("mobile", "analytics", {code: "analytics-sessions", permission: "core", url: "#/analytics/sessions", text: "sidebar.analytics.session", priority: 20});
+    app.addSubMenuForType("mobile", "analytics", {code: "analytics-users", permission: "core", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
+    app.addSubMenuForType("mobile", "analytics", {code: "analytics-loyalty", permission: "core", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 15});
 
-        app.addAppSwitchCallback(function(appId) {
-            if (countlyGlobal.apps[appId].type === "mobile") {
-                //revenue = IAP
-                jQuery.i18n.map["systemlogs.action.iap_updated"] = jQuery.i18n.map["mobile.systemlogs.action.iap_updated"];
-            }
-            app.appTypes.mobile.origLangs = {
-                "revenue.tooltip": jQuery.i18n.map["revenue.tooltip"],
-                "placeholder.iap-event-key": jQuery.i18n.map["placeholder.iap-event-key"],
-                "placeholder.iap-help": jQuery.i18n.map["placeholder.iap-help"],
-                "management-applications.iap-event": jQuery.i18n.map["management-applications.iap-event"]
-            };
-        });
-    }
+    app.addAppSwitchCallback(function(appId) {
+        if (countlyGlobal.apps[appId].type === "mobile") {
+            //revenue = IAP
+            jQuery.i18n.map["systemlogs.action.iap_updated"] = jQuery.i18n.map["mobile.systemlogs.action.iap_updated"];
+        }
+        app.appTypes.mobile.origLangs = {
+            "revenue.tooltip": jQuery.i18n.map["revenue.tooltip"],
+            "placeholder.iap-event-key": jQuery.i18n.map["placeholder.iap-event-key"],
+            "placeholder.iap-help": jQuery.i18n.map["placeholder.iap-help"],
+            "management-applications.iap-event": jQuery.i18n.map["management-applications.iap-event"]
+        };
+    });
 });

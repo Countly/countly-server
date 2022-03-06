@@ -246,6 +246,7 @@ var AppPlatformView = countlyVue.views.create({
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 1,
     name: "platforms",
+    permission: "core",
     route: "#/analytics/technology/platforms",
     title: CV.i18n('platforms.title'),
     component: AppPlatformView

@@ -92,8 +92,15 @@
                                         :value="configsData[selectedConfig][key]"
                                         v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                     </el-color-picker>
-                                    <el-upload 
-                                        class="config-image-uploader"
+                                    <cly-colorpicker 
+                                        v-else-if="getInputType(key) === 'cly-colorpicker'" 
+                                        v-model="configsData[selectedConfig][key]"
+                                        :value="configsData[selectedConfig][key]"
+                                        @change="onChange(key,configsData[selectedConfig][key])"
+                                        v-bind="predefinedInputs[selectedConfig + '.' + key].attrs"
+                                        style="display:inline">
+                                    </cly-colorpicker>
+                                    <el-upload
                                         v-else-if="getInputType(key) === 'image'" 
                                         :show-file-list="false"
                                         :before-upload="predefinedInputs[selectedConfig + '.' + key].before"
@@ -102,7 +109,7 @@
                                         v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                         <div :class="predefinedInputs[selectedConfig + '.' + key].image_size">
                                             <img v-if="configsData[selectedConfig][key]" :src="'/white-label/preview/' + configsData[selectedConfig][key] + '?' + Date.now()">
-                                            <i v-else class="el-icon-plus config-image-uploader-icon"></i>
+                                            <el-button v-else type="default">Choose File</el-button>
                                             <el-button 
                                                 v-if="configsData[selectedConfig][key]"
                                                 size="small" 

@@ -57,6 +57,7 @@ var AppVersionView = countlyVue.views.create({
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 4,
     name: "versions",
+    permission: "core",
     title: CV.i18n('app-versions.title'),
     route: "#/analytics/technology/versions",
     component: AppVersionView

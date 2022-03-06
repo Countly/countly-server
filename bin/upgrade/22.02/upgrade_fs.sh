@@ -56,6 +56,7 @@ then
     #disable old plugins
     countly plugin disable EChartMap
     countly plugin disable restrict
+    countly plugin disable assistant
     
     #get web sdk
     countly update sdk-web

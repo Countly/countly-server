@@ -207,7 +207,6 @@ $bg-color: #24292e;
         border-bottom: 1px solid map.get(c.$colors, "warm-gray-70");
         background-color: $bg-color;
         box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
-        padding-bottom: 16px;
     }
 
     &__header {
@@ -364,7 +363,7 @@ $bg-color: #24292e;
     }
 
     &__user-divider {
-        border: 1px solid map.get(c.$colors, "warm-gray-30");;
+        border: 1px solid map.get(c.$colors, "warm-gray-30");
         margin-top: 5px;
         position: relative;
     }
@@ -485,5 +484,10 @@ $bg-color: #24292e;
                 width: 11px;
             }
         }
+    }
+
+    &--floating {
+        position: absolute;
+        left: 48px;
     }
 }

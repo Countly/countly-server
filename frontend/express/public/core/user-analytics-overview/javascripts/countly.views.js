@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery, countlyGlobal*/
+/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery*/
 var UserAnalyticsOverview = countlyVue.views.create({
     template: CV.T("/core/user-analytics-overview/templates/overview.html"),
     data: function() {
@@ -180,13 +180,17 @@ app.route("/analytics/users/*tab", "user-analytics-tab", function(tab) {
 //Analytics->User analytics - overview widget
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
+    mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
     props: {
         data: {
             type: Object,
             default: function() {
                 return {};
             }
+        },
+        isAllowed: {
+            type: Boolean,
+            default: true
         }
     },
     mounted: function() {
@@ -238,7 +242,7 @@ var GridComponent = countlyVue.views.create({
                     var name = this.map[this.data.metrics[k]] || this.data.metrics[k];
 
                     if (multiApps) {
-                        name = (countlyGlobal.apps[app].name || app) + " (" + name + ")";
+                        name = (this.__allApps[app] && this.__allApps[app].name || app) + " (" + name + ")";
                     }
                     series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], color: countlyCommon.GRAPH_COLORS[series.length]});
                 }
@@ -428,6 +432,7 @@ countlyVue.container.registerTab("/analytics/users", {
     priority: 1,
     route: "#/analytics/users/overview",
     name: "overview",
+    permission: "core",
     title: CV.i18n('user-analytics.overview-title'),
     component: UserAnalyticsOverview,
     vuex: []

@@ -342,6 +342,7 @@ var CountriesHomeWidget = countlyVue.views.create({
 
 countlyVue.container.registerData("/home/widgets", {
     _id: "countries-dashboard-widget",
+    permission: "core",
     label: CV.i18n('countries.title'),
     description: CV.i18n('countries.description'),
     enabled: {"default": true}, //object. For each type set if by default enabled
@@ -394,6 +395,7 @@ app.route("/analytics/geo/countries/*region", "analytics-geo", function(region) 
 countlyVue.container.registerTab("/analytics/geo", {
     priority: 1,
     name: "countries",
+    permission: "core",
     title: CV.i18n('sidebar.analytics.countries'),
     route: "#/analytics/geo/countries",
     component: CountryView,
