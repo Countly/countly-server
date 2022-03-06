@@ -180,7 +180,7 @@ app.route("/analytics/users/*tab", "user-analytics-tab", function(tab) {
 //Analytics->User analytics - overview widget
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
+    mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
     props: {
         data: {
             type: Object,

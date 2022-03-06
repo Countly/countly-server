@@ -150,17 +150,33 @@
         }
     };
 
-
-    var _mixins = {
-        'autoRefresh': autoRefreshMixin,
-        'refreshOnParentActive': refreshOnParentActiveMixin,
-        'i18n': i18nMixin,
-        'commonFormatters': commonFormattersMixin,
-        'auth': authMixin,
-        'basicComponentUtils': basicComponentUtilsMixin
+    var DashboardsAppsMixin = {
+        computed: {
+            __allApps: function() {
+                return this.$store.getters["countlyDashboards/allApps"];
+            }
+        },
+        methods: {
+            __getAppName: function(appId) {
+                if (this.__allApps && this.__allApps[appId] && this.__allApps[appId].name) {
+                    return this.__allApps[appId].name;
+                }
+                else {
+                    return appId;
+                }
+            },
+            __getAppLogo: function(appId) {
+                if (this.__allApps && this.__allApps[appId] && this.__allApps[appId].image) {
+                    return this.__allApps[appId].image;
+                }
+                else {
+                    return 'appimages/' + appId + '.png';
+                }
+            }
+        }
     };
 
-    var DashboardsHelpersMixin = {
+    var DashboardsWidgetMixin = {
         methods: {
             calculateTableDataFromWidget: function(widgetData) {
                 widgetData = widgetData || {};
@@ -288,7 +304,18 @@
         }
     };
 
-    _mixins.DashboardsHelpersMixin = DashboardsHelpersMixin;
+    var _mixins = {
+        'autoRefresh': autoRefreshMixin,
+        'refreshOnParentActive': refreshOnParentActiveMixin,
+        'i18n': i18nMixin,
+        'commonFormatters': commonFormattersMixin,
+        'auth': authMixin,
+        'basicComponentUtils': basicComponentUtilsMixin,
+        'customDashboards': {
+            apps: DashboardsAppsMixin,
+            widget: DashboardsWidgetMixin
+        },
+    };
 
     var _globalVuexStore = new Vuex.Store({
         modules: {

@@ -508,7 +508,8 @@
                 var appsObj = apps.reduce(function(acc, app) {
                     acc[app._id] = {
                         _id: app._id,
-                        name: app.name
+                        name: app.name,
+                        image: app.image
                     };
                     return acc;
                 }, {});
@@ -518,7 +519,8 @@
                 for (var key in countlyGlobal.apps) {
                     globalApps[key] = {
                         _id: key,
-                        name: countlyGlobal.apps[key].name
+                        name: countlyGlobal.apps[key].name,
+                        image: countlyGlobal.apps[key].image
                     };
                 }
 

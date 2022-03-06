@@ -3,7 +3,7 @@
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
