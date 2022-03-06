@@ -372,7 +372,8 @@
                     id: null,
                     data: null
                 },
-                events: {}
+                events: {},
+                apps: {}
             };
         };
 
@@ -382,6 +383,9 @@
             },
             selected: function(state) {
                 return state.selected;
+            },
+            allApps: function(state) {
+                return state.apps;
             },
             reportDateRangeDict: function() {
                 return {
@@ -498,6 +502,12 @@
                 var eventsObj = state.events;
                 eventsObj[events._id] = events;
                 state.events = JSON.parse(JSON.stringify(eventsObj));
+            },
+            setApps: function(state, apps) {
+                state.apps = apps.reduce(function(acc, app) {
+                    acc[app._id] = app;
+                    return acc;
+                }, {});
             }
         };
 
@@ -528,6 +538,7 @@
                     var isSane = context.getters["requests/isSane"];
                     var dashbaord = null;
                     var widgets = [];
+                    var apps = [];
                     var dId = null;
 
                     if (res && res._id) {
@@ -536,6 +547,7 @@
                         if (dId === dashboardId) {
                             dashbaord = res;
                             widgets = dashbaord.widgets || [];
+                            apps = dashbaord.apps || [];
                         }
                         else {
                             dId = null;
@@ -563,6 +575,9 @@
                         }
 
                         context.dispatch("widgets/setAll", widgets);
+                        context.commit("setApps", apps);
+
+                        return false;
                     }
 
                     return dashbaord;
@@ -595,21 +610,16 @@
                 });
 
                 var widgets = dash && dash.widgets || [];
+                var apps = dash && dash.apps || [];
 
                 context.commit("setSelectedDashboard", {id: dashboardId, data: dash});
-
-                /*
-                    Set all widgets of this dashboard here in the vuex store - Start
-                */
                 context.dispatch("widgets/setAll", widgets);
-                /*
-                    Set all widgets of this dashboard here in the vuex store - End
-                */
+                context.commit("setApps", apps);
 
                 /*
                     We have already set the current dashboard and its widget data in the vuex store
                     But we will update it again after we have the updated data from the server
-                    Until the request is processing, we will show the loading states for the widgets if no data is available
+                    Until the request is processing, we will show the loading states for the widgets if no data is available.
                 */
 
                 if (dashboardId) {
