@@ -795,6 +795,10 @@
                 default: function() {
                     return {};
                 }
+            },
+            isAllowed: {
+                type: Boolean,
+                default: true
             }
         },
         mounted: function() {

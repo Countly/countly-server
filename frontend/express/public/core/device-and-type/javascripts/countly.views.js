@@ -365,6 +365,10 @@ var GridComponent = countlyVue.views.create({
             default: function() {
                 return {};
             }
+        },
+        isAllowed: {
+            type: Boolean,
+            default: true
         }
     },
     mounted: function() {

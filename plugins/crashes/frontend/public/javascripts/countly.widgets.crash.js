@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyGlobal, countlyCommon */
+/*global countlyVue, CV, countlyCommon */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
@@ -10,6 +10,10 @@
                 default: function() {
                     return {};
                 }
+            },
+            isAllowed: {
+                type: Boolean,
+                default: true
             }
         },
         data: function() {
