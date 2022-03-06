@@ -795,6 +795,10 @@
                 default: function() {
                     return {};
                 }
+            },
+            isAllowed: {
+                type: Boolean,
+                default: true
             }
         },
         mounted: function() {
@@ -924,7 +928,6 @@
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
         label: CV.i18n("views.widget-type"),
-        permission: FEATURE_NAME,
         priority: 1,
         primary: false,
         getter: function(widget) {
