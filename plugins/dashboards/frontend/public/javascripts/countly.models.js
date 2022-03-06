@@ -509,7 +509,8 @@
                     acc[app._id] = {
                         _id: app._id,
                         name: app.name,
-                        image: app.image
+                        image: app.image,
+                        type: app.type
                     };
                     return acc;
                 }, {});
@@ -520,7 +521,8 @@
                     globalApps[key] = {
                         _id: key,
                         name: countlyGlobal.apps[key].name,
-                        image: countlyGlobal.apps[key].image
+                        image: countlyGlobal.apps[key].image,
+                        type: countlyGlobal.apps[key].type
                     };
                 }
 

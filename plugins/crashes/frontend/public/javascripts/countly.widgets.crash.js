@@ -47,10 +47,10 @@
                     for (var k = 0; k < this.data.metrics.length; k++) {
                         if (multiApps) {
                             if (this.data.metrics.length > 1) {
-                                name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+                                name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (this.__allApps[app] && this.__allApps[app].name || "Unknown");
                             }
                             else {
-                                name = (countlyGlobal.apps[app].name || "");
+                                name = (this.__allApps[app] && this.__allApps[app].name || "Unknown");
                             }
                         }
                         else {

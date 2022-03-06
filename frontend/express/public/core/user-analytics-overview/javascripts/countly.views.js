@@ -238,7 +238,7 @@ var GridComponent = countlyVue.views.create({
                     var name = this.map[this.data.metrics[k]] || this.data.metrics[k];
 
                     if (multiApps) {
-                        name = (countlyGlobal.apps[app].name || app) + " (" + name + ")";
+                        name = (this.__allApps[app] && this.__allApps[app].name || app) + " (" + name + ")";
                     }
                     series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], color: countlyCommon.GRAPH_COLORS[series.length]});
                 }

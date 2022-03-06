@@ -96,10 +96,10 @@
                         for (var k = 0; k < this.data.metrics.length; k++) {
                             if (multiApps) {
                                 if (this.data.metrics.length > 1) {
-                                    name = eventName + " " + (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+                                    name = eventName + " " + (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (this.__allApps[app] && this.__allApps[app].name || "");
                                 }
                                 else {
-                                    name = (eventName + " " + countlyGlobal.apps[app].name || "");
+                                    name = (eventName + " " + this.__allApps[app] && this.__allApps[app].name || "");
                                 }
                             }
                             else {

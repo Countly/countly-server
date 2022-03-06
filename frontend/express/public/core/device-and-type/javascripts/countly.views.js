@@ -358,7 +358,7 @@ var TechnologyHomeWidget = countlyVue.views.create({
 
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
+    mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.zoom],
     props: {
         data: {
             type: Object,
