@@ -408,6 +408,7 @@
             },
             allEvents: function(state) {
                 var eventsObj = state.events;
+                var appsObj = state.apps;
 
                 return function(appIds) {
                     var allEvents = [];
@@ -423,7 +424,7 @@
                                     var isGroupEvent = false;
                                     var eventName = events.list[k];
 
-                                    var eventNamePostfix = (appIds.length > 1) ? " (" + ((countlyGlobal.apps[events._id] && countlyGlobal.apps[events._id].name) || "Unknown") + ")" : "";
+                                    var eventNamePostfix = (appIds.length > 1) ? " (" + ((appsObj[events._id] && appsObj[events._id].name) || "Unknown") + ")" : "";
 
                                     if (events.map && events.map[eventName] && events.map[eventName].is_group_event) {
                                         isGroupEvent = true;
@@ -504,10 +505,24 @@
                 state.events = JSON.parse(JSON.stringify(eventsObj));
             },
             setApps: function(state, apps) {
-                state.apps = apps.reduce(function(acc, app) {
-                    acc[app._id] = app;
+                var appsObj = apps.reduce(function(acc, app) {
+                    acc[app._id] = {
+                        _id: app._id,
+                        name: app.name
+                    };
                     return acc;
                 }, {});
+
+                var globalApps = {};
+
+                for (var key in countlyGlobal.apps) {
+                    globalApps[key] = {
+                        _id: key,
+                        name: countlyGlobal.apps[key].name
+                    };
+                }
+
+                state.apps = Object.assign({}, appsObj, globalApps);
             }
         };
 
