@@ -232,9 +232,15 @@ plugins.register("/i/hook/save", function(ob) {
     return true;
 });
 
+/**
+ * build mongodb query for app level permission control
+ * @param {objext} query - init mongodb query object
+ * @param {object} params - countly params from requested upstream
+ * @returns  {object} newQuery - new query object
+ */
 function getVisibilityQuery(query, params) {
     let member = params.member;
-    rights.getUserAppsForFeaturePermission(member, FEATURE_NAME, 'r')
+    rights.getUserAppsForFeaturePermission(member, FEATURE_NAME, 'r');
 
     if (member.global_admin) {
         return query;
