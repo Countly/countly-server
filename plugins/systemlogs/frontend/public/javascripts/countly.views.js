@@ -1,4 +1,4 @@
-/*global countlySystemLogs, countlyAttribution, countlyCrashes, moment, countlyCommon, countlyGlobal, app, $, jQuery, countlyVue, CV */
+/*global countlySystemLogs, countlyAttribution, countlyCrashes, moment, countlyCommon, countlyGlobal, app, $, jQuery, countlyVue, CV, countlyAuth */
 
 (function() {
     var FEATURE_NAME = "systemlogs";
@@ -214,40 +214,42 @@
         }
     });
 
-    countlyVue.container.registerTab("/manage/logs", {
-        priority: 2,
-        route: "#/manage/logs/systemlogs",
-        component: SystemLogsView,
-        title: "Audit Logs",
-        name: "systemlogs",
-        permission: FEATURE_NAME,
-        vuex: []
-    });
-
-    app.addRefreshScript("/manage/compliance#", function() {
-        if (app.activeView.dtableactionlogs) {
-            app.activeView.dtableactionlogs.fnDraw(false);
-        }
-    });
-
-    $(document).ready(function() {
-        app.addPageScript("/manage/users", function() {
-            setTimeout(function() {
-                $("#user-table").on("click", "tr", function() {
-                    var container = $(this);
-                    if (container.find("td.details").length === 0) {
-                        setTimeout(function() {
-                            container = container.next("tr");
-                            var id = container.find(".user_id").val();
-                            container.find(".button-container").append("<a class='icon-button light' data-localize='systemlogs.view-user-actions' href='#/manage/logs/systemlogs/filter/{\"user_id\":\"" + id + "\"}'>" + jQuery.i18n.map["systemlogs.view-user-actions"] + "</a>");
-                        }, 0);
-                    }
-                });
-            }, 1000);
+    if (countlyAuth.validateGlobalAdmin()) {
+        countlyVue.container.registerTab("/manage/logs", {
+            priority: 2,
+            route: "#/manage/logs/systemlogs",
+            component: SystemLogsView,
+            title: "Audit Logs",
+            name: "systemlogs",
+            permission: FEATURE_NAME,
+            vuex: []
         });
 
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel('systemlogs.preventIPTracking', 'systemlogs.prevent-ip-tracking');
-        }
-    });
+        app.addRefreshScript("/manage/compliance#", function() {
+            if (app.activeView.dtableactionlogs) {
+                app.activeView.dtableactionlogs.fnDraw(false);
+            }
+        });
+
+        $(document).ready(function() {
+            app.addPageScript("/manage/users", function() {
+                setTimeout(function() {
+                    $("#user-table").on("click", "tr", function() {
+                        var container = $(this);
+                        if (container.find("td.details").length === 0) {
+                            setTimeout(function() {
+                                container = container.next("tr");
+                                var id = container.find(".user_id").val();
+                                container.find(".button-container").append("<a class='icon-button light' data-localize='systemlogs.view-user-actions' href='#/manage/logs/systemlogs/filter/{\"user_id\":\"" + id + "\"}'>" + jQuery.i18n.map["systemlogs.view-user-actions"] + "</a>");
+                            }, 0);
+                        }
+                    });
+                }, 1000);
+            });
+
+            if (app.configurationsView) {
+                app.configurationsView.registerLabel('systemlogs.preventIPTracking', 'systemlogs.prevent-ip-tracking');
+            }
+        });
+    }
 })();
