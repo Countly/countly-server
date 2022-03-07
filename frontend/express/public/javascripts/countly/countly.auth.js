@@ -380,4 +380,13 @@
         }
     };
 
+    countlyAuth.featureBeautifier = function(featureName) {
+        var fa = featureName.split('_');
+        var ret = '';
+        for (var i = 0; i < fa.length; i++) {
+            ret += fa[i].substr(0, 1).toUpperCase() + fa[i].substr(1, fa[i].length - 1) + ' ';
+        }
+        return $.i18n.map[featureName + ".plugin-title"] || $.i18n.map[featureName + ".title"] || ret;
+    };
+
 })(window.countlyAuth = window.countlyAuth || {});
