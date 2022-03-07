@@ -51,4 +51,17 @@
         h2 {letter-spacing: 0.3px;}
         h3 {letter-spacing: 0.3px;}
     }
+    .image-delete{
+        .el-button--text:active, .el-button--text:focus, .el-button--text:hover {
+            border-color: #fff;
+            background-color: #fff;
+            color: #D23F00;
+        }
+    }
+    .el-upload img {
+        width:165px;
+        height: 50px;
+        margin-left:24px;
+        cursor: default;
+    }
 }
