@@ -54,7 +54,7 @@
 </script>
 
 <script type="text/x-template" id="add-user-property-popover">
-    <div>
+    <div ref="addUserPropertyPopover">
         <div v-if="isOpen" v-bind:style="getStyleObject" class="cly-vue-push-notification-add-user-property-popover">
             <div class="cly-vue-push-notification-add-user-property-popover__inner">
                 <div class="cly-vue-push-notification-add-user-property-popover__title">{{i18n('push-notification.add-user-property')}}</div>
@@ -207,7 +207,7 @@
 </script>
 
 <script type="text/x-template" id="message-editor-with-emoji-picker" class="cly-vue-push-notification-message-editor-with-emoji-picker">
-    <div class="cly-vue-push-notification-emoji-wrapper">
+    <div class="cly-vue-push-notification-emoji-wrapper" style="position:relative;">
         <validation-provider ref="defaultLocalizationValidationProvider" v-slot="validation" :rules="isRequired?'required':null"> </validation-provider>
         <div :class="['el-input',hasValidationErrors?'is-error':null]" style="display:block;" @click="onClick">
             <component 
@@ -220,6 +220,21 @@
                 @keydown.enter.prevent>
             </component>
         </div>
+        <add-user-property-popover
+            :width="350"
+            :isOpen="isOpen"
+            :container="container"
+            :userProperty="userProperty"
+            :options="options"
+            :position="position"
+            @select="onSelectUserProperty"
+            @input="onInputUserProperty"
+            @fallback="onInputFallbackUserProperty"
+            @uppercase="onCheckUppercaseUserProperty"
+            @remove="onRemoveUserProperty"
+            @close="closeAddUserPropertyPopover"
+        >
+        </add-user-property-popover>
         <emoji-picker @emoji="appendEmoji" :search="search">
             <template  v-slot:emoji-invoker ="{ events: { click: clickEvent } }">   
                 <div class="emoji-invoker" @click.stop="clickEvent">

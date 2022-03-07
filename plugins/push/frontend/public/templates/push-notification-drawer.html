@@ -25,22 +25,6 @@
         <el-button size="small" @click="onDraft" type="default" :disabled="!isDraftButtonEnabled">{{i18n('push-notification.save-as-draft')}}</el-button>
     </template>
     <template v-slot:default="drawerScope">
-        <add-user-property-popover 
-            :isOpen="isAddUserPropertyPopoverOpen"
-            :width="350"
-            ref="addUserPropertyPopover"
-            :id="selectedUserPropertyId"
-            :container="selectedUserPropertyContainer"
-            :userProperty="pushNotificationUnderEdit.message[activeLocalization].properties[selectedUserPropertyContainer][selectedUserPropertyId]"
-            :options="userPropertiesOptions"
-            :position="addUserPropertyPopoverPosition"
-            @select="onSelectUserProperty"
-            @input="onInputUserProperty"
-            @fallback="onInputFallbackUserProperty"
-            @uppercase="onCheckUppercaseUserProperty"
-            @remove="onRemoveUserProperty"
-            @close="closeAddUserPropertyPopover">
-        </add-user-property-popover>
             <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')" v-loading="isLoading">
                 <div class="cly-vue-push-notification-drawer__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.notification-name')}}</div>
@@ -601,12 +585,21 @@
                                     </div>
                                     <message-editor-with-emoji-picker 
                                         ref="title"
+                                        :isOpen="isAddUserPropertyPopoverOpen.title"
                                         container="title"
                                         id="input-element-title"
                                         :isDefaultLocalizationActive="isDefaultLocalizationActive"
+                                        :userProperty="pushNotificationUnderEdit.message[activeLocalization].properties.title[selectedUserPropertyId]"
+                                        :options="userPropertiesOptions"
                                         @change="onTitleChange"
                                         @delete="onRemoveUserProperty"
-                                        @click="onUserPropertyClick">
+                                        @click="onUserPropertyClick"
+                                        @select="onSelectUserProperty"
+                                        @input="onInputUserProperty"
+                                        @fallback="onInputFallbackUserProperty"
+                                        @uppercase="onCheckUppercaseUserProperty"
+                                        @remove="onRemoveUserProperty"
+                                        @close="closeAddUserPropertyPopover">
                                     </message-editor-with-emoji-picker>
                                 </div>
                                 <div class="cly-vue-drawer-step__section">
@@ -620,15 +613,24 @@
                                     </div>
                                     <message-editor-with-emoji-picker 
                                         ref="content"
-                                        id="input-element-content"
+                                        :isOpen="isAddUserPropertyPopoverOpen.content"
                                         container="content"
+                                        id="input-element-content"
                                         :isRequired="true"
                                         type="textarea"
+                                        :placeholder="i18n('push-notification.clear-and-shorter-messages')"
                                         :isDefaultLocalizationActive="isDefaultLocalizationActive"
-                                        :placeholder="i18n('push-notification.clear-and-shorter-messages')" 
+                                        :userProperty="pushNotificationUnderEdit.message[activeLocalization].properties.content[selectedUserPropertyId]"
+                                        :options="userPropertiesOptions"
                                         @change="onContentChange"
                                         @delete="onRemoveUserProperty"
-                                        @click="onUserPropertyClick">
+                                        @click="onUserPropertyClick"
+                                        @select="onSelectUserProperty"
+                                        @input="onInputUserProperty"
+                                        @fallback="onInputFallbackUserProperty"
+                                        @uppercase="onCheckUppercaseUserProperty"
+                                        @remove="onRemoveUserProperty"
+                                        @close="closeAddUserPropertyPopover">
                                     </message-editor-with-emoji-picker>
                                 </div>
                                 <div class="cly-vue-drawer-step__section">
