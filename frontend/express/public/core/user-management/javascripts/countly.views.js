@@ -372,6 +372,12 @@
                         this.permissionSets[index][type].allowed[this.features[feature2]] = this.permissionSets[index][type].all;
                     }
                 }
+                if (this.permissionSets[index][type].all) {
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.future-plugins'),
+                        type: 'info'
+                    });
+                }
             },
             handleCommand: function(command, index) {
                 switch (command) {
