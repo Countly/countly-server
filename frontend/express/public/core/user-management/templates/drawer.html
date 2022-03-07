@@ -190,7 +190,7 @@
                         <el-checkbox @change="setPermissionByFeature(index, 'c', feature)" v-model="permissionSets[index].c.allowed[feature]"></el-checkbox>
                       </div>
                       <div class="user-management-drawer-content__permission-box">
-                        <el-checkbox :disabled="feature === 'core'" @change="setPermissionByFeature(index, 'r', feature)" v-model="permissionSets[index].r.allowed[feature]"></el-checkbox>
+                        <el-checkbox @change="setPermissionByFeature(index, 'r', feature)" v-model="permissionSets[index].r.allowed[feature]"></el-checkbox>
                       </div>
                       <div class="user-management-drawer-content__permission-box">
                         <el-checkbox @change="setPermissionByFeature(index, 'u', feature)" v-model="permissionSets[index].u.allowed[feature]"></el-checkbox>
