@@ -466,7 +466,7 @@
                     var mm = m.data().menus;
 
                     var menu = mm.filter(function(val) {
-                       if (val.category === "management") {
+                        if (val.category === "management") {
                             return true;
                         }
                         return false;
