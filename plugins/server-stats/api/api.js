@@ -3,12 +3,19 @@ const { getUserApps } = require('../../../api/utils/rights.js');
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
+    { validateUser } = require('../../../api/utils/rights.js'),
     stats = require('./parts/stats.js');
 
 var log = common.log('data-points:api');
 
+const FEATURE_NAME = 'server-stats';
+
 (function() {
 
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+    
     plugins.register("/master", function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
@@ -138,7 +145,7 @@ var log = common.log('data-points:api');
             _id: {$in: []}
         };
 
-        ob.validateUserForMgmtReadAPI(function() {
+        validateUser(params, function() {
             if (!params.member.global_admin) {
                 var apps = getUserApps(params.member) || [];
                 for (let i = 0; i < periodsToFetch.length; i++) {
@@ -184,18 +191,18 @@ var log = common.log('data-points:api');
                 });
             }
 
-        }, params);
+        });
 
         return true;
     });
 
     plugins.register("/o/server-stats/top", function(ob) {
         var params = ob.params;
-        ob.validateUserForMgmtReadAPI(async() => {
+        validateUser(params, async() => {
             stats.getTop(common.db, params, function(res) {
                 common.returnOutput(params, res);
             });
-        }, params);
+        });
         return true;
     });
 
@@ -205,7 +212,7 @@ var log = common.log('data-points:api');
     **/
     plugins.register("/o/server-stats/punch-card", function(ob) {
         var params = ob.params;
-        ob.validateUserForMgmtReadAPI(async() => {
+        validateUser(params, async() => {
             var periodsToFetch = [];
             params.qstring.period = params.qstring.period || "30days";
             countlyCommon.setPeriod(params.qstring.period);
@@ -251,7 +258,7 @@ var log = common.log('data-points:api');
                 log.e("Error while fetching punch card data: ", error.message);
                 common.returnMessage(params, 400, "Something went wrong");
             }
-        }, params);
+        });
         return true;
     });
 }());
