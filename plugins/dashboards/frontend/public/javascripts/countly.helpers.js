@@ -5,27 +5,6 @@
      * DRAWER HELPERS
      */
 
-    var AppsMixin = {
-        methods: {
-            getAppName: function(appId) {
-                if (countlyGlobal.apps && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].name) {
-                    return countlyGlobal.apps[appId].name;
-                }
-                else {
-                    return appId;
-                }
-            },
-            getAppLogo: function(appId) {
-                if (countlyGlobal.apps && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].image) {
-                    return countlyGlobal.apps[appId].image;
-                }
-                else {
-                    return 'appimages/' + appId + '.png';
-                }
-            }
-        }
-    };
-
     var MetricComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/metric.html'),
         props: {
@@ -129,6 +108,7 @@
 
     var BreakdownComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/breakdown.html'),
+        mixins: [countlyVue.mixins.customDashboards.apps],
         props: {
             appId: {
                 type: String,
@@ -166,7 +146,7 @@
 
                 switch (this.type) {
                 case "session":
-                    var app = countlyGlobal.apps[appId];
+                    var app = this.__allApps[appId];
                     if (app && app.type) {
 
                         breakdowns.push(
@@ -285,7 +265,7 @@
                         breakdowns.push({ label: this.i18n("density.title"), value: "density"});
                     }
 
-                    var app1 = countlyGlobal.apps[appId];
+                    var app1 = this.__allApps[appId];
                     if (app1 && app1.type) {
                         if (app1.type === "web") {
                             if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("browser") > -1) {
@@ -975,7 +955,7 @@
      */
     var PrimaryWidgetLegend = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/widget/primary-legend.html'),
-        mixins: [AppsMixin],
+        mixins: [countlyVue.mixins.customDashboards.apps],
         props: {
             apps: {
                 type: Array,
@@ -1005,8 +985,8 @@
 
                 return {
                     id: appId,
-                    name: this.getAppName(appId),
-                    image: 'background-image: url("' + this.getAppLogo(appId) + '")'
+                    name: this.__getAppName(appId),
+                    image: 'background-image: url("' + this.__getAppLogo(appId) + '")'
                 };
             }
         }
@@ -1018,7 +998,7 @@
      */
     var SecondaryWidgetLegend = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/widget/secondary-legend.html'),
-        mixins: [AppsMixin],
+        mixins: [countlyVue.mixins.customDashboards.apps],
         props: {
             apps: {
                 type: Array,
@@ -1043,8 +1023,8 @@
                     var appId = this.apps[i];
                     appData.push({
                         id: appId,
-                        name: this.getAppName(appId),
-                        image: 'background-image: url("' + this.getAppLogo(appId) + '")',
+                        name: this.__getAppName(appId),
+                        image: 'background-image: url("' + this.__getAppLogo(appId) + '")',
                         labels: labels[appId] || []
                     });
                 }

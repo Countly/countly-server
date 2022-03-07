@@ -105,10 +105,10 @@
         P12: 'p12'
     });
     var UserPropertyTypeEnum = Object.freeze({
-        EVENT: 'event',
-        USER: 'user',
-        CUSTOM: 'custom',
-        API: 'api'
+        EVENT: 'e',
+        USER: 'u',
+        CUSTOM: 'c',
+        API: 'a'
     });
 
     var AddTestUserDefinitionTypeEnum = Object.freeze({
@@ -1573,23 +1573,7 @@
                     return self.mapPlatformItem(platform);
                 });
             },
-            mapUserPropertyType: function(type) {
-                if (type === UserPropertyTypeEnum.USER) {
-                    return 'u';
-                }
-                if (type === UserPropertyTypeEnum.CUSTOM) {
-                    return 'c';
-                }
-                if (type === UserPropertyTypeEnum.EVENT) {
-                    return 'e';
-                }
-                if (type === UserPropertyTypeEnum.API) {
-                    return 'a';
-                }
-                throw new Error('Unknown user property type:' + type);
-            },
             mapUserProperties: function(localizedMessage, container) {
-                var self = this;
                 var userPropertyDto = {};
                 var indices = this.getUserPropertiesIndices(localizedMessage, container);
                 var userPropertyIds = this.getUserPropertiesIds(localizedMessage, container);
@@ -1598,7 +1582,7 @@
                         f: localizedMessage.properties[container][userPropertyId].fallback,
                         c: localizedMessage.properties[container][userPropertyId].isUppercase,
                         k: localizedMessage.properties[container][userPropertyId].value,
-                        t: self.mapUserPropertyType(localizedMessage.properties[container][userPropertyId].type),
+                        t: localizedMessage.properties[container][userPropertyId].type,
                     };
                 });
                 return userPropertyDto;

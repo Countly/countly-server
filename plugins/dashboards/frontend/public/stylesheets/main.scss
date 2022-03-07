@@ -48,10 +48,16 @@
         }
     }
 
-    .grid-stack-item-content {
-        background-color: map.get(c.$colors, "white");
-        border: 1px solid #E2E4E8;
-        border-radius: 4px;
+    .grid-stack-item {
+        &-content {
+            background-color: map.get(c.$colors, "white");
+            border: 1px solid #E2E4E8;
+            border-radius: 4px;
+        }
+
+        .el-loading-mask {
+            z-index: 1999;
+        }
     }
 
     .clyd-visualization {

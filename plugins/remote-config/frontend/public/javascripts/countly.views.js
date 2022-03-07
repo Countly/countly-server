@@ -897,27 +897,21 @@
             templates: templates
         });
     };
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
+    app.route("/remote-config", 'remote-config', function() {
+        var mainView = getMainView();
+        this.renderWhenReady(mainView);
+    });
 
-        app.route("/remote-config", 'remote-config', function() {
-            var mainView = getMainView();
-            this.renderWhenReady(mainView);
-        });
-
-        app.route("/remote-config/*tab", 'remote-config-tab', function(tab) {
-            var mainView = getMainView();
-            var params = {
-                tab: tab
-            };
-            mainView.params = params;
-            this.renderWhenReady(mainView);
-        });
-    }
+    app.route("/remote-config/*tab", 'remote-config-tab', function(tab) {
+        var mainView = getMainView();
+        var params = {
+            tab: tab
+        };
+        mainView.params = params;
+        this.renderWhenReady(mainView);
+    });
     $(document).ready(function() {
         //We shouldn't be using $ (jquery)
-
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addMenu("improve", {code: "remote-config", url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
-        }
+        app.addMenu("improve", {code: "remote-config", permission: FEATURE_NAME, url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
     });
 })();

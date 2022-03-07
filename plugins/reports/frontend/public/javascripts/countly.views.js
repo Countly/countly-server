@@ -3,7 +3,6 @@
     countlyCommon,
     CountlyHelpers,
     countlyGlobal,
-    countlyAuth,
     countlyEvent,
     countlyReporting,
     jQuery,
@@ -356,26 +355,22 @@
     });
     reportsView.featureName = FEATURE_NAME;
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route('/manage/reports', 'reports', function() {
-            this.renderWhenReady(reportsView);
-        });
-        app.route('/manage/reports/create/dashboard/:dashboardID', 'reports', function(dashboardID) {
-            reportsView._createDashboard = dashboardID;
-            this.renderWhenReady(reportsView);
-        });
-    }
+    app.route('/manage/reports', 'reports', function() {
+        this.renderWhenReady(reportsView);
+    });
+    app.route('/manage/reports/create/dashboard/:dashboardID', 'reports', function(dashboardID) {
+        reportsView._createDashboard = dashboardID;
+        this.renderWhenReady(reportsView);
+    });
 
     $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 90});
-            if (app.configurationsView) {
-                app.configurationsView.registerLabel("reports", "reports.title");
-                app.configurationsView.registerLabel(
-                    "reports.secretKey",
-                    "reports.secretKey"
-                );
-            }
+        app.addMenu("management", {code: "reports", permission: FEATURE_NAME, url: "#/manage/reports", text: "reports.title", priority: 90});
+        if (app.configurationsView) {
+            app.configurationsView.registerLabel("reports", "reports.title");
+            app.configurationsView.registerLabel(
+                "reports.secretKey",
+                "reports.secretKey"
+            );
         }
 
         if (countlyGlobal.plugins.indexOf("dashboards") > -1) {

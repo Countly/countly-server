@@ -1,4 +1,4 @@
-/*global countlyAuth, app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $ */
+/*global app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $ */
 (function() {
     var FEATURE_NAME = "sources";
 
@@ -288,21 +288,23 @@
         component: SourcesContainer
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route("/analytics/acquisition", 'acqusition', function() {
-            this.renderWhenReady(SourcesView);
-        });
-    }
+    app.route("/analytics/acquisition", 'acqusition', function() {
+        this.renderWhenReady(SourcesView);
+    });
 
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
                 default: function() {
                     return {};
                 }
+            },
+            isAllowed: {
+                type: Boolean,
+                default: true
             }
         },
         data: function() {
@@ -570,37 +572,35 @@
         }
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        countlyVue.container.registerData("/home/widgets", {
-            _id: "sources-dashboard-widget",
-            label: CV.i18n('sidebar.acquisition'),
-            description: CV.i18n('sources.description'),
-            enabled: {"default": true}, //object. For each type set if by default enabled
-            available: {"default": false, "mobile": true, "web": true}, //object. default - for all app types. For other as specified.
-            placeBeforeDatePicker: false,
-            order: 3,
-            linkTo: {"label": CV.i18n('sources.go-to-acquisition'), "href": "#/analytics/acquisition"},
-            component: SourcesDashboardWidget
-        });
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "sources-dashboard-widget",
+        permission: FEATURE_NAME,
+        label: CV.i18n('sidebar.acquisition'),
+        description: CV.i18n('sources.description'),
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": false, "mobile": true, "web": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: false,
+        order: 3,
+        linkTo: {"label": CV.i18n('sources.go-to-acquisition'), "href": "#/analytics/acquisition"},
+        component: SourcesDashboardWidget
+    });
 
-        countlyVue.container.registerData("/home/widgets", {
-            _id: "keywords-dashboard-widget",
-            label: CV.i18n('keywords.top_terms'),
-            description: CV.i18n('sources.description'),
-            enabled: {"default": true}, //object. For each type set if by default enabled
-            available: {"default": false, "web": true}, //object. default - for all app types. For other as specified.
-            placeBeforeDatePicker: false,
-            linkTo: {"label": CV.i18n('keywords.go-to-keywords'), "href": "#/analytics/acquisition/search-terms"},
-            order: 5,
-            width: 6,
-            component: KeywordsDashboardWidget
-        });
-    }
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "keywords-dashboard-widget",
+        permission: FEATURE_NAME,
+        label: CV.i18n('keywords.top_terms'),
+        description: CV.i18n('sources.description'),
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": false, "web": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: false,
+        linkTo: {"label": CV.i18n('keywords.go-to-keywords'), "href": "#/analytics/acquisition/search-terms"},
+        order: 5,
+        width: 6,
+        component: KeywordsDashboardWidget
+    });
 
     $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
-            app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
-        }
+        app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
+        app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
     });
 })();

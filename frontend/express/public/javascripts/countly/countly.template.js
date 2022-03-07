@@ -695,6 +695,7 @@ var AppRouter = Backbone.Router.extend({
     _subMenuForCodes: {},
     _subMenus: {},
     _internalMenuCategories: ["management", "user"],
+    _uniqueMenus: {},
     /**
     * Add menu category. Categories will be copied for all app types and its visibility should be controled from the app type plugin
     * @memberof app
@@ -790,6 +791,22 @@ var AppRouter = Backbone.Router.extend({
             throw "Provide code, text, icon and priority properties for menu element";
         }
 
+        if (!this._uniqueMenus[app_type]) {
+            this._uniqueMenus[app_type] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][category]) {
+            this._uniqueMenus[app_type][category] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][category][node.code]) {
+            this._uniqueMenus[app_type][category][node.code] = true;
+        }
+        else {
+            //duplicate menu
+            return;
+        }
+
         //New sidebar container hook
         countlyVue.container.registerData("/sidebar/analytics/menu", {
             app_type: app_type,
@@ -799,6 +816,7 @@ var AppRouter = Backbone.Router.extend({
             title: node.text,
             url: node.url,
             icon: node.icon,
+            permission: node.permission,
             node: node
             /*
                 Following secondary params are simply passed to registry, but not directly used for now:
@@ -908,6 +926,22 @@ var AppRouter = Backbone.Router.extend({
             throw "Provide text, code, url and priority for sub menu";
         }
 
+        if (!this._uniqueMenus[app_type]) {
+            this._uniqueMenus[app_type] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][parent_code]) {
+            this._uniqueMenus[app_type][parent_code] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][parent_code][node.code]) {
+            this._uniqueMenus[app_type][parent_code][node.code] = true;
+        }
+        else {
+            //duplicate menu
+            return;
+        }
+
         //New sidebar container hook
         countlyVue.container.registerData("/sidebar/analytics/submenu", {
             app_type: app_type,
@@ -916,6 +950,7 @@ var AppRouter = Backbone.Router.extend({
             priority: node.priority,
             title: node.text,
             url: node.url,
+            permission: node.permission,
             node: node
             /*
                 Following secondary params are simply passed to registry, but not directly used for now:
@@ -1360,10 +1395,8 @@ var AppRouter = Backbone.Router.extend({
             self.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
             self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
             // self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
-            self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
-            if (countlyAuth.validateRead('events')) {
-                self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
-            }
+            self.addSubMenu("events", {code: "events-overview", permission: "events", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
+            self.addSubMenu("events", {code: "all-events", permission: "events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
             // if (countlyAuth.validateUpdate('events') || countlyAuth.validateDelete('events')) {
             //     self.addSubMenu("events", {code: "manage-events", url: "#/analytics/manage-events", text: "sidebar.events.blueprint", priority: 100});
             // }
@@ -1400,16 +1433,6 @@ var AppRouter = Backbone.Router.extend({
 
             // self.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
             // self.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
-
-            if ((countlyGlobal.plugins.indexOf("surveys") > -1) ||
-                (countlyGlobal.plugins.indexOf("star-rating") > -1)) {
-                app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
-            }
-
-            if ((countlyGlobal.plugins.indexOf("crashes") > -1) ||
-                (countlyGlobal.plugins.indexOf("crash_symbolication") > -1)) {
-                app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-            }
 
             Backbone.history.checkUrl();
 

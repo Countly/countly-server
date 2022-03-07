@@ -372,7 +372,8 @@
                     id: null,
                     data: null
                 },
-                events: {}
+                events: {},
+                apps: {}
             };
         };
 
@@ -382,6 +383,9 @@
             },
             selected: function(state) {
                 return state.selected;
+            },
+            allApps: function(state) {
+                return state.apps;
             },
             reportDateRangeDict: function() {
                 return {
@@ -404,6 +408,7 @@
             },
             allEvents: function(state) {
                 var eventsObj = state.events;
+                var appsObj = state.apps;
 
                 return function(appIds) {
                     var allEvents = [];
@@ -419,7 +424,7 @@
                                     var isGroupEvent = false;
                                     var eventName = events.list[k];
 
-                                    var eventNamePostfix = (appIds.length > 1) ? " (" + ((countlyGlobal.apps[events._id] && countlyGlobal.apps[events._id].name) || "Unknown") + ")" : "";
+                                    var eventNamePostfix = (appIds.length > 1) ? " (" + ((appsObj[events._id] && appsObj[events._id].name) || "Unknown") + ")" : "";
 
                                     if (events.map && events.map[eventName] && events.map[eventName].is_group_event) {
                                         isGroupEvent = true;
@@ -498,6 +503,30 @@
                 var eventsObj = state.events;
                 eventsObj[events._id] = events;
                 state.events = JSON.parse(JSON.stringify(eventsObj));
+            },
+            setApps: function(state, apps) {
+                var appsObj = apps.reduce(function(acc, app) {
+                    acc[app._id] = {
+                        _id: app._id,
+                        name: app.name,
+                        image: app.image,
+                        type: app.type
+                    };
+                    return acc;
+                }, {});
+
+                var globalApps = {};
+
+                for (var key in countlyGlobal.apps) {
+                    globalApps[key] = {
+                        _id: key,
+                        name: countlyGlobal.apps[key].name,
+                        image: countlyGlobal.apps[key].image,
+                        type: countlyGlobal.apps[key].type
+                    };
+                }
+
+                state.apps = Object.assign({}, appsObj, globalApps);
             }
         };
 
@@ -528,6 +557,7 @@
                     var isSane = context.getters["requests/isSane"];
                     var dashbaord = null;
                     var widgets = [];
+                    var apps = [];
                     var dId = null;
 
                     if (res && res._id) {
@@ -536,6 +566,7 @@
                         if (dId === dashboardId) {
                             dashbaord = res;
                             widgets = dashbaord.widgets || [];
+                            apps = dashbaord.apps || [];
                         }
                         else {
                             dId = null;
@@ -563,6 +594,9 @@
                         }
 
                         context.dispatch("widgets/setAll", widgets);
+                        context.commit("setApps", apps);
+
+                        return false;
                     }
 
                     return dashbaord;
@@ -595,21 +629,16 @@
                 });
 
                 var widgets = dash && dash.widgets || [];
+                var apps = dash && dash.apps || [];
 
                 context.commit("setSelectedDashboard", {id: dashboardId, data: dash});
-
-                /*
-                    Set all widgets of this dashboard here in the vuex store - Start
-                */
                 context.dispatch("widgets/setAll", widgets);
-                /*
-                    Set all widgets of this dashboard here in the vuex store - End
-                */
+                context.commit("setApps", apps);
 
                 /*
                     We have already set the current dashboard and its widget data in the vuex store
                     But we will update it again after we have the updated data from the server
-                    Until the request is processing, we will show the loading states for the widgets if no data is available
+                    Until the request is processing, we will show the loading states for the widgets if no data is available.
                 */
 
                 if (dashboardId) {

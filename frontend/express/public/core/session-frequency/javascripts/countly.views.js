@@ -58,6 +58,7 @@ var SessionFrequencyView = countlyVue.views.create({
 countlyVue.container.registerTab("/analytics/sessions", {
     priority: 3,
     name: "frequency",
+    permission: "core",
     title: CV.i18n('session-frequency.title'),
     route: "#/analytics/sessions/frequency",
     component: SessionFrequencyView,

@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal*/
+/* global countlyAuth,countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal*/
 var DevicesTabView = countlyVue.views.create({
     template: CV.T("/core/device-and-type/templates/devices-tab.html"),
     mounted: function() {
@@ -264,6 +264,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     priority: 2,
     route: "#/analytics/technology/devices-and-types",
     name: "devices-and-types",
+    permission: "core",
     title: CV.i18n('devices.devices-and-types.title'),
     component: AllTabs,
     vuex: [{
@@ -326,11 +327,13 @@ var TechnologyHomeWidget = countlyVue.views.create({
                 }];
 
             if (appType === "web") {
-                dd.push({
-                    "title": CV.i18n('common.bar.top-browsers'),
-                    "description": CV.i18n('common.bar.top-browsers.description'),
-                    "data": tops.browser || []
-                });
+                if (countlyAuth.validateRead('browser')) {
+                    dd.push({
+                        "title": CV.i18n('common.bar.top-browsers'),
+                        "description": CV.i18n('common.bar.top-browsers.description'),
+                        "data": tops.browser || []
+                    });
+                }
             }
             else {
                 dd.push({
@@ -355,13 +358,17 @@ var TechnologyHomeWidget = countlyVue.views.create({
 
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
+    mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.zoom],
     props: {
         data: {
             type: Object,
             default: function() {
                 return {};
             }
+        },
+        isAllowed: {
+            type: Boolean,
+            default: true
         }
     },
     mounted: function() {
@@ -531,6 +538,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
 
 countlyVue.container.registerData("/home/widgets", {
     _id: "technology-dashboard-widget",
+    permission: "core",
     label: CV.i18n('sidebar.analytics.technology'),
     description: CV.i18n('sidebar.analytics.technology-description'),
     enabled: {"default": true}, //object. For each type set if by default enabled

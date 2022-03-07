@@ -40,6 +40,7 @@ then
         #disable old plugins
         countly plugin disable EChartMap
         countly plugin disable restrict
+        countly plugin disable assistant
     fi
 
     #run upgrade scripts

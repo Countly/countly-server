@@ -561,16 +561,16 @@
                                 <div v-for="localization in localizationOptions" 
                                     v-bind:class="['bu-is-flex','bu-is-align-items-center','cly-vue-push-notification-drawer__subsection-left-row',activeLocalization === localization.value?'cly-vue-push-notification-drawer__subsection-left-row-active':null]">
                                     <el-checkbox 
-                                        class="bu-ml-1"                        
+                                        class="bu-ml-2"
                                         v-tooltip.top-left="isDefaultLocalizationActive? i18n('push-notification.default-message-is-required') : null"
                                         :checked="isLocalizationSelected(localization)" 
                                         :disabled="isDefaultLocalization(localization)" 
                                         :key="localization.value" 
                                         @change="onLocalizationChange(localization)">
+                                        <li class="cly-vue-push-notification-drawer__subsection-left-list-item bu-pr-3 bu-py-2">
+                                            {{localization.label}}
+                                        </li>
                                     </el-checkbox>
-                                    <li  @click="onLocalizationSelect(localization)" class="cly-vue-push-notification-drawer__subsection-left-list-item bu-px-3 bu-py-3">
-                                        {{localization.label}}
-                                    </li>
                                 </div>
                             </div>
                             <div v-bind:class="['bu-is-flex-grow-1', multipleLocalizations?'cly-vue-push-notification-drawer__subsection-right':'cly-vue-push-notification-drawer__subsection-border']">
@@ -580,7 +580,7 @@
                                             {{i18n('push-notification.message-title')}}
                                         </div>
                                         <div>
-                                            <el-button type="text" @click="onAddUserProperty('title')" class="bu-px-0">{{i18n('push-notification.add-variable')}}</el-button>
+                                            <el-button type="text" @click="onAddUserProperty('title')" class="bu-px-0 cly-text-button" size="small">{{i18n('push-notification.add-variable')}}</el-button>
                                         </div>
                                     </div>
                                     <message-editor-with-emoji-picker 
@@ -608,7 +608,7 @@
                                             {{i18n('push-notification.message-content')}}
                                         </div>
                                         <div>
-                                            <el-button type="text" @click="onAddUserProperty('content')" class="bu-px-0">{{i18n('push-notification.add-variable')}}</el-button>
+                                            <el-button type="text" @click="onAddUserProperty('content')" class="bu-px-0 cly-text-button" size="small">{{i18n('push-notification.add-variable')}}</el-button>
                                         </div>
                                     </div>
                                     <message-editor-with-emoji-picker 
@@ -654,11 +654,13 @@
                                                 :class="{'is-error': validation.errors.length > 0}">
                                             </el-input>
                                         </validation-provider>
-                                        <div class="bu-pl-1" @click="removeButton(index)"><i class="fas fa-times"></i></div>
+                                        <div class="bu-ml-1 cly-icon-button cly-icon-button--gray" @click="removeButton(index)">
+                                            <i class="el-icon-close"></i>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="cly-vue-drawer-step__section bu-pb-1">
-                                    <el-button type="text" :disabled="isAddButtonDisabled" @click="addButton" class="bu-px-0">
+                                    <el-button type="text" :disabled="isAddButtonDisabled" @click="addButton" class="bu-px-0 cly-text-button" size="small">
                                         {{addButtonLabel}}
                                     </el-button>
                                 </div>

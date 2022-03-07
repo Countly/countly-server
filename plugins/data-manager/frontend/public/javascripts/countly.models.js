@@ -89,10 +89,14 @@
                 }
             }, {"disableAutoCatch": true});
         },
-        changeVisibility: function(events, visibility) {
+        changeVisibility: function(events, visibility, ee) {
+            var url = countlyCommon.API_PARTS.data.w + "/events/change_visibility";
+            if (ee) {
+                url = countlyCommon.API_PARTS.data.w + "/data-manager/events/change_visibility";
+            }
             return CV.$.ajax({
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.w + "/events/change_visibility",
+                url: url,
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "set_visibility": visibility,
@@ -405,12 +409,16 @@
             },
             changeVisibility: function(context, data) {
                 var visibility = data.isVisible ? 'show' : 'hide';
-                countlyDataManager.service.changeVisibility(data.events, visibility).then(function(res) {
-                    if (res === 'Error') {
-                        return res;
+                countlyDataManager.service.changeVisibility(data.events, visibility, isDrill).then(function(res) {
+                    if (res === 'EVENT_STATUS_UNPLANNED') {
+                        CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-visibility-error'), sticky: false, type: 'error'});
                     }
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
+                }).catch(function(e) {
+                    if (e === 'EVENT_STATUS_UNPLANNED') {
+                        CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-visibility-error'), sticky: false, type: 'error'});
+                    }
                 });
             },
             deleteEvents: function(context, events) {
