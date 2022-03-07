@@ -1,5 +1,6 @@
 <div id="push-notification-app-config">
     <div>
+        <form>
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>{{i18n('push-notification.ios-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.IOS)" :disabled="isKeyEmpty(PlatformEnum.IOS)">{{i18n('push-notification.delete')}}</el-button>
@@ -43,16 +44,14 @@
         </template>
         <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P12">
             <cly-inline-form-field :label="i18n('push-notification.passphrase')">
-                <form>
                     <el-input type="password" :value="viewModel[PlatformEnum.IOS].passphrase" @input="onInput('passphrase',$event,PlatformEnum.IOS)" autocomplete="off"></el-input>
-                </form>            
             </cly-inline-form-field>
         </template>
 
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>{{i18n('push-notification.android-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.ANDROID)" :disabled="isKeyEmpty(PlatformEnum.ANDROID)">{{i18n('push-notification.delete')}}</el-button>
-        </div>        
+        </div>     
         <cly-inline-form-field :label="i18n('push-notification.firebase-key')">
             <el-input :value="viewModel[PlatformEnum.ANDROID].firebaseKey" @input="onInput('firebaseKey',$event,PlatformEnum.ANDROID)" autocomplete="off"></el-input>
         </cly-inline-form-field>
@@ -60,7 +59,7 @@
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>{{i18n('push-notification.huawei-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.HUAWEI)" :disabled="isKeyEmpty(PlatformEnum.HUAWEI)">{{i18n('push-notification.delete')}}</el-button>
-        </div>        
+        </div>
         <cly-inline-form-field :label="i18n('push-notification.huawei-app-id')" :rules="{required:isHuaweiConfigRequired}">
             <el-input :value="viewModel[PlatformEnum.HUAWEI].appId" @input="onInput('appId',$event,PlatformEnum.HUAWEI)" autocomplete="off"></el-input>
         </cly-inline-form-field>
@@ -77,6 +76,7 @@
         <cly-inline-form-field :label="i18n('push-notification.period-in-seconds')" rules="numeric">
             <el-input :value="viewModel.period" @input="onInput('period',$event)" autocomplete="off"></el-input>
         </cly-inline-form-field>
+        </form>
     </div>
     <div class="cly-vue-section bu-mr-4 cly-vue-section--has-default-skin">
         <div class="bu-is-flex bu-level bu-ml-6">

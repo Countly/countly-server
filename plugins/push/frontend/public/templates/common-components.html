@@ -30,12 +30,14 @@
                 <el-switch :value="toggle" @change="onToggle"></el-switch>
             </div>
         </div>
+        <form>
         <slot v-if="hasDefaultSlot && toggle"></slot>
         <template v-else> 
             <validation-provider v-slot="validation" v-if="toggle" :rules="rules">
                 <el-input :value="input" @input="onInput" :placeholder="placeholder" :class="{'is-error': validation.errors.length > 0}" autocomplete="off"></el-input>
             </validation-provider>
         </template>
+        </form>
     </div>
 </script>
 
@@ -55,6 +57,7 @@
 
 <script type="text/x-template" id="add-user-property-popover">
     <div ref="addUserPropertyPopover">
+        <form>
         <div v-if="isOpen" v-bind:style="getStyleObject" class="cly-vue-push-notification-add-user-property-popover">
             <div class="cly-vue-push-notification-add-user-property-popover__inner">
                 <div class="cly-vue-push-notification-add-user-property-popover__title">{{i18n('push-notification.add-user-property')}}</div>
@@ -112,6 +115,7 @@
                 </div>
             </div>
         </div>
+        </form>
     </div>
 </script>
 

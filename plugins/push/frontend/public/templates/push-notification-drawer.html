@@ -26,6 +26,7 @@
     </template>
     <template v-slot:default="drawerScope">
             <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')" v-loading="isLoading">
+                <form>
                 <div class="cly-vue-push-notification-drawer__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.notification-name')}}</div>
                     <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.notification-name-description')}}</div>
@@ -302,8 +303,10 @@
                         </div>
                     </template>
                 </template>
+                </form>
             </cly-form-step>
             <cly-form-step id="step2" :name="i18n('push-notification.drawer-step-two')">
+                <form>
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                         <template v-if="type === TypeEnum.ONE_TIME">Delivery</template><template v-else>{{i18n('push-notification.set-start-date')}}</template>
@@ -535,8 +538,10 @@
                         </validation-provider>
                     </div>
                 </div>
+                </form>
             </cly-form-step>
             <cly-form-step id="step3" :name="i18n('push-notification.drawer-step-three')" class="bu-container">  
+                <form>
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-is-flex bu-is-align-items-center">
                         <div class="bu-py-1 bu-my-1 bu-mr-2 cly-vue-push-notification-drawer__checkbox-label">{{i18n('push-notification.notification-type')}}</div>
@@ -891,6 +896,7 @@
                         </el-collapse-item>
                     </el-collapse>
                 </div>
+                </form>
             </cly-form-step>
             <cly-form-step id="step4" :name="i18n('push-notification.drawer-step-four')" >
                 <div class="cly-vue-drawer-step__section">
