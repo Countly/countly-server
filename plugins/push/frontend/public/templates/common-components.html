@@ -33,7 +33,7 @@
         <slot v-if="hasDefaultSlot && toggle"></slot>
         <template v-else> 
             <validation-provider v-slot="validation" v-if="toggle" :rules="rules">
-                <el-input :value="input" @input="onInput" :placeholder="placeholder" :class="{'is-error': validation.errors.length > 0}" ></el-input>
+                <el-input :value="input" @input="onInput" :placeholder="placeholder" :class="{'is-error': validation.errors.length > 0}" autocomplete="off"></el-input>
             </validation-provider>
         </template>
     </div>
@@ -70,7 +70,7 @@
                         <div class="bu-level bu-is-flex-direction-column bu-is-align-items-flex-start bu-mb-4">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.api-property')}}</div>
                             <validation-provider vid="apiValueValidator" v-slot="validation" rules="required" style="width:100%">
-                                <el-input :value="userProperty.value" @input="onInput" :placeholder="i18n('push-notification.enter-value')" :class="{'is-error': validation.errors.length > 0}"> </el-input>
+                                <el-input :value="userProperty.value" @input="onInput" :placeholder="i18n('push-notification.enter-value')" :class="{'is-error': validation.errors.length > 0}" autocomplete="off"> </el-input>
                             </validation-provider>
                         </div>
                     </template>
@@ -101,7 +101,7 @@
                         <div class="bu-level bu-is-flex-direction-column bu-is-align-items-flex-start">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.fallback-value')}}</div>
                             <validation-provider vid="fallbackValueValidator" v-slot="validation" rules="required" style="width:100%">
-                                <el-input :value="userProperty.fallback" @input="onFallback" placeholder="Enter fallback value" :class="{'is-error': validation.errors.length > 0}"> </el-input>
+                                <el-input :value="userProperty.fallback" @input="onFallback" placeholder="Enter fallback value" :class="{'is-error': validation.errors.length > 0}" autocomplete="off"> </el-input>
                             </validation-provider>
                         </div>
                     </div>

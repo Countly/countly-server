@@ -642,6 +642,7 @@
                                         v-for="(button,index) in pushNotificationUnderEdit.message[activeLocalization].buttons">
                                         <validation-provider v-slot="validation" rules="required" style="width:35%;" class="bu-pr-1">
                                             <el-input 
+                                                autocomplete="off"
                                                 v-model="pushNotificationUnderEdit.message[activeLocalization].buttons[index].label" 
                                                 :placeholder="i18n('push-notification.enter-x-button')" 
                                                 :class="{'is-error': validation.errors.length > 0}">
@@ -649,6 +650,7 @@
                                         </validation-provider>
                                         <validation-provider v-slot="validation" :rules="{required:true, regex:urlRegex}" style="width:60%;" class="bu-pl-1 bu-pr-1">
                                             <el-input 
+                                                autocomplete="off"
                                                 v-model="pushNotificationUnderEdit.message[activeLocalization].buttons[index].url" 
                                                 :placeholder="i18n('push-notification.enter-button-url')" 
                                                 :class="{'is-error': validation.errors.length > 0}">
@@ -673,6 +675,7 @@
                             <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.media-url-description')}}</div>
                             <validation-provider v-slot="validation" ref="allMediaURLValidationProvider" :rules="{push_notification_message_media_url:PlatformEnum.ALL}" mode="passive">
                                 <el-input 
+                                    autocomplete="off"
                                     :value="pushNotificationUnderEdit.settings.all.mediaURL" 
                                     @input="onAllMediaURLInput" 
                                     :placeholder="i18n('push-notification.enter-media-url')" 
@@ -710,6 +713,7 @@
                                 :description="i18n('push-notification.media-url-platform-description')">
                                 <validation-provider v-slot="validation" ref="iosMediaURLValidationProvider" :rules="{required:true,push_notification_message_media_url:PlatformEnum.IOS}" mode="passive">
                                     <el-input 
+                                        autocomplete="off"
                                         :value="pushNotificationUnderEdit.settings.ios.mediaURL" 
                                         @input="onIOSMediaURLInput" 
                                         :placeholder="i18n('push-notification.enter-media-url')" 
@@ -756,6 +760,7 @@
                                 :description="i18n('push-notification.send-json-description')">
                                 <validation-provider rules="json|required" v-slot="validation">
                                     <el-input 
+                                        autocomplete="off"
                                         v-model="pushNotificationUnderEdit.settings.ios.json" 
                                         type="textarea" 
                                         @input="function(value){onSettingChange(PlatformEnum.IOS,'json',value)}" 
@@ -808,6 +813,7 @@
                                 :description="i18n('push-notification.media-url-platform-description')">
                                 <validation-provider v-slot="validation" ref="androidMediaURLValidationProvider" :rules="{required:true,push_notification_message_media_url:PlatformEnum.ANDROID}" mode="passive">
                                     <el-input 
+                                        autocomplete="off"
                                         :value="pushNotificationUnderEdit.settings.android.mediaURL" 
                                         @input="onAndroidMediaURLInput" 
                                         :placeholder="i18n('push-notification.enter-media-url')" 
@@ -853,7 +859,8 @@
                                 :label="i18n('push-notification.send-json')"
                                 :description="i18n('push-notification.send-json-description')">
                                 <validation-provider rules="json|required" v-slot="validation">
-                                    <el-input 
+                                    <el-input
+                                        autocomplete="off" 
                                         v-model="pushNotificationUnderEdit.settings.android.json" 
                                         type="textarea"
                                         @input="function(value){onSettingChange(PlatformEnum.ANDROID,'json',value)}" 
