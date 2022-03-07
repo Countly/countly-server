@@ -15,7 +15,7 @@ const FEATURE_NAME = 'server-stats';
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
-    
+
     plugins.register("/master", function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
