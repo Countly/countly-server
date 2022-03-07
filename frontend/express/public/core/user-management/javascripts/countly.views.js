@@ -392,6 +392,23 @@
             onClose: function() {},
             onSubmit: function(submitted, done) {
                 var self = this;
+                var atLeastOneAppSelected = false;
+
+                for (var i = 0; i < submitted.permission._.u.length; i++) {
+                    if (submitted.permission._.u[i].length > 0) {
+                        atLeastOneAppSelected = true;
+                    }
+                }
+
+                if (!submitted.global_admin && (!atLeastOneAppSelected && submitted.permission._.a.length === 0)) {
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.at-least-one-app-required'),
+                        type: 'error'
+                    });
+                    done(CV.i18n('management-users.at-least-one-app-required'));
+                    return;
+                }
+
                 this.addRolesToUserUnderEdit(submitted);
                 if (this.settings.editMode) {
                     if (typeof this.group._id === "undefined") {
