@@ -235,14 +235,7 @@
 
         var AnalyticsMenu = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/analytics-menu.html'),
-            mixins: [
-                countlyVue.container.dataMixin({
-                    "categories": "/sidebar/analytics/menuCategory",
-                    "menus": "/sidebar/analytics/menu",
-                    "submenus": "/sidebar/analytics/submenu"
-                }),
-                AppsMixin
-            ],
+            mixins: [AppsMixin],
             components: {
                 "app-selector": AppSelector
             },
@@ -253,12 +246,33 @@
                 };
             },
             computed: {
+                categories: function() {
+                    if (!this.activeApp || !this.activeApp._id) {
+                        return [];
+                    }
+
+                    var c = countlyVue.container.dataMixin({
+                        categories: "/sidebar/analytics/menuCategory"
+                    });
+
+                    var cats = c.data().categories;
+
+                    return cats;
+                },
                 categorizedMenus: function() {
                     if (!this.activeApp || !this.activeApp._id) {
                         return {};
                     }
+
+                    var m = countlyVue.container.dataMixin({
+                        menus: "/sidebar/analytics/menu"
+                    });
+
+                    var mm = m.data().menus;
+
                     var self = this;
-                    var menus = this.menus.reduce(function(acc, val) {
+
+                    var menus = mm.reduce(function(acc, val) {
                         if (val.app_type === self.activeApp.type && checkMenuPermission(val.permission)) {
                             if (!acc[val.category]) {
                                 acc[val.category] = [];
@@ -268,14 +282,22 @@
                         }
                         return acc;
                     }, {});
+
                     return menus;
                 },
                 categorizedSubmenus: function() {
                     if (!this.activeApp || !this.activeApp._id) {
                         return {};
                     }
+
+                    var s = countlyVue.container.dataMixin({
+                        submenus: "/sidebar/analytics/submenu"
+                    });
+
+                    var sbm = s.data().submenus;
+
                     var self = this;
-                    var submenus = this.submenus.reduce(function(acc, val) {
+                    var submenus = sbm.reduce(function(acc, val) {
                         if (val.app_type === self.activeApp.type && checkSubMenuPermission(val.permission)) {
                             if (!acc[val.parent_code]) {
                                 acc[val.parent_code] = [];
@@ -285,6 +307,7 @@
                         }
                         return acc;
                     }, {});
+
                     return submenus;
                 },
                 selectedMenuItem: function() {
@@ -431,19 +454,20 @@
 
         var ManagementMenu = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/management-menu.html'),
-            mixins: [
-                countlyVue.container.dataMixin({
-                    "menus": "/sidebar/analytics/menu"
-                }),
-                AppsMixin
-            ],
+            mixins: [AppsMixin],
             computed: {
                 menu: function() {
                     if (!this.activeApp || !this.activeApp._id) {
                         return [];
                     }
 
-                    var menu = this.menus.filter(function(val) {
+                    var m = countlyVue.container.dataMixin({
+                        menus: "/sidebar/analytics/menu"
+                    });
+
+                    var mm = m.data().menus;
+
+                    var menu = mm.filter(function(val) {
                         if (val.category === "management" && checkSubMenuPermission(val.name)) {
                             return true;
                         }
