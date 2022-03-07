@@ -259,7 +259,7 @@
                     }
                     var self = this;
                     var menus = this.menus.reduce(function(acc, val) {
-                        if (val.app_type === self.activeApp.type && checkMenuPermission(val.permission)) {
+                        if (val.app_type === self.activeApp.type) {
                             if (!acc[val.category]) {
                                 acc[val.category] = [];
                             }
@@ -276,7 +276,7 @@
                     }
                     var self = this;
                     var submenus = this.submenus.reduce(function(acc, val) {
-                        if (val.app_type === self.activeApp.type && checkSubMenuPermission(val.permission)) {
+                        if (val.app_type === self.activeApp.type) {
                             if (!acc[val.parent_code]) {
                                 acc[val.parent_code] = [];
                             }
