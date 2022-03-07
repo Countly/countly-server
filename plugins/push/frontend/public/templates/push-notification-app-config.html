@@ -1,5 +1,6 @@
 <div id="push-notification-app-config">
     <div>
+        <form>
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>{{i18n('push-notification.ios-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.IOS)" :disabled="isKeyEmpty(PlatformEnum.IOS)">{{i18n('push-notification.delete')}}</el-button>
@@ -13,7 +14,7 @@
             <div class="bu-is-flex bu-is-flex-direction-column">
                 <div class="bu-is-flex">
                     <validation-provider :rules="{required:isIOSConfigRequired}">
-                        <el-input v-model="uploadedIOSKeyFilename" style="display:none"></el-input>
+                        <el-input v-model="uploadedIOSKeyFilename" style="display:none" autocomplete="off"></el-input>
                         <el-upload
                             ref="keyFileUploader"
                             action=""
@@ -32,51 +33,50 @@
         </cly-inline-form-field>
         <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P8"> 
             <cly-inline-form-field :label="i18n('push-notification.key-id')" :rules="{required:isIOSConfigRequired}">
-                <el-input :value="viewModel[PlatformEnum.IOS].keyId" @input="onInput('keyId', $event, PlatformEnum.IOS)"></el-input>
+                <el-input :value="viewModel[PlatformEnum.IOS].keyId" @input="onInput('keyId', $event, PlatformEnum.IOS)" autocomplete="off"></el-input>
             </cly-inline-form-field>
             <cly-inline-form-field :label="i18n('push-notification.team-id')" :rules="{required:isIOSConfigRequired}">
-                <el-input :value="viewModel[PlatformEnum.IOS].teamId" @input="onInput('teamId', $event, PlatformEnum.IOS)"></el-input>
+                <el-input :value="viewModel[PlatformEnum.IOS].teamId" @input="onInput('teamId', $event, PlatformEnum.IOS)" autocomplete="off"></el-input>
             </cly-inline-form-field>
             <cly-inline-form-field :label="i18n('push-notification.bundle-id')" :rules="{required:isIOSConfigRequired}">
-                <el-input :value="viewModel[PlatformEnum.IOS].bundleId" @input="onInput('bundleId',$event,PlatformEnum.IOS)"></el-input>
+                <el-input :value="viewModel[PlatformEnum.IOS].bundleId" @input="onInput('bundleId',$event,PlatformEnum.IOS)" autocomplete="off"></el-input>
             </cly-inline-form-field>
         </template>
         <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P12">
             <cly-inline-form-field :label="i18n('push-notification.passphrase')">
-                <form>
-                    <el-input type="password" :value="viewModel[PlatformEnum.IOS].passphrase" @input="onInput('passphrase',$event,PlatformEnum.IOS)"></el-input>
-                </form>            
+                    <el-input type="password" :value="viewModel[PlatformEnum.IOS].passphrase" @input="onInput('passphrase',$event,PlatformEnum.IOS)" autocomplete="off"></el-input>
             </cly-inline-form-field>
         </template>
 
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>{{i18n('push-notification.android-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.ANDROID)" :disabled="isKeyEmpty(PlatformEnum.ANDROID)">{{i18n('push-notification.delete')}}</el-button>
-        </div>        
+        </div>     
         <cly-inline-form-field :label="i18n('push-notification.firebase-key')">
-            <el-input :value="viewModel[PlatformEnum.ANDROID].firebaseKey" @input="onInput('firebaseKey',$event,PlatformEnum.ANDROID)"></el-input>
+            <el-input :value="viewModel[PlatformEnum.ANDROID].firebaseKey" @input="onInput('firebaseKey',$event,PlatformEnum.ANDROID)" autocomplete="off"></el-input>
         </cly-inline-form-field>
 
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>{{i18n('push-notification.huawei-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.HUAWEI)" :disabled="isKeyEmpty(PlatformEnum.HUAWEI)">{{i18n('push-notification.delete')}}</el-button>
-        </div>        
+        </div>
         <cly-inline-form-field :label="i18n('push-notification.huawei-app-id')" :rules="{required:isHuaweiConfigRequired}">
-            <el-input :value="viewModel[PlatformEnum.HUAWEI].appId" @input="onInput('appId',$event,PlatformEnum.HUAWEI)"></el-input>
+            <el-input :value="viewModel[PlatformEnum.HUAWEI].appId" @input="onInput('appId',$event,PlatformEnum.HUAWEI)" autocomplete="off"></el-input>
         </cly-inline-form-field>
         <cly-inline-form-field :label="i18n('push-notification.huawei-app-secret')" :rules="{required:isHuaweiConfigRequired, numeric: true}">
-            <el-input :value="viewModel[PlatformEnum.HUAWEI].appSecret" @input="onInput('appSecret',$event,PlatformEnum.HUAWEI)"></el-input>
+            <el-input :value="viewModel[PlatformEnum.HUAWEI].appSecret" @input="onInput('appSecret',$event,PlatformEnum.HUAWEI)" autocomplete="off"></el-input>
         </cly-inline-form-field>
 
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>{{i18n('push-notification.rate-limit')}}</h3>
         </div>
         <cly-inline-form-field :label="i18n('push-notification.maximum-notifications-per-period')" rules="numeric">
-            <el-input :value="viewModel.rate" @input="onInput('rate',$event)"></el-input>
+            <el-input :value="viewModel.rate" @input="onInput('rate',$event)" autocomplete="off"></el-input>
         </cly-inline-form-field>
         <cly-inline-form-field :label="i18n('push-notification.period-in-seconds')" rules="numeric">
-            <el-input :value="viewModel.period" @input="onInput('period',$event)"></el-input>
+            <el-input :value="viewModel.period" @input="onInput('period',$event)" autocomplete="off"></el-input>
         </cly-inline-form-field>
+        </form>
     </div>
     <div class="cly-vue-section bu-mr-4 cly-vue-section--has-default-skin">
         <div class="bu-is-flex bu-level bu-ml-6">
