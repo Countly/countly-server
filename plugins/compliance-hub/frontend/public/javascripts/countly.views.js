@@ -1,6 +1,6 @@
 /*global $, CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, CountlyHelpers, countlyGlobal */
 (function() {
-    var FEATURE_NAME = "compliance-hub";
+    var FEATURE_NAME = "compliance_hub";
     var UserView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/user.html"),
         mixins: [countlyVue.mixins.auth(FEATURE_NAME)],

@@ -38,28 +38,28 @@
 
                     </template>
                 </el-table-column>
-                <el-table-column>
+                <el-table-column type="options">
                     <template v-slot="rowScope">
-                        <cly-more-options  size="small">
+                        <cly-more-options v-if="rowScope.row.hover" size="small">
                             <el-dropdown-item>
-                                <el-link class="bu-ml-1" plain @click="switchToConsentHistory(rowScope.row.uid)"> <i class="fa fa-arrow-right"></i> {{i18n("consent.go-history")}} </el-link>
+                                <el-link class="bu-ml-1" plain @click="switchToConsentHistory(rowScope.row.uid)"> {{i18n("consent.go-history")}} </el-link>
                             </el-dropdown-item>
                             <el-dropdown-item v-if="!rowScope.row.appUserExport && canUserRead">
                                 <el-link class="bu-ml-1" plain @click="exportUserData(rowScope.row.uid)">
-                                    <i class="fa fa fa-upload"></i>  {{i18n("app-users.export-userdata")}}</el-link>
+                                    {{i18n("app-users.export-userdata")}}</el-link>
                             </el-dropdown-item>
                             <el-dropdown-item v-if="rowScope.row.appUserExport && canUserRead">
                                 <el-link class="bu-ml-1" plain @click="downloadExportedData(rowScope.row.uid)">
-                                    <i class="fa fa-download"></i>{{i18n("app-users.download-export")}}</span>
+                                    {{i18n("app-users.download-export")}}</span>
                                 </el-link>
                             </el-dropdown-item>
                             <el-dropdown-item v-if="rowScope.row.appUserExport && canUserDelete">
                                 <el-link class="bu-ml-1" plain @click="deleteExport(rowScope.row.uid)">
-                                    <i class="fa fa-trash"></i>{{i18n("app-users.delete-export")}}</span>
+                                    {{i18n("app-users.delete-export")}}</span>
                                 </el-link>
                             </el-dropdown-item>
                             <el-dropdown-item v-if="canUserDelete">
-                                <el-link class="bu-ml-1" @click="deleteUserData(rowScope.row.uid)" plain> <i class="fa fa-user-times"></i>
+                                <el-link class="bu-ml-1" @click="deleteUserData(rowScope.row.uid)" plain>
                                     {{i18n("app-users.delete-userdata")}}</el-link>
                             </el-dropdown-item>
                         </cly-more-options>
