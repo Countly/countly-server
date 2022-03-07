@@ -105,9 +105,6 @@
                             if (data && data.permission) {
                                 return countlyAuth.validateRead(data.permission);
                             }
-                            else if (data && data.node && data.node.permission) {
-                                return countlyAuth.validateRead(data.permission);
-                            }
                             return true;
                         });
                     }

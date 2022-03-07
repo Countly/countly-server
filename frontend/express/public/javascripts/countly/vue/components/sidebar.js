@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, countlyAuth */
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon */
 
 (function(countlyVue, $) {
 
@@ -71,12 +71,12 @@
         * @param {string} permission - permission name
         * @returns {boolean} - true if permission granted
         **/
-        var checkMenuPermission = function(permission) {
+        /*var checkMenuPermission = function(permission) {
             if (permission) {
                 return countlyAuth.validateRead(permission);
             }
             return countlyAuth.validateGlobalAdmin();
-        };
+        };*/
 
         /**
         * Check feature permission before adding sidebar
@@ -84,12 +84,12 @@
         * @param {string} permission - permission name
         * @returns {boolean} - true if permission granted
         **/
-        var checkSubMenuPermission = function(permission) {
+        /*var checkSubMenuPermission = function(permission) {
             if (permission) {
                 return countlyAuth.validateRead(permission);
             }
             return countlyAuth.validateGlobalAdmin();
-        };
+        };*/
 
         var AppsMixin = {
             computed: {
@@ -444,7 +444,7 @@
                     }
 
                     var menu = this.menus.filter(function(val) {
-                        if (val.category === "management" && checkSubMenuPermission(val.name)) {
+                        if (val.category === "management") {
                             return true;
                         }
                         return false;
