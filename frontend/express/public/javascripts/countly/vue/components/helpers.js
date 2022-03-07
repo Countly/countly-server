@@ -89,9 +89,13 @@
         props: {
             text: { required: true, type: String },
             color: { default: "green", type: String},
+            size: { default: "unset", type: String},
         },
         computed: {
             dynamicClasses: function() {
+                if (this.size === "small") {
+                    return ["cly-vue-status-tag--small", "cly-vue-status-tag--" + this.color];
+                }
                 return "cly-vue-status-tag--" + this.color;
             }
         },

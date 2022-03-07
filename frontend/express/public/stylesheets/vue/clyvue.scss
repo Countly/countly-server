@@ -134,6 +134,13 @@
     padding-right: 16.33px;
     border-radius: 4px;
     display: inline-block;
+    &--small {
+        font-size: 12px;
+        line-height: 18px;
+        display: flex;
+        align-items: baseline;
+        font-weight: 500;
+    }
     &--green {
         background-color: #EBFAEE;
         color: #12AF51;
@@ -3943,6 +3950,9 @@
         cursor: default;
         color: map.get(c.$colors, "text-secondary");
         opacity: 0.7;
+    }
+    &:hover {
+        background-color: transparent;
     }
 }
 
