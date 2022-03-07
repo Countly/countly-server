@@ -1,9 +1,5 @@
 /*global countlyAuth, app, countlyGlobal, $, groupsModel, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
-    var featureNameMapper = {
-        'block': 'filtering_rules',
-        'geo': 'location_targeting'
-    };
 
     var DataTable = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/data-table.html"),
@@ -153,6 +149,7 @@
             };
         },
         methods: {
+            featureBeautifier: countlyAuth.featureBeautifier,
             generatePassword: function() {
                 var generatedPassword = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
                 this.$refs.userDrawer.editedObject.password = generatedPassword;
@@ -599,15 +596,6 @@
                     this.permissionSets.push(permissionSet_);
                 }
             },
-            // TODO: move this to countlyAuth
-            featureBeautifier: function(featureName) {
-                var fa = featureName.split('_');
-                var ret = '';
-                for (var i = 0; i < fa.length; i++) {
-                    ret += fa[i].substr(0, 1).toUpperCase() + fa[i].substr(1, fa[i].length - 1) + ' ';
-                }
-                return ret;
-            },
             onGroupChange: function(groupVal) {
                 this.group = groupVal;
             },
@@ -690,14 +678,7 @@
                     self.users.push(usersObj[user]);
                 }
                 self.loading = false;
-                self.features = countlyUserManagement.getFeatures().map(function(f) {
-                    if (featureNameMapper[f]) {
-                        return featureNameMapper[f];
-                    }
-                    else {
-                        return f;
-                    }
-                }).sort();
+                self.features = countlyUserManagement.getFeatures().sort();
             });
         }
     });
