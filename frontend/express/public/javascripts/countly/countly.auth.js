@@ -56,18 +56,23 @@
         }
 
         if (!member.global_admin) {
-            /*
-            if (typeof feature !== 'undefined' && feature.substr(0, 7) === 'global_') {
-                feature = feature.split('_')[1];
-                if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType].global === "object") && (member.permission[accessType].global.all || member.permission[accessType].global.allowed[feature]))) {
-                    return false;
+            var isPermissionObjectExistForAccessType = (typeof member.permission[accessType] === "object" && typeof member.permission[accessType][app_id] === "object");
+
+            var memberHasAllFlag = member.permission && member.permission[accessType] && member.permission[accessType][app_id] && member.permission[accessType][app_id].all;
+            var memberHasAllowedFlag = false;
+
+            if (typeof feature === 'string') {
+                memberHasAllowedFlag = member.permission && member.permission[accessType] && member.permission[accessType][app_id] && member.permission[accessType][app_id].allowed && member.permission[accessType][app_id].allowed[feature];
+            }
+            else {
+                for (var i = 0 ; i < feature.length; i++) {
+                    if (member.permission && member.permission[accessType] && member.permission[accessType][app_id] && member.permission[accessType][app_id].allowed && member.permission[accessType][app_id].allowed[feature[i]]) {
+                        memberHasAllowedFlag = true;
+                        break;
+                    }
                 }
             }
-            */
-            var isPermissionObjectExistForAccessType = (typeof member.permission[accessType] === "object" && typeof member.permission[accessType][app_id] === "object");
-            // TODO: make here better. create helper method for these checks
-            var memberHasAllFlag = member.permission && member.permission[accessType] && member.permission[accessType][app_id] && member.permission[accessType][app_id].all;
-            var memberHasAllowedFlag = member.permission && member.permission[accessType] && member.permission[accessType][app_id] && member.permission[accessType][app_id].allowed && member.permission[accessType][app_id].allowed[feature];
+
             var isFeatureAllowedInRelatedPermissionObject = isPermissionObjectExistForAccessType && (memberHasAllFlag || memberHasAllowedFlag);
             var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission._ === "object" && typeof member.permission._.a === "object") && member.permission._.a.indexOf(app_id) > -1;
             // don't allow if user has not permission for feature and has no admin access for current app
@@ -108,19 +113,25 @@
             return false;
         }
         if (!member.global_admin) {
-            /*
-            if (typeof feature !== 'undefined' && feature.substr(0, 7) === 'global_') {
-                feature = feature.split('_')[1];
-                if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r.global === "object") && (member.permission.r.global.all || member.permission.r.global.allowed[feature]))) {
-                    return false;
-                }
-            }
-            */
             var isPermissionObjectExistForRead = (typeof member.permission.r === "object" && typeof member.permission.r[app_id] === "object");
             // TODO: make here better. create helper method for these checks
             var memberHasAllFlag = member.permission && member.permission.r && member.permission.r[app_id] && member.permission.r[app_id].all;
-            var memberHasAllowedFlag = member.permission && member.permission.r && member.permission.r[app_id] && member.permission.r[app_id].allowed && member.permission.r[app_id].allowed[feature];
+            var memberHasAllowedFlag = false;
+
+            if (typeof feature === 'string') {
+                memberHasAllowedFlag = member.permission && member.permission.r && member.permission.r[app_id] && member.permission.r[app_id].allowed && member.permission.r[app_id].allowed[feature];
+            }
+            else {
+                for (var i = 0; i < feature.length; i++) {
+                    if (member.permission && member.permission.r && member.permission.r[app_id] && member.permission.r[app_id].allowed && member.permission.r[app_id].allowed[feature[i]]) {
+                        memberHasAllowedFlag = true;
+                        break;
+                    }
+                }
+            }
+
             var isFeatureAllowedInReadPermissionObject = isPermissionObjectExistForRead && (memberHasAllFlag || memberHasAllowedFlag);
+
             var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission._ === "object" && typeof member.permission._.a === "object") && member.permission._.a.indexOf(app_id) > -1;
             // don't allow if user has not permission for feature and has no admin access for current app
             if (!(isFeatureAllowedInReadPermissionObject) && !(hasAdminAccess)) {
@@ -378,6 +389,15 @@
         else {
             return member.permission._.a;
         }
+    };
+
+    countlyAuth.featureBeautifier = function(featureName) {
+        var fa = featureName.split('_');
+        var ret = '';
+        for (var i = 0; i < fa.length; i++) {
+            ret += fa[i].substr(0, 1).toUpperCase() + fa[i].substr(1, fa[i].length - 1) + ' ';
+        }
+        return $.i18n.map[featureName + ".plugin-title"] || $.i18n.map[featureName + ".title"] || ret;
     };
 
 })(window.countlyAuth = window.countlyAuth || {});

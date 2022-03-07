@@ -1,9 +1,5 @@
 /*global countlyAuth, app, countlyGlobal, $, groupsModel, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
-    var featureNameMapper = {
-        'block': 'filtering_rules',
-        'geo': 'location_targeting'
-    };
 
     var DataTable = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/data-table.html"),
@@ -153,6 +149,7 @@
             };
         },
         methods: {
+            featureBeautifier: countlyAuth.featureBeautifier,
             generatePassword: function() {
                 var generatedPassword = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
                 this.$refs.userDrawer.editedObject.password = generatedPassword;
@@ -279,14 +276,12 @@
                 }
             },
             addPermissionSet: function() {
-                var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
+                var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
                 var types = ['c', 'r', 'u', 'd'];
 
                 for (var type in types) {
                     for (var feature in this.features) {
-                        if (!(types[type] === 'r' && this.features[feature] === 'core')) {
-                            permissionSet[types[type]].allowed[this.features[feature]] = false;
-                        }
+                        permissionSet[types[type]].allowed[this.features[feature]] = false;
                     }
                 }
 
@@ -342,9 +337,7 @@
                 if (this.permissionSets[index][type].all && type !== 'r' && !this.permissionSets[index].r.all) {
                     this.permissionSets[index].r.all = true;
                     for (var feature in this.features) {
-                        if (this.features[feature] !== 'core') {
-                            this.permissionSets[index].r.allowed[this.features[feature]] = this.permissionSets[index][type].all;
-                        }
+                        this.permissionSets[index].r.allowed[this.features[feature]] = this.permissionSets[index][type].all;
                     }
                     CountlyHelpers.notify({
                         message: CV.i18n('management-users.read-permission-all'),
@@ -356,9 +349,7 @@
                     for (var _type in types) {
                         this.permissionSets[index][types[_type]].all = false;
                         for (var feature1 in this.features) {
-                            if (!(types[_type] === 'r' && this.features[feature1] === 'core')) {
-                                this.permissionSets[index][types[_type]].allowed[this.features[feature1]] = false;
-                            }
+                            this.permissionSets[index][types[_type]].allowed[this.features[feature1]] = false;
                         }
                     }
                     CountlyHelpers.notify({
@@ -368,9 +359,13 @@
                 }
                 // set type specific features for other cases
                 for (var feature2 in this.features) {
-                    if (!(type === 'r' && this.features[feature2] === 'core')) {
-                        this.permissionSets[index][type].allowed[this.features[feature2]] = this.permissionSets[index][type].all;
-                    }
+                    this.permissionSets[index][type].allowed[this.features[feature2]] = this.permissionSets[index][type].all;
+                }
+                if (this.permissionSets[index][type].all) {
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.future-plugins'),
+                        type: 'info'
+                    });
                 }
             },
             handleCommand: function(command, index) {
@@ -396,26 +391,6 @@
             // drawer event handlers
             onClose: function() {},
             onSubmit: function(submitted, done) {
-                var atLeastOneAppSelected = false;
-
-                for (var i = 0; i < submitted.permission._.u.length; i++) {
-                    if (submitted.permission._.u[i].length > 0) {
-                        atLeastOneAppSelected = true;
-                    }
-                }
-
-                // block process if no app selected
-                // and user is not admin
-                // and user doesn't have assigned to any group
-                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin && typeof this.group._id === "undefined") {
-                    CountlyHelpers.notify({
-                        message: CV.i18n('management-users.at-least-one-app-required'),
-                        type: 'error'
-                    });
-                    done(CV.i18n('management-users.at-least-one-app-required'));
-                    return;
-                }
-
                 var self = this;
                 this.addRolesToUserUnderEdit(submitted);
                 if (this.settings.editMode) {
@@ -547,7 +522,7 @@
                         // set group state
                         this.group = { _id: this.user.group_id[0] };
                         // add initial permission state for cases who unselected group
-                        this.permissionSets.push({ c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+                        this.permissionSets.push({ c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
                     }
                     // user isn't member of a group?
                     else {
@@ -557,14 +532,12 @@
 
                             for (var set in userAppsSets) {
                                 var appFromSet = userAppsSets[set][0];
-                                var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
+                                var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
                                 for (var type in types) {
                                     for (var feature in this.features) {
                                         // TODO: these checks will be converted to helper method
                                         permissionSet[types[type]].all = typeof this.user.permission[types[type]][appFromSet].all === "boolean" ? this.user.permission[types[type]][appFromSet].all : false;
-                                        if (!(types[type] === "r" && this.features[feature] === 'core')) {
-                                            permissionSet[types[type]].allowed[this.features[feature]] = typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false;
-                                        }
+                                        permissionSet[types[type]].allowed[this.features[feature]] = typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false;
                                     }
                                 }
                                 this.permissionSets.push(permissionSet);
@@ -572,7 +545,7 @@
                         }
                         // is user global admin?
                         else {
-                            this.permissionSets.push({ c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+                            this.permissionSets.push({ c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
                         }
                     }
                 }
@@ -586,27 +559,16 @@
                         return;
                     }
 
-                    var permissionSet_ = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
+                    var permissionSet_ = { c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
 
                     for (var type_ in types) {
                         for (var feature_ in this.features) {
-                            if (this.features[feature_] !== 'core') {
-                                permissionSet_[types[type_]].allowed[this.features[feature_]] = false;
-                            }
+                            permissionSet_[types[type_]].allowed[this.features[feature_]] = false;
                         }
                     }
 
                     this.permissionSets.push(permissionSet_);
                 }
-            },
-            // TODO: move this to countlyAuth
-            featureBeautifier: function(featureName) {
-                var fa = featureName.split('_');
-                var ret = '';
-                for (var i = 0; i < fa.length; i++) {
-                    ret += fa[i].substr(0, 1).toUpperCase() + fa[i].substr(1, fa[i].length - 1) + ' ';
-                }
-                return ret;
             },
             onGroupChange: function(groupVal) {
                 this.group = groupVal;
@@ -690,14 +652,7 @@
                     self.users.push(usersObj[user]);
                 }
                 self.loading = false;
-                self.features = countlyUserManagement.getFeatures().map(function(f) {
-                    if (featureNameMapper[f]) {
-                        return featureNameMapper[f];
-                    }
-                    else {
-                        return f;
-                    }
-                }).sort();
+                self.features = countlyUserManagement.getFeatures().sort();
             });
         }
     });

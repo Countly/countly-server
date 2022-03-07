@@ -137,17 +137,15 @@
                 settings: JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState)),
                 userPropertiesIdCounter: 0,
                 selectedUserPropertyId: null,
-                selectedUserPropertyContainer: "title",
-                isAddUserPropertyPopoverOpen: false,
+                isAddUserPropertyPopoverOpen: {
+                    title: false,
+                    content: false
+                },
                 isUsersTimezoneSet: false,
                 isEndDateSet: false,
                 isLocationSet: false,
                 multipleLocalizations: false,
                 urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
-                addUserPropertyPopoverPosition: {
-                    top: 0,
-                    left: 0
-                },
                 mediaMetadata: {
                     all: null,
                     ios: null,
@@ -603,13 +601,15 @@
                 this.isConfirmed = false;
                 this.multipleLocalizations = false;
                 this.expandedPlatformSettings = [];
-                this.selectedUserPropertyContainer = "title";
+                this.isAddUserPropertyPopoverOpen = {
+                    title: false,
+                    content: false
+                };
                 this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
                 this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
             },
             onClose: function() {
                 this.resetState();
-                this.closeAddUserPropertyPopover();
                 this.$emit('onClose');
             },
             onPlatformChange: function() {
@@ -747,14 +747,12 @@
             setSelectedUserPropertyId: function(id) {
                 this.selectedUserPropertyId = id;
             },
-            setSelectedUserPropertyContainer: function(container) {
-                this.selectedUserPropertyContainer = container;
+            openAddUserPropertyPopover: function(container) {
+                this.isAddUserPropertyPopoverOpen[container] = true;
             },
-            openAddUserPropertyPopover: function() {
-                this.isAddUserPropertyPopoverOpen = true;
-            },
-            closeAddUserPropertyPopover: function() {
-                this.isAddUserPropertyPopoverOpen = false;
+            closeAddUserPropertyPopover: function(container) {
+                console.log(container);
+                this.isAddUserPropertyPopoverOpen[container] = false;
             },
             addUserPropertyInHTML: function(id, container) {
                 this.$refs[container].addEmptyUserProperty(id);
@@ -768,11 +766,11 @@
             setUserPropertyFallbackInHTML: function(id, container, previewValue, fallback) {
                 this.$refs[container].setUserPropertyFallbackValue(id, previewValue, fallback);
             },
-            setAddUserPropertyPopoverPosition: function(position) {
-                this.addUserPropertyPopoverPosition = position;
+            isAnyAddUserPropertyPopoverOpen: function() {
+                return this.isAddUserPropertyPopoverOpen.title || this.isAddUserPropertyPopoverOpen.content;
             },
             onAddUserProperty: function(container) {
-                if (!this.isAddUserPropertyPopoverOpen) {
+                if (!this.isAnyAddUserPropertyPopoverOpen()) {
                     var propertyIndex = this.userPropertiesIdCounter;
                     this.userPropertiesIdCounter = this.userPropertiesIdCounter + 1;
                     this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], propertyIndex, {
@@ -784,14 +782,13 @@
                         isUppercase: false
                     });
                     this.setSelectedUserPropertyId(propertyIndex);
-                    this.setSelectedUserPropertyContainer(container);
                     this.addUserPropertyInHTML(propertyIndex, container);
                 }
             },
             onRemoveUserProperty: function(payload) {
                 var id = payload.id;
                 var container = payload.container;
-                this.closeAddUserPropertyPopover();
+                this.closeAddUserPropertyPopover(payload.container);
                 this.$delete(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], id);
                 this.removeUserPropertyInHTML(id, container);
             },
@@ -837,11 +834,9 @@
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].isUppercase = isUppercase;
             },
             onUserPropertyClick: function(payload) {
-                if (!this.isAddUserPropertyPopoverOpen) {
+                if (!this.isAnyAddUserPropertyPopoverOpen()) {
                     this.setSelectedUserPropertyId(payload.id);
-                    this.setSelectedUserPropertyContainer(payload.container);
-                    this.setAddUserPropertyPopoverPosition(payload.position);
-                    this.openAddUserPropertyPopover();
+                    this.openAddUserPropertyPopover(payload.container);
                 }
             },
             resetAllMediaURLIfNecessary: function() {
