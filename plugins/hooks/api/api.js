@@ -9,6 +9,7 @@ const plugins = require('../../pluginManager.js');
 const log = common.log('hooks:api');
 const _ = require('lodash');
 const utils = require('./utils');
+const rights = require('../../../api/utils/rights');
 
 const FEATURE_NAME = 'hooks';
 
@@ -231,12 +232,30 @@ plugins.register("/i/hook/save", function(ob) {
     return true;
 });
 
+function getVisibilityQuery(query, params) {
+    let member = params.member;
+    rights.getUserAppsForFeaturePermission(member, FEATURE_NAME, 'r')
+
+    if (member.global_admin) {
+        return query;
+    }
+    let newQuery = _.extend({}, query);
+
+    newQuery.$or = [
+        {apps: {$in: rights.getAdminApps(member) || []}},
+        {apps: {$in: rights.getUserAppsForFeaturePermission(member, FEATURE_NAME, 'r') || []}}
+    ];
+    return newQuery;
+}
+
 plugins.register("/o/hook/list", function(ob) {
     const paramsInstance = ob.params;
 
     validateRead(paramsInstance, FEATURE_NAME, function(params) {
         try {
-            let query = { $query: {}, $orderby: { created_at: -1 } };
+
+            let query = { $query: getVisibilityQuery({}, paramsInstance), $orderby: { created_at: -1 } };
+
             if (paramsInstance.qstring && paramsInstance.qstring.id) {
                 query.$query._id = common.db.ObjectID(paramsInstance.qstring.id);
             }
