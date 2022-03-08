@@ -591,10 +591,10 @@
 
             if (countlyAuth.validateGlobalAdmin()) {
                 tabs.push({
-                     title: "Export/Purge History",
-                     name: "actionlogs",
-                     component: ExportView,
-                     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/actionlogs"
+                    title: "Export/Purge History",
+                    name: "actionlogs",
+                    component: ExportView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/actionlogs"
                 });
             }
             return {
