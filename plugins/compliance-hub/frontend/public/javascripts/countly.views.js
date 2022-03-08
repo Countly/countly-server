@@ -1,4 +1,4 @@
-/*global $, CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager */
+/*global $, CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, countlyAuth */
 (function() {
     var UserView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/user.html"),
@@ -497,35 +497,39 @@
     var ComplianceMainView = countlyVue.views.create({
         template: CV.T('/compliance-hub/templates/main.html'),
         data: function() {
+            var tabs = [
+                {
+                    title: "Metrics",
+                    name: "metrics",
+                    component: MetricsView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/"
+                },
+                {
+                    title: "Users",
+                    name: "users",
+                    component: UserView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/users"
+                },
+                {
+                    title: "Consent History",
+                    name: "consent/history",
+                    component: ConsentView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/consent/history"
+                }
+            ];
+
+            if (countlyAuth.validateGlobalAdmin()) {
+                tabs.push({
+                    title: "Export/Purge History",
+                    name: "actionlogs",
+                    component: ExportView,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/actionlogs"
+                });
+            }
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
                 dynamicTab: (this.$route.params && this.$route.params.tab) || "",
-                localTabs: [
-                    {
-                        title: "Metrics",
-                        name: "metrics",
-                        component: MetricsView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/"
-                    },
-                    {
-                        title: "Users",
-                        name: "users",
-                        component: UserView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/users"
-                    },
-                    {
-                        title: "Consent History",
-                        name: "consent/history",
-                        component: ConsentView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/consent/history"
-                    },
-                    {
-                        title: "Export/Purge History",
-                        name: "actionlogs",
-                        component: ExportView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/actionlogs"
-                    },
-                ]
+                localTabs: tabs
             };
         },
         computed: {
