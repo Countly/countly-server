@@ -101,6 +101,11 @@ var SessionHomeWidget = countlyVue.views.create({
             chooseProperties: this.calculateProperties(),
             chosenProperty: "t",
             sessionGraphTab: "t",
+            headerData: {
+                label: CV.i18n("dashboard.audience"),
+                description: CV.i18n("session-overview.description"),
+                linkTo: {"label": CV.i18n('dashboard.go-to-sessions'), "href": "#/analytics/sessions"},
+            }
         };
     },
     mounted: function() {
@@ -266,13 +271,11 @@ countlyVue.container.registerData("/home/widgets", {
     _id: "sessions-dashboard-widget",
     permission: "core",
     label: CV.i18n('dashboard.audience'),
-    description: CV.i18n('session-overview.description'),
     enabled: {"default": true}, //object. For each type set if by default enabled
     available: {"default": true}, //object. default - for all app types. For other as specified.
     order: 0, //sorted by ascending
     placeBeforeDatePicker: false,
     component: SessionHomeWidget,
-    linkTo: {"label": CV.i18n('dashboard.go-to-sessions'), "href": "#/analytics/sessions"}
 });
 
 
