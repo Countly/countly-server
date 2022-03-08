@@ -1416,7 +1416,7 @@
             data: {
                 app_key: countlyCommon.ACTIVE_APP_KEY,
                 requests: JSON.stringify(bulker),
-                populator: true,
+                populator: true
             },
             success: callback,
             error: callback
