@@ -7,7 +7,7 @@
   <template v-slot:header-right>
         <cly-more-options v-if="topDropdown" size="small">
           <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-            <span :class="item.icon"></span>
+            <!--<span :class="item.icon"></span>-->
             <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
           </el-dropdown-item>
         </cly-more-options>
