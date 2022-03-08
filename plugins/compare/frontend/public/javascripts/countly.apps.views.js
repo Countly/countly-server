@@ -1,6 +1,5 @@
-/* global countlyVue, countlyCompareApps, countlyCommon, CV, countlyAuth, countlyCommon, app*/
+/* global countlyVue, countlyCompareApps, countlyCommon, CV, countlyCommon, app*/
 (function() {
-    var FEATURE_NAME = "compare";
     var CompareAppsTable = countlyVue.views.create({
         template: CV.T("/compare/templates/compareAppsTable.html"),
         mixins: [countlyVue.mixins.i18n],
@@ -155,13 +154,11 @@
             }]
         });
     };
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route("/compare", "compare-apps", function() {
-            var view = getMainView();
-            view.params = {app_id: countlyCommon.ACTIVE_APP_ID};
-            this.renderWhenReady(view);
-        });
-    }
+    app.route("/compare", "compare-apps", function() {
+        var view = getMainView();
+        view.params = {app_id: countlyCommon.ACTIVE_APP_ID};
+        this.renderWhenReady(view);
+    });
 
     countlyVue.container.registerData("/apps/compare", {
         enabled: {"default": true}

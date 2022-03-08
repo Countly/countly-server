@@ -1,4 +1,4 @@
-/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser, countlyGlobal, countlyDensity*/
+/* global CountlyHelpers, countlyAuth, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser, countlyGlobal, countlyDensity*/
 (function(countlyDevicesAndTypes) {
 
     CountlyHelpers.createMetricModel(window.countlyDevicesAndTypes, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
@@ -140,7 +140,12 @@
             }
 
             if (appType === "web") {
-                return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices")), countlyBrowser.initialize(), countlyTotalUsers.initialize("browser");
+                if (countlyAuth.validateRead('browser')) {
+                    return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices"), countlyBrowser.initialize(), countlyTotalUsers.initialize("browser"));
+                }
+                else {
+                    return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices"));
+                }
             }
             else {
                 return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices"), countlyTotalUsers.initialize("app_versions"), countlyTotalUsers.initialize("device_type"));
@@ -326,14 +331,14 @@
                     if (topN.length < 5) {
                         topN.push(tableData[k]);
                         topN = topN.sort(function(a, b) {
-                            return a[property] - b[property];
+                            return b[property] - a[property];
                         });
                     }
                     else {
-                        if (topN[2][property] < tableData[k][property]) {
-                            topN[2] = tableData[k];
+                        if (topN[4][property] < tableData[k][property]) {
+                            topN[4] = tableData[k];
                             topN = topN.sort(function(a, b) {
-                                return a[property] - b[property];
+                                return b[property] - a[property];
                             });
                         }
                     }

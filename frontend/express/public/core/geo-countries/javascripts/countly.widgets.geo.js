@@ -3,13 +3,17 @@
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
                 default: function() {
                     return {};
                 }
+            },
+            isAllowed: {
+                type: Boolean,
+                default: true
             }
         },
         data: function() {
@@ -26,15 +30,6 @@
                     "langs": this.i18n("languages.table.language")
                 }
             };
-        },
-        methods: {
-            onWidgetCommand: function(event) {
-                if (event === 'zoom') {
-                    this.triggerZoom();
-                    return;
-                }
-                return this.$emit('command', event);
-            }
         },
         computed: {
             title: function() {
@@ -97,12 +92,17 @@
 
                 return multiple;
             }
+        },
+        methods: {
+            onDataTypeChange: function(v) {
+                var widget = this.scope.editedObject;
+                this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+            }
         }
     });
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "analytics",
-        feature: "geo",
         label: CV.i18nM("dashboards.widget-type.analytics"),
         priority: 1,
         primary: false,
@@ -122,12 +122,13 @@
             getEmpty: function() {
                 return {
                     title: "",
+                    feature: "geo",
                     widget_type: "analytics",
                     app_count: 'single',
                     data_type: "geo",
                     apps: [],
                     visualization: "",
-                    custom_period: "30days",
+                    custom_period: null,
                     metrics: ["t"],
                     breakdowns: ["countries"],
                     bar_color: 1

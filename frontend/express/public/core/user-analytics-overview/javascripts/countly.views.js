@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery, countlyGlobal*/
+/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery*/
 var UserAnalyticsOverview = countlyVue.views.create({
     template: CV.T("/core/user-analytics-overview/templates/overview.html"),
     data: function() {
@@ -180,13 +180,17 @@ app.route("/analytics/users/*tab", "user-analytics-tab", function(tab) {
 //Analytics->User analytics - overview widget
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
+    mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
     props: {
         data: {
             type: Object,
             default: function() {
                 return {};
             }
+        },
+        isAllowed: {
+            type: Boolean,
+            default: true
         }
     },
     mounted: function() {
@@ -200,15 +204,6 @@ var GridComponent = countlyVue.views.create({
                 "n": this.i18n("common.table.new-users")
             }
         };
-    },
-    methods: {
-        onWidgetCommand: function(event) {
-            if (event === 'zoom') {
-                this.triggerZoom();
-                return;
-            }
-            return this.$emit('command', event);
-        }
     },
     computed: {
         title: function() {
@@ -247,7 +242,7 @@ var GridComponent = countlyVue.views.create({
                     var name = this.map[this.data.metrics[k]] || this.data.metrics[k];
 
                     if (multiApps) {
-                        name = (countlyGlobal.apps[app].name || app) + " (" + name + ")";
+                        name = (this.__allApps[app] && this.__allApps[app].name || app) + " (" + name + ")";
                     }
                     series.push({ "data": [], "name": name, "app": app, "metric": this.data.metrics[k], color: countlyCommon.GRAPH_COLORS[series.length]});
                 }
@@ -356,9 +351,14 @@ var DrawerComponent = countlyVue.views.create({
         }
     },
     methods: {
-    },
-    watch: {
-
+        onDataTypeChange: function(v) {
+            var widget = this.scope.editedObject;
+            this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+        },
+        onBreakdownChange: function(v) {
+            var widget = this.scope.editedObject;
+            this.$emit("reset", {widget_type: widget.widget_type, data_type: widget.data_type, breakdowns: [v]});
+        }
     },
     props: {
         scope: {
@@ -372,7 +372,6 @@ var DrawerComponent = countlyVue.views.create({
 
 countlyVue.container.registerData("/custom/dashboards/widget", {
     type: "analytics",
-    feature: "core",
     label: CV.i18n("user-analytics.overview-title"),
     priority: 1,
     primary: false,
@@ -398,6 +397,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
         getEmpty: function() {
             return {
                 title: "",
+                feature: "core",
                 widget_type: "analytics",
                 data_type: "user-analytics",
                 app_count: 'single',
@@ -405,7 +405,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
                 apps: [],
                 visualization: "",
                 breakdowns: ['overview'],
-                custom_period: "30days"
+                custom_period: null
             };
         },
         beforeLoadFn: function(/*doc, isEdited*/) {
@@ -432,6 +432,7 @@ countlyVue.container.registerTab("/analytics/users", {
     priority: 1,
     route: "#/analytics/users/overview",
     name: "overview",
+    permission: "core",
     title: CV.i18n('user-analytics.overview-title'),
     component: UserAnalyticsOverview,
     vuex: []

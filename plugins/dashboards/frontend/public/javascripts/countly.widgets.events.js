@@ -1,24 +1,19 @@
-/*global countlyVue,countlyGlobal, CV, countlyCommon */
+/*global countlyVue, CV, countlyCommon */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
                 default: function() {
                     return {};
                 }
-            }
-        },
-        methods: {
-            onWidgetCommand: function(event) {
-                if (event === 'zoom') {
-                    this.triggerZoom();
-                    return;
-                }
-                return this.$emit('command', event);
+            },
+            isAllowed: {
+                type: Boolean,
+                default: true
             }
         },
         data: function() {
@@ -105,10 +100,10 @@
                         for (var k = 0; k < this.data.metrics.length; k++) {
                             if (multiApps) {
                                 if (this.data.metrics.length > 1) {
-                                    name = eventName + " " + (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+                                    name = eventName + " " + (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (this.__allApps[app] && this.__allApps[app].name || "");
                                 }
                                 else {
-                                    name = (eventName + " " + countlyGlobal.apps[app].name || "");
+                                    name = (eventName + " " + this.__allApps[app] && this.__allApps[app].name || "");
                                 }
                             }
                             else {
@@ -261,7 +256,6 @@
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "events",
-        feature: "events",
         label: CV.i18nM("dashboards.widget-type.events"),
         priority: 2,
         primary: true,
@@ -281,6 +275,7 @@
             getEmpty: function() {
                 return {
                     title: "",
+                    feature: "events",
                     widget_type: "events",
                     app_count: 'single',
                     apps: [],

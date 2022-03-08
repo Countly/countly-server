@@ -19,7 +19,7 @@
                     <span>Create JIRA Task</span>
                 </el-button>
                 -->
-                <cly-dropdown class="bu-ml-2 crash-mark-as" ref="markDropdown">
+                <cly-dropdown class="bu-ml-2 crash-mark-as" ref="markDropdown" v-if="canUserUpdate">
                     <template v-slot:trigger="dropdown">
                         <cly-input-dropdown-trigger
                             class="crash-mark-as__button text-button color-cool-gray-100"
@@ -39,7 +39,7 @@
                 </cly-dropdown>
                 <cly-more-options @command="handleCrashgroupCommand($event)" class="bu-ml-2">
                     <el-dropdown-item command="view-user-list" v-if="userProfilesEnabled">{{i18n("userdata.list")}}</el-dropdown-item>
-                    <el-dropdown-item command="delete">{{i18n("crashes.action-delete")}}</el-dropdown-item>
+                    <el-dropdown-item v-if="canUserDelete" command="delete">{{i18n("crashes.action-delete")}}</el-dropdown-item>
                 </cly-more-options>
             </div>
         </template>
@@ -47,23 +47,23 @@
     <cly-main>
         <cly-section class="crashgroup-common-metrics" v-if="!!commonMetrics">
             <div class="crashgroup-common-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-platform')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-platform')" v-loading="commonMetrics.platform == undefined">
                     <template v-slot:title>Platform</template>
                     <template v-slot:value>{{commonMetrics.platform}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-reports')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-reports')" v-loading="commonMetrics.occurrences == undefined">
                     <template v-slot:title>Occurrences</template>
                     <template v-slot:value>{{getShortNumber(commonMetrics.occurrences)}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-affected')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-affected')" v-loading="commonMetrics.affectedUsers == undefined">
                     <template v-slot:title>Affected Users</template>
                     <template v-slot:value>{{getShortNumber(commonMetrics.affectedUsers)}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-frequency')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-frequency')" v-loading="commonMetrics.crashFrequency == undefined">
                     <template v-slot:title>Crash Frequency</template>
                     <template v-slot:value>{{commonMetrics.crashFrequency.toFixed(2)}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-latest-version')">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-latest-version')" v-loading="commonMetrics.latestAppVersion == undefined">
                     <template v-slot:title>Latest App Version</template>
                     <template v-slot:value>{{commonMetrics.latestAppVersion}}</template>
                 </cly-crashes-dashboard-tile>
@@ -114,17 +114,17 @@
                         </div>
                     </el-card>
                     <div class="bu-m-5 comment-box" style="margin-top: 38px !important;">
-                        <el-input type="textarea" autosize placeholder="Enter your comment" v-model="commentInput"></el-input>
+                        <el-input v-if="canUserCreate" type="textarea" autosize placeholder="Enter your comment" v-model="commentInput"></el-input>
                         <div class="bu-level bu-mt-3" style="margin-top: 16px !important;">
                             <div class="bu-left">
                             </div>
                             <div class="bu-right">
                                 <div v-if="!!commentBeingEdited">
                                     <el-button size="small" type="primary" @click="stopEditingComment">{{i18n("crashes.cancel")}}</el-button>
-                                    <el-button size="small" type="primary" @click="saveComment">{{i18n("common.save")}}</el-button>
+                                    <el-button size="small" v-if="canUserUpdate" type="primary" @click="saveComment">{{i18n("common.save")}}</el-button>
                                 </div>
                                 <div v-else-if="!!commentInput  || comments.length === 0">
-                                    <el-button class="icon-button" type="success" size="small" @click="saveComment">{{i18n("crashes.add_comment")}}</el-button>
+                                    <el-button class="icon-button" v-if="canUserCreate"  type="success" size="small" @click="saveComment">{{i18n("crashes.add_comment")}}</el-button>
                                 </div>
                             </div>
                         </div>
@@ -185,7 +185,7 @@
                     <el-option v-for="item in chartByOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
                 </el-select>
             </template>
-            <cly-chart-bar :loading="isLoading" :option="chartData" :legend="{show: true}"></cly-chart-bar>
+            <cly-chart-bar :option="chartData" :legend="{show: true}" v-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section :title="i18n('crashes.crash-occurences')" class="crash-occurences">
             <cly-datatable-n :force-loading="isLoading" :rows="crashes" ref="tableData" @row-click="handleRowClick">
@@ -264,19 +264,19 @@
                             </el-card>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="ts" :label="i18n('crashes.crashed')" width="210" sortable>
+                    <el-table-column prop="ts" :label="i18n('crashes.crashed')" sortable>
                         <template slot-scope="col">
                             <span v-html="formatTimeAgo(col.row.ts)"></span>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="os" :label="i18n('crashes.os_version')" width="250">
+                    <el-table-column prop="os" :label="i18n('crashes.os_version')">
                         <template slot-scope="col">
                             {{col.row.os}} {{col.row.os_version}}
                         </template>
                     </el-table-column>
-                    <el-table-column prop="device" :label="i18n('crashes.device')" width="199px" sortable></el-table-column>
-                    <el-table-column prop="app_version" :label="i18n('crashes.app_version')" width="161" sortable></el-table-column>
-                    <el-table-column :label="i18n('crashes.user')">
+                    <el-table-column prop="device" :label="i18n('crashes.device')" sortable></el-table-column>
+                    <el-table-column prop="app_version" :label="i18n('crashes.app_version')" sortable></el-table-column>
+                    <el-table-column v-if="hasUserPermission" :label="i18n('crashes.user')">
                         <template slot-scope="col">
                             {{col.row.user && col.row.user.name || col.row.uid}}
                             <a class="crash-user-profile-link" :href="'/#/users/' + col.row.uid"><i class="fas fa-arrow-circle-right"></i></a>

@@ -20,7 +20,6 @@
     &__btn-delete {
         font-weight: 500 !important;
         color: #D23F00 !important;
-        padding-right: unset !important;
     }
 
     &__btn-segmentation {
@@ -155,6 +154,12 @@
         align-items: center;
         div {
             margin-top: 0 !important;
+        }
+    }
+
+    &__table {
+        .el-table__only-options-fixed-right {
+            height: 580px !important;
         }
     }
 }

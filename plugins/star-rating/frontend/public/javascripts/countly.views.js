@@ -1,959 +1,961 @@
-/*global $, countlyAuth, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
-var FEATURE_NAME = 'star_rating';
+/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
+(function() {
+    var FEATURE_NAME = 'star_rating';
 
-/**
+    /**
  * Replace escaped characters
  * @param {string} val - string to replace
  * @returns {string} - replaced escaped characters
  */
-function replaceEscapes(val) {
-    return val.replace("&#39;", "'");
-}
+    function replaceEscapes(val) {
+        return val.replace("&#39;", "'");
+    }
 
-var Drawer = countlyVue.views.create({
-    template: CV.T("/star-rating/templates/drawer.html"),
-    props: {
-        settings: Object,
-        controls: Object
-    },
-    mixins: [],
-    data: function() {
-        return {
-            ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
-            constants: {
+    var Drawer = countlyVue.views.create({
+        template: CV.T("/star-rating/templates/drawer.html"),
+        props: {
+            settings: Object,
+            controls: Object
+        },
+        mixins: [],
+        data: function() {
+            return {
+                ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
+                constants: {
                 // TODO: will be localized
-                trigger_sizes: [{label: 'Small', value: 's'}, {label: 'Medium', value: 'm'}, {label: 'Large', value: 'l'}],
-                trigger_positions: [{value: 'mleft', label: 'Center left', key: 'middle-left'}, { value: 'mright', label: 'Center right', key: 'middle-right' }, { value: 'bleft', label: 'Bottom left', key: 'bottom-left'}, { value: 'bright', label: 'Bottom right', key: 'bottom-right' }]
-            },
-            logoDropzoneOptions: {
-                createImageThumbnails: false,
-                maxFilesize: 2, // MB
-                autoProcessQueue: false,
-                addRemoveLinks: true,
-                acceptedFiles: 'image/jpeg,image/png,image/gif',
-                dictDefaultMessage: this.i18n('feedback.drop-message'),
-                dictRemoveFile: this.i18n('feedback.remove-file'),
-                url: "/i/feedback/logo",
-                paramName: "logo",
-                params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
-            },
-            logoFile: "",
-            stamp: 0,
-            cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
-        };
-    },
-    methods: {
+                    trigger_sizes: [{label: 'Small', value: 's'}, {label: 'Medium', value: 'm'}, {label: 'Large', value: 'l'}],
+                    trigger_positions: [{value: 'mleft', label: 'Center left', key: 'middle-left'}, { value: 'mright', label: 'Center right', key: 'middle-right' }, { value: 'bleft', label: 'Bottom left', key: 'bottom-left'}, { value: 'bright', label: 'Bottom right', key: 'bottom-right' }]
+                },
+                logoDropzoneOptions: {
+                    createImageThumbnails: false,
+                    maxFilesize: 2, // MB
+                    autoProcessQueue: false,
+                    addRemoveLinks: true,
+                    acceptedFiles: 'image/jpeg,image/png,image/gif',
+                    dictDefaultMessage: this.i18n('feedback.drop-message'),
+                    dictRemoveFile: this.i18n('feedback.remove-file'),
+                    url: "/i/feedback/logo",
+                    paramName: "logo",
+                    params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
+                },
+                logoFile: "",
+                stamp: 0,
+                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
+            };
+        },
+        methods: {
         // drawer event handlers
-        onClose: function() {},
-        setRatingItemActive: function(index) {
-            var self = this;
-            this.ratingItem.forEach(function(item) {
-                if (self.ratingItem.indexOf(item) !== index) {
-                    item.inactive = true;
-                    item.active = false;
+            onClose: function() {},
+            setRatingItemActive: function(index) {
+                var self = this;
+                this.ratingItem.forEach(function(item) {
+                    if (self.ratingItem.indexOf(item) !== index) {
+                        item.inactive = true;
+                        item.active = false;
+                    }
+                    else {
+                        item.inactive = false;
+                        item.active = true;
+                    }
+                });
+            },
+            onSubmit: function(submitted, done) {
+                var self = this;
+
+                if (this.logoFile !== "") {
+                    submitted.logo = this.logoFile;
+                }
+
+                if (this.cohortsEnabled) {
+                    var finalizedTargeting = null;
+                    var exported = this.$refs.ratingsSegmentation.export();
+                    if (!((exported.behaviorSegmentation.length === 0) && (Object.keys(exported.propertySegmentation.query).length === 0))) {
+                        finalizedTargeting = Object.assign({}, {
+                            user_segmentation: JSON.stringify(exported.propertySegmentation),
+                            steps: JSON.stringify(exported.behaviorSegmentation)
+                        });
+                    }
+
+                    submitted.targeting = finalizedTargeting;
+                }
+
+                if (submitted.target_page) {
+                    submitted.target_page = "selected";
                 }
                 else {
-                    item.inactive = false;
-                    item.active = true;
+                    submitted.target_page = "all";
+                    submitted.target_pages = ["/"];
                 }
-            });
-        },
-        onSubmit: function(submitted, done) {
-            var self = this;
 
-            if (this.logoFile !== "") {
-                submitted.logo = this.logoFile;
-            }
-
-            if (this.cohortsEnabled) {
-                var finalizedTargeting = null;
-                var exported = this.$refs.ratingsSegmentation.export();
-                if (!((exported.behaviorSegmentation.length === 0) && (Object.keys(exported.propertySegmentation.query).length === 0))) {
-                    finalizedTargeting = Object.assign({}, {
-                        user_segmentation: JSON.stringify(exported.propertySegmentation),
-                        steps: JSON.stringify(exported.behaviorSegmentation)
+                if (this.settings.isEditMode) {
+                    starRatingPlugin.editFeedbackWidget(submitted, function() {
+                        self.$emit('widgets-refresh');
+                        done();
                     });
                 }
-
-                submitted.targeting = finalizedTargeting;
-            }
-
-            if (submitted.target_page) {
-                submitted.target_page = "selected";
-            }
-            else {
-                submitted.target_page = "all";
-                submitted.target_pages = ["/"];
-            }
-
-            if (this.settings.isEditMode) {
-                starRatingPlugin.editFeedbackWidget(submitted, function() {
-                    self.$emit('widgets-refresh');
-                    done();
-                });
-            }
-            else {
-                starRatingPlugin.createFeedbackWidget(submitted, function() {
-                    self.$emit('widgets-refresh');
-                    done();
-                });
-            }
-        },
-        onOpen: function() {},
-        onFileAdded: function() {
-            var self = this;
-            this.stamp = Date.now();
-            this.logoDropzoneOptions.params.identifier = this.stamp;
-            setTimeout(function() {
-                self.$refs.logoDropzone.processQueue();
-            }, 1);
-        },
-        onComplete: function(res) {
-            this.logoFile = this.stamp + "." + res.upload.filename.split(".")[1];
-        }
-    }
-});
-
-// these table components should be 3 different components
-var CommentsTable = countlyVue.views.create({
-    template: CV.T("/star-rating/templates/comments-table.html"),
-    props: {
-        comments: Array
-    },
-    computed: {
-        preparedRows: function() {
-            return this.comments.map(function(comment) {
-                comment.cd = countlyCommon.formatTimeAgo(comment.cd);
-                return comment;
-            });
-        }
-    }
-});
-
-var RatingsTable = countlyVue.views.create({
-    template: CV.T("/star-rating/templates/ratings-table.html"),
-    props: {
-        ratings: Array
-    }
-});
-
-var WidgetsTable = countlyVue.views.create({
-    template: CV.T("/star-rating/templates/widgets-table.html"),
-    mixins: [
-        countlyVue.mixins.auth(FEATURE_NAME)
-    ],
-    props: {
-        rows: {
-            type: Array,
-            default: []
-        },
-        loading: {
-            type: Boolean,
-            default: true
-        }
-    },
-    data: function() {
-        return {
-            cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
-        };
-    },
-    computed: {
-        widgets: function() {
-            for (var i = 0; i < this.rows.length; i++) {
-                var ratingScore = 0;
-                if (this.rows[i].ratingsCount > 0) {
-                    ratingScore = (this.rows[i].ratingsSum / this.rows[i].ratingsCount).toFixed(1);
-                }
-                this.rows[i].ratingScore = ratingScore;
-                this.rows[i].popup_header_text = replaceEscapes(this.rows[i].popup_header_text);
-                if (this.cohortsEnabled) {
-                    this.rows[i] = this.parseTargeting(this.rows[i]);
-                }
-            }
-            return this.rows;
-        }
-    },
-    methods: {
-        goWidgetDetail: function(id) {
-            window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
-        },
-        parseTargeting: function(widget) {
-            if (widget.targeting) {
-                try {
-                    if (typeof widget.targeting.user_segmentation === "string") {
-                        widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
-                    }
-                }
-                catch (e) {
-                    widget.targeting.user_segmentation = {};
-                }
-
-                try {
-                    if (typeof widget.targeting.steps === "string") {
-                        widget.targeting.steps = JSON.parse(widget.targeting.steps);
-                    }
-                }
-                catch (e) {
-                    widget.targeting.steps = [];
-                }
-
-                widget.targeting.user_segmentation = widget.targeting.user_segmentation || {};
-                widget.targeting.steps = widget.targeting.steps || [];
-            }
-            return widget;
-        }
-    }
-});
-
-var RatingsTab = countlyVue.views.create({
-    template: CV.T("/star-rating/templates/ratings-tab.html"),
-    data: function() {
-        return {
-            activeFilter: {
-                platform: "",
-                version: "",
-                widget: ""
-            },
-            barOptions: {
-                xAxis: {
-                    data: [1, 2, 3, 4, 5]
-                },
-                series: [
-                    {
-                        name: CV.i18n('feedback.ratings'),
-                        data: [0, 0, 0, 0, 0]
-                    }
-                ]
-            },
-            tabs: [
-                {
-                    title: CV.i18n('feedback.ratings'),
-                    name: 'ratings-table',
-                    component: RatingsTable
-                },
-                {
-                    title: CV.i18n('feedback.comments'),
-                    name: 'comments-table',
-                    component: CommentsTable
-                }
-            ],
-            dynamicTab: 'ratings-table',
-            feedbackData: [],
-            cumulativeData: [],
-            rating: {},
-            platform_version: {},
-            sum: 0,
-            avg: 0,
-            count: 0,
-            comments: [],
-            platformOptions: [{label: 'All Platforms', value: ''}],
-            widgetOptions: [{label: 'All Widgets', value: ''}],
-            versionOptions: [{label: 'All Versions', value: ''}]
-        };
-    },
-    methods: {
-        refresh: function() {
-            this.fetch();
-        },
-        matchPlatformVersion: function(documentName) {
-            var regexString = '';
-            if (this.activeFilter.platform === '') {
-                regexString += '(\\w+)(\\*\\*)';
-            }
-            else {
-                regexString += this.activeFilter.platform.toString().toUpperCase() + '(\\*\\*)';
-            }
-            if (this.activeFilter.version === '') {
-                regexString += '(\\w+)(\\S*)(\\w*)(\\*\\*)[1-5]';
-            }
-            else {
-                regexString += this.activeFilter.version.toString() + '(\\*\\*)[1-5]';
-            }
-            if (this.activeFilter.widget !== '') {
-                regexString += '(\\*\\*)' + this.activeFilter.widget.toString();
-            }
-            return (new RegExp(regexString, 'i')).test(documentName);
-        },
-        calCumulativeData: function() {
-            var self = this;
-            // reset values
-            self.count = 0;
-            self.avg = 0;
-            self.sum = 0;
-            // reset cumulative data
-            self.cumulativeData = [{
-                rating: 0,
-                count: 0,
-                percent: 0
-            }, {
-                rating: 1,
-                count: 0,
-                percent: 0
-            }, {
-                rating: 2,
-                count: 0,
-                percent: 0
-            }, {
-                rating: 3,
-                count: 0,
-                percent: 0
-            }, {
-                rating: 4,
-                count: 0,
-                percent: 0
-            }];
-
-            var ratingArray = [];
-            var result = self.rating;
-            var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
-
-            // prepare cumulative data by period object
-            for (var i = 0; i < periodArray.length; i++) {
-                var dateArray = periodArray[i].split('.');
-                var year = dateArray[0];
-                var month = dateArray[1];
-                var day = dateArray[2];
-                if (result[year] && result[year][month] && result[year][month][day]) {
-                    for (var rating in result[year][month][day]) {
-                        if (self.matchPlatformVersion(rating)) {
-                            var rank = (rating.split("**"))[2];
-                            if (self.cumulativeData[rank - 1]) {
-                                self.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
-                                self.count += result[year][month][day][rating].c;
-                                self.sum += (result[year][month][day][rating].c * rank);
-                                self.avg = self.sum / self.count;
-                                var times = result[year][month][day][rating].c;
-                                while (times--) {
-                                    ratingArray.push(parseInt(rank));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // reset chart data
-            self.barOptions.series[0].data = [];
-            // prepare sum, count and chart data
-            self.cumulativeData.forEach(function(star) {
-                self.barOptions.series[0].data.push(star.count);
-            });
-
-            // prepare percent values in cumulative data
-            self.cumulativeData.forEach(function(star) {
-                if (self.count !== 0) {
-                    star.percent = ((star.count / self.count) * 100).toFixed(1);
-                }
-            });
-
-            ratingArray.sort();
-        },
-        fetch: function() {
-            var self = this;
-            $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter), starRatingPlugin.requestFeedbackWidgetsData())
-                .then(function() {
-                    // set platform versions for filter
-                    self.platform_version = starRatingPlugin.getPlatformVersion();
-                    self.widgets = starRatingPlugin.getFeedbackWidgetsData();
-                    // set rating data for charts
-                    // calculate cumulative data for chart
-                    self.rating = starRatingPlugin.getRatingInPeriod();
-                    self.calCumulativeData();
-                    // set comments data for all widgets
-                    self.feedbackData = starRatingPlugin.getFeedbackData();
-                });
-        },
-        prepareVersions: function(newValue) {
-            var self = this;
-            self.versionOptions = [{label: 'All Versions', value: ''}];
-            if (newValue.platform !== '') {
-                for (var i = 0; i < self.platform_version[newValue.platform].length; i++) {
-                    self.versionOptions.push({ label: self.platform_version[newValue.platform][i], value: self.platform_version[newValue.platform][i] });
-                }
-            }
-        },
-        filterUpdated: function() {
-            //this.fetch();
-            this.calCumulativeData();
-        }
-    },
-    computed: {
-        activeFilterFields: function() {
-            var self = this;
-            self.platformOptions = [{label: 'All Platforms', value: ''}];
-            self.widgetOptions = [{label: 'All Widgets', value: ''}];
-
-            for (var platform in self.platform_version) {
-                self.platformOptions.push({ label: platform, value: platform });
-            }
-
-            for (var widget in self.widgets) {
-                self.widgetOptions.push({ label: self.widgets[widget].popup_header_text, value: self.widgets[widget]._id });
-            }
-
-            return [
-                {
-                    label: "Platform",
-                    key: "platform",
-                    items: self.platformOptions,
-                    default: ""
-                },
-                {
-                    label: "App Version",
-                    key: "version",
-                    items: self.versionOptions,
-                    default: ""
-                },
-                {
-                    label: "Widget",
-                    key: "widget",
-                    items: self.widgetOptions,
-                    default: ""
-                }
-            ];
-        }
-    },
-    created: function() {
-        this.fetch();
-    }
-});
-
-var WidgetsTab = countlyVue.views.create({
-    template: CV.T("/star-rating/templates/widgets-tab.html"),
-    components: {
-        'widgets-table': WidgetsTable,
-        'drawer': Drawer
-    },
-    mixins: [
-        countlyVue.mixins.hasDrawers("widget"),
-        countlyVue.mixins.auth(FEATURE_NAME)
-    ],
-    data: function() {
-        return {
-            widgets: [],
-            drawerSettings: {
-                createTitle: CV.i18n('feedback.add-widget'),
-                editTitle: CV.i18n('feedback.edit-widget'),
-                saveButtonLabel: CV.i18n('common.save'),
-                createButtonLabel: CV.i18n('common.create'),
-                isEditMode: false
-            },
-            widget: '',
-            rating: {},
-            loading: true
-        };
-    },
-    methods: {
-        createWidget: function() {
-            // TODO: move this to model
-            // TODO: localizations
-            this.openDrawer("widget", {
-                popup_header_text: 'What\'s your opinion about this page?',
-                popup_thanks_message: 'Thanks for your feedback!',
-                popup_button_callout: 'Submit Feedback',
-                rating_symbol: 'emojis',
-                trigger_position: 'mleft',
-                trigger_size: 'm',
-                contact_enable: false,
-                popup_email_callout: 'Contact me e-mail',
-                popup_comment_callout: 'Add comment',
-                comment_enable: false,
-                ratings_texts: [
-                    'Very dissatisfied',
-                    'Somewhat dissatisfied',
-                    'Neither satisfied Nor Dissatisfied',
-                    'Somewhat Satisfied',
-                    'Very Satisfied'
-                ],
-                targeting: {
-                    user_segmentation: null,
-                    steps: null
-                },
-                trigger_button_text: 'Feedback',
-                trigger_bg_color: '#123456',
-                trigger_font_color: '#fff',
-                hide_sticker: false,
-                status: true,
-                logo: null,
-                target_pages: ["/"],
-                target_page: false
-            });
-        },
-        refresh: function() {
-            this.fetch();
-        },
-        setWidget: function(row, status) {
-            starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status }, function() {
-                CountlyHelpers.notify({
-                    type: 'success',
-                    message: CV.i18n('feedback.successfully-updated')
-                });
-            });
-        },
-        matchPlatformVersion: function(documentName) {
-            var regexString = '';
-            if (this.widget !== '') {
-                regexString += '(\\*\\*)' + this.widget;
-            }
-            return (new RegExp(regexString, 'i')).test(documentName);
-        },
-        calRatingsCountForWidgets: function() {
-            var self = this;
-            var count = 0;
-            var result = self.rating;
-            var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
-
-            // prepare cumulative data by period object
-            for (var i = 0; i < periodArray.length; i++) {
-                var dateArray = periodArray[i].split('.');
-                var year = dateArray[0];
-                var month = dateArray[1];
-                var day = dateArray[2];
-                if (result[year] && result[year][month] && result[year][month][day]) {
-                    for (var rating in result[year][month][day]) {
-                        if (self.matchPlatformVersion(rating)) {
-                            var rank = (rating.split("**"))[2];
-                            if (self.cumulativeData[rank - 1]) {
-                                count += result[year][month][day][rating].c;
-                            }
-                        }
-                    }
-                }
-            }
-
-            for (var index = 0; index < self.widgets.length; index++) {
-                if (self.widgets[index]._id === self.widget) {
-                    self.widgets[index].ratingsCount = count;
-                }
-            }
-        },
-        fetch: function() {
-            var self = this;
-            this.loading = true;
-            $.when(starRatingPlugin.requestFeedbackWidgetsData(), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod())
-                .then(function() {
-                    // set platform versions for filter
-                    self.platform_version = starRatingPlugin.getPlatformVersion();
-                    // set rating data for charts
-                    // calculate cumulative data for chart
-                    self.rating = starRatingPlugin.getRatingInPeriod();
-                    self.widgets = starRatingPlugin.getFeedbackWidgetsData();
-                    self.loading = false;
-                });
-        }
-    },
-    created: function() {
-        this.fetch();
-    }
-});
-
-var RatingsMain = countlyVue.views.create({
-    template: CV.T("/star-rating/templates/main.html"),
-    data: function() {
-        return {
-            appId: countlyCommon.ACTIVE_APP_ID,
-            dynamicTab: (this.$route.params && this.$route.params.tab) || "ratings",
-            tabs: [
-                {
-                    title: CV.i18n('feedback.ratings'),
-                    name: 'ratings',
-                    component: RatingsTab,
-                    route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/ratings'
-                },
-                {
-                    title: CV.i18n('feedback.widgets'),
-                    name: 'widgets',
-                    component: WidgetsTab,
-                    route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets'
-                }
-            ]
-        };
-    }
-});
-
-var WidgetDetail = countlyVue.views.create({
-    template: CV.T("/star-rating/templates/widget-detail.html"),
-    components: {
-        'drawer': Drawer
-    },
-    mixins: [
-        countlyVue.mixins.hasDrawers("widget"),
-        countlyVue.mixins.auth(FEATURE_NAME)
-    ],
-    data: function() {
-        return {
-            activeNames: [1],
-            cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
-            activeFilter: {
-                platform: "",
-                version: "",
-                widget: ""
-            },
-            widget: {},
-            dynamicTab: (this.$route.params && this.$route.params.tab) || "ratings-table",
-            barOptions: {
-                xAxis: {
-                    data: [1, 2, 3, 4, 5]
-                },
-                series: [
-                    {
-                        name: CV.i18n('feedback.ratings'),
-                        data: [0, 0, 0, 0, 0]
-                    }
-                ]
-            },
-            tabs: [
-                {
-                    title: CV.i18n('feedback.ratings'),
-                    name: 'ratings-table',
-                    component: RatingsTable
-                },
-                {
-                    title: CV.i18n('feedback.comments'),
-                    name: 'comments-table',
-                    component: CommentsTable
-                }
-            ],
-            feedbackData: [],
-            cumulativeData: [],
-            count: 0,
-            sum: 0,
-            rating: {},
-            timesShown: 0,
-            drawerSettings: {
-                createTitle: CV.i18n('feedback.add-widget'),
-                editTitle: CV.i18n('feedback.edit-widget'),
-                saveButtonLabel: CV.i18n('common.save'),
-                createButtonLabel: CV.i18n('common.create'),
-                isEditMode: true
-            },
-            platformOptions: [{label: 'All Platforms', value: ''}],
-            versionOptions: [{label: 'All Versions', value: ''}],
-            platform_version: {}
-        };
-    },
-    methods: {
-        backToWidgets: function() {
-            window.location.hash = '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets';
-        },
-        calCumulativeData: function() {
-            var self = this;
-            // reset values
-            self.count = 0;
-            self.avg = 0;
-            self.sum = 0;
-            // reset cumulative data
-            self.cumulativeData = [{
-                count: 0,
-                percent: 0
-            }, {
-                count: 0,
-                percent: 0
-            }, {
-                count: 0,
-                percent: 0
-            }, {
-                count: 0,
-                percent: 0
-            }, {
-                count: 0,
-                percent: 0
-            }];
-
-            var ratingArray = [];
-            var result = self.rating;
-            var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
-
-            // prepare cumulative data by period object
-            for (var i = 0; i < periodArray.length; i++) {
-                var dateArray = periodArray[i].split('.');
-                var year = dateArray[0];
-                var month = dateArray[1];
-                var day = dateArray[2];
-                if (result[year] && result[year][month] && result[year][month][day]) {
-                    for (var rating in result[year][month][day]) {
-                        if (self.matchPlatformVersion(rating)) {
-                            var rank = (rating.split("**"))[2];
-                            if (self.cumulativeData[rank - 1]) {
-                                self.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
-                                self.count += result[year][month][day][rating].c;
-                                self.sum += (result[year][month][day][rating].c * rank);
-                                self.avg = self.sum / self.count;
-                                var times = result[year][month][day][rating].c;
-                                while (times--) {
-                                    ratingArray.push(parseInt(rank));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // reset chart data
-            self.barOptions.series[0].data = [];
-            // prepare sum, count and chart data
-            self.cumulativeData.forEach(function(star) {
-                self.barOptions.series[0].data.push(star.count);
-            });
-
-            // prepare percent values in cumulative data
-            self.cumulativeData.forEach(function(star) {
-                if (self.count !== 0) {
-                    star.percent = ((star.count / self.count) * 100).toFixed(1);
-                }
-            });
-
-            ratingArray.sort();
-        },
-        setWidget: function(state) {
-            var self = this;
-            starRatingPlugin.editFeedbackWidget({ _id: this.widget._id, status: (state) }, function() {
-                self.widget.is_active = (state ? "true" : "false");
-                self.widget.status = state;
-
-                CountlyHelpers.notify({
-                    type: 'success',
-                    message: CV.i18n('feedback.successfully-updated')
-                });
-            });
-        },
-        editWidget: function() {
-            if (this.cohortsEnabled && this.widget.targeting && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
-                this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
-            }
-            else {
-                this.widget.targeting = {
-                    user_segmentation: null,
-                    steps: null
-                };
-            }
-            this.widget.target_page = this.widget.target_page === "selected";
-            this.openDrawer('widget', this.widget);
-        },
-        handleCommand: function(command) {
-            var self = this;
-            switch (command) {
-            case 'delete-widget':
-                CountlyHelpers.confirm(CV.i18n('feedback.delete-a-widget-description'), "red", function(result) {
-                    if (!result) {
-                        return true;
-                    }
-                    starRatingPlugin.removeFeedbackWidget(self.widget._id, false, function() {
-                        CountlyHelpers.notify({
-                            type: 'success',
-                            message: CV.i18n('feedback.successfully-removed')
-                        });
-                        window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets";
+                else {
+                    starRatingPlugin.createFeedbackWidget(submitted, function() {
+                        self.$emit('widgets-refresh');
+                        done();
                     });
-                }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') });
-                break;
-            }
-        },
-        matchPlatformVersion: function(documentName) {
-            var regexString = '';
-            if (this.activeFilter.platform === '') {
-                regexString += '(\\w+)(\\*\\*)';
-            }
-            else {
-                regexString += this.activeFilter.platform.toString().toUpperCase() + '(\\*\\*)';
-            }
-            if (this.activeFilter.version === '') {
-                regexString += '(\\w+)(\\S*)(\\w*)(\\*\\*)[1-5]';
-            }
-            else {
-                regexString += this.activeFilter.version.toString() + '(\\*\\*)[1-5]';
-            }
-            if (this.activeFilter.widget !== '') {
-                regexString += '(\\*\\*)' + this.activeFilter.widget;
-            }
-            return (new RegExp(regexString, 'i')).test(documentName);
-        },
-        refresh: function() {
-            this.fetch();
-        },
-        fetch: function() {
-            var self = this;
-            this.activeFilter.widget = this.$route.params.id;
-
-            starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
-                self.widget = widget;
-                self.widget.popup_header_text = replaceEscapes(self.widget.popup_header_text);
-                self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
-                if (self.cohortsEnabled) {
-                    self.widget = self.parseTargeting(widget);
                 }
-            });
-            // set widget filter as current one
-            this.activeFilter.widget = this.widget._id;
-            $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter))
-                .then(function() {
-                    // set platform versions for filter
-                    self.platform_version = starRatingPlugin.getPlatformVersion();
-                    // set rating data for charts
-                    // calculate cumulative data for chart
-                    self.rating = starRatingPlugin.getRatingInPeriod();
-                    self.calCumulativeData();
-                    // set comments data for all widgets
-                    self.feedbackData = starRatingPlugin.getFeedbackData();
+            },
+            onOpen: function() {},
+            onFileAdded: function() {
+                var self = this;
+                this.stamp = Date.now();
+                this.logoDropzoneOptions.params.identifier = this.stamp;
+                setTimeout(function() {
+                    self.$refs.logoDropzone.processQueue();
+                }, 1);
+            },
+            onComplete: function(res) {
+                this.logoFile = this.stamp + "." + res.upload.filename.split(".")[1];
+            }
+        }
+    });
+
+    // these table components should be 3 different components
+    var CommentsTable = countlyVue.views.create({
+        template: CV.T("/star-rating/templates/comments-table.html"),
+        props: {
+            comments: Array
+        },
+        computed: {
+            preparedRows: function() {
+                return this.comments.map(function(comment) {
+                    comment.cd = countlyCommon.formatTimeAgo(comment.cd);
+                    return comment;
                 });
-        },
-        prepareVersions: function(newValue) {
-            var self = this;
-            self.versionOptions = [{label: 'All Versions', value: ''}];
-            if (newValue.platform !== '') {
-                for (var i = 0; i < self.platform_version[newValue.platform].length; i++) {
-                    self.versionOptions.push({ label: self.platform_version[newValue.platform][i], value: self.platform_version[newValue.platform][i] });
-                }
-            }
-        },
-        parseTargeting: function(widget) {
-            if (widget.targeting) {
-                try {
-                    if (typeof widget.targeting.user_segmentation === "string") {
-                        widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
-                    }
-                }
-                catch (e) {
-                    widget.targeting.user_segmentation = {};
-                }
-
-                try {
-                    if (typeof widget.targeting.steps === "string") {
-                        widget.targeting.steps = JSON.parse(widget.targeting.steps);
-                    }
-                }
-                catch (e) {
-                    widget.targeting.steps = [];
-                }
-
-                widget.targeting.user_segmentation = widget.targeting.user_segmentation || {};
-                widget.targeting.steps = widget.targeting.steps || [];
-            }
-            return widget;
-        }
-    },
-    computed: {
-        activeFilterFields: function() {
-            var self = this;
-            self.platformOptions = [{label: 'All Platforms', value: ''}];
-
-            for (var platform in self.platform_version) {
-                self.platformOptions.push({ label: platform, value: platform });
-            }
-
-            return [
-                {
-                    label: "Platform",
-                    key: "platform",
-                    items: self.platformOptions,
-                    default: ""
-                },
-                {
-                    label: "App Version",
-                    key: "version",
-                    items: self.versionOptions,
-                    default: ""
-                }
-            ];
-        },
-        ratingRate: function() {
-            var timesShown = this.widget.timesShown === 0 ? 1 : this.widget.timesShown;
-            return parseFloat(((this.widget.ratingsCount / timesShown) * 100).toFixed(2)) || 0;
-        }
-    },
-    mounted: function() {
-        this.fetch();
-    }
-});
-
-var UserFeedbackRatingsTable = countlyVue.views.create({
-    template: CV.T('/star-rating/templates/users-feedback-ratings-table.html'),
-    props: {
-        ratings: {
-            type: Array,
-            default: function() {
-                return [
-                    {
-                        widget: '1',
-                        rating: 1,
-                        time: 1
-                    },
-                    {
-                        widget: '2',
-                        rating: 2,
-                        time: 2
-                    },
-                    {
-                        widget: '3',
-                        rating: 3,
-                        time: 3
-                    },
-                    {
-                        widget: '4',
-                        rating: 4,
-                        time: 4
-                    },
-                    {
-                        widget: '5',
-                        rating: 5,
-                        time: 5
-                    }
-                ];
             }
         }
-    }
-});
+    });
 
-// create vue view
-countlyVue.container.registerTab("/users/tabs", {
-    priority: 1,
-    title: 'Feedback',
-    name: 'feedback',
-    component: countlyVue.components.create({
-        template: CV.T("/star-rating/templates/users-tab.html"),
-        components: {
-            'user-feedback-ratings-table': UserFeedbackRatingsTable
+    var RatingsTable = countlyVue.views.create({
+        template: CV.T("/star-rating/templates/ratings-table.html"),
+        props: {
+            ratings: Array
+        }
+    });
+
+    var WidgetsTable = countlyVue.views.create({
+        template: CV.T("/star-rating/templates/widgets-table.html"),
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
+        props: {
+            rows: {
+                type: Array,
+                default: []
+            },
+            loading: {
+                type: Boolean,
+                default: true
+            }
         },
         data: function() {
             return {
-                uid: '',
-                ratingsData: [],
-                title: CV.i18n('feedback.ratings')
+                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
             };
         },
-        methods: {},
+        computed: {
+            widgets: function() {
+                for (var i = 0; i < this.rows.length; i++) {
+                    var ratingScore = 0;
+                    if (this.rows[i].ratingsCount > 0) {
+                        ratingScore = (this.rows[i].ratingsSum / this.rows[i].ratingsCount).toFixed(1);
+                    }
+                    this.rows[i].ratingScore = ratingScore;
+                    this.rows[i].popup_header_text = replaceEscapes(this.rows[i].popup_header_text);
+                    if (this.cohortsEnabled) {
+                        this.rows[i] = this.parseTargeting(this.rows[i]);
+                    }
+                    this.rows[i].target_pages = this.rows[i].target_pages && this.rows[i].target_pages.length > 0 ? this.rows[i].target_pages.join(", ") : "-";
+                }
+                return this.rows;
+            }
+        },
+        methods: {
+            goWidgetDetail: function(id) {
+                window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
+            },
+            parseTargeting: function(widget) {
+                if (widget.targeting) {
+                    try {
+                        if (typeof widget.targeting.user_segmentation === "string") {
+                            widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+                        }
+                    }
+                    catch (e) {
+                        widget.targeting.user_segmentation = {};
+                    }
+
+                    try {
+                        if (typeof widget.targeting.steps === "string") {
+                            widget.targeting.steps = JSON.parse(widget.targeting.steps);
+                        }
+                    }
+                    catch (e) {
+                        widget.targeting.steps = [];
+                    }
+
+                    widget.targeting.user_segmentation = widget.targeting.user_segmentation || {};
+                    widget.targeting.steps = widget.targeting.steps || [];
+                }
+                return widget;
+            }
+        }
+    });
+
+    var RatingsTab = countlyVue.views.create({
+        template: CV.T("/star-rating/templates/ratings-tab.html"),
+        data: function() {
+            return {
+                activeFilter: {
+                    platform: "",
+                    version: "",
+                    widget: ""
+                },
+                barOptions: {
+                    xAxis: {
+                        data: [1, 2, 3, 4, 5]
+                    },
+                    series: [
+                        {
+                            name: CV.i18n('feedback.ratings'),
+                            data: [0, 0, 0, 0, 0]
+                        }
+                    ]
+                },
+                tabs: [
+                    {
+                        title: CV.i18n('feedback.ratings'),
+                        name: 'ratings-table',
+                        component: RatingsTable
+                    },
+                    {
+                        title: CV.i18n('feedback.comments'),
+                        name: 'comments-table',
+                        component: CommentsTable
+                    }
+                ],
+                dynamicTab: 'ratings-table',
+                feedbackData: [],
+                cumulativeData: [],
+                rating: {},
+                platform_version: {},
+                sum: 0,
+                avg: 0,
+                count: 0,
+                comments: [],
+                platformOptions: [{label: 'All Platforms', value: ''}],
+                widgetOptions: [{label: 'All Widgets', value: ''}],
+                versionOptions: [{label: 'All Versions', value: ''}]
+            };
+        },
+        methods: {
+            refresh: function() {
+                this.fetch();
+            },
+            matchPlatformVersion: function(documentName) {
+                var regexString = '';
+                if (this.activeFilter.platform === '') {
+                    regexString += '(\\w+)(\\*\\*)';
+                }
+                else {
+                    regexString += this.activeFilter.platform.toString().toUpperCase() + '(\\*\\*)';
+                }
+                if (this.activeFilter.version === '') {
+                    regexString += '(\\w+)(\\S*)(\\w*)(\\*\\*)[1-5]';
+                }
+                else {
+                    regexString += this.activeFilter.version.toString() + '(\\*\\*)[1-5]';
+                }
+                if (this.activeFilter.widget !== '') {
+                    regexString += '(\\*\\*)' + this.activeFilter.widget.toString();
+                }
+                return (new RegExp(regexString, 'i')).test(documentName);
+            },
+            calCumulativeData: function() {
+                var self = this;
+                // reset values
+                self.count = 0;
+                self.avg = 0;
+                self.sum = 0;
+                // reset cumulative data
+                self.cumulativeData = [{
+                    rating: 0,
+                    count: 0,
+                    percent: 0
+                }, {
+                    rating: 1,
+                    count: 0,
+                    percent: 0
+                }, {
+                    rating: 2,
+                    count: 0,
+                    percent: 0
+                }, {
+                    rating: 3,
+                    count: 0,
+                    percent: 0
+                }, {
+                    rating: 4,
+                    count: 0,
+                    percent: 0
+                }];
+
+                var ratingArray = [];
+                var result = self.rating;
+                var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
+
+                // prepare cumulative data by period object
+                for (var i = 0; i < periodArray.length; i++) {
+                    var dateArray = periodArray[i].split('.');
+                    var year = dateArray[0];
+                    var month = dateArray[1];
+                    var day = dateArray[2];
+                    if (result[year] && result[year][month] && result[year][month][day]) {
+                        for (var rating in result[year][month][day]) {
+                            if (self.matchPlatformVersion(rating)) {
+                                var rank = (rating.split("**"))[2];
+                                if (self.cumulativeData[rank - 1]) {
+                                    self.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
+                                    self.count += result[year][month][day][rating].c;
+                                    self.sum += (result[year][month][day][rating].c * rank);
+                                    self.avg = self.sum / self.count;
+                                    var times = result[year][month][day][rating].c;
+                                    while (times--) {
+                                        ratingArray.push(parseInt(rank));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // reset chart data
+                self.barOptions.series[0].data = [];
+                // prepare sum, count and chart data
+                self.cumulativeData.forEach(function(star) {
+                    self.barOptions.series[0].data.push(star.count);
+                });
+
+                // prepare percent values in cumulative data
+                self.cumulativeData.forEach(function(star) {
+                    if (self.count !== 0) {
+                        star.percent = ((star.count / self.count) * 100).toFixed(1);
+                    }
+                });
+
+                ratingArray.sort();
+            },
+            fetch: function() {
+                var self = this;
+                $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter), starRatingPlugin.requestFeedbackWidgetsData())
+                    .then(function() {
+                    // set platform versions for filter
+                        self.platform_version = starRatingPlugin.getPlatformVersion();
+                        self.widgets = starRatingPlugin.getFeedbackWidgetsData();
+                        // set rating data for charts
+                        // calculate cumulative data for chart
+                        self.rating = starRatingPlugin.getRatingInPeriod();
+                        self.calCumulativeData();
+                        // set comments data for all widgets
+                        self.feedbackData = starRatingPlugin.getFeedbackData();
+                    });
+            },
+            prepareVersions: function(newValue) {
+                var self = this;
+                self.versionOptions = [{label: 'All Versions', value: ''}];
+                if (newValue.platform !== '') {
+                    for (var i = 0; i < self.platform_version[newValue.platform].length; i++) {
+                        self.versionOptions.push({ label: self.platform_version[newValue.platform][i], value: self.platform_version[newValue.platform][i] });
+                    }
+                }
+            },
+            filterUpdated: function() {
+            //this.fetch();
+                this.calCumulativeData();
+            }
+        },
+        computed: {
+            activeFilterFields: function() {
+                var self = this;
+                self.platformOptions = [{label: 'All Platforms', value: ''}];
+                self.widgetOptions = [{label: 'All Widgets', value: ''}];
+
+                for (var platform in self.platform_version) {
+                    self.platformOptions.push({ label: platform, value: platform });
+                }
+
+                for (var widget in self.widgets) {
+                    self.widgetOptions.push({ label: self.widgets[widget].popup_header_text, value: self.widgets[widget]._id });
+                }
+
+                return [
+                    {
+                        label: "Platform",
+                        key: "platform",
+                        items: self.platformOptions,
+                        default: ""
+                    },
+                    {
+                        label: "App Version",
+                        key: "version",
+                        items: self.versionOptions,
+                        default: ""
+                    },
+                    {
+                        label: "Widget",
+                        key: "widget",
+                        items: self.widgetOptions,
+                        default: ""
+                    }
+                ];
+            }
+        },
         created: function() {
-            this.uid = this.$route.params.uid;
-            var self = this;
-            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})
-                .then(function() {
-                    self.ratingsData = starRatingPlugin.getFeedbackData().aaData;
-                    self.ratingsData.map(function(rating) {
-                        rating.ts = countlyCommon.formatTimeAgo(rating.ts);
+            this.fetch();
+        }
+    });
+
+    var WidgetsTab = countlyVue.views.create({
+        template: CV.T("/star-rating/templates/widgets-tab.html"),
+        components: {
+            'widgets-table': WidgetsTable,
+            'drawer': Drawer
+        },
+        mixins: [
+            countlyVue.mixins.hasDrawers("widget"),
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
+        data: function() {
+            return {
+                widgets: [],
+                drawerSettings: {
+                    createTitle: CV.i18n('feedback.add-widget'),
+                    editTitle: CV.i18n('feedback.edit-widget'),
+                    saveButtonLabel: CV.i18n('common.save'),
+                    createButtonLabel: CV.i18n('common.create'),
+                    isEditMode: false
+                },
+                widget: '',
+                rating: {},
+                loading: true
+            };
+        },
+        methods: {
+            createWidget: function() {
+            // TODO: move this to model
+            // TODO: localizations
+                this.openDrawer("widget", {
+                    popup_header_text: 'What\'s your opinion about this page?',
+                    popup_thanks_message: 'Thanks for your feedback!',
+                    popup_button_callout: 'Submit Feedback',
+                    rating_symbol: 'emojis',
+                    trigger_position: 'mleft',
+                    trigger_size: 'm',
+                    contact_enable: false,
+                    popup_email_callout: 'Contact me e-mail',
+                    popup_comment_callout: 'Add comment',
+                    comment_enable: false,
+                    ratings_texts: [
+                        'Very dissatisfied',
+                        'Somewhat dissatisfied',
+                        'Neither satisfied Nor Dissatisfied',
+                        'Somewhat Satisfied',
+                        'Very Satisfied'
+                    ],
+                    targeting: {
+                        user_segmentation: null,
+                        steps: null
+                    },
+                    trigger_button_text: 'Feedback',
+                    trigger_bg_color: '#123456',
+                    trigger_font_color: '#fff',
+                    hide_sticker: false,
+                    status: true,
+                    logo: null,
+                    target_pages: ["/"],
+                    target_page: false
+                });
+            },
+            refresh: function() {
+                this.fetch();
+            },
+            setWidget: function(row, status) {
+                starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status }, function() {
+                    CountlyHelpers.notify({
+                        type: 'success',
+                        message: CV.i18n('feedback.successfully-updated')
                     });
                 });
+            },
+            matchPlatformVersion: function(documentName) {
+                var regexString = '';
+                if (this.widget !== '') {
+                    regexString += '(\\*\\*)' + this.widget;
+                }
+                return (new RegExp(regexString, 'i')).test(documentName);
+            },
+            calRatingsCountForWidgets: function() {
+                var self = this;
+                var count = 0;
+                var result = self.rating;
+                var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
+
+                // prepare cumulative data by period object
+                for (var i = 0; i < periodArray.length; i++) {
+                    var dateArray = periodArray[i].split('.');
+                    var year = dateArray[0];
+                    var month = dateArray[1];
+                    var day = dateArray[2];
+                    if (result[year] && result[year][month] && result[year][month][day]) {
+                        for (var rating in result[year][month][day]) {
+                            if (self.matchPlatformVersion(rating)) {
+                                var rank = (rating.split("**"))[2];
+                                if (self.cumulativeData[rank - 1]) {
+                                    count += result[year][month][day][rating].c;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (var index = 0; index < self.widgets.length; index++) {
+                    if (self.widgets[index]._id === self.widget) {
+                        self.widgets[index].ratingsCount = count;
+                    }
+                }
+            },
+            fetch: function() {
+                var self = this;
+                this.loading = true;
+                $.when(starRatingPlugin.requestFeedbackWidgetsData(), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod())
+                    .then(function() {
+                    // set platform versions for filter
+                        self.platform_version = starRatingPlugin.getPlatformVersion();
+                        // set rating data for charts
+                        // calculate cumulative data for chart
+                        self.rating = starRatingPlugin.getRatingInPeriod();
+                        self.widgets = starRatingPlugin.getFeedbackWidgetsData();
+                        self.loading = false;
+                    });
+            }
+        },
+        created: function() {
+            this.fetch();
         }
-    })
-});
+    });
 
-var RatingsMainView = new countlyVue.views.BackboneWrapper({
-    component: RatingsMain,
-    templates: [
-        "/drill/templates/query.builder.v2.html"
-    ]
-});
+    var RatingsMain = countlyVue.views.create({
+        template: CV.T("/star-rating/templates/main.html"),
+        data: function() {
+            return {
+                appId: countlyCommon.ACTIVE_APP_ID,
+                dynamicTab: (this.$route.params && this.$route.params.tab) || "ratings",
+                tabs: [
+                    {
+                        title: CV.i18n('feedback.ratings'),
+                        name: 'ratings',
+                        component: RatingsTab,
+                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/ratings'
+                    },
+                    {
+                        title: CV.i18n('feedback.widgets'),
+                        name: 'widgets',
+                        component: WidgetsTab,
+                        route: '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets'
+                    }
+                ]
+            };
+        }
+    });
 
-var WidgetDetailView = new countlyVue.views.BackboneWrapper({
-    component: WidgetDetail,
-    templates: [
-        "/drill/templates/query.builder.v2.html"
-    ]
-});
+    var WidgetDetail = countlyVue.views.create({
+        template: CV.T("/star-rating/templates/widget-detail.html"),
+        components: {
+            'drawer': Drawer
+        },
+        mixins: [
+            countlyVue.mixins.hasDrawers("widget"),
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
+        data: function() {
+            return {
+                activeNames: [1],
+                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
+                activeFilter: {
+                    platform: "",
+                    version: "",
+                    widget: ""
+                },
+                widget: {},
+                dynamicTab: (this.$route.params && this.$route.params.tab) || "ratings-table",
+                barOptions: {
+                    xAxis: {
+                        data: [1, 2, 3, 4, 5]
+                    },
+                    series: [
+                        {
+                            name: CV.i18n('feedback.ratings'),
+                            data: [0, 0, 0, 0, 0]
+                        }
+                    ]
+                },
+                tabs: [
+                    {
+                        title: CV.i18n('feedback.ratings'),
+                        name: 'ratings-table',
+                        component: RatingsTable
+                    },
+                    {
+                        title: CV.i18n('feedback.comments'),
+                        name: 'comments-table',
+                        component: CommentsTable
+                    }
+                ],
+                feedbackData: [],
+                cumulativeData: [],
+                count: 0,
+                sum: 0,
+                rating: {},
+                timesShown: 0,
+                drawerSettings: {
+                    createTitle: CV.i18n('feedback.add-widget'),
+                    editTitle: CV.i18n('feedback.edit-widget'),
+                    saveButtonLabel: CV.i18n('common.save'),
+                    createButtonLabel: CV.i18n('common.create'),
+                    isEditMode: true
+                },
+                platformOptions: [{label: 'All Platforms', value: ''}],
+                versionOptions: [{label: 'All Versions', value: ''}],
+                platform_version: {}
+            };
+        },
+        methods: {
+            backToWidgets: function() {
+                window.location.hash = '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets';
+            },
+            calCumulativeData: function() {
+                var self = this;
+                // reset values
+                self.count = 0;
+                self.avg = 0;
+                self.sum = 0;
+                // reset cumulative data
+                self.cumulativeData = [{
+                    count: 0,
+                    percent: 0
+                }, {
+                    count: 0,
+                    percent: 0
+                }, {
+                    count: 0,
+                    percent: 0
+                }, {
+                    count: 0,
+                    percent: 0
+                }, {
+                    count: 0,
+                    percent: 0
+                }];
 
-app.ratingsMainView = RatingsMainView;
-app.widgetDetailView = WidgetDetailView;
+                var ratingArray = [];
+                var result = self.rating;
+                var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
 
-if (countlyAuth.validateRead(FEATURE_NAME)) {
+                // prepare cumulative data by period object
+                for (var i = 0; i < periodArray.length; i++) {
+                    var dateArray = periodArray[i].split('.');
+                    var year = dateArray[0];
+                    var month = dateArray[1];
+                    var day = dateArray[2];
+                    if (result[year] && result[year][month] && result[year][month][day]) {
+                        for (var rating in result[year][month][day]) {
+                            if (self.matchPlatformVersion(rating)) {
+                                var rank = (rating.split("**"))[2];
+                                if (self.cumulativeData[rank - 1]) {
+                                    self.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
+                                    self.count += result[year][month][day][rating].c;
+                                    self.sum += (result[year][month][day][rating].c * rank);
+                                    self.avg = self.sum / self.count;
+                                    var times = result[year][month][day][rating].c;
+                                    while (times--) {
+                                        ratingArray.push(parseInt(rank));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // reset chart data
+                self.barOptions.series[0].data = [];
+                // prepare sum, count and chart data
+                self.cumulativeData.forEach(function(star) {
+                    self.barOptions.series[0].data.push(star.count);
+                });
+
+                // prepare percent values in cumulative data
+                self.cumulativeData.forEach(function(star) {
+                    if (self.count !== 0) {
+                        star.percent = ((star.count / self.count) * 100).toFixed(1);
+                    }
+                });
+
+                ratingArray.sort();
+            },
+            setWidget: function(state) {
+                var self = this;
+                starRatingPlugin.editFeedbackWidget({ _id: this.widget._id, status: (state) }, function() {
+                    self.widget.is_active = (state ? "true" : "false");
+                    self.widget.status = state;
+
+                    CountlyHelpers.notify({
+                        type: 'success',
+                        message: CV.i18n('feedback.successfully-updated')
+                    });
+                });
+            },
+            editWidget: function() {
+                if (this.cohortsEnabled && this.widget.targeting && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
+                    this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
+                }
+                else {
+                    this.widget.targeting = {
+                        user_segmentation: null,
+                        steps: null
+                    };
+                }
+                this.widget.target_page = this.widget.target_page === "selected";
+                this.openDrawer('widget', this.widget);
+            },
+            handleCommand: function(command) {
+                var self = this;
+                switch (command) {
+                case 'delete-widget':
+                    CountlyHelpers.confirm(CV.i18n('feedback.delete-a-widget-description'), "red", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        starRatingPlugin.removeFeedbackWidget(self.widget._id, false, function() {
+                            CountlyHelpers.notify({
+                                type: 'success',
+                                message: CV.i18n('feedback.successfully-removed')
+                            });
+                            window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets";
+                        });
+                    }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') });
+                    break;
+                }
+            },
+            matchPlatformVersion: function(documentName) {
+                var regexString = '';
+                if (this.activeFilter.platform === '') {
+                    regexString += '(\\w+)(\\*\\*)';
+                }
+                else {
+                    regexString += this.activeFilter.platform.toString().toUpperCase() + '(\\*\\*)';
+                }
+                if (this.activeFilter.version === '') {
+                    regexString += '(\\w+)(\\S*)(\\w*)(\\*\\*)[1-5]';
+                }
+                else {
+                    regexString += this.activeFilter.version.toString() + '(\\*\\*)[1-5]';
+                }
+                if (this.activeFilter.widget !== '') {
+                    regexString += '(\\*\\*)' + this.activeFilter.widget;
+                }
+                return (new RegExp(regexString, 'i')).test(documentName);
+            },
+            refresh: function() {
+                this.fetch();
+            },
+            fetch: function() {
+                var self = this;
+                this.activeFilter.widget = this.$route.params.id;
+
+                starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
+                    self.widget = widget;
+                    self.widget.popup_header_text = replaceEscapes(self.widget.popup_header_text);
+                    self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
+                    if (self.cohortsEnabled) {
+                        self.widget = self.parseTargeting(widget);
+                    }
+                });
+                // set widget filter as current one
+                this.activeFilter.widget = this.widget._id;
+                $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter))
+                    .then(function() {
+                    // set platform versions for filter
+                        self.platform_version = starRatingPlugin.getPlatformVersion();
+                        // set rating data for charts
+                        // calculate cumulative data for chart
+                        self.rating = starRatingPlugin.getRatingInPeriod();
+                        self.calCumulativeData();
+                        // set comments data for all widgets
+                        self.feedbackData = starRatingPlugin.getFeedbackData();
+                    });
+            },
+            prepareVersions: function(newValue) {
+                var self = this;
+                self.versionOptions = [{label: 'All Versions', value: ''}];
+                if (newValue.platform !== '') {
+                    for (var i = 0; i < self.platform_version[newValue.platform].length; i++) {
+                        self.versionOptions.push({ label: self.platform_version[newValue.platform][i], value: self.platform_version[newValue.platform][i] });
+                    }
+                }
+            },
+            parseTargeting: function(widget) {
+                if (widget.targeting) {
+                    try {
+                        if (typeof widget.targeting.user_segmentation === "string") {
+                            widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+                        }
+                    }
+                    catch (e) {
+                        widget.targeting.user_segmentation = {};
+                    }
+
+                    try {
+                        if (typeof widget.targeting.steps === "string") {
+                            widget.targeting.steps = JSON.parse(widget.targeting.steps);
+                        }
+                    }
+                    catch (e) {
+                        widget.targeting.steps = [];
+                    }
+
+                    widget.targeting.user_segmentation = widget.targeting.user_segmentation || {};
+                    widget.targeting.steps = widget.targeting.steps || [];
+                }
+                return widget;
+            }
+        },
+        computed: {
+            activeFilterFields: function() {
+                var self = this;
+                self.platformOptions = [{label: 'All Platforms', value: ''}];
+
+                for (var platform in self.platform_version) {
+                    self.platformOptions.push({ label: platform, value: platform });
+                }
+
+                return [
+                    {
+                        label: "Platform",
+                        key: "platform",
+                        items: self.platformOptions,
+                        default: ""
+                    },
+                    {
+                        label: "App Version",
+                        key: "version",
+                        items: self.versionOptions,
+                        default: ""
+                    }
+                ];
+            },
+            ratingRate: function() {
+                var timesShown = this.widget.timesShown === 0 ? 1 : this.widget.timesShown;
+                return parseFloat(((this.widget.ratingsCount / timesShown) * 100).toFixed(2)) || 0;
+            }
+        },
+        mounted: function() {
+            this.fetch();
+        }
+    });
+
+    var UserFeedbackRatingsTable = countlyVue.views.create({
+        template: CV.T('/star-rating/templates/users-feedback-ratings-table.html'),
+        props: {
+            ratings: {
+                type: Array,
+                default: function() {
+                    return [
+                        {
+                            widget: '1',
+                            rating: 1,
+                            time: 1
+                        },
+                        {
+                            widget: '2',
+                            rating: 2,
+                            time: 2
+                        },
+                        {
+                            widget: '3',
+                            rating: 3,
+                            time: 3
+                        },
+                        {
+                            widget: '4',
+                            rating: 4,
+                            time: 4
+                        },
+                        {
+                            widget: '5',
+                            rating: 5,
+                            time: 5
+                        }
+                    ];
+                }
+            }
+        }
+    });
+
+    // create vue view
+    countlyVue.container.registerTab("/users/tabs", {
+        priority: 1,
+        title: 'Feedback',
+        name: 'feedback',
+        permission: FEATURE_NAME,
+        component: countlyVue.components.create({
+            template: CV.T("/star-rating/templates/users-tab.html"),
+            components: {
+                'user-feedback-ratings-table': UserFeedbackRatingsTable
+            },
+            data: function() {
+                return {
+                    uid: '',
+                    ratingsData: [],
+                    title: CV.i18n('feedback.ratings')
+                };
+            },
+            methods: {},
+            created: function() {
+                this.uid = this.$route.params.uid;
+                var self = this;
+                starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})
+                    .then(function() {
+                        self.ratingsData = starRatingPlugin.getFeedbackData().aaData;
+                        self.ratingsData.map(function(rating) {
+                            rating.ts = countlyCommon.formatTimeAgo(rating.ts);
+                        });
+                    });
+            }
+        })
+    });
+
+    var RatingsMainView = new countlyVue.views.BackboneWrapper({
+        component: RatingsMain,
+        templates: [
+            "/drill/templates/query.builder.v2.html"
+        ]
+    });
+
+    var WidgetDetailView = new countlyVue.views.BackboneWrapper({
+        component: WidgetDetail,
+        templates: [
+            "/drill/templates/query.builder.v2.html"
+        ]
+    });
+
+    app.ratingsMainView = RatingsMainView;
+    app.widgetDetailView = WidgetDetailView;
+
     app.route("/feedback/ratings", 'ratings', function() {
         this.renderWhenReady(this.ratingsMainView);
     });
@@ -975,9 +977,8 @@ if (countlyAuth.validateRead(FEATURE_NAME)) {
     app.addPageScript("/manage/reports", function() {
         countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
     });
-}
 
-/*
+    /*
 app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
@@ -1107,39 +1108,40 @@ app.addPageScript("/drill#", function() {
 });
 */
 
-$(document).ready(function() {
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
+    $(document).ready(function() {
+        app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
         app.addSubMenu("feedback", {
             code: "star-rating",
+            permission: FEATURE_NAME,
             url: "#/feedback/ratings",
             text: "star.menu-title",
             icon: '<div class="logo ion-android-star-half"></div>',
             priority: 30
         });
-    }
-});
+    });
 
-countlyVue.container.registerMixin("/manage/export/export-features", {
-    beforeCreate: function() {
-        var self = this;
-        $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {
-            var widgets = starRatingPlugin.getFeedbackWidgetsData();
-            var widgetsList = [];
-            widgets.forEach(function(widget) {
-                widgetsList.push({
-                    id: widget._id,
-                    name: widget.popup_header_text
+    countlyVue.container.registerMixin("/manage/export/export-features", {
+        beforeCreate: function() {
+            var self = this;
+            $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {
+                var widgets = starRatingPlugin.getFeedbackWidgetsData();
+                var widgetsList = [];
+                widgets.forEach(function(widget) {
+                    widgetsList.push({
+                        id: widget._id,
+                        name: widget.popup_header_text
+                    });
                 });
-            });
 
-            var selectItem = {
-                id: "feedback_widgets",
-                name: "Feedback Widgets",
-                children: widgetsList
-            };
-            if (widgetsList.length) {
-                self.$store.dispatch("countlyConfigTransfer/addConfigurations", selectItem);
-            }
-        });
-    }
-});
+                var selectItem = {
+                    id: "feedback_widgets",
+                    name: "Feedback Widgets",
+                    children: widgetsList
+                };
+                if (widgetsList.length) {
+                    self.$store.dispatch("countlyConfigTransfer/addConfigurations", selectItem);
+                }
+            });
+        }
+    });
+})();

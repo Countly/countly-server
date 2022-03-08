@@ -163,6 +163,7 @@
                 type: Object,
                 default: function() {
                     return {
+                        id: "",
                         value: "",
                         fallback: "",
                         isUppercase: false,
@@ -173,9 +174,6 @@
             isOpen: {
                 type: Boolean,
                 default: false
-            },
-            id: {
-                required: true,
             },
             container: {
                 type: String,
@@ -190,7 +188,7 @@
                 type: Object,
                 required: true,
                 default: function() {
-                    return {top: 0, left: 0};
+                    return {top: 0, left: 0, width: 0};
                 }
             },
             options: {
@@ -213,11 +211,18 @@
         },
         computed: {
             getStyleObject: function() {
-                var result = {};
-                var topOffset = 30;
-                result.width = this.width + 'px';
-                result.top = (this.position.top + topOffset) + 'px';
-                result.left = (this.position.left - (this.width / 2)) + 'px';
+                var editorWith = this.$refs.addUserPropertyPopover.offsetWidth;
+                var topOffset = 25;
+                var result = {
+                    width: this.width + 'px',
+                    top: this.position.top + topOffset + 'px',
+                };
+                if (this.position.left + this.width > editorWith) {
+                    result.right = 0;
+                }
+                else {
+                    result.left = this.position.left + "px";
+                }
                 return result;
             },
         },
@@ -247,19 +252,19 @@
             },
             onSelect: function(value) {
                 var optionItem = this.findOptionByValue(value);
-                this.$emit('select', {id: this.id, container: this.container, value: value, label: optionItem.label, type: optionItem.type});
+                this.$emit('select', {id: this.userProperty.id, container: this.container, value: value, label: optionItem.label, type: optionItem.type});
             },
             onUppercase: function(value) {
-                this.$emit('uppercase', {id: this.id, container: this.container, value: value});
+                this.$emit('uppercase', {id: this.userProperty.id, container: this.container, value: value});
             },
             onFallback: function(value) {
-                this.$emit('fallback', {id: this.id, container: this.container, value: value});
+                this.$emit('fallback', {id: this.userProperty.id, container: this.container, value: value});
             },
             onInput: function(value) {
-                this.$emit('input', {id: this.id, container: this.container, value: value});
+                this.$emit('input', {id: this.userProperty.id, container: this.container, value: value});
             },
             onRemove: function() {
-                this.$emit('remove', {id: this.id, container: this.container});
+                this.$emit('remove', {id: this.userProperty.id, container: this.container});
             },
             onClose: function() {
                 var self = this;
@@ -269,12 +274,6 @@
                     }
                 });
             },
-        },
-        mounted: function() {
-            document.body.appendChild(this.$el);
-        },
-        destroyed: function() {
-            document.body.removeChild(this.$el);
         },
         template: "#add-user-property-popover"
     });
@@ -500,6 +499,29 @@
                 required: false,
                 default: false
             },
+            userProperty: {
+                type: Object,
+                default: function() {
+                    return {
+                        id: "",
+                        value: "",
+                        fallback: "",
+                        isUppercase: false,
+                        type: countlyPushNotification.service.UserPropertyTypeEnum.USER
+                    };
+                }
+            },
+            isOpen: {
+                type: Boolean,
+                default: false
+            },
+            options: {
+                type: Array,
+                required: true,
+                default: function() {
+                    return [];
+                }
+            },
             placeholder: {
                 type: String,
                 required: false,
@@ -520,7 +542,11 @@
                 selectionRange: null,
                 mutationObserver: null,
                 userPropertyEvents: new Map(),
-                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum
+                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum,
+                position: {
+                    top: 0,
+                    left: 0,
+                }
             };
         },
         computed: {
@@ -541,9 +567,11 @@
         },
         methods: {
             onUserPropertyClick: function(id, element) {
-                var elementBound = element.getBoundingClientRect();
-                var leftCoordinate = elementBound.left + (elementBound.width / 2);
-                this.$emit("click", {id: id, container: this.container, position: {left: leftCoordinate, top: elementBound.top }});
+                this.position = {
+                    top: element.offsetTop,
+                    left: element.offsetLeft,
+                };
+                this.$emit("click", {id: id, container: this.container});
             },
             getOnUserPropertyClickEventListener: function(id) {
                 var self = this;
@@ -755,6 +783,24 @@
                     }
                 });
                 this.userPropertyEvents.clear();
+            },
+            onSelectUserProperty: function(value) {
+                this.$emit('select', value);
+            },
+            onInputUserProperty: function(value) {
+                this.$emit('input', value);
+            },
+            onInputFallbackUserProperty: function(value) {
+                this.$emit('fallback', value);
+            },
+            onCheckUppercaseUserProperty: function(value) {
+                this.$emit('uppercase', value);
+            },
+            onRemoveUserProperty: function(value) {
+                this.$emit('remove', value);
+            },
+            closeAddUserPropertyPopover: function() {
+                this.$emit('close', this.container);
             }
         },
         mounted: function() {
@@ -777,7 +823,8 @@
             this.removePasteEventListener(this.onPaste);
         },
         components: {
-            'emoji-picker': countlyPushNotificationComponent.EmojiPicker
+            'emoji-picker': countlyPushNotificationComponent.EmojiPicker,
+            'add-user-property-popover': countlyPushNotificationComponent.AddUserPropertyPopover,
         },
     });
 

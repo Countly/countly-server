@@ -30,12 +30,14 @@
                 <el-switch :value="toggle" @change="onToggle"></el-switch>
             </div>
         </div>
+        <form>
         <slot v-if="hasDefaultSlot && toggle"></slot>
         <template v-else> 
             <validation-provider v-slot="validation" v-if="toggle" :rules="rules">
-                <el-input :value="input" @input="onInput" :placeholder="placeholder" :class="{'is-error': validation.errors.length > 0}" ></el-input>
+                <el-input :value="input" @input="onInput" :placeholder="placeholder" :class="{'is-error': validation.errors.length > 0}" autocomplete="off"></el-input>
             </validation-provider>
         </template>
+        </form>
     </div>
 </script>
 
@@ -54,7 +56,8 @@
 </script>
 
 <script type="text/x-template" id="add-user-property-popover">
-    <div>
+    <div ref="addUserPropertyPopover">
+        <form>
         <div v-if="isOpen" v-bind:style="getStyleObject" class="cly-vue-push-notification-add-user-property-popover">
             <div class="cly-vue-push-notification-add-user-property-popover__inner">
                 <div class="cly-vue-push-notification-add-user-property-popover__title">{{i18n('push-notification.add-user-property')}}</div>
@@ -70,7 +73,7 @@
                         <div class="bu-level bu-is-flex-direction-column bu-is-align-items-flex-start bu-mb-4">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.api-property')}}</div>
                             <validation-provider vid="apiValueValidator" v-slot="validation" rules="required" style="width:100%">
-                                <el-input :value="userProperty.value" @input="onInput" :placeholder="i18n('push-notification.enter-value')" :class="{'is-error': validation.errors.length > 0}"> </el-input>
+                                <el-input :value="userProperty.value" @input="onInput" :placeholder="i18n('push-notification.enter-value')" :class="{'is-error': validation.errors.length > 0}" autocomplete="off"> </el-input>
                             </validation-provider>
                         </div>
                     </template>
@@ -101,7 +104,7 @@
                         <div class="bu-level bu-is-flex-direction-column bu-is-align-items-flex-start">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.fallback-value')}}</div>
                             <validation-provider vid="fallbackValueValidator" v-slot="validation" rules="required" style="width:100%">
-                                <el-input :value="userProperty.fallback" @input="onFallback" placeholder="Enter fallback value" :class="{'is-error': validation.errors.length > 0}"> </el-input>
+                                <el-input :value="userProperty.fallback" @input="onFallback" placeholder="Enter fallback value" :class="{'is-error': validation.errors.length > 0}" autocomplete="off"> </el-input>
                             </validation-provider>
                         </div>
                     </div>
@@ -112,6 +115,7 @@
                 </div>
             </div>
         </div>
+        </form>
     </div>
 </script>
 
@@ -207,7 +211,7 @@
 </script>
 
 <script type="text/x-template" id="message-editor-with-emoji-picker" class="cly-vue-push-notification-message-editor-with-emoji-picker">
-    <div class="cly-vue-push-notification-emoji-wrapper">
+    <div class="cly-vue-push-notification-emoji-wrapper" style="position:relative;">
         <validation-provider ref="defaultLocalizationValidationProvider" v-slot="validation" :rules="isRequired?'required':null"> </validation-provider>
         <div :class="['el-input',hasValidationErrors?'is-error':null]" style="display:block;" @click="onClick">
             <component 
@@ -220,6 +224,21 @@
                 @keydown.enter.prevent>
             </component>
         </div>
+        <add-user-property-popover
+            :width="350"
+            :isOpen="isOpen"
+            :container="container"
+            :userProperty="userProperty"
+            :options="options"
+            :position="position"
+            @select="onSelectUserProperty"
+            @input="onInputUserProperty"
+            @fallback="onInputFallbackUserProperty"
+            @uppercase="onCheckUppercaseUserProperty"
+            @remove="onRemoveUserProperty"
+            @close="closeAddUserPropertyPopover"
+        >
+        </add-user-property-popover>
         <emoji-picker @emoji="appendEmoji" :search="search">
             <template  v-slot:emoji-invoker ="{ events: { click: clickEvent } }">   
                 <div class="emoji-invoker" @click.stop="clickEvent">
@@ -255,7 +274,7 @@
 </script>
 
 <script type="text/x-template" id="details-tab-row">
-    <div class="bu-level bu-ml-5 bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
+    <div class="bu-level bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
         <div class="bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__label">
             {{label}}
         </div>
@@ -272,14 +291,14 @@
     <el-card class="box-card cly-vue-push-notification-details-summary-card">
         <template v-if="pushNotification.messageType === MessageTypeEnum.CONTENT">
             <div slot="header" class="clearfix">
-                <span>{{i18n('push-notification-details.localization-filter-label')}}</span>
+                <span class="bu-mr-1 color-cool-gray-50 font-weight-bold text-small">{{i18n('push-notification-details.localization-filter-label')}}</span>
                 <el-select v-model="selectedMessageLocale">
                     <el-option v-for="item in localizations" :key="item.value" :value="item.value" :label="item.label">
                     </el-option>
                 </el-select>
             </div>
-            <div>
-                <div class="bu-level bu-ml-5 bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
+            <div class="bu-p-1">
+                <div class="bu-level bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
                     <div class="bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__label">
                         {{i18n('push-notification-details.message-title')}}
                     </div>
@@ -291,7 +310,7 @@
                         </template>    
                     </div>
                 </div>
-                <div class="bu-level bu-ml-5 bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
+                <div class="bu-level bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
                     <div class="bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__label">
                         {{i18n('push-notification-details.message-content')}}
                     </div>
@@ -316,102 +335,104 @@
                 </template>
             </div>
         </template>
-    <template v-if="pushNotification.messageType === MessageTypeEnum.SILENT">
-        <div>
-            <details-tab-row :label="i18n('push-notification.ios-badge-number-setting')" :value="pushNotification.settings[PlatformEnum.IOS].badgeNumber"> </details-tab-row>
-            <details-tab-row :label="i18n('push-notification.ios-json-data-setting')" :value="prettifyJSON(pushNotification.settings[PlatformEnum.IOS].json)"  :usePre="true"> </details-tab-row>
-            <details-tab-row :label="i18n('push-notification.ios-user-data-setting')" :value="pushNotification.settings[PlatformEnum.IOS].userData.join(', ')"> </details-tab-row>
-            <details-tab-row :label="i18n('push-notification.android-badge-number-setting')" :value="pushNotification.settings[PlatformEnum.ANDROID].badgeNumber"> </details-tab-row>
-            <details-tab-row :label="i18n('push-notification.android-json-data-setting')" :value="prettifyJSON(pushNotification.settings[PlatformEnum.ANDROID].json)"  :usePre="true"> </details-tab-row>
-            <details-tab-row :label="i18n('push-notification.android-user-data-setting')" :value="pushNotification.settings[PlatformEnum.ANDROID].userData.join(', ')"> </details-tab-row>
-        </div>
-    </template>
+        <template v-if="pushNotification.messageType === MessageTypeEnum.SILENT">
+            <div>
+                <details-tab-row :label="i18n('push-notification.ios-badge-number-setting')" :value="pushNotification.settings[PlatformEnum.IOS].badgeNumber"> </details-tab-row>
+                <details-tab-row :label="i18n('push-notification.ios-json-data-setting')" :value="prettifyJSON(pushNotification.settings[PlatformEnum.IOS].json)"  :usePre="true"> </details-tab-row>
+                <details-tab-row :label="i18n('push-notification.ios-user-data-setting')" :value="pushNotification.settings[PlatformEnum.IOS].userData.join(', ')"> </details-tab-row>
+                <details-tab-row :label="i18n('push-notification.android-badge-number-setting')" :value="pushNotification.settings[PlatformEnum.ANDROID].badgeNumber"> </details-tab-row>
+                <details-tab-row :label="i18n('push-notification.android-json-data-setting')" :value="prettifyJSON(pushNotification.settings[PlatformEnum.ANDROID].json)"  :usePre="true"> </details-tab-row>
+                <details-tab-row :label="i18n('push-notification.android-user-data-setting')" :value="pushNotification.settings[PlatformEnum.ANDROID].userData.join(', ')"> </details-tab-row>
+            </div>
+        </template>
     </el-card>
 </script>
 
 <script type="text/x-template" id="details-targeting-tab">
     <el-card class="box-card cly-vue-push-notification-details-summary-card">
-        <template v-if="pushNotification.type === TypeEnum.ONE_TIME || pushNotification.type === TypeEnum.AUTOMATIC"> 
-            <div class="cly-vue-push-notification-details-summary__header bu-mt-5 bu-mb-4 bu-ml-5" >
-                {{i18n('push-notification-details.targeting-sub-header')}}
-            </div>
-            <div>
-                <template v-if="pushNotification.type === TypeEnum.ONE_TIME">
-                    <template v-if="pushNotification[TypeEnum.ONE_TIME].targeting === TargetingEnum.ALL">
-                        <details-tab-row :label="i18n('push-notification-details.targeted-users')"> 
-                            {{targetingOptions[pushNotification[TypeEnum.ONE_TIME].targeting].label}}
-                        </details-tab-row>
+        <div class="bu-p-1">
+            <template v-if="pushNotification.type === TypeEnum.ONE_TIME || pushNotification.type === TypeEnum.AUTOMATIC"> 
+                <div class="cly-vue-push-notification-details-summary__header bu-mt-1 bu-mb-4" >
+                    {{i18n('push-notification-details.targeting-sub-header')}}
+                </div>
+                <div class="bu-pb-4">
+                    <template v-if="pushNotification.type === TypeEnum.ONE_TIME">
+                        <template v-if="pushNotification[TypeEnum.ONE_TIME].targeting === TargetingEnum.ALL">
+                            <details-tab-row :label="i18n('push-notification-details.targeted-users')"> 
+                                {{targetingOptions[pushNotification[TypeEnum.ONE_TIME].targeting].label}}
+                            </details-tab-row>
+                        </template>
+                        <template v-else>
+                            <details-tab-row :label="i18n('push-notification-details.targeted-users')"> 
+                                <div class="bu-is-flex bu-is-flex-direction-column">
+                                    <div class="bu-level" v-for="cohortName in previewCohorts">
+                                        {{cohortName}}
+                                    </div>
+                                </div>
+                            </details-tab-row>
+                            <details-tab-row :label="i18n('push-notification-details.geolocation')"> 
+                                <div class="bu-is-flex bu-is-flex-direction-column">
+                                    <div class="bu-level" v-for="locationName in locations">
+                                        {{locationName}}
+                                    </div>
+                                </div>
+                            </details-tab-row>
+                        </template>
+                        <details-tab-row :label="i18n('push-notification-details.when-to-determine')" :value="audienceSelectionOptions[pushNotification.audienceSelection].label"> </details-tab-row>
                     </template>
-                    <template v-else>
-                        <details-tab-row :label="i18n('push-notification-details.targeted-users')"> 
+                    <template v-if="pushNotification.type === TypeEnum.AUTOMATIC">
+                        <details-tab-row :label="i18n('push-notification.trigger-type')" :value="triggerOptions[pushNotification.automatic.trigger].label"> </details-tab-row>
+                        <details-tab-row v-if="pushNotification.automatic.trigger === TriggerEnum.EVENT" :label="i18n('push-notification.events')">
+                            <div class="bu-is-flex bu-is-flex-direction-column">
+                                <div class="bu-level" v-for="eventName in pushNotification.automatic.events">
+                                    {{eventName}}
+                                </div>
+                            </div>
+                        </details-tab-row>
+                        <details-tab-row v-else :label="i18n('push-notification.cohorts')">
                             <div class="bu-is-flex bu-is-flex-direction-column">
                                 <div class="bu-level" v-for="cohortName in previewCohorts">
                                     {{cohortName}}
                                 </div>
                             </div>
                         </details-tab-row>
-                        <details-tab-row :label="i18n('push-notification-details.geolocation')"> 
+                        <details-tab-row :label="i18n('push-notification.geolocations')">
                             <div class="bu-is-flex bu-is-flex-direction-column">
                                 <div class="bu-level" v-for="locationName in locations">
                                     {{locationName}}
                                 </div>
                             </div>
                         </details-tab-row>
+                        <details-tab-row v-if="pushNotification.automatic.trigger === TriggerEnum.EVENT" :label="i18n('push-notification.geolocations')" :value="deliveryDateCalculationOptions[pushNotification.automatic.deliveryDateCalculation].label"></details-tab-row>
+                        <details-tab-row v-else :label="i18n('push-notification.behavior-trigger-not-met')" :value="triggerNotMetOptions[pushNotification.automatic.triggerNotMet].label"></details-tab-row>
                     </template>
-                    <details-tab-row :label="i18n('push-notification-details.when-to-determine')" :value="audienceSelectionOptions[pushNotification.audienceSelection].label"> </details-tab-row>
+                </div>
+            </template>
+            <div class="cly-vue-push-notification-details-summary__header bu-mt-1 bu-mb-4">
+                {{i18n('push-notification-details.delivery-sub-header')}}
+            </div>
+            <div>
+                <template v-if="pushNotification.type === TypeEnum.ONE_TIME">
+                    <details-tab-row :label="i18n('push-notification.delivery-type')" :value="startDateOptions[pushNotification.delivery.type].label"> </details-tab-row>
+                    <details-tab-row :label="i18n('push-notification-details.scheduled-for')" :value="formatDateAndTime(pushNotification.delivery.startDate)"> </details-tab-row>
+                    <details-tab-row :label="i18n('push-notification-details.expiration-time')" :value="i18n('push-notification-details.message-expires-after', pushNotification.expiration.days, pushNotification.expiration.hours)"> </details-tab-row>
                 </template>
-                <template v-if="pushNotification.type === TypeEnum.AUTOMATIC">
-                    <details-tab-row :label="i18n('push-notification.trigger-type')" :value="triggerOptions[pushNotification.automatic.trigger].label"> </details-tab-row>
-                    <details-tab-row v-if="pushNotification.automatic.trigger === TriggerEnum.EVENT" :label="i18n('push-notification.events')">
-                        <div class="bu-is-flex bu-is-flex-direction-column">
-                            <div class="bu-level" v-for="eventName in pushNotification.automatic.events">
-                                {{eventName}}
-                            </div>
-                        </div>
+                <template v-if="pushNotification.type === TypeEnum.AUTOMATIC || pushNotification.type === TypeEnum.TRANSACTIONAL">
+                    <details-tab-row :label="i18n('push-notification.delivery-timeframe')" :value="startDateOptions[pushNotification.delivery.type].label"> </details-tab-row>
+                    <details-tab-row :label="i18n('push-notification.start-date')" :value="formatDateAndTime(pushNotification.delivery.startDate)"></details-tab-row>
+                    <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.end-date')" :value="formatDateAndTime(pushNotification.delivery.endDate)"></details-tab-row>
+                    <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.delivery-method')" :value="deliveryMethodOptions[pushNotification.automatic.deliveryMethod].label"></details-tab-row>
+                    <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.capping')">
+                        <template v-if="pushNotification.automatic.capping">
+                            {{i18n('push-notification.maximum-messages',pushNotification.automatic.maximumMessagesPerUser)}} <br />
+                            {{i18n('push-notification.minimum-days-and-hours',pushNotification.automatic.minimumTimeBetweenMessages.days,pushNotification.automatic.minimumTimeBetweenMessages.hours)}}
+                        </template>
+                        <template v-else>
+                            {{i18n('push-notification.no-capping')}} <br />
+                        </template>
                     </details-tab-row>
-                    <details-tab-row v-else :label="i18n('push-notification.cohorts')">
-                        <div class="bu-is-flex bu-is-flex-direction-column">
-                            <div class="bu-level" v-for="cohortName in previewCohorts">
-                                {{cohortName}}
-                            </div>
-                        </div>
-                    </details-tab-row>
-                    <details-tab-row :label="i18n('push-notification.geolocations')">
-                        <div class="bu-is-flex bu-is-flex-direction-column">
-                            <div class="bu-level" v-for="locationName in locations">
-                                {{locationName}}
-                            </div>
-                        </div>
-                    </details-tab-row>
-                    <details-tab-row v-if="pushNotification.automatic.trigger === TriggerEnum.EVENT" :label="i18n('push-notification.geolocations')" :value="deliveryDateCalculationOptions[pushNotification.automatic.deliveryDateCalculation].label"></details-tab-row>
-                    <details-tab-row v-else :label="i18n('push-notification.behavior-trigger-not-met')" :value="triggerNotMetOptions[pushNotification.automatic.triggerNotMet].label"></details-tab-row>
                 </template>
             </div>
-        </template>
-        <div class="cly-vue-push-notification-details-summary__header bu-mt-5 bu-mb-4 bu-ml-5">
-            {{i18n('push-notification-details.delivery-sub-header')}}
-        </div>
-        <div>
-            <template v-if="pushNotification.type === TypeEnum.ONE_TIME">
-                <details-tab-row :label="i18n('push-notification.delivery-type')" :value="startDateOptions[pushNotification.delivery.type].label"> </details-tab-row>
-                <details-tab-row :label="i18n('push-notification-details.scheduled-for')" :value="formatDateAndTime(pushNotification.delivery.startDate)"> </details-tab-row>
-                <details-tab-row :label="i18n('push-notification-details.expiration-time')" :value="i18n('push-notification-details.message-expires-after', pushNotification.expiration.days, pushNotification.expiration.hours)"> </details-tab-row>
-            </template>
-            <template v-if="pushNotification.type === TypeEnum.AUTOMATIC || pushNotification.type === TypeEnum.TRANSACTIONAL">
-                <details-tab-row :label="i18n('push-notification.delivery-timeframe')" :value="startDateOptions[pushNotification.delivery.type].label"> </details-tab-row>
-                <details-tab-row :label="i18n('push-notification.start-date')" :value="formatDateAndTime(pushNotification.delivery.startDate)"></details-tab-row>
-                <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.end-date')" :value="formatDateAndTime(pushNotification.delivery.endDate)"></details-tab-row>
-                <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.delivery-method')" :value="deliveryMethodOptions[pushNotification.automatic.deliveryMethod].label"></details-tab-row>
-                <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.capping')">
-                    <template v-if="pushNotification.automatic.capping">
-                        {{i18n('push-notification.maximum-messages',pushNotification.automatic.maximumMessagesPerUser)}} <br />
-                        {{i18n('push-notification.minimum-days-and-hours',pushNotification.automatic.minimumTimeBetweenMessages.days,pushNotification.automatic.minimumTimeBetweenMessages.hours)}}
-                    </template>
-                    <template v-else>
-                        {{i18n('push-notification.no-capping')}} <br />
-                    </template>
-                </details-tab-row>
-            </template>
         </div>
     </el-card>
 </script>
@@ -428,7 +449,7 @@
                         :label="i18n('push-notification.error-code')"
                         min-width="30">
                         <template v-slot="scope">
-                         <span style="white-space:normal">{{scope.row.code}} {{scope.row.codePostfix? '('+scope.row.codePostfix+')' : ''}}</span>
+                         <span style="white-space:normal">{{scope.row.code}}</span>
                         </template>
                     </el-table-column>
                     <el-table-column

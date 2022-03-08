@@ -14,7 +14,7 @@
                 return json;
             },
             error: function(xhr, status, error) {
-                if (error) {
+                if (error && status !== 'abort') {
                     CountlyHelpers.alert(error, "red");
                 }
             }
@@ -33,7 +33,7 @@
                 return json;
             },
             error: function(xhr, status, error) {
-                if (error) {
+                if (error && status !== 'abort') {
                     CountlyHelpers.alert(error, "red");
                 }
             }

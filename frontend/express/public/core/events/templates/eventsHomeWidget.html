@@ -15,6 +15,9 @@
 					<span v-if="item.trend=='d'" slot="description" class="cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{item.change}}</span>
 					<span v-else slot="description" class="cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{item.change}}</span>
 				</cly-metric-card>
+				<div v-if="items.length <1 && !isLoading" class="technology-analytics-wrapper__empty-card" >
+					<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+				</div>
 			</cly-metric-cards>
 		<!-- </vue-scroll> -->
 	</cly-section>

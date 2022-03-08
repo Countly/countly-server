@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, countlyAuth, CountlyHelpers, countlyGlobal, countlyDataMigration, app */
+/*global countlyVue, CV, countlyCommon, CountlyHelpers, countlyGlobal, countlyDataMigration, app */
 (function() {
     var FEATURE_NAME = 'data_migration';
 
@@ -386,12 +386,10 @@
         component: DataMigrationMain
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        //register route
-        app.route('/manage/data-migration', 'datamigration', function() {
-            this.renderWhenReady(DataMigrationMainView);
-        });
+    //register route
+    app.route('/manage/data-migration', 'datamigration', function() {
+        this.renderWhenReady(DataMigrationMainView);
+    });
 
-        app.addMenu("management", {code: "data-migration", url: "#/manage/data-migration", text: "data-migration.page-title", icon: '<div class="logo-icon fa fa-arrows-alt-h"></div>', priority: 130});
-    }
+    app.addMenu("management", {code: "data-migration", permission: FEATURE_NAME, url: "#/manage/data-migration", text: "data-migration.page-title", icon: '<div class="logo-icon fa fa-arrows-alt-h"></div>', priority: 70});
 })();

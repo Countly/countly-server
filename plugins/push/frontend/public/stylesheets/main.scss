@@ -46,8 +46,9 @@
 }
 
 .cly-vue-platform-filter-label {
-    font-size: typography.$heading-3-size;
+    font-size: typography.$heading-4-size;
     font-weight: typography.$font-weight-primary;
+    color: map.get(colors.$colors,"cool-gray-100");
 }
 
 .blinker-wrapper {
@@ -291,6 +292,8 @@
 }
 
 .cly-vue-push-notification-details-summary {
+
+    margin-top: 64px;
     
     &__header {
         margin-top: 64px;
@@ -305,13 +308,16 @@
         }
     }
 
-    &__message-preview {
-        margin-top:214px;
-    }
+    // &__message-preview {
+    //     margin-top:214px;
+    // }
 }
 
 .cly-vue-push-notification-details-summary-card {
-    min-height: 715px;
+    min-height: 600px;
+    > .el-card__header {
+        padding: 12px 24px;
+    }
 }
 
 .cly-vue-push-notification-details-sub-header {
@@ -331,13 +337,13 @@
 .cly-vue-push-notification-details-summary {
 
     &__header {
-        font-weight: typography.$heading-3-weight;
-        font-size: typography.$heading-3-size;
+        font-weight: typography.$heading-4-weight;
+        font-size: typography.$heading-4-size;
     }
 
     &__label {
         flex-basis: 20%;
-        min-width: 20%;
+        min-width: 25%;
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
@@ -468,6 +474,7 @@
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
     }
 
     &__subsection-left {
@@ -481,12 +488,21 @@
         overflow-y: auto;
     }
 
+    &__subsection-left-row {
+        padding: 2.5px 0;
+        border-left: 2px solid transparent;
+        .el-checkbox__label {
+            width: 150px;
+        }
+    }
+
     &__subsection-left-row-active {
         background:#F6F6F6;
     }
 
     &__subsection-left-row:hover {
-        background:#cecece;
+        background:#F6F6F6;
+        border-left: 2px solid #0166D6;
     }
 
     &__subsection-left-list-item {
@@ -509,7 +525,7 @@
         border-top-left-radius: 0px;  
         border-bottom-right-radius: 6px;
         border-top-right-radius: 6px;
-        padding-top: 12px;
+        padding-top: 8px;
         padding-bottom: 12px;
         padding-left: 16px;
         padding-right: 16px;
@@ -579,6 +595,7 @@
         display: inline-block;
         color: map.get(colors.$colors,"text-primary");
         white-space: break-spaces;
+        font-weight: 400;
     }
 
     &__content {
@@ -600,6 +617,7 @@
         display: inline-block;
         color: map.get(colors.$colors,"text-primary");
         white-space: pre-wrap;
+        font-weight: 400;
     }
 
     &__content {
@@ -749,21 +767,22 @@
 
 .emoji-invoker {
     position: absolute;
-    top: 0.25rem;
-    right: 0.85rem;
+    top: 0.35rem;
+    right: 0.35rem;
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all .2s;
+    transform: scale(0.7);
 }
 
 .emoji-invoker:hover {
-    transform: scale(1.1);
+    transform: scale(1);
 }
 
 .emoji-invoker > svg {
-    fill: #b1c6d0;
+    fill: #81868D;
 }
 
 .emoji-picker {

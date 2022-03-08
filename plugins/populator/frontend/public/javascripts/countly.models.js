@@ -1,4 +1,4 @@
-/*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
+/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_app_version", "_density", "_locale", "_store"],
@@ -1519,7 +1519,7 @@
                 template.events = JSON.stringify(template.events);
             }
         }
-
+        template.app_id = countlyCommon.ACTIVE_APP_ID;
         return template;
     }
 
@@ -1709,7 +1709,7 @@
 
         var template = this.currentTemplate || {};
 
-        if (typeof countlyCohorts !== "undefined") {
+        if (typeof countlyCohorts !== "undefined" && countlyAuth.validateCreate('cohorts')) {
             if (template && template.events && Object.keys(template.events).length > 0) {
                 var firstEventKey = Object.keys(template.events)[0];
 
@@ -1856,7 +1856,7 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/populator/templates",
-                data: {template_id: templateId},
+                data: {template_id: templateId, app_id: countlyCommon.ACTIVE_APP_ID},
                 success: callback,
                 error: function() {
                     CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-fetch-template", templateId), type: "error"});
@@ -1928,7 +1928,7 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/i/populator/templates/remove",
-                data: {template_id: templateId},
+                data: {template_id: templateId, app_id: countlyCommon.ACTIVE_APP_ID},
                 success: callback,
                 error: function() {
                     CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-remove-template", templateId), type: "error"});

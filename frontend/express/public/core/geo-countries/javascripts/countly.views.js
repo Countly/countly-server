@@ -280,8 +280,12 @@ var CountriesHomeWidget = countlyVue.views.create({
             buttonLink: buttonLink,
             chooseProperties: this.calculateProperties(),
             countriesData: this.calculateCountriesData(),
-            selectedProperty: "t"
-
+            selectedProperty: "t",
+            headerData: {
+                label: CV.i18n("countries.title"),
+                description: CV.i18n('countries.description'),
+                linkTo: {"label": CV.i18n('countries.go-to-countries'), "href": "#/analytics/geo/countries"}
+            }
         };
     },
     beforeCreate: function() {
@@ -342,14 +346,13 @@ var CountriesHomeWidget = countlyVue.views.create({
 
 countlyVue.container.registerData("/home/widgets", {
     _id: "countries-dashboard-widget",
+    permission: "core",
     label: CV.i18n('countries.title'),
-    description: CV.i18n('countries.description'),
     enabled: {"default": true}, //object. For each type set if by default enabled
     available: {"default": true}, //object. default - for all app types. For other as specified.
     order: 8, //sorted by ascending
     placeBeforeDatePicker: false,
-    component: CountriesHomeWidget,
-    linkTo: {"label": CV.i18n('countries.go-to-countries'), "href": "#/analytics/geo/countries"}
+    component: CountriesHomeWidget
 });
 
 
@@ -394,6 +397,7 @@ app.route("/analytics/geo/countries/*region", "analytics-geo", function(region) 
 countlyVue.container.registerTab("/analytics/geo", {
     priority: 1,
     name: "countries",
+    permission: "core",
     title: CV.i18n('sidebar.analytics.countries'),
     route: "#/analytics/geo/countries",
     component: CountryView,

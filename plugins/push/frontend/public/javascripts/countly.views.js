@@ -7,14 +7,15 @@
 
     var statusFilterOptions = [
         {label: countlyPushNotification.service.ALL_FILTER_OPTION_LABEL, value: countlyPushNotification.service.ALL_FILTER_OPTION_VALUE},
-        {label: CV.i18n("push-notification.status-created"), value: countlyPushNotification.service.StatusEnum.CREATED},
-        {label: CV.i18n("push-notification.status-scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
-        {label: CV.i18n("push-notification.status-sent"), value: countlyPushNotification.service.StatusEnum.SENT},
-        {label: CV.i18n("push-notification.status-sending"), value: countlyPushNotification.service.StatusEnum.SENDING},
-        {label: CV.i18n("push-notification.status-failed"), value: countlyPushNotification.service.StatusEnum.FAILED},
-        {label: CV.i18n("push-notification.status-stopped"), value: countlyPushNotification.service.StatusEnum.STOPPED},
-        {label: CV.i18n("push-notification.status-draft"), value: countlyPushNotification.service.StatusEnum.DRAFT},
-        {label: CV.i18n("push-notification.status-pending-approval"), value: countlyPushNotification.service.StatusEnum.PENDING_APPROVAL},
+        {label: CV.i18n("push-notification.created"), value: countlyPushNotification.service.StatusEnum.CREATED},
+        {label: CV.i18n("push-notification.scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
+        {label: CV.i18n("push-notification.sent"), value: countlyPushNotification.service.StatusEnum.SENT},
+        {label: CV.i18n("push-notification.sending"), value: countlyPushNotification.service.StatusEnum.SENDING},
+        {label: CV.i18n("push-notification.failed"), value: countlyPushNotification.service.StatusEnum.FAILED},
+        {label: CV.i18n("push-notification.stopped"), value: countlyPushNotification.service.StatusEnum.STOPPED},
+        {label: CV.i18n("push-notification.draft"), value: countlyPushNotification.service.StatusEnum.DRAFT},
+        {label: CV.i18n("push-notification.waiting-for-approval"), value: countlyPushNotification.service.StatusEnum.PENDING_APPROVAL},
+        {label: CV.i18n("push-notification.reject"), value: countlyPushNotification.service.StatusEnum.REJECT},
     ];
 
     var platformFilterOptions = [
@@ -92,11 +93,6 @@
                 type: Object,
                 default: null,
             },
-            wrappedUserProperties: {
-                type: Boolean,
-                default: false,
-                required: false
-            }
         },
         data: function() {
             return {
@@ -141,17 +137,15 @@
                 settings: JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState)),
                 userPropertiesIdCounter: 0,
                 selectedUserPropertyId: null,
-                selectedUserPropertyContainer: "title",
-                isAddUserPropertyPopoverOpen: false,
+                isAddUserPropertyPopoverOpen: {
+                    title: false,
+                    content: false
+                },
                 isUsersTimezoneSet: false,
                 isEndDateSet: false,
                 isLocationSet: false,
                 multipleLocalizations: false,
                 urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
-                addUserPropertyPopoverPosition: {
-                    top: 0,
-                    left: 0
-                },
                 mediaMetadata: {
                     all: null,
                     ios: null,
@@ -212,18 +206,25 @@
             },
             totalEnabledUsers: function() {
                 var self = this;
-                var total = 0;
+                if (this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.ANDROID;
+                }) &&
+                this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.IOS;
+                })) {
+                    return this.enabledUsers[this.PlatformEnum.ALL];
+                }
                 if (this.pushNotificationUnderEdit.platforms.some(function(selectedPlatform) {
                     return selectedPlatform === self.PlatformEnum.ANDROID;
                 })) {
-                    total += this.enabledUsers[this.PlatformEnum.ANDROID];
+                    return this.enabledUsers[this.PlatformEnum.ANDROID];
                 }
                 if (this.pushNotificationUnderEdit.platforms.some(function(selectedPlatform) {
                     return selectedPlatform === self.PlatformEnum.IOS;
                 })) {
-                    total += this.enabledUsers[this.PlatformEnum.IOS];
+                    return this.enabledUsers[this.PlatformEnum.IOS];
                 }
-                return total;
+                return 0;
             },
             selectedMessageLocale: function() {
                 return this.pushNotificationUnderEdit.message[this.activeLocalization];
@@ -382,6 +383,32 @@
             setCurrentNumberOfUsers: function(value) {
                 this.currentNumberOfUsers = value;
             },
+            updateEnabledNumberOfUsers: function(value) {
+                var self = this;
+                if (this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.ANDROID;
+                }) &&
+                this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.IOS;
+                })) {
+                    this.enabledUsers[this.PlatformEnum.ALL] = value;
+                    return;
+                }
+                if (this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.ANDROID;
+                })) {
+                    this.enabledUsers[this.PlatformEnum.ANDROID] = value;
+                    this.enabledUsers[this.PlatformEnum.IOS] = 0;
+                    return;
+                }
+                if (this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.IOS;
+                })) {
+                    this.enabledUsers[this.PlatformEnum.IOS] = value;
+                    this.enabledUsers[this.PlatformEnum.ANDROID] = 0;
+                    return;
+                }
+            },
             setLocalizationOptions: function(localizations) {
                 this.localizationOptions = localizations;
             },
@@ -391,11 +418,6 @@
             getQueryFilter: function() {
                 if (!this.queryFilter) {
                     return {};
-                }
-                if (this.wrappedUserProperties) {
-                    var result = Object.assign({}, this.queryFilter);
-                    result.queryObject = countlyPushNotification.helper.unwrapUserProperties(this.queryFilter.queryObject);
-                    return result;
                 }
                 return this.queryFilter;
             },
@@ -411,14 +433,22 @@
                     preparePushNotificationModel.type = self.type;
                     countlyPushNotification.service.estimate(preparePushNotificationModel, options).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
+                        self.setCurrentNumberOfUsers(response.total);
+                        self.updateEnabledNumberOfUsers(response.total);
+                        if (response.total === 0) {
+                            resolve(false);
+                            CountlyHelpers.notify({ message: 'No users were found from selected configuration.', type: "error"});
+                            return;
+                        }
                         if (response._id) {
                             self.setId(response._id);
                         }
-                        self.setCurrentNumberOfUsers(response.total);
                         resolve(true);
                     }).catch(function(error) {
                         console.error(error);
                         self.setLocalizationOptions([]);
+                        self.setCurrentNumberOfUsers(0);
+                        self.updateEnabledNumberOfUsers(0);
                         CountlyHelpers.notify({ message: error.message, type: "error"});
                         resolve(false);
                     }).finally(function() {
@@ -571,18 +601,28 @@
                 this.isConfirmed = false;
                 this.multipleLocalizations = false;
                 this.expandedPlatformSettings = [];
-                this.selectedUserPropertyContainer = "title";
+                this.isAddUserPropertyPopoverOpen = {
+                    title: false,
+                    content: false
+                };
                 this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
                 this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
             },
             onClose: function() {
                 this.resetState();
-                this.closeAddUserPropertyPopover();
                 this.$emit('onClose');
+            },
+            onPlatformChange: function() {
+                if (this.pushNotificationUnderEdit.platforms.length) {
+                    this.estimate();
+                }
             },
             onOpen: function() {
                 if (this.id) {
                     this.fetchPushNotificationById();
+                }
+                if (this.from) {
+                    this.estimate();
                 }
             },
             addButton: function() {
@@ -707,14 +747,12 @@
             setSelectedUserPropertyId: function(id) {
                 this.selectedUserPropertyId = id;
             },
-            setSelectedUserPropertyContainer: function(container) {
-                this.selectedUserPropertyContainer = container;
+            openAddUserPropertyPopover: function(container) {
+                this.isAddUserPropertyPopoverOpen[container] = true;
             },
-            openAddUserPropertyPopover: function() {
-                this.isAddUserPropertyPopoverOpen = true;
-            },
-            closeAddUserPropertyPopover: function() {
-                this.isAddUserPropertyPopoverOpen = false;
+            closeAddUserPropertyPopover: function(container) {
+                console.log(container);
+                this.isAddUserPropertyPopoverOpen[container] = false;
             },
             addUserPropertyInHTML: function(id, container) {
                 this.$refs[container].addEmptyUserProperty(id);
@@ -728,11 +766,11 @@
             setUserPropertyFallbackInHTML: function(id, container, previewValue, fallback) {
                 this.$refs[container].setUserPropertyFallbackValue(id, previewValue, fallback);
             },
-            setAddUserPropertyPopoverPosition: function(position) {
-                this.addUserPropertyPopoverPosition = position;
+            isAnyAddUserPropertyPopoverOpen: function() {
+                return this.isAddUserPropertyPopoverOpen.title || this.isAddUserPropertyPopoverOpen.content;
             },
             onAddUserProperty: function(container) {
-                if (!this.isAddUserPropertyPopoverOpen) {
+                if (!this.isAnyAddUserPropertyPopoverOpen()) {
                     var propertyIndex = this.userPropertiesIdCounter;
                     this.userPropertiesIdCounter = this.userPropertiesIdCounter + 1;
                     this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], propertyIndex, {
@@ -744,14 +782,13 @@
                         isUppercase: false
                     });
                     this.setSelectedUserPropertyId(propertyIndex);
-                    this.setSelectedUserPropertyContainer(container);
                     this.addUserPropertyInHTML(propertyIndex, container);
                 }
             },
             onRemoveUserProperty: function(payload) {
                 var id = payload.id;
                 var container = payload.container;
-                this.closeAddUserPropertyPopover();
+                this.closeAddUserPropertyPopover(payload.container);
                 this.$delete(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], id);
                 this.removeUserPropertyInHTML(id, container);
             },
@@ -797,11 +834,9 @@
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].isUppercase = isUppercase;
             },
             onUserPropertyClick: function(payload) {
-                if (!this.isAddUserPropertyPopoverOpen) {
+                if (!this.isAnyAddUserPropertyPopoverOpen()) {
                     this.setSelectedUserPropertyId(payload.id);
-                    this.setSelectedUserPropertyContainer(payload.container);
-                    this.setAddUserPropertyPopoverPosition(payload.position);
-                    this.openAddUserPropertyPopover();
+                    this.openAddUserPropertyPopover(payload.container);
                 }
             },
             resetAllMediaURLIfNecessary: function() {
@@ -2270,11 +2305,6 @@
                 type: Object,
                 default: null,
             },
-            wrappedUserProperties: {
-                type: Boolean,
-                default: false,
-                required: false
-            }
         },
         data: function() {
             return {};
@@ -2296,7 +2326,7 @@
         components: {
             'push-notification-drawer': PushNotificationDrawer
         },
-        template: '<push-notification-drawer v-if="shouldDisplay" :queryFilter="queryFilter" :from="from" :wrappedUserProperties="wrappedUserProperties" :controls="controls" :type="type"></push-notification-drawer>',
+        template: '<push-notification-drawer v-if="shouldDisplay" :queryFilter="queryFilter" :from="from" :controls="controls" :type="type"></push-notification-drawer>',
     });
 
     var PushNotificationWidgetDrawer = countlyVue.views.create({
@@ -2345,13 +2375,17 @@
 
     var PushNotificationWidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
                 default: function() {
                     return {};
                 }
+            },
+            isAllowed: {
+                type: Boolean,
+                default: true
             }
         },
         data: function() {
@@ -2387,10 +2421,10 @@
                     for (var k = 0; k < this.data.metrics.length; k++) {
                         if (multiApps) {
                             if (this.data.metrics.length > 1) {
-                                name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+                                name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (this.__allApps[app] && this.__allApps[app].name || "Unknown");
                             }
                             else {
-                                name = (countlyGlobal.apps[app].name || "");
+                                name = (this.__allApps[app] && this.__allApps[app].name || "Unknown");
                             }
                         }
                         else {
@@ -2510,7 +2544,6 @@
     function addWidgetToCustomDashboard() {
         countlyVue.container.registerData('/custom/dashboards/widget', {
             type: 'push',
-            feature: featureName,
             label: CV.i18n('push-notification.title'),
             priority: 6,
             primary: true,
@@ -2522,6 +2555,7 @@
                 getEmpty: function() {
                     return {
                         title: "",
+                        feature: featureName,
                         widget_type: "push",
                         isPluginWidget: true,
                         apps: [],
@@ -2554,16 +2588,11 @@
 
     //countly.view global management settings
     $(document).ready(function() {
-        if (countlyAuth.validateRead(featureName)) {
-            app.addMenuForType("mobile", "reach", {code: "push", url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
-            addWidgetToCustomDashboard();
-        }
+        app.addMenuForType("mobile", "reach", {code: "push", permission: featureName, url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+        addWidgetToCustomDashboard();
 
         if (app.configurationsView) {
-            app.configurationsView.registerLabel("push", "push.plugin-title");
-            app.configurationsView.registerLabel("push.proxyhost", "push.proxyhost");
-            app.configurationsView.registerInput("push.proxypass", {input: "el-input", attrs: {type: "password"}});
-            app.configurationsView.registerLabel("push.proxyport", "push.proxyport");
+            app.configurationsView.registerLabel("push", "push-notification.title");
         }
     });
 }());

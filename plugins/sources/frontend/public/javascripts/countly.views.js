@@ -1,4 +1,4 @@
-/*global countlyAuth, app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $ */
+/*global app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $ */
 (function() {
     var FEATURE_NAME = "sources";
 
@@ -288,21 +288,23 @@
         component: SourcesContainer
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route("/analytics/acquisition", 'acqusition', function() {
-            this.renderWhenReady(SourcesView);
-        });
-    }
+    app.route("/analytics/acquisition", 'acqusition', function() {
+        this.renderWhenReady(SourcesView);
+    });
 
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
                 default: function() {
                     return {};
                 }
+            },
+            isAllowed: {
+                type: Boolean,
+                default: true
             }
         },
         data: function() {
@@ -317,15 +319,6 @@
                     "sources": this.i18n("sources.source"),
                 }
             };
-        },
-        methods: {
-            onWidgetCommand: function(event) {
-                if (event === 'zoom') {
-                    this.triggerZoom();
-                    return;
-                }
-                return this.$emit('command', event);
-            }
         },
         computed: {
             title: function() {
@@ -388,6 +381,12 @@
 
                 return multiple;
             }
+        },
+        methods: {
+            onDataTypeChange: function(v) {
+                var widget = this.scope.editedObject;
+                this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+            }
         }
     });
 
@@ -395,7 +394,6 @@
         type: "analytics",
         label: CV.i18nM("sources.title"),
         priority: 1,
-        feature: FEATURE_NAME,
         primary: false,
         getter: function(widget) {
             return widget.widget_type === "analytics" && widget.data_type === "sources";
@@ -413,14 +411,16 @@
             getEmpty: function() {
                 return {
                     title: "",
+                    feature: FEATURE_NAME,
                     widget_type: "analytics",
                     app_count: 'single',
                     data_type: "sources",
                     apps: [],
                     visualization: "table",
-                    custom_period: "30days",
+                    custom_period: null,
                     metrics: ["t"],
-                    bar_color: 1
+                    bar_color: 1,
+                    isPluginWidget: true
                 };
             },
             beforeSaveFn: function() {
@@ -451,7 +451,12 @@
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
                 ],
-                isLoading: true
+                isLoading: true,
+                headerData: {
+                    label: CV.i18n("keywords.top_terms"),
+                    description: CV.i18n("sources.description"),
+                    linkTo: {"label": CV.i18n('keywords.go-to-keywords'), "href": "#/analytics/acquisition/search-terms"},
+                }
             };
         },
         mounted: function() {
@@ -503,7 +508,12 @@
         data: function() {
             return {
                 sourceItems: [],
-                isLoading: true
+                isLoading: true,
+                headerData: {
+                    label: CV.i18n("sidebar.acquisition"),
+                    description: CV.i18n("sources.description"),
+                    linkTo: {"label": CV.i18n('sources.go-to-acquisition'), "href": "#/analytics/acquisition"},
+                }
             };
         },
         mounted: function() {
@@ -572,37 +582,31 @@
         }
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        countlyVue.container.registerData("/home/widgets", {
-            _id: "sources-dashboard-widget",
-            label: CV.i18n('sidebar.acquisition'),
-            description: CV.i18n('sources.description'),
-            enabled: {"default": true}, //object. For each type set if by default enabled
-            available: {"default": false, "mobile": true, "web": true}, //object. default - for all app types. For other as specified.
-            placeBeforeDatePicker: false,
-            order: 3,
-            linkTo: {"label": CV.i18n('sources.go-to-acquisition'), "href": "#/analytics/acquisition"},
-            component: SourcesDashboardWidget
-        });
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "sources-dashboard-widget",
+        permission: FEATURE_NAME,
+        label: CV.i18n('sidebar.acquisition'),
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": false, "mobile": true, "web": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: false,
+        order: 3,
+        component: SourcesDashboardWidget
+    });
 
-        countlyVue.container.registerData("/home/widgets", {
-            _id: "keywords-dashboard-widget",
-            label: CV.i18n('keywords.top_terms'),
-            description: CV.i18n('sources.description'),
-            enabled: {"default": true}, //object. For each type set if by default enabled
-            available: {"default": false, "web": true}, //object. default - for all app types. For other as specified.
-            placeBeforeDatePicker: false,
-            linkTo: {"label": CV.i18n('keywords.go-to-keywords'), "href": "#/analytics/acquisition/search-terms"},
-            order: 5,
-            width: 6,
-            component: KeywordsDashboardWidget
-        });
-    }
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "keywords-dashboard-widget",
+        permission: FEATURE_NAME,
+        label: CV.i18n('keywords.top_terms'),
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": false, "web": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: false,
+        order: 5,
+        width: 6,
+        component: KeywordsDashboardWidget
+    });
 
     $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
-            app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
-        }
+        app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
+        app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
     });
 })();

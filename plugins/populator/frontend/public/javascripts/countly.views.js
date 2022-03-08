@@ -33,7 +33,6 @@
         methods: {
             refreshTable: function(res) {
                 if (res.result) {
-                    CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), sticky: false, clearAll: true});
                     this.refresh(true);
                 }
             },
@@ -64,7 +63,7 @@
                 }
 
                 if (command === "edit" || command === "duplicate") {
-                    this.titleDescription = {header: CV.i18n('populator.drawer-title-edit'), button: CV.i18n('populator.edit')};
+                    this.titleDescription = {header: CV.i18n('populator.drawer-title-edit'), button: CV.i18n('populator.save')};
 
                     var preparedDrawerUpObject = [{key: "", value: []}];
                     var preparedDrawerEventObject = [{eventName: "", duration: ['', ''], sum: ['', ''], segments: [{key: "", value: []}], checkedEventProperties: {duration: false, sum: false}}];
@@ -116,6 +115,9 @@
                     }
 
                     template.up = preparedDrawerUpObject;
+                    if (preparedDrawerEventObject.length > 1 && preparedDrawerEventObject[0].eventName === "") {
+                        preparedDrawerEventObject = preparedDrawerEventObject.slice(1);
+                    }
                     template.events = preparedDrawerEventObject;
                     this.openDrawer("populatorTemplate", template);
                 }
@@ -282,9 +284,7 @@
     });
 
     $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.plugin-title", priority: 30, classes: "populator-menu"});
-        }
+        app.addSubMenu("management", {code: "populate", permission: FEATURE_NAME, url: "#/manage/populate", text: "populator.plugin-title", priority: 30, classes: "populator-menu"});
     });
     countlyVue.container.registerMixin("/manage/export/export-features", {
         beforeCreate: function() {

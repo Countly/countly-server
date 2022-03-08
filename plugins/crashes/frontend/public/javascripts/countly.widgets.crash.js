@@ -1,15 +1,19 @@
-/*global countlyVue, CV, countlyGlobal, countlyCommon */
+/*global countlyVue, CV, countlyCommon */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.DashboardsHelpersMixin],
+        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
         props: {
             data: {
                 type: Object,
                 default: function() {
                     return {};
                 }
+            },
+            isAllowed: {
+                type: Boolean,
+                default: true
             }
         },
         data: function() {
@@ -47,10 +51,10 @@
                     for (var k = 0; k < this.data.metrics.length; k++) {
                         if (multiApps) {
                             if (this.data.metrics.length > 1) {
-                                name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (countlyGlobal.apps[app].name || "");
+                                name = (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (this.__allApps[app] && this.__allApps[app].name || "Unknown");
                             }
                             else {
-                                name = (countlyGlobal.apps[app].name || "");
+                                name = (this.__allApps[app] && this.__allApps[app].name || "Unknown");
                             }
                         }
                         else {
@@ -162,13 +166,12 @@
     });
 
     countlyVue.container.registerData("/custom/dashboards/widget", {
-        type: "crash",
-        feature: "crashes",
+        type: "crashes",
         label: CV.i18nM("dashboards.widget-type.crash"),
         priority: 11,
         primary: true,
         getter: function(widget) {
-            return widget.widget_type === "crash";
+            return widget.widget_type === "crashes";
         },
         templates: [
             {
@@ -183,11 +186,13 @@
             getEmpty: function() {
                 return {
                     title: "",
-                    widget_type: "crash",
+                    feature: "crashes",
+                    widget_type: "crashes",
                     app_count: 'single',
                     apps: [],
                     metrics: [],
-                    visualization: ""
+                    visualization: "",
+                    isPluginWidget: true
                 };
             },
         },
@@ -195,10 +200,10 @@
             component: WidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 6,
-                    minHeight: 3,
-                    width: 6,
-                    height: 3
+                    minWidth: 2,
+                    minHeight: 4,
+                    width: 2,
+                    height: 4
                 };
             }
         }

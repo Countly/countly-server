@@ -1,4 +1,4 @@
-<div> 
+<div v-bind:class="[componentId]"> 
     <cly-tabs v-model="currentTab">
         <el-tab-pane name="data-populator" v-if="canUserCreate" :label="i18n('populator.plugin-title')" class="populator-wrapper">
             <cly-header>
@@ -39,8 +39,8 @@
                         <div v-html="dialog.text"></div>
                     </template>
                 </cly-confirm-dialog> 
-                <el-dialog class="populator-start-modal-wrapper" :close-on-press-escape="false" :close-on-click-modal="false" :visible.sync="generateDataModal.showDialog"  width="30%" :before-close="closeGenerateDataModal">
-                    <img src="/populator/images/generate-data-modal.png" style="width: 100%; height: 177px;">
+                <el-dialog class="populator-start-modal-wrapper" :close-on-press-escape="false" :close-on-click-modal="false" :visible.sync="generateDataModal.showDialog"  width="429px" :before-close="closeGenerateDataModal">
+                    <img src="/populator/images/generate-data-modal.png" style="width: 100%;">
                     <div class="populator-start-modal-wrapper__modal-progress-container">
                         <cly-progress-bar  :percentage="percentage" :color="progressBarColor" :height:=8 class="bu-mt-1 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>
                         <h3 class="populator-start-modal-wrapper__generate-data-header">{{ i18n('populator.generating-data') }}</h3>
@@ -71,26 +71,26 @@
                     <el-button type="success" v-if="canUserCreate" icon="el-icon-circle-plus" @click="newTemplate">{{i18n("populator.create-new-template")}}</el-button>
                 </template>
             </cly-header>
-            <cly-main>
-                <cly-datatable-n :rows="templates">
-                    <template v-slot="scope">
-                        <el-table-column prop="name" fixed="left" :label="i18n('populator.template')" width="220" sortable></el-table-column>
-                        <el-table-column prop="isDefault" :label="i18n('populator.template-type')" width="200" sortable></el-table-column>
-                        <el-table-column prop="upCount" :label="i18n('populator.number-of-user-props')" width="240" sortable></el-table-column>
-                        <el-table-column prop="eventCount" :label="i18n('populator.number-of-events')" width="220" sortable></el-table-column>
-                        <el-table-column prop="editedBy" :label="i18n('populator.edited-by')" width="200" sortable></el-table-column>
-                        <el-table-column type="options">
-                            <template v-slot="col">
-                                <cly-more-options v-if="col.row.hover && (canUserCreate || canUserUpdate || canUserDelete)" size="small" @command="changeTemplate($event, col.row)">
-                                    <el-dropdown-item command="edit" v-if="col.row.buttonShow && canUserUpdate">{{ i18n('populator.edit') }}</el-dropdown-item>
-                                    <el-dropdown-item command="delete" v-if="col.row.buttonShow && canUserDelete">{{ i18n('populator.delete') }}</el-dropdown-item>
-                                    <el-dropdown-item v-if="canUserCreate" command="duplicate">{{ i18n('populator.duplicate') }}</el-dropdown-item>
-                                </cly-more-options>
-                            </template>
-                        </el-table-column>
-                    </template>
-                </cly-datatable-n>
-            </cly-main>
+                <cly-main>
+                    <cly-datatable-n :rows="templates" class="populator-wrapper__table">
+                        <template v-slot="scope">
+                            <el-table-column prop="name" :label="i18n('populator.template')" sortable></el-table-column>
+                            <el-table-column prop="isDefault" :label="i18n('populator.template-type')" sortable></el-table-column>
+                            <el-table-column prop="upCount" :label="i18n('populator.number-of-user-props')" sortable></el-table-column>
+                            <el-table-column prop="eventCount" :label="i18n('populator.number-of-events')" sortable></el-table-column>
+                            <el-table-column prop="editedBy" :label="i18n('populator.edited-by')" sortable></el-table-column>
+                            <el-table-column type="options">
+                                <template v-slot="col">
+                                    <cly-more-options v-if="col.row.hover && (canUserCreate || canUserUpdate || canUserDelete)" size="small" @command="changeTemplate($event, col.row)">
+                                        <el-dropdown-item command="edit" v-if="col.row.buttonShow && canUserUpdate">{{ i18n('populator.edit') }}</el-dropdown-item>
+                                        <el-dropdown-item command="delete" v-if="col.row.buttonShow && canUserDelete">{{ i18n('populator.delete') }}</el-dropdown-item>
+                                        <el-dropdown-item v-if="canUserCreate" command="duplicate">{{ i18n('populator.duplicate') }}</el-dropdown-item>
+                                    </cly-more-options>
+                                </template>
+                            </el-table-column>
+                        </template>
+                    </cly-datatable-n>
+                </cly-main>
         </el-tab-pane>
     </cly-tabs>
     <cly-populator-template-drawer ref="populatorTemplateDrawer" @closeHandler="refreshTable" :titleDescription="titleDescription" :controls="drawers.populatorTemplate"></cly-populator-template-drawer>

@@ -1,0 +1,9 @@
+<div class="bu-level bu-pb-3" >
+	<div class="bu-level-left">
+		<h2>{{i18n(widget.label)}}</h2>
+		<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="widget.description"></span>
+	</div>
+	<div class="bu-level-right">
+		<a v-if="widget.linkTo" class="cly-back-link text-medium" :href="widget.linkTo.href"><span>{{i18n(widget.linkTo.label)}}<i class="fas fa-arrow-right bu-pl-3"></i></span></a>
+	</div>
+</div>

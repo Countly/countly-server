@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal*/
+/* global countlyAuth,countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal*/
 var DevicesTabView = countlyVue.views.create({
     template: CV.T("/core/device-and-type/templates/devices-tab.html"),
     mounted: function() {
@@ -264,6 +264,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     priority: 2,
     route: "#/analytics/technology/devices-and-types",
     name: "devices-and-types",
+    permission: "core",
     title: CV.i18n('devices.devices-and-types.title'),
     component: AllTabs,
     vuex: [{
@@ -278,6 +279,11 @@ var TechnologyHomeWidget = countlyVue.views.create({
     data: function() {
         return {
             dataBlocks: [],
+            headerData: {
+                label: CV.i18n("sidebar.analytics.technology"),
+                description: CV.i18n("sidebar.analytics.technology-description"),
+                linkTo: {"label": CV.i18n('devices.go-to-technology'), "href": "#/analytics/technology/devices-and-types"}
+            }
         };
     },
     beforeCreate: function() {
@@ -326,11 +332,13 @@ var TechnologyHomeWidget = countlyVue.views.create({
                 }];
 
             if (appType === "web") {
-                dd.push({
-                    "title": CV.i18n('common.bar.top-browsers'),
-                    "description": CV.i18n('common.bar.top-browsers.description'),
-                    "data": tops.browser || []
-                });
+                if (countlyAuth.validateRead('browser')) {
+                    dd.push({
+                        "title": CV.i18n('common.bar.top-browsers'),
+                        "description": CV.i18n('common.bar.top-browsers.description'),
+                        "data": tops.browser || []
+                    });
+                }
             }
             else {
                 dd.push({
@@ -355,13 +363,17 @@ var TechnologyHomeWidget = countlyVue.views.create({
 
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.DashboardsHelpersMixin, countlyVue.mixins.zoom],
+    mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.zoom],
     props: {
         data: {
             type: Object,
             default: function() {
                 return {};
             }
+        },
+        isAllowed: {
+            type: Boolean,
+            default: true
         }
     },
     mounted: function() {
@@ -393,18 +405,6 @@ var GridComponent = countlyVue.views.create({
                 "device_type": this.i18n("device_type.table.device_type"),
             }
         };
-    },
-    methods: {
-        refresh: function() {
-
-        },
-        onWidgetCommand: function(event) {
-            if (event === 'zoom') {
-                this.triggerZoom();
-                return;
-            }
-            return this.$emit('command', event);
-        }
     },
     computed: {
         title: function() {
@@ -468,9 +468,10 @@ var DrawerComponent = countlyVue.views.create({
         }
     },
     methods: {
-    },
-    watch: {
-
+        onDataTypeChange: function(v) {
+            var widget = this.scope.editedObject;
+            this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+        }
     },
     props: {
         scope: {
@@ -484,7 +485,6 @@ var DrawerComponent = countlyVue.views.create({
 
 countlyVue.container.registerData("/custom/dashboards/widget", {
     type: "analytics",
-    feature: "core",
     label: CV.i18n("sidebar.analytics.technology"),
     priority: 1,
     primary: false,
@@ -509,6 +509,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
         getEmpty: function() {
             return {
                 title: "",
+                feature: "core",
                 widget_type: "analytics",
                 data_type: "technology",
                 app_count: 'single',
@@ -516,7 +517,7 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
                 apps: [],
                 visualization: "",
                 breakdowns: ['devices'],
-                custom_period: "30days",
+                custom_period: null,
                 bar_color: 1
             };
         },
@@ -542,12 +543,11 @@ countlyVue.container.registerData("/custom/dashboards/widget", {
 
 countlyVue.container.registerData("/home/widgets", {
     _id: "technology-dashboard-widget",
+    permission: "core",
     label: CV.i18n('sidebar.analytics.technology'),
-    description: CV.i18n('sidebar.analytics.technology-description'),
     enabled: {"default": true}, //object. For each type set if by default enabled
     available: {"default": true}, //object. default - for all app types. For other as specified.
     order: 6, //sorted by ascending
     placeBeforeDatePicker: false,
     component: TechnologyHomeWidget,
-    linkTo: {"label": CV.i18n('devices.go-to-technology'), "href": "#/analytics/technology/devices-and-types"}
 });

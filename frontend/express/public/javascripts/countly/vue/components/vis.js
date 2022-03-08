@@ -1,4 +1,4 @@
-/* global Promise, Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
+/* global Promise, Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
 
 // _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
 
@@ -10,7 +10,7 @@
     var FONT_FAMILY = "Inter";
 
     /**
-     * legendOptions depends on internalLegend and legend
+     * legendOptions depends on calculatedLegend and legend
      * mergedOptions depends on legendOptions
      * chartOptions depends on mergedOptions
      * chartOptions also calls patchChart which intern calls patchZoom and patchLegend
@@ -31,39 +31,62 @@
     var LegendMixin = {
         data: function() {
             return {
-                internalLegend: {
+                calculatedLegend: {
                     show: true,
                     type: "secondary",
                     data: [],
                     position: "bottom"
-                },
+                }
             };
         },
         computed: {
             legendOptions: function() {
-                var options = _merge({}, this.internalLegend, this.legend || {});
+                var options = _merge({}, this.calculatedLegend, this.legend || {});
+
+                delete options.data;
 
                 if (this.legend && this.legend.data && this.legend.data.length) {
                     options.data = JSON.parse(JSON.stringify(this.legend.data));
                 }
                 else {
-                    options.data = JSON.parse(JSON.stringify(this.internalLegend.data));
+                    options.data = JSON.parse(JSON.stringify(this.calculatedLegend.data));
                 }
 
-                if (this.internalLegend.data.length !== options.data.length) {
-                    options.data = [];
-                }
+                /**
+                 * There is an issue.
+                 *
+                 * So we calculate calculatedLegend.data from the series right.
+                 * And this.legend is independent.
+                 *
+                 * Sometimes what happens is that there is a delay in the change of
+                 * this.legend as compared to the calculatedLegend. So lets say chartOptions
+                 * and legend both are to be changed, but this.legend changes after chartOptions.
+                 * So this creates an inconsistent state between the values of calculatedLegend
+                 * and this.legend. While calculatedLegend is latest, this.legend is old as this.legend
+                 * hasn't changed yet from the parent.
+                 *
+                 * But this inconsistent state is very hard to catch in the UI as shortly
+                 * after this.legend changes and hence both calculatedLegend and this.legend are the same.
+                 */
 
                 for (var i = 0; i < options.data.length; i++) {
-                    options.data[i].color = this.internalLegend.data[i].color;
-                    options.data[i].displayColor = options.data[i].color;
+                    var currLegend = options.data[i];
+                    // eslint-disable-next-line no-loop-func
+                    var legend = this.calculatedLegend.data.find(function(l) {
+                        return l.name === currLegend.name;
+                    });
+
+                    if (legend) {
+                        currLegend.color = legend.color;
+                        currLegend.displayColor = legend.color;
+                    }
                 }
 
                 return options;
             }
         },
         methods: {
-            setInternalLegendData: function(opt, series) {
+            setCalculatedLegendData: function(opt, series) {
                 var data = [];
                 var colorIndex = 0;
                 var obj = {}, color;
@@ -115,7 +138,7 @@
                     }
                 }
 
-                this.internalLegend.data = data;
+                this.calculatedLegend.data = data;
 
                 //Set default legend show to false
                 opt.legend.show = false;
@@ -265,6 +288,13 @@
             },
             onPatchZoom: function() {
                 this.$refs.zoomRef.patchZoom();
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                return this.$emit('command', event);
             }
         }
     };
@@ -722,7 +752,7 @@
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
 
-                this.setInternalLegendData(opt, series);
+                this.setCalculatedLegendData(opt, series);
 
                 opt.series = series;
 
@@ -765,7 +795,7 @@
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
 
-                this.setInternalLegendData(opt, series);
+                this.setCalculatedLegendData(opt, series);
 
                 opt.series = series;
 
@@ -774,6 +804,87 @@
                 }
 
                 return opt;
+            }
+        },
+        methods: {
+            handleXAxisOverflow: function(options, strategy) {
+                if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
+                    return null;
+                }
+                var xAxis = options.xAxis;
+
+                // Early return, no need to analyze the array
+                if (xAxis.data.length > 15) {
+                    // no need to force all points to be present
+                    // if there are too many of them
+                    return {
+                        grid: {containLabel: false, bottom: 90, left: 75},
+                        xAxis: {
+                            axisLabel: {
+                                width: 100,
+                                overflow: "truncate",
+                                rotate: 45,
+                            }
+                        }
+                    };
+                }
+                else if (xAxis.data.length >= 5) {
+                    return {
+                        grid: {containLabel: false, bottom: 90, left: 75},
+                        xAxis: {
+                            axisLabel: {
+                                width: 100,
+                                overflow: "truncate",
+                                interval: 0,
+                                rotate: 45,
+                            }
+                        }
+                    };
+                }
+
+                var maxLen = 0;
+
+                xAxis.data.forEach(function(item) {
+                    var str = "";
+                    if (Array.isArray(item)) {
+                        str = (item[1] || item[0] || "") + "";
+                    }
+                    else {
+                        str = (item || "") + "";
+                    }
+                    maxLen = Math.max(maxLen, str.length);
+                });
+
+                if (maxLen > 25 && xAxis.data.length >= 2) {
+                    return {
+                        grid: {containLabel: false, bottom: 90, left: 75},
+                        xAxis: {
+                            axisLabel: {
+                                width: 150,
+                                overflow: "truncate",
+                                interval: 0,
+                                rotate: 30,
+                            }
+                        }
+                    };
+                }
+                else if (xAxis.data.length >= 2) {
+                    return {
+                        grid: {
+                            bottom: 50
+                        },
+                        xAxis: {
+                            axisLabel: {
+                                width: 150,
+                                overflow: "break",
+                                interval: 0
+                            }
+                        }
+                    };
+                }
+                return {
+                    xAxis: {axisLabel: {interval: 0}}
+                };
             }
         }
     });
@@ -899,7 +1010,7 @@
                     }
                 }
 
-                this.setInternalLegendData(opt, series);
+                this.setCalculatedLegendData(opt, series);
 
                 opt.series = series;
 
@@ -1467,13 +1578,13 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']" style="min-height: 0">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1497,7 +1608,6 @@
                         </custom-legend>\
                     </div>'
     }));
-
 
     Vue.component("cly-chart-flow", BaseChart.extend({
         data: function() {
@@ -1539,7 +1649,7 @@
         },
 
         template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
@@ -1594,13 +1704,13 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
                             <chart-header :chart-type="\'line\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']" style="min-height: 0">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1712,13 +1822,13 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
                             <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']" style="min-height: 0">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1743,86 +1853,6 @@
                     </div>'
     }));
 
-    var handleXAxisOverflow = function(options, strategy) {
-        if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
-            return null;
-        }
-        var xAxis = options.xAxis;
-
-        // Early return, no need to analyze the array
-        if (xAxis.data.length > 15) {
-            // no need to force all points to be present
-            // if there are too many of them
-            return {
-                grid: {containLabel: false, bottom: 90, left: 75},
-                xAxis: {
-                    axisLabel: {
-                        width: 100,
-                        overflow: "truncate",
-                        rotate: 45,
-                    }
-                }
-            };
-        }
-        else if (xAxis.data.length >= 5) {
-            return {
-                grid: {containLabel: false, bottom: 90, left: 75},
-                xAxis: {
-                    axisLabel: {
-                        width: 100,
-                        overflow: "truncate",
-                        interval: 0,
-                        rotate: 45,
-                    }
-                }
-            };
-        }
-
-        var maxLen = 0;
-
-        xAxis.data.forEach(function(item) {
-            var str = "";
-            if (Array.isArray(item)) {
-                str = (item[1] || item[0] || "") + "";
-            }
-            else {
-                str = (item || "") + "";
-            }
-            maxLen = Math.max(maxLen, str.length);
-        });
-
-        if (maxLen > 25 && xAxis.data.length >= 2) {
-            return {
-                grid: {containLabel: false, bottom: 90, left: 75},
-                xAxis: {
-                    axisLabel: {
-                        width: 150,
-                        overflow: "truncate",
-                        interval: 0,
-                        rotate: 30,
-                    }
-                }
-            };
-        }
-        else if (xAxis.data.length >= 2) {
-            return {
-                grid: {
-                    bottom: 50
-                },
-                xAxis: {
-                    axisLabel: {
-                        width: 150,
-                        overflow: "break",
-                        interval: 0
-                    }
-                }
-            };
-        }
-        return {
-            xAxis: {axisLabel: {interval: 0}}
-        };
-    };
-
     Vue.component("cly-chart-bar", BaseBarChart.extend({
         data: function() {
             return {
@@ -1844,7 +1874,7 @@
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 opt = this.patchChart(opt);
-                var xAxisOverflowPatch = handleXAxisOverflow(opt, this.xAxisLabelOverflow);
+                var xAxisOverflowPatch = this.handleXAxisOverflow(opt, this.xAxisLabelOverflow);
                 if (xAxisOverflowPatch) {
                     opt = _merge(opt, xAxisOverflowPatch);
                 }
@@ -1852,13 +1882,13 @@
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
-                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1">\
+                        <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
                             <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']" style="min-height: 0">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -1931,7 +1961,7 @@
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless bu-is-flex-grow-1\']" style="overflow: hidden">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless bu-is-flex-grow-1\']" style="min-height: 0;">\
                                 <div :class="classes">\
                                     <echarts\
                                         v-if="!isChartEmpty"\
@@ -2007,6 +2037,11 @@
                 userCenterCoordinates: null,
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+                markerIcon: L.icon({
+                    iconUrl: '/images/leaflet/marker-icon.svg',
+                    iconSize: [32, 32],
+                    iconAnchor: [ 16, 32],
+                }),
                 MI_TO_KM_RATIO: 1.60934,
                 KM_TO_M_RATIO: 1000,
                 RadiusUnitEnum: {

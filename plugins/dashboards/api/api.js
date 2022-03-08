@@ -1232,7 +1232,7 @@ plugins.setConfigs("dashboards", {
                         allApps.push(apps[appId]);
                     }
                     else {
-                        allApps.push({_id: apps[appId]._id, name: apps[appId].name});
+                        allApps.push({_id: apps[appId]._id, name: apps[appId].name, image: apps[appId].image, type: apps[appId].type});
                     }
                 }
 
@@ -1490,7 +1490,7 @@ plugins.setConfigs("dashboards", {
             case 'push':
                 await customDashboards.fetchPushData(params, apps, widget);
                 break;
-            case 'crash':
+            case 'crashes':
                 await customDashboards.fetchCrashData(params, apps, widget);
                 break;
             case 'note':

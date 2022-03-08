@@ -25,38 +25,26 @@
         <el-button size="small" @click="onDraft" type="default" :disabled="!isDraftButtonEnabled">{{i18n('push-notification.save-as-draft')}}</el-button>
     </template>
     <template v-slot:default="drawerScope">
-        <add-user-property-popover 
-            :isOpen="isAddUserPropertyPopoverOpen"
-            :width="350"
-            ref="addUserPropertyPopover"
-            :id="selectedUserPropertyId"
-            :container="selectedUserPropertyContainer"
-            :userProperty="pushNotificationUnderEdit.message[activeLocalization].properties[selectedUserPropertyContainer][selectedUserPropertyId]"
-            :options="userPropertiesOptions"
-            :position="addUserPropertyPopoverPosition"
-            @select="onSelectUserProperty"
-            @input="onInputUserProperty"
-            @fallback="onInputFallbackUserProperty"
-            @uppercase="onCheckUppercaseUserProperty"
-            @remove="onRemoveUserProperty"
-            @close="closeAddUserPropertyPopover">
-        </add-user-property-popover>
             <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')" v-loading="isLoading">
+                <form>
                 <div class="cly-vue-push-notification-drawer__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.notification-name')}}</div>
                     <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.notification-name-description')}}</div>
                     <validation-provider v-slot="validation">
-                        <el-input 
-                            v-model="pushNotificationUnderEdit.name" 
-                            :placeholder="i18n('push-notification.enter-notification-name')" 
-                            :class="{'is-error': validation.errors.length > 0}">
-                        </el-input>
+                        <form>
+                            <el-input 
+                                autocomplete="off"
+                                v-model="pushNotificationUnderEdit.name" 
+                                :placeholder="i18n('push-notification.enter-notification-name')" 
+                                :class="{'is-error': validation.errors.length > 0}">
+                            </el-input>
+                        </form>
                     </validation-provider>
                 </div>
                 <div class="cly-vue-push-notification-drawer__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__checkbox-group-header">{{i18n('push-notification.platforms')}}</div>
                     <validation-provider v-slot="validation" rules="required" name="platforms">
-                        <el-checkbox-group v-model="pushNotificationUnderEdit.platforms">
+                        <el-checkbox-group v-model="pushNotificationUnderEdit.platforms" @change="onPlatformChange">
                             <el-checkbox 
                                 type="checkbox" 
                                 :label="PlatformEnum.ANDROID" 
@@ -315,8 +303,10 @@
                         </div>
                     </template>
                 </template>
+                </form>
             </cly-form-step>
             <cly-form-step id="step2" :name="i18n('push-notification.drawer-step-two')">
+                <form>
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                         <template v-if="type === TypeEnum.ONE_TIME">Delivery</template><template v-else>{{i18n('push-notification.set-start-date')}}</template>
@@ -548,8 +538,10 @@
                         </validation-provider>
                     </div>
                 </div>
+                </form>
             </cly-form-step>
             <cly-form-step id="step3" :name="i18n('push-notification.drawer-step-three')" class="bu-container">  
+                <form>
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-is-flex bu-is-align-items-center">
                         <div class="bu-py-1 bu-my-1 bu-mr-2 cly-vue-push-notification-drawer__checkbox-label">{{i18n('push-notification.notification-type')}}</div>
@@ -574,16 +566,16 @@
                                 <div v-for="localization in localizationOptions" 
                                     v-bind:class="['bu-is-flex','bu-is-align-items-center','cly-vue-push-notification-drawer__subsection-left-row',activeLocalization === localization.value?'cly-vue-push-notification-drawer__subsection-left-row-active':null]">
                                     <el-checkbox 
-                                        class="bu-ml-1"                        
+                                        class="bu-ml-2"
                                         v-tooltip.top-left="isDefaultLocalizationActive? i18n('push-notification.default-message-is-required') : null"
                                         :checked="isLocalizationSelected(localization)" 
                                         :disabled="isDefaultLocalization(localization)" 
                                         :key="localization.value" 
                                         @change="onLocalizationChange(localization)">
+                                        <li class="cly-vue-push-notification-drawer__subsection-left-list-item bu-pr-3 bu-py-2">
+                                            {{localization.label}}
+                                        </li>
                                     </el-checkbox>
-                                    <li  @click="onLocalizationSelect(localization)" class="cly-vue-push-notification-drawer__subsection-left-list-item bu-px-3 bu-py-3">
-                                        {{localization.label}}
-                                    </li>
                                 </div>
                             </div>
                             <div v-bind:class="['bu-is-flex-grow-1', multipleLocalizations?'cly-vue-push-notification-drawer__subsection-right':'cly-vue-push-notification-drawer__subsection-border']">
@@ -593,17 +585,26 @@
                                             {{i18n('push-notification.message-title')}}
                                         </div>
                                         <div>
-                                            <el-button type="text" @click="onAddUserProperty('title')" class="bu-px-0">{{i18n('push-notification.add-variable')}}</el-button>
+                                            <el-button type="text" @click="onAddUserProperty('title')" class="bu-px-0 cly-text-button" size="small">{{i18n('push-notification.add-variable')}}</el-button>
                                         </div>
                                     </div>
                                     <message-editor-with-emoji-picker 
                                         ref="title"
+                                        :isOpen="isAddUserPropertyPopoverOpen.title"
                                         container="title"
                                         id="input-element-title"
                                         :isDefaultLocalizationActive="isDefaultLocalizationActive"
+                                        :userProperty="pushNotificationUnderEdit.message[activeLocalization].properties.title[selectedUserPropertyId]"
+                                        :options="userPropertiesOptions"
                                         @change="onTitleChange"
                                         @delete="onRemoveUserProperty"
-                                        @click="onUserPropertyClick">
+                                        @click="onUserPropertyClick"
+                                        @select="onSelectUserProperty"
+                                        @input="onInputUserProperty"
+                                        @fallback="onInputFallbackUserProperty"
+                                        @uppercase="onCheckUppercaseUserProperty"
+                                        @remove="onRemoveUserProperty"
+                                        @close="closeAddUserPropertyPopover">
                                     </message-editor-with-emoji-picker>
                                 </div>
                                 <div class="cly-vue-drawer-step__section">
@@ -612,20 +613,29 @@
                                             {{i18n('push-notification.message-content')}}
                                         </div>
                                         <div>
-                                            <el-button type="text" @click="onAddUserProperty('content')" class="bu-px-0">{{i18n('push-notification.add-variable')}}</el-button>
+                                            <el-button type="text" @click="onAddUserProperty('content')" class="bu-px-0 cly-text-button" size="small">{{i18n('push-notification.add-variable')}}</el-button>
                                         </div>
                                     </div>
                                     <message-editor-with-emoji-picker 
                                         ref="content"
-                                        id="input-element-content"
+                                        :isOpen="isAddUserPropertyPopoverOpen.content"
                                         container="content"
+                                        id="input-element-content"
                                         :isRequired="true"
                                         type="textarea"
+                                        :placeholder="i18n('push-notification.clear-and-shorter-messages')"
                                         :isDefaultLocalizationActive="isDefaultLocalizationActive"
-                                        :placeholder="i18n('push-notification.clear-and-shorter-messages')" 
+                                        :userProperty="pushNotificationUnderEdit.message[activeLocalization].properties.content[selectedUserPropertyId]"
+                                        :options="userPropertiesOptions"
                                         @change="onContentChange"
                                         @delete="onRemoveUserProperty"
-                                        @click="onUserPropertyClick">
+                                        @click="onUserPropertyClick"
+                                        @select="onSelectUserProperty"
+                                        @input="onInputUserProperty"
+                                        @fallback="onInputFallbackUserProperty"
+                                        @uppercase="onCheckUppercaseUserProperty"
+                                        @remove="onRemoveUserProperty"
+                                        @close="closeAddUserPropertyPopover">
                                     </message-editor-with-emoji-picker>
                                 </div>
                                 <div class="cly-vue-drawer-step__section">
@@ -637,6 +647,7 @@
                                         v-for="(button,index) in pushNotificationUnderEdit.message[activeLocalization].buttons">
                                         <validation-provider v-slot="validation" rules="required" style="width:35%;" class="bu-pr-1">
                                             <el-input 
+                                                autocomplete="off"
                                                 v-model="pushNotificationUnderEdit.message[activeLocalization].buttons[index].label" 
                                                 :placeholder="i18n('push-notification.enter-x-button')" 
                                                 :class="{'is-error': validation.errors.length > 0}">
@@ -644,16 +655,19 @@
                                         </validation-provider>
                                         <validation-provider v-slot="validation" :rules="{required:true, regex:urlRegex}" style="width:60%;" class="bu-pl-1 bu-pr-1">
                                             <el-input 
+                                                autocomplete="off"
                                                 v-model="pushNotificationUnderEdit.message[activeLocalization].buttons[index].url" 
                                                 :placeholder="i18n('push-notification.enter-button-url')" 
                                                 :class="{'is-error': validation.errors.length > 0}">
                                             </el-input>
                                         </validation-provider>
-                                        <div class="bu-pl-1" @click="removeButton(index)"><i class="fas fa-times"></i></div>
+                                        <div class="bu-ml-1 cly-icon-button cly-icon-button--gray" @click="removeButton(index)">
+                                            <i class="el-icon-close"></i>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="cly-vue-drawer-step__section bu-pb-1">
-                                    <el-button type="text" :disabled="isAddButtonDisabled" @click="addButton" class="bu-px-0">
+                                    <el-button type="text" :disabled="isAddButtonDisabled" @click="addButton" class="bu-px-0 cly-text-button" size="small">
                                         {{addButtonLabel}}
                                     </el-button>
                                 </div>
@@ -666,6 +680,7 @@
                             <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.media-url-description')}}</div>
                             <validation-provider v-slot="validation" ref="allMediaURLValidationProvider" :rules="{push_notification_message_media_url:PlatformEnum.ALL}" mode="passive">
                                 <el-input 
+                                    autocomplete="off"
                                     :value="pushNotificationUnderEdit.settings.all.mediaURL" 
                                     @input="onAllMediaURLInput" 
                                     :placeholder="i18n('push-notification.enter-media-url')" 
@@ -703,6 +718,7 @@
                                 :description="i18n('push-notification.media-url-platform-description')">
                                 <validation-provider v-slot="validation" ref="iosMediaURLValidationProvider" :rules="{required:true,push_notification_message_media_url:PlatformEnum.IOS}" mode="passive">
                                     <el-input 
+                                        autocomplete="off"
                                         :value="pushNotificationUnderEdit.settings.ios.mediaURL" 
                                         @input="onIOSMediaURLInput" 
                                         :placeholder="i18n('push-notification.enter-media-url')" 
@@ -749,6 +765,7 @@
                                 :description="i18n('push-notification.send-json-description')">
                                 <validation-provider rules="json|required" v-slot="validation">
                                     <el-input 
+                                        autocomplete="off"
                                         v-model="pushNotificationUnderEdit.settings.ios.json" 
                                         type="textarea" 
                                         @input="function(value){onSettingChange(PlatformEnum.IOS,'json',value)}" 
@@ -801,6 +818,7 @@
                                 :description="i18n('push-notification.media-url-platform-description')">
                                 <validation-provider v-slot="validation" ref="androidMediaURLValidationProvider" :rules="{required:true,push_notification_message_media_url:PlatformEnum.ANDROID}" mode="passive">
                                     <el-input 
+                                        autocomplete="off"
                                         :value="pushNotificationUnderEdit.settings.android.mediaURL" 
                                         @input="onAndroidMediaURLInput" 
                                         :placeholder="i18n('push-notification.enter-media-url')" 
@@ -846,7 +864,8 @@
                                 :label="i18n('push-notification.send-json')"
                                 :description="i18n('push-notification.send-json-description')">
                                 <validation-provider rules="json|required" v-slot="validation">
-                                    <el-input 
+                                    <el-input
+                                        autocomplete="off" 
                                         v-model="pushNotificationUnderEdit.settings.android.json" 
                                         type="textarea"
                                         @input="function(value){onSettingChange(PlatformEnum.ANDROID,'json',value)}" 
@@ -877,6 +896,7 @@
                         </el-collapse-item>
                     </el-collapse>
                 </div>
+                </form>
             </cly-form-step>
             <cly-form-step id="step4" :name="i18n('push-notification.drawer-step-four')" >
                 <div class="cly-vue-drawer-step__section">

@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyAuth, countlyView, simpleheat, countlySegmentation, ActionMapView, countlyCommon, countlyGlobal, countlyViews, T, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
+/*global CountlyHelpers, countlyAuth, countlySegmentation, countlyCommon, countlyGlobal, countlyViews, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
 
 (function() {
     var FEATURE_NAME = "views";
@@ -610,7 +610,12 @@
         data: function() {
             return {
                 dataBlocks: [],
-                isLoading: true
+                isLoading: true,
+                headerData: {
+                    label: CV.i18n("views.title"),
+                    description: CV.i18n("views.title-desc"),
+                    linkTo: {"label": CV.i18n('views.go-to-views'), "href": "#/analytics/views"},
+                }
             };
         },
         mounted: function() {
@@ -683,503 +688,297 @@
         }
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        countlyVue.container.registerTab("/analytics/sessions", {
-            priority: 4,
-            name: "views-per-session",
-            title: CV.i18n('views-per-session.title'),
-            route: "#/analytics/sessions/views-per-session",
-            component: ViewsPerSessionView,
-            vuex: [{
-                clyModel: countlyViewsPerSession
-            }]
-        });
+    countlyVue.container.registerTab("/analytics/sessions", {
+        priority: 4,
+        name: "views-per-session",
+        permission: FEATURE_NAME,
+        title: CV.i18n('views-per-session.title'),
+        route: "#/analytics/sessions/views-per-session",
+        component: ViewsPerSessionView,
+        vuex: [{
+            clyModel: countlyViewsPerSession
+        }]
+    });
 
-        var viewsHomeView = new countlyVue.views.BackboneWrapper({
-            component: ViewsView,
-            vuex: [{clyModel: countlyViews}]
-        });
+    var viewsHomeView = new countlyVue.views.BackboneWrapper({
+        component: ViewsView,
+        vuex: [{clyModel: countlyViews}]
+    });
 
-        var viewsEditView = new countlyVue.views.BackboneWrapper({
-            component: EditViewsView,
-            vuex: [{clyModel: countlyViews}]
-        });
+    var viewsEditView = new countlyVue.views.BackboneWrapper({
+        component: EditViewsView,
+        vuex: [{clyModel: countlyViews}]
+    });
 
-        app.viewsHomeView = viewsHomeView;
-        app.viewsEditView = viewsEditView;
-
-
-        app.route("/analytics/views", "views-home", function() {
-            var params = {};
-            this.viewsHomeView.params = params;
-            this.renderWhenReady(this.viewsHomeView);
-        });
-
-        app.route("/analytics/views/manage", "views", function() {
-            var params = {};
-            this.viewsEditView.params = params;
-            this.renderWhenReady(this.viewsEditView);
-        });
+    app.viewsHomeView = viewsHomeView;
+    app.viewsEditView = viewsEditView;
 
 
-        countlyVue.container.registerData("/home/widgets", {
-            _id: "views-dashboard-widget",
-            label: CV.i18n('views.title'),
-            description: CV.i18n('views.title-desc'),
-            enabled: {"default": true}, //object. For each type set if by default enabled
-            available: {"default": true}, //object. default - for all app types. For other as specified.
-            placeBeforeDatePicker: false,
-            linkTo: {"label": CV.i18n('views.go-to-views'), "href": "#/analytics/views"},
-            width: 6,
-            order: 4,
-            component: ViewsHomeWidget
-        });
+    app.route("/analytics/views", "views-home", function() {
+        var params = {};
+        this.viewsHomeView.params = params;
+        this.renderWhenReady(this.viewsHomeView);
+    });
 
-    }
+    app.route("/analytics/views/manage", "views", function() {
+        var params = {};
+        this.viewsEditView.params = params;
+        this.renderWhenReady(this.viewsEditView);
+    });
 
-    window.ActionMapView = countlyView.extend({
-        actionType: "",
-        curSegment: 0,
-        curRadius: 1,
-        curBlur: 1,
-        baseRadius: 1,
-        baseBlur: 1.6,
-        beforeRender: function() {
-            var self = this;
-            return $.when(T.render('/views/templates/actionmap.html', function(src) {
-                self.template = src;
-            }), countlyViews.loadActionsData(this.view)).then(function() {});
-        },
-        getData: function(data) {
-            var heat = [];
-            var point;
-            var width = $("#view-canvas-map").prop('width');
-            var height = $("#view-canvas-map").prop('height');
-            for (var i = 0; i < data.length; i++) {
-                point = data[i].sg;
-                if (point.type === this.actionType) {
-                    heat.push([parseInt((point.x / point.width) * width), parseInt((point.y / point.height) * height), data[i].c]);
+
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "views-dashboard-widget",
+        label: CV.i18n('views.title'),
+        permission: FEATURE_NAME,
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: false,
+        width: 6,
+        order: 4,
+        component: ViewsHomeWidget
+    });
+
+    //Views type button in drill
+    app.addPageScript("/drill#", function() {
+        var drillClone;
+        var self = app.drillView;
+        var record_views = countlyGlobal.record_views;
+        if (countlyGlobal.apps && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill && typeof countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views !== "undefined") {
+            record_views = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views;
+        }
+        if (record_views) {
+
+            $("#drill-types").append('<div id="drill-type-views" class="item"><div class="inner"><span class="icon views"></span><span class="text">' + jQuery.i18n.map["views.title"] + '</span></div></div>');
+            $("#drill-type-views").on("click", function() {
+                if ($(this).hasClass("active")) {
+                    return true;
                 }
-            }
-            return heat;
-        },
-        getMaxHeight: function(data) {
-            var width = $("#view-map").width();
-            var lowest = {w: 0, h: 0};
-            var highest = {w: 100000, h: 5000};
-            var i;
-            for (i = 0; i < data.length; i++) {
-                if (width === data[i].sg.width) {
-                    return data[i].sg.height;
-                }
-                else if (width > data[i].sg.width && lowest.w < data[i].sg.width) {
-                    lowest.w = data[i].sg.width;
-                    lowest.h = data[i].sg.height;
-                }
-            }
 
-            if (lowest.h > 0) {
-                return lowest.h;
-            }
+                $("#drill-types").find(".item").removeClass("active");
+                $(this).addClass("active");
+                $("#event-selector").hide();
 
-            for (i = 0; i < data.length; i++) {
-                if (width < data[i].sg.width && highest.w > data[i].sg.width) {
-                    highest.w = data[i].sg.width;
-                    highest.h = data[i].sg.height;
-                }
-            }
+                $("#drill-no-event").fadeOut();
+                $("#segmentation-start").fadeOut().remove();
 
-            return highest.h;
-        },
-        getResolutions: function() {
-            var res = ["Normal", "Fullscreen", "320x480", "480x800"];
-            return res;
-        },
-        resize: function() {
-            $('#view-canvas-map').prop('width', $("#view-map").width());
-            $('#view-canvas-map').prop('height', $("#view-map").height());
-            if (this.map) {
-                this.map.resize();
-            }
-        },
-        loadIframe: function() {
-            var self = this;
-            var segments = countlyViews.getActionsData().domains;
-            var url = "http://" + segments[self.curSegment] + self.view;
-            if ($("#view_loaded_url").val().length === 0) {
-                $("#view_loaded_url").val(url);
-            }
-            countlyViews.testUrl(url, function(result) {
-                if (result) {
-                    $("#view-map iframe").attr("src", url);
-                    $("#view_loaded_url").val(url);
-                }
-                else {
-                    self.curSegment++;
-                    if (segments[self.curSegment]) {
-                        self.loadIframe();
+                var currEvent = "[CLY]_view";
+
+                self.graphType = "line";
+                self.graphVal = "times";
+                self.filterObj = {};
+                self.byVal = "";
+                self.drillChartDP = {};
+                self.drillChartData = {};
+                self.activeSegmentForTable = "";
+                countlySegmentation.reset();
+
+                $("#drill-navigation").find(".menu[data-open=table-view]").hide();
+
+                $.when(countlySegmentation.initialize(currEvent)).then(function() {
+                    $("#drill-filter-view").replaceWith(drillClone.clone(true));
+                    self.adjustFilters();
+                    if (!self.keepQueryTillExec) {
+                        self.draw(true, false);
                     }
-                    else {
-                        $("#view_loaded_url").show();
-                        CountlyHelpers.alert(jQuery.i18n.map["views.cannot-load"], "red");
-                    }
-                }
+                });
             });
-        },
-        renderCommon: function(isRefresh) {
-            var data = countlyViews.getActionsData();
-            this.actionType = data.types[0] || jQuery.i18n.map["views.select-action-type"];
-            var segments = countlyViews.getSegments();
-            var self = this;
-            this.templateData = {
-                "page-title": jQuery.i18n.map["views.action-map"],
-                "font-logo-class": "fa-eye",
-                "first-type": this.actionType,
-                "active-segmentation": jQuery.i18n.map["views.all-segments"],
-                "segmentations": segments,
-                "resolutions": this.getResolutions(),
-                "data": data
-            };
-
-            if (!isRefresh) {
-                $(this.el).html(this.template(this.templateData));
-                $("#view-map").height(this.getMaxHeight(data.data));
-                this.resize();
-                this.loadIframe();
-                this.map = simpleheat("view-canvas-map");
-                this.map.data(this.getData(data.data));
-                this.baseRadius = Math.max((48500 - 35 * data.data.length) / 900, 5);
-                this.drawMap();
-
-                app.localize();
-
-                $("#view_reload_url").on("click", function() {
-                    $("#view-map iframe").attr("src", "/o/urlload?url=" + encodeURIComponent($("#view_loaded_url").val()));
-                });
-
-                $("#view_loaded_url").keyup(function(event) {
-                    if (event.keyCode === 13) {
-                        $("#view_reload_url").click();
-                    }
-                });
-
-                $("#radius").on("change", function() {
-                    self.curRadius = parseInt($("#radius").val()) / 10;
-                    self.drawMap();
-                });
-
-                $("#blur").on("change", function() {
-                    self.curBlur = parseInt($("#blur").val()) / 10;
-                    self.drawMap();
-                });
-
-                $("#action-map-type .segmentation-option").on("click", function() {
-                    self.actionType = $(this).data("value");
-                    self.refresh();
-                });
-
-                $("#action-map-resolution .segmentation-option").on("click", function() {
-                    switch ($(this).data("value")) {
-                    case "Normal":
-                        $("#view-map").width("100%");
-                        $("#view-map").prependTo("#view-map-container");
-                        break;
-                    case "Fullscreen":
-                        $("#view-map").width("100%");
-                        $("#view-map").prependTo(document.body);
-                        break;
-                    default:
-                        var parts = $(this).data("value").split("x");
-                        $("#view-map").width(parts[0] + "px");
-                        $("#view-map").prependTo("#view-map-container");
-                    }
-                    self.resize();
-                    self.refresh();
-                });
-
-                $("#view-segments .segmentation-option").on("click", function() {
-                    countlyViews.reset();
-                    countlyViews.setSegment($(this).data("value"));
-                    self.refresh();
-                });
-            }
-        },
-        drawMap: function() {
-            this.map.radius(this.baseRadius * this.curRadius, this.baseRadius * this.baseBlur * this.curBlur);
-            this.map.draw();
-        },
-        refresh: function() {
-            var self = this;
-            $.when(countlyViews.loadActionsData(this.view)).then(function() {
-                if (app.activeView !== self) {
-                    return false;
-                }
-                self.renderCommon(true);
-                var data = countlyViews.getActionsData();
-                if (self.map) {
-                    self.map.clear();
-                    self.map.data(self.getData(data.data));
-                    self.baseRadius = Math.max((48500 - 35 * data.data.length) / 900, 5);
-                    self.drawMap();
-                }
-            });
+            setTimeout(function() {
+                drillClone = $("#drill-filter-view").clone(true);
+            }, 0);
         }
     });
-    //register views
-    app.actionMapView = new ActionMapView();
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        //Action map
-        app.route("/analytics/views/action-map/*view", 'views', function(view) {
-            this.actionMapView.view = view;
-            this.renderWhenReady(this.actionMapView);
-        });
-
-        //Views type button in drill
-        app.addPageScript("/drill#", function() {
-            var drillClone;
-            var self = app.drillView;
-            var record_views = countlyGlobal.record_views;
-            if (countlyGlobal.apps && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill && typeof countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views !== "undefined") {
-                record_views = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views;
-            }
-            if (record_views) {
-
-                $("#drill-types").append('<div id="drill-type-views" class="item"><div class="inner"><span class="icon views"></span><span class="text">' + jQuery.i18n.map["views.title"] + '</span></div></div>');
-                $("#drill-type-views").on("click", function() {
-                    if ($(this).hasClass("active")) {
-                        return true;
-                    }
-
-                    $("#drill-types").find(".item").removeClass("active");
-                    $(this).addClass("active");
-                    $("#event-selector").hide();
-
-                    $("#drill-no-event").fadeOut();
-                    $("#segmentation-start").fadeOut().remove();
-
-                    var currEvent = "[CLY]_view";
-
-                    self.graphType = "line";
-                    self.graphVal = "times";
-                    self.filterObj = {};
-                    self.byVal = "";
-                    self.drillChartDP = {};
-                    self.drillChartData = {};
-                    self.activeSegmentForTable = "";
-                    countlySegmentation.reset();
-
-                    $("#drill-navigation").find(".menu[data-open=table-view]").hide();
-
-                    $.when(countlySegmentation.initialize(currEvent)).then(function() {
-                        $("#drill-filter-view").replaceWith(drillClone.clone(true));
-                        self.adjustFilters();
-                        if (!self.keepQueryTillExec) {
-                            self.draw(true, false);
-                        }
-                    });
-                });
-                setTimeout(function() {
-                    drillClone = $("#drill-filter-view").clone(true);
-                }, 0);
-            }
-        });
-
-        var GridComponent = countlyVue.views.create({
-            template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-            mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.zoom],
-            props: {
-                data: {
-                    type: Object,
-                    default: function() {
-                        return {};
-                    }
+    var GridComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
+        mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.zoom],
+        props: {
+            data: {
+                type: Object,
+                default: function() {
+                    return {};
                 }
             },
-            mounted: function() {
-            },
-            methods: {
-                refresh: function() {
-                },
-                onWidgetCommand: function(event) {
-                    if (event === 'zoom') {
-                        this.triggerZoom();
-                        return;
-                    }
-                    return this.$emit('command', event);
+            isAllowed: {
+                type: Boolean,
+                default: true
+            }
+        },
+        mounted: function() {
+        },
+        computed: {
+            title: function() {
+                if (this.data.title) {
+                    return this.data.title;
                 }
+                if (this.data.dashData) {
+                    return CV.i18n("views.widget-type");
+                }
+                return "";
             },
-            computed: {
-                title: function() {
-                    if (this.data.title) {
-                        return this.data.title;
-                    }
-                    if (this.data.dashData) {
-                        return CV.i18n("views.widget-type");
-                    }
-                    return "";
-                },
-                showBuckets: function() {
-                    return false;
-                },
-                metricLabels: function() {
-                    return [];
-                },
-                tableStructure: function() {
-                    var columns = [{prop: "view", "title": CV.i18n("views.widget-type")}];
+            showBuckets: function() {
+                return false;
+            },
+            metricLabels: function() {
+                return [];
+            },
+            tableStructure: function() {
+                var columns = [{prop: "view", "title": CV.i18n("views.widget-type")}];
 
-                    this.data = this.data || {};
-                    this.data.metrics = this.data.metrics || [];
+                this.data = this.data || {};
+                this.data.metrics = this.data.metrics || [];
+                for (var k = 0; k < this.data.metrics.length; k++) {
+                    if (this.data.metrics[k] === "d" || this.data.metrics[k] === "scr" || this.data.metrics[k] === "br") {
+                        columns.push({"prop": this.data.metrics[k], "title": CV.i18n("views." + this.data.metrics[k])});
+                    }
+                    else {
+                        columns.push({"prop": this.data.metrics[k], "title": CV.i18n("views." + this.data.metrics[k]), "type": "number"});
+                    }
+                }
+                return columns;
+            },
+            getTableData: function() {
+                this.data = this.data || {};
+                this.data.dashData = this.data.dashData || {};
+                this.data.dashData.data = this.data.dashData.data || {};
+                this.data.dashData.data.chartData = this.data.dashData.data.chartData || [];
+
+                var tableData = [];
+                for (var z = 0; z < this.data.dashData.data.chartData.length; z++) {
+                    var ob = {"view": this.data.dashData.data.chartData[z].view};
                     for (var k = 0; k < this.data.metrics.length; k++) {
-                        if (this.data.metrics[k] === "d" || this.data.metrics[k] === "scr" || this.data.metrics[k] === "br") {
-                            columns.push({"prop": this.data.metrics[k], "title": CV.i18n("views." + this.data.metrics[k])});
-                        }
-                        else {
-                            columns.push({"prop": this.data.metrics[k], "title": CV.i18n("views." + this.data.metrics[k]), "type": "number"});
-                        }
-                    }
-                    return columns;
-                },
-                getTableData: function() {
-                    this.data = this.data || {};
-                    this.data.dashData = this.data.dashData || {};
-                    this.data.dashData.data = this.data.dashData.data || {};
-                    this.data.dashData.data.chartData = this.data.dashData.data.chartData || [];
-
-                    var tableData = [];
-                    for (var z = 0; z < this.data.dashData.data.chartData.length; z++) {
-                        var ob = {"view": this.data.dashData.data.chartData[z].view};
-                        for (var k = 0; k < this.data.metrics.length; k++) {
-                            if (this.data.metrics[k] === "d") {
-                                if (this.data.dashData.data.chartData[z].t > 0) {
-                                    ob[this.data.metrics[k]] = countlyCommon.timeString((this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t) / 60);
-                                }
-                                else {
-                                    ob[this.data.metrics[k]] = 0;
-                                }
-                            }
-                            else if (this.data.metrics[k] === "scr") {
-                                if (this.data.dashData.data.chartData[k].t > 0) {
-                                    var vv = parseFloat(this.data.dashData.data.chartData[z].scr) / parseFloat(this.data.dashData.data.chartData[z].t);
-                                    if (vv > 100) {
-                                        vv = 100;
-                                    }
-                                    ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + " %";
-                                }
-                                else {
-                                    ob[this.data.metrics[k]] = 0;
-                                }
-                            }
-                            else if (this.data.metrics[k] === "br") {
-                                ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]] || 0;
-                                ob[this.data.metrics[k]] = countlyCommon.formatNumber(ob[this.data.metrics[k]]) + " %";
+                        if (this.data.metrics[k] === "d") {
+                            if (this.data.dashData.data.chartData[z].t > 0) {
+                                ob[this.data.metrics[k]] = countlyCommon.timeString((this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t) / 60);
                             }
                             else {
-                                ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]];
+                                ob[this.data.metrics[k]] = 0;
                             }
                         }
-                        tableData.push(ob);
-
+                        else if (this.data.metrics[k] === "scr") {
+                            if (this.data.dashData.data.chartData[k].t > 0) {
+                                var vv = parseFloat(this.data.dashData.data.chartData[z].scr) / parseFloat(this.data.dashData.data.chartData[z].t);
+                                if (vv > 100) {
+                                    vv = 100;
+                                }
+                                ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + " %";
+                            }
+                            else {
+                                ob[this.data.metrics[k]] = 0;
+                            }
+                        }
+                        else if (this.data.metrics[k] === "br") {
+                            ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]] || 0;
+                            ob[this.data.metrics[k]] = countlyCommon.formatNumber(ob[this.data.metrics[k]]) + " %";
+                        }
+                        else {
+                            ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]];
+                        }
                     }
-                    return tableData;
+                    tableData.push(ob);
+
+                }
+                return tableData;
+            }
+        }
+
+    });
+
+    var DrawerComponent = countlyVue.views.create({
+        template: "#views-drawer",
+        data: function() {
+            return {
+                useCustomTitle: false,
+                useCustomPeriod: false
+            };
+        },
+        computed: {
+            availableStatsMetric: function() {
+                var app = this.scope.editedObject.apps[0];
+                var metrics = [
+                    { label: CV.i18n("views.u"), value: "u" },
+                    { label: CV.i18n("views.n"), value: "n" },
+                    { label: CV.i18n("views.t"), value: "t" },
+                    { label: CV.i18n("views.d"), value: "d" },
+                    { label: CV.i18n("views.s"), value: "s" },
+                    { label: CV.i18n("views.e"), value: "e" },
+                    { label: CV.i18n("views.b"), value: "b" },
+                    { label: CV.i18n("views.br"), value: "br" },
+                    { label: CV.i18n("views.uvc"), value: "uvc" }
+                ];
+                if (app && countlyGlobal.apps[app] && countlyGlobal.apps[app].type === "web") {
+                    metrics.push({ label: CV.i18n("views.scr"), value: "scr" });
+                }
+                return metrics;
+            }
+        },
+        methods: {
+            onDataTypeChange: function(v) {
+                var widget = this.scope.editedObject;
+                this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+            }
+        },
+        props: {
+            scope: {
+                type: Object,
+                default: function() {
+                    return {};
                 }
             }
+        }
+    });
 
-        });
-
-        var DrawerComponent = countlyVue.views.create({
-            template: "#views-drawer",
-            data: function() {
+    countlyVue.container.registerData("/custom/dashboards/widget", {
+        type: "analytics",
+        label: CV.i18n("views.widget-type"),
+        priority: 1,
+        primary: false,
+        getter: function(widget) {
+            return widget.widget_type === "analytics" && widget.data_type === "views";
+        },
+        templates: [
+            {
+                namespace: "views",
+                mapping: {
+                    drawer: '/views/templates/widgetDrawer.html',
+                }
+            }
+        ],
+        drawer: {
+            component: DrawerComponent,
+            getEmpty: function() {
                 return {
-                    useCustomTitle: false,
-                    useCustomPeriod: false
+                    title: "",
+                    feature: FEATURE_NAME,
+                    widget_type: "analytics",
+                    data_type: "views",
+                    app_count: 'single',
+                    metrics: [],
+                    apps: [],
+                    custom_period: null,
+                    visualization: "table",
+                    isPluginWidget: true
                 };
             },
-            computed: {
-                availableStatsMetric: function() {
-                    var app = this.scope.editedObject.apps[0];
-                    var metrics = [
-                        { label: CV.i18n("views.u"), value: "u" },
-                        { label: CV.i18n("views.n"), value: "n" },
-                        { label: CV.i18n("views.t"), value: "t" },
-                        { label: CV.i18n("views.d"), value: "d" },
-                        { label: CV.i18n("views.s"), value: "s" },
-                        { label: CV.i18n("views.e"), value: "e" },
-                        { label: CV.i18n("views.b"), value: "b" },
-                        { label: CV.i18n("views.br"), value: "br" },
-                        { label: CV.i18n("views.uvc"), value: "uvc" }
-                    ];
-                    if (app && countlyGlobal.apps[app] && countlyGlobal.apps[app].type === "web") {
-                        metrics.push({ label: CV.i18n("views.scr"), value: "scr" });
-                    }
-                    return metrics;
-                }
+            beforeLoadFn: function(/*doc, isEdited*/) {
             },
-            mounted: function() {
-            },
-            methods: {
-            },
-            props: {
-                scope: {
-                    type: Object,
-                    default: function() {
-                        return {};
-                    }
-                }
+            beforeSaveFn: function(/*doc*/) {
+
             }
-        });
-
-        countlyVue.container.registerData("/custom/dashboards/widget", {
-            type: "analytics",
-            feature: FEATURE_NAME,
-            label: CV.i18n("views.widget-type"),
-            priority: 1,
-            primary: false,
-            getter: function(widget) {
-                return widget.widget_type === "analytics" && widget.data_type === "views";
-            },
-            templates: [
-                {
-                    namespace: "views",
-                    mapping: {
-                        drawer: '/views/templates/widgetDrawer.html',
-                    }
-                }
-            ],
-            drawer: {
-                component: DrawerComponent,
-                getEmpty: function() {
-                    return {
-                        title: "",
-                        widget_type: "analytics",
-                        data_type: "views",
-                        app_count: 'single',
-                        metrics: [],
-                        apps: [],
-                        custom_period: "30days",
-                        visualization: "table"
-                    };
-                },
-                beforeLoadFn: function(/*doc, isEdited*/) {
-                },
-                beforeSaveFn: function(/*doc*/) {
-
-                }
-            },
-            grid: {
-                component: GridComponent,
-                dimensions: function() {
-                    return {
-                        minWidth: 2,
-                        minHeight: 4,
-                        width: 2,
-                        height: 4
-                    };
-                }
+        },
+        grid: {
+            component: GridComponent,
+            dimensions: function() {
+                return {
+                    minWidth: 2,
+                    minHeight: 4,
+                    width: 2,
+                    height: 4
+                };
             }
+        }
 
-        });
-    }
+    });
 
     $(document).ready(function() {
         jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
@@ -1201,9 +1000,7 @@
                 countlyViews.loadList(appId);
             }
         });
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 25});
-        }
+        app.addSubMenu("analytics", {code: "analytics-views", permission: FEATURE_NAME, url: "#/analytics/views", text: "views.title", priority: 25});
 
         //check if configuration view exists
         if (app.configurationsView) {

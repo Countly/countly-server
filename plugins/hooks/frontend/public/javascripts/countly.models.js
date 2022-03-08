@@ -192,6 +192,7 @@
                     url: countlyCommon.API_PARTS.data.r + "/hook/list",
                     data: {
                         "id": id,
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
                     },
                     dataType: "json",
                     success: function(data) {
@@ -209,7 +210,7 @@
             saveHook: function(context, record) {
                 return CV.$.ajax({
                     type: "POST",
-                    url: countlyCommon.API_PARTS.data.w + "/hook/save",
+                    url: countlyCommon.API_PARTS.data.w + "/hook/save?" + "app_id=" + record.apps[0],
                     data: {
                         "hook_config": JSON.stringify(record)
                     },
@@ -223,7 +224,7 @@
             deleteHook: function(context, id) {
                 return CV.$.ajax({
                     type: "POST",
-                    url: countlyCommon.API_PARTS.data.w + "/hook/delete",
+                    url: countlyCommon.API_PARTS.data.w + "/hook/delete" + "?app_id=" + countlyCommon.ACTIVE_APP_ID,
                     data: {
                         "hookID": id
                     },
@@ -240,7 +241,7 @@
                 context.commit("resetTestResult");
                 return CV.$.ajax({
                     type: "get",
-                    url: countlyCommon.API_PARTS.data.w + "/hook/test",
+                    url: countlyCommon.API_PARTS.data.w + "/hook/test" + "?app_id=" + countlyCommon.ACTIVE_APP_ID,
                     data: {
                         "hook_config": JSON.stringify(hookConfig),
                         "mock_data": JSON.stringify(mockData),
@@ -288,7 +289,7 @@
                 updateStatus: function(context, status) {
                     return CV.$.ajax({
                         type: "post",
-                        url: countlyCommon.API_PARTS.data.w + "/hook/status",
+                        url: countlyCommon.API_PARTS.data.w + "/hook/status" + "?app_id=" + countlyCommon.ACTIVE_APP_ID,
                         data: {
                             "status": JSON.stringify(status)
                         },
@@ -302,7 +303,7 @@
                     context.commit("setInitialized", false);
                     return CV.$.ajax({
                         type: "GET",
-                        url: countlyCommon.API_PARTS.data.r + "/hook/list",
+                        url: countlyCommon.API_PARTS.data.r + "/hook/list" + "?app_id=" + countlyCommon.ACTIVE_APP_ID,
                         data: {preventGlobalAbort: true},
                     }).then(function(res) {
                         var hookList = res && res.hooksList || [];

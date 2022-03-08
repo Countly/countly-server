@@ -1,6 +1,5 @@
-/*global app, countlyVue, CV, $, countlyAuth*/
+/*global app, countlyVue, CV*/
 (function() {
-    var FEATURE_NAME = 'logs';
     var Logs = countlyVue.views.create({
         template: CV.T('/core/logs/templates/logs-main.html'),
         mixins: [
@@ -54,9 +53,5 @@
         this.renderWhenReady(ViewWrapper);
     });
 
-    $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addMenu("management", {code: "logs", url: "#/manage/logs", text: "Logs", priority: 30});
-        }
-    });
+    app.addMenu("management", {code: "logs", url: "#/manage/logs", text: "Logs", priority: 50});
 })();

@@ -5,7 +5,7 @@
     <div class="cly-vue-sidebar__main-menu" style="margin-top: 26px;">
         <vue-scroll :ops="{scrollPanel: { scrollingX: false }}">
             <ul>
-                <li v-for="(item, idx) in menu" :key="item.name" :class="['bu-px-3 bu-mb-1 bu-is-clickable']">
+                <li v-for="(item, idx) in menu" :key="item.name" class="bu-px-3 bu-mb-1 bu-is-clickable" :style="item.node && item.node.bottom ? {'marginBottom': item.node.bottom + 'px !important'} : {}">
                     <a :href="item.url">
                         <div
                             style="width: calc(100% - 24px);"

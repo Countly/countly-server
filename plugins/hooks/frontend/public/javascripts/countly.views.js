@@ -1,5 +1,5 @@
 /*global
-   CV, _,  countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
+   CV, _,  countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent
  */
 (function() {
     var FEATURE_NAME = "hooks";
@@ -849,37 +849,30 @@
             "/hooks/templates/vue-hooks-detail-error-table.html",
             "/hooks/templates/vue-triggers.html",
             "/hooks/templates/vue-effects.html",
-            "/drill/templates/drill.query.builder.html",
             "/drill/templates/query.builder.v2.html",
-
         ]
     });
 
+    app.route('/manage/hooks', 'hooks', function() {
+        this.renderWhenReady(hooksView);
+    });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route('/manage/hooks', 'hooks', function() {
-            this.renderWhenReady(hooksView);
-        });
+    app.route("/manage/hooks/:id", "hooks-detail", function(id) {
+        var params = {
+            id: id
+        };
 
-        app.route("/manage/hooks/:id", "hooks-detail", function(id) {
-            var params = {
-                id: id
-            };
-
-            hooksDetailView.params = params;
-            this.renderWhenReady(hooksDetailView);
-        });
-    }
+        hooksDetailView.params = params;
+        this.renderWhenReady(hooksDetailView);
+    });
 
     $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 44});
+        app.addMenu("management", {code: "hooks", permission: FEATURE_NAME, url: "#/manage/hooks", text: "hooks.plugin-title", priority: 110});
 
-            //check if configuration view exists
-            if (app.configurationsView) {
-                app.configurationsView.registerLabel("hooks", "hooks.plugin-title");
-                app.configurationsView.registerLabel("hooks.batchSize", "hooks.batch-size");
-            }
+        //check if configuration view exists
+        if (app.configurationsView) {
+            app.configurationsView.registerLabel("hooks", "hooks.plugin-title");
+            app.configurationsView.registerLabel("hooks.batchSize", "hooks.batch-size");
         }
 
     });
