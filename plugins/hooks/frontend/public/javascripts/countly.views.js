@@ -849,9 +849,7 @@
             "/hooks/templates/vue-hooks-detail-error-table.html",
             "/hooks/templates/vue-triggers.html",
             "/hooks/templates/vue-effects.html",
-            "/drill/templates/drill.query.builder.html",
             "/drill/templates/query.builder.v2.html",
-
         ]
     });
 
