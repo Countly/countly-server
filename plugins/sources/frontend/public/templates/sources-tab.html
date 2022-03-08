@@ -12,6 +12,9 @@
           </el-dropdown-item>
           <el-dropdown-item>
             <!--<span class="ion-settings"></span>-->
+            <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+          </el-dropdown-item>
+          <el-dropdown-item>
             <a href="#/manage/configurations/sources" class="bu-ml-1">{{ i18n('sources.plugin-settings') }}</a>
           </el-dropdown-item>
         </cly-more-options>
