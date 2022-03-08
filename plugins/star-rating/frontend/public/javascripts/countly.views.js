@@ -170,6 +170,7 @@
                     if (this.cohortsEnabled) {
                         this.rows[i] = this.parseTargeting(this.rows[i]);
                     }
+                    this.rows[i].target_pages = this.rows[i].target_pages && this.rows[i].target_pages.length > 0 ? this.rows[i].target_pages.join(", ") : "-";
                 }
                 return this.rows;
             }
