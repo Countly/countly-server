@@ -31,7 +31,7 @@
             :label="i18n('management-users.role')">
             <template v-slot="rowScope">
               <span class="text-medium">
-                {{ rowScope.row.global_admin ? i18n('management-users.global-admin') : ((rowScope.row.permission && rowScope.row.permission._.a.length > 0) ? i18n('management-users.admin') : i18n('management-users.user')) }}
+                {{ rowScope.row.global_admin ? i18n('management-users.global-admin') : ((rowScope.row.permission && rowScope.row.permission._ && rowScope.row.permission._.a.length > 0) ? i18n('management-users.admin') : i18n('management-users.user')) }}
               </span>
             </template>
           </el-table-column>
