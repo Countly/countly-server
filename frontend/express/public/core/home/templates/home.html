@@ -50,7 +50,7 @@
 				</div>
 				<component v-else-if="registredComponents[item._id].component" v-bind:is="registredComponents[item._id].component"></component>
 			</div>
-			<cly-empty-view v-if=" ordered.length ==0 && !isLoading"
+			<cly-empty-view v-if="ordered.length ==0 && topComponents.length == 0 && !isLoading"
 				:title="i18n('dashboard.empty-title')"
 				:subTitle="i18n('dashboard.empty-text')">
 			</cly-empty-view>
