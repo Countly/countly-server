@@ -1,5 +1,20 @@
 /* global jQuery,CountlyHelpers,countlyVue, CV, countlyCommon,countlyGlobal, app,countlyHomeView*/
 
+
+var HomeWidgetTitleComponent = countlyVue.views.create({
+    template: CV.T('/core/home/templates/widgetTitle.html'),
+    props: {
+        widget: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        }
+    }
+});
+
+Vue.component("clyd-home-widget-header", HomeWidgetTitleComponent);
+
 var HomeViewView = countlyVue.views.create({
     template: CV.T("/core/home/templates/home.html"),
     data: function() {
@@ -12,16 +27,20 @@ var HomeViewView = countlyVue.views.create({
             selectedDynamicComponents: [],
             selectedText: "",
             registredComponents: {},
-            ordered: []
+            ordered: [],
+            isLoading: true
         };
     },
     mounted: function() {
         this.loadAllWidgets();
     },
+    computed: {
+    },
     methods: {
         refresh: function() {
             this.loadAllWidgets();
         },
+
         loadAllWidgets: function() {
             var userSettings = {};
             if (countlyGlobal && countlyGlobal.member && countlyGlobal.member.homeSettings && countlyCommon.ACTIVE_APP_ID) {
@@ -93,6 +112,7 @@ var HomeViewView = countlyVue.views.create({
             }
 
             this.calculatePlacedComponents();
+            this.isLoading = false;
 
         },
         calculatePlacedComponents: function() {
@@ -102,7 +122,7 @@ var HomeViewView = countlyVue.views.create({
 
             for (var k in this.registredComponents) {
                 if (!this.registredComponents[k].placeBeforeDatePicker) {
-                    this.componentSelector.push({"value": this.registredComponents[k]._id, label: this.registredComponents[k].label, "order": this.registredComponents[k].order});
+                    this.componentSelector.push({"fixed": this.registredComponents[k].placeBeforeDatePicker, "value": this.registredComponents[k]._id, label: CV.i18n(this.registredComponents[k].label), "order": this.registredComponents[k].order});
                 }
                 if (this.registredComponents[k].enabled) {
                     if (!this.registredComponents[k].placeBeforeDatePicker) {

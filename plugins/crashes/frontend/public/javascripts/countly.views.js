@@ -1065,7 +1065,12 @@
         data: function() {
             return {
                 crashesItems: [],
-                isLoading: true
+                isLoading: true,
+                headerData: {
+                    label: CV.i18n("crashes.crash-statistics"),
+                    description: CV.i18n("crashes.plugin-description"),
+                    linkTo: {"label": CV.i18n('crashes.go-to-crashes'), "href": "#/crashes"},
+                }
             };
         },
         mounted: function() {
@@ -1135,13 +1140,10 @@
     countlyVue.container.registerData("/home/widgets", {
         _id: "crashes-dashboard-widget",
         label: CV.i18n('crashes.crash-statistics'),
-        permission: FEATURE_NAME,
-        description: CV.i18n('crashes.plugin-description'),
         enabled: {"default": true}, //object. For each type set if by default enabled
         available: {"default": true}, //object. default - for all app types. For other as specified.
         placeBeforeDatePicker: false,
         order: 9,
-        linkTo: {"label": CV.i18n('crashes.go-to-crashes'), "href": "#/crashes"},
         component: CrashesDashboardWidget
     });
 
