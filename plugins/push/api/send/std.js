@@ -3,7 +3,7 @@ const { Duplex } = require('stream'),
     { XXHash64 } = require('xxhash-addon'),
     // { getHasher, OutputType, HashType, hashAsBigInt} = require('bigint-hash'),
     { ERROR, PushError, SendError, ConnectionError, ValidationError, Message} = require('./data'),
-    { FRAME } = require('./proto');
+    { FRAME, FRAME_NAME } = require('./proto');
     // ,
     // log = require('../../../../api/utils/log.js')('push:send:base');
 
@@ -51,16 +51,16 @@ class Base extends Duplex {
         // this.log.i('initialized %s', type);
     }
 
-    /**
-     * Initializes the connection by calling connect function & using default stream _construct method
-     * 
-     * @param {function} callback function called after fist connection is made
-     */
-    _construct(callback) {
-        this.connect().then(() => callback(), e => {
-            throw e;
-        });
-    }
+    // /**
+    //  * Initializes the connection by calling connect function & using default stream _construct method
+    //  * 
+    //  * @param {function} callback function called after fist connection is made
+    //  */
+    // _construct(callback) {
+    //     // this.connect().then(() => callback(), e => {
+    //     //     throw e;
+    //     // });
+    // }
 
     /**
      * Add message into local cache
@@ -113,14 +113,14 @@ class Base extends Duplex {
         chunks = chunks.map(c => c.chunk);
         for (let i = 0; i < chunks.length; i++) {
             let {frame, payload, length} = chunks[i];
-            this.log.d('do_writev %d (%d out of %d)', frame, i, chunks.length);
+            this.log.d('do_writev %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
             if (frame & FRAME.CMD) {
                 this.push(chunks[i]);
             }
             else {
                 await this.send(payload, length);
             }
-            this.log.d('do_writev done %d (%d out of %d)', frame, i, chunks.length);
+            this.log.d('do_writev done %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
         }
     }
 

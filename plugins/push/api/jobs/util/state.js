@@ -16,6 +16,7 @@ class State extends EventEmitter {
         this._messages = {};
         // this._credentials = {};
         this._pushes = {};
+        this._sending = {};
         this._cfg = {
             pool: {
                 bytes: 100000,
@@ -130,6 +131,35 @@ class State extends EventEmitter {
      */
     isMessageDiscarded(id) {
         return this._messages[id] === false;
+    }
+
+    /**
+     * Increment sending counter for given message id
+     * 
+     * @param {string|ObjectID} id message id
+     */
+    incSending(id) {
+        this._sending[id] = (this._sending[id] || 0) + 1;
+    }
+
+    /**
+     * Decrement sending counter for given message id
+     * 
+     * @param {string|ObjectID} id message id
+     * @param {int} count decrement
+     */
+    decSending(id, count = 1) {
+        this._sending[id] = (this._sending[id] || 0) - count;
+    }
+
+    /**
+     * Check if some pushes are still in processing
+     * 
+     * @param {string|ObjectID} id message id
+     * @returns {boolean} true if there're pushes in processing
+     */
+    isSending(id) {
+        return !!this._sending[id];
     }
 
     // /**
