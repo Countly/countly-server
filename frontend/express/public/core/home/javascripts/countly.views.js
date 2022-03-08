@@ -1,4 +1,4 @@
-/* global jQuery,CountlyHelpers,countlyVue, CV, countlyCommon,countlyGlobal, app,countlyHomeView*/
+/* global jQuery,CountlyHelpers,countlyVue, CV,Vue, countlyCommon,countlyGlobal, app,countlyHomeView*/
 
 
 var HomeWidgetTitleComponent = countlyVue.views.create({
@@ -33,8 +33,6 @@ var HomeViewView = countlyVue.views.create({
     },
     mounted: function() {
         this.loadAllWidgets();
-    },
-    computed: {
     },
     methods: {
         refresh: function() {
