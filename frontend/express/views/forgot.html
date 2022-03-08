@@ -57,7 +57,7 @@
 			</div>
 		</div>
 		<h1 style="font-weight: 500; text-align: center; line-height: 48px;" id="header" data-localize="login.forgot"></h1>
-		<div style="height: 40px; font-size: 14px; color: #333C48; text-align: center; width: 332px; margin: 0 auto 16px; line-height: 21px;" data-localize="forgot.explanation"></div>
+		<div style="height: 40px; font-size: 14px; color: #333C48; text-align: center; width: 332px; margin: 0 auto 16px; line-height: 21px;" id="headerExp" data-localize="forgot.explanation"></div>
 		<div id="forgot-form" style="width:304px; margin:auto;">
 			<div>
 				<form method="POST" id="remember-password-form">
@@ -135,6 +135,16 @@
 							}
 							else {
 								$('#message').html($.i18n.map['forgot.result']);
+								var prepareEmail = $('#remember-password-email').val();
+								prepareEmail = prepareEmail.replace(/(\w{1})[\w.-]+@([\w.]+\w)/, "$1***@$2");
+								var emailmessage = `An email has been sent to your email address, ${prepareEmail}. Follow the directions in the email to reset your password.`
+								$("#forgot-form").hide();
+								$("#header").before('<img src="/images/icons/checked.svg" style="margin:auto;display:flex;"/>');
+								$('#header').css("margin-top","24px");
+								$("#header").text("Password Reset Email Sent");
+								$("#headerExp").css("width", "422px");
+								$("#headerExp").text(emailmessage);
+								$("#headerExp").after('<div style="margin:auto;width:300px"><a href="./login"><div id="login-button" class="back-to-login">Back to Login</div></a><div>');
 							}
 						},
 						error: function() {
