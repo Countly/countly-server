@@ -42,6 +42,13 @@
               </span>
             </template>
           </el-table-column>
+          <el-table-column sortable="true" prop="target_pages" :label="i18n('feedback.pages')">
+            <template v-slot="rowScope" class="bu-is-flex bu-is-justify-content-center">
+              <span class="text-medium">
+                {{ rowScope.row.target_pages }}
+              </span>
+            </template>
+          </el-table-column>
         </template>
       </template>
   </cly-datatable-n>
