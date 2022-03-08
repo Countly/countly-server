@@ -451,7 +451,12 @@
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
                 ],
-                isLoading: true
+                isLoading: true,
+                headerData: {
+                    label: CV.i18n("keywords.top_terms"),
+                    description: CV.i18n("sources.description"),
+                    linkTo: {"label": CV.i18n('keywords.go-to-keywords'), "href": "#/analytics/acquisition/search-terms"},
+                }
             };
         },
         mounted: function() {
@@ -503,7 +508,12 @@
         data: function() {
             return {
                 sourceItems: [],
-                isLoading: true
+                isLoading: true,
+                headerData: {
+                    label: CV.i18n("sidebar.acquisition"),
+                    description: CV.i18n("sources.description"),
+                    linkTo: {"label": CV.i18n('sources.go-to-acquisition'), "href": "#/analytics/acquisition"},
+                }
             };
         },
         mounted: function() {
@@ -576,12 +586,10 @@
         _id: "sources-dashboard-widget",
         permission: FEATURE_NAME,
         label: CV.i18n('sidebar.acquisition'),
-        description: CV.i18n('sources.description'),
         enabled: {"default": true}, //object. For each type set if by default enabled
         available: {"default": false, "mobile": true, "web": true}, //object. default - for all app types. For other as specified.
         placeBeforeDatePicker: false,
         order: 3,
-        linkTo: {"label": CV.i18n('sources.go-to-acquisition'), "href": "#/analytics/acquisition"},
         component: SourcesDashboardWidget
     });
 
@@ -589,11 +597,9 @@
         _id: "keywords-dashboard-widget",
         permission: FEATURE_NAME,
         label: CV.i18n('keywords.top_terms'),
-        description: CV.i18n('sources.description'),
         enabled: {"default": true}, //object. For each type set if by default enabled
         available: {"default": false, "web": true}, //object. default - for all app types. For other as specified.
         placeBeforeDatePicker: false,
-        linkTo: {"label": CV.i18n('keywords.go-to-keywords'), "href": "#/analytics/acquisition/search-terms"},
         order: 5,
         width: 6,
         component: KeywordsDashboardWidget

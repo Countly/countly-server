@@ -887,6 +887,7 @@
         };
 
         var crashgroupsResource = countlyVue.vuex.ServerDataTable("crashgroups", {
+            columns: ["name", "os", "reports", "lastTs", "users", "latest_version"],
             onRequest: function() {
                 return {
                     type: "GET",

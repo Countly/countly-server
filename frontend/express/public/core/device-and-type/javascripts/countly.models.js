@@ -331,14 +331,14 @@
                     if (topN.length < 5) {
                         topN.push(tableData[k]);
                         topN = topN.sort(function(a, b) {
-                            return a[property] - b[property];
+                            return b[property] - a[property];
                         });
                     }
                     else {
-                        if (topN[2][property] < tableData[k][property]) {
-                            topN[2] = tableData[k];
+                        if (topN[4][property] < tableData[k][property]) {
+                            topN[4] = tableData[k];
                             topN = topN.sort(function(a, b) {
-                                return a[property] - b[property];
+                                return b[property] - a[property];
                             });
                         }
                     }

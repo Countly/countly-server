@@ -279,6 +279,11 @@ var TechnologyHomeWidget = countlyVue.views.create({
     data: function() {
         return {
             dataBlocks: [],
+            headerData: {
+                label: CV.i18n("sidebar.analytics.technology"),
+                description: CV.i18n("sidebar.analytics.technology-description"),
+                linkTo: {"label": CV.i18n('devices.go-to-technology'), "href": "#/analytics/technology/devices-and-types"}
+            }
         };
     },
     beforeCreate: function() {
@@ -540,11 +545,9 @@ countlyVue.container.registerData("/home/widgets", {
     _id: "technology-dashboard-widget",
     permission: "core",
     label: CV.i18n('sidebar.analytics.technology'),
-    description: CV.i18n('sidebar.analytics.technology-description'),
     enabled: {"default": true}, //object. For each type set if by default enabled
     available: {"default": true}, //object. default - for all app types. For other as specified.
     order: 6, //sorted by ascending
     placeBeforeDatePicker: false,
     component: TechnologyHomeWidget,
-    linkTo: {"label": CV.i18n('devices.go-to-technology'), "href": "#/analytics/technology/devices-and-types"}
 });

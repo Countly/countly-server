@@ -610,7 +610,12 @@
         data: function() {
             return {
                 dataBlocks: [],
-                isLoading: true
+                isLoading: true,
+                headerData: {
+                    label: CV.i18n("views.title"),
+                    description: CV.i18n("views.title-desc"),
+                    linkTo: {"label": CV.i18n('views.go-to-views'), "href": "#/analytics/views"},
+                }
             };
         },
         mounted: function() {
@@ -726,11 +731,9 @@
         _id: "views-dashboard-widget",
         label: CV.i18n('views.title'),
         permission: FEATURE_NAME,
-        description: CV.i18n('views.title-desc'),
         enabled: {"default": true}, //object. For each type set if by default enabled
         available: {"default": true}, //object. default - for all app types. For other as specified.
         placeBeforeDatePicker: false,
-        linkTo: {"label": CV.i18n('views.go-to-views'), "href": "#/analytics/views"},
         width: 6,
         order: 4,
         component: ViewsHomeWidget
