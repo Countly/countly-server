@@ -919,7 +919,7 @@
                             <slot name="subTitle">\
                                 <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span v-html="subTitle"></span></div>\
                             </slot>\
-                            <slot name="action" v-if="hasAction">\
+                            <slot name="action" v-if="hasCreateRight && hasAction">\
                                 <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
                             </slot>\
                         </div>\
@@ -932,7 +932,8 @@
             subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String },
             actionTitle: { default: "Create", type: String },
             actionFunc: { default: null, type: Function },
-            hasAction: {default: false, type: Boolean}
+            hasAction: {default: false, type: Boolean},
+            hasCreateRight: { default: true, type: Boolean }
         },
         data: function() {
             return {};
