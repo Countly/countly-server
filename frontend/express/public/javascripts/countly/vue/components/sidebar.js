@@ -417,6 +417,7 @@
                         return false;
                     });
 
+                    this.$emit("management-menu-ready", menu);
                     return menu;
                 },
                 selectedMenuItem: function() {
@@ -552,28 +553,8 @@
                     showMainMenu: true,
                     redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID,
                     onOptionsMenu: false,
-                    onMainMenu: false
-                };
-            },
-            computed: {
-                components: function() {
-                    var menuOptions = [];
-
-                    var externalMainMenuOptions = this.externalMainMenuOptions;
-                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
-
-                    if (externalMainMenuOptions && externalMainMenuOptions.length) {
-                        menuOptions = menuOptions.concat(externalMainMenuOptions);
-                    }
-
-                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
-                        menuOptions = menuOptions.concat(externalOtherMenuOptions);
-                    }
-
-                    return menuOptions;
-                },
-                mainMenuOptions: function() {
-                    var menuOptions = [
+                    onMainMenu: false,
+                    defaultMainMenuOptions: [
                         {
                             name: "app",
                             icon: "cly-icon-sidebar-app",
@@ -601,7 +582,28 @@
                             noSelect: true,
                             tooltip: "Report Manager"
                         }
-                    ];
+                    ]
+                };
+            },
+            computed: {
+                components: function() {
+                    var menuOptions = [];
+
+                    var externalMainMenuOptions = this.externalMainMenuOptions;
+                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
+
+                    if (externalMainMenuOptions && externalMainMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalMainMenuOptions);
+                    }
+
+                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalOtherMenuOptions);
+                    }
+
+                    return menuOptions;
+                },
+                mainMenuOptions: function() {
+                    var menuOptions = JSON.parse(JSON.stringify(this.defaultMainMenuOptions));
 
                     var externalMainMenuOptions = this.externalMainMenuOptions;
 
@@ -805,6 +807,20 @@
                                 }
                             }, 0);
                         });
+                    });
+                },
+                onManagementMenuReady: function(items) {
+                    this.defaultMainMenuOptions = this.defaultMainMenuOptions.map(function(menu) {
+                        if (menu.name === "management") {
+                            if (items.length) {
+                                delete menu.hide;
+                            }
+                            else {
+                                menu.hide = true;
+                            }
+                        }
+
+                        return menu;
                     });
                 }
             },
