@@ -43,12 +43,6 @@ RUN useradd -r -M -U -d /opt/countly -s /bin/false countly && \
     apt-get update && \
     apt-get -y install nodejs mongodb-org-shell mongodb-org-tools && \
     \
-    # nghttp2
-    (git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 --single-branch --branch=v1.30.0 --depth=1 && \
-        cd /tmp/nghttp2 && \
-        export CFLAGS="-g -O2 -fPIC" && export CPPFLAGS="-fPIC" && autoreconf -i && automake && autoconf && \
-        ./configure --disable-examples --disable-app && make && make install && export CC="" && export CXX="") && \
-    \
     # configs
     cp ./bin/config/nginx.server.conf /etc/nginx/sites-enabled/default && \
     cp ./bin/config/nginx.conf /etc/nginx/nginx.conf && \

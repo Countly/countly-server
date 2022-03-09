@@ -145,9 +145,6 @@ if [ ! -f "/etc/timezone" ]; then
     echo "Etc/UTC" > /etc/timezone
 fi
 
-#install nghttp2
-bash "$DIR/scripts/install.nghttp2.sh"
-
 #install plugins
 node "$DIR/scripts/install_plugins"
 
