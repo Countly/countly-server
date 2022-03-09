@@ -817,6 +817,7 @@ var AppRouter = Backbone.Router.extend({
             url: node.url,
             icon: node.icon,
             permission: node.permission,
+            tabsPath: node.tabsPath,
             node: node
             /*
                 Following secondary params are simply passed to registry, but not directly used for now:
@@ -951,6 +952,7 @@ var AppRouter = Backbone.Router.extend({
             title: node.text,
             url: node.url,
             permission: node.permission,
+            tabsPath: node.tabsPath,
             node: node
             /*
                 Following secondary params are simply passed to registry, but not directly used for now:
