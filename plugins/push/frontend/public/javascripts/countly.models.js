@@ -647,6 +647,7 @@
             });
         },
         sendToTestUsers: function(dto) {
+            // return Promise.resolve({"result": {"total": 1, "processed": 1, "errored": 0, sent: 1, "next": "2022-03-09T10:28:56.000Z", "subs": {"i": {"total": 1, "errored": 1, "errors": {"nomsg": 1}, "next": "2022-03-09T10:28:56.000Z", "subs": {"en": {"total": 1, "errored": 1, "errors": {"nomsg": 1}}}}}}});
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "POST",
@@ -2346,7 +2347,35 @@
                 console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
-            return countlyPushNotification.api.sendToTestUsers(dto);
+            return new Promise(function(resolve, reject) {
+                countlyPushNotification.api.sendToTestUsers(dto)
+                    .then(function(testDto) {
+                        if (!testDto.result) {
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            console.error(testDto);
+                            return;
+                        }
+                        if (testDto.result.errors) {
+                            reject(new Error(JSON.stringify(testDto.result.errors)));
+                            console.error(testDto);
+                            return;
+                        }
+                        if (testDto.result.errored) {
+                            reject(new Error('Error occurred when sending push notification to test users'));
+                            console.error(testDto);
+                            return;
+                        }
+                        if (testDto.result.sent > 0) {
+                            resolve();
+                            return;
+                        }
+                        reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        console.error(testDto);
+                    }).catch(function(error) {
+                        console.error(error);
+                        reject(error);
+                    });
+            });
         },
         resend: function(model, options) {
             var dto = null;
