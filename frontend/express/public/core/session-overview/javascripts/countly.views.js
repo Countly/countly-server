@@ -101,6 +101,7 @@ var SessionHomeWidget = countlyVue.views.create({
             chooseProperties: this.calculateProperties(),
             chosenProperty: "t",
             sessionGraphTab: "t",
+            isLoading: true,
             headerData: {
                 label: CV.i18n("dashboard.audience"),
                 description: CV.i18n("session-overview.description"),

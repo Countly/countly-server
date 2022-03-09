@@ -279,6 +279,7 @@ var TechnologyHomeWidget = countlyVue.views.create({
     data: function() {
         return {
             dataBlocks: [],
+            isLoading: true,
             headerData: {
                 label: CV.i18n("sidebar.analytics.technology"),
                 description: CV.i18n("sidebar.analytics.technology-description"),
