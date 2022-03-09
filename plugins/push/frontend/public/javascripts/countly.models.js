@@ -647,7 +647,6 @@
             });
         },
         sendToTestUsers: function(dto) {
-            // return Promise.resolve({"result": {"total": 1, "processed": 1, "errored": 0, sent: 1, "next": "2022-03-09T10:28:56.000Z", "subs": {"i": {"total": 1, "errored": 1, "errors": {"nomsg": 1}, "next": "2022-03-09T10:28:56.000Z", "subs": {"en": {"total": 1, "errored": 1, "errors": {"nomsg": 1}}}}}}});
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "POST",
@@ -655,11 +654,7 @@
                     data: JSON.stringify(dto),
                     contentType: "application/json",
                     success: function(response) {
-                        if (response.error) {
-                            reject(new Error(response.error));
-                            return;
-                        }
-                        resolve();
+                        resolve(response);
                     },
                     error: function(error) {
                         console.error(error);
