@@ -315,8 +315,8 @@
             return {
                 selectedPlatform: this.findInitialSelectedPlatform(),
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
-                MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
-                appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name')
+                appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name'),
+                videoRegex: new RegExp('video/*'),
             };
         },
         props: {
@@ -392,6 +392,9 @@
                     return countlyPushNotification.service.PlatformEnum.ANDROID;
                 }
                 return null;
+            },
+            isVideo: function(mime) {
+                return this.videoRegex.test(mime);
             },
             setSelectedPlatform: function(value) {
                 this.selectedPlatform = value;
