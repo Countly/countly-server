@@ -508,14 +508,24 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
 
     var apps = [];
     var userApps = module.exports.getUserApps(params.member);
-
-    //use whatever user has permission for
-    apps = userApps || [];
-    // also check for app based restrictions
-    if (params.member.app_restrict) {
-        for (var app_id in params.member.app_restrict) {
-            if (params.member.app_restrict[app_id].indexOf("#/manage/db") !== -1 && apps.indexOf(app_id) !== -1) {
-                apps.splice(apps.indexOf(app_id), 1);
+    if (params.qstring.app_id) {
+        //if app_id was provided, we need to check if user has access for this app_id
+        // is user_of array contain current app_id?
+        var isUserOf = userApps.indexOf(params.qstring.app_id) !== -1;
+        var isRestricted = params.member.app_restrict && params.member.app_restrict[params.qstring.app_id] && params.member.app_restrict[params.qstring.app_id].indexOf("#/manage/db");
+        if (params.member.global_admin || isUserOf && !isRestricted) {
+            apps = [params.qstring.app_id];
+        }
+    }
+    else {
+        //use whatever user has permission for
+        apps = userApps || [];
+        // also check for app based restrictions
+        if (params.member.app_restrict) {
+            for (var app_id in params.member.app_restrict) {
+                if (params.member.app_restrict[app_id].indexOf("#/manage/db") !== -1 && apps.indexOf(app_id) !== -1) {
+                    apps.splice(apps.indexOf(app_id), 1);
+                }
             }
         }
     }
