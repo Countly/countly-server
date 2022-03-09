@@ -138,6 +138,7 @@
 								var prepareEmail = $('#remember-password-email').val();
 								prepareEmail = prepareEmail.replace(/(\w{1})[\w.-]+@([\w.]+\w)/, "$1***@$2");
 								var emailmessage = `An email has been sent to your email address, ${prepareEmail}. Follow the directions in the email to reset your password.`
+								$('.cly-vue-notification__alert-box').hide();
 								$("#forgot-form").hide();
 								$("#header").before('<img src="/images/icons/checked.svg" style="margin:auto;display:flex;"/>');
 								$('#header').css("margin-top","24px");
