@@ -303,7 +303,7 @@ var TechnologyHomeWidget = countlyVue.views.create({
         });
     },
     methods: {
-        refresh: function() {
+        refresh: function(force) {
             var self = this;
             if (force) {
                 self.isLoading = true;
