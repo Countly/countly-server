@@ -598,7 +598,7 @@
         this.getFeedbackEvents = function() {
             var events = [];
             events.push(this.getRatingEvent());
-            if (countlyGlobal.plugins.indexOf("surveys") !== -1) {
+            if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
                 events.push(this.getNPSEvent());
                 events.push(this.getSurveyEvent());
             }
@@ -1273,7 +1273,7 @@
         }
 
         generateRatingWidgets(function() {
-            if (countlyGlobal.plugins.indexOf("surveys") !== -1) {
+            if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
                 generateNPSWidgets(function() {
                     generateSurveyWidgets(done);
                 });
@@ -1630,7 +1630,7 @@
             });
         }
 
-        if (countlyGlobal.plugins.indexOf("star-rating") !== -1) {
+        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
             generateWidgets(function() {});
         }
     };
