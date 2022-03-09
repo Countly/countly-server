@@ -118,60 +118,52 @@ class Splitter extends Base {
      * @param {array} chunks Array of chunks
      */
     async do_writev(chunks) {
+        this.log.d('do_writev', chunks.length);
         chunks = chunks.map(c => c.chunk);
 
-        let results = [],
-            total = 0;
+        for (let i = 0; i < chunks.length; i++) {
+            let {payload, length, frame} = chunks[i];
 
-        try {
-            for (let i = 0; i < chunks.length; i++) {
-                let {payload, length, frame} = chunks[i];
-
-                if (!(frame & FRAME.SEND)) {
-                    continue;
+            this.log.d('do_writev', i, frame, payload);
+            if (!(frame & FRAME.SEND)) {
+                if (frame & FRAME.CMD) {
+                    this.push(chunks[i]);
                 }
-                // console.log(length, payload);
+                continue;
+            }
+            console.log(frame, length, payload);
 
-                if (payload.length === 1) {
-                    await this.send(payload, length);
-                }
-                else {
-                    let p,
-                        one = Math.floor(length / payload.length),
-                        sent = 0,
-                        first = 0,
-                        hash = payload[0].h,
-                        mid = payload[0].n;
+            if (payload.length === 1) {
+                await this.send(payload, length);
+                this.log.d('do_writev sent one', i, frame, payload);
+            }
+            else {
+                let p,
+                    one = Math.floor(length / payload.length),
+                    sent = 0,
+                    first = 0,
+                    hash = payload[0].h,
+                    mid = payload[0].n;
 
-                    for (p = first + 1; p < payload.length; p++) {
-                        if (!mid || payload[p].n !== mid || payload[p].h !== hash) {
-                            let len = p === payload.length - 1 ? length - sent : (p - first) * one,
-                                res = await this.send(payload, first, p, len);
-                            results.push(res[0]);
-                            total += len;
-                            sent += len;
+                for (p = first + 1; p < payload.length; p++) {
+                    if (!mid || payload[p].n !== mid || payload[p].h !== hash) {
+                        let len = p === payload.length - 1 ? length - sent : (p - first) * one;
+                        await this.send(payload, first, p, len);
+                        this.log.d('do_writev sent', i, frame, payload);
+                        // total += len;
+                        sent += len;
 
-                            first = p;
-                            hash = payload[p].h;
-                            mid = payload[p].n;
-                        }
-                    }
-
-                    if (first < payload.length - 1) {
-                        let res = await this.send(payload, first, payload.length, length - sent);
-                        results.push(res[0]);
-                        total += length - sent;
+                        first = p;
+                        hash = payload[p].h;
+                        mid = payload[p].n;
                     }
                 }
-            }
-            this.send_results(results.flat(1), total);
-        }
-        catch (error) {
-            if (results.length) {
-                this.send_results(results.flat(1), total);
-            }
 
-            throw error;
+                if (first < payload.length - 1) {
+                    await this.send(payload, first, payload.length, length - sent);
+                    // total += length - sent;
+                }
+            }
         }
     }
 

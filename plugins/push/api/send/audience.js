@@ -723,7 +723,7 @@ class Popper extends PusherPopper {
                 state: State.Done | State.Error,
                 'result.error': new PushError(msg).serialize()
             }
-        });
+        }, () => {});
         return deleted;
     }
 

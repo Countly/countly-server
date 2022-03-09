@@ -1,5 +1,5 @@
 const { Transform } = require('stream'),
-    { FRAME, frame_type, encode, decode } = require('../../send/proto'),
+    { FRAME, frame_type, encode, decode, FRAME_NAME } = require('../../send/proto'),
     { ERROR, PushError } = require('../../send/data/error');
 
 /**
@@ -22,6 +22,7 @@ class SynFlushTransform extends Transform {
         this.listener = frame => {
             let flush, syn;
             if (this.readableObjectMode) {
+                this.log.d('in obj syn', FRAME_NAME[frame.frame]);
                 if (frame.flush) {
                     flush = true;
                 }
@@ -31,6 +32,7 @@ class SynFlushTransform extends Transform {
             }
             else {
                 let type = frame_type(frame);
+                this.log.d('in syn', FRAME_NAME[type]);
                 if (type & FRAME.FLUSH) {
                     flush = true;
                 }
@@ -107,6 +109,7 @@ class SynFlushTransform extends Transform {
      * @returns {number} a numerical id of syn frame
      */
     flushIt() {
+        this.log.d('flushIt');
         if (this.writableObjectMode) {
             this.write({frame: FRAME.FLUSH, payload: this.syn, length: 0});
         }

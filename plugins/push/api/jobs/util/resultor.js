@@ -1,6 +1,6 @@
-const { FRAME } = require('../../send/proto'),
+const { FRAME, FRAME_NAME } = require('../../send/proto'),
     { SynFlushTransform } = require('./syn'),
-    { ERROR, Result, TriggerKind } = require('../../send/data');
+    { ERROR, Result, TriggerKind, State, Status } = require('../../send/data');
 
 /**
  * Stream responsible for handling sending results:
@@ -75,6 +75,7 @@ class Resultor extends SynFlushTransform {
      */
     _transform(chunk, encoding, callback) {
         let {frame, payload: results} = chunk;
+        this.log.d('in resultor _transform', FRAME_NAME[frame]);
         if (frame & FRAME.CMD) {
             if (frame & (FRAME.FLUSH | FRAME.SYN)) {
                 this.do_flush(() => {
@@ -112,9 +113,12 @@ class Resultor extends SynFlushTransform {
                         msg.result.processed++;
                         msg.result.recordError(results.message, 1);
                         rp.recordError(results.message, 1);
+                        rp.processed++;
                         rl.recordError(results.message, 1);
+                        rl.processed++;
                         delete this.data.pushes[id];
                         this.toDelete.push(id);
+                        this.data.decSending(m);
                     });
                     this.count += arr.length;
                 });
@@ -134,6 +138,8 @@ class Resultor extends SynFlushTransform {
                     if (!p) { // 2 or more resultors on one pool
                         return;
                     }
+
+                    this.data.decSending(p.m);
 
                     let m = this.data.message(p.m);
                     m.result.sent++;
@@ -199,6 +205,7 @@ class Resultor extends SynFlushTransform {
                 let m = this.data.message(mid);
                 m.result.processed[m] += mids[mid];
                 m.result.pushError(error);
+                this.data.decSending(mid);
             }
         }
 
@@ -216,13 +223,57 @@ class Resultor extends SynFlushTransform {
      * @param {function} callback callback
      */
     do_flush(callback) {
-        this.log.d('Flushing');
+        this.log.d('in resultor do_flush');
         this.count = 0;
 
         let updates = {},
             promises = this.data.messages().map(m => {
-                console.log('in resultor', m.id, m.result.json);
-                m.save();
+                if (this.data.isSending(m.id)) {
+                    this.log.d('message %s is still in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
+                    return m.save();
+                }
+                this.log.d('message %s is done processing', m.id);
+                let state, status, error;
+                if (m.triggerAutoOrApi()) {
+                    if (m.result.total === m.result.errored) {
+                        state = State.Created | State.Error | State.Done;
+                        status = Status.Stopped;
+                        error = 'Failed to send all notifications';
+                    }
+                    else {
+                        state = m.state & ~State.Streaming;
+                        status = Status.Scheduled;
+                    }
+                }
+                else {
+                    if (m.result.total === m.result.errored) {
+                        state = State.Created | State.Error | State.Done;
+                        status = Status.Failed;
+                        error = 'Failed to send all notifications';
+                    }
+                    else if (m.result.total === m.result.processed) {
+                        state = State.Created | State.Done;
+                        status = Status.Sent;
+                    }
+                    else {
+                        state = m.state & ~State.Streaming;
+                        status = Status.Scheduled;
+                    }
+                }
+
+                if (m.result.state !== state) {
+                    this.log.d('saving message', m.id, m.result.json, 'state', state, 'status', status, 'error', error);
+                    m.state = state;
+                    m.status = status;
+                    if (error) {
+                        m.result.error = error;
+                    }
+                    return m.save();
+                }
+                else {
+                    this.log.d('message %s is in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
+                    return m.save();
+                }
             });
 
         if (this.toDelete.length) {
@@ -318,7 +369,7 @@ class Resultor extends SynFlushTransform {
 
                         try {
                             this.log.d('Recording %d data points', sent);
-                            require('../../../server-stats/api/parts/stats.js').updateDataPoints(common.writeBatcher, this.app._id, 0, {"p": sent});
+                            require('../../../../server-stats/api/parts/stats').updateDataPoints(common.writeBatcher, this.app._id, 0, {"p": sent});
                         }
                         catch (e) {
                             this.log.d('Error during dp recording', e);
@@ -349,12 +400,12 @@ class Resultor extends SynFlushTransform {
         }
 
         Promise.all(promises).then(() => {
-            this.log.d('Flushed');
+            this.log.d('do_flush done');
             if (callback) {
                 callback();
             }
         }, err => {
-            this.log.e('Flushing error', err);
+            this.log.e('do_flush error', err);
             if (callback) {
                 callback(err);
             }
@@ -623,12 +674,14 @@ class Resultor extends SynFlushTransform {
      * @param {function} callback callback
      */
     _flush(callback) {
-        this.log.d('_flush');
+        this.log.d('in resultor _flush');
         this.do_flush(err => {
             if (err) {
+                this.log.d('in resultor _flush err');
                 callback(err);
             }
             else {
+                this.log.d('in resultor _flush syn');
                 this.syn(callback);
             }
         });
