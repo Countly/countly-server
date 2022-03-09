@@ -146,11 +146,6 @@
                 isLocationSet: false,
                 multipleLocalizations: false,
                 urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
-                mediaMetadata: {
-                    all: null,
-                    ios: null,
-                    android: null
-                },
                 pushNotificationUnderEdit: JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type))),
                 currentNumberOfUsers: 0,
             };
@@ -260,15 +255,9 @@
             },
             previewMessageMedia: function() {
                 var result = {};
-                if (this.mediaMetadata[this.PlatformEnum.ANDROID] && this.settings[this.PlatformEnum.ANDROID].isMediaURLEnabled) {
-                    result[this.PlatformEnum.ANDROID] = {url: this.pushNotificationUnderEdit.settings.android.mediaURL, type: this.MediaTypeEnum.IMAGE};
-                }
-                if (this.mediaMetadata[this.PlatformEnum.IOS] && this.settings[this.PlatformEnum.IOS].isMediaURLEnabled) {
-                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.settings.ios.mediaURL, type: this.mediaMetadata.ios.type};
-                }
-                if (this.mediaMetadata[this.PlatformEnum.ALL]) {
-                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE};
-                }
+                result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.settings[this.PlatformEnum.ALL].mediaURL, type: this.pushNotificationUnderEdit.settings[this.PlatformEnum.ALL].mediaMime };
+                result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL, type: this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaMime };
+                result[this.PlatformEnum.ANDROID] = {url: this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaURL, type: this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaMime};
                 return result;
             },
             previewMessageTitle: function() {
@@ -871,23 +860,15 @@
                 if (isValid) {
                     this.fetchMediaMetadata(platform, this.pushNotificationUnderEdit.settings[platform].mediaURL);
                 }
-                else {
-                    this.mediaMetadata[platform] = null;
-                }
             },
-            setMediaMime: function(platform, value) {
-                this.pushNotificationUnderEdit.settings[platform].mediaMime = value;
-            },
-            setMediaMetadata: function(platform, metadata) {
-                this.mediaMetadata[platform] = metadata;
+            setMediaMime: function(platform, mime) {
+                this.pushNotificationUnderEdit.settings[platform].mediaMime = mime;
             },
             fetchMediaMetadata: function(platform, url) {
                 var self = this;
                 countlyPushNotification.service.fetchMediaMetadata(url).then(function(mediaMetadata) {
-                    self.setMediaMetadata(platform, mediaMetadata);
                     self.setMediaMime(platform, mediaMetadata.mime);
                 }).catch(function() {
-                    self.setMediaMetadata(platform, {});
                     self.setMediaMime(platform, "");
                 });
             },
@@ -2593,6 +2574,10 @@
 
         if (app.configurationsView) {
             app.configurationsView.registerLabel("push", "push-notification.title");
+            app.configurationsView.registerLabel("push.proxyhost", "push-notification.proxy-host");
+            app.configurationsView.registerLabel("push.proxypass", "push-notification.proxy-password");
+            app.configurationsView.registerLabel("push.proxyport", "push-notification.proxy-port");
+            app.configurationsView.registerLabel("push.proxyuser", "push-notification.proxy-user");
         }
     });
 }());
