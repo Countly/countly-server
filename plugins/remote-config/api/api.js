@@ -708,14 +708,16 @@ plugins.setConfigs("remote-config", {
                     },
                 });
             });
-            common.outDb.collection(collectionName).bulkWrite(bulkArray, function(error) {
-                if (error) {
-                    log.w("Error while bulk write of updating parameters count", error);
-                }
-                else {
-                    plugins.dispatch("/systemlogs", {params: params, action: "rc_parameters_edited", data: { parameters: parameters }});
-                }
-            });
+            if (bulkArray.length > 0) {
+                common.outDb.collection(collectionName).bulkWrite(bulkArray, function(error) {
+                    if (error) {
+                        log.w("Error while bulk write of updating parameters count", error);
+                    }
+                    else {
+                        plugins.dispatch("/systemlogs", {params: params, action: "rc_parameters_edited", data: { parameters: parameters }});
+                    }
+                });
+            }
         }
         catch (e) {
             log.w("Error while updating parameters count", e);
