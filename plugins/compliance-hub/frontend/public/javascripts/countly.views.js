@@ -1,7 +1,9 @@
-/*global $, CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, countlyAuth */
+/*global $, CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, CountlyHelpers, countlyGlobal, countlyAuth */
 (function() {
+    var FEATURE_NAME = "compliance_hub";
     var UserView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/user.html"),
+        mixins: [countlyVue.mixins.auth(FEATURE_NAME)],
         data: function() {
             return {
                 userTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyConsentManager", "userDataResource"),
@@ -9,6 +11,74 @@
         },
         beforeCreate: function() {
             this.$store.dispatch("countlyConsentManager/fetchUserDataResource");
+        },
+        methods: {
+            switchToConsentHistory: function(uid) {
+                window.location.hash = "#/manage/compliance/history/" + uid;
+            },
+            deleteUserData: function(uid) {
+                var self = this;
+                CountlyHelpers.confirm(this.i18n("app-users.delete-userdata-confirm"), "popStyleGreen", function(result) {
+                    if (!result) {
+                        return true;
+                    }
+                    countlyConsentManager.service.deleteUserdata(JSON.stringify({ uid: uid }), function(error) {
+                        if (error) {
+                            CountlyHelpers.alert(error, "red");
+                        }
+                        else {
+                            CountlyHelpers.notify({ type: "ok", title: this.i18n("common.success"), message: this.i18n("app-users.userdata-deleted"), sticky: false, clearAll: true });
+                            self.$store.dispatch("countlyConsentManager/fetchUserDataResource");
+                        }
+                    });
+                }, [this.i18n("app-users.no-dont-purge"), this.i18n("app-users.yes-purge-data")], { title: this.i18n("app-users.purge-confirm-title"), image: "purge-user-data" });
+            },
+            exportUserData: function(uid) {
+                var self = this;
+                countlyConsentManager.service.exportUser(JSON.stringify({ uid: uid }), function(error, export_id, task_id) {
+                    self.$store.dispatch("countlyConsentManager/fetchUserDataResource");
+                    if (error) {
+                        CountlyHelpers.alert(error, "red");
+                    }
+                    else if (export_id) {
+                        CountlyHelpers.notify({
+                            type: "ok",
+                            title: this.i18n("common.success"),
+                            message: this.i18n("app-users.export-finished"),
+                            info: this.i18n("consent.export-finished-click"),
+                            sticky: false,
+                            clearAll: true,
+                            onClick: function() {
+                                var win = window.open(countlyCommon.API_PARTS.data.r + "/app_users/download/" + export_id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID, '_blank');
+                                win.focus();
+                            }
+                        });
+                    }
+                    else if (task_id) {
+                        CountlyHelpers.notify({ type: "ok", title: this.i18n("common.success"), message: this.i18n("app-users.export-started"), sticky: false, clearAll: false });
+                    }
+                    else {
+                        CountlyHelpers.alert(this.i18n("app-users.export-failed"), "red");
+                    }
+                });
+            },
+            deleteExport: function(uid) {
+                var self = this;
+                countlyConsentManager.service.deleteExport(uid, function(error) {
+                    self.$store.dispatch("countlyConsentManager/fetchUserDataResource");
+                    if (error) {
+                        CountlyHelpers.alert(error, "red");
+                    }
+                    else {
+                        CountlyHelpers.notify({ type: "ok", title: this.i18n("common.success"), message: this.i18n("app-users.export-deleted"), sticky: false, clearAll: true });
+                    }
+                });
+            },
+            downloadExportedData: function(uid) {
+                var win = window.open(countlyCommon.API_PARTS.data.r + "/app_users/download/appUser_" + countlyCommon.ACTIVE_APP_ID + "_" + uid + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID, '_blank');
+                win.focus();
+            }
+
         }
     });
     var ConsentView = countlyVue.views.create({
@@ -86,6 +156,7 @@
             };
         },
         beforeCreate: function() {
+            this.$store.dispatch("countlyConsentManager/uid", this.$route.params.uid);
             this.$store.dispatch("countlyConsentManager/fetchConsentHistoryResource");
         },
         computed: {
@@ -232,7 +303,7 @@
                     self.$store.dispatch("countlyConsentManager/_exportDP", payload);
                     self.$store.dispatch("countlyConsentManager/_purgeDP");
                     self.$store.dispatch("countlyConsentManager/_ePData");
-                    this.$store.dispatch("countlyConsentManager/fetchExportHistoryDataResource");
+                    self.$store.dispatch("countlyConsentManager/fetchExportHistoryDataResource");
 
                 });
             },
@@ -512,9 +583,9 @@
                 },
                 {
                     title: "Consent History",
-                    name: "consent/history",
+                    name: "history",
                     component: ConsentView,
-                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/consent/history"
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/history"
                 }
             ];
 
@@ -588,6 +659,15 @@
         var renderedView = getMainView();
         var params = {
             tab: tab
+        };
+        renderedView.params = params;
+        this.renderWhenReady(renderedView);
+    });
+    app.route("/manage/compliance/*tab/*uid", 'compliance-tab-uid', function(tab, uid) {
+        var renderedView = getMainView();
+        var params = {
+            tab: tab,
+            uid: uid
         };
         renderedView.params = params;
         this.renderWhenReady(renderedView);
