@@ -279,6 +279,7 @@ var TechnologyHomeWidget = countlyVue.views.create({
     data: function() {
         return {
             dataBlocks: [],
+            isLoading: true,
             headerData: {
                 label: CV.i18n("sidebar.analytics.technology"),
                 description: CV.i18n("sidebar.analytics.technology-description"),
@@ -298,13 +299,18 @@ var TechnologyHomeWidget = countlyVue.views.create({
         var self = this;
         this.$store.dispatch('countlyDevicesAndTypes/fetchHomeDashboard').then(function() {
             self.dataBlocks = self.calculateAllData();
+            self.isLoading = false;
         });
     },
     methods: {
-        refresh: function() {
+        refresh: function(force) {
             var self = this;
+            if (force) {
+                self.isLoading = true;
+            }
             this.$store.dispatch('countlyDevicesAndTypes/fetchHomeDashboard').then(function() {
                 self.dataBlocks = self.calculateAllData();
+                self.isLoading = false;
             });
         },
         calculateAllData: function() {
