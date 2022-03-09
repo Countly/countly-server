@@ -138,7 +138,7 @@
 								$('#message').html($.i18n.map['forgot.result']);
 								var prepareEmail = $('#remember-password-email').val();
 								prepareEmail = prepareEmail.replace(/(\w{1})[\w.-]+@([\w.]+\w)/, "$1***@$2");
-								var emailmessage = $.i18n.map['forgot.sent-email'] + " " + prepareEmail + ". " + $.i18n.map['forgot.sent-email-follow']
+								var emailmessage = $.i18n.prop("forgot.sent-email",prepareEmail);
 								$('.cly-vue-notification__alert-box').hide();
 								$("#forgot-form").hide();
 								$('#checked').css('display','flex');
