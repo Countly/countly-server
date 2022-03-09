@@ -1,4 +1,4 @@
-/*global countlyCommon,CountlyHelpers, jQuery, CV, countlyGlobal, countlyVue */
+/*global countlyCommon,CountlyHelpers, jQuery, CV, countlyGlobal, countlyVue, countlyTaskManager */
 
 (function(countlyConsentManager) {
     CountlyHelpers.createMetricModel(countlyConsentManager, {name: "consents", estOverrideMetric: "consents"}, jQuery);
@@ -24,37 +24,71 @@
 
             return obj;
         },
-        deleteUserdata: function(query) {
-            var apiQueryData = CV.$.ajax({
+        deleteUserdata: function(query, callback) {
+            CV.$.ajax({
                 type: "POST",
                 url: countlyCommon.API_PARTS.data.w + "/app_users/delete",
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "query": query
                 },
+                success: function(result) {
+                    callback(null, result);
+                },
+                error: function(xhr, status, error) {
+                    callback(error, null);
+                }
             });
-            return apiQueryData;
         },
-        deleteExport: function(eid) {
-            var apiQueryData = CV.$.ajax({
+        deleteExport: function(eid, callback) {
+            CV.$.ajax({
                 type: "POST",
                 url: countlyCommon.API_PARTS.data.w + "/app_users/deleteExport/appUser_" + countlyCommon.ACTIVE_APP_ID + "_" + eid,
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                 },
+                success: function(result) {
+                    callback(null, result);
+                },
+                error: function(xhr, status, error) {
+                    callback(error, null);
+                }
             });
-            return apiQueryData;
         },
-        exportUser: function(query) {
-            var apiQueryData = CV.$.ajax({
+        exportUser: function(query, callback) {
+            CV.$.ajax({
                 type: "POST",
                 url: countlyCommon.API_PARTS.data.w + "/app_users/export",
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "query": query
                 },
+                success: function(result) {
+                    var task_id = null;
+                    var fileid = null;
+                    if (result && result.result && result.result.task_id) {
+                        task_id = result.result.task_id;
+                        countlyTaskManager.monitor(task_id);
+                    }
+                    else if (result && result.result) {
+                        fileid = result.result;
+                    }
+                    callback(null, fileid, task_id);
+                },
+                error: function(xhr, status, error) {
+                    var filename = null;
+                    if (xhr && xhr.responseText && xhr.responseText !== "") {
+                        var ob = JSON.parse(xhr.responseText);
+                        if (ob.result && ob.result.message) {
+                            error = ob.result.message;
+                        }
+                        if (ob.result && ob.result.filename) {
+                            filename = ob.result.filename;
+                        }
+                    }
+                    callback(error, filename, null);
+                }
             });
-            return apiQueryData;
         },
         userData: function(data, path, type) {
             data.app_id = countlyCommon.ACTIVE_APP_ID;
@@ -132,6 +166,7 @@
         onRequest: function(context) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
+                period: countlyCommon.getPeriodForAjax()
             };
 
             return {
@@ -174,7 +209,13 @@
         onRequest: function(context) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
+                period: countlyCommon.getPeriodForAjax()
             };
+            if (context.rootState.countlyConsentManager.uid !== "") {
+                data.filter = JSON.stringify({
+                    "uid": context.rootState.countlyConsentManager.uid
+                });
+            }
 
             return {
                 type: "POST",
@@ -208,7 +249,7 @@
         onRequest: function(context, payload) {
             context.rootState.countlyConsentManager.isLoading = true;
             var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
+                app_id: countlyCommon.ACTIVE_APP_ID
             };
             if (payload.uid) {
                 return {
@@ -248,7 +289,8 @@
                     _consentDP: {},
                     _exportDP: {},
                     _bigNumberData: {},
-                    isLoading: false
+                    isLoading: false,
+                    uid: ''
                 };
             },
             getters: {},
@@ -258,6 +300,9 @@
         };
         _consentManagerDbModule.getters.isLoading = function(state) {
             return state.isLoading;
+        };
+        _consentManagerDbModule.getters.uid = function(state) {
+            return state.uid;
         };
         _consentManagerDbModule.getters._ePData = function(state) {
             return state._ePData;
@@ -293,6 +338,9 @@
         _consentManagerDbModule.mutations._bigNumberData = function(state, payload) {
             state._bigNumberData = payload;
             state._bigNumberData = Object.assign({}, state._bigNumberData, {});
+        };
+        _consentManagerDbModule.mutations.uid = function(state, payload) {
+            state.uid = payload;
         };
         _consentManagerDbModule.actions._ePData = function(context) {
             var data = countlyCommon.getDashboardData(countlyConsentManager.getDb(), ["e", "p"], [], {}, countlyConsentManager.service.clearObj);
@@ -349,6 +397,9 @@
         _consentManagerDbModule.actions._bigNumberData = function(context, payload) {
             var data = countlyCommon.getDashboardData(countlyConsentManager.getDb(), ["i", "o"], [], {}, countlyConsentManager.service.clearObj, payload.segment);
             return context.commit("_bigNumberData", data);
+        };
+        _consentManagerDbModule.actions.uid = function(context, payload) {
+            return context.commit("uid", payload);
         };
         var _module = {
             state: _consentManagerDbModule.state,
