@@ -299,13 +299,18 @@ var TechnologyHomeWidget = countlyVue.views.create({
         var self = this;
         this.$store.dispatch('countlyDevicesAndTypes/fetchHomeDashboard').then(function() {
             self.dataBlocks = self.calculateAllData();
+            self.isLoading = false;
         });
     },
     methods: {
         refresh: function() {
             var self = this;
+            if (force) {
+                self.isLoading = true;
+            }
             this.$store.dispatch('countlyDevicesAndTypes/fetchHomeDashboard').then(function() {
                 self.dataBlocks = self.calculateAllData();
+                self.isLoading = false;
             });
         },
         calculateAllData: function() {

@@ -111,30 +111,31 @@ var SessionHomeWidget = countlyVue.views.create({
     },
     mounted: function() {
         var self = this;
-        this.initialized = false;
         $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
             self.calculateAllData();
         });
     },
     methods: {
-        refresh: function() {
+        refresh: function(force) {
             var self = this;
+            if (force) {
+                this.isLoading = true;
+            }
             $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
                 self.calculateAllData();
-
             });
         },
         chartData: function(value) {
             return this.calculateSeries(value);
         },
         calculateAllData: function() {
-            this.initialized = true;
+            this.isLoading = false;
             this.chooseProperties = this.calculateProperties();
             this.lineOptions = this.calculateSeries();
         },
         calculateProperties: function() {
             var sessionData = countlySession.getSessionData();
-            if (!this.initialized) {
+            if (!sessionData || !sessionData.usage || !sessionData.usage['total-sessions']) {
                 sessionData = {"usage": {"totals-sessions": {}}};
             }
 
