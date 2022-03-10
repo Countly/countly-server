@@ -465,7 +465,6 @@
                     },
                     tooltip: {
                         appendToBody: false,
-                        renderMode: 'html',
                         confine: true,
                         show: true,
                         trigger: 'axis',
