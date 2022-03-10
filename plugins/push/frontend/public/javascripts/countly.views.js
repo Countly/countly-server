@@ -1690,7 +1690,7 @@
                 this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', false);
             },
             onGoToSent: function() {
-                var queryData = {message: {$in: ["609526bd23c8ba7ef0b1e099"]}};
+                var queryData = {message: {$in: [this.pushNotification._id]}};
                 CountlyHelpers.goTo({
                     url: '/users/qfilter/' + JSON.stringify(queryData),
                     from: "#/" + countlyCommon.ACTIVE_APP_ID + "/messaging/details/" + this.pushNotification._id,
@@ -1717,7 +1717,7 @@
             },
             onGoToErrored: function() {
                 var self = this;
-                var queryData = {message: {"$nin": ["609526bd23c8ba7ef0b1e099"]}};
+                var queryData = {message: {"$nin": [this.pushNotification._id]}};
                 var $in = [];
                 if (this.pushNotification.user) {
                     queryData.user = this.pushNotification.user;
