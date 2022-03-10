@@ -1671,6 +1671,11 @@
                 var content = [];
                 Object.keys(pushNotificationModel.message).forEach(function(localizationKey) {
                     var localeDto = {};
+                    if (!pushNotificationModel.localizations.some(function(item) {
+                        return item.value === localizationKey;
+                    })) {
+                        return;
+                    }
                     if (localizationKey !== DEFAULT_LOCALIZATION_VALUE) {
                         localeDto.la = localizationKey;
                     }
