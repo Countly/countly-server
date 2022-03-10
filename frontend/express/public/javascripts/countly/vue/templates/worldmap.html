@@ -46,7 +46,7 @@
                             </span>
                             <div class="bu-is-flex bu-is-align-items-baseline">
                                 <h2 class="bu-pr-2">
-                                    {{countryValue}}
+                                    {{formatNumberSafe(countryValue)}}
                                 </h2>
                                 <slot v-if="currentViewType === 'regions'" name="regions-info">
                                     <span class="text-medium">{{valueType}}</span>
