@@ -2351,12 +2351,12 @@
                             return;
                         }
                         if (testDto.result.errors) {
-                            reject(new Error(JSON.stringify(testDto.result.errors)));
+                            reject(new Error('Error sending push notificaiton to test users:' + JSON.stringify(testDto.result.errors)));
                             console.error(testDto);
                             return;
                         }
                         if (testDto.result.errored) {
-                            reject(new Error('Error occurred when sending push notification to test users'));
+                            reject(new Error('Error sending push notification to test users. Number of errors:' + testDto.result.errored));
                             console.error(testDto);
                             return;
                         }
