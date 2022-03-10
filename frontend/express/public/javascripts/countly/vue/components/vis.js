@@ -464,7 +464,9 @@
                         itemSize: 0
                     },
                     tooltip: {
-                        appendToBody: true,
+                        appendToBody: false,
+                        renderMode: 'html',
+                        confine: true,
                         show: true,
                         trigger: 'axis',
                         axisPointer: {
