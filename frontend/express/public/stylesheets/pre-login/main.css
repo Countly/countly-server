@@ -162,7 +162,16 @@ a:active { color:inherit; }
 	#login-button:hover { background-color: #2f9732; }
 	#login-button:active { }
     #forgot-form #login-button {}
-.back-button{padding: 10px 12px;text-align: center; font-size: 14px;color: #0166D6;margin-top: 24px;font-weight: 500;}    
+.back-button{padding: 10px 12px;text-align: center; font-size: 14px;color: #0166D6;margin-top: 24px;font-weight: 500;}
+.back-to-login {
+  width:250px !important;
+  margin:auto;
+  margin-top:32px !important;
+  text-align:center;
+  align-items:center;
+  display:grid;
+  height:17px !important;
+}
 .wrapper {
   position:relative;padding-top:86px;
 }

@@ -114,11 +114,16 @@
                         preparedDrawerEventObject.push(drawerEventObject);
                     }
 
+                    if (preparedDrawerUpObject.length > 1 && preparedDrawerUpObject[0].key === "") {
+                        preparedDrawerUpObject = preparedDrawerUpObject.slice(1);
+                    }
                     template.up = preparedDrawerUpObject;
+
                     if (preparedDrawerEventObject.length > 1 && preparedDrawerEventObject[0].eventName === "") {
                         preparedDrawerEventObject = preparedDrawerEventObject.slice(1);
                     }
                     template.events = preparedDrawerEventObject;
+
                     this.openDrawer("populatorTemplate", template);
                 }
                 else if (command === "delete") {

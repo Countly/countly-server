@@ -1,7 +1,7 @@
 <div v-bind:class="[componentId]">
 <clyd-home-widget-header :widget="headerData"></clyd-home-widget-header>
-	<div class="bu-columns bu-is-multiline bu-is-gapless technology-dashboard-widget technology-analytics-wrapper">
-		<div class="bu-column bu-is-6 " :key="idx" v-for="(item, idx) in dataBlocks" >
+	<div class="bu-columns bu-is-multiline bu-is-gapless technology-dashboard-widget technology-analytics-wrapper"  v-loading="isLoading">
+		<div class="bu-column bu-is-6 " :key="idx" v-for="(item, idx) in dataBlocks">
 			<cly-section class="bu-pt-2 bu-pb-2">
 					<div class="bu-level-left bu-p-5">
 						<span class="text-medium text-uppercase">{{item.title}}</span>
