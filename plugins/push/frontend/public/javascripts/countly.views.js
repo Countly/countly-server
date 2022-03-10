@@ -1677,9 +1677,63 @@
             getRemainingStackBar: function(value) {
                 return {data: [100 - value], itemStyle: {color: "#E2E4E8"}, silent: true};
             },
-
             onDrawerClose: function() {
                 this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', false);
+            },
+            onGoToSent: function() {
+                var queryData = {message: {$in: ["609526bd23c8ba7ef0b1e099"]}};
+                CountlyHelpers.goTo({
+                    url: '/users/qfilter/' + JSON.stringify(queryData),
+                    from: "#/" + countlyCommon.ACTIVE_APP_ID + "/messaging/details/" + this.pushNotification._id,
+                    title: CV.i18n("push-notification.back-to-push-notification-details")
+                });
+            },
+            onGoToActioned: function() {
+                var queryData = {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    event: "[CLY]_push_action",
+                    method: "segmentation_users",
+                    period: "month",
+                    bucket: "daily",
+                    projectionKey: "",
+                    queryObject: JSON.stringify({
+                        "sg.i": {"$in": [this.pushNotification._id]}
+                    })
+                };
+                CountlyHelpers.goTo({
+                    url: '/users/request/' + JSON.stringify(queryData),
+                    from: "#/" + countlyCommon.ACTIVE_APP_ID + "/messaging/details/" + this.pushNotification._id,
+                    title: CV.i18n("push-notification.back-to-push-notification-details")
+                });
+            },
+            onGoToErrored: function() {
+                var self = this;
+                var queryData = {message: {"$nin": ["609526bd23c8ba7ef0b1e099"]}};
+                var $in = [];
+                if (this.pushNotification.user) {
+                    queryData.user = this.pushNotification.user;
+                }
+                if (this.pushNotification.locations && this.pushNotification.locations.length) {
+                    queryData.geo = {"$in": this.pushNotification.locations};
+                }
+                if (this.pushNotification.cohorts && this.pushNotification.cohorts.length) {
+                    queryData.chr = {"$in": this.pushNotification.cohorts};
+                }
+                this.pushNotification.platforms.forEach(function(platform) {
+                    if (self.PlatformEnum.ANDROID === platform) {
+                        $in.push('tkap');
+                    }
+                    if (self.PlatformEnum.IOS === platform) {
+                        $in.push('tkip');
+                    }
+                });
+                queryData.push = {};
+                queryData.push.$in = $in;
+                CountlyHelpers.goTo({
+                    url: '/users/qfilter/' + JSON.stringify(queryData),
+                    from: "#/" + countlyCommon.ACTIVE_APP_ID + "/messaging/details/" + this.pushNotification._id,
+                    title: CV.i18n("push-notification.back-to-push-notification-details")
+                });
             }
         },
         components: {
