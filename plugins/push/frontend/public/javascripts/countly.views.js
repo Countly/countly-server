@@ -1511,6 +1511,15 @@
                     this.$store.dispatch("countlyPushNotification/details/onSetLocaleFilter", null);
                 }
             },
+            shouldShowGoToSentUrl: function() {
+                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.sent > 0;
+            },
+            shouldShowGoToErroredUrl: function() {
+                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.errored > 0;
+            },
+            shouldShowGoToActionedUrl: function() {
+                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.actioned > 0;
+            }
         },
         watch: {
             isDrawerOpen: function(value) {
