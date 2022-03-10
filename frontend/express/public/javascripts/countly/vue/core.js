@@ -119,6 +119,7 @@
             parseTimeAgo: countlyCommon.formatTimeAgoText,
             formatTimeAgo: countlyCommon.formatTimeAgo,
             formatNumber: countlyCommon.formatNumber,
+            formatNumberSafe: countlyCommon.formatNumberSafe,
             getShortNumber: countlyCommon.getShortNumber
         }
     };

@@ -2145,6 +2145,11 @@
         },
         mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.i18n],
         props: {
+            navigationLoading: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
             showNavigation: {
                 type: Boolean,
                 default: true,
