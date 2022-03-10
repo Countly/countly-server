@@ -146,6 +146,8 @@ plugins.register('/i', async ob => {
                     }
 
                     let p = event.segmentation.p,
+                        a = msg.triggers.filter(tr => tr.kind === TriggerKind.Cohort || tr.kind === TriggerKind.Event).length > 0,
+                        t = msg.triggers.filter(tr => tr.kind === TriggerKind.API).length > 0,
                         upd = updates[msg.id];
                     if (upd) {
                         upd.$inc['result.actioned'] += count;
@@ -158,11 +160,13 @@ plugins.register('/i', async ob => {
                         p = guess(params.req.headers['user-agent']);
                     }
 
-                    event.segmentation.a = msg.triggers.filter(t => t.kind === TriggerKind.Cohort || t.kind === TriggerKind.Event).length > 0;
-                    event.segmentation.t = msg.triggers.filter(t => t.kind === TriggerKind.API).length > 0;
+                    event.segmentation.a = a;
+                    event.segmentation.t = t;
 
                     if (p && platforms.indexOf(p) !== -1) {
                         event.segmentation.p = p;
+                        event.segmentation.ap = a + p;
+                        event.segmentation.tp = t + p;
                         if (upd.$inc[`result.subs.${p}.actioned`]) {
                             upd.$inc[`result.subs.${p}.actioned`] += count;
                         }

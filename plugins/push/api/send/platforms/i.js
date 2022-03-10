@@ -311,14 +311,10 @@ const CREDS = {
                 type: this._data.type,
                 cert: 'APN Key File (P8)',
                 bundle: this._data.bundle,
-                topics: this._data.topics,
-                notBefore: this._data.notBefore,
-                notAfter: this._data.notAfter,
+                keyid: this._data.keyid,
+                team: this._data.team,
                 hash: this._data.hash,
             };
-            if (this._data.secret) {
-                json.secret = new Array(this._data.secret.length).fill('*').join('');
-            }
             return json;
         }
 
@@ -548,8 +544,8 @@ class APN extends Base {
             Object.assign(this.sessionOptions, this.creds.tls);
         }
         if (this.creds instanceof CREDS.apn_token) {
-            this.headersFirst.authorization = this.creds.bearer;
-            this.headersSecond.authorization = this.creds.bearer;
+            this.headersFirst.authorization = this.headersSecond.authorization = this.creds.bearer;
+            this.headersFirst['apns-topic'] = this.headersSecond['apns-topic'] = this.creds._data.bundle;
         }
     }
 
@@ -562,7 +558,7 @@ class APN extends Base {
      */
     template(id) {
         let { PLATFORM } = require('../index');
-        return this.templates[id] || (this.templates[id] = new Template(this.messages[id], PLATFORM[this.type.substr(0, 1)]));
+        return this.templates[id] || (this.templates[id] = new Template(this.messages[id], PLATFORM[this.type.substr(0, 1)], true));
     }
 
     /**
@@ -605,8 +601,8 @@ class APN extends Base {
                  * Called on stream completion, returns results for this batch
                  */
                 streamDone = () => {
-                    if (oks.length + recoverableErrors + nonRecoverableError.left.length === pushes.length) {
-                        let errored = nonRecoverableError.bytes;
+                    if (oks.length + recoverableErrors + (nonRecoverableError && nonRecoverableError.left.length || 0) === pushes.length) {
+                        let errored = nonRecoverableError && nonRecoverableError.bytes || 0;
                         if (oks.length) {
                             this.send_results(oks, bytes - errored);
                         }
@@ -672,41 +668,40 @@ class APN extends Base {
                     data += dt;
                 });
                 stream.on('end', () => {
-                    try {
-                        let json = JSON.parse(data);
-                        if (status === 400) {
-                            if (json.reason) {
-                                if (json.reason === 'DeviceTokenNotForTopic' || json.reason === 'BadDeviceToken') {
-                                    error(ERROR.DATA_TOKEN_INVALID, json.reason).addAffected(p._id, one);
+                    if (status === 400 || status === 403 || status === 429) {
+                        try {
+                            let json = JSON.parse(data);
+                            if (status === 400) {
+                                if (json.reason) {
+                                    if (json.reason === 'DeviceTokenNotForTopic' || json.reason === 'BadDeviceToken') {
+                                        error(ERROR.DATA_TOKEN_INVALID, json.reason).addAffected(p._id, one);
+                                    }
+                                    else {
+                                        error(ERROR.DATA_COUNTLY, json.reason).addAffected(p._id, one);
+                                    }
                                 }
                                 else {
-                                    error(ERROR.DATA_COUNTLY, json.reason).addAffected(p._id, one);
+                                    error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                                 }
                             }
-                            else {
+                            else if (status === 403) {
+                                if (!nonRecoverableError) {
+                                    nonRecoverableError = new ConnectionError(`APN Unauthorized: ${status} (${json.reason})`, ERROR.INVALID_CREDENTIALS).addAffected(p._id, one);
+                                }
+                                else {
+                                    nonRecoverableError.addAffected(p._id, one);
+                                }
+                            }
+                            else if (status === 429) {
                                 error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                             }
                         }
-                        else if (status === 403) {
-                            if (!nonRecoverableError) {
-                                nonRecoverableError = new ConnectionError(`APN Unauthorized: ${status} (${json.reason})`, ERROR.INVALID_CREDENTIALS).addAffected(p._id, one);
-                            }
-                            else {
-                                nonRecoverableError.addAffected(p._id, one);
-                            }
-                        }
-                        else if (status === 429) {
+                        catch (e) {
+                            self.log.e('provider returned %d: %s', status, data, e);
                             error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                         }
-                        else {
-                            error(ERROR.DATA_PROVIDER, `APN Unexpected response ${status} (${json.reason})`).addAffected(p._id, one);
-                        }
+                        streamDone();
                     }
-                    catch (e) {
-                        self.log.e('provider returned %d: %s', status, data);
-                        error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
-                    }
-                    streamDone();
                 });
                 stream.setEncoding('utf-8');
                 stream.end(content);

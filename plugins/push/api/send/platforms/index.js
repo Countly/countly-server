@@ -18,7 +18,9 @@ const platforms = Object.keys(PLATFORM);
 
 for (let p in PLATFORM) {
     extractors.push(PLATFORM[p].extractor);
-    guesses.push(PLATFORM[p].guess);
+    if (PLATFORM[p].guess) {
+        guesses.push(PLATFORM[p].guess);
+    }
     PLATFORMS_TITLES[p] = PLATFORM[p].title;
     for (let num in PLATFORM[p].FIELDS) {
         FIELDS[p + num] = p + PLATFORM[p].FIELDS[num];
