@@ -176,6 +176,16 @@ class PushError extends Error {
     }
 
     /**
+     * Check that error type is bitwise same as typ
+     * 
+     * @param {int} typ error flag
+     * @returns {boolean} true if the error corresponds to the typ
+     */
+    is(typ) {
+        return (this.type & typ) === typ;
+    }
+
+    /**
      * Convert this error to plain JSON
      * @returns {object} JSON contents of the error
      */
