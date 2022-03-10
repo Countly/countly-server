@@ -654,11 +654,7 @@
                     data: JSON.stringify(dto),
                     contentType: "application/json",
                     success: function(response) {
-                        if (response.error) {
-                            reject(new Error(response.error));
-                            return;
-                        }
-                        resolve();
+                        resolve(response);
                     },
                     error: function(error) {
                         console.error(error);
@@ -2346,7 +2342,35 @@
                 console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
-            return countlyPushNotification.api.sendToTestUsers(dto);
+            return new Promise(function(resolve, reject) {
+                countlyPushNotification.api.sendToTestUsers(dto)
+                    .then(function(testDto) {
+                        if (!testDto.result) {
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            console.error(testDto);
+                            return;
+                        }
+                        if (testDto.result.errors) {
+                            reject(new Error('Error sending push notificaiton to test users:' + JSON.stringify(testDto.result.errors)));
+                            console.error(testDto);
+                            return;
+                        }
+                        if (testDto.result.errored) {
+                            reject(new Error('Error sending push notification to test users. Number of errors:' + testDto.result.errored));
+                            console.error(testDto);
+                            return;
+                        }
+                        if (testDto.result.sent > 0) {
+                            resolve();
+                            return;
+                        }
+                        reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        console.error(testDto);
+                    }).catch(function(error) {
+                        console.error(error);
+                        reject(error);
+                    });
+            });
         },
         resend: function(model, options) {
             var dto = null;

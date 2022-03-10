@@ -464,7 +464,8 @@
                         itemSize: 0
                     },
                     tooltip: {
-                        appendToBody: true,
+                        appendToBody: false,
+                        confine: true,
                         show: true,
                         trigger: 'axis',
                         axisPointer: {
