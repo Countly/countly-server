@@ -19,7 +19,7 @@ module.exports.drillAddPushEvents = ({uid, params, events, event}) => {
                         }
 
                         for (let id in pu.msgs) {
-                            let ts = parseInt(pu.msgs[id]),
+                            let ts = parseInt(pu.msgs[id], 10),
                                 m = msgs.filter(msg => msg._id.toString() === id)[0];
                             events.push({
                                 _id: id,
