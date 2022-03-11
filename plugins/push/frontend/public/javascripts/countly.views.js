@@ -740,7 +740,6 @@
                 this.isAddUserPropertyPopoverOpen[container] = true;
             },
             closeAddUserPropertyPopover: function(container) {
-                console.log(container);
                 this.isAddUserPropertyPopoverOpen[container] = false;
             },
             addUserPropertyInHTML: function(id, container) {
