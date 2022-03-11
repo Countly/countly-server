@@ -4,7 +4,6 @@
             <div class="bu-level-item bu-is-flex-shrink-1" style="min-width: 0">
                 <h4 class="bu-is-flex-shrink-1 has-ellipsis">{{title}}</h4>
                 <clyd-title-labels :labels="metricLabels"></clyd-title-labels>
-
             </div>
         </div>
         <div class="bu-level-right" v-if="isAllowed">
@@ -37,8 +36,8 @@
 				<span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>
 			</p>
 		</div>
-        <div v-else-if="data.visualization === 'table'" style="width: 100%;">
-            <cly-datatable-n v-if="getTableData.length" :rows="getTableData" :hideTop="true" style="width: 100%;">
+        <div v-else-if="data.visualization === 'table'" style="width: 100%; height: 100%;">
+            <cly-datatable-n v-if="getTableData.length" :rows="getTableData" :hideTop="true" style="width: 100%; height: 100%;">
                 <template v-slot="scope">
                     <el-table-column  v-for="(item, index) in tableStructure" :key="index" :sortable="false" :prop="item.prop" :label="item.title">
                         <template slot-scope="scope">
