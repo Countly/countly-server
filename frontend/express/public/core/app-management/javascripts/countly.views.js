@@ -95,7 +95,9 @@
                 loadingDetails: false,
                 appSettings: {},
                 appManagementViews: app.appManagementViews,
-                edited: true
+                edited: true,
+                isAppAdmin: countlyAuth.validateAppAdmin(app_id),
+                isGlobalAdmin: countlyAuth.validateGlobalAdmin()
             };
         },
         watch: {
@@ -737,7 +739,7 @@
         });
     };
 
-    if (countlyAuth.validateGlobalAdmin()) {
+    if (countlyAuth.validateAppAdmin()) {
         app.route("/manage/apps", "manage-apps", function() {
             var view = getMainView();
             view.params = {app_id: countlyCommon.ACTIVE_APP_ID};

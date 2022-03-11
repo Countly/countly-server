@@ -176,6 +176,22 @@
         return countlyGlobal.member.global_admin;
     };
 
+    /**
+     * Validate is this user admin of specific app or not
+     * @param {string} app - countly application id, optional
+     * @returns {boolean} user admin of specific app or not?
+     */
+    countlyAuth.validateAppAdmin = function(app) {
+        var _app = app || countlyCommon.ACTIVE_APP_ID;
+
+        if (countlyGlobal.member.global_admin) {
+            return true;
+        }
+        else {
+            return countlyGlobal.member.permission && countlyGlobal.member.permission._ && countlyGlobal.member.permission._.a && countlyGlobal.member.permission._.a.indexOf(_app) > -1;
+        }
+    };
+
     countlyAuth.renderFeatureTemplate = function(featureName, index) {
         var odd = countlyAuth.odd;
         countlyAuth.odd = !countlyAuth.odd;
