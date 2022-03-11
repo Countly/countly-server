@@ -4,7 +4,7 @@
             <h2> {{i18n('management-applications.title')}} </h2>
         </template>
         <template v-if="!firstApp" v-slot:header-right>
-            <el-button type="success" icon="el-icon-circle-plus" @click="createNewApp">{{i18n('common.add-new-app-button')}}</el-button>
+            <el-button v-if="isGlobalAdmin" type="success" icon="el-icon-circle-plus" @click="createNewApp">{{i18n('common.add-new-app-button')}}</el-button>
         </template>
     </cly-header>
     <cly-main class="bu-pt-4">
@@ -29,13 +29,13 @@
             </div>
             <div v-if="firstApp" class="bu-column bu-is-1"></div>
             <div :class="{'bu-column':true, 'bu-is-6':firstApp, 'bu-is-9':!firstApp}">
-                <cly-more-options v-if="!newApp" size="small" class="bu-is-pulled-right" @command="handleMenuCommand">
+                <cly-more-options v-if="!newApp && isGlobalAdmin" size="small" class="bu-is-pulled-right" @command="handleMenuCommand">
                     <el-dropdown-item :disabled="isDisabled()" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
                         <el-link :disabled="isDisabled()" class="bu-ml-1">{{item.label}}</el-link>
                     </el-dropdown-item>
                 </cly-more-options>
                 <el-switch
-                    v-if="!newApp"
+                    v-if="!newApp && isGlobalAdmin"
                     v-model="apps[selectedApp].locked"
                     :active-text="apps[selectedApp].locked ? i18n('common.locked') : i18n('common.unlocked')"
                     @change="setAppLock"
@@ -54,7 +54,7 @@
                                     <cly-form-step :id="formId" class="app-section">
                                         <div style="display: flex;justify-content: space-between; line-height: 30px;">
                                             APP INFORMATION
-                                            <el-button v-show="edited" @click="edit()" class="bu-mr-2" type="text">Edit</el-button>
+                                            <el-button v-show="edited && isGlobalAdmin" @click="edit()" class="bu-mr-2" type="text">Edit</el-button>
                                         </div>
                                         <div>
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.application-name')">
@@ -165,7 +165,7 @@
                                 </div>
                                 <p>&nbsp;</p>
                                     <el-upload
-                                    v-if="!isDisabled()"
+                                    v-if="!isDisabled() && isGlobalAdmin"
                                     action="apps/icon" 
                                     :on-success="handleUploadSuccess"
                                     :data="uploadData"

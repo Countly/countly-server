@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -1389,7 +1389,7 @@ const processRequest = (params) => {
                     validateUser(params, countlyApi.mgmt.apps.getCurrentUserApps);
                     break;
                 case 'details':
-                    validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.getAppsDetails);
+                    validateAppAdmin(params, countlyApi.mgmt.apps.getAppsDetails);
                     break;
                 case 'plugins':
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.getAppPlugins);
