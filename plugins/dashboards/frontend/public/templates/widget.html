@@ -30,7 +30,7 @@
                 </div>
             </template>
         </widget-disabled>
-        <widget-invalid v-else-if="isWidgetInvalid(widget)" :widget="widget">
+        <widget-invalid v-else-if="!loading && isWidgetInvalid(widget)" :widget="widget">
             <template v-slot:action v-if="canUpdateGrid && settings.isAllowed">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">
