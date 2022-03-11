@@ -72,7 +72,7 @@
                             <tr>
                                 <td><span>{{i18n('data-manager.description')}}</span>
                                 </td>
-                                <td>{{event.description}}</td>
+                                <td v-html="event.description || '-' "></td>
                             </tr>
                             <tr>
                                 <td><span>{{i18n('data-manager.category')}}</span>
