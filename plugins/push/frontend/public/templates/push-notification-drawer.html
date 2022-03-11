@@ -572,7 +572,7 @@
                                         :disabled="isDefaultLocalization(localization)" 
                                         :key="localization.value" 
                                         @change="onLocalizationChange(localization)">
-                                        <li class="cly-vue-push-notification-drawer__subsection-left-list-item bu-pr-3 bu-py-2">
+                                        <li @click="onLocalizationSelect(localization)" class="cly-vue-push-notification-drawer__subsection-left-list-item bu-pr-3 bu-py-2">
                                             {{localization.label}}
                                         </li>
                                     </el-checkbox>

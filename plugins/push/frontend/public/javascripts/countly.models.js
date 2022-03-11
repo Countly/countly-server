@@ -984,8 +984,8 @@
                             time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("h:mm:ss a")
                         },
                         sentDateTime: {
-                            date: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.started).format("MMMM Do YYYY"),
-                            time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.started).format("h:mm:ss a")
+                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("MMMM Do YYYY") : null,
+                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("h:mm:ss a") : null,
                         },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
@@ -1671,6 +1671,11 @@
                 var content = [];
                 Object.keys(pushNotificationModel.message).forEach(function(localizationKey) {
                     var localeDto = {};
+                    if (!pushNotificationModel.localizations.some(function(item) {
+                        return item.value === localizationKey;
+                    })) {
+                        return;
+                    }
                     if (localizationKey !== DEFAULT_LOCALIZATION_VALUE) {
                         localeDto.la = localizationKey;
                     }
