@@ -12,18 +12,18 @@
           <div :class="[widget.status && 'ratings-widget-detail-view__widget-status-active', !widget.status && 'ratings-widget-detail-view__widget-status-disabled', 'bu-has-text-weight-semibold text-small bu-mt-1']">
             <span v-if="widget.status" class="blinker"></span> {{ widget.status ? i18n('feedback.active') : i18n('feedback.disabled') }}
           </div>
-          <div class="ratings-widget-detail-view__created-at text-medium bu-p-1 bu-ml-2"> <i class="el-icon-time"></i> {{ i18n('feedback.created-at') }} <span v-html="widget.created_at"></span></div>
-          <div class="ratings-widget-detail-view__widget-id text-medium bu-p-1 bu-ml-2"> <i class="el-icon-folder"></i> <span class="ratings-widget-detail-view__widget-id">{{ i18n('feedback.widget-id') }} </span><span class="ratings-widget-detail-view__ID">{{ widget._id }}</span></div>
+          <div class="ratings-widget-detail-view__created-at text-medium bu-p-1 bu-ml-2"> <i class="ion-android-time"></i> {{ i18n('feedback.created-at') }} <span v-html="widget.created_at"></span></div>
+          <div class="ratings-widget-detail-view__widget-id text-medium bu-p-1 bu-ml-2"> <i class="ion-pricetag"></i> <span class="ratings-widget-detail-view__widget-id">{{ i18n('feedback.widget-id') }} </span><span class="ratings-widget-detail-view__ID">{{ widget._id }}</span></div>
         </div>
       </div>
     </template>
     <template v-slot:header-right>
       <div class="bu-mt-2">
-        <el-button v-if="widget.status && canUserUpdate" @click="setWidget(false)" size="small" icon="el-icon-video-pause"> {{ i18n('feedback.stop-widget') }}
+        <el-button v-if="widget.status && canUserUpdate" @click="setWidget(false)" size="small" icon="ion-android-cancel"> {{ i18n('feedback.stop-widget') }}
         </el-button>
-        <el-button v-if="!widget.status && canUserUpdate" @click="setWidget(true)" size="small" icon="el-icon-video-play"> {{ i18n('feedback.start-widget') }}
+        <el-button v-if="!widget.status && canUserUpdate" @click="setWidget(true)" size="small" icon="ion-android-arrow-dropright-circle"> {{ i18n('feedback.start-widget') }}
         </el-button>
-        <el-button v-if="canUserUpdate" @click="editWidget()" class="ratings-widget-detail-view__edit-widget" size="small" icon="el-icon-edit"> {{ i18n('feedback.edit-widget') }}
+        <el-button v-if="canUserUpdate" @click="editWidget()" class="ratings-widget-detail-view__edit-widget" size="small" icon="ion-edit"> {{ i18n('feedback.edit-widget') }}
         </el-button>
         <cly-more-options v-if="canUserDelete" class="bu-ml-2" size="small" @command="handleCommand($event)">
           <el-dropdown-item command="delete-widget"> {{ i18n('feedback.delete-widget') }} </el-dropdown-item>
