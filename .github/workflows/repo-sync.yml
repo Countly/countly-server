@@ -7,4 +7,6 @@ jobs:
   git-sync:
     runs-on: ubuntu-latest
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
       - run: git push --mirror git@bitbucket.org:osoner/countly-server.git
