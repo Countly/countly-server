@@ -39,7 +39,7 @@
                 </div>
             </template>
         </widget-invalid>
-        <component v-else :is="settings.grid.component" @command="$emit('command', $event, widget)" :is-allowed="canUpdateGrid && settings.isAllowed" :data="widget">
+        <component v-else :is="settings.grid.component" @command="$emit('command', $event, widget)" :is-allowed="canUpdateGrid && settings.isAllowed" :data="widget" :loading="loading">
             <template v-slot:action v-if="canUpdateGrid && settings.isAllowed">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">

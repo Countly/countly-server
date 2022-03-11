@@ -369,21 +369,7 @@ var TechnologyHomeWidget = countlyVue.views.create({
 
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.zoom],
-    props: {
-        data: {
-            type: Object,
-            default: function() {
-                return {};
-            }
-        },
-        isAllowed: {
-            type: Boolean,
-            default: true
-        }
-    },
-    mounted: function() {
-    },
+    mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.zoom],
     data: function() {
         return {
             showBuckets: false,

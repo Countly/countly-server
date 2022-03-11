@@ -3,14 +3,7 @@
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/note/widget.html'),
-        props: {
-            data: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            }
-        },
+        mixins: [countlyVue.mixins.customDashboards.global],
         computed: {
             linkStyling: function() {
                 if (this.data.text_align) {
