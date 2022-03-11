@@ -64,4 +64,14 @@
         },
         params: ['platform']
     });
+
+    VeeValidate.extend('push_notification_fallback', {
+        computesRequired: true,
+        validate: function(value) {
+            if (value === ' ') {
+                return true;
+            }
+            return Boolean(value);
+        }
+    });
 })();
