@@ -2843,6 +2843,25 @@
             return parts.join(".");
         };
 
+
+        /**
+        * Formats the number by separating each 3 digits with, falls back to
+        * a default value in case of NaN
+        * @memberof countlyCommon
+        * @param {number} x - number to format
+        * @param {string} fallback - fallback value for unparsable numbers
+        * @returns {string} formatted number or fallback
+        * @example
+        * //outputs 1,234,567
+        * countlyCommon.formatNumberSafe(1234567);
+        */
+        countlyCommon.formatNumberSafe = function(x, fallback) {
+            if (isNaN(parseFloat(x))) {
+                return fallback || "N/A";
+            }
+            return countlyCommon.formatNumber(x);
+        };
+
         /**
         * Pad number with specified character from left to specified length
         * @memberof countlyCommon

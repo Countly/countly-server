@@ -816,6 +816,8 @@ var AppRouter = Backbone.Router.extend({
             title: node.text,
             url: node.url,
             icon: node.icon,
+            permission: node.permission,
+            tabsPath: node.tabsPath,
             node: node
             /*
                 Following secondary params are simply passed to registry, but not directly used for now:
@@ -949,6 +951,8 @@ var AppRouter = Backbone.Router.extend({
             priority: node.priority,
             title: node.text,
             url: node.url,
+            permission: node.permission,
+            tabsPath: node.tabsPath,
             node: node
             /*
                 Following secondary params are simply passed to registry, but not directly used for now:
@@ -1142,18 +1146,19 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard: function() {
-        var type = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
         if (countlyGlobal.member.restrict && countlyGlobal.member.restrict.indexOf("#/") !== -1) {
             return;
         }
         if (_.isEmpty(countlyGlobal.apps)) {
             this.renderWhenReady(this.manageAppsView);
         }
-        else if (type === "mobile" || type === "web" || type === "desktop") {
-            this.renderWhenReady(app.HomeView);
-        }
         else if (typeof this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== "undefined") {
-            this.renderWhenReady(this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]);
+            if (this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== null) {
+                this.renderWhenReady(this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]);
+            }
+            else {
+                this.renderWhenReady(app.HomeView);
+            }
         }
         else {
             this.renderWhenReady(this.dashboardView);
@@ -3401,7 +3406,12 @@ var AppRouter = Backbone.Router.extend({
     * app.addAppType("mobile", MobileDashboardView);
     */
     addAppType: function(name, view) {
-        this.appTypes[name] = new view();
+        if (view) {
+            this.appTypes[name] = new view();
+        }
+        else {
+            this.appTypes[name] = null;
+        }
         var menu = $("#default-type").clone();
         menu.attr("id", name + "-type");
         $("#sidebar-menu").append(menu);

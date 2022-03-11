@@ -30,7 +30,7 @@
                                 <cly-tooltip-icon></cly-tooltip-icon>
                             </div>
                             <div>
-                                <el-select class="custom-value" :placeholder="i18n('populator.enter-your-values')" v-model="drawerScope.editedObject.up[index].value" multiple filterable allow-create></el-select>
+                                <el-select class="custom-value" :collapse-tags="false" :placeholder="i18n('populator.enter-your-values')" v-model="drawerScope.editedObject.up[index].value" multiple filterable allow-create></el-select>
                             </div>
                         </div>
                     </div>
@@ -70,7 +70,7 @@
                                         <cly-tooltip-icon></cly-tooltip-icon>
                                     </div>
                                     <div>
-                                        <el-select v-model="drawerScope.editedObject.events[index].segments[segmentIndex].value" class="custom-value" multiple filterable allow-create></el-select>
+                                        <el-select v-model="drawerScope.editedObject.events[index].segments[segmentIndex].value" class="custom-value" :collapse-tags="false" multiple filterable allow-create></el-select>
                                     </div>
                                 </div>
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-ml-2 bu-is-justify-content-center">

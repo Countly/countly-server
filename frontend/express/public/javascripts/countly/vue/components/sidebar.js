@@ -1,96 +1,8 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, countlyAuth */
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon */
 
 (function(countlyVue, $) {
 
     $(document).ready(function() {
-        /*var _featureMapper = {
-                "overview": "core",
-                "analytics": "core",
-                "events": "events",
-                "events-overview": "events",
-                "all-events": "events",
-                "management": "core",
-                "applications": "admin",
-                "users": "admin",
-                "jobs": "admin",
-                "feedback": "core",
-                "crashes": "crashes",
-                "logs": "admin",
-                "plugins": "admin",
-                "configurations": "admin",
-                "analytics-views": (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile",
-                "analytics-users": "core",
-                "analytics-loyalty": "core",
-                "analytics-sessions": "core",
-                "analytics-technology": "core",
-                "analytics-geo": "core",
-                "drill": "drill",
-                "funnels": "funnels",
-                "retention": "retention_segments",
-                "flows": "flows",
-                "cohorts": "cohorts",
-                "ias": "surveys",
-                "nps": "surveys",
-                "formulas": "formulas",
-                "remote-config": "remote_config",
-                "ab-testing": "ab_testing",
-                "revenue": "revenue",
-                "logger": "admin",
-                "populate": "populator",
-                "reports": "reports",
-                "crash": "crashes",
-                "geo": "geo",
-                "blocks": "block",
-                "profiles": "users",
-                "star-rating": "star_rating",
-                "alerts": "alerts",
-                "data-point": "core",
-                "db": "dbviewer",
-                "symbols": "crashes",
-                "symbol_jobs": "crashes",
-                "compliance": "compliance_hub",
-                "performance-monitoring": "performance_monitoring",
-                "hooks": "hooks",
-                "attribution": "attribution",
-                "data-migration": "data_migration",
-                "export": "config_transfer"
-            },
-            _menuDependencies = {
-                "events": ["events"],
-                "retention": ["retention_segments"],
-                "feedback": ["star_rating", "surveys"],
-                "crashes": ["crashes"],
-                "overview": ["core"],
-                "analytics": ["core"],
-                "management": ["populator", "config_transfer", "crashes", "blocks", "logger", "compliance_hub"]
-            };*/
-
-        /**
-        * Check feature permission before adding sidebar
-        * @memberof app
-        * @param {string} permission - permission name
-        * @returns {boolean} - true if permission granted
-        **/
-        var checkMenuPermission = function(permission) {
-            if (permission) {
-                return countlyAuth.validateRead(permission);
-            }
-            return countlyAuth.validateGlobalAdmin();
-        };
-
-        /**
-        * Check feature permission before adding sidebar
-        * @memberof app
-        * @param {string} permission - permission name
-        * @returns {boolean} - true if permission granted
-        **/
-        var checkSubMenuPermission = function(permission) {
-            if (permission) {
-                return countlyAuth.validateRead(permission);
-            }
-            return countlyAuth.validateGlobalAdmin();
-        };
-
         var AppsMixin = {
             computed: {
                 allApps: {
@@ -233,16 +145,36 @@
             }
         });
 
+        var ValidationMixin = {
+            methods: {
+                validate: function(item) {
+                    var valid = true;
+
+                    var tabsValidated = this.validateTabs(item);
+
+                    return valid && tabsValidated;
+                },
+                validateTabs: function(item) {
+                    var valid = true;
+
+                    if (item.tabsPath) {
+                        var tbs = countlyVue.container.tabsMixin({
+                            t: item.tabsPath
+                        });
+
+                        var tabs = tbs.data().t;
+
+                        valid = (tabs.length > 0);
+                    }
+
+                    return valid;
+                }
+            }
+        };
+
         var AnalyticsMenu = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/analytics-menu.html'),
-            mixins: [
-                countlyVue.container.dataMixin({
-                    "categories": "/sidebar/analytics/menuCategory",
-                    "menus": "/sidebar/analytics/menu",
-                    "submenus": "/sidebar/analytics/submenu"
-                }),
-                AppsMixin
-            ],
+            mixins: [AppsMixin, ValidationMixin],
             components: {
                 "app-selector": AppSelector
             },
@@ -253,38 +185,71 @@
                 };
             },
             computed: {
+                categories: function() {
+                    if (!this.activeApp || !this.activeApp._id) {
+                        return [];
+                    }
+
+                    var c = countlyVue.container.dataMixin({
+                        categories: "/sidebar/analytics/menuCategory"
+                    });
+
+                    var cats = c.data().categories;
+
+                    return cats;
+                },
                 categorizedMenus: function() {
                     if (!this.activeApp || !this.activeApp._id) {
                         return {};
                     }
-                    var self = this;
-                    var menus = this.menus.reduce(function(acc, val) {
-                        if (val.app_type === self.activeApp.type && checkMenuPermission(val.permission)) {
-                            if (!acc[val.category]) {
-                                acc[val.category] = [];
-                            }
 
-                            acc[val.category].push(val);
+                    var m = countlyVue.container.dataMixin({
+                        menus: "/sidebar/analytics/menu"
+                    });
+
+                    var mm = m.data().menus;
+
+                    var self = this;
+                    var menus = mm.reduce(function(acc, val) {
+                        if (val.app_type === self.activeApp.type) {
+                            if (self.validate(val)) {
+                                if (!acc[val.category]) {
+                                    acc[val.category] = [];
+                                }
+
+                                acc[val.category].push(val);
+                            }
                         }
                         return acc;
                     }, {});
+
                     return menus;
                 },
                 categorizedSubmenus: function() {
                     if (!this.activeApp || !this.activeApp._id) {
                         return {};
                     }
-                    var self = this;
-                    var submenus = this.submenus.reduce(function(acc, val) {
-                        if (val.app_type === self.activeApp.type && checkSubMenuPermission(val.permission)) {
-                            if (!acc[val.parent_code]) {
-                                acc[val.parent_code] = [];
-                            }
 
-                            acc[val.parent_code].push(val);
+                    var s = countlyVue.container.dataMixin({
+                        submenus: "/sidebar/analytics/submenu"
+                    });
+
+                    var sbm = s.data().submenus;
+
+                    var self = this;
+                    var submenus = sbm.reduce(function(acc, val) {
+                        if (val.app_type === self.activeApp.type) {
+                            if (self.validate(val)) {
+                                if (!acc[val.parent_code]) {
+                                    acc[val.parent_code] = [];
+                                }
+
+                                acc[val.parent_code].push(val);
+                            }
                         }
                         return acc;
                     }, {});
+
                     return submenus;
                 },
                 selectedMenuItem: function() {
@@ -431,25 +396,28 @@
 
         var ManagementMenu = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/management-menu.html'),
-            mixins: [
-                countlyVue.container.dataMixin({
-                    "menus": "/sidebar/analytics/menu"
-                }),
-                AppsMixin
-            ],
+            mixins: [AppsMixin, ValidationMixin],
             computed: {
                 menu: function() {
                     if (!this.activeApp || !this.activeApp._id) {
                         return [];
                     }
+                    var m = countlyVue.container.dataMixin({
+                        menus: "/sidebar/analytics/menu"
+                    });
 
-                    var menu = this.menus.filter(function(val) {
-                        if (val.category === "management" && checkSubMenuPermission(val.name)) {
+                    var mm = m.data().menus;
+                    var self = this;
+
+                    var menu = mm.filter(function(val) {
+                        if (val.category === "management" && self.validate(val)) {
                             return true;
                         }
+
                         return false;
                     });
 
+                    this.$emit("management-menu-ready", menu);
                     return menu;
                 },
                 selectedMenuItem: function() {
@@ -585,28 +553,8 @@
                     showMainMenu: true,
                     redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID,
                     onOptionsMenu: false,
-                    onMainMenu: false
-                };
-            },
-            computed: {
-                components: function() {
-                    var menuOptions = [];
-
-                    var externalMainMenuOptions = this.externalMainMenuOptions;
-                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
-
-                    if (externalMainMenuOptions && externalMainMenuOptions.length) {
-                        menuOptions = menuOptions.concat(externalMainMenuOptions);
-                    }
-
-                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
-                        menuOptions = menuOptions.concat(externalOtherMenuOptions);
-                    }
-
-                    return menuOptions;
-                },
-                mainMenuOptions: function() {
-                    var menuOptions = [
+                    onMainMenu: false,
+                    defaultMainMenuOptions: [
                         {
                             name: "app",
                             icon: "cly-icon-sidebar-app",
@@ -634,7 +582,28 @@
                             noSelect: true,
                             tooltip: "Report Manager"
                         }
-                    ];
+                    ]
+                };
+            },
+            computed: {
+                components: function() {
+                    var menuOptions = [];
+
+                    var externalMainMenuOptions = this.externalMainMenuOptions;
+                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
+
+                    if (externalMainMenuOptions && externalMainMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalMainMenuOptions);
+                    }
+
+                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalOtherMenuOptions);
+                    }
+
+                    return menuOptions;
+                },
+                mainMenuOptions: function() {
+                    var menuOptions = JSON.parse(JSON.stringify(this.defaultMainMenuOptions));
 
                     var externalMainMenuOptions = this.externalMainMenuOptions;
 
@@ -838,6 +807,20 @@
                                 }
                             }, 0);
                         });
+                    });
+                },
+                onManagementMenuReady: function(items) {
+                    this.defaultMainMenuOptions = this.defaultMainMenuOptions.map(function(menu) {
+                        if (menu.name === "management") {
+                            if (items.length) {
+                                delete menu.hide;
+                            }
+                            else {
+                                menu.hide = true;
+                            }
+                        }
+
+                        return menu;
                     });
                 }
             },

@@ -1,4 +1,5 @@
 <div v-bind:class="[componentId]">
+	<clyd-home-widget-header :widget="headerData"></clyd-home-widget-header>
 	<cly-section>
 		<cly-metric-cards :multiline="false" v-loading="isLoading" style="min-height:100px;">
 				<cly-metric-card :box-type="5" formatting="long" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in crashesItems">

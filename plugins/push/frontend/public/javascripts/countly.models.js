@@ -654,11 +654,7 @@
                     data: JSON.stringify(dto),
                     contentType: "application/json",
                     success: function(response) {
-                        if (response.error) {
-                            reject(new Error(response.error));
-                            return;
-                        }
-                        resolve();
+                        resolve(response);
                     },
                     error: function(error) {
                         console.error(error);
@@ -988,8 +984,8 @@
                             time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("h:mm:ss a")
                         },
                         sentDateTime: {
-                            date: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.started).format("MMMM Do YYYY"),
-                            time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.started).format("h:mm:ss a")
+                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("MMMM Do YYYY") : null,
+                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("h:mm:ss a") : null,
                         },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
@@ -1675,6 +1671,11 @@
                 var content = [];
                 Object.keys(pushNotificationModel.message).forEach(function(localizationKey) {
                     var localeDto = {};
+                    if (!pushNotificationModel.localizations.some(function(item) {
+                        return item.value === localizationKey;
+                    })) {
+                        return;
+                    }
                     if (localizationKey !== DEFAULT_LOCALIZATION_VALUE) {
                         localeDto.la = localizationKey;
                     }
@@ -2346,7 +2347,35 @@
                 console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
-            return countlyPushNotification.api.sendToTestUsers(dto);
+            return new Promise(function(resolve, reject) {
+                countlyPushNotification.api.sendToTestUsers(dto)
+                    .then(function(testDto) {
+                        if (!testDto.result) {
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            console.error(testDto);
+                            return;
+                        }
+                        if (testDto.result.errors) {
+                            reject(new Error('Error sending push notificaiton to test users:' + JSON.stringify(testDto.result.errors)));
+                            console.error(testDto);
+                            return;
+                        }
+                        if (testDto.result.errored) {
+                            reject(new Error('Error sending push notification to test users. Number of errors:' + testDto.result.errored));
+                            console.error(testDto);
+                            return;
+                        }
+                        if (testDto.result.sent > 0) {
+                            resolve();
+                            return;
+                        }
+                        reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        console.error(testDto);
+                    }).catch(function(error) {
+                        console.error(error);
+                        reject(error);
+                    });
+            });
         },
         resend: function(model, options) {
             var dto = null;

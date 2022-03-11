@@ -98,14 +98,11 @@
         var self = this;
         var mixin = {
             data: function() {
-                return Object.keys(mapping).reduce(function(acc, val) {
+                var ob = Object.keys(mapping).reduce(function(acc, val) {
                     var dataOb = self.dict[mapping[val]] ? self.dict[mapping[val]].data : [];
                     if (Array.isArray(dataOb)) {
                         acc[val] = dataOb.filter(function(data) {
                             if (data && data.permission) {
-                                return countlyAuth.validateRead(data.permission);
-                            }
-                            else if (data && data.node && data.node.permission) {
                                 return countlyAuth.validateRead(data.permission);
                             }
                             return true;
@@ -126,6 +123,7 @@
                     }
                     return acc;
                 }, {});
+                return ob;
             }
         };
         return mixin;
@@ -135,7 +133,7 @@
         var self = this;
         var mixin = {
             data: function() {
-                return Object.keys(mapping).reduce(function(acc, val) {
+                var ob = Object.keys(mapping).reduce(function(acc, val) {
                     acc[val] = (self.dict[mapping[val]] ? self.dict[mapping[val]].tabs : []).filter(function(tab) {
                         if (tab.permission) {
                             return countlyAuth.validateRead(tab.permission);
@@ -144,6 +142,7 @@
                     });
                     return acc;
                 }, {});
+                return ob;
             }
         };
         return mixin;

@@ -57,7 +57,7 @@ class ReportsJob extends job.Job {
                             ((report.frequency === "weekly") && (report.r_day + '' === dow + '')) ||
                             ((report.frequency === "monthly") && (dom === 1))
                         )) {
-                        if (report.last_sent && report.last_send.hour === hour && report.last_send.dow === dow && report.last_send.dom === dom) {
+                        if (report.last_sent && report.last_sent.hour === hour && report.last_sent.dow === dow && report.last_sent.dom === dom) {
                             return done();
                         }
                         reports.getReport(countlyDb, report, function(err2, ob) {

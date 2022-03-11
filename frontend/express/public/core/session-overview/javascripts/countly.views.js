@@ -101,34 +101,41 @@ var SessionHomeWidget = countlyVue.views.create({
             chooseProperties: this.calculateProperties(),
             chosenProperty: "t",
             sessionGraphTab: "t",
+            isLoading: true,
+            headerData: {
+                label: CV.i18n("dashboard.audience"),
+                description: CV.i18n("session-overview.description"),
+                linkTo: {"label": CV.i18n('dashboard.go-to-sessions'), "href": "#/analytics/sessions"},
+            }
         };
     },
     mounted: function() {
         var self = this;
-        this.initialized = false;
         $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
             self.calculateAllData();
         });
     },
     methods: {
-        refresh: function() {
+        refresh: function(force) {
             var self = this;
+            if (force) {
+                this.isLoading = true;
+            }
             $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
                 self.calculateAllData();
-
             });
         },
         chartData: function(value) {
             return this.calculateSeries(value);
         },
         calculateAllData: function() {
-            this.initialized = true;
+            this.isLoading = false;
             this.chooseProperties = this.calculateProperties();
             this.lineOptions = this.calculateSeries();
         },
         calculateProperties: function() {
             var sessionData = countlySession.getSessionData();
-            if (!this.initialized) {
+            if (!sessionData || !sessionData.usage || !sessionData.usage['total-sessions']) {
                 sessionData = {"usage": {"totals-sessions": {}}};
             }
 
@@ -228,7 +235,7 @@ var SessionHomeWidget = countlyVue.views.create({
                 break;
             }
             var series = [];
-            if (this.initialized) {
+            if (sessionDP && sessionDP.chartDP && sessionDP.chartDP[0] && sessionDP.chartDP[1]) {
                 series.push({"name": sessionDP.chartDP[1].label, "data": sessionDP.chartDP[1].data});
                 series.push({"name": sessionDP.chartDP[0].label + "(" + CV.i18n('common.previous-period') + ")", "data": sessionDP.chartDP[0].data, "color": "#39C0C8", lineStyle: {"color": "#39C0C8"} });
             }
@@ -266,13 +273,11 @@ countlyVue.container.registerData("/home/widgets", {
     _id: "sessions-dashboard-widget",
     permission: "core",
     label: CV.i18n('dashboard.audience'),
-    description: CV.i18n('session-overview.description'),
     enabled: {"default": true}, //object. For each type set if by default enabled
     available: {"default": true}, //object. default - for all app types. For other as specified.
     order: 0, //sorted by ascending
     placeBeforeDatePicker: false,
     component: SessionHomeWidget,
-    linkTo: {"label": CV.i18n('dashboard.go-to-sessions'), "href": "#/analytics/sessions"}
 });
 
 

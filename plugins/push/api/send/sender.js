@@ -152,7 +152,7 @@ class Sender {
                 .pipe(batcher, {end: false})
                 .pipe(resultor, {end: false});
 
-            pushes.on('close', () => {
+            pushes.once('close', () => {
                 flush = connector.flushIt();
             });
             // connector.on('close', () => batcher.closeOnSyn());

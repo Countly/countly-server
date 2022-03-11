@@ -2,17 +2,17 @@ var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    { validateRead, validateUser } = require('../../../api/utils/rights.js');
+    { validateGlobalAdmin, validateUser } = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'systemlogs';
+//const FEATURE_NAME = 'systemlogs';
 plugins.setConfigs("systemlogs", {
     preventIPTracking: false
 });
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
+    /*plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
-    });
+    });*/
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
@@ -44,7 +44,7 @@ plugins.setConfigs("systemlogs", {
                 countlyCommon.getPeriodObj(params);
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
-            validateRead(params, FEATURE_NAME, function(paramsNew) {
+            validateGlobalAdmin(params, function(paramsNew) {
                 var columns = [null, "ts", "u", "ip", "a", "i"];
                 common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
                     total--;
@@ -89,7 +89,7 @@ plugins.setConfigs("systemlogs", {
             return true;
         }
         else if (params.qstring.method === 'systemlogs_meta') {
-            validateRead(params, FEATURE_NAME, function(paramsNew) {
+            validateGlobalAdmin(params, function(paramsNew) {
                 //get all users
                 common.db.collection('members').find({}, {username: 1, email: 1, full_name: 1}).toArray(function(err1, users) {
                     common.db.collection('systemlogs').findOne({_id: "meta_v2"}, {_id: 0}, function(err2, res) {

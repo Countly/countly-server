@@ -1,4 +1,5 @@
 <div v-bind:class="[componentId]">
+	<clyd-home-widget-header :widget="headerData"></clyd-home-widget-header>
 	<cly-section class="keywords-dashboard-widget">
         <cly-metric-cards :multiline="true" v-loading="isLoading" style="min-height:100px;">
             <cly-metric-card :label="searchTermsTop3[0].label">

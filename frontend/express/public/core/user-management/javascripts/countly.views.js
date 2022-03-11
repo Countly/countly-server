@@ -1,9 +1,5 @@
 /*global countlyAuth, app, countlyGlobal, $, groupsModel, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
-    var featureNameMapper = {
-        'block': 'filtering_rules',
-        'geo': 'location_targeting'
-    };
 
     var DataTable = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/data-table.html"),
@@ -153,6 +149,7 @@
             };
         },
         methods: {
+            featureBeautifier: countlyAuth.featureBeautifier,
             generatePassword: function() {
                 var generatedPassword = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
                 this.$refs.userDrawer.editedObject.password = generatedPassword;
@@ -372,6 +369,18 @@
                         this.permissionSets[index][type].allowed[this.features[feature2]] = this.permissionSets[index][type].all;
                     }
                 }
+                if (this.permissionSets[index][type].all) {
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.future-plugins'),
+                        type: 'info'
+                    });
+                }
+                if (this.permissionSets[index][type].all) {
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.future-plugins'),
+                        type: 'info'
+                    });
+                }
             },
             handleCommand: function(command, index) {
                 switch (command) {
@@ -543,7 +552,7 @@
                 // if it's in edit mode
                 if (this.settings.editMode) {
                     // is user member of a group?
-                    if (this.user.group_id) {
+                    if (this.user.group_id && countlyGlobal.plugins.indexOf('groups') > -1) {
                         // set group state
                         this.group = { _id: this.user.group_id[0] };
                         // add initial permission state for cases who unselected group
@@ -563,7 +572,7 @@
                                         // TODO: these checks will be converted to helper method
                                         permissionSet[types[type]].all = typeof this.user.permission[types[type]][appFromSet].all === "boolean" ? this.user.permission[types[type]][appFromSet].all : false;
                                         if (!(types[type] === "r" && this.features[feature] === 'core')) {
-                                            permissionSet[types[type]].allowed[this.features[feature]] = typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false;
+                                            permissionSet[types[type]].allowed[this.features[feature]] = permissionSet[types[type]].all || (typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false);
                                         }
                                     }
                                 }
@@ -598,15 +607,6 @@
 
                     this.permissionSets.push(permissionSet_);
                 }
-            },
-            // TODO: move this to countlyAuth
-            featureBeautifier: function(featureName) {
-                var fa = featureName.split('_');
-                var ret = '';
-                for (var i = 0; i < fa.length; i++) {
-                    ret += fa[i].substr(0, 1).toUpperCase() + fa[i].substr(1, fa[i].length - 1) + ' ';
-                }
-                return ret;
             },
             onGroupChange: function(groupVal) {
                 this.group = groupVal;
@@ -690,14 +690,7 @@
                     self.users.push(usersObj[user]);
                 }
                 self.loading = false;
-                self.features = countlyUserManagement.getFeatures().map(function(f) {
-                    if (featureNameMapper[f]) {
-                        return featureNameMapper[f];
-                    }
-                    else {
-                        return f;
-                    }
-                }).sort();
+                self.features = countlyUserManagement.getFeatures().sort();
             });
         }
     });

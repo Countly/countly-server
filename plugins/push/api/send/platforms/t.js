@@ -13,7 +13,7 @@ const key = 't';
  * @returns {string} platform key if it looks like request made by this platform
  */
 function guess(userAgent) {
-    return userAgent.includes('Test') && key;
+    return userAgent.includes('TestUserAgent') && key;
 }
 
 /**
