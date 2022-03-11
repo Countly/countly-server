@@ -791,21 +791,7 @@
 
     var GridComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.zoom],
-        props: {
-            data: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            },
-            isAllowed: {
-                type: Boolean,
-                default: true
-            }
-        },
-        mounted: function() {
-        },
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.commonFormatters, countlyVue.mixins.zoom],
         computed: {
             title: function() {
                 if (this.data.title) {
