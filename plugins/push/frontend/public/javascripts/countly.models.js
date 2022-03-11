@@ -1194,19 +1194,37 @@
                 result[PlatformEnum.IOS] = parseInt(dto.enabled.i);
                 return result;
             },
-            mapTotalActions: function(dto) {
+            mapDashboardTotal: function(dto, type, property) {
                 var result = {};
-                result[TypeEnum.ONE_TIME] = dto.actions.total;
-                result[TypeEnum.AUTOMATIC] = dto.actions_automated.total;
-                result[TypeEnum.TRANSACTIONAL] = dto.actions_tx.total;
+                result[type] = {};
+                result[type][PlatformEnum.ALL] = dto[property].total;
+                result[type][PlatformEnum.IOS] = dto[property].platforms[PlatformDtoEnum.IOS].total;
+                result[type][PlatformEnum.ANDROID] = dto[property].platforms[PlatformDtoEnum.ANDROID].total;
                 return result;
             },
-            mapTotalSent: function(dto) {
-                var result = {};
-                result[TypeEnum.ONE_TIME] = dto.sent.total;
-                result[TypeEnum.AUTOMATIC] = dto.sent_automated.total;
-                result[TypeEnum.TRANSACTIONAL] = dto.sent_tx.total;
-                return result;
+            mapTotalActions: function(dto, type) {
+                if (type === TypeEnum.ONE_TIME) {
+                    return this.mapDashboardTotal(dto, type, 'actions');
+                }
+                if (type === TypeEnum.AUTOMATIC) {
+                    return this.mapDashboardTotal(dto, type, 'actions_automated');
+                }
+                if (type === TypeEnum.TRANSACTIONAL) {
+                    return this.mapDashboardTotal(dto, type, 'actions_tx');
+                }
+                throw new Error('Unknown push notification type:' + type);
+            },
+            mapTotalSent: function(dto, type) {
+                if (type === TypeEnum.ONE_TIME) {
+                    return this.mapDashboardTotal(dto, type, 'sent');
+                }
+                if (type === TypeEnum.AUTOMATIC) {
+                    return this.mapDashboardTotal(dto, type, 'sent_automated');
+                }
+                if (type === TypeEnum.TRANSACTIONAL) {
+                    return this.mapDashboardTotal(dto, type, 'sent_tx');
+                }
+                throw new Error('Unknown push notification type:' + type);
             },
             mapMainDashboard: function(dashboardDto, type) {
                 return {
@@ -1214,8 +1232,8 @@
                     periods: this.mapPeriods(dashboardDto, type),
                     totalAppUsers: parseInt(dashboardDto.users),
                     enabledUsers: this.mapEnabledUsers(dashboardDto),
-                    totalActions: this.mapTotalActions(dashboardDto),
-                    totalSent: this.mapTotalSent(dashboardDto)
+                    totalActions: this.mapTotalActions(dashboardDto, type),
+                    totalSent: this.mapTotalSent(dashboardDto, type)
                 };
             },
             mapAndroidDashboard: function(dto) {
@@ -1294,7 +1312,7 @@
                         date: moment(dto.created).valueOf(),
                         time: moment(dto.created).format("H:mm")
                     },
-                    name: dto.info && dto.info.title || "-",
+                    name: dto.info && dto.info.title,
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
                     localizations: localizations,

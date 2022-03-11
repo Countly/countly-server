@@ -1087,12 +1087,12 @@
                     data: [
                         {
                             name: CV.i18n('push-notification.sent-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalSent[this.selectedPushNotificationType]),
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalSent[this.selectedPushNotificationType][this.selectedPlatformFilter]),
                             tooltip: CV.i18n('push-notification.sent-serie-description')
                         },
                         {
                             name: CV.i18n('push-notification.actions-performed-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalActions[this.selectedPushNotificationType]),
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalActions[this.selectedPushNotificationType][this.selectedPlatformFilter]),
                             tooltip: CV.i18n('push-notification.actions-performed-serie-description')
                         }
                     ]
