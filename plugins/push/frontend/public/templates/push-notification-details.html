@@ -2,7 +2,7 @@
     <div v-bind:class="[componentId]">
         <cly-header class="cly-vue-push-notification-details-header">
             <template v-slot:header-left>
-                <h2> {{pushNotification.name }} </h2>
+                <h2> {{pushNotification.name || '-' }} </h2>
             </template>
             <template v-slot:header-top>
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>

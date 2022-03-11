@@ -1312,7 +1312,7 @@
                         date: moment(dto.created).valueOf(),
                         time: moment(dto.created).format("H:mm")
                     },
-                    name: dto.info && dto.info.title || "-",
+                    name: dto.info && dto.info.title,
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
                     localizations: localizations,
