@@ -1,0 +1,20 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="48" cy="48" r="48" fill="#FFF4CE"/>
+<mask id="mask0_1324_125" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="96" height="96">
+<circle cx="48" cy="48" r="48" fill="#E1EFFF"/>
+</mask>
+<g mask="url(#mask0_1324_125)">
+<rect x="-65.8613" y="24" width="145.861" height="91.0075" rx="4.98671" fill="white"/>
+<rect x="45" y="32" width="27" height="6" rx="1" fill="#12AF51"/>
+<rect x="42.001" y="75.0005" width="30" height="6" rx="1" fill="#ECECEC"/>
+<rect x="18" y="93" width="30" height="6" rx="1" fill="#ECECEC"/>
+<rect x="30.001" y="75" width="9" height="6" rx="1" fill="#ECECEC"/>
+<rect x="18.001" y="75" width="9" height="6" rx="1" fill="#ECECEC"/>
+<path opacity="0.3" d="M-3 48H72V67H-3V48Z" fill="#ECECEC"/>
+<rect x="24" y="55" width="30" height="6" rx="1" fill="#ECECEC"/>
+<rect x="-99.999" y="83.0009" width="172" height="6" rx="1" fill="#E2E4E8"/>
+<path d="M-11 67L72 67" stroke="#ECECEC" stroke-width="0.362487" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M4 48L4 67" stroke="#ECECEC" stroke-width="0.362487" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="14.5" cy="57.5" r="4.5" stroke="#017AFF" stroke-width="2"/>
+</g>
+</svg>
