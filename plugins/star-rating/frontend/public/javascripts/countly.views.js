@@ -155,7 +155,17 @@
         },
         data: function() {
             return {
-                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
+                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
+                persistKey: 'ratingsWidgetsTable_' + countlyCommon.ACTIVE_APP_ID,
+                tableDynamicCols: [
+                    {
+                        value: "target_pages",
+                        label: CV.i18n("feedback.pages"),
+                        default: true,
+                        required: true
+
+                    }
+                ],
             };
         },
         computed: {
