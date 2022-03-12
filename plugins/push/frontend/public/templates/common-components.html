@@ -2,7 +2,7 @@
     <div v-bind:class="['bu-level-item','cly-vue-push-notification-large-radio-button-with-description__container','bu-pr-1']">
         <el-radio :label="label"  border class="cly-vue-push-notification-large-radio-button-with-description__button" v-model="innerValue"> 
             <div class="cly-vue-push-notification-large-radio-button-with-description__title bu-mt-2">{{title}}</div>
-            <div class="cly-vue-push-notification-large-radio-button-with-description__content bu-level bu-ml-5 bu-mt-2"> 
+            <div class="cly-vue-push-notification-large-radio-button-with-description__content bu-level bu-ml-5 bu-mt-2 font-weight-normal"> 
                 <slot v-if="hasDefaultSlot"></slot>      
                 <template v-if="description">{{description}}</template>               
             </div>
