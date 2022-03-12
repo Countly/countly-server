@@ -442,6 +442,11 @@
         ],
         data: function() {
             return {
+                empty: {
+                    title: CV.i18n("ratings.empty.title"),
+                    body: "",
+                    image: "/star-rating/images/star-rating/ratings-empty.svg"
+                },
                 widgets: [],
                 drawerSettings: {
                     createTitle: CV.i18n('feedback.add-widget'),
@@ -657,19 +662,24 @@
                 // reset cumulative data
                 self.cumulativeData = [{
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 0
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 1
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 2
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 3
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 4
                 }];
 
                 var ratingArray = [];
