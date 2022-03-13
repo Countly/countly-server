@@ -444,7 +444,7 @@
             return {
                 empty: {
                     title: CV.i18n("ratings.empty.title"),
-                    body: "",
+                    body: CV.i18n("ratings.empty.body"),
                     image: "/star-rating/images/star-rating/ratings-empty.svg"
                 },
                 widgets: [],
