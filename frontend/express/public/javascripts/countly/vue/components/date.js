@@ -640,6 +640,13 @@
             },
             weekdays: function() {
                 return moment.weekdaysMin();
+            },
+            warnings: function() {
+                if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {
+                    var lengthStr = this.rangeLimits.maxLength[0] + ' ' + CV.i18n('common.buckets.' + this.rangeLimits.maxLength[1]);
+                    return {'maxLength': CV.i18n('common.range-length-limit', lengthStr)};
+                }
+                return {};
             }
         },
         props: {
@@ -945,6 +952,9 @@
             handleDiscardClick: function() {
                 this.doDiscard();
             },
+            triggerCommitWarning: function(/*errorType*/) {
+                //this.warnings[errorType];
+            },
             doClose: function() {
                 this.$refs.dropdown.handleClose();
             },
@@ -957,7 +967,7 @@
                     if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {
                         var allowedMax = moment(this.minDate).add(this.rangeLimits.maxLength[0], this.rangeLimits.maxLength[1]);
                         if (allowedMax < moment(this.maxDate)) {
-                            return;
+                            return this.triggerCommitWarning('maxLength');
                         }
                     }
                     var submittedVal = this.isRange ? value : value[0];
