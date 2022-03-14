@@ -66,7 +66,6 @@
             widgetText: function() {
                 return this.data.content;
             }
-
         },
         methods: {
             beforeCopy: function(data) {
