@@ -313,10 +313,8 @@
                 if (this.data.title) {
                     return this.data.title;
                 }
-                if (this.data.dashData) {
-                    return CV.i18n("sources.title");
-                }
-                return "";
+
+                return this.i18n("sources.title");
             },
             showBuckets: function() {
                 return false;

@@ -17,7 +17,7 @@
         },
         computed: {
             title: function() {
-                var title = "";
+                var title = this.i18nM("dashboards.widget-type.events");
 
                 if (this.data.events && this.data.events.length === 1) {
                     var parts = this.data.events[0].split("***");
@@ -30,7 +30,7 @@
                     }
                 }
 
-                return this.data.title || title || CV.i18nM("dashboards.widget-type.events");
+                return this.data.title || title;
             },
             showBuckets: function() {
                 return false;

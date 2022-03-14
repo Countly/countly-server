@@ -196,10 +196,8 @@ var GridComponent = countlyVue.views.create({
             if (this.data.title) {
                 return this.data.title;
             }
-            if (this.data.dashData) {
-                return CV.i18n("user-analytics.overview-title");
-            }
-            return "";
+
+            return this.i18n("user-analytics.overview-title")
         },
         metricLabels: function() {
             this.data = this.data || {};

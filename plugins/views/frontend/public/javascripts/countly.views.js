@@ -797,10 +797,8 @@
                 if (this.data.title) {
                     return this.data.title;
                 }
-                if (this.data.dashData) {
-                    return CV.i18n("views.widget-type");
-                }
-                return "";
+
+                return this.i18n("views.widget-type");
             },
             showBuckets: function() {
                 return false;
