@@ -132,7 +132,7 @@
         data: function() {
             return {
                 commentsTablePersistKey: 'comments_table_' + countlyCommon.ACTIVE_APP_ID
-            }
+            };
         }
     });
 
@@ -144,7 +144,7 @@
         data: function() {
             return {
                 ratingsTablePersistKey: 'ratings_table_' + countlyCommon.ACTIVE_APP_ID
-            }
+            };
         }
     });
 
