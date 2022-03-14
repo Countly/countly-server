@@ -305,6 +305,25 @@
         }
     };
 
+    var DashboardsGlobalMixin = {
+        props: {
+            data: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            isAllowed: {
+                type: Boolean,
+                default: true
+            },
+            loading: {
+                type: Boolean,
+                default: true
+            }
+        }
+    };
+
     var _mixins = {
         'autoRefresh': autoRefreshMixin,
         'refreshOnParentActive': refreshOnParentActiveMixin,
@@ -314,7 +333,8 @@
         'basicComponentUtils': basicComponentUtilsMixin,
         'customDashboards': {
             apps: DashboardsAppsMixin,
-            widget: DashboardsWidgetMixin
+            widget: DashboardsWidgetMixin,
+            global: DashboardsGlobalMixin
         },
     };
 

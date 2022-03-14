@@ -180,21 +180,7 @@ app.route("/analytics/users/*tab", "user-analytics-tab", function(tab) {
 //Analytics->User analytics - overview widget
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
-    props: {
-        data: {
-            type: Object,
-            default: function() {
-                return {};
-            }
-        },
-        isAllowed: {
-            type: Boolean,
-            default: true
-        }
-    },
-    mounted: function() {
-    },
+    mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
     data: function() {
         return {
             showBuckets: false,
@@ -210,10 +196,8 @@ var GridComponent = countlyVue.views.create({
             if (this.data.title) {
                 return this.data.title;
             }
-            if (this.data.dashData) {
-                return CV.i18n("user-analytics.overview-title");
-            }
-            return "";
+
+            return this.i18n("user-analytics.overview-title");
         },
         metricLabels: function() {
             this.data = this.data || {};
