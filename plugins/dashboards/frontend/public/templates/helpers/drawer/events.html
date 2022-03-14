@@ -3,7 +3,7 @@
     rules="required"
     :label="i18nM(multiple ? 'dashboards.events': 'dashboards.event')">
     <el-select
-		isFullWidth
+        :is-full-width="true"
         :key="rerender"
         style="width: 100%;"
         v-bind="$attrs"
