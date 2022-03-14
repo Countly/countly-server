@@ -128,6 +128,11 @@
                     return comment;
                 });
             }
+        },
+        data: function() {
+            return {
+                commentsTablePersistKey: 'comments_table_' + countlyCommon.ACTIVE_APP_ID
+            };
         }
     });
 
@@ -135,6 +140,11 @@
         template: CV.T("/star-rating/templates/ratings-table.html"),
         props: {
             ratings: Array
+        },
+        data: function() {
+            return {
+                ratingsTablePersistKey: 'ratings_table_' + countlyCommon.ACTIVE_APP_ID
+            };
         }
     });
 
@@ -156,16 +166,7 @@
         data: function() {
             return {
                 cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
-                persistKey: 'ratingsWidgetsTable_' + countlyCommon.ACTIVE_APP_ID,
-                tableDynamicCols: [
-                    {
-                        value: "target_pages",
-                        label: CV.i18n("feedback.pages"),
-                        default: true,
-                        required: true
-
-                    }
-                ],
+                widgetsTablePersistKey: 'widgets_table_' + countlyCommon.ACTIVE_APP_ID
             };
         },
         computed: {
@@ -442,11 +443,6 @@
         ],
         data: function() {
             return {
-                empty: {
-                    title: CV.i18n("ratings.empty.title"),
-                    body: CV.i18n("ratings.empty.body"),
-                    image: "/star-rating/images/star-rating/ratings-empty.svg"
-                },
                 widgets: [],
                 drawerSettings: {
                     createTitle: CV.i18n('feedback.add-widget'),
@@ -662,24 +658,19 @@
                 // reset cumulative data
                 self.cumulativeData = [{
                     count: 0,
-                    percent: 0,
-                    rating: 0
+                    percent: 0
                 }, {
                     count: 0,
-                    percent: 0,
-                    rating: 1
+                    percent: 0
                 }, {
                     count: 0,
-                    percent: 0,
-                    rating: 2
+                    percent: 0
                 }, {
                     count: 0,
-                    percent: 0,
-                    rating: 3
+                    percent: 0
                 }, {
                     count: 0,
-                    percent: 0,
-                    rating: 4
+                    percent: 0
                 }];
 
                 var ratingArray = [];

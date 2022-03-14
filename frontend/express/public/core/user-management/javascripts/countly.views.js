@@ -43,7 +43,8 @@
                         label: CV.i18n('management-users.last_login'),
                         default: true
                     }
-                ]
+                ],
+                userManagementPersistKey: 'userManagement_table_' + countlyCommon.ACTIVE_APP_ID
             };
         },
         computed: {

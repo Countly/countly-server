@@ -10,7 +10,8 @@
         ],
         data: function() {
             return {
-                list: []
+                list: [],
+                importsTablePersistKey: 'imports_table_' + countlyCommon.ACTIVE_APP_ID
             };
         },
         methods: {
@@ -21,7 +22,12 @@
                 var self = this;
                 countlyDataMigration.loadImportList()
                     .then(function(res) {
-                        self.list = Object.values(res.result);
+                        if (typeof res.result === "object") {
+                            self.list = res.result;
+                        }
+                        else if (typeof res.result === "string") {
+                            self.list = [];
+                        }
                     });
             },
             handleCommand: function(command, scope, row) {
@@ -68,7 +74,8 @@
         ],
         data: function() {
             return {
-                list: []
+                list: [],
+                exportsTablePersistKey: 'exports_table_' + countlyCommon.ACTIVE_APP_ID
             };
         },
         methods: {

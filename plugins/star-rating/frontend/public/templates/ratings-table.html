@@ -1,4 +1,4 @@
-<cly-datatable-n :rows="ratings">
+<cly-datatable-n :rows="ratings" :persist-key="ratingsTablePersistKey">
     <template v-slot="scope">
         <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')">
             <template v-slot="rowScope">
