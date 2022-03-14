@@ -37,7 +37,7 @@
         <template v-slot="scope">
             <el-table-column type="switch" fixed="left" width="88" prop="enabled">
                 <template v-slot="rowScope">
-                    <el-switch :value="rowScope.row.enabled" class="bu-ml-4  bu-mr-2" :disabled="!canUserUpdate"
+                    <el-switch :value="rowScope.row.enabled" class="bu-ml-4  bu-mr-2" :disabled="!rowScope.row._canUpdate"
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                     </el-switch>
                 </template>
@@ -84,7 +84,7 @@
             <el-table-column type="options">
                 <template v-slot="rowScope">
                     <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleReportEditCommand($event,rowScope)">
-                        <el-dropdown-item v-if="canUserUpdate" icon="el-icon-document-copy" command="edit-comment">
+                        <el-dropdown-item v-if="rowScope.row._canUpdate" icon="el-icon-document-copy" command="edit-comment">
                             Edit
                         </el-dropdown-item>
                         <el-dropdown-item  icon="el-icon-position" command="send-comment">
@@ -93,7 +93,7 @@
                         <el-dropdown-item  icon="el-icon-chat-dot-square" command="preview-comment">
                             Preview
                         </el-dropdown-item>
-                        <el-dropdown-item v-if="canUserDelete" icon="el-icon-delete" command="delete-comment">
+                        <el-dropdown-item v-if="rowScope.row._canDelete" icon="el-icon-delete" command="delete-comment">
                             Delete
                         </el-dropdown-item>
                     </cly-more-options>

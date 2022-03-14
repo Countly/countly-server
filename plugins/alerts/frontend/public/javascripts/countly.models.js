@@ -158,6 +158,8 @@
                 context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
             },
             saveAlert: function(context, alertConfig) {
+                delete alertConfig._canUpdate;
+                delete alertConfig._canDelete;
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/alert/save",
@@ -205,6 +207,9 @@
                 });
             },
             saveOnlineUsersAlert: function(context, alertConfig) {
+                delete alertConfig._canUpdate;
+                delete alertConfig._canDelete;
+
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/save",

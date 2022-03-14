@@ -815,7 +815,7 @@
                 newElement.setAttribute("data-user-property-label", userProperty.l);
                 newElement.setAttribute("data-user-property-value", userProperty.k);
                 newElement.setAttribute("data-user-property-fallback", userProperty.f);
-                newElement.innerText = userProperty.k + "|" + userProperty.f;
+                newElement.innerText = userProperty.l + "|" + userProperty.f;
                 return newElement.outerHTML;
             },
             decodeMessage: function(message) {
@@ -1308,10 +1308,7 @@
                 return {
                     _id: dto._id || null,
                     status: this.mapStatus(dto),
-                    createdDateTime: {
-                        date: moment(dto.created).valueOf(),
-                        time: moment(dto.created).format("H:mm")
-                    },
+                    createdAt: dto.info && dto.info.created || null,
                     name: dto.info && dto.info.title,
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
