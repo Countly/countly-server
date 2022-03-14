@@ -714,6 +714,13 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            rangeLimits: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
             }
         },
         data: function() {
@@ -947,6 +954,12 @@
             },
             doCommit: function(value, isShortcut) {
                 if (value) {
+                    if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {
+                        var allowedMax = moment(this.minDate).add(this.rangeLimits.maxLength[0], this.rangeLimits.maxLength[1]);
+                        if (allowedMax < moment(this.maxDate)) {
+                            return;
+                        }
+                    }
                     var submittedVal = this.isRange ? value : value[0];
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     this.$emit("input", submittedVal);
