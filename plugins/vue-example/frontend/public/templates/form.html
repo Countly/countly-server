@@ -317,7 +317,7 @@
             </cly-section>
             <cly-section title="Helpers (cly-app-select, single)">
                 <div class="example-cell">
-                    <cly-app-select v-model="selectedApp"></cly-app-select>
+                    <cly-app-select v-model="selectedApp" :auth='{"feature": "drill", "permission": "c"}'></cly-app-select>
                     <cly-app-select v-model="selectedApp" allow-all></cly-app-select>
                 </div>
                 <div class="example-cell">
