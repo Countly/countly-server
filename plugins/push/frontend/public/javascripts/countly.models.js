@@ -815,7 +815,7 @@
                 newElement.setAttribute("data-user-property-label", userProperty.l);
                 newElement.setAttribute("data-user-property-value", userProperty.k);
                 newElement.setAttribute("data-user-property-fallback", userProperty.f);
-                newElement.innerText = userProperty.k + "|" + userProperty.f;
+                newElement.innerText = userProperty.l + "|" + userProperty.f;
                 return newElement.outerHTML;
             },
             decodeMessage: function(message) {
