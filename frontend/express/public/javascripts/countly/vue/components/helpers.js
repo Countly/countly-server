@@ -1,4 +1,4 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal*/
+/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth*/
 
 (function(countlyVue) {
 
@@ -447,6 +447,13 @@
                 type: Number,
                 default: 0,
                 required: false
+            },
+            auth: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
             }
         },
         computed: {
@@ -461,6 +468,32 @@
             },
             apps: function() {
                 var apps = countlyGlobal.apps || {};
+
+                if (this.auth && this.auth.feature && this.auth.permission) {
+                    var expectedPermission = this.auth.permission,
+                        targetFeature = this.auth.feature;
+
+                    return Object.keys(apps).reduce(function(acc, key) {
+                        var hasPermission,
+                            currentApp = apps[key];
+
+                        if (expectedPermission === "r") {
+                            hasPermission = countlyAuth.validateRead(targetFeature, null, currentApp._id);
+                        }
+                        else {
+                            hasPermission = countlyAuth.validateWrite(expectedPermission, targetFeature, null, currentApp._id);
+                        }
+
+                        if (hasPermission) {
+                            acc.push({
+                                label: currentApp.name,
+                                value: currentApp._id
+                            });
+                        }
+                        return acc;
+                    }, []);
+                }
+
                 return Object.keys(apps).map(function(key) {
                     return {
                         label: apps[key].name,
