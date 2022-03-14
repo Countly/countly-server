@@ -62,7 +62,9 @@
                     value: "lastTriggerTimestampString",
                     label: CV.i18n('hooks.trigger-last-time'),
                     default: true
-                }]
+                }],
+                tablePersistKey: "hooks_table_" + countlyCommon.ACTIVE_APP_ID,
+
             };
         },
         methods: {
