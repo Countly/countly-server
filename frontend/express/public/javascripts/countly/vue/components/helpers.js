@@ -474,17 +474,9 @@
                         targetFeature = this.auth.feature;
 
                     return Object.keys(apps).reduce(function(acc, key) {
-                        var hasPermission,
-                            currentApp = apps[key];
+                        var currentApp = apps[key];
 
-                        if (expectedPermission === "r") {
-                            hasPermission = countlyAuth.validateRead(targetFeature, null, currentApp._id);
-                        }
-                        else {
-                            hasPermission = countlyAuth.validateWrite(expectedPermission, targetFeature, null, currentApp._id);
-                        }
-
-                        if (hasPermission) {
+                        if (countlyAuth.validate(expectedPermission, targetFeature, null, currentApp._id)) {
                             acc.push({
                                 label: currentApp.name,
                                 value: currentApp._id

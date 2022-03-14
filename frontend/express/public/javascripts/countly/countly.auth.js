@@ -169,6 +169,23 @@
     };
 
     /**
+     * validate all types of requests for specific feature on specific app
+     * @param {string} accessType - write process type [c, r, u, d]
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validate = function(accessType, feature, member, app_id) {
+        if (accessType === "r") {
+            return countlyAuth.validateRead(feature, member, app_id);
+        }
+        else {
+            return validateWrite(accessType, feature, member, app_id);
+        }
+    };
+
+    /**
      * Validate is this user global admin or not
      * @returns {boolean} is this user global admin or not?
      */
