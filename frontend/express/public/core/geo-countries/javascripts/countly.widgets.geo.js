@@ -27,7 +27,8 @@
                 if (this.data.dashData) {
                     return this.i18n("dashboards.data-type.geo") + " (" + (this.map[this.data.breakdowns[0]] || this.data.breakdowns[0]) + ")";
                 }
-                return this.i18n("dashboards.data-type.geo")
+
+                return this.i18n("dashboards.data-type.geo");
             },
             showBuckets: function() {
                 return false;

@@ -197,7 +197,7 @@ var GridComponent = countlyVue.views.create({
                 return this.data.title;
             }
 
-            return this.i18n("user-analytics.overview-title")
+            return this.i18n("user-analytics.overview-title");
         },
         metricLabels: function() {
             this.data = this.data || {};
