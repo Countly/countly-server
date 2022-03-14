@@ -1044,7 +1044,7 @@
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
                     soundFilename: androidSettingsDto && androidSettingsDto.sound || "",
-                    badgeNumber: androidSettingsDto && androidSettingsDto.badge,
+                    badgeNumber: androidSettingsDto && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
                     onClickURL: androidSettingsDto && androidSettingsDto.url || '',
@@ -1056,7 +1056,7 @@
                 return {
                     subtitle: "",
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
-                    badgeNumber: iosSettingsDto && iosSettingsDto.badge,
+                    badgeNumber: iosSettingsDto && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
                     onClickURL: iosSettingsDto && iosSettingsDto.url || '',
