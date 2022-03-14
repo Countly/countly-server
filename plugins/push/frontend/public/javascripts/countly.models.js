@@ -1513,9 +1513,13 @@
                 var htmlElement = document.createElement('div');
                 htmlElement.innerHTML = localizedMessage[container];
                 for (var index = 0; index < htmlElement.children.length; index++) {
-                    var idAtribute = htmlElement.children[index].getAttributeNode('id').value;
-                    var idNumber = idAtribute.split('-')[1];
-                    userPropertyIds.push(idNumber);
+                    var idAttribute = htmlElement.children[index].getAttributeNode('id');
+                    if (idAttribute && idAttribute.value) {
+                        var idAtributeValue = idAttribute.value;
+                        var idNumber = idAtributeValue.split('-')[1];
+                        userPropertyIds.push(idNumber);
+                    }
+
                 }
                 return userPropertyIds;
             },
