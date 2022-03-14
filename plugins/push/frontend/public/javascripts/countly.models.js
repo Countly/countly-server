@@ -1651,6 +1651,9 @@
                     result.media = model.settings[PlatformEnum.IOS].mediaURL;
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
                 }
+                if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
+                    result.specific = [{subtitle: iosSettings.subtitle}];
+                }
                 return result;
             },
             mapAndroidSettings: function(model, options) {

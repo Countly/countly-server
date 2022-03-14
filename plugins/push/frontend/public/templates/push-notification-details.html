@@ -118,7 +118,15 @@
                         </div>
                     </div>
                     <div style="width: 16.166667%; padding-right: 24px">
-                        <mobile-message-preview :title="message.title" :content="message.content" :platforms="pushNotification.platforms" :media="previewMessageMedia" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
+                        <mobile-message-preview 
+                            :title="message.title"
+                            :subtitle="message.settings[PlatformEnum.IOS].subtitle"
+                            :content="message.content" 
+                            :platforms="pushNotification.platforms" 
+                            :media="previewMessageMedia" 
+                            :buttons="message.buttons.map(function(item){return item.label})" 
+                            class="cly-vue-push-notification-details-summary__message-preview"> 
+                        </mobile-message-preview>
                     </div>
                 </div>
             </div>
