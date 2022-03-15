@@ -1550,6 +1550,9 @@
             },
             shouldShowGoToActionedUrl: function() {
                 return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.actioned > 0;
+            },
+            dashboardTokens: function() {
+                return this.$store.state.countlyPushNotification.details.dashboardTokens;
             }
         },
         watch: {
@@ -1759,16 +1762,24 @@
                 if (this.pushNotification.cohorts && this.pushNotification.cohorts.length) {
                     queryData.chr = {"$in": this.pushNotification.cohorts};
                 }
-                this.pushNotification.platforms.forEach(function(platform) {
-                    if (self.PlatformEnum.ANDROID === platform) {
-                        $in.push('tkap');
-                    }
-                    if (self.PlatformEnum.IOS === platform) {
-                        $in.push('tkip');
+                var platformIndex = 2;
+                Object.keys(this.dashboardTokens).forEach(function(tokenName) {
+                    if (self.pushNotification.platforms.some(function(platformName) {
+                        // Note: token name format is 'tk'+platform+token_subtype.
+                        if (platformName === self.PlatformEnum.ANDROID) {
+                            return 'a' === tokenName.charAt(platformIndex);
+                        }
+                        if (platformName === self.PlatformEnum.IOS) {
+                            return 'i' === tokenName.charAt(platformIndex);
+                        }
+                    })) {
+                        $in.push(tokenName);
                     }
                 });
-                queryData.push = {};
-                queryData.push.$in = $in;
+                if ($in.length) {
+                    queryData.push = {};
+                    queryData.push.$in = $in;
+                }
                 CountlyHelpers.goTo({
                     url: '/users/qfilter/' + JSON.stringify(queryData),
                     from: "#/" + countlyCommon.ACTIVE_APP_ID + "/messaging/details/" + this.pushNotification._id,
