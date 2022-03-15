@@ -1044,7 +1044,7 @@
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
                     soundFilename: androidSettingsDto && androidSettingsDto.sound || "",
-                    badgeNumber: androidSettingsDto && androidSettingsDto.badge.toString(),
+                    badgeNumber: androidSettingsDto && androidSettingsDto.badge && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
                     onClickURL: androidSettingsDto && androidSettingsDto.url || '',
@@ -1056,7 +1056,7 @@
                 return {
                     subtitle: "",
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
-                    badgeNumber: iosSettingsDto && iosSettingsDto.badge.toString(),
+                    badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
                     onClickURL: iosSettingsDto && iosSettingsDto.url || '',
@@ -1308,7 +1308,7 @@
                 return {
                     _id: dto._id || null,
                     status: this.mapStatus(dto),
-                    createdAt: dto.info && dto.info.created || null,
+                    createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
                     name: dto.info && dto.info.title,
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
