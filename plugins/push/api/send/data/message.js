@@ -1,5 +1,5 @@
 'use strict';
-const { State, Status, STATUSES, Mongoable, DEFAULTS, S } = require('./const'),
+const { State, Status, STATUSES, Mongoable, DEFAULTS, S, S_REGEXP } = require('./const'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
@@ -394,10 +394,25 @@ class Message extends Mongoable {
      * Get user fields used in a Content
      * 
      * @param {Content[]} contents array of Content instances
+     * @param {boolean} deup remove leading 'up.'
      * @returns {string[]} array of app user field names
      */
-    static userFieldsFor(contents) {
-        let keys = contents.map(content => Object.values(content.messagePers || {}).concat(Object.values(content.titlePers || {})).map(obj => obj.k).concat(content.extras || []).map(Message.decodeFieldKey)).flat();
+    static userFieldsFor(contents, deup) {
+        let keys = contents.map(content => Object.values(content.messagePers || {}).concat(Object.values(content.titlePers || {}))
+            .map(obj => obj.k)
+            .concat(content.extras || [])
+            .map(Message.decodeFieldKey))
+            .flat();
+        if (deup) {
+            keys = keys.map(f => {
+                if (f.indexOf('up.') === 0) {
+                    return f.substring(3);
+                }
+                else {
+                    return f;
+                }
+            });
+        }
         // if (contents.length > 1) { // commenting out for now because we always need locale now - for result subs
         if (keys.indexOf('la') === -1) {
             keys.push('la');
@@ -424,7 +439,7 @@ class Message extends Mongoable {
      * @returns {string} original field name
      */
     static decodeFieldKey(key) {
-        return key.replace(new RegExp(S, 'g'), '.');
+        return key.replace(new RegExp(S_REGEXP, 'g'), '.');
     }
 
     /**

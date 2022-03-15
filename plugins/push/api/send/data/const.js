@@ -157,6 +157,7 @@ const TriggerKind = {
  * Separator used in property keys
  */
 const S = '|';
+const S_REGEXP = '\\|';
 
 /**
  * Type of personalization object
@@ -191,6 +192,7 @@ function toDate(date) {
 
 module.exports = {
     S,
+    S_REGEXP,
 
     State,
     Status,

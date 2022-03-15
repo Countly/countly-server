@@ -347,7 +347,7 @@ class Mapper {
         this.f = f;
         this.pf = p + f;
         this.topUserFields = [];
-        message.userFields.forEach(k => this.topUserFields.push(k.indexOf('.') === -1 ? k : k.substr(0, k.indexOf('.')))); // make sure we have 'custom', not 'custom.x'
+        Message.userFieldsFor(message.contents, true).forEach(k => this.topUserFields.push(k.indexOf('.') === -1 ? k : k.substr(0, k.indexOf('.')))); // make sure we have 'custom', not 'custom.x'
     }
 
     /**
@@ -514,7 +514,7 @@ class PusherPopper {
             await this.audience.addFilter(steps, this.audience.message.filter);
         }
 
-        let userFields = Message.userFieldsFor(this.audience.message.contents.concat(this.contents || []));
+        let userFields = Message.userFieldsFor(this.audience.message.contents.concat(this.contents || []), true);
 
         // Decrease amount of data we process here
         await this.audience.addProjection(steps, userFields);

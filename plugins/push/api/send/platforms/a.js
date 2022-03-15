@@ -370,6 +370,20 @@ const map = {
             }
         }
     },
+
+    /**
+     * Sends platform specific fields
+     * 
+     * @param {Template} template template
+     * @param {object} specific platform specific props to be sent
+     */
+    specific: function(template, specific) {
+        if (specific) {
+            if (specific.large_icon) {
+                template.result.data['c.li'] = specific.large_icon;
+            }
+        }
+    },
 };
 
 /**

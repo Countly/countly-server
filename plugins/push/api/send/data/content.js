@@ -220,6 +220,18 @@ class Content extends Validatable {
     }
 
     /**
+     * Getter for titlePers with leading "up." removed from field names
+     * 
+     * @returns {object|undefined} title personalization
+     */
+    get titlePersDeup() {
+        if (!this._titlePersDeup && this._data.titlePers) {
+            this._titlePersDeup = Content.deupPers(this._data.titlePers);
+        }
+        return this._titlePersDeup;
+    }
+
+    /**
      * Getter for message
      * 
      * @returns {string|undefined} message text
@@ -263,6 +275,38 @@ class Content extends Validatable {
         else {
             delete this._data.messagePers;
         }
+    }
+
+    /**
+     * Getter for titlePers with leading "up." removed from field names
+     * 
+     * @returns {object|undefined} title personalization
+     */
+    get messagePersDeup() {
+        if (!this._messagePersDeup && this._data.messagePers) {
+            this._messagePersDeup = Content.deupPers(this._data.messagePers);
+        }
+        return this._messagePersDeup;
+    }
+
+    /**
+     * Deup (remove leading "up.") from personalisation object and return new one
+     * 
+     * @param {object} obj object to deup
+     * @returns {object} object with keys deupped
+     */
+    static deupPers(obj) {
+        let ret = {};
+        Object.keys(obj).forEach(idx => {
+            let {f, c, k, t} = obj[idx];
+            ret[idx] = {
+                f,
+                c,
+                t,
+                k: k.indexOf('up.') === 0 ? k.substring(3) : k,
+            };
+        });
+        return ret;
     }
 
     /**
@@ -358,6 +402,28 @@ class Content extends Validatable {
         else {
             delete this._data.extras;
         }
+    }
+
+    /**
+     * Getter for extras with leading "up." removed
+     * 
+     * @returns {string[]} array of user prop keys to send
+     */
+    get extrasDeup() {
+        if (!this._extrasDeup && this._data.extras) {
+            this._extrasDeup = Content.deupExtras(this._data.extras);
+        }
+        return this._extrasDeup;
+    }
+
+    /**
+     * Deup (remove leading "up.") property key array
+     * 
+     * @param {string[]} arr array of property keys
+     * @returns {string[]} array with keys deupped
+     */
+    static deupExtras(arr) {
+        return arr.map(x => x.indexOf('up.') === 0 ? x.substring(3) : x);
     }
 
     /**
