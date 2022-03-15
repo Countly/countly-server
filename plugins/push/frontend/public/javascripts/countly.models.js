@@ -1044,7 +1044,7 @@
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
                     soundFilename: androidSettingsDto && androidSettingsDto.sound || "",
-                    badgeNumber: androidSettingsDto && androidSettingsDto.badge,
+                    badgeNumber: androidSettingsDto && androidSettingsDto.badge && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
                     onClickURL: androidSettingsDto && androidSettingsDto.url || '',
@@ -1056,7 +1056,7 @@
                 return {
                     subtitle: "",
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
-                    badgeNumber: iosSettingsDto && iosSettingsDto.badge,
+                    badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
                     onClickURL: iosSettingsDto && iosSettingsDto.url || '',
@@ -1308,7 +1308,7 @@
                 return {
                     _id: dto._id || null,
                     status: this.mapStatus(dto),
-                    createdAt: dto.info && dto.info.created || null,
+                    createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
                     name: dto.info && dto.info.title,
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
@@ -1513,9 +1513,13 @@
                 var htmlElement = document.createElement('div');
                 htmlElement.innerHTML = localizedMessage[container];
                 for (var index = 0; index < htmlElement.children.length; index++) {
-                    var idAtribute = htmlElement.children[index].getAttributeNode('id').value;
-                    var idNumber = idAtribute.split('-')[1];
-                    userPropertyIds.push(idNumber);
+                    var idAttribute = htmlElement.children[index].getAttributeNode('id');
+                    if (idAttribute && idAttribute.value) {
+                        var idAtributeValue = idAttribute.value;
+                        var idNumber = idAtributeValue.split('-')[1];
+                        userPropertyIds.push(idNumber);
+                    }
+
                 }
                 return userPropertyIds;
             },
