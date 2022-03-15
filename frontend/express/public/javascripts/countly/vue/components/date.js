@@ -733,6 +733,7 @@
         data: function() {
             var data = getInitialState(this);
             data.isVisible = false;
+            data.commitTooltip = {};
             return data;
         },
         watch: {
@@ -860,6 +861,7 @@
             },
             handleDropdownHide: function(aborted) {
                 this.abortPicking();
+                this.clearCommitWarning(true);
                 if (aborted) {
                     this.loadValue(this.value);
                 }
@@ -952,11 +954,27 @@
             handleDiscardClick: function() {
                 this.doDiscard();
             },
-            triggerCommitWarning: function(/*errorType*/) {
-                //this.warnings[errorType];
+            triggerCommitWarning: function(errorType) {
+                var self = this;
+                clearTimeout(self.commitTooltip._timeout);
+                self.commitTooltip = {
+                    show: true,
+                    content: this.warnings[errorType],
+                    trigger: 'manual'
+                };
+                self.commitTooltip._timeout = setTimeout(function() {
+                    self.clearCommitWarning();
+                }, 3000);
+            },
+            clearCommitWarning: function(destroyTimeout) {
+                if (destroyTimeout) {
+                    clearTimeout(this.commitTooltip._timeout);
+                }
+                this.commitTooltip = {};
             },
             doClose: function() {
                 this.$refs.dropdown.handleClose();
+                this.clearCommitWarning(true);
             },
             doDiscard: function() {
                 this.handleDropdownHide(true);
@@ -984,6 +1002,9 @@
                     this.doClose();
                 }
             }
+        },
+        beforeDestroy: function() {
+            this.clearCommitWarning(true);
         },
         template: CV.T('/javascripts/countly/vue/templates/datepicker.html')
     }));

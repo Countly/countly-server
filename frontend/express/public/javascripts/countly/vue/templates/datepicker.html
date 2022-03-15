@@ -153,7 +153,7 @@
             </div>
             <div class="cly-vue-daterp__commit-section">
                 <el-button @click="handleDiscardClick" class="cly-vue-daterp__cancel-button color-cool-gray-100 bg-warm-gray-20" size="small">{{ i18n("common.cancel") }}</el-button>
-                <el-button @click="handleConfirmClick" class="cly-vue-daterp__confirm-button" type="success" size="small">{{ !isRange ? i18n("common.apply") : i18n("common.apply-range") }}</el-button>
+                <el-button @click="handleConfirmClick" v-tooltip="commitTooltip" class="cly-vue-daterp__confirm-button" type="success" size="small">{{ !isRange ? i18n("common.apply") : i18n("common.apply-range") }}</el-button>
             </div>
         </div>
     </div>
