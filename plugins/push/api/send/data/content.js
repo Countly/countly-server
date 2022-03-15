@@ -91,7 +91,7 @@ class Content extends Validatable {
             return;
         }
         for (let k in obj) {
-            if (isNaN(parseInt(k))) {
+            if (isNaN(parseInt(k, 10))) {
                 return 'Personalisation key must be a number';
             }
             let opt = obj[k];

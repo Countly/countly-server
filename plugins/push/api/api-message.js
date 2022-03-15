@@ -423,13 +423,13 @@ module.exports.mime = async params => {
         else if (MEDIA_MIME_ALL.indexOf(info.headers['content-type']) === -1) {
             common.returnMessage(params, 400, {errors: [`Media mime type "${info.headers['content-type']}" is not supported`]}, null, true);
         }
-        else if (parseInt(info.headers['content-length']) > DEFAULTS.max_media_size) {
+        else if (parseInt(info.headers['content-length'], 10) > DEFAULTS.max_media_size) {
             common.returnMessage(params, 400, {errors: [`Media size (${info.headers['content-length']}) is too large`]}, null, true);
         }
         else {
             let media = info.url,
                 mediaMime = info.headers['content-type'],
-                mediaSize = parseInt(info.headers['content-length']);
+                mediaSize = parseInt(info.headers['content-length'], 10);
 
             common.returnOutput(params, {
                 media,

@@ -8,7 +8,7 @@
  */
 module.exports = function personalize(string, personaliztion) {
     let parts = [],
-        indicies = personaliztion ? Object.keys(personaliztion).map(parseInt) : [],
+        indicies = personaliztion ? Object.keys(personaliztion).map(n => parseInt(n, 10)) : [],
         i = 0,
         def;
 
