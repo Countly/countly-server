@@ -32,7 +32,11 @@ class Content extends Validatable {
      * @param {string}      data.buttons[].url      button action URL
      * @param {string}      data.buttons[].title    button title
      * @param {string}      data.buttons[].pers     button title personalization
-     * @param {object[]}    data.specific[]         ... any other platform-specific field like {contentAvailable: true}, {delayWhileIdle}, {collapseKey: 'key'}, etc. (use with specific method)
+     * @param {object[]}    data.specific[]         ... any other platform-specific field in a form of Object[], i.e. [{subtitle: 'Subtitle'}, {large_icon: 'icon'}]. 
+     *                                              Currently supported for iOS:
+     *                                                  {subtitle: 'Subtitle'}
+     *                                              Currently supported for Android:
+     *                                                  {large_icon: 'icon'}
      */
     constructor(data) {
         super(data);
@@ -602,6 +606,29 @@ class Content extends Validatable {
     }
 
     /**
+     * Getter for specific
+     * 
+     * @returns {object[]|undefined} media MIME type
+     */
+    get specific() {
+        return this._data.specific;
+    }
+
+    /**
+     * Setter for specific
+     * 
+     * @param {object[]|undefined} specific platform specific objects
+     */
+    set specific(specific) {
+        if (specific !== null && specific !== undefined) {
+            this._data.specific = specific;
+        }
+        else {
+            delete this._data.specific;
+        }
+    }
+
+    /**
      * Platform fields getter/setter
      * - call specific() to get an object containing all fields
      * - call specific(key) to get data for a key
@@ -612,7 +639,7 @@ class Content extends Validatable {
      * @param {any|null|undefined} value field data (pass undefined to get, pass null to remove)
      * @returns {any} stored value
      */
-    specific(key, value) {
+    specifics(key, value) {
         if (key === undefined) {
             return this._data.specific ? JSON.parse(this._data.specific) : undefined;
         }

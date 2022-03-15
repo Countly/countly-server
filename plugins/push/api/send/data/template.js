@@ -119,7 +119,15 @@ class Template {
             buttons = push.ov && push.ov.buttons ? null : undefined,
             data = push.ov && push.ov.data ? null : undefined,
             extras = push.ov && push.ov.extras ? null : undefined,
-            specific = push.ov && push.ov.specific || {};
+            specific = {};
+
+        if (push.ov && push.ov.specific) {
+            push.ov.specific.forEach(obj => {
+                for (let k in obj) {
+                    specific[k] = obj[k];
+                }
+            });
+        }
 
         // now go backwards through all contents picking the latest title/message/etc 
         // this ensures that any overrides don't mess with less important values (i.e. we cannot apply data without picking, message/messagePers etc are inter dependent as well)
@@ -156,11 +164,13 @@ class Template {
                 extras = c.extrasDeup;
             }
             if (c.specific) {
-                for (let k in c.specific) {
-                    if (specific[k] === undefined) {
-                        specific[k] = c.specific[k];
+                c.specific.forEach(obj => {
+                    for (let k in obj) {
+                        if (specific[k] === undefined) {
+                            specific[k] = obj[k];
+                        }
                     }
-                }
+                });
             }
         }
 
