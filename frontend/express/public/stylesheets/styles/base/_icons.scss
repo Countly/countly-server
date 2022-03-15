@@ -59,8 +59,20 @@
     &load {
         background-image: url("../../../images/icons/load.svg");
     }
+
+    &upload {
+        background-image: url("../../../images/icons/upload.svg");
+    }
 }
 
 .el-button [class*=ion-]+span, [class*=cly-icon-]+span {
-    margin-left: 5px;
+    margin-left: 6px;
+}
+.el-button-group > .el-button {
+    display: flex;
+    align-items: center;
+}
+.el-button-group>.el-select:first-child .el-button {
+    display: flex;
+    align-items: center;
 }
