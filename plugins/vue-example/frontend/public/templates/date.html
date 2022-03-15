@@ -2,7 +2,7 @@
     <cly-header title="Date picking"></cly-header>
     <cly-main>
         <cly-section title="Global picker (countlyCommon/period)">
-            <cly-date-picker-g></cly-date-picker-g>
+            <cly-date-picker-g :range-limits="{'maxLength': [10, 'days']}"></cly-date-picker-g>
         </cly-section>
         <cly-section title="Date range">
             <cly-date-picker v-model="selectedDateRange" timestampFormat="ms"></cly-date-picker>
