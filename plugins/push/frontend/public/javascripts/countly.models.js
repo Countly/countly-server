@@ -1308,7 +1308,7 @@
                 return {
                     _id: dto._id || null,
                     status: this.mapStatus(dto),
-                    createdAt: dto.info && dto.info.created || null,
+                    createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
                     name: dto.info && dto.info.title,
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
