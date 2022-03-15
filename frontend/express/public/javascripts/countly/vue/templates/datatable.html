@@ -29,7 +29,7 @@
                 <div class="bu-level-item" v-if="hasExport">
                     <cly-dropdown :width="332" placement="bottom-end" ref="exportDropdown">
                         <template v-slot:trigger="dropdown">
-                            <el-button size="small" icon="el-icon-download"></el-button>
+                            <el-button size="small" icon="cly-icon-btn cly-icon-download"></el-button>
                         </template>
                         <template>
                             <div class="bu-mx-4 bu-mt-4">
@@ -84,7 +84,7 @@
                 </div>
                 <div class="bu-level-item" v-if="displaySearch">
                     <form>
-                        <el-input autocomplete="off" size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
+                        <el-input autocomplete="off" size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="ion-ios-search-strong" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
                     </form>
                 </div>
             </div>
