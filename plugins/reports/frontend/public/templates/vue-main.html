@@ -157,6 +157,7 @@
 
         <cly-form-field name="apps" :label="i18n('reports.select-apps')" rules="required" v-if="showApps">
             <cly-app-select 
+                :auth='{"feature": "reports", "permission":  drawerScope.editedObject._id ? "u": "c"}'
                 class="bu-is-flex"
                 :placeholder="i18n('reports.Select_apps')"
                 v-on:change="appsChange" 

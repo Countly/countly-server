@@ -147,6 +147,7 @@
 
             <cly-form-field name="apps" :label="i18n('alert.For_Applications')" rules="required">
                 <cly-app-select 
+                        :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
                         class="bu-is-flex"
                         @change="onAppChange"
                         v-model="drawerScope.editedObject.selectedApps"
