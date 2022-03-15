@@ -1350,7 +1350,7 @@
                 model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
                 model.delivery = {
                     startDate: moment(triggerDto.start).valueOf(),
-                    endDate: moment(triggerDto.end).valueOf() || "Never",
+                    endDate: moment(triggerDto.end).valueOf() || null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 model.automatic = {
@@ -1361,6 +1361,7 @@
                     cohorts: triggerDto.cohorts || [],
                     events: triggerDto.events || [],
                     capping: Boolean(triggerDto.cap) && Boolean(triggerDto.sleep),
+                    usersTimezone: triggerDto.time || null,
                 };
                 model.automatic.delayed = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.delay);
                 model.automatic.maximumMessagesPerUser = triggerDto.cap || 1,

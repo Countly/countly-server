@@ -972,6 +972,14 @@
                 this.updateIosPlatformSettingsStateIfFound();
                 this.updateAndroidPlatformSettingsStateIfFound();
             },
+            updateAutomaticOptions: function() {
+                if (this.pushNotificationUnderEdit.automatic.usersTimezone) {
+                    this.isUsersTimezoneSet = true;
+                }
+                if (this.pushNotificationUnderEdit.delivery.endDate) {
+                    this.isEndDateSet = true;
+                }
+            },
             fetchPushNotificationById: function() {
                 var self = this;
                 this.setIsLoading(true);
@@ -983,6 +991,9 @@
                         }
                         self.resetMessageInHTMLToActiveLocalization();
                         self.updateSettingsState();
+                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.AUTOMATIC) {
+                            self.updateAutomaticOptions();
+                        }
                     })
                     .catch(function(error) {
                         console.error(error);
