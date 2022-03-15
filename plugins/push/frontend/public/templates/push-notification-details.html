@@ -2,7 +2,7 @@
     <div v-bind:class="[componentId]">
         <cly-header class="cly-vue-push-notification-details-header">
             <template v-slot:header-left>
-                <h2> {{pushNotification.name }} </h2>
+                <h2> {{pushNotification.name || '-' }} </h2>
             </template>
             <template v-slot:header-top>
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>
@@ -29,7 +29,7 @@
                 </div>
                 <div class="bu-level-item cly-vue-push-notification-details-sub-header">
                     <div class="text-medium color-cool-gray-50"><i class="far fa-clock bu-pr-1"></i></div>
-                    <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.created-by',pushNotification.createdDateTime && formatTimeAgoText(pushNotification.createdDateTime.date),pushNotification.createdBy)}}</span>
+                    <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.created-by',pushNotification.createdAt,pushNotification.createdBy)}}</span>
                 </div>
                 <div class="bu-level-item cly-vue-push-notification-details-sub-header">
                     <div class="text-medium color-cool-gray-50" style="padding-right: 5.33px;"><i class="ion ion-pricetags"></i></div>

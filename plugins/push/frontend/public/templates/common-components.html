@@ -2,7 +2,7 @@
     <div v-bind:class="['bu-level-item','cly-vue-push-notification-large-radio-button-with-description__container','bu-pr-1']">
         <el-radio :label="label"  border class="cly-vue-push-notification-large-radio-button-with-description__button" v-model="innerValue"> 
             <div class="cly-vue-push-notification-large-radio-button-with-description__title bu-mt-2">{{title}}</div>
-            <div class="cly-vue-push-notification-large-radio-button-with-description__content bu-level bu-ml-5 bu-mt-2"> 
+            <div class="cly-vue-push-notification-large-radio-button-with-description__content bu-level bu-ml-5 bu-mt-2 font-weight-normal"> 
                 <slot v-if="hasDefaultSlot"></slot>      
                 <template v-if="description">{{description}}</template>               
             </div>
@@ -103,14 +103,14 @@
                     <div>
                         <div class="bu-level bu-is-flex-direction-column bu-is-align-items-flex-start">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.fallback-value')}}</div>
-                            <validation-provider vid="fallbackValueValidator" v-slot="validation" rules="required" style="width:100%">
-                                <el-input :value="userProperty.fallback" @input="onFallback" placeholder="Enter fallback value" :class="{'is-error': validation.errors.length > 0}" autocomplete="off"> </el-input>
+                            <validation-provider vid="fallbackValueValidator" v-slot="validation" :rules="{push_notification_fallback:true}" style="width:100%">
+                                <el-input v-tooltip="i18n('push-notification.fallback-value-desc')" :value="userProperty.fallback" @input="onFallback" placeholder="Enter fallback value" :class="{'is-error': validation.errors.length > 0}" autocomplete="off"> </el-input>
                             </validation-provider>
                         </div>
                     </div>
                 </validation-observer>
                 <div class="cly-vue-drawer-step__section cly-vue-drawer-step__line--aligned bu-is-justify-content-flex-end">
-                    <el-button type="default" @click="onRemove">{{i18n('push-notification.remove')}}</el-button>
+                    <el-button type="default" @click="onRemove">{{i18n('common.cancel')}}</el-button>
                     <el-button type="success" @click="onClose">{{i18n('push-notification.confirm')}}</el-button>
                 </div>
             </div>

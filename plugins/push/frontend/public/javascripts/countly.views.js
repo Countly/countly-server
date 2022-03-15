@@ -717,7 +717,6 @@
                 this.setActiveLocalization(localization.value);
                 this.resetMessageInHTMLToActiveLocalization();
             },
-
             onSettingChange: function(platform, property, value) {
                 this.pushNotificationUnderEdit.settings[platform][property] = value;
             },
@@ -740,7 +739,6 @@
                 this.isAddUserPropertyPopoverOpen[container] = true;
             },
             closeAddUserPropertyPopover: function(container) {
-                console.log(container);
                 this.isAddUserPropertyPopoverOpen[container] = false;
             },
             addUserPropertyInHTML: function(id, container) {
@@ -942,6 +940,38 @@
             setPushNotificationUnderEdit: function(value) {
                 this.pushNotificationUnderEdit = value;
             },
+            updateIosPlatformSettingsStateIfFound: function() {
+                var self = this;
+                if (this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.IOS;
+                })) {
+                    this.settings[this.PlatformEnum.IOS].isMediaURLEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL);
+                    this.settings[this.PlatformEnum.IOS].isSoundFilenameEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].soundFilename);
+                    this.settings[this.PlatformEnum.IOS].isBadgeNumberEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].badgeNumber);
+                    this.settings[this.PlatformEnum.IOS].isOnClickURLEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].onClickURL);
+                    this.settings[this.PlatformEnum.IOS].isJsonEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].json);
+                    this.settings[this.PlatformEnum.IOS].isUserDataEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].userData.length);
+                    this.settings[this.PlatformEnum.IOS].isSubtitleEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].subtitle);
+                }
+            },
+            updateAndroidPlatformSettingsStateIfFound: function() {
+                var self = this;
+                if (this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === self.PlatformEnum.ANDROID;
+                })) {
+                    this.settings[this.PlatformEnum.ANDROID].isMediaURLEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaURL);
+                    this.settings[this.PlatformEnum.ANDROID].isSoundFilenameEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].soundFilename);
+                    this.settings[this.PlatformEnum.ANDROID].isBadgeNumberEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].badgeNumber);
+                    this.settings[this.PlatformEnum.ANDROID].isOnClickURLEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].onClickURL);
+                    this.settings[this.PlatformEnum.ANDROID].isJsonEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].json);
+                    this.settings[this.PlatformEnum.ANDROID].isUserDataEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].userData.length);
+                    this.settings[this.PlatformEnum.ANDROID].isIconEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].icon);
+                }
+            },
+            updateSettingsState: function() {
+                this.updateIosPlatformSettingsStateIfFound();
+                this.updateAndroidPlatformSettingsStateIfFound();
+            },
             fetchPushNotificationById: function() {
                 var self = this;
                 this.setIsLoading(true);
@@ -952,6 +982,7 @@
                             self.setId(null);
                         }
                         self.resetMessageInHTMLToActiveLocalization();
+                        self.updateSettingsState();
                     })
                     .catch(function(error) {
                         console.error(error);
@@ -1087,12 +1118,12 @@
                     data: [
                         {
                             name: CV.i18n('push-notification.sent-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalSent[this.selectedPushNotificationType]),
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalSent[this.selectedPushNotificationType][this.selectedPlatformFilter]),
                             tooltip: CV.i18n('push-notification.sent-serie-description')
                         },
                         {
                             name: CV.i18n('push-notification.actions-performed-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalActions[this.selectedPushNotificationType]),
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalActions[this.selectedPushNotificationType][this.selectedPlatformFilter]),
                             tooltip: CV.i18n('push-notification.actions-performed-serie-description')
                         }
                     ]
@@ -2419,19 +2450,7 @@
 
     var PushNotificationWidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
-        props: {
-            data: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            },
-            isAllowed: {
-                type: Boolean,
-                default: true
-            }
-        },
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
         data: function() {
             return {
                 selectedBucket: "daily",

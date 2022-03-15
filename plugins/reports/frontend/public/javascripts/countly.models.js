@@ -1,6 +1,7 @@
 /*global
     countlyCommon,
     countlyGlobal,
+    countlyAuth,
     jQuery,
     CV,
     CountlyHelpers,
@@ -8,6 +9,7 @@
     app,
  */
 (function(countlyReporting, $) {
+    var FEATURE_NAME = "reports";
     //Private Properties
     var _data = {};
     var _metrics = [
@@ -179,6 +181,8 @@
                 });
             },
             saveReport: function(context, args) {
+                delete args._canUpdate;
+                delete args._canDelete;
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/reports/" + (args._id ? "update" : "create"),
@@ -290,6 +294,17 @@
                                     ret = ret.substring(0, ret.length - 2);
 
                                     ret += " for " + data[i].appNames.join(", ");
+
+                                    data[i]._canUpdate = true;
+                                    data[i]._canDelete = true;
+                                    for (var aIdx = 0; aIdx < data[i].apps.length; aIdx++) {
+                                        if (!countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, data[i].apps[aIdx])) {
+                                            data[i]._canUpdate = false;
+                                        }
+                                        if (!countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, data[i].apps[aIdx])) {
+                                            data[i]._canDelete = false;
+                                        }
+                                    }
                                 }
                                 else if (!data[i].pluginEnabled) {
                                     ret = jQuery.i18n.prop("reports.enable-plugin", data[i].report_type);
@@ -308,6 +323,8 @@
                                         }
                                     }
                                     ret = "Dashboard " + (dashboard.name || "");
+                                    data[i]._canUpdate = countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, countlyCommon.ACTIVE_APP_ID);
+                                    data[i]._canDelete = countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, countlyCommon.ACTIVE_APP_ID);
                                 }
                                 data[i].dataColumn = ret;
 

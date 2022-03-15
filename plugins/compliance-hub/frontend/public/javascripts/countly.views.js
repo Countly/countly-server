@@ -3,7 +3,7 @@
     var FEATURE_NAME = "compliance_hub";
     var UserView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/user.html"),
-        mixins: [countlyVue.mixins.auth(FEATURE_NAME)],
+        mixins: [countlyVue.mixins.auth(FEATURE_NAME), countlyVue.mixins.i18n],
         data: function() {
             return {
                 userTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyConsentManager", "userDataResource"),
@@ -27,11 +27,11 @@
                             CountlyHelpers.alert(error, "red");
                         }
                         else {
-                            CountlyHelpers.notify({ type: "ok", title: this.i18n("common.success"), message: this.i18n("app-users.userdata-deleted"), sticky: false, clearAll: true });
+                            CountlyHelpers.notify({ type: "success", title: self.i18n("common.success"), message: self.i18n("app-users.userdata-deleted") });
                             self.$store.dispatch("countlyConsentManager/fetchUserDataResource");
                         }
                     });
-                }, [this.i18n("app-users.no-dont-purge"), this.i18n("app-users.yes-purge-data")], { title: this.i18n("app-users.purge-confirm-title"), image: "purge-user-data" });
+                }, [self.i18n("app-users.no-dont-purge"), self.i18n("app-users.yes-purge-data")], { title: self.i18n("app-users.purge-confirm-title"), image: "purge-user-data" });
             },
             exportUserData: function(uid) {
                 var self = this;
@@ -43,9 +43,9 @@
                     else if (export_id) {
                         CountlyHelpers.notify({
                             type: "ok",
-                            title: this.i18n("common.success"),
-                            message: this.i18n("app-users.export-finished"),
-                            info: this.i18n("consent.export-finished-click"),
+                            title: self.i18n("common.success"),
+                            message: self.i18n("app-users.export-finished"),
+                            info: self.i18n("consent.export-finished-click"),
                             sticky: false,
                             clearAll: true,
                             onClick: function() {
@@ -55,10 +55,10 @@
                         });
                     }
                     else if (task_id) {
-                        CountlyHelpers.notify({ type: "ok", title: this.i18n("common.success"), message: this.i18n("app-users.export-started"), sticky: false, clearAll: false });
+                        CountlyHelpers.notify({ type: "ok", title: self.i18n("common.success"), message: self.i18n("app-users.export-started"), sticky: false, clearAll: false });
                     }
                     else {
-                        CountlyHelpers.alert(this.i18n("app-users.export-failed"), "red");
+                        CountlyHelpers.alert(self.i18n("app-users.export-failed"), "red");
                     }
                 });
             },
@@ -70,7 +70,7 @@
                         CountlyHelpers.alert(error, "red");
                     }
                     else {
-                        CountlyHelpers.notify({ type: "ok", title: this.i18n("common.success"), message: this.i18n("app-users.export-deleted"), sticky: false, clearAll: true });
+                        CountlyHelpers.notify({ type: "ok", title: self.i18n("common.success"), message: self.i18n("app-users.export-deleted"), sticky: false, clearAll: true });
                     }
                 });
             },

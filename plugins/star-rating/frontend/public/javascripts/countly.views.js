@@ -128,6 +128,11 @@
                     return comment;
                 });
             }
+        },
+        data: function() {
+            return {
+                commentsTablePersistKey: 'comments_table_' + countlyCommon.ACTIVE_APP_ID
+            };
         }
     });
 
@@ -135,6 +140,11 @@
         template: CV.T("/star-rating/templates/ratings-table.html"),
         props: {
             ratings: Array
+        },
+        data: function() {
+            return {
+                ratingsTablePersistKey: 'ratings_table_' + countlyCommon.ACTIVE_APP_ID
+            };
         }
     });
 
@@ -155,7 +165,8 @@
         },
         data: function() {
             return {
-                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
+                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
+                widgetsTablePersistKey: 'widgets_table_' + countlyCommon.ACTIVE_APP_ID
             };
         },
         computed: {

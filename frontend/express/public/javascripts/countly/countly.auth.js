@@ -169,11 +169,44 @@
     };
 
     /**
+     * validate all types of requests for specific feature on specific app
+     * @param {string} accessType - write process type [c, r, u, d]
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validate = function(accessType, feature, member, app_id) {
+        if (accessType === "r") {
+            return countlyAuth.validateRead(feature, member, app_id);
+        }
+        else {
+            return validateWrite(accessType, feature, member, app_id);
+        }
+    };
+
+    /**
      * Validate is this user global admin or not
      * @returns {boolean} is this user global admin or not?
      */
     countlyAuth.validateGlobalAdmin = function() {
         return countlyGlobal.member.global_admin;
+    };
+
+    /**
+     * Validate is this user admin of specific app or not
+     * @param {string} app - countly application id, optional
+     * @returns {boolean} user admin of specific app or not?
+     */
+    countlyAuth.validateAppAdmin = function(app) {
+        var _app = app || countlyCommon.ACTIVE_APP_ID;
+
+        if (countlyGlobal.member.global_admin) {
+            return true;
+        }
+        else {
+            return countlyGlobal.member.permission && countlyGlobal.member.permission._ && countlyGlobal.member.permission._.a && countlyGlobal.member.permission._.a.indexOf(_app) > -1;
+        }
     };
 
     countlyAuth.renderFeatureTemplate = function(featureName, index) {

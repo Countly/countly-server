@@ -43,7 +43,8 @@
                         label: CV.i18n('management-users.last_login'),
                         default: true
                     }
-                ]
+                ],
+                userManagementPersistKey: 'userManagement_table_' + countlyCommon.ACTIVE_APP_ID
             };
         },
         computed: {
@@ -552,7 +553,7 @@
                 // if it's in edit mode
                 if (this.settings.editMode) {
                     // is user member of a group?
-                    if (this.user.group_id) {
+                    if (this.user.group_id && countlyGlobal.plugins.indexOf('groups') > -1) {
                         // set group state
                         this.group = { _id: this.user.group_id[0] };
                         // add initial permission state for cases who unselected group

@@ -107,6 +107,12 @@
                     </template>
                 </el-table-column>
 
+                <el-table-column v-else-if="col.value === 'description' " sortable="custom" min-width="250" prop="totalCount" :label="i18n('data-manager.description')">
+                    <template v-slot="rowScope">
+                            <div v-html="rowScope.row.description || i18n('data-manager.empty-placeholder')"></div>
+                    </template>
+                </el-table-column>
+
                 <el-table-column v-else v-bind:sortable="col.sort ? 'custom' : false" :key="idx" min-width="300" :prop="col.value" :label="col.label">
                     <template v-slot="rowScope">
                         {{rowScope.row[col.value] || i18n('data-manager.empty-placeholder') }}

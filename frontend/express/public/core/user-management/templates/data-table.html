@@ -2,7 +2,8 @@
   <cly-datatable-n
     :rows="filteredRows"
     :force-loading="loading"
-    :available-dynamic-cols="tableDynamicCols">
+    :available-dynamic-cols="tableDynamicCols"
+    :persist-key="userManagementPersistKey">
       <template v-slot:header-left="selectScope">
         <el-select placement="bottom-start" v-model="tableFilter" :placeholder="i18n('management-users.all-roles')">
           <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>

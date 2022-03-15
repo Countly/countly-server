@@ -224,23 +224,23 @@ module.exports.dashboard = async function(params) {
                         else if (e.s === 'ap' && diff <= 29) {
                             target = 29 - diff;
                             platforms.forEach(p => {
-                                p = 'true' + p;
-                                if (!e.d[d][p]) {
+                                let k = 'true' + p;
+                                if (!e.d[d][k]) {
                                     return;
                                 }
-                                retAuto.platforms[p].daily.data[target] += e.d[d][p].c;
-                                retAuto.platforms[p].total += e.d[d][p].c;
+                                retAuto.platforms[p].daily.data[target] += e.d[d][k].c;
+                                retAuto.platforms[p].total += e.d[d][k].c;
                             });
                         }
                         else if (e.s === 'tp' && diff <= 29) {
                             target = 29 - diff;
                             platforms.forEach(p => {
-                                p = 'true' + p;
-                                if (!e.d[d][p]) {
+                                let k = 'true' + p;
+                                if (!e.d[d][k]) {
                                     return;
                                 }
-                                retAuto.platforms[p].daily.data[target] += e.d[d][p].c;
-                                retAuto.platforms[p].total += e.d[d][p].c;
+                                retTx.platforms[p].daily.data[target] += e.d[d][k].c;
+                                retTx.platforms[p].total += e.d[d][k].c;
                             });
                         }
                     }

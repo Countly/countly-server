@@ -407,8 +407,6 @@
                 localTableTrackedFields: ['enabled'],
                 isAdmin: countlyGlobal.member.global_admin,
                 deleteElement: null,
-                canUpdateConcurrentAlert: countlyAuth.validateUpdate("concurrent_users"),
-                canDeleteConcurrentAlert: countlyAuth.validateDelete("concurrent_users"),
             };
         },
         props: {

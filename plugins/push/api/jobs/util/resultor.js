@@ -93,7 +93,7 @@ class Resultor extends SynFlushTransform {
         else if (frame & FRAME.RESULTS) {
             if (frame & FRAME.ERROR) {
                 [results.affected, results.left].forEach(arr => {
-                    if (results.type & (ERROR.DATA_TOKEN_EXPIRED | ERROR.DATA_TOKEN_INVALID)) {
+                    if (results.is(ERROR.DATA_TOKEN_EXPIRED) || results.is(ERROR.DATA_TOKEN_INVALID)) {
                         arr.forEach(id => {
                             if (id < 0) {
                                 return;
@@ -353,23 +353,27 @@ class Resultor extends SynFlushTransform {
                 m.platforms.forEach(p => {
                     let sent = this.sentUsers[aid][mid][p];
                     if (sent) {
-                        let params = {
-                            qstring: {
-                                events: [
-                                    { key: '[CLY]_push_sent', count: sent, segmentation: {i: mid, a: !!m.triggerAuto(), t: !!m.triggerFind(TriggerKind.API)} }
-                                ]
-                            },
-                            app_id: app._id,
-                            appTimezone: app.timezone,
-                            time: common.initTimeObj(app.timezone)
-                        };
+                        let a = !!m.triggerAuto(),
+                            t = !!m.triggerFind(TriggerKind.API),
+                            ap = a + p,
+                            tp = t + p,
+                            params = {
+                                qstring: {
+                                    events: [
+                                        { key: '[CLY]_push_sent', count: sent, segmentation: {i: mid, a, t, p, ap, tp} }
+                                    ]
+                                },
+                                app_id: app._id,
+                                appTimezone: app.timezone,
+                                time: common.initTimeObj(app.timezone)
+                            };
 
                         this.log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
                         require('../../../../../api/parts/data/events').processEvents(params);
 
                         try {
                             this.log.d('Recording %d data points', sent);
-                            require('../../../../server-stats/api/parts/stats').updateDataPoints(common.writeBatcher, this.app._id, 0, {"p": sent});
+                            require('../../../../server-stats/api/parts/stats').updateDataPoints(common.writeBatcher, app._id, 0, {"p": sent});
                         }
                         catch (e) {
                             this.log.d('Error during dp recording', e);
