@@ -997,7 +997,7 @@
                 return rowsModel;
             },
             mapTargeting: function(dto) {
-                if (dto.filter && dto.filter.cohorts && dto.filter.cohorts.length || dto.filter.geos && dto.filter.geos.length) {
+                if (dto.filter && (dto.filter.cohorts && dto.filter.cohorts.length || dto.filter.geos && dto.filter.geos.length)) {
                     return TargetingEnum.SEGMENTED;
                 }
                 return TargetingEnum.ALL;
@@ -1233,7 +1233,8 @@
                     totalAppUsers: parseInt(dashboardDto.users),
                     enabledUsers: this.mapEnabledUsers(dashboardDto),
                     totalActions: this.mapTotalActions(dashboardDto, type),
-                    totalSent: this.mapTotalSent(dashboardDto, type)
+                    totalSent: this.mapTotalSent(dashboardDto, type),
+                    tokens: dashboardDto.tokens,
                 };
             },
             mapAndroidDashboard: function(dto) {
@@ -2494,6 +2495,7 @@
                 pushNotificationId: null
             },
             isDrawerOpen: false,
+            dashboardTokens: {},
         };
     };
 
@@ -2505,9 +2507,20 @@
                     context.commit('setPushNotification', model);
                     context.dispatch('onSetPlatformFilterOptions', model);
                     context.dispatch('onFetchSuccess', {useLoader: true});
+                    context.dispatch('fetchDashboardTokens', model.type);
                 }).catch(function(error) {
                     console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
+                });
+        },
+        fetchDashboardTokens: function(context, type) {
+            console.log('type', type);
+            countlyPushNotification.service.fetchDashboard(type)
+                .then(function(mainDashboard) {
+                    context.commit('setDashboardTokens', mainDashboard.tokens || {});
+                })
+                .catch(function(error) {
+                    console.error(error);
                 });
         },
         onUserCommand: function(context, payload) {
@@ -2617,6 +2630,9 @@
             }
             state.platformFilterOptions = filterOptions;
         },
+        setDashboardTokens: function(state, value) {
+            state.dashboardTokens = value;
+        }
     };
 
     var pushNotificationDetailsModule = countlyVue.vuex.Module("details", {

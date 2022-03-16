@@ -80,7 +80,7 @@
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> {{i18n('push-notification.sent-notifications')}}  <cly-tooltip-icon :tooltip="i18n('push-notification.sent-notifications-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{sentPushNotifications}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.sent || 0}} {{i18n('push-notification.users')}}  </div>
+                                <div class="text-medium"> {{selectedDashboard.sent || 0}} {{i18n('push-notification.users')}} <span v-if="shouldShowGoToSentUrl" @click="onGoToSent"><i class="ion-ios-arrow-forward"></i></span>  </div>
                             </div>
                         </div>
                     </div>
@@ -90,7 +90,7 @@
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> {{i18n('push-notification.clicked-notifications')}} <cly-tooltip-icon :tooltip="i18n('push-notification.clicked-notifications-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{clickedPushNotifications}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.actioned || 0}} {{i18n('push-notification.users')}} </div>
+                                <div class="text-medium"> {{selectedDashboard.actioned || 0}} {{i18n('push-notification.users')}} <span v-if="shouldShowGoToActionedUrl" @click="onGoToActioned"><i class="ion-ios-arrow-forward"></i></span> </div>
                             </div>
                         </div>
                     </div>
@@ -100,7 +100,7 @@
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> {{i18n('push-notification.failed')}} <cly-tooltip-icon :tooltip="i18n('push-notification.failed-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{failedPushNotifications}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.errored || 0}} {{i18n('push-notification.users')}} </div>
+                                <div class="text-medium"> {{selectedDashboard.errored || 0}} {{i18n('push-notification.users')}} <span v-if="shouldShowGoToErroredUrl" @click="onGoToErrored"><i class="ion-ios-arrow-forward"></i></span> </div>
                             </div>
                         </div>
                     </div>
