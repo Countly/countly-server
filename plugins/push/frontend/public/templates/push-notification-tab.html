@@ -67,7 +67,7 @@
                                     <span class="cly-vue-push-notification-table-column__second-line">
                                         <span> {{getPreviewPlatforms(scope.row.platforms)}} </span>
                                         <span class="blinker cly-vue-push-notification-table-column__separator-blinker"></span>
-                                        <span> {{i18n('push-notification.created-by')}} {{scope.row.createdBy}} </span>
+                                        <span> {{i18n('push-notification.created-by')}} {{scope.row.createdBy || '-'}} </span>
                                     </span>
                                 </div>
                             </template>
@@ -126,8 +126,13 @@
                         <el-table-column  width="280" sortable="custom" prop="sentDateTime" :label="i18n('push-notification.table-date-sent')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.sentDateTime.date}}</span>
-                                    <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.sentDateTime.time}}</span>
+                                    <template v-if="scope.row.sentDateTime && scope.row.sentDateTime.date"> 
+                                        <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.sentDateTime.date}}</span>
+                                        <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.sentDateTime.time}}</span>
+                                    </template>
+                                    <template v-else>
+                                        <span>-</span>
+                                    </template>
                                 </div>
                             </template>
                         </el-table-column>
