@@ -836,11 +836,11 @@
             },
             buildMessageText: function(message, userPropertiesDto) {
                 var self = this;
-                if (!userPropertiesDto) {
-                    return message;
-                }
                 if (!message) {
                     message = "";
+                }
+                if (!userPropertiesDto) {
+                    return message;
                 }
                 var messageInHTMLString = message;
                 var buildMessageLength = 0;
@@ -1709,7 +1709,10 @@
                         localeDto.la = localizationKey;
                     }
                     localeDto.message = self.getMessageText(pushNotificationModel.message[localizationKey], 'content');
-                    localeDto.title = self.getMessageText(pushNotificationModel.message[localizationKey], 'title');
+                    var title = self.getMessageText(pushNotificationModel.message[localizationKey], 'title');
+                    if (title) {
+                        localeDto.title = title;
+                    }
                     if (self.hasUserProperties(pushNotificationModel.message[localizationKey], 'content')) {
                         localeDto.messagePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'content');
                     }
