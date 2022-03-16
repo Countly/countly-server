@@ -974,7 +974,7 @@ plugins.setConfigs("crashes", {
                                         return crash;
                                     });
                                 }
-                                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: Math.max(total, 0), iTotalDisplayRecords: count, aaData: crashData});
+                                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: Math.max(total, count, 0), iTotalDisplayRecords: count, aaData: crashData});
                             });
                         });
                     });
