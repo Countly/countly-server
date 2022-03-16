@@ -268,7 +268,7 @@
                 });
             },
             resetTestResult: function(context) {
-                context.commit("setTestResult", []); 
+                context.commit("setTestResult", []);
             }
         };
 
