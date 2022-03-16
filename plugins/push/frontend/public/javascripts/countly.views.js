@@ -1059,15 +1059,14 @@
             setAppConfig: function(value) {
                 this.appConfig = value;
             },
-            fetchAppConfig: function() {
-                var self = this;
-                countlyPushNotification.service.fetchAppConfig()
-                    .then(function(config) {
-                        self.setAppConfig(config);
-                    }).catch(function(error) {
-                        console.error(error);
-                        self.setAppConfig({});
-                    });
+            getAppConfig: function() {
+                var appConfig = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins || {};
+                try {
+                    this.setAppConfig(countlyPushNotification.mapper.incoming.mapAppLevelConfig(appConfig.push));
+                }
+                catch (error) {
+                    console.error(error);
+                }
             }
         },
         mounted: function() {
@@ -1075,7 +1074,7 @@
             this.fetchLocations();
             this.fetchEvents();
             this.fetchDashboard();
-            this.fetchAppConfig();
+            this.getAppConfig();
         },
         components: {
             "message-setting-element": countlyPushNotificationComponent.MessageSettingElement,
