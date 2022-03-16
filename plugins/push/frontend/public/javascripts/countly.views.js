@@ -616,6 +616,15 @@
                 }
                 return this.appConfig[platform] && this.appConfig[platform]._id;
             },
+            getPlatformLabel: function(platform) {
+                if (platform === this.PlatformEnum.ANDROID) {
+                    return CV.i18n('push-notification.android');
+                }
+                if (platform === this.PlatformEnum.IOS) {
+                    return CV.i18n('push-notification.ios');
+                }
+                return platform;
+            },
             onPlatformChange: function(platform) {
                 if (!this.isPlatformSelected(platform)) {
                     if (this.hasPlatformConfig(platform)) {
@@ -625,7 +634,7 @@
                         }
                         return;
                     }
-                    CountlyHelpers.notify({type: 'error', message: 'No push credentials found for ' + platform + 'platform ' });
+                    CountlyHelpers.notify({type: 'error', message: 'No push credentials found for ' + this.getPlatformLabel(platform) + ' platform' });
                 }
                 else {
                     this.pushNotificationUnderEdit.platforms = this.pushNotificationUnderEdit.platforms.filter(function(item) {
