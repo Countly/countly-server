@@ -229,6 +229,7 @@
                                     filterable
                                     isFullWidth
                                     reserve-keyword
+                                    :collapse-tags="false"
                                     :placeholder="i18n('push-notification.select-event')"
                                     :loading="isFetchEventsLoading"
                                     :class="{'is-error': validation.errors.length > 0}"
@@ -254,6 +255,7 @@
                                     isFullWidth
                                     filterable
                                     reserve-keyword
+                                    :collapse-tags="false"
                                     :placeholder="i18n('push-notification.select-cohort')"
                                     :loading="isFetchCohortsLoading"
                                     :class="{'is-error': validation.errors.length > 0}"
