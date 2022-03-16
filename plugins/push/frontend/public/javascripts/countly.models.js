@@ -2517,7 +2517,6 @@
                 });
         },
         fetchDashboardTokens: function(context, type) {
-            console.log('type', type);
             countlyPushNotification.service.fetchDashboard(type)
                 .then(function(mainDashboard) {
                     context.commit('setDashboardTokens', mainDashboard.tokens || {});
