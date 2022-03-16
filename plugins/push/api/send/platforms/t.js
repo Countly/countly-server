@@ -232,37 +232,6 @@ class TestConnection extends Base {
     }
 }
 
-/** 
- * Flatten object using dot notation ({a: {b: 1}} becomes {'a.b': 1})
- * 
- * @param {object} ob - object to flatten
- * @returns {object} flattened object
- */
-function flattenObject(ob) {
-    var toReturn = {};
-
-    for (var i in ob) {
-        if (!Object.prototype.hasOwnProperty.call(ob, i)) {
-            continue;
-        }
-
-        if ((typeof ob[i]) === 'object' && ob[i] !== null) {
-            var flatObject = flattenObject(ob[i]);
-            for (var x in flatObject) {
-                if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
-                    continue;
-                }
-
-                toReturn[i + '.' + x] = flatObject[x];
-            }
-        }
-        else {
-            toReturn[i] = ob[i];
-        }
-    }
-    return toReturn;
-}
-
 /**
  * Create new empty payload for the note object given
  * 
@@ -406,7 +375,7 @@ const map = {
      * @param {Object} data data to be sent
      */
     data: function(template, data) {
-        Object.assign(template.result.data, flattenObject(data));
+        Object.assign(template.result.data, util.flattenObject(data));
     },
 
     /**
