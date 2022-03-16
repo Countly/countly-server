@@ -220,7 +220,7 @@
             return {
                 _id: null,
                 name: "",
-                platforms: [PlatformEnum.ANDROID],
+                platforms: [],
                 audienceSelection: AudienceSelectionEnum.BEFORE,
                 message: {
                     default: {
@@ -770,6 +770,26 @@
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     },
+                }, {disableAutoCatch: true});
+            });
+        },
+        getAppConfig: function() {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: 'GET',
+                    url: countlyCommon.API_URL + "/o/apps/plugins",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        resolve(response.plugins || {});
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    }
                 }, {disableAutoCatch: true});
             });
         },
@@ -2475,6 +2495,25 @@
         },
         toggle: function(id, isActive) {
             return countlyPushNotification.api.toggle(id, isActive);
+        },
+        fetchAppConfig: function() {
+            return new Promise(function(resolve, reject) {
+                countlyPushNotification.api.getAppConfig()
+                    .then(function(response) {
+                        try {
+                            var result = countlyPushNotification.mapper.incoming.mapAppLevelConfig(response.push);
+                            console.log(result);
+                            resolve(result);
+                        }
+                        catch (error) {
+                            console.error(error);
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
+                    }).catch(function(error) {
+                        console.error(error);
+                        reject(error);
+                    });
+            });
         }
     };
 
