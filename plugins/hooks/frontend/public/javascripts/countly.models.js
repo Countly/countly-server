@@ -266,6 +266,9 @@
                         }
                     }
                 });
+            },
+            resetTestResult: function(context) {
+                context.commit("setTestResult", []); 
             }
         };
 

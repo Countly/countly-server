@@ -78,6 +78,7 @@
                     delete data.triggerEffectColumn;
                     delete data.triggerEffectDom;
                     delete data.error_logs;
+                    this.$store.dispatch("countlyHooks/resetTestResult");
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
@@ -722,6 +723,7 @@
         },
         methods: {
             createHook: function() {
+                this.$store.dispatch("countlyHooks/resetTestResult");
                 this.openDrawer("home", hooksPlugin.defaultDrawerConfigValue());
             },
         },
@@ -802,6 +804,7 @@
                     delete data.triggerEffectColumn;
                     delete data.triggerEffectDom;
                     delete data.error_logs;
+                    this.$store.dispatch("countlyHooks/resetTestResult");
                     this.openDrawer("detail", data);
                 }
                 else if (command === "delete-comment") {
