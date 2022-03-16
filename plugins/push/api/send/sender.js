@@ -130,7 +130,7 @@ class Sender {
         this.log.d('sending');
 
         // data shared across multiple streams
-        let state = new State(),
+        let state = new State(this.cfg),
             connector = new Connector(this.log, common.db, state, 100000),
             batcher = new Batcher(this.log, state, 100000),
             resultor = new Resultor(this.log, common.db, state, 100000);
