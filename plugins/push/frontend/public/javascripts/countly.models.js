@@ -220,7 +220,7 @@
             return {
                 _id: null,
                 name: "",
-                platforms: [PlatformEnum.ANDROID],
+                platforms: [],
                 audienceSelection: AudienceSelectionEnum.BEFORE,
                 message: {
                     default: {
@@ -1779,8 +1779,14 @@
             },
             mapFilters: function(model, options) {
                 var result = {};
-                if (options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length) {
+                if (model.user) {
+                    result.user = model.user;
+                }
+                if ((options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length)) {
                     result.user = JSON.stringify(options.queryFilter.queryObject);
+                }
+                if (model.drill) {
+                    result.drill = model.drill;
                 }
                 if (options.queryFilter && options.from === 'drill') {
                     var drillFilter = Object.assign({}, options.queryFilter);

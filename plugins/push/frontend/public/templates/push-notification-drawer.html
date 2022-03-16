@@ -44,15 +44,17 @@
                 <div class="cly-vue-push-notification-drawer__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__checkbox-group-header">{{i18n('push-notification.platforms')}}</div>
                     <validation-provider v-slot="validation" rules="required" name="platforms">
-                        <el-checkbox-group v-model="pushNotificationUnderEdit.platforms" @change="onPlatformChange">
+                        <el-checkbox-group :value="pushNotificationUnderEdit.platforms">
                             <el-checkbox 
                                 type="checkbox" 
                                 :label="PlatformEnum.ANDROID" 
+                                @change="onPlatformChange(PlatformEnum.ANDROID)"
                                 :class="{'cly-vue-push-notification-drawer__checkbox-is-error':validation.errors.length > 0}">
                                 {{i18n('push-notification.android')}}
                             </el-checkbox>
                             <el-checkbox 
                                 type="checkbox" 
+                                @change="onPlatformChange(PlatformEnum.IOS)"
                                 :label="PlatformEnum.IOS" 
                                 :class="{'cly-vue-push-notification-drawer__checkbox-is-error':validation.errors.length > 0}">
                                 {{i18n('push-notification.ios')}}
