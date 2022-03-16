@@ -7,8 +7,10 @@ const EventEmitter = require("events"),
 class State extends EventEmitter {
     /**
      * Constructor
+     * 
+     * @param {object} opts general push plugin config options
      */
-    constructor() {
+    constructor(opts) {
         super();
 
         // objects here have form of {_id: object}
@@ -17,12 +19,12 @@ class State extends EventEmitter {
         // this._credentials = {};
         this._pushes = {};
         this._sending = {};
-        this._cfg = {
+        this._cfg = Object.assign({
             pool: {
                 bytes: 100000,
                 workers: 10
             }
-        };
+        }, opts || {});
     }
 
     /**

@@ -100,17 +100,20 @@ class Message extends Mongoable {
      * Get query of messages active at data
      * 
      * @param {Date} date date
+     * @param {int} play period in ms to the left and right from the date
      * @param {State} state state, streamable by default
      * @returns {object} MongoDB filter object
      */
-    static filter(date, state = State.Streamable) {
+    static filter(date, play, state = State.Streamable) {
+        let $lte = new Date(date.getTime() + play),
+            $gte = new Date(date.getTime() - play);
         return {
             state: {$bitsAllSet: state},
             $or: [
-                {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte}}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
             ]
         };
     }

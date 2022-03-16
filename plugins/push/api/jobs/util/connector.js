@@ -121,7 +121,7 @@ class Connector extends SynFlushTransform {
         }
         else { // all good with credentials, now let's check messages
             if (!message) {
-                let query = Message.filter(new Date());
+                let query = Message.filter(new Date(), this.state.cfg.sendAhead);
                 query._id = push.m;
                 this.db.collection('messages').findOne(query).then(msg => {
                     if (msg) {
