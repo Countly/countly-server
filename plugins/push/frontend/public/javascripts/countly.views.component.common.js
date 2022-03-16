@@ -328,6 +328,10 @@
                 type: String,
                 default: CV.i18n('push-notification.mobile-preview-default-title')
             },
+            subtitle: {
+                type: String,
+                default: ""
+            },
             content: {
                 type: String,
                 default: CV.i18n('push-notification.mobile-preview-default-content'),

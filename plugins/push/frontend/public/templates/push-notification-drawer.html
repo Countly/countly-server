@@ -14,6 +14,7 @@
             <mobile-message-preview
                 v-if="(drawerScope.currentStepId === 'step3' ||  drawerScope.currentStepId === 'step4') && pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
                 :title="pushNotificationUnderEdit.message[activeLocalization].title" 
+                :subtitle="pushNotificationUnderEdit.settings[PlatformEnum.IOS].subtitle"
                 :content="pushNotificationUnderEdit.message[activeLocalization].content" 
                 :platforms="pushNotificationUnderEdit.platforms" 
                 :media="previewMessageMedia" 
