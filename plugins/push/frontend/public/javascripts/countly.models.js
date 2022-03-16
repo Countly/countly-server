@@ -997,7 +997,7 @@
                 return rowsModel;
             },
             mapTargeting: function(dto) {
-                if (dto.filter && dto.filter.cohorts && dto.filter.cohorts.length || dto.filter.geos && dto.filter.geos.length) {
+                if (dto.filter && (dto.filter.cohorts && dto.filter.cohorts.length || dto.filter.geos && dto.filter.geos.length)) {
                     return TargetingEnum.SEGMENTED;
                 }
                 return TargetingEnum.ALL;
@@ -1044,7 +1044,7 @@
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
                     soundFilename: androidSettingsDto && androidSettingsDto.sound || "",
-                    badgeNumber: androidSettingsDto && androidSettingsDto.badge,
+                    badgeNumber: androidSettingsDto && androidSettingsDto.badge && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
                     onClickURL: androidSettingsDto && androidSettingsDto.url || '',
@@ -1056,7 +1056,7 @@
                 return {
                     subtitle: "",
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
-                    badgeNumber: iosSettingsDto && iosSettingsDto.badge,
+                    badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
                     onClickURL: iosSettingsDto && iosSettingsDto.url || '',
@@ -1233,7 +1233,8 @@
                     totalAppUsers: parseInt(dashboardDto.users),
                     enabledUsers: this.mapEnabledUsers(dashboardDto),
                     totalActions: this.mapTotalActions(dashboardDto, type),
-                    totalSent: this.mapTotalSent(dashboardDto, type)
+                    totalSent: this.mapTotalSent(dashboardDto, type),
+                    tokens: dashboardDto.tokens,
                 };
             },
             mapAndroidDashboard: function(dto) {
@@ -1308,10 +1309,7 @@
                 return {
                     _id: dto._id || null,
                     status: this.mapStatus(dto),
-                    createdDateTime: {
-                        date: moment(dto.created).valueOf(),
-                        time: moment(dto.created).format("H:mm")
-                    },
+                    createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
                     name: dto.info && dto.info.title,
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
@@ -1516,9 +1514,13 @@
                 var htmlElement = document.createElement('div');
                 htmlElement.innerHTML = localizedMessage[container];
                 for (var index = 0; index < htmlElement.children.length; index++) {
-                    var idAtribute = htmlElement.children[index].getAttributeNode('id').value;
-                    var idNumber = idAtribute.split('-')[1];
-                    userPropertyIds.push(idNumber);
+                    var idAttribute = htmlElement.children[index].getAttributeNode('id');
+                    if (idAttribute && idAttribute.value) {
+                        var idAtributeValue = idAttribute.value;
+                        var idNumber = idAtributeValue.split('-')[1];
+                        userPropertyIds.push(idNumber);
+                    }
+
                 }
                 return userPropertyIds;
             },
@@ -2496,6 +2498,7 @@
                 pushNotificationId: null
             },
             isDrawerOpen: false,
+            dashboardTokens: {},
         };
     };
 
@@ -2507,9 +2510,20 @@
                     context.commit('setPushNotification', model);
                     context.dispatch('onSetPlatformFilterOptions', model);
                     context.dispatch('onFetchSuccess', {useLoader: true});
+                    context.dispatch('fetchDashboardTokens', model.type);
                 }).catch(function(error) {
                     console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
+                });
+        },
+        fetchDashboardTokens: function(context, type) {
+            console.log('type', type);
+            countlyPushNotification.service.fetchDashboard(type)
+                .then(function(mainDashboard) {
+                    context.commit('setDashboardTokens', mainDashboard.tokens || {});
+                })
+                .catch(function(error) {
+                    console.error(error);
                 });
         },
         onUserCommand: function(context, payload) {
@@ -2619,6 +2633,9 @@
             }
             state.platformFilterOptions = filterOptions;
         },
+        setDashboardTokens: function(state, value) {
+            state.dashboardTokens = value;
+        }
     };
 
     var pushNotificationDetailsModule = countlyVue.vuex.Module("details", {

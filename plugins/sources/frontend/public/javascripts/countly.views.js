@@ -294,19 +294,7 @@
 
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
-        props: {
-            data: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            },
-            isAllowed: {
-                type: Boolean,
-                default: true
-            }
-        },
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
         data: function() {
             return {
                 map: {
@@ -325,10 +313,8 @@
                 if (this.data.title) {
                     return this.data.title;
                 }
-                if (this.data.dashData) {
-                    return CV.i18n("sources.title");
-                }
-                return "";
+
+                return this.i18n("sources.title");
             },
             showBuckets: function() {
                 return false;

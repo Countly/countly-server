@@ -3,11 +3,13 @@
     CV,
     countlyVue,
     countlyGlobal,
+    countlyAuth,
     _,
     moment,
  */
 
 (function(hooksPlugin, jQuery) {
+    var FEATURE_NAME = "hooks";
     var countlyCommon = window.countlyCommon;
 
 
@@ -197,8 +199,11 @@
                     dataType: "json",
                     success: function(data) {
                         if (data.hooksList && data.hooksList.length === 1) {
-                            data.hooksList[0].triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(data.hooksList[0]);
-                            context.commit("setDetail", data.hooksList[0]);
+                            var record = data.hooksList[0];
+                            record.triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(record);
+                            record._canUpdate = countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, record.apps[0]),
+                            record._canDelete = countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, record.apps[0]),
+                            context.commit("setDetail", record);
                             context.commit("setDetailLogsInitialized", true);
                         }
                     },
@@ -208,6 +213,8 @@
                 context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
             },
             saveHook: function(context, record) {
+                delete record._canUpdate;
+                delete record._canDelete;
                 return CV.$.ajax({
                     type: "POST",
                     url: countlyCommon.API_PARTS.data.w + "/hook/save?" + "app_id=" + record.apps[0],
@@ -259,6 +266,9 @@
                         }
                     }
                 });
+            },
+            resetTestResult: function(context) {
+                context.commit("setTestResult", []);
             }
         };
 
@@ -335,6 +345,8 @@
                                 created_at: hookList[i].created_at || 0,
                                 created_at_string: moment(hookList[i].created_at).fromNow(),
                                 triggerEffectColumn: triggerEffectDom || "",
+                                _canUpdate: countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, hookList[i].apps[0]),
+                                _canDelete: countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, hookList[i].apps[0]),
                             });
                         }
                         context.commit("setInitialized", true);

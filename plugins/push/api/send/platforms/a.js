@@ -1,6 +1,7 @@
 const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'),
     logger = require('../../../../../api/utils/log'),
     { Splitter } = require('./utils/splitter'),
+    { util } = require('../std'),
     { Creds } = require('../data/creds'),
     { threadId } = require('worker_threads'),
     FORGE = require('node-forge');
@@ -178,37 +179,6 @@ class FCM extends Splitter {
 
 }
 
-/** 
- * Flatten object using dot notation ({a: {b: 1}} becomes {'a.b': 1})
- * 
- * @param {object} ob - object to flatten
- * @returns {object} flattened object
- */
-function flattenObject(ob) {
-    var toReturn = {};
-
-    for (var i in ob) {
-        if (!Object.prototype.hasOwnProperty.call(ob, i)) {
-            continue;
-        }
-
-        if ((typeof ob[i]) === 'object' && ob[i] !== null) {
-            var flatObject = flattenObject(ob[i]);
-            for (var x in flatObject) {
-                if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
-                    continue;
-                }
-
-                toReturn[i + '.' + x] = flatObject[x];
-            }
-        }
-        else {
-            toReturn[i] = ob[i];
-        }
-    }
-    return toReturn;
-}
-
 /**
  * Create new empty payload for the note object given
  * 
@@ -352,7 +322,7 @@ const map = {
      * @param {Object} data data to be sent
      */
     data: function(template, data) {
-        Object.assign(template.result.data, flattenObject(data));
+        Object.assign(template.result.data, util.flattenObject(data));
     },
 
     /**
@@ -367,6 +337,20 @@ const map = {
             let k = extras[i];
             if (data[k] !== null && data[k] !== undefined) {
                 template.result.data['c.e.' + k] = data[k];
+            }
+        }
+    },
+
+    /**
+     * Sends platform specific fields
+     * 
+     * @param {Template} template template
+     * @param {object} specific platform specific props to be sent
+     */
+    specific: function(template, specific) {
+        if (specific) {
+            if (specific.large_icon) {
+                template.result.data['c.li'] = specific.large_icon;
             }
         }
     },

@@ -162,11 +162,11 @@ module.exports.dashboard = async function(params) {
             events1.forEach(e => {
                 // log.d('event', e);
                 var par = e._id.match(rxp),
-                    yer = parseInt(par[1]),
-                    mon = parseInt(par[2]) - 1;
+                    yer = parseInt(par[1], 10),
+                    mon = parseInt(par[2], 10) - 1;
 
                 Object.keys(e.d).forEach(d => {
-                    d = parseInt(d);
+                    d = parseInt(d, 10);
                     if (yer === agy && mon === agm && d < agd) {
                         return;
                     }

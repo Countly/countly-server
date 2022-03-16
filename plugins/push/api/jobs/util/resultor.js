@@ -265,6 +265,9 @@ class Resultor extends SynFlushTransform {
                     this.log.d('saving message', m.id, m.result.json, 'state', state, 'status', status, 'error', error);
                     m.state = state;
                     m.status = status;
+                    if (status === Status.Sent || status === Status.Failed) {
+                        m.info.finished = new Date();
+                    }
                     if (error) {
                         m.result.error = error;
                     }

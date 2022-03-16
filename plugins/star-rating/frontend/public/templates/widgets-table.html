@@ -1,7 +1,7 @@
 <cly-datatable-n
-    :persist-key="persistKey"
     :force-loading="loading"
     :rows="widgets"
+    :persist-key="persistKey"
     :available-dynamic-cols="tableDynamicCols"
     width="100%">
       <template v-slot="scope">
@@ -46,14 +46,14 @@
             </template>
           </el-table-column>
           <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
-          <el-table-column v-if="col.value === 'target_pages'" :key="idx" 
-           min-width="120" sortable="true" prop="target_pages" :label="col.label">
-            <template v-slot="rowScope" class="bu-is-flex bu-is-justify-content-center">
-              <span class="text-medium">
-                {{ rowScope.row.target_pages }}
-              </span>
-            </template>
-          </el-table-column>
-        </template>
+            <el-table-column v-if="col.value === 'target_pages'" :key="idx" 
+             min-width="120" sortable="true" prop="target_pages" :label="col.label">
+              <template v-slot="rowScope" class="bu-is-flex bu-is-justify-content-center">
+                <span class="text-medium">
+                  {{ rowScope.row.target_pages }}
+                </span>
+              </template>
+            </el-table-column>
+          </template>
       </template>
   </cly-datatable-n>

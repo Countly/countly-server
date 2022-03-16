@@ -4,7 +4,6 @@
             <div class="bu-level-item bu-is-flex-shrink-1" style="min-width: 0">
                 <h4 class="bu-is-flex-shrink-1 has-ellipsis">{{title}}</h4>
                 <clyd-title-labels :labels="metricLabels"></clyd-title-labels>
-
             </div>
         </div>
         <div class="bu-level-right" v-if="isAllowed">
@@ -23,39 +22,41 @@
 	<cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
     <clyd-primary-legend :apps="data.apps" :showApps="data.visualization !== 'time-series'" :custom-period="data.custom_period"></clyd-primary-legend>
 
-	<div class="clyd-widget__content" :class="'clyd-widget__content--vis-' + data.visualization">
-		<cly-chart-time v-if="data.visualization === 'time-series'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}">
-		</cly-chart-time>
-		<div v-else-if="data.visualization === 'number'" >
-			<h1 class="bu-pb-2">{{formatNumber(number.total)}}</h1>
-			<p v-if="number.trend== 'u'" class="trend-up bu-p-0 bu-m-0">
-				<i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{number.change}}</span>
-				<span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>
-			</p>
-			<p v-if="number.trend == 'd'" class="trend-down bu-p-0 bu-m-0"> 
-				<i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2"></i><span>{{number.change}}</span>
-				<span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>
-			</p>
-		</div>
-        <div v-else-if="data.visualization === 'table'" style="width: 100%;">
-            <cly-datatable-n v-if="getTableData.length" :rows="getTableData" :hideTop="true" style="width: 100%;">
-                <template v-slot="scope">
-                    <el-table-column  v-for="(item, index) in tableStructure" :key="index" :sortable="false" :prop="item.prop" :label="item.title">
-                        <template slot-scope="scope">
-                            <span v-if="item.type === 'number'">
-                                {{formatNumber(scope.row[item.prop] || 0)}}
-                            </span>
-                            <span v-else>
-                                {{scope.row[item.prop]}}
-                            </span>
-                        </template>
-                    </el-table-column>
-                </template>
-            </cly-datatable-n>
-            <cly-blank :classes="{'bu-p-0': true}" v-else></cly-blank>
-        </div>
-		<cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}"></cly-chart-bar>
-		<cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
+	<div class="clyd-widget__content" v-loading="loading" :class="'clyd-widget__content--vis-' + data.visualization">
+		<template v-if="!loading">
+            <cly-chart-time v-if="data.visualization === 'time-series'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}">
+            </cly-chart-time>
+            <div v-else-if="data.visualization === 'number'" >
+                <h1 class="bu-pb-2">{{formatNumber(number.total)}}</h1>
+                <p v-if="number.trend== 'u'" class="trend-up bu-p-0 bu-m-0">
+                    <i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{number.change}}</span>
+                    <span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>
+                </p>
+                <p v-if="number.trend == 'd'" class="trend-down bu-p-0 bu-m-0">
+                    <i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2"></i><span>{{number.change}}</span>
+                    <span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>
+                </p>
+            </div>
+            <div v-else-if="data.visualization === 'table'" style="width: 100%; height: 100%;">
+                <cly-datatable-n v-if="getTableData.length" :rows="getTableData" :hideTop="true" style="width: 100%; height: 100%;">
+                    <template v-slot="scope">
+                        <el-table-column  v-for="(item, index) in tableStructure" :key="index" :sortable="false" :prop="item.prop" :label="item.title">
+                            <template slot-scope="scope">
+                                <span v-if="item.type === 'number'">
+                                    {{formatNumber(scope.row[item.prop] || 0)}}
+                                </span>
+                                <span v-else>
+                                    {{scope.row[item.prop]}}
+                                </span>
+                            </template>
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+                <cly-blank :classes="{'bu-p-0': true}" v-else></cly-blank>
+            </div>
+            <cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}"></cly-chart-bar>
+            <cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
+        </template>
 	</div>
 
     <clyd-secondary-legend :apps="data.apps" :labels="legendLabels" v-if="data.visualization === 'time-series'"></clyd-secondary-legend>

@@ -12,7 +12,9 @@
 
     <clyd-primary-legend :apps="data.apps" :show-period="false"></clyd-primary-legend>
 
-    <div class="clyd-widget__content">
-        <times-of-day-scatter-chart :series="series" :maxSeriesValue="maxSeriesValue" :show-zoom="false" :show-toggle="false" height="auto" :showDownload="false" skin="full"></times-of-day-scatter-chart>
+    <div class="clyd-widget__content" v-loading="loading">
+        <template v-if="!loading">
+            <times-of-day-scatter-chart :series="series" :maxSeriesValue="maxSeriesValue" :show-zoom="false" :show-toggle="false" height="auto" :showDownload="false" skin="full"></times-of-day-scatter-chart>
+        </template>
     </div>
 </div>
