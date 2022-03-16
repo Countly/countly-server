@@ -28,8 +28,8 @@
                     {{rowScope.row.name}}
                 </a>
                 <div class="text-small color-cool-gray-50" v-if="rowScope.row.source_events">{{rowScope.row.source_events.length || 0}} Events</div>
-                <span v-if="rowScope.row.status === false" class="cly-vue-data-manager__hidden-icon"><i class="fa fa-eye-slash"></i></span>
-                <span v-else class="cly-vue-data-manager__hidden-icon"><i class="fa fa-eye"></i></ion-icon></span>
+                <span v-if="rowScope.row.status === false" class="cly-vue-data-manager__hidden-icon"><i class="ion-eye-disabled"></i></span>
+                <span v-else class="cly-vue-data-manager__hidden-icon"><i class="ion-eye"></i></ion-icon></span>
             </template>
         </el-table-column>
 

@@ -38,7 +38,7 @@
                         v-for="(app, index) in drawerScope.editedObject.apps"
                         :key="index"
                         class="cly-vue-hook-drawer__is-full-line"
-                        :options="appsSelectorOption">
+                        :options="drawerScope.editedObject._id ? appsSelectorOption2 : appsSelectorOption">
                         <template v-slot:option-prefix="option">
                             <div class="hook-app-selector-image" :style="option.image">
                             </div>
