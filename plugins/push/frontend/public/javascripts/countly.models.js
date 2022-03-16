@@ -1798,8 +1798,14 @@
             },
             mapFilters: function(model, options) {
                 var result = {};
-                if (options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length) {
+                if (model.user) {
+                    result.user = model.user;
+                }
+                if ((options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length)) {
                     result.user = JSON.stringify(options.queryFilter.queryObject);
+                }
+                if (model.drill) {
+                    result.drill = model.drill;
                 }
                 if (options.queryFilter && options.from === 'drill') {
                     var drillFilter = Object.assign({}, options.queryFilter);
@@ -2501,9 +2507,7 @@
                 countlyPushNotification.api.getAppConfig()
                     .then(function(response) {
                         try {
-                            var result = countlyPushNotification.mapper.incoming.mapAppLevelConfig(response.push);
-                            console.log(result);
-                            resolve(result);
+                            resolve(countlyPushNotification.mapper.incoming.mapAppLevelConfig(response.push));
                         }
                         catch (error) {
                             console.error(error);
