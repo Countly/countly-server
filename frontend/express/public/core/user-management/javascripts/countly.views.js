@@ -680,7 +680,7 @@
                         self.drawerSettings.editMode = true;
                         self.user = countlyUserManagement.getUser();
                         if (typeof self.user.permission === "undefined") {
-                            self.user.permission = { c:{}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] }};
+                            self.user.permission = { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] }};
                         }
                         self.openDrawer("user", self.user);
                     });
