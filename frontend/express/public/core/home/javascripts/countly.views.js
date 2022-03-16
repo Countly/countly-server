@@ -219,7 +219,7 @@ var HomeViewView = countlyVue.views.create({
         selected: function(command) {
             if (command === "download") {
                 var self = this;
-                CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: "Starting image generation.you will be notified when it is ready. Please do not leave site.", sticky: true, clearAll: true});
+                CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: "Starting the image generation process. You will be notified when it is ready. Please do not leave the website while the process is running.", sticky: true, clearAll: true});
                 this.$store.dispatch("countlyHomeView/downloadScreen").then(function() {
                     if (self.$store.state.countlyHomeView.image) {
                         CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: "<a href='" + self.$store.state.countlyHomeView.image + "'>Download</a>", sticky: true, clearAll: true});

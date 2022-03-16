@@ -32,7 +32,11 @@ class Content extends Validatable {
      * @param {string}      data.buttons[].url      button action URL
      * @param {string}      data.buttons[].title    button title
      * @param {string}      data.buttons[].pers     button title personalization
-     * @param {object[]}    data.specific[]         ... any other platform-specific field like {contentAvailable: true}, {delayWhileIdle}, {collapseKey: 'key'}, etc. (use with specific method)
+     * @param {object[]}    data.specific[]         ... any other platform-specific field in a form of Object[], i.e. [{subtitle: 'Subtitle'}, {large_icon: 'icon'}]. 
+     *                                              Currently supported for iOS:
+     *                                                  {subtitle: 'Subtitle'}
+     *                                              Currently supported for Android:
+     *                                                  {large_icon: 'icon'}
      */
     constructor(data) {
         super(data);
@@ -87,7 +91,7 @@ class Content extends Validatable {
             return;
         }
         for (let k in obj) {
-            if (isNaN(parseInt(k))) {
+            if (isNaN(parseInt(k, 10))) {
                 return 'Personalisation key must be a number';
             }
             let opt = obj[k];
@@ -220,6 +224,18 @@ class Content extends Validatable {
     }
 
     /**
+     * Getter for titlePers with leading "up." removed from field names
+     * 
+     * @returns {object|undefined} title personalization
+     */
+    get titlePersDeup() {
+        if (!this._titlePersDeup && this._data.titlePers) {
+            this._titlePersDeup = Content.deupPers(this._data.titlePers);
+        }
+        return this._titlePersDeup;
+    }
+
+    /**
      * Getter for message
      * 
      * @returns {string|undefined} message text
@@ -263,6 +279,38 @@ class Content extends Validatable {
         else {
             delete this._data.messagePers;
         }
+    }
+
+    /**
+     * Getter for titlePers with leading "up." removed from field names
+     * 
+     * @returns {object|undefined} title personalization
+     */
+    get messagePersDeup() {
+        if (!this._messagePersDeup && this._data.messagePers) {
+            this._messagePersDeup = Content.deupPers(this._data.messagePers);
+        }
+        return this._messagePersDeup;
+    }
+
+    /**
+     * Deup (remove leading "up.") from personalisation object and return new one
+     * 
+     * @param {object} obj object to deup
+     * @returns {object} object with keys deupped
+     */
+    static deupPers(obj) {
+        let ret = {};
+        Object.keys(obj).forEach(idx => {
+            let {f, c, k, t} = obj[idx];
+            ret[idx] = {
+                f,
+                c,
+                t,
+                k: k.indexOf('up.') === 0 ? k.substring(3) : k,
+            };
+        });
+        return ret;
     }
 
     /**
@@ -358,6 +406,28 @@ class Content extends Validatable {
         else {
             delete this._data.extras;
         }
+    }
+
+    /**
+     * Getter for extras with leading "up." removed
+     * 
+     * @returns {string[]} array of user prop keys to send
+     */
+    get extrasDeup() {
+        if (!this._extrasDeup && this._data.extras) {
+            this._extrasDeup = Content.deupExtras(this._data.extras);
+        }
+        return this._extrasDeup;
+    }
+
+    /**
+     * Deup (remove leading "up.") property key array
+     * 
+     * @param {string[]} arr array of property keys
+     * @returns {string[]} array with keys deupped
+     */
+    static deupExtras(arr) {
+        return arr.map(x => x.indexOf('up.') === 0 ? x.substring(3) : x);
     }
 
     /**
@@ -536,6 +606,29 @@ class Content extends Validatable {
     }
 
     /**
+     * Getter for specific
+     * 
+     * @returns {object[]|undefined} media MIME type
+     */
+    get specific() {
+        return this._data.specific;
+    }
+
+    /**
+     * Setter for specific
+     * 
+     * @param {object[]|undefined} specific platform specific objects
+     */
+    set specific(specific) {
+        if (specific !== null && specific !== undefined) {
+            this._data.specific = specific;
+        }
+        else {
+            delete this._data.specific;
+        }
+    }
+
+    /**
      * Platform fields getter/setter
      * - call specific() to get an object containing all fields
      * - call specific(key) to get data for a key
@@ -546,7 +639,7 @@ class Content extends Validatable {
      * @param {any|null|undefined} value field data (pass undefined to get, pass null to remove)
      * @returns {any} stored value
      */
-    specific(key, value) {
+    specifics(key, value) {
         if (key === undefined) {
             return this._data.specific ? JSON.parse(this._data.specific) : undefined;
         }

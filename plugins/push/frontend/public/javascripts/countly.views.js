@@ -1553,6 +1553,18 @@
                     this.$store.dispatch("countlyPushNotification/details/onSetLocaleFilter", null);
                 }
             },
+            shouldShowGoToSentUrl: function() {
+                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.sent > 0;
+            },
+            shouldShowGoToErroredUrl: function() {
+                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.errored > 0;
+            },
+            shouldShowGoToActionedUrl: function() {
+                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.actioned > 0;
+            },
+            dashboardTokens: function() {
+                return this.$store.state.countlyPushNotification.details.dashboardTokens;
+            }
         },
         watch: {
             isDrawerOpen: function(value) {
@@ -1719,9 +1731,71 @@
             getRemainingStackBar: function(value) {
                 return {data: [100 - value], itemStyle: {color: "#E2E4E8"}, silent: true};
             },
-
             onDrawerClose: function() {
                 this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', false);
+            },
+            onGoToSent: function() {
+                var queryData = {message: {$in: [this.pushNotification._id]}};
+                CountlyHelpers.goTo({
+                    url: '/users/qfilter/' + JSON.stringify(queryData),
+                    from: "#/" + countlyCommon.ACTIVE_APP_ID + "/messaging/details/" + this.pushNotification._id,
+                    title: CV.i18n("push-notification.back-to-push-notification-details")
+                });
+            },
+            onGoToActioned: function() {
+                var queryData = {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    event: "[CLY]_push_action",
+                    method: "segmentation_users",
+                    period: "month",
+                    bucket: "daily",
+                    projectionKey: "",
+                    queryObject: JSON.stringify({
+                        "sg.i": {"$in": [this.pushNotification._id]}
+                    })
+                };
+                CountlyHelpers.goTo({
+                    url: '/users/request/' + JSON.stringify(queryData),
+                    from: "#/" + countlyCommon.ACTIVE_APP_ID + "/messaging/details/" + this.pushNotification._id,
+                    title: CV.i18n("push-notification.back-to-push-notification-details")
+                });
+            },
+            onGoToErrored: function() {
+                var self = this;
+                var queryData = {message: {"$nin": [this.pushNotification._id]}};
+                var $in = [];
+                if (this.pushNotification.user) {
+                    queryData.user = this.pushNotification.user;
+                }
+                if (this.pushNotification.locations && this.pushNotification.locations.length) {
+                    queryData.geo = {"$in": this.pushNotification.locations};
+                }
+                if (this.pushNotification.cohorts && this.pushNotification.cohorts.length) {
+                    queryData.chr = {"$in": this.pushNotification.cohorts};
+                }
+                var platformIndex = 2;
+                Object.keys(this.dashboardTokens).forEach(function(tokenName) {
+                    if (self.pushNotification.platforms.some(function(platformName) {
+                        // Note: token name format is 'tk'+platform+token_subtype.
+                        if (platformName === self.PlatformEnum.ANDROID) {
+                            return 'a' === tokenName.charAt(platformIndex);
+                        }
+                        if (platformName === self.PlatformEnum.IOS) {
+                            return 'i' === tokenName.charAt(platformIndex);
+                        }
+                    })) {
+                        $in.push(tokenName);
+                    }
+                });
+                if ($in.length) {
+                    queryData.push = {};
+                    queryData.push.$in = $in;
+                }
+                CountlyHelpers.goTo({
+                    url: '/users/qfilter/' + JSON.stringify(queryData),
+                    from: "#/" + countlyCommon.ACTIVE_APP_ID + "/messaging/details/" + this.pushNotification._id,
+                    title: CV.i18n("push-notification.back-to-push-notification-details")
+                });
             }
         },
         components: {

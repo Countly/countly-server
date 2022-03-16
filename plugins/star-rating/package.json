@@ -1,6 +1,6 @@
 {
   "name": "countly-star-rating",
-  "title": "Rating",
+  "title": "Ratings",
   "version": "1.0.0",
   "description": "Send 1-5 user rating from web (including comments) or mobile.",
   "author": "Count.ly",

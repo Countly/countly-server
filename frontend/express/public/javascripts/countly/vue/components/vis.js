@@ -1315,7 +1315,7 @@
                         <div class="bu-level-right">\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
                             <div class="bu-level-item" v-if="showDownload && !isZoom">\
-                                <el-button @click="downloadImage" size="small" class="chart-download-button"><img src="images/icons/download-icon.svg">\
+                                <el-button @click="downloadImage" size="small" icon="cly-icon-btn cly-icon-download" class="chart-download-button">\
                                 </el-button>\
                             </div>\
                             <div class="bu-level-item" v-if="showToggle && !isZoom">\

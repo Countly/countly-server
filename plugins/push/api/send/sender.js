@@ -46,7 +46,7 @@ class Sender {
         if (plugins.push) {
             if (plugins.push.sendahead) {
                 try {
-                    this.cfg.sendAhead = parseInt(plugins.push.sendahead);
+                    this.cfg.sendAhead = parseInt(plugins.push.sendahead, 10);
                 }
                 catch (e) {
                     this.log.w('Invalid sendahead plugin configuration: %j', plugins.push.sendahead);
@@ -62,7 +62,7 @@ class Sender {
             }
             if (plugins.push.bytes) {
                 try {
-                    this.cfg.pool.bytes = parseInt(plugins.push.bytes);
+                    this.cfg.pool.bytes = parseInt(plugins.push.bytes, 10);
                 }
                 catch (e) {
                     this.log.w('Invalid bytes plugin configuration: %j', plugins.push.bytes);
@@ -70,7 +70,7 @@ class Sender {
             }
             if (plugins.push.concurrency) {
                 try {
-                    this.cfg.pool.concurrency = parseInt(plugins.push.concurrency);
+                    this.cfg.pool.concurrency = parseInt(plugins.push.concurrency, 10);
                 }
                 catch (e) {
                     this.log.w('Invalid concurrency plugin configuration: %j', plugins.push.concurrency);
@@ -130,7 +130,7 @@ class Sender {
         this.log.d('sending');
 
         // data shared across multiple streams
-        let state = new State(),
+        let state = new State(this.cfg),
             connector = new Connector(this.log, common.db, state, 100000),
             batcher = new Batcher(this.log, state, 100000),
             resultor = new Resultor(this.log, common.db, state, 100000);

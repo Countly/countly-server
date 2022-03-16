@@ -1,5 +1,5 @@
 'use strict';
-const { State, Status, STATUSES, Mongoable, DEFAULTS, S } = require('./const'),
+const { State, Status, STATUSES, Mongoable, DEFAULTS, S, S_REGEXP } = require('./const'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
@@ -100,17 +100,20 @@ class Message extends Mongoable {
      * Get query of messages active at data
      * 
      * @param {Date} date date
+     * @param {int} play period in ms to the left and right from the date
      * @param {State} state state, streamable by default
      * @returns {object} MongoDB filter object
      */
-    static filter(date, state = State.Streamable) {
+    static filter(date, play, state = State.Streamable) {
+        let $lte = new Date(date.getTime() + play),
+            $gte = new Date(date.getTime() - play);
         return {
             state: {$bitsAllSet: state},
             $or: [
-                {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte: date}, $or: [{end: {$gte: date}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte}}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
             ]
         };
     }
@@ -394,10 +397,25 @@ class Message extends Mongoable {
      * Get user fields used in a Content
      * 
      * @param {Content[]} contents array of Content instances
+     * @param {boolean} deup remove leading 'up.'
      * @returns {string[]} array of app user field names
      */
-    static userFieldsFor(contents) {
-        let keys = contents.map(content => Object.values(content.messagePers || {}).concat(Object.values(content.titlePers || {})).map(obj => obj.k).concat(content.extras || []).map(Message.decodeFieldKey)).flat();
+    static userFieldsFor(contents, deup) {
+        let keys = contents.map(content => Object.values(content.messagePers || {}).concat(Object.values(content.titlePers || {}))
+            .map(obj => obj.k)
+            .concat(content.extras || [])
+            .map(Message.decodeFieldKey))
+            .flat();
+        if (deup) {
+            keys = keys.map(f => {
+                if (f.indexOf('up.') === 0) {
+                    return f.substring(3);
+                }
+                else {
+                    return f;
+                }
+            });
+        }
         // if (contents.length > 1) { // commenting out for now because we always need locale now - for result subs
         if (keys.indexOf('la') === -1) {
             keys.push('la');
@@ -424,7 +442,7 @@ class Message extends Mongoable {
      * @returns {string} original field name
      */
     static decodeFieldKey(key) {
-        return key.replace(new RegExp(S, 'g'), '.');
+        return key.replace(new RegExp(S_REGEXP, 'g'), '.');
     }
 
     /**

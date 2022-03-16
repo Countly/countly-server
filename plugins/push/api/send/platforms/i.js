@@ -395,7 +395,7 @@ const map = {
      */
     buttons: function(t, buttons) {
         if (buttons) {
-            t.result.c.b = buttons.map(b => ({t: b.title, l: b.link}));
+            t.result.c.b = buttons.map(b => ({t: b.title, l: b.url}));
         }
     },
 
@@ -488,6 +488,21 @@ const map = {
         }
         if (any) {
             template.result.c.e = e;
+        }
+    },
+
+    /**
+     * Sends platform specific fields
+     * 
+     * @param {Template} template template
+     * @param {object} specific platform specific props to be sent
+     */
+    specific: function(template, specific) {
+        if (specific) {
+            if (specific.subtitle) {
+                template.result.aps.alert = template.result.aps.alert || {};
+                template.result.aps.alert.subtitle = specific.subtitle;
+            }
         }
     },
 };

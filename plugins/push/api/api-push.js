@@ -76,7 +76,7 @@ module.exports.onSessionUser = ({params, dbAppUser}) => {
             platfs.forEach(p => updateUsersMonth['d.' + params.time.day + '.' + DBMAP.MESSAGING_ENABLED + p] = 1);
         }
 
-        if (userLastSeenDate.year() === parseInt(params.time.yearly) && Math.ceil(userLastSeenDate.format('DDD') / 7) < params.time.weekly) {
+        if (userLastSeenDate.year() === parseInt(params.time.yearly, 10) && Math.ceil(userLastSeenDate.format('DDD') / 7) < params.time.weekly) {
             updateUsersZero['d.w' + params.time.weekly + '.' + DBMAP.MESSAGING_ENABLED] = 1;
             platfs.forEach(p => updateUsersZero['d.w' + params.time.weekly + '.' + DBMAP.MESSAGING_ENABLED + p] = 1);
         }
@@ -169,8 +169,8 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         let update = {};
         if (config.rate) {
             pushcfg.rate = pushcfg.rate || {};
-            config.rate.rate = config.rate.rate ? parseInt(config.rate.rate) : 0;
-            config.rate.period = config.rate.period ? parseInt(config.rate.period) : 0;
+            config.rate.rate = config.rate.rate ? parseInt(config.rate.rate, 10) : 0;
+            config.rate.period = config.rate.period ? parseInt(config.rate.period, 10) : 0;
 
             if (config.rate.rate) {
                 update.$set = {'plugins.push.rate.rate': config.rate.rate};

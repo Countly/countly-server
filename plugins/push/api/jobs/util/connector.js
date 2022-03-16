@@ -121,7 +121,7 @@ class Connector extends SynFlushTransform {
         }
         else { // all good with credentials, now let's check messages
             if (!message) {
-                let query = Message.filter(new Date());
+                let query = Message.filter(new Date(), this.state.cfg.sendAhead);
                 query._id = push.m;
                 this.db.collection('messages').findOne(query).then(msg => {
                     if (msg) {
@@ -134,7 +134,12 @@ class Connector extends SynFlushTransform {
                 }, callback);
             }
             else if (!message.is(State.Streaming)) {
-                message.updateAtomically({_id: message._id, state: message.state}, {$set: {status: Status.Sending}, $bit: {state: {or: State.Streaming}}})
+                let date = new Date(),
+                    update = {$set: {status: Status.Sending, 'info.startedLast': date}, $bit: {state: {or: State.Streaming}}};
+                if (!message.info.started) {
+                    update.$set['info.started'] = date;
+                }
+                message.updateAtomically({_id: message._id, state: message.state}, update)
                     .then(ok => {
                         if (ok) {
                             this.do_transform(push, encoding, callback);

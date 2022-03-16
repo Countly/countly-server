@@ -139,7 +139,7 @@ plugins.register('/i', async ob => {
                 for (let i = 0; i < push.length; i++) {
                     let event = push[i],
                         msg = msgs.filter(m => m.id === event.segmentation.i)[0],
-                        count = parseInt(event.count);
+                        count = parseInt(event.count, 10);
                     if (!msg || count !== 1) {
                         log.i('Invalid segmentation for [CLY]_push_action from %s: %j (msg %s, count %j)', params.qstring.device_id, event.segmentation, msg ? 'found' : 'not found', event.segmentation.count);
                         continue;

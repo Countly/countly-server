@@ -1,5 +1,6 @@
 const { LRU } = require('./lru'),
-    personalize = require('./pers');
+    personalize = require('./pers'),
+    { Content } = require('./content');
 
 /**
  * Simple class for abstracting template/compilation-related logic
@@ -117,7 +118,16 @@ class Template {
             message = push.ov && push.ov.message ? null : undefined,
             buttons = push.ov && push.ov.buttons ? null : undefined,
             data = push.ov && push.ov.data ? null : undefined,
-            extras = push.ov && push.ov.extras ? null : undefined;
+            extras = push.ov && push.ov.extras ? null : undefined,
+            specific = {};
+
+        if (push.ov && push.ov.specific) {
+            push.ov.specific.forEach(obj => {
+                for (let k in obj) {
+                    specific[k] = obj[k];
+                }
+            });
+        }
 
         // now go backwards through all contents picking the latest title/message/etc 
         // this ensures that any overrides don't mess with less important values (i.e. we cannot apply data without picking, message/messagePers etc are inter dependent as well)
@@ -130,7 +140,7 @@ class Template {
 
             if (title === undefined) {
                 if (c.titlePers) {
-                    title = this.title(c.title, c.titlePers, push.pr);
+                    title = this.title(c.title, c.titlePersDeup, push.pr);
                 }
                 else {
                     title = c.title;
@@ -138,7 +148,7 @@ class Template {
             }
             if (message === undefined) {
                 if (c.messagePers) {
-                    message = this.message(c.message, c.messagePers, push.pr);
+                    message = this.message(c.message, c.messagePersDeup, push.pr);
                 }
                 else {
                     message = c.message;
@@ -151,14 +161,23 @@ class Template {
                 data = c.data;
             }
             if (extras === undefined) {
-                extras = c.extras;
+                extras = c.extrasDeup;
+            }
+            if (c.specific) {
+                c.specific.forEach(obj => {
+                    for (let k in obj) {
+                        if (specific[k] === undefined) {
+                            specific[k] = obj[k];
+                        }
+                    }
+                });
             }
         }
 
         // now apply all picked content items unless there's an override in push.ov
         if (push.ov && push.ov.title) {
             if (push.ov.titlePers) {
-                this.platform.map.title(this, personalize(push.ov.title, push.ov.titlePers)(push.pr));
+                this.platform.map.title(this, personalize(push.ov.title, Content.deupPers(push.ov.titlePers))(push.pr));
             }
             else {
                 this.platform.map.title(this, push.ov.title, push.pr);
@@ -170,7 +189,7 @@ class Template {
 
         if (push.ov && push.ov.message) {
             if (push.ov.messagePers) {
-                this.platform.map.message(this, personalize(push.ov.message, push.ov.messagePers)(push.pr));
+                this.platform.map.message(this, personalize(push.ov.message, Content.deupPers(push.ov.messagePers))(push.pr));
             }
             else {
                 this.platform.map.message(this, push.ov.message, push.pr);
@@ -196,10 +215,21 @@ class Template {
         }
 
         if (push.ov && push.ov.extras) {
-            this.platform.map.extras(this, push.ov.extras, push.pr);
+            this.platform.map.extras(this, Content.deupExtras(push.ov.extras), push.pr);
         }
         else if (extras) {
             this.platform.map.extras(this, extras, push.pr);
+        }
+
+        if (push.ov && push.ov.extras) {
+            this.platform.map.extras(this, Content.deupExtras(push.ov.extras), push.pr);
+        }
+        else if (extras) {
+            this.platform.map.extras(this, extras, push.pr);
+        }
+
+        if (specific) {
+            this.platform.map.specific(this, specific, push.pr);
         }
 
         // apply other overrides if any

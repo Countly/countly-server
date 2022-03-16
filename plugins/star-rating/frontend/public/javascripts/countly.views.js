@@ -166,7 +166,15 @@
         data: function() {
             return {
                 cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
-                widgetsTablePersistKey: 'widgets_table_' + countlyCommon.ACTIVE_APP_ID
+                persistKey: 'ratingsWidgetsTable_' + countlyCommon.ACTIVE_APP_ID,
+                tableDynamicCols: [
+                    {
+                        value: "target_pages",
+                        label: CV.i18n("feedback.pages"),
+                        default: true,
+                        required: true
+                    }
+                ],
             };
         },
         computed: {
@@ -443,6 +451,11 @@
         ],
         data: function() {
             return {
+                empty: {
+                    title: CV.i18n("ratings.empty.title"),
+                    body: CV.i18n("ratings.empty.body"),
+                    image: "/star-rating/images/star-rating/ratings-empty.svg"
+                },
                 widgets: [],
                 drawerSettings: {
                     createTitle: CV.i18n('feedback.add-widget'),
@@ -658,19 +671,24 @@
                 // reset cumulative data
                 self.cumulativeData = [{
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 0
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 1
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 2
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 3
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 4
                 }];
 
                 var ratingArray = [];
