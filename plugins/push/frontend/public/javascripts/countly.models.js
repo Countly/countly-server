@@ -1043,6 +1043,8 @@
             },
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
+                    // NOte: icon will reside at index zero for now. There are no other platform specifics
+                    icon: androidSettingsDto && androidSettingsDto.specific && androidSettingsDto.specific[0] && androidSettingsDto.specific[0].large_icon || "",
                     soundFilename: androidSettingsDto && androidSettingsDto.sound || "",
                     badgeNumber: androidSettingsDto && androidSettingsDto.badge && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
@@ -1054,7 +1056,8 @@
             },
             mapIOSSettings: function(iosSettingsDto) {
                 return {
-                    subtitle: "",
+                    // NOte: subtitle will reside at index zero for now. There are no other platform specifics
+                    subtitle: iosSettingsDto && iosSettingsDto.specific && iosSettingsDto.specific[0] && iosSettingsDto.specific[0].subtitle || "",
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
@@ -1649,12 +1652,12 @@
                 if (iosSettings.onClickURL && options.settings[PlatformEnum.IOS].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.url = iosSettings.onClickURL;
                 }
+                if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
+                    result.specific = [{subtitle: iosSettings.subtitle}];
+                }
                 if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = model.settings[PlatformEnum.IOS].mediaURL;
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
-                }
-                if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
-                    result.specific = [{subtitle: iosSettings.subtitle}];
                 }
                 return result;
             },
@@ -1679,6 +1682,9 @@
                 }
                 if (androidSettings.onClickURL && options.settings[PlatformEnum.ANDROID].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.url = androidSettings.onClickURL;
+                }
+                if (androidSettings.icon && options.settings[PlatformEnum.ANDROID].isIconEnabled) {
+                    result.specific = [{large_icon: androidSettings.icon}];
                 }
                 if (model.settings[PlatformEnum.ANDROID].mediaURL && options.settings[PlatformEnum.ANDROID].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = model.settings[PlatformEnum.ANDROID].mediaURL;
