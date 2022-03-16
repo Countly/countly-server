@@ -979,7 +979,7 @@ window.CrashesView = countlyView.extend({
 
                 $("#crash-" + self.curMetric).parents(".big-numbers").addClass("active");
 
-                self.dtable.fnDraw(false);
+                self.dtable && self.dtable.fnDraw(false);
 
                 self.pageScripts();
                 countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
