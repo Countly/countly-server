@@ -376,12 +376,6 @@
                         type: 'info'
                     });
                 }
-                if (this.permissionSets[index][type].all) {
-                    CountlyHelpers.notify({
-                        message: CV.i18n('management-users.future-plugins'),
-                        type: 'info'
-                    });
-                }
             },
             handleCommand: function(command, index) {
                 switch (command) {
