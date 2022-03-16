@@ -273,6 +273,13 @@
                 ]
             };
         },
+        watch: {
+            tab: function(newVal) {
+                if (newVal === 'sources') {
+                    window.location.hash = "#/analytics/acquisition";
+                }
+            }
+        },
         created: function() {
             if (this.isWeb) {
                 this.tabs.push({
@@ -281,14 +288,23 @@
                     component: KeywordsTabContainer
                 });
             }
+            if (app.redirectFromHome) {
+                this.tab = 'keywords';
+            }
         }
     });
-
     var SourcesView = new countlyVue.views.BackboneWrapper({
         component: SourcesContainer
     });
 
+
     app.route("/analytics/acquisition", 'acqusition', function() {
+        app.redirectFromHome = false;
+        this.renderWhenReady(SourcesView);
+    });
+
+    app.route("/analytics/acquisition/*search-terms", 'acqusition', function() {
+        app.redirectFromHome = true;
         this.renderWhenReady(SourcesView);
     });
 
