@@ -212,6 +212,11 @@ class Audience {
         // User query
         let query = filter.user;
         if (query) {
+            let params = {
+                time: common.initTimeObj(this.app.timezone, Date.now()),
+                qstring: Object.assign({app_id: this.app._id.toString()}, query),
+                app_id: this.app._id.toString()
+            };
             await common.plugins.dispatchAsPromise("/drill/preprocess_query", {
                 query,
                 params
@@ -269,7 +274,7 @@ class Audience {
             else {
                 // drill().drill.openDrillDb();
 
-                var params = {
+                let params = {
                     time: common.initTimeObj(this.app.timezone, Date.now()),
                     qstring: Object.assign({app_id: this.app._id.toString()}, query),
                     app_id: this.app._id.toString()
