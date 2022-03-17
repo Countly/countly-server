@@ -418,9 +418,12 @@ module.exports.mime = async params => {
             common.returnMessage(params, 400, {errors: ['No content-type while HEADing the url']}, null, true);
         }
         else if (info.headers['content-length'] === undefined) {
-            common.returnMessage(params, 400, {errors: ['No content-length while HEADing the url']}, null, true);
+            info = await mimeInfo(params.qstring.url, 'GET');
+            if (info.headers['content-length'] === undefined) {
+                return common.returnMessage(params, 400, {errors: ['No content-length while HEADing the url']}, null, true);
+            }
         }
-        else if (MEDIA_MIME_ALL.indexOf(info.headers['content-type']) === -1) {
+        if (MEDIA_MIME_ALL.indexOf(info.headers['content-type']) === -1) {
             common.returnMessage(params, 400, {errors: [`Media mime type "${info.headers['content-type']}" is not supported`]}, null, true);
         }
         else if (parseInt(info.headers['content-length'], 10) > DEFAULTS.max_media_size) {
@@ -572,9 +575,10 @@ module.exports.all = async params => {
  * Get MIME of the file behind url by sending a HEAD request
  * 
  * @param {string} url - url to get info from
+ * @param {string} method - http method to use
  * @returns {Promise} - {status, headers} in case of success, PushError otherwise
  */
-function mimeInfo(url) {
+function mimeInfo(url, method = 'HEAD') {
     let conf = common.plugins.getConfig('push'),
         ok = common.validateArgs({url}, {
             url: {type: 'URLString', required: true},
@@ -611,13 +615,34 @@ function mimeInfo(url) {
                 .on('connect', (res, socket) => {
                     if (res.statusCode === 200) {
                         opts = {
-                            method: 'HEAD',
+                            method,
                             agent: false,
                             socket
                         };
 
                         let req = require(protocol).request(url, opts, res2 => {
-                            resolve({url: url.toString(), status: res2.statusCode, headers: res2.headers});
+                            let status = res2.statusCode,
+                                headers = res2.headers,
+                                data = 0;
+                            if (method === 'HEAD') {
+                                resolve({url: url.toString(), status, headers});
+                            }
+                            else {
+                                res2.on('data', dt => {
+                                    if (typeof dt === 'string') {
+                                        data += dt.length;
+                                    }
+                                    else if (Buffer.isBuffer(dt)) {
+                                        data += dt.byteLength;
+                                    }
+                                });
+                                res2.on('end', () => {
+                                    if (!headers['content-length']) {
+                                        headers['content-length'] = data || 0;
+                                    }
+                                    resolve({url: url.toString(), status, headers});
+                                });
+                            }
                         });
                         req.on('error', err => {
                             log.e('error when HEADing ' + url, err);
@@ -638,12 +663,33 @@ function mimeInfo(url) {
         }
         else {
             require(protocol)
-                .request(url, {method: 'HEAD'}, res => {
+                .request(url, {method}, res => {
                     if ((res.statusCode === 301 || res.statusCode === 302) && res.headers.location) {
                         mimeInfo(res.headers.location).then(resolve, reject);
                     }
                     else {
-                        resolve({url: url.toString(), status: res.statusCode, headers: res.headers});
+                        let status = res.statusCode,
+                            headers = res.headers,
+                            data = 0;
+                        if (method === 'HEAD') {
+                            resolve({url: url.toString(), status, headers});
+                        }
+                        else {
+                            res.on('data', dt => {
+                                if (typeof dt === 'string') {
+                                    data += dt.length;
+                                }
+                                else if (Buffer.isBuffer(dt)) {
+                                    data += dt.byteLength;
+                                }
+                            });
+                            res.on('end', () => {
+                                if (!headers['content-length']) {
+                                    headers['content-length'] = data || 0;
+                                }
+                                resolve({url: url.toString(), status, headers});
+                            });
+                        }
                     }
                 })
                 .on('error', err => {
