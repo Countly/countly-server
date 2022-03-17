@@ -101,7 +101,7 @@
                 arrSum.push(eventData.chartData[i].s);
 
                 arrDuration.push(eventData.chartData[i].dur);
-                xAxisData.push(typeof eventData.chartData[i].curr_segment === 'string' ? countlyCommon.decode(eventData.chartData[i].curr_segment) : eventData.chartData[i].curr_segment);
+                xAxisData.push(typeof eventData.chartData[i].curr_segment === 'string' ? countlyAllEvents.helpers.decode(eventData.chartData[i].curr_segment) : eventData.chartData[i].curr_segment);
                 if (eventData.chartData[i].c) {
                     count += eventData.chartData[i].c;
                 }
@@ -154,6 +154,9 @@
             }
 
             return obj;
+        },
+        decode: function(str) {
+            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
         },
         getEventLongName: function(eventKey, eventMap) {
             var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");

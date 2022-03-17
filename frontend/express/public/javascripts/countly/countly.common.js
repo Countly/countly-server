@@ -265,7 +265,7 @@
         * @returns {string} decoded string
         */
         countlyCommon.decode = function(str) {
-            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
         };
 
         /**
