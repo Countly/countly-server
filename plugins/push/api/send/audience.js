@@ -212,26 +212,31 @@ class Audience {
         // User query
         let query = filter.user;
         if (query) {
-            if (query.message) {
-                let filtered = await this.filterMessage(query.message);
-                delete query.message;
+            await common.plugins.dispatchAsPromise("/drill/preprocess_query", {
+                query,
+                params
+            });
 
-                steps.push({$match: {uid: {$in: filtered}}});
-            }
+            // if (query.message) {
+            //     let filtered = await this.filterMessage(query.message);
+            //     delete query.message;
 
-            if (query.geo) {
-                if (drill() && geo()) {
-                    drill().preprocessQuery(query);
-                    let geos = await geo().query(this.app._id, query.geo);
-                    if (geos && geos.length) {
-                        steps.push({$match: {$or: geos.map(g => geo().conds(g))}});
-                    }
-                    else {
-                        query.invalidgeo = true;
-                    }
-                }
-                delete query.geo;
-            }
+            //     steps.push({$match: {uid: {$in: filtered}}});
+            // }
+
+            // if (query.geo) {
+            //     if (drill() && geo()) {
+            //         drill().preprocessQuery(query);
+            //         let geos = await geo().query(this.app._id, query.geo);
+            //         if (geos && geos.length) {
+            //             steps.push({$match: {$or: geos.map(g => geo().conds(g))}});
+            //         }
+            //         else {
+            //             query.invalidgeo = true;
+            //         }
+            //     }
+            //     delete query.geo;
+            // }
 
             if (Object.keys(query).length) {
                 steps.push({$match: query});
@@ -241,6 +246,10 @@ class Audience {
         // Drill query
         query = filter.drill;
         if (query && drill()) {
+            // await common.plugins.dispatchAsPromise("/drill/preprocess_query", {
+            //     query,
+            //     params
+            // });
             if (query.queryObject && query.queryObject.chr && Object.keys(query.queryObject).length === 1) {
                 let cohorts = {}, chr = query.queryObject.chr, i;
 
@@ -262,7 +271,8 @@ class Audience {
 
                 var params = {
                     time: common.initTimeObj(this.app.timezone, Date.now()),
-                    qstring: Object.assign({app_id: this.app._id.toString()}, query)
+                    qstring: Object.assign({app_id: this.app._id.toString()}, query),
+                    app_id: this.app._id.toString()
                 };
                 delete params.qstring.queryObject.chr;
 

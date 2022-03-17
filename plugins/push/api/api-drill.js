@@ -83,13 +83,13 @@ module.exports.drillAddPushEvents = ({uid, params, events, event}) => {
 function messageQuery(message) {
     if (message) {
         if (message.$in) {
-            return {$or: [message.$in.map(m => ({[`msg.${m}`]: {$exists: true}}))]};
+            return {$or: message.$in.map(m => ({[`msgs.${m}`]: {$exists: true}}))};
         }
         else if (message.$nin) {
-            return {$nor: [message.$nin.map(m => ({[`msg.${m}`]: {$exists: true}}))]};
+            return {$and: message.$nin.map(m => ({[`msgs.${m}`]: {$exists: false}}))};
         }
         else if (Object.keys(message).length) {
-            return {$or: [message.map(m => ({[`msg.${m}`]: {$exists: true}}))]};
+            return {$or: message.map(m => ({[`msgs.${m}`]: {$exists: true}}))};
         }
     }
 }
@@ -121,27 +121,25 @@ module.exports.drillPreprocessQuery = ({query, params}) => {
             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
 
-            if (params && params.qstring.method === 'user_details') {
-                return new Promise((res, rej) => {
-                    try {
-                        common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
-                            if (err) {
-                                rej(err);
-                            }
-                            else {
-                                ids = (ids || []).map(id => id._id);
-                                query.uid = {$in: ids};
-                                log.d(`filtered by message: uids out of ${ids.length}`);
-                                res();
-                            }
-                        });
-                    }
-                    catch (e) {
-                        console.log(e);
-                        rej(e);
-                    }
-                });
-            }
+            return new Promise((res, rej) => {
+                try {
+                    common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
+                        if (err) {
+                            rej(err);
+                        }
+                        else {
+                            ids = (ids || []).map(id => id._id);
+                            query.uid = {$in: ids};
+                            log.d(`filtered by message: uids out of ${ids.length}`);
+                            res();
+                        }
+                    });
+                }
+                catch (e) {
+                    console.log(e);
+                    rej(e);
+                }
+            });
         }
     }
 };
