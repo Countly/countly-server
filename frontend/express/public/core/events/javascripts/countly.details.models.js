@@ -101,7 +101,7 @@
                 arrSum.push(eventData.chartData[i].s);
 
                 arrDuration.push(eventData.chartData[i].dur);
-                xAxisData.push(eventData.chartData[i].curr_segment);
+                xAxisData.push(countlyCommon.decode(eventData.chartData[i].curr_segment));
                 if (eventData.chartData[i].c) {
                     count += eventData.chartData[i].c;
                 }
