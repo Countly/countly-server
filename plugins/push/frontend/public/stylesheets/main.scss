@@ -251,36 +251,12 @@
     }
 
     &__platforms {
-
-        width: 70px;
-        margin: 18px auto 0;
-        height: 27px;
-        display: table;
-        table-layout: fixed;
-    }
-
-    &__icon-container {
-        display: table-cell;
-        width: 2%;
-        max-width: 80px;
-        text-align: center;
-        font-size: 12px;
-        padding: 6px 9px;
-        color: #A7A8A8;
-        background-color: #F5F5F5;
-        border: 1px solid #D0D0D0;
-        transition: .6s ease-out;
-        line-height: 15px;
-    }
-
-    &__icon-container:first-child {
-        border-radius: 2px 0 0 2px;
-    }
-
-    &__active-icon {
-        color: #636363;
-        background-color: white;
-        border: 1px solid #37BB29;
+        display: flex;
+        justify-content: center;
+        width: 280px;
+        .el-radio-button__inner {
+            width: 80px;
+        }
     }
 
     &__user-property {
