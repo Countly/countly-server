@@ -13,14 +13,14 @@
                     <el-button v-if="shouldShowApproveUserCommand(pushNotification.status)" @click="onApprove(pushNotification._id)" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> {{i18n('push-notification.approve')}} </el-button>
                 </template>
                 <cly-more-options size="small" @command="handleUserCommands($event, pushNotification._id)">
+                    <el-dropdown-item v-if="shouldShowStartUserCommand(pushNotification.status)" :command="UserCommandEnum.START">{{i18n('push-notification.start')}} </el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowStopUserCommand(pushNotification.status)" :command="UserCommandEnum.STOP">{{i18n('push-notification.stop')}} </el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowEditUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowEditDraftUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowEditRejectUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_REJECT">{{i18n('push-notification.edit')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowDuplicateUserCommand(pushNotification.status)" :command="UserCommandEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowDeleteUserCommand(pushNotification.status)"  :command="UserCommandEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowResendUserCommand(pushNotification.status)" :command="UserCommandEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowEditDraftUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowEditUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowEditRejectUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_REJECT">{{i18n('push-notification.edit')}}</el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowStartUserCommand(pushNotification.status)" :command="UserCommandEnum.START">{{i18n('push-notification.start')}} </el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowStopUserCommand(pushNotification.status)" :command="UserCommandEnum.STOP">{{i18n('push-notification.stop')}} </el-dropdown-item>
                 </cly-more-options>
             </template>
             <template v-slot:header-bottom>
@@ -118,7 +118,15 @@
                         </div>
                     </div>
                     <div style="width: 16.166667%; padding-right: 24px">
-                        <mobile-message-preview :title="message.title" :content="message.content" :platforms="pushNotification.platforms" :media="previewMessageMedia" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
+                        <mobile-message-preview 
+                            :title="message.title"
+                            :subtitle="pushNotification.settings[this.PlatformEnum.IOS].subtitle"
+                            :content="message.content" 
+                            :platforms="pushNotification.platforms" 
+                            :media="previewMessageMedia" 
+                            :buttons="message.buttons.map(function(item){return item.label})" 
+                            class="cly-vue-push-notification-details-summary__message-preview"> 
+                        </mobile-message-preview>
                     </div>
                 </div>
             </div>

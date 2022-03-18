@@ -149,6 +149,7 @@
                 pushNotificationUnderEdit: JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type))),
                 currentNumberOfUsers: 0,
                 today: moment.utc().valueOf(),
+                appConfig: {},
             };
         },
         watch: {
@@ -446,8 +447,12 @@
             },
             estimate: function() {
                 var self = this;
-                this.setIsLoading(true);
                 return new Promise(function(resolve) {
+                    if (!self.pushNotificationUnderEdit.platforms.length) {
+                        resolve(false);
+                        return;
+                    }
+                    self.setIsLoading(true);
                     var options = {};
                     options.isLocationSet = self.isLocationSet;
                     options.from = self.from;
@@ -455,13 +460,17 @@
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
                     countlyPushNotification.service.estimate(preparePushNotificationModel, options).then(function(response) {
-                        self.setLocalizationOptions(response.localizations);
-                        self.setCurrentNumberOfUsers(response.total);
-                        self.updateEnabledNumberOfUsers(response.total);
                         if (response.total === 0) {
                             resolve(false);
                             CountlyHelpers.notify({ message: 'No users were found from selected configuration.', type: "error"});
                             return;
+                        }
+                        self.setLocalizationOptions(response.localizations);
+                        self.setCurrentNumberOfUsers(response.total);
+                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME) {
+                            if (self.pushNotificationUnderEdit[self.TypeEnum.ONE_TIME].targeting === self.TargetingEnum.ALL) {
+                                self.updateEnabledNumberOfUsers(response.total);
+                            }
                         }
                         if (response._id) {
                             self.setId(response._id);
@@ -635,16 +644,64 @@
                 this.resetState();
                 this.$emit('onClose');
             },
-            onPlatformChange: function() {
-                if (this.pushNotificationUnderEdit.platforms.length) {
-                    this.estimate();
+            hasPlatformConfig: function(platform) {
+                if (platform === this.PlatformEnum.ANDROID) {
+                    return (this.appConfig[platform] && this.appConfig[platform]._id) || (this.appConfig[this.PlatformEnum.HUAWEI] && this.appConfig[this.PlatformEnum.HUAWEI]._id);
                 }
+                return this.appConfig[platform] && this.appConfig[platform]._id;
+            },
+            getPlatformLabel: function(platform) {
+                if (platform === this.PlatformEnum.ANDROID) {
+                    return CV.i18n('push-notification.android');
+                }
+                if (platform === this.PlatformEnum.IOS) {
+                    return CV.i18n('push-notification.ios');
+                }
+                return platform;
+            },
+            onPlatformChange: function(platform) {
+                if (!this.isPlatformSelected(platform)) {
+                    if (this.hasPlatformConfig(platform)) {
+                        this.pushNotificationUnderEdit.platforms.push(platform);
+                        if (this.from) {
+                            this.estimate();
+                        }
+                        return;
+                    }
+                    CountlyHelpers.notify({type: 'error', message: 'No push credentials found for ' + this.getPlatformLabel(platform) + ' platform' });
+                }
+                else {
+                    this.pushNotificationUnderEdit.platforms = this.pushNotificationUnderEdit.platforms.filter(function(item) {
+                        return item !== platform;
+                    });
+                    if (this.from) {
+                        this.estimate();
+                    }
+                }
+            },
+            isPlatformSelected: function(platform) {
+                return this.pushNotificationUnderEdit.platforms.some(function(item) {
+                    return item === platform;
+                });
+            },
+            updatePlatformsBasedOnAppConfig: function() {
+                if (this.hasPlatformConfig(this.PlatformEnum.ANDROID)) {
+                    this.pushNotificationUnderEdit.platforms.push(this.PlatformEnum.ANDROID);
+                }
+                if (this.hasPlatformConfig(this.PlatformEnum.IOS)) {
+                    this.pushNotificationUnderEdit.platforms.push(this.PlatformEnum.IOS);
+                }
+            },
+            isQueryFilterEmpty: function() {
+                return this.queryFilter && this.queryFilter.queryObject && Object.keys(this.queryFilter.queryObject).length === 0;
             },
             onOpen: function() {
                 if (this.id) {
                     this.fetchPushNotificationById();
+                    return;
                 }
-                if (this.from) {
+                this.updatePlatformsBasedOnAppConfig();
+                if (this.from && !this.isQueryFilterEmpty()) {
                     this.estimate();
                 }
             },
@@ -1044,12 +1101,25 @@
                     return selectedPlatform === platform;
                 }).length > 0;
             },
+            setAppConfig: function(value) {
+                this.appConfig = value;
+            },
+            getAppConfig: function() {
+                var appConfig = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins || {};
+                try {
+                    this.setAppConfig(countlyPushNotification.mapper.incoming.mapAppLevelConfig(appConfig.push));
+                }
+                catch (error) {
+                    console.error(error);
+                }
+            }
         },
         mounted: function() {
             this.fetchCohorts();
             this.fetchLocations();
             this.fetchEvents();
             this.fetchDashboard();
+            this.getAppConfig();
         },
         components: {
             "message-setting-element": countlyPushNotificationComponent.MessageSettingElement,
@@ -1371,7 +1441,7 @@
             return {
                 pushNotificationTabs: [
                     {title: CV.i18n('push-notification.one-time'), name: countlyPushNotification.service.TypeEnum.ONE_TIME, component: PushNotificationTabView},
-                    {title: CV.i18n('push-notification.automatic'), name: countlyPushNotification.service.TypeEnum.AUTOMATIC, component: PushNotificationTabView},
+                    {title: CV.i18n('push-notification.automated'), name: countlyPushNotification.service.TypeEnum.AUTOMATIC, component: PushNotificationTabView},
                     {title: CV.i18n('push-notification.transactional'), name: countlyPushNotification.service.TypeEnum.TRANSACTIONAL, component: PushNotificationTabView}
                 ],
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum

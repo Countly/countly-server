@@ -21,6 +21,9 @@
             },
             isCode: function() {
                 return countlyGlobal.config && countlyGlobal.config.code;
+            },
+            hasGlobalAdminRights: function() {
+                return countlyAuth.validateGlobalAdmin();
             }
         },
         data: function() {
@@ -41,7 +44,7 @@
             timezones.sort(function(a, b) {
                 return a.label > b.label && 1 || -1;
             });
-            var appList = Object.keys(countlyGlobal.apps).map(function(id) {
+            var appList = Object.keys(countlyGlobal.admin_apps).map(function(id) {
                 countlyGlobal.apps[id].image = "appimages/" + id + ".png";
                 return {
                     label: countlyGlobal.apps[id].name,

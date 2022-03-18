@@ -376,12 +376,6 @@
                         type: 'info'
                     });
                 }
-                if (this.permissionSets[index][type].all) {
-                    CountlyHelpers.notify({
-                        message: CV.i18n('management-users.future-plugins'),
-                        type: 'info'
-                    });
-                }
             },
             handleCommand: function(command, index) {
                 switch (command) {
@@ -679,7 +673,10 @@
                     .then(function() {
                         self.drawerSettings.editMode = true;
                         self.user = countlyUserManagement.getUser();
-                        self.openDrawer("user", countlyUserManagement.getUser());
+                        if (typeof self.user.permission === "undefined") {
+                            self.user.permission = { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] }};
+                        }
+                        self.openDrawer("user", self.user);
                     });
             }
         },

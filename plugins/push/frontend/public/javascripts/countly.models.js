@@ -221,7 +221,7 @@
             return {
                 _id: null,
                 name: "",
-                platforms: [PlatformEnum.ANDROID],
+                platforms: [],
                 audienceSelection: AudienceSelectionEnum.BEFORE,
                 message: {
                     default: {
@@ -839,11 +839,11 @@
             },
             buildMessageText: function(message, userPropertiesDto) {
                 var self = this;
-                if (!userPropertiesDto) {
-                    return message;
-                }
                 if (!message) {
                     message = "";
+                }
+                if (!userPropertiesDto) {
+                    return message;
                 }
                 var messageInHTMLString = message;
                 var buildMessageLength = 0;
@@ -1046,6 +1046,8 @@
             },
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
+                    // NOte: icon will reside at index zero for now. There are no other platform specifics
+                    icon: androidSettingsDto && androidSettingsDto.specific && androidSettingsDto.specific[0] && androidSettingsDto.specific[0].large_icon || "",
                     soundFilename: androidSettingsDto && androidSettingsDto.sound || "",
                     badgeNumber: androidSettingsDto && androidSettingsDto.badge && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
@@ -1057,7 +1059,8 @@
             },
             mapIOSSettings: function(iosSettingsDto) {
                 return {
-                    subtitle: "",
+                    // NOte: subtitle will reside at index zero for now. There are no other platform specifics
+                    subtitle: iosSettingsDto && iosSettingsDto.specific && iosSettingsDto.specific[0] && iosSettingsDto.specific[0].subtitle || "",
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
@@ -1658,6 +1661,9 @@
                 if (iosSettings.onClickURL && options.settings[PlatformEnum.IOS].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.url = iosSettings.onClickURL;
                 }
+                if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
+                    result.specific = [{subtitle: iosSettings.subtitle}];
+                }
                 if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = model.settings[PlatformEnum.IOS].mediaURL;
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
@@ -1686,6 +1692,9 @@
                 if (androidSettings.onClickURL && options.settings[PlatformEnum.ANDROID].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.url = androidSettings.onClickURL;
                 }
+                if (androidSettings.icon && options.settings[PlatformEnum.ANDROID].isIconEnabled) {
+                    result.specific = [{large_icon: androidSettings.icon}];
+                }
                 if (model.settings[PlatformEnum.ANDROID].mediaURL && options.settings[PlatformEnum.ANDROID].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = model.settings[PlatformEnum.ANDROID].mediaURL;
                     result.mediaMime = model.settings[PlatformEnum.ANDROID].mediaMime;
@@ -1709,7 +1718,10 @@
                         localeDto.la = localizationKey;
                     }
                     localeDto.message = self.getMessageText(pushNotificationModel.message[localizationKey], 'content');
-                    localeDto.title = self.getMessageText(pushNotificationModel.message[localizationKey], 'title');
+                    var title = self.getMessageText(pushNotificationModel.message[localizationKey], 'title');
+                    if (title) {
+                        localeDto.title = title;
+                    }
                     if (self.hasUserProperties(pushNotificationModel.message[localizationKey], 'content')) {
                         localeDto.messagePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'content');
                     }
@@ -1788,8 +1800,14 @@
             },
             mapFilters: function(model, options) {
                 var result = {};
-                if (options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length) {
+                if (model.user) {
+                    result.user = model.user;
+                }
+                if ((options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length)) {
                     result.user = JSON.stringify(options.queryFilter.queryObject);
+                }
+                if (model.drill) {
+                    result.drill = model.drill;
                 }
                 if (options.queryFilter && options.from === 'drill') {
                     var drillFilter = Object.assign({}, options.queryFilter);
@@ -2523,7 +2541,6 @@
                 });
         },
         fetchDashboardTokens: function(context, type) {
-            console.log('type', type);
             countlyPushNotification.service.fetchDashboard(type)
                 .then(function(mainDashboard) {
                     context.commit('setDashboardTokens', mainDashboard.tokens || {});
