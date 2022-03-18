@@ -329,8 +329,9 @@
                             v-model="pushNotificationUnderEdit.delivery.type"
                             :title="i18n('push-notification.schedule-for-later')">    
                             <cly-date-picker 
+                                :offset-correction="false"
                                 v-bind:disabled="pushNotificationUnderEdit.delivery.type === SendEnum.NOW" 
-                                v-model="pushNotificationUnderEdit.delivery.startDate" 
+                                v-model="startDate" 
                                 timestampFormat="ms" 
                                 type="date" 
                                 :select-time="true" 
@@ -350,9 +351,10 @@
                         </div>
                         <div style="width:200px">
                             <cly-date-picker 
+                                :offset-correction="false"
                                 class="bu-ml-6" 
                                 v-bind:disabled="!isEndDateSet" 
-                                v-model="pushNotificationUnderEdit.delivery.endDate" 
+                                v-model="endDate" 
                                 timestampFormat="ms" 
                                 type="date" 
                                 width="200" 
@@ -373,7 +375,7 @@
                             <cly-time-picker
                                 class="bu-ml-6" 
                                 v-bind:disabled="!isUsersTimezoneSet"
-                                v-model="pushNotificationUnderEdit.automatic.usersTimezone">
+                                v-model="usersTimezone">
                             </cly-time-picker>
                         </div>
                     </div>
@@ -1016,7 +1018,7 @@
                         <template v-if="type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL">
                             <review-section-row :label="i18n('push-notification.delivery-timeframe')" :value="startDateOptions[pushNotificationUnderEdit.delivery.type].label"></review-section-row>
                             <review-section-row :label="i18n('push-notification.start-date')" :value="formatDateTime(pushNotificationUnderEdit.delivery.startDate)"></review-section-row>
-                            <review-section-row v-if="type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.end-date')" :value="formatDateTime(pushNotificationUnderEdit.delivery.endDate)"></review-section-row>
+                            <review-section-row v-if="type === TypeEnum.AUTOMATIC && isEndDateSet" :label="i18n('push-notification.end-date')" :value="formatDateTime(pushNotificationUnderEdit.delivery.endDate)"></review-section-row>
                             <review-section-row v-if="type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.delivery-method')" :value="deliveryMethodOptions[pushNotificationUnderEdit.automatic.deliveryMethod].label"></review-section-row>
                             <review-section-row v-if="type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.capping')">
                                 <template v-if="pushNotificationUnderEdit.automatic.capping">

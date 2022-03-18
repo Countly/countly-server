@@ -148,6 +148,7 @@
                 urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
                 pushNotificationUnderEdit: JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type))),
                 currentNumberOfUsers: 0,
+                today: Date.now(),
                 appConfig: {},
             };
         },
@@ -157,6 +158,39 @@
             }
         },
         computed: {
+            startDate: {
+                get: function() {
+                    if (this.pushNotificationUnderEdit.delivery.startDate) {
+                        return this.pushNotificationUnderEdit.delivery.startDate;
+                    }
+                    return this.today;
+                },
+                set: function(value) {
+                    this.pushNotificationUnderEdit.delivery.startDate = value;
+                }
+            },
+            endDate: {
+                get: function() {
+                    if (this.pushNotificationUnderEdit.delivery.endDate) {
+                        return this.pushNotificationUnderEdit.delivery.endDate;
+                    }
+                    return this.today;
+                },
+                set: function(value) {
+                    this.pushNotificationUnderEdit.delivery.endDate = value;
+                }
+            },
+            usersTimezone: {
+                get: function() {
+                    if (this.pushNotificationUnderEdit.automatic.usersTimezone) {
+                        return this.pushNotificationUnderEdit.automatic.usersTimezone;
+                    }
+                    return this.today;
+                },
+                set: function(value) {
+                    this.pushNotificationUnderEdit.automatic.usersTimezone = value;
+                }
+            },
             saveButtonLabel: function() {
                 if (!countlyPushNotification.service.isPushNotificationApproverPluginEnabled()) {
                     return CV.i18n('push-notification.save');
@@ -433,7 +467,7 @@
                         }
                         self.setLocalizationOptions(response.localizations);
                         self.setCurrentNumberOfUsers(response.total);
-                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME) {
+                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME || self.type === self.TypeEnum.ONE_TIME) {
                             if (self.pushNotificationUnderEdit[self.TypeEnum.ONE_TIME].targeting === self.TargetingEnum.ALL) {
                                 self.updateEnabledNumberOfUsers(response.total);
                             }
@@ -1029,6 +1063,14 @@
                 this.updateIosPlatformSettingsStateIfFound();
                 this.updateAndroidPlatformSettingsStateIfFound();
             },
+            updateAutomaticOptions: function() {
+                if (this.pushNotificationUnderEdit.automatic.usersTimezone) {
+                    this.isUsersTimezoneSet = true;
+                }
+                if (this.pushNotificationUnderEdit.delivery.endDate) {
+                    this.isEndDateSet = true;
+                }
+            },
             fetchPushNotificationById: function() {
                 var self = this;
                 this.setIsLoading(true);
@@ -1040,6 +1082,9 @@
                         }
                         self.resetMessageInHTMLToActiveLocalization();
                         self.updateSettingsState();
+                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.AUTOMATIC) {
+                            self.updateAutomaticOptions();
+                        }
                     })
                     .catch(function(error) {
                         console.error(error);

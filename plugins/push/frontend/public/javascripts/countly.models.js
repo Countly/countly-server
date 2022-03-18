@@ -8,6 +8,7 @@
     var MB_TO_BYTES_RATIO = 1000000;
     var DAY_TO_MS_RATIO = 86400 * 1000;
     var HOUR_TO_MS_RATIO = 3600000;
+    var MINUTES_TO_MS_RATIO = 60000;
     var ERROR_MESSAGE_REGEX = /^([ia])([0-9]+)(\+(.+))?$/;
 
     var DEFAULT_LOCALIZATION_VALUE = 'default';
@@ -451,23 +452,25 @@
             if (!dateTimeInMs) {
                 return {
                     days: 0,
-                    hours: 0
+                    hours: 0,
+                    minutes: 0
                 };
             }
             var days = parseInt(dateTimeInMs / DAY_TO_MS_RATIO, 10);
-            var remainingTime = (dateTimeInMs % DAY_TO_MS_RATIO);
-            var hours = parseInt(remainingTime / HOUR_TO_MS_RATIO, 10);
+            var hours = parseInt((dateTimeInMs / HOUR_TO_MS_RATIO) % 24, 10);
+            var minutes = parseInt((dateTimeInMs / MINUTES_TO_MS_RATIO) % 60, 10);
             return {
                 days: days,
-                hours: hours
+                hours: hours,
+                minutes: minutes
             };
         },
         formatDateTime: function(dateTime, format) {
-            if (dateTime === 'Never') {
+            if (!dateTime) {
                 return dateTime;
             }
             if (!format) {
-                format = "DD.MM.YYYY hh:mm";
+                format = "DD.MM.YYYY hh:mm a";
             }
             return moment(dateTime).format(format);
         },
@@ -1338,8 +1341,8 @@
                 model.type = TypeEnum.ONE_TIME;
                 var triggerDto = dto.triggers[0];
                 model.delivery = {
-                    startDate: moment(triggerDto.start).valueOf(),
-                    endDate: "Never",
+                    startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
+                    endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 model.audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
@@ -1354,7 +1357,7 @@
                 model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
                 model.delivery = {
                     startDate: moment(triggerDto.start).valueOf(),
-                    endDate: moment(triggerDto.end).valueOf() || "Never",
+                    endDate: triggerDto.end ? moment(triggerDto.end).valueOf() : null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 model.automatic = {
@@ -1365,7 +1368,13 @@
                     cohorts: triggerDto.cohorts || [],
                     events: triggerDto.events || [],
                     capping: Boolean(triggerDto.cap) && Boolean(triggerDto.sleep),
+                    usersTimezone: null,
                 };
+                if (triggerDto.time) {
+                    var result = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.time);
+                    model.automatic.usersTimezone = new Date();
+                    model.automatic.usersTimezone.setHours(result.hours, result.minutes);
+                }
                 model.automatic.delayed = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.delay);
                 model.automatic.maximumMessagesPerUser = triggerDto.cap || 1,
                 model.automatic.minimumTimeBetweenMessages = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.sleep);
@@ -1376,8 +1385,8 @@
                 model.type = TypeEnum.TRANSACTIONAL;
                 var triggerDto = dto.triggers[0];
                 model.delivery = {
-                    startDate: moment(triggerDto.start).valueOf(),
-                    endDate: "Never",
+                    startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
+                    endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 return model;

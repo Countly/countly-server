@@ -399,9 +399,12 @@
                         </details-tab-row>
                         <details-tab-row :label="i18n('push-notification.geolocations')">
                             <div class="bu-is-flex bu-is-flex-direction-column">
-                                <div class="bu-level" v-for="locationName in locations">
-                                    {{locationName}}
-                                </div>
+                                <template v-if="locations.length">
+                                    <div class="bu-level" v-for="locationName in locations">
+                                        {{locationName}}
+                                    </div>
+                                </template>
+                                <template><span>-</span></template>
                             </div>
                         </details-tab-row>
                         <details-tab-row v-if="pushNotification.automatic.trigger === TriggerEnum.EVENT" :label="i18n('push-notification.delivery-date-calculation')" :value="deliveryDateCalculationOptions[pushNotification.automatic.deliveryDateCalculation].label"></details-tab-row>
@@ -421,7 +424,7 @@
                 <template v-if="pushNotification.type === TypeEnum.AUTOMATIC || pushNotification.type === TypeEnum.TRANSACTIONAL">
                     <details-tab-row :label="i18n('push-notification.delivery-timeframe')" :value="startDateOptions[pushNotification.delivery.type].label"> </details-tab-row>
                     <details-tab-row :label="i18n('push-notification.start-date')" :value="formatDateAndTime(pushNotification.delivery.startDate)"></details-tab-row>
-                    <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.end-date')" :value="formatDateAndTime(pushNotification.delivery.endDate)"></details-tab-row>
+                    <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC && pushNotification.delivery.endDate" :label="i18n('push-notification.end-date')" :value="formatDateAndTime(pushNotification.delivery.endDate)"></details-tab-row>
                     <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.delivery-method')" :value="deliveryMethodOptions[pushNotification.automatic.deliveryMethod].label"></details-tab-row>
                     <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" :label="i18n('push-notification.capping')">
                         <template v-if="pushNotification.automatic.capping">
