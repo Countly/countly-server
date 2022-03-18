@@ -194,12 +194,10 @@
         </div>
     
         <div class="cly-vue-push-notification-mobile-preview__platforms">
-            <div v-if="hasIOSPlatform" @click="setSelectedPlatform(PlatformEnum.IOS)" v-bind:class="['cly-vue-push-notification-mobile-preview__icon-container',isIOSPlatformSelected?'cly-vue-push-notification-mobile-preview__active-icon':'']">
-                <span class="ion-social-apple"></span>
-            </div>
-            <div v-if="hasAndroidPlatform" @click="setSelectedPlatform(PlatformEnum.ANDROID)" v-bind:class="['cly-vue-push-notification-mobile-preview__icon-container',isAndroidPlatformSelected?'cly-vue-push-notification-mobile-preview__active-icon':'']">
-                <span class="ion-social-android"></span>
-            </div>
+            <el-radio-group v-model="selectedPlatform">
+                <el-radio-button v-if="hasAndroidPlatform" :key="PlatformEnum.ANDROID" :label="PlatformEnum.ANDROID">{{i18n('push-notification.android')}}</el-radio-button>
+                <el-radio-button v-if="hasIOSPlatform" :key="PlatformEnum.IOS" :label="PlatformEnum.IOS">{{i18n('push-notification.ios')}}</el-radio-button>
+            </el-radio-group>
         </div>
     </div>
 </script>
