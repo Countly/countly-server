@@ -401,9 +401,12 @@
                         </details-tab-row>
                         <details-tab-row :label="i18n('push-notification.geolocations')">
                             <div class="bu-is-flex bu-is-flex-direction-column">
-                                <div class="bu-level" v-for="locationName in locations">
-                                    {{locationName}}
-                                </div>
+                                <template v-if="locations.length">
+                                    <div class="bu-level" v-for="locationName in locations">
+                                        {{locationName}}
+                                    </div>
+                                </template>
+                                <template><span>-</span></template>
                             </div>
                         </details-tab-row>
                         <details-tab-row v-if="pushNotification.automatic.trigger === TriggerEnum.EVENT" :label="i18n('push-notification.geolocations')" :value="deliveryDateCalculationOptions[pushNotification.automatic.deliveryDateCalculation].label"></details-tab-row>
