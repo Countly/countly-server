@@ -100,7 +100,7 @@ Security is very important to us. If you discover any issue regarding security, 
 Countly is a privacy-focused and 360-degree analytics platform with several, unique values:
 
 * Real-time mobile analytics, web analytics and push notifications.
-* Your data, your rules - since you can install Countly on your own server, or let us do a private cloud deployment for you.
+* Complete data ownership and control - since you can install Countly on your own server, or let us do a private cloud deployment for you.
 * Configurable and extensible via open source [plugins](https://count.ly/plugins).
 * Modern and easy to use web based dashboard with a focus on user experience, which makes getting complex insights a breeze.
 * Tracking more than 2500 web sites and 16000 mobile applications.
@@ -166,7 +166,7 @@ If you liked Countly, [why not use one of our badges](https://count.ly/brand-ass
 
 ## Links
 
-* [Our philosophy: Your Data, Your Rules](https://count.ly/your-data-your-rules)
+* [Our philosophy: Let Data Live](https://count.ly/your-data-your-rules)
 * [Countly Plugin Marketplace](https://count.ly/plugins)
 * [General product information](http://count.ly/product)
 * [Questions? Ask in our forum](http://community.count.ly)
