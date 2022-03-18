@@ -467,7 +467,7 @@
                         }
                         self.setLocalizationOptions(response.localizations);
                         self.setCurrentNumberOfUsers(response.total);
-                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME) {
+                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME || self.type === self.TypeEnum.ONE_TIME) {
                             if (self.pushNotificationUnderEdit[self.TypeEnum.ONE_TIME].targeting === self.TargetingEnum.ALL) {
                                 self.updateEnabledNumberOfUsers(response.total);
                             }
