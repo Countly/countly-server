@@ -472,7 +472,7 @@
             if (!format) {
                 format = "DD.MM.YYYY hh:mm a";
             }
-            return moment.utc(dateTime).format(format);
+            return moment(dateTime).format(format);
         },
         shouldAddFilter: function(model, options) {
             if (options.queryFilter && options.from) {

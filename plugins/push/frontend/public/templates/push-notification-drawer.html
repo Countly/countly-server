@@ -329,6 +329,7 @@
                             v-model="pushNotificationUnderEdit.delivery.type"
                             :title="i18n('push-notification.schedule-for-later')">    
                             <cly-date-picker 
+                                :offset-correction="false"
                                 v-bind:disabled="pushNotificationUnderEdit.delivery.type === SendEnum.NOW" 
                                 v-model="startDate" 
                                 timestampFormat="ms" 
@@ -350,6 +351,7 @@
                         </div>
                         <div style="width:200px">
                             <cly-date-picker 
+                                :offset-correction="false"
                                 class="bu-ml-6" 
                                 v-bind:disabled="!isEndDateSet" 
                                 v-model="endDate" 
