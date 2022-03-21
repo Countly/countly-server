@@ -257,7 +257,7 @@
                 return (row.status !== "running" && row.status !== "rerunning") ? CV.i18n("common.view") : CV.i18n("taskmanager.view-old");
             },
             isDownloadable: function(row) {
-                if (row.type === "Views" || row.type == "tableExport") {
+                if (row.type === "views" || row.type === "tableExport") {
                     return true;
                 }
                 else {
