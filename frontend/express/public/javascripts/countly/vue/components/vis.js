@@ -1974,9 +1974,6 @@
                                         :autoresize="autoresize"\
                                         @datazoom="onDataZoom">\
                                     </echarts>\
-                                    <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                        <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
-                                    </div>\
                                 </div>\
                                 <custom-legend\
                                     ref="legend"\
@@ -1992,6 +1989,9 @@
 										</div>\
 									</div>\
 								</div>\
+                                <div class="bu-column bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
+                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                </div>\
                             </div>\
                         </div>\
                     </div>'
