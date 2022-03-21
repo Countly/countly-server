@@ -220,6 +220,7 @@
                     "formulas": CV.i18n("calculated-metrics.formulas") || "Formulas",
                     "dbviewer": CV.i18n("dbviewer.title") || "DBViewer",
                     "data-manager": CV.i18n("data-manager.plugin-title") || "Data Manager",
+                    "views": CV.i18n("views.title") || "Views"
                 },
                 availableRunTimeTypes: {
                     "all": CV.i18n("report-manager.all-types"),
@@ -254,6 +255,14 @@
             },
             getViewText: function(row) {
                 return (row.status !== "running" && row.status !== "rerunning") ? CV.i18n("common.view") : CV.i18n("taskmanager.view-old");
+            },
+            isDownloadable: function(row) {
+                if (row.type === "Views" || row.type == "tableExport") {
+                    return true;
+                }
+                else {
+                    return false;
+                }
             },
             isReadyForView: function(row) {
                 return row.view && row.hasData;
@@ -298,6 +307,11 @@
                         if (!this.disableAutoNavigationToTask) {
                             window.location = row.view + id;
                         }
+                    }
+                    else if (command === "download-task") {
+                        self.$emit("download-task", row);
+                        var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+                        window.location = link;
                     }
                 }
             },

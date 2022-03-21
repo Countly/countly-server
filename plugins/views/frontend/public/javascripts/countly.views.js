@@ -444,6 +444,7 @@
                     method: "GET",
                     filename: "Views" + countlyCommon.ACTIVE_APP_ID + "_on_" + moment().format("DD-MMM-YYYY"),
                     prop: ['aaData'],
+                    type_name: "views",
                     "url": "/o/export/requestQuery"
                 };
                 return apiQueryData;
