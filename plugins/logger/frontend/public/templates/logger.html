@@ -60,20 +60,19 @@
                             </cly-section>
                         </template>
                     </el-table-column>
-
+                    <el-table-column class="request-date" sortable="custom"
+                        :label="i18n('logger.requests')" vertical-align="middle" min-width="283" fixed="left">
+                        <template slot-scope="rowScope">
+                            <logger-readable-date :timestamp="rowScope.row.reqts"></logger-readable-date>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="details" :label="i18n('logger.details')" min-width="413">
+                        <template slot-scope="rowScope">
+                            <logger-details :device="rowScope.row.d" :version="rowScope.row.v" :sdk="rowScope.row.s"
+                                :location="rowScope.row.l"></logger-details>
+                        </template>
+                    </el-table-column>
                     <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
-                        <el-table-column v-if="col.value === 'requests'" class="request-date" :key="idx" sortable="custom"
-                            :label="i18n('logger.requests')" vertical-align="middle" min-width="283" fixed="left">
-                            <template slot-scope="rowScope">
-                                <logger-readable-date :timestamp="rowScope.row.reqts"></logger-readable-date>
-                            </template>
-                        </el-table-column>
-                        <el-table-column v-if="col.value === 'details'" :key="idx" sortable="custom" prop="details" :label="i18n('logger.details')" min-width="413">
-                            <template slot-scope="rowScope">
-                                <logger-details :device="rowScope.row.d" :version="rowScope.row.v" :sdk="rowScope.row.s"
-                                    :location="rowScope.row.l"></logger-details>
-                            </template>
-                        </el-table-column>
                         <el-table-column v-if="col.value === 'info'" :key="idx" sortable="custom" prop="info" :label="i18n('logger.info')" min-width="283">
                             <template slot-scope="rowScope">
                                 <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>

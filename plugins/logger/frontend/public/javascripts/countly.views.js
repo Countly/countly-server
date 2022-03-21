@@ -89,16 +89,6 @@
                 collectionInfo: '',
                 tablePersistKey: 'requestLogsTable_' + countlyCommon.ACTIVE_APP_ID,
                 tableDynamicCols: [{
-                    value: "requests",
-                    label: CV.i18n('logger.requests'),
-                    required: true
-                },
-                {
-                    value: "details",
-                    label: CV.i18n('logger.details'),
-                    default: true
-                },
-                {
                     value: "info",
                     label: CV.i18n('logger.info'),
                     default: true
