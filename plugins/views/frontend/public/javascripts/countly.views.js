@@ -205,6 +205,7 @@
                 showActionMapColumn: showActionMapColumn, //for action map
                 domains: [], //for action map
                 persistentSettings: [],
+                tablePersistKey: "views_table_" + countlyCommon.ACTIVE_APP_ID,
                 tableMode: "all",
                 tableModes: [
                     {"key": "all", "label": CV.i18n('common.all')},
