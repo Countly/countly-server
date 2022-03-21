@@ -460,11 +460,6 @@
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
                     countlyPushNotification.service.estimate(preparePushNotificationModel, options).then(function(response) {
-                        if (response.total === 0) {
-                            resolve(false);
-                            CountlyHelpers.notify({ message: 'No users were found from selected configuration.', type: "error"});
-                            return;
-                        }
                         self.setLocalizationOptions(response.localizations);
                         self.setCurrentNumberOfUsers(response.total);
                         if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME || self.type === self.TypeEnum.ONE_TIME) {
@@ -474,6 +469,11 @@
                         }
                         if (response._id) {
                             self.setId(response._id);
+                        }
+                        if (response.total === 0) {
+                            resolve(false);
+                            CountlyHelpers.notify({ message: 'No users were found from selected configuration.', type: "error"});
+                            return;
                         }
                         resolve(true);
                     }).catch(function(error) {
