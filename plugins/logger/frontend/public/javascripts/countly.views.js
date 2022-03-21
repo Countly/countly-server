@@ -88,11 +88,6 @@
                 appId: countlyCommon.ACTIVE_APP_ID,
                 collectionInfo: '',
                 tablePersistKey: 'requestLogsTable_' + countlyCommon.ACTIVE_APP_ID,
-                tableDynamicCols: [{
-                    value: "info",
-                    label: CV.i18n('logger.info'),
-                    default: true
-                }],
                 defaultFilters: [{
                     value: 'all',
                     label: this.i18n('logger.all')

@@ -32,7 +32,7 @@
             <cly-notification v-if="showTurnedOff" :text="i18n('logger.state-off-warning', appId)"></cly-notification>
         </div>
         <cly-section>
-            <cly-datatable-n ref="requestLogTable" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :rows="logsData"
+            <cly-datatable-n ref="requestLogTable" :persist-key="tablePersistKey" :rows="logsData"
                 :resizable="false" :force-loading="isLoading" :export-query="getExportQuery" class="is-clickable">
                 <template v-slot:header-left="filterScope">
                     <el-select v-model="loggerFilter" placeholder="Select" @change="filterChange()">
@@ -72,14 +72,11 @@
                                 :location="rowScope.row.l"></logger-details>
                         </template>
                     </el-table-column>
-                    <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
-                        <el-table-column v-if="col.value === 'info'" :key="idx" sortable="custom" prop="info" :label="i18n('logger.info')" min-width="283">
-                            <template slot-scope="rowScope">
-                                <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>
-                            </template>
-                        </el-table-column>
-                    </template>
-
+                    <el-table-column sortable="custom" prop="info" :label="i18n('logger.info')" min-width="283">
+                        <template slot-scope="rowScope">
+                            <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>
+                        </template>
+                    </el-table-column>
                 </template>
             </cly-datatable-n>
         </cly-section>
