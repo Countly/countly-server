@@ -1,3 +1,10 @@
+## Version 21.11.3
+
+Eneterprise Fixes:
+- [surveys] fix for salt check
+- [cohorts] fixes for cohort metric calculation
+- [crashes] post processing meta results and removed from query
+
 ## Version 21.11.2
 
 Fixes:
