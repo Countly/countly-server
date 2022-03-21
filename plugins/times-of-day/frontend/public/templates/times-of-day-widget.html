@@ -1,9 +1,7 @@
 <div v-bind:class="[componentId, 'clyd-widget']">
     <div class="bu-level">
-        <div class="bu-level-left">
-            <div class="bu-level-item">
-                {{title}}
-            </div>
+        <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0">
+            <clyd-widget-title class="bu-level-item" :title="title"></clyd-widget-title>
         </div>
         <div class="bu-level-right">
             <slot name="action"></slot>
