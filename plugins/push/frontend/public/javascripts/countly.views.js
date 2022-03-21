@@ -1063,12 +1063,32 @@
                 this.updateIosPlatformSettingsStateIfFound();
                 this.updateAndroidPlatformSettingsStateIfFound();
             },
+            updateOneTimeOptions: function() {
+                if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
+                    this.pushNotificationUnderEdit.delivery.startDate = Date.now();
+                    this.pushNotificationUnderEdit.delivery.endDate = null;
+                    this.pushNotificationUnderEdit.delivery.type = this.SendEnum.NOW;
+                }
+            },
             updateAutomaticOptions: function() {
+                if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
+                    this.pushNotificationUnderEdit.delivery.startDate = Date.now();
+                    this.pushNotificationUnderEdit.delivery.endDate = null;
+                    this.pushNotificationUnderEdit.delivery.type = this.SendEnum.NOW;
+                    this.pushNotificationUnderEdit.automatic.usersTimezone = null;
+                }
                 if (this.pushNotificationUnderEdit.automatic.usersTimezone) {
                     this.isUsersTimezoneSet = true;
                 }
                 if (this.pushNotificationUnderEdit.delivery.endDate) {
                     this.isEndDateSet = true;
+                }
+            },
+            updateTransactionalOptions: function() {
+                if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
+                    this.pushNotificationUnderEdit.delivery.startDate = Date.now();
+                    this.pushNotificationUnderEdit.delivery.endDate = null;
+                    this.pushNotificationUnderEdit.delivery.type = this.SendEnum.NOW;
                 }
             },
             fetchPushNotificationById: function() {
@@ -1084,6 +1104,12 @@
                         self.updateSettingsState();
                         if (self.pushNotificationUnderEdit.type === self.TypeEnum.AUTOMATIC) {
                             self.updateAutomaticOptions();
+                        }
+                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME) {
+                            self.updateOneTimeOptions();
+                        }
+                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.TRANSACTIONAL) {
+                            self.updateTransactionalOptions();
                         }
                     })
                     .catch(function(error) {
