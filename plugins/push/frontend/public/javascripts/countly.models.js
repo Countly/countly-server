@@ -1726,6 +1726,9 @@
                     }
                     if (self.hasUserProperties(pushNotificationModel.message[localizationKey], 'title')) {
                         localeDto.titlePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'title');
+                        if (!title) {
+                            localeDto.title = title;
+                        }
                     }
                     if (pushNotificationModel.message[localizationKey].buttons.length) {
                         localeDto.buttons = self.mapButtons(pushNotificationModel.message[localizationKey]);
