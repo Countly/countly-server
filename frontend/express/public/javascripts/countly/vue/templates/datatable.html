@@ -111,7 +111,7 @@
                     <slot :name="name" v-bind="commonScope"/>
                 </template>
         </el-table>
-        <div class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white" @mouseenter="onNoCellMouseEnter">
+        <div v-if="!hideBottom" class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white" @mouseenter="onNoCellMouseEnter">
             <div class="bu-level-left">
                 <div class="bu-level-item text-smallish bu-mr-0">
                     {{ i18n("common.items-per-page") }}:
