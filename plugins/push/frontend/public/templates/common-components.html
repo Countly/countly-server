@@ -373,9 +373,12 @@
                             </details-tab-row>
                             <details-tab-row :label="i18n('push-notification-details.geolocation')"> 
                                 <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <div class="bu-level" v-for="locationName in locations">
-                                        {{locationName}}
-                                    </div>
+                                    <template v-if="locations.length">
+                                        <div class="bu-level" v-for="locationName in locations">
+                                            {{locationName}}
+                                        </div>
+                                    </template>
+                                    <template><span>-</span></template>
                                 </div>
                             </details-tab-row>
                         </template>

@@ -460,11 +460,6 @@
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
                     countlyPushNotification.service.estimate(preparePushNotificationModel, options).then(function(response) {
-                        if (response.total === 0) {
-                            resolve(false);
-                            CountlyHelpers.notify({ message: 'No users were found from selected configuration.', type: "error"});
-                            return;
-                        }
                         self.setLocalizationOptions(response.localizations);
                         self.setCurrentNumberOfUsers(response.total);
                         if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME || self.type === self.TypeEnum.ONE_TIME) {
@@ -474,6 +469,11 @@
                         }
                         if (response._id) {
                             self.setId(response._id);
+                        }
+                        if (response.total === 0) {
+                            resolve(false);
+                            CountlyHelpers.notify({ message: 'No users were found from selected configuration.', type: "error"});
+                            return;
                         }
                         resolve(true);
                     }).catch(function(error) {
@@ -1063,12 +1063,31 @@
                 this.updateIosPlatformSettingsStateIfFound();
                 this.updateAndroidPlatformSettingsStateIfFound();
             },
+            resetDelivery: function() {
+                this.pushNotificationUnderEdit.delivery.startDate = Date.now();
+                this.pushNotificationUnderEdit.delivery.endDate = null;
+                this.pushNotificationUnderEdit.delivery.type = this.SendEnum.NOW;
+            },
+            updateOneTimeOptions: function() {
+                if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
+                    this.resetDelivery();
+                }
+            },
             updateAutomaticOptions: function() {
+                if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
+                    this.resetDelivery();
+                    this.pushNotificationUnderEdit.automatic.usersTimezone = null;
+                }
                 if (this.pushNotificationUnderEdit.automatic.usersTimezone) {
                     this.isUsersTimezoneSet = true;
                 }
                 if (this.pushNotificationUnderEdit.delivery.endDate) {
                     this.isEndDateSet = true;
+                }
+            },
+            updateTransactionalOptions: function() {
+                if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
+                    this.resetDelivery();
                 }
             },
             fetchPushNotificationById: function() {
@@ -1084,6 +1103,12 @@
                         self.updateSettingsState();
                         if (self.pushNotificationUnderEdit.type === self.TypeEnum.AUTOMATIC) {
                             self.updateAutomaticOptions();
+                        }
+                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME) {
+                            self.updateOneTimeOptions();
+                        }
+                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.TRANSACTIONAL) {
+                            self.updateTransactionalOptions();
                         }
                     })
                     .catch(function(error) {

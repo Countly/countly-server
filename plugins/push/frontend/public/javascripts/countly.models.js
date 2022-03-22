@@ -1346,7 +1346,7 @@
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 model.audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
-                model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
+                model.timezone = triggerDto.tz ? TimezoneEnum.DEVICE : TimezoneEnum.SAME;
                 return model;
             },
             mapDtoToAutomaticModel: function(dto) {
@@ -1354,7 +1354,6 @@
                 model.type = TypeEnum.AUTOMATIC;
                 var triggerDto = dto.triggers[0];
                 model.cohorts = triggerDto.cohorts || [];
-                model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
                 model.delivery = {
                     startDate: moment(triggerDto.start).valueOf(),
                     endDate: triggerDto.end ? moment(triggerDto.end).valueOf() : null,
@@ -1727,6 +1726,9 @@
                     }
                     if (self.hasUserProperties(pushNotificationModel.message[localizationKey], 'title')) {
                         localeDto.titlePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'title');
+                        if (!title) {
+                            localeDto.title = title;
+                        }
                     }
                     if (pushNotificationModel.message[localizationKey].buttons.length) {
                         localeDto.buttons = self.mapButtons(pushNotificationModel.message[localizationKey]);
@@ -1746,11 +1748,11 @@
                     start: model.delivery.startDate,
                 };
                 if (model.delivery.type === SendEnum.LATER) {
-                    result.tz = model.timezone === TimezoneEnum.SAME;
+                    if (model.timezone === TimezoneEnum.DEVICE) {
+                        result.tz = true;
+                        result.sctz = new Date().getTimezoneOffset();
+                    }
                     result.delayed = model.audienceSelection === AudienceSelectionEnum.BEFORE;
-                }
-                if (model.timezone === TimezoneEnum.SAME && model.delivery.type === SendEnum.LATER) {
-                    result.sctz = new Date().getTimezoneOffset();
                 }
                 return [result];
             },
