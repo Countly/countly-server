@@ -42,7 +42,7 @@
             }
         },
         log: function(e) {
-            var DEBUG = true;
+            var DEBUG = false;
             if (DEBUG) {
                 // eslint-disable-next-line no-console
                 console.log(e);
