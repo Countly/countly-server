@@ -1063,18 +1063,19 @@
                 this.updateIosPlatformSettingsStateIfFound();
                 this.updateAndroidPlatformSettingsStateIfFound();
             },
+            resetDelivery: function() {
+                this.pushNotificationUnderEdit.delivery.startDate = Date.now();
+                this.pushNotificationUnderEdit.delivery.endDate = null;
+                this.pushNotificationUnderEdit.delivery.type = this.SendEnum.NOW;
+            },
             updateOneTimeOptions: function() {
                 if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
-                    this.pushNotificationUnderEdit.delivery.startDate = Date.now();
-                    this.pushNotificationUnderEdit.delivery.endDate = null;
-                    this.pushNotificationUnderEdit.delivery.type = this.SendEnum.NOW;
+                    this.resetDelivery();
                 }
             },
             updateAutomaticOptions: function() {
                 if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
-                    this.pushNotificationUnderEdit.delivery.startDate = Date.now();
-                    this.pushNotificationUnderEdit.delivery.endDate = null;
-                    this.pushNotificationUnderEdit.delivery.type = this.SendEnum.NOW;
+                    this.resetDelivery();
                     this.pushNotificationUnderEdit.automatic.usersTimezone = null;
                 }
                 if (this.pushNotificationUnderEdit.automatic.usersTimezone) {
@@ -1086,9 +1087,7 @@
             },
             updateTransactionalOptions: function() {
                 if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
-                    this.pushNotificationUnderEdit.delivery.startDate = Date.now();
-                    this.pushNotificationUnderEdit.delivery.endDate = null;
-                    this.pushNotificationUnderEdit.delivery.type = this.SendEnum.NOW;
+                    this.resetDelivery();
                 }
             },
             fetchPushNotificationById: function() {
