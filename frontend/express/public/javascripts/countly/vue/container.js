@@ -103,7 +103,15 @@
                     if (Array.isArray(dataOb)) {
                         acc[val] = dataOb.filter(function(data) {
                             if (data && data.permission) {
-                                return countlyAuth.validateRead(data.permission);
+                                if (data.permission === 'globaladmin') {
+                                    return countlyAuth.validateGlobalAdmin();
+                                }
+                                else if (data.permission === 'admin') {
+                                    return countlyAuth.validateAppAdmin();
+                                }
+                                else {
+                                    return countlyAuth.validateRead(data.permission);
+                                }
                             }
                             return true;
                         });
@@ -111,7 +119,17 @@
                     else {
                         for (var key in dataOb) {
                             if (dataOb[key] && dataOb[key].permission) {
-                                if (countlyAuth.validateRead(dataOb[key].permission)) {
+                                if (dataOb[key].permission === 'globaladmin') {
+                                    if (countlyAuth.validateGlobalAdmin()) {
+                                        acc[val] = dataOb;
+                                    }
+                                }
+                                else if (dataOb[key].permission === 'admin') {
+                                    if (countlyAuth.validateAppAdmin()) {
+                                        acc[val] = dataOb;
+                                    }
+                                }
+                                else if (countlyAuth.validateRead(dataOb[key].permission)) {
                                     acc[val] = dataOb;
                                 }
                             }
