@@ -195,6 +195,16 @@
         }
     };
 
+    /**
+     * Validate is this user admin of any app or not
+     * If this user has admin access for at least one app, 
+     * we can show applications view to this user
+     * @returns {boolean} is this user admin of any app or not?
+     */
+    countlyAuth.hasApplicationsAccess = function() {
+        return countlyGlobal.member.global_admin || (countlyGlobal.member.permission && countlyGlobal.member.permission._ && countlyGlobal.member.permission._.a && countlyGlobal.member.permission._.a.length > 0);
+    };
+
     countlyAuth.permissionSetGenerator = function(count) {
         var permission_sets = [];
         for (var i = 0; i < count; i++) {
