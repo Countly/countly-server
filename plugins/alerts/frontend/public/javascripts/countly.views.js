@@ -175,7 +175,7 @@
                 }
             },
             dataTypeSelected: function(val, notRest) {
-                if (val === 'dataPoint') {
+                if (val === 'dataPoint' && countlyGlobal.member.global_admin === true) {
                     this.allowAll = true;
                 }
                 if (val === 'online-users') {

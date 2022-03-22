@@ -165,7 +165,7 @@
                     url: countlyCommon.API_PARTS.data.w + "/alert/save",
                     data: {
                         "alert_config": JSON.stringify(alertConfig),
-                        "app_id": alertConfig.selectedApps[0],
+                        "app_id": alertConfig.selectedApps[0] === "all" ? countlyCommon.ACTIVE_APP_ID : alertConfig.selectedApps[0],
                     },
                     dataType: "json",
                     success: function() {
@@ -181,7 +181,7 @@
                     url: countlyCommon.API_PARTS.data.w + "/alert/delete",
                     data: {
                         "alertID": options.alertID,
-                        "app_id": options.appid,
+                        "app_id": options.appid === "all" ? countlyCommon.ACTIVE_APP_ID : options.appid,
                     },
                     dataType: "json",
                     success: function() {

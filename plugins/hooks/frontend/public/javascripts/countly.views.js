@@ -440,7 +440,7 @@
                 $.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + '/hook/list',
-                    data: {},
+                    data: {app_id: this.$props.app},
                     dataType: "json",
                     success: function(data) {
                         var hookList = [];
