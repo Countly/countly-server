@@ -17,7 +17,7 @@
         <el-table-column sortable="true" prop="percentage" :label="i18n('feedback.percentage')">
           <template v-slot="rowScope">
               <span class="text-medium">
-                % {{ rowScope.row.percent }} <span :style="{ width: rowScope.row.percent + 'px'}" :class="'rating-color rating-color-' + rowScope.row.rating"></span>
+                {{ rowScope.row.percent }} %<span :style="{ width: rowScope.row.percent + 'px'}" :class="'rating-color rating-color-' + rowScope.row.rating"></span>
               </span>
           </template>
         </el-table-column>
