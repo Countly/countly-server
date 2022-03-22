@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, VeeValidate, inViewportMixin, VueCompositionAPI, VueECharts */
+/* global Vue, ELEMENT, VeeValidate, inViewportMixin, VueCompositionAPI, VueECharts, VueClipboard */
 
 (function(countlyVue) {
 
@@ -11,7 +11,7 @@
     window.VTooltip.VTooltip.options.popover.defaultInnerClass = 'cly-vue-popover__content';
 
     Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
-
+    Vue.use(VueClipboard);
     Vue.use(VeeValidate);
     Vue.use(VueCompositionAPI);
     Vue.component('echarts', VueECharts);

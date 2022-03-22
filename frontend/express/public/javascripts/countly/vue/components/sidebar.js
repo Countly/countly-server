@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon */
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers */
 
 (function(countlyVue, $) {
 
@@ -118,7 +118,9 @@
                     featureRequestLink: {
                         isString: typeof countlyGlobal.usermenu.featureRequestLink === "string" ? countlyGlobal.usermenu.featureRequestLink : false,
                         isBoolean: typeof countlyGlobal.usermenu.featureRequestLink === "boolean" && countlyGlobal.usermenu.featureRequestLink
-                    }
+                    },
+                    successMessage: 'Api Key has been copied to clipboard!',
+                    errormessage: 'Something went wrong, please copy it again.'
                 };
             },
             methods: {
@@ -141,6 +143,18 @@
                     document.body.appendChild(logoutForm);
                     logoutForm.submit();
                     document.body.removeChild(logoutForm);
+                },
+                onCopy: function() {
+                    CountlyHelpers.notify({
+                        message: this.successmessage,
+                        type: "success"
+                    });
+                },
+                onError: function() {
+                    CountlyHelpers.notify({
+                        message: this.errormessage,
+                        type: "error"
+                    });
                 }
             }
         });
