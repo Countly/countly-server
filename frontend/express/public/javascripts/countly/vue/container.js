@@ -103,10 +103,7 @@
                     if (Array.isArray(dataOb)) {
                         acc[val] = dataOb.filter(function(data) {
                             if (data && data.permission) {
-                                if (data.permission === 'globaladmin') {
-                                    return countlyAuth.validateGlobalAdmin();
-                                }
-                                else if (data.permission === 'admin') {
+                                if (data.permission === 'anyadmin') {
                                     return countlyAuth.validateAppAdmin();
                                 }
                                 else {
@@ -119,12 +116,7 @@
                     else {
                         for (var key in dataOb) {
                             if (dataOb[key] && dataOb[key].permission) {
-                                if (dataOb[key].permission === 'globaladmin') {
-                                    if (countlyAuth.validateGlobalAdmin()) {
-                                        acc[val] = dataOb;
-                                    }
-                                }
-                                else if (dataOb[key].permission === 'admin') {
+                                if (dataOb[key].permission === 'anyadmin') {
                                     if (countlyAuth.validateAppAdmin()) {
                                         acc[val] = dataOb;
                                     }
