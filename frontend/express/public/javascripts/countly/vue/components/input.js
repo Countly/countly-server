@@ -653,7 +653,7 @@
                     else if (this.hasAllOptionsTab) {
                         self.activeTabId = "__all";
                     }
-                    else if (!self.activeTabId || self.activeTabId === "__all" || self.activeTabId === "__root") {
+                    else if (!self.activeTabId || self.activeTabId === "0" || self.activeTabId === "__all" || self.activeTabId === "__root") {
                         self.activeTabId = self.publicTabs[0].name;
                     }
                 });
