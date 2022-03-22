@@ -230,6 +230,10 @@ module.exports.dashboard = async function(params) {
                                 }
                                 retAuto.platforms[p].daily.data[target] += e.d[d][k].c;
                                 retAuto.platforms[p].total += e.d[d][k].c;
+
+                                ret.platforms[p].weekly.data[wi] -= e.d[d][k].c;
+                                ret.platforms[p].monthly.data[mi] -= e.d[d][k].c;
+                                ret.platforms[p].total -= e.d[d][k].c;
                             });
                         }
                         else if (e.s === 'tp' && diff <= 29) {
@@ -241,6 +245,10 @@ module.exports.dashboard = async function(params) {
                                 }
                                 retTx.platforms[p].daily.data[target] += e.d[d][k].c;
                                 retTx.platforms[p].total += e.d[d][k].c;
+
+                                ret.platforms[p].weekly.data[wi] -= e.d[d][k].c;
+                                ret.platforms[p].monthly.data[mi] -= e.d[d][k].c;
+                                ret.platforms[p].total -= e.d[d][k].c;
                             });
                         }
                     }
