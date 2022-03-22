@@ -201,7 +201,7 @@
      * we can show applications view to this user
      * @returns {boolean} is this user admin of any app or not?
      */
-    countlyAuth.hasApplicationsAccess = function() {
+    countlyAuth.validateAnyAppAdmin = function() {
         return countlyGlobal.member.global_admin || (countlyGlobal.member.permission && countlyGlobal.member.permission._ && countlyGlobal.member.permission._.a && countlyGlobal.member.permission._.a.length > 0);
     };
 

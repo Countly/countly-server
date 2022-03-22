@@ -104,7 +104,7 @@
                         acc[val] = dataOb.filter(function(data) {
                             if (data && data.permission) {
                                 if (data.permission === 'anyadmin') {
-                                    return countlyAuth.validateAppAdmin();
+                                    return countlyAuth.validateAnyAppAdmin();
                                 }
                                 else {
                                     return countlyAuth.validateRead(data.permission);
@@ -117,7 +117,7 @@
                         for (var key in dataOb) {
                             if (dataOb[key] && dataOb[key].permission) {
                                 if (dataOb[key].permission === 'anyadmin') {
-                                    if (countlyAuth.validateAppAdmin()) {
+                                    if (countlyAuth.validateAnyAppAdmin()) {
                                         acc[val] = dataOb;
                                     }
                                 }
