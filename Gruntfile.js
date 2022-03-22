@@ -67,6 +67,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/vue/vue-color.min.js',
                     'frontend/express/public/javascripts/utils/vue/v-tooltip.min.js',
                     'frontend/express/public/javascripts/utils/vue/vee-validate.full.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue-clipboard.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue-good-table.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue2Dropzone.min.js',
                     'frontend/express/public/javascripts/utils/vue/element-ui.js',
