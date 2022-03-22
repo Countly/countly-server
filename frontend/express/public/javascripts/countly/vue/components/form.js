@@ -390,7 +390,7 @@
                         <div v-if="subheading" class="color-cool-gray-50 text-small bu-mb-1">\
                             {{subheading}}\
                         </div>\
-                        <component :is="wrapperElement">\
+                        <component :is="wrapperElement" @submit.prevent>\
                             <validation-provider v-if="$attrs.rules" v-bind="$attrs" v-on="$listeners" v-slot="validation">\
                                 <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}">\
                                     <slot v-bind="validation"/>\
