@@ -3,6 +3,7 @@ var common = require('../../../api/utils/common.js'),
     async = require('async'),
     moment = require('moment-timezone'),
     log = require('../../../api/utils/log')('reports:api'),
+    ejs = require("ejs"),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps, } = require('../../../api/utils/rights.js');
 
@@ -291,7 +292,12 @@ const FEATURE_NAME = 'reports';
                         }
                         else {
                             if (params && params.res) {
-                                common.returnRaw(params, 200, res.message, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
+                                var html = res.message;
+                                if (result.report_type !== "core") {
+                                    html = ejs.render(res.message.template, res.message.data);
+                                }
+
+                                common.returnRaw(params, 200, html, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
                             }
                         }
                     });
