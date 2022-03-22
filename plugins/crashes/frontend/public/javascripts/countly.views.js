@@ -282,7 +282,7 @@
                 );
             }
 
-            if (countlyAuth.validateRead('drill') &&  typeof countlyDrillMeta !== "undefined") {
+            if (countlyAuth.validateRead('drill') && typeof countlyDrillMeta !== "undefined") {
                 var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
                 var getFilterValues = function(segmentationKey) {
                     return function() {
