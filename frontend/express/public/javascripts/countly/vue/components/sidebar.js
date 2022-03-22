@@ -119,8 +119,8 @@
                         isString: typeof countlyGlobal.usermenu.featureRequestLink === "string" ? countlyGlobal.usermenu.featureRequestLink : false,
                         isBoolean: typeof countlyGlobal.usermenu.featureRequestLink === "boolean" && countlyGlobal.usermenu.featureRequestLink
                     },
-                    successMessage: CV.i18n("sidebar.copy-success-message"),
-                    errorMessage: CV.i18n("sidebar.copy-error-message")
+                    successMessage: CV.i18n("sidebar.copy-api-key-success-message"),
+                    errorMessage: CV.i18n("common.copy-error-message")
                 };
             },
             methods: {
