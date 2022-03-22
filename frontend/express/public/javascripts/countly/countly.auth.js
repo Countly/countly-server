@@ -202,7 +202,7 @@
      * @returns {boolean} is this user admin of any app or not?
      */
     countlyAuth.hasApplicationsAccess = function() {
-        return countlyGlobal.member.global_admin || countlyGlobal.member.permission && countlyGlobal.member.permission._ && countlyGlobal.member.permission._.a && countlyGlobal.member.permission._.a.length > 0;
+        return countlyGlobal.member.global_admin || (countlyGlobal.member.permission && countlyGlobal.member.permission._ && countlyGlobal.member.permission._.a && countlyGlobal.member.permission._.a.length > 0);
     };
 
     countlyAuth.permissionSetGenerator = function(count) {
