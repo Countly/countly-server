@@ -377,6 +377,7 @@
                 if (!this.selectedPlatform) {
                     this.selectedPlatform = this.findInitialSelectedPlatform();
                 }
+                this.$emit('select', this.selectedPlatform);
             }
         },
         methods: {
@@ -402,6 +403,9 @@
             },
             setSelectedPlatform: function(value) {
                 this.selectedPlatform = value;
+            },
+            onPlatformChange: function() {
+                this.$emit('select', this.selectedPlatform);
             }
         },
         components: {
@@ -918,6 +922,12 @@
             },
             hasAllPlatformMediaOnly: function() {
                 return !this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL && !this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
+            },
+            subtitle: function() {
+                return this.pushNotification.settings[this.PlatformEnum.IOS].subtitle;
+            },
+            selectedMobileMessagePlatform: function() {
+                return this.$store.state.countlyPushNotification.details.mobileMessagePlatform;
             }
         },
         methods: {

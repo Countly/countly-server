@@ -194,7 +194,7 @@
         </div>
     
         <div class="cly-vue-push-notification-mobile-preview__platforms">
-            <el-radio-group v-model="selectedPlatform">
+            <el-radio-group v-model="selectedPlatform" @change="onPlatformChange">
                 <el-radio-button v-if="hasAndroidPlatform" :key="PlatformEnum.ANDROID" :label="PlatformEnum.ANDROID">{{i18n('push-notification.android')}}</el-radio-button>
                 <el-radio-button v-if="hasIOSPlatform" :key="PlatformEnum.IOS" :label="PlatformEnum.IOS">{{i18n('push-notification.ios')}}</el-radio-button>
             </el-radio-group>
@@ -309,6 +309,14 @@
                                 <component v-bind:is="component.name" :value="component.value"></component>
                             </keep-alive>
                         </template>    
+                    </div>
+                </div>
+                <div v-if="selectedMobileMessagePlatform === PlatformEnum.IOS && subtitle" class="bu-level bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
+                    <div class="bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__label">
+                        {{i18n('push-notification.subtitle')}}
+                    </div>
+                    <div class="bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__value">
+                        <span>{{subtitle}}</span>   
                     </div>
                 </div>
                 <div class="bu-level bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">

@@ -125,6 +125,7 @@
                             :platforms="pushNotification.platforms" 
                             :media="previewMessageMedia" 
                             :buttons="message.buttons.map(function(item){return item.label})" 
+                            @select="onMobileMessagePlatformChange"
                             class="cly-vue-push-notification-details-summary__message-preview"> 
                         </mobile-message-preview>
                     </div>

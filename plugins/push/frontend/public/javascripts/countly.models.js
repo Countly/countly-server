@@ -2526,6 +2526,7 @@
             },
             isDrawerOpen: false,
             dashboardTokens: {},
+            mobileMessagePlatform: null,
         };
     };
 
@@ -2621,6 +2622,9 @@
         },
         onSetPlatformFilterOptions: function(context, value) {
             context.commit('setPlatformFilterOptions', value);
+        },
+        onSetMobileMessagePlatform: function(context, value) {
+            context.commit('setMobileMessagePlatform', value);
         }
     };
 
@@ -2661,6 +2665,9 @@
         },
         setDashboardTokens: function(state, value) {
             state.dashboardTokens = value;
+        },
+        setMobileMessagePlatform: function(state, value) {
+            state.mobileMessagePlatform = value;
         }
     };
 
