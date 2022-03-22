@@ -339,6 +339,14 @@
             }
             return htmlString;
         },
+        decodeMessage: function(message) {
+            if (!message) {
+                return message;
+            }
+            var textArea = document.createElement('textarea');
+            textArea.innerHTML = message;
+            return textArea.value;
+        },
         getPreviewMessageComponentsList: function(content) {
             var self = this;
             var htmlTitle = document.createElement("div");
@@ -821,11 +829,6 @@
                 newElement.innerText = userProperty.l + "|" + userProperty.f;
                 return newElement.outerHTML;
             },
-            decodeMessage: function(message) {
-                var textArea = document.createElement('textarea');
-                textArea.innerHTML = message;
-                return textArea.value;
-            },
             insertUserPropertyAtIndex: function(message, index, userProperty) {
                 return [message.slice(0, index), userProperty, message.slice(index)].join('');
             },
@@ -1060,7 +1063,7 @@
             mapIOSSettings: function(iosSettingsDto) {
                 return {
                     // NOte: subtitle will reside at index zero for now. There are no other platform specifics
-                    subtitle: iosSettingsDto && iosSettingsDto.specific && iosSettingsDto.specific[0] && iosSettingsDto.specific[0].subtitle || "",
+                    subtitle: iosSettingsDto && iosSettingsDto.specific && iosSettingsDto.specific[0] && countlyPushNotification.helper.decodeMessage(iosSettingsDto.specific[0].subtitle || ""),
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
