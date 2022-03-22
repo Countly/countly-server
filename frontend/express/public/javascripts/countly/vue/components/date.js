@@ -122,7 +122,7 @@
         globalFutureDaysRange = [],
         globalFutureMonthsRange = [],
         globalMin = moment([2010, 0, 1]),
-        globalMax = moment(),
+        globalMax = moment().startOf('day'),
         globalFutureMax = moment().add(10, "y"),
         daysCursor = moment(globalMin.toDate()),
         monthsCursor = moment(globalMin.toDate());
