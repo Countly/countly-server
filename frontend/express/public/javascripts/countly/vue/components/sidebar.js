@@ -119,8 +119,8 @@
                         isString: typeof countlyGlobal.usermenu.featureRequestLink === "string" ? countlyGlobal.usermenu.featureRequestLink : false,
                         isBoolean: typeof countlyGlobal.usermenu.featureRequestLink === "boolean" && countlyGlobal.usermenu.featureRequestLink
                     },
-                    successMessage: 'Api Key has been copied to clipboard!',
-                    errormessage: 'Something went wrong, please copy it again.'
+                    successMessage: CV.i18n("sidebar.copy-success-message"),
+                    errorMessage: CV.i18n("sidebar.copy-error-message")
                 };
             },
             methods: {
@@ -146,13 +146,13 @@
                 },
                 onCopy: function() {
                     CountlyHelpers.notify({
-                        message: this.successmessage,
+                        message: this.successMessage,
                         type: "success"
                     });
                 },
                 onError: function() {
                     CountlyHelpers.notify({
-                        message: this.errormessage,
+                        message: this.errorMessage,
                         type: "error"
                     });
                 }
