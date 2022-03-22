@@ -68,6 +68,9 @@
         background-image: url("../../../images/icons/arrow_forward-circled.svg");
     }
 
+    &copy {
+        background-image: url("../../../images/icons/copy.svg");
+    }
 }
 
 .el-button [class*=ion-]+span, [class*=cly-icon-]+span {
