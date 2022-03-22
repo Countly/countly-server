@@ -1925,7 +1925,10 @@
                     from: "#/" + countlyCommon.ACTIVE_APP_ID + "/messaging/details/" + this.pushNotification._id,
                     title: CV.i18n("push-notification.back-to-push-notification-details")
                 });
-            }
+            },
+            onMobileMessagePlatformChange: function(value) {
+                this.$store.dispatch('countlyPushNotification/details/onSetMobileMessagePlatform', value);
+            },
         },
         components: {
             "mobile-message-preview": countlyPushNotificationComponent.MobileMessagePreview,
