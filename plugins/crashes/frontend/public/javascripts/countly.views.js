@@ -282,19 +282,16 @@
                 );
             }
 
-            if (countlyAuth.validateRead('drill')) {
-                if (typeof countlyDrillMeta !== "undefined") {
-                    var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
-                    var getFilterValues = function(segmentationKey) {
-                        return function() {
-                            return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
-                                var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
-                                return {name: name, value: value};
-                            });
-                        };
+            if (countlyAuth.validateRead('drill') &&  typeof countlyDrillMeta !== "undefined") {
+                var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
+                var getFilterValues = function(segmentationKey) {
+                    return function() {
+                        return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
+                            var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
+                            return {name: name, value: value};
+                        });
                     };
-                }
-
+                };
 
                 crashMeta.initialize().then(function() {
                     if (window.countlyQueryBuilder) {
