@@ -385,9 +385,9 @@ class Pool extends Duplex {
                     type = frame_type(data.buffer);
 
                 if (type === FRAME.CONNECT) {
-                    this.log.d('received messages %j', data.map(m => m._id));
-                    this.connections.forEach(conn => conn.messages(data));
-                    chunkCallback();
+                    this.log.d('received messages %j', decode(data.buffer).payload.map(m => m._id));
+                    let times = timesCallback(this.connections.length, chunkCallback);
+                    this.connections.forEach(conn => conn.write(data, times));
                 }
                 else if (type === FRAME.SEND) {
                     let sent = false,
@@ -641,5 +641,41 @@ class Pool extends Duplex {
     //     }
     // }
 }
+
+/**
+ * Make a function which would call callback only after times calls
+ * 
+ * @param {int} times how many times the function should be called before calling callback
+ * @param {function} callback callback to be called after times calls
+ * @returns {function} the function
+ */
+function timesCallback(times, callback) {
+    return function() {
+        if (times !== null && --times <= 0) {
+            callback.apply(this, arguments);
+            times = null;
+        }
+    };
+}
+
+// /**
+//  * Make a function which would call callback only after times calls
+//  * 
+//  * @param {int} times how many times the function should be called before calling callback
+//  * @param {function} callback callback to be called after times calls
+//  * @returns {function} the function
+//  */
+// function timesOrErrCallback(times, callback) {
+//     return function(err) {
+//         if (err && times !== null) {
+//             callback(err);
+//             times = null;
+//         }
+//         if (!err && times !== null && --times <= 0) {
+//             callback.apply(this, arguments);
+//             times = null;
+//         }
+//     };
+// }
 
 module.exports = { Pool };
