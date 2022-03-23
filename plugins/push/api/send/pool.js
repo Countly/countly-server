@@ -651,9 +651,12 @@ class Pool extends Duplex {
  */
 function timesCallback(times, callback) {
     return function() {
-        if (times !== null && --times <= 0) {
+        if (times !== null && times <= 1) {
             callback.apply(this, arguments);
             times = null;
+        }
+        else {
+            times--;
         }
     };
 }
