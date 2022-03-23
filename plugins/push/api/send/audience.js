@@ -425,6 +425,15 @@ class PlainApiMapper extends Mapper {
         if (this.trigger.tz) {
             let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
             d = date.getTime() - this.trigger.sctz * 60000 - utz;
+
+            if (d < Date.now()) {
+                if (this.trigger.reschedule) {
+                    d = d + 24 * 60 * 60000;
+                }
+                else {
+                    return null;
+                }
+            }
         }
         return super.map(user, d, c);
     }
