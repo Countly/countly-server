@@ -901,7 +901,7 @@
                 return "";
             },
             previewAndroidMedia: function() {
-                var result = "";
+                var result = "-";
                 if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
                     result = this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL;
                 }
@@ -911,7 +911,7 @@
                 return result;
             },
             previewIOSMedia: function() {
-                var result = "";
+                var result = "-";
                 if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
                     result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
                 }
