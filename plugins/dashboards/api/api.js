@@ -1068,10 +1068,11 @@ plugins.setConfigs("dashboards", {
                                     // eslint-disable-next-line no-undef
                                     countlyCommon.setPeriod(reportDateRange);
                                     // eslint-disable-next-line no-undef
-                                    //app.activeView.vm.$emit("cly-date-change");
+                                    var app = window.app;
+                                    app.activeView.vm.$emit("cly-date-change");
                                     // eslint-disable-next-line no-undef
                                     var $ = window.$;
-                                    $("html").addClass("full-screen");
+                                    $("html").addClass("email-screen");
                                 };
 
                                 //options.beforeScrnCbFn = function() {
