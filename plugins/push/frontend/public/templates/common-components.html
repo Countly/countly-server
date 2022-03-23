@@ -329,11 +329,16 @@
                         {{i18n('push-notification-details.message-content')}}
                     </div>
                     <div class="bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__value">
-                        <template v-for="(component) in previewMessageContent">
-                            <keep-alive>
-                                <component v-bind:is="component.name" :value="component.value"></component>
-                            </keep-alive>
-                        </template>    
+                        <template v-if="previewMessageContent.length">
+                            <template v-for="(component) in previewMessageContent">
+                                <keep-alive>
+                                    <component v-bind:is="component.name" :value="component.value"></component>
+                                </keep-alive>
+                            </template>    
+                        </template>
+                        <template v-else>
+                            <span>-</span>
+                        </template>
                     </div>
                 </div>
                 <template v-if="message.buttons && message.buttons.length>0">
