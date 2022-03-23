@@ -106,7 +106,6 @@
                 locationOptions: [],
                 eventOptions: [],
                 enabledUsers: JSON.parse(JSON.stringify(InitialEnabledUsers)),
-                totalAppUsers: 0,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 TargetingEnum: countlyPushNotification.service.TargetingEnum,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
@@ -490,7 +489,6 @@
             },
             getBaseOptions: function() {
                 var options = {};
-                options.totalAppUsers = this.totalAppUsers;
                 options.localizations = this.localizationOptions;
                 options.settings = this.settings;
                 options.isUsersTimezoneSet = this.isUsersTimezoneSet;
@@ -1009,9 +1007,6 @@
                         self.isFetchEventsLoading = false;
                     });
             },
-            setTotalAppUsers: function(totalAppUsers) {
-                this.totalAppUsers = totalAppUsers;
-            },
             setEnabledUsers: function(enabledUsers) {
                 this.enabledUsers = enabledUsers;
             },
@@ -1019,12 +1014,10 @@
                 var self = this;
                 countlyPushNotification.service.fetchDashboard(this.type, countlyCommon.generateId())
                     .then(function(response) {
-                        self.setTotalAppUsers(response.totalAppUsers);
                         self.setEnabledUsers(response.enabledUsers);
                     })
                     .catch(function(error) {
                         console.error(error);
-                        self.setTotalAppUsers(0);
                         self.setEnabledUsers(JSON.parse(JSON.stringify(InitialEnabledUsers)));
                     });
             },
