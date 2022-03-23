@@ -1068,10 +1068,10 @@ plugins.setConfigs("dashboards", {
                                     // eslint-disable-next-line no-undef
                                     countlyCommon.setPeriod(reportDateRange);
                                     // eslint-disable-next-line no-undef
-                                    app.activeView.vm.$emit("cly-date-change");
+                                    //app.activeView.vm.$emit("cly-date-change");
                                     // eslint-disable-next-line no-undef
                                     var $ = window.$;
-                                    $("html").addClass("email-screen");
+                                    $("html").addClass("full-screen");
                                 };
 
                                 //options.beforeScrnCbFn = function() {
@@ -1122,7 +1122,7 @@ plugins.setConfigs("dashboards", {
 
                                                 var message = {
                                                     template: template,
-                                                    data: {"host": host, "report": report, "version": versionInfo, "properties": props, "image": image}
+                                                    data: {"host": host, "report": report, "version": versionInfo, "properties": props, "image": image, "unsubscribe_link": ""}
                                                 };
                                                 var sDate = new Date();
                                                 sDate.setHours(23, 59);
