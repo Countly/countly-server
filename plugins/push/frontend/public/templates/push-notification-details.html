@@ -46,7 +46,7 @@
                         </div>
                     </div>
                     <div class="bu-level-item bu-mr-1">
-                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedPlatformFilter">
+                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedPlatformFilter" :disabled="!platformFilterOptions.length">
                             <el-option v-for="item in platformFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
@@ -56,7 +56,7 @@
                         </div>
                     </div>
                     <div class="bu-level-item bu-mr-1">
-                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedLocaleFilter">
+                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedLocaleFilter" :disabled="!localeFilterOptions.length">
                             <el-option v-for="item in localeFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
