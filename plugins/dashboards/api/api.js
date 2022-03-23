@@ -1075,6 +1075,8 @@ plugins.setConfigs("dashboards", {
                                     $("html").addClass("email-screen");
                                 };
 
+                                options.waitForRegexAfterCbfn = true;
+
                                 //options.beforeScrnCbFn = function() {
                                 // eslint-disable-next-line no-undef
                                 //var $ = window.$;
