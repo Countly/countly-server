@@ -122,8 +122,9 @@
         globalFutureDaysRange = [],
         globalFutureMonthsRange = [],
         globalMin = moment([2010, 0, 1]),
-        globalMax = moment(),
-        globalFutureMax = moment().add(10, "y"),
+        globalMax = moment().endOf('day'),
+        globalFutureMin = moment().startOf('day'),
+        globalFutureMax = moment().startOf('day').add(10, "y"),
         daysCursor = moment(globalMin.toDate()),
         monthsCursor = moment(globalMin.toDate());
 
@@ -221,7 +222,7 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
-            globalMin: instance.isFuture ? globalMax : globalMin,
+            globalMin: instance.isFuture ? globalFutureMin : globalMin,
             globalMax: instance.isFuture ? globalFutureMax : globalMax
         };
 

@@ -803,6 +803,10 @@
                 type: Boolean,
                 default: false
             },
+            hideBottom: {
+                type: Boolean,
+                default: false
+            },
             forceLoading: {
                 type: Boolean,
                 default: false,

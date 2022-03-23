@@ -430,8 +430,7 @@
                         if (res.result && typeof res.result === "string") {
                             if (self.groupsInput.length) {
                                 var group_id = self.group._id ? [self.group._id] : [];
-                                groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id })
-                                    .then(function() {});
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id }, function() {});
                             }
                             self.$emit('refresh-table');
                             self.group = {};
@@ -486,8 +485,7 @@
                     countlyUserManagement.createUser(submitted, function(res) {
                         if (res.full_name) {
                             if (typeof self.group._id !== "undefined") {
-                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
-                                    .then(function() {});
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] }, function() {});
                             }
                             self.group = {};
                             self.$emit('refresh-table');

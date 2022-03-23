@@ -1760,7 +1760,7 @@ const processRequest = (params) => {
                             binary: true,
                             app_id: params.qstring.app_id,
                             params: params,
-                            type: "tableExport",
+                            type: params.qstring.type_name || "tableExport",
                             report_name: params.qstring.filename + "." + params.qstring.type,
                             meta: JSON.stringify({
                                 "app_id": params.qstring.app_id,

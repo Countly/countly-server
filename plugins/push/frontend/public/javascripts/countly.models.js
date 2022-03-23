@@ -339,6 +339,14 @@
             }
             return htmlString;
         },
+        decodeMessage: function(message) {
+            if (!message) {
+                return message;
+            }
+            var textArea = document.createElement('textarea');
+            textArea.innerHTML = message;
+            return textArea.value;
+        },
         getPreviewMessageComponentsList: function(content) {
             var self = this;
             var htmlTitle = document.createElement("div");
@@ -821,11 +829,6 @@
                 newElement.innerText = userProperty.l + "|" + userProperty.f;
                 return newElement.outerHTML;
             },
-            decodeMessage: function(message) {
-                var textArea = document.createElement('textarea');
-                textArea.innerHTML = message;
-                return textArea.value;
-            },
             insertUserPropertyAtIndex: function(message, index, userProperty) {
                 return [message.slice(0, index), userProperty, message.slice(index)].join('');
             },
@@ -1060,7 +1063,7 @@
             mapIOSSettings: function(iosSettingsDto) {
                 return {
                     // NOte: subtitle will reside at index zero for now. There are no other platform specifics
-                    subtitle: iosSettingsDto && iosSettingsDto.specific && iosSettingsDto.specific[0] && iosSettingsDto.specific[0].subtitle || "",
+                    subtitle: iosSettingsDto && iosSettingsDto.specific && iosSettingsDto.specific[0] && countlyPushNotification.helper.decodeMessage(iosSettingsDto.specific[0].subtitle || ""),
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
@@ -1346,7 +1349,7 @@
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 model.audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
-                model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
+                model.timezone = triggerDto.tz ? TimezoneEnum.DEVICE : TimezoneEnum.SAME;
                 return model;
             },
             mapDtoToAutomaticModel: function(dto) {
@@ -1354,7 +1357,6 @@
                 model.type = TypeEnum.AUTOMATIC;
                 var triggerDto = dto.triggers[0];
                 model.cohorts = triggerDto.cohorts || [];
-                model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
                 model.delivery = {
                     startDate: moment(triggerDto.start).valueOf(),
                     endDate: triggerDto.end ? moment(triggerDto.end).valueOf() : null,
@@ -1727,6 +1729,9 @@
                     }
                     if (self.hasUserProperties(pushNotificationModel.message[localizationKey], 'title')) {
                         localeDto.titlePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'title');
+                        if (!title) {
+                            localeDto.title = title;
+                        }
                     }
                     if (pushNotificationModel.message[localizationKey].buttons.length) {
                         localeDto.buttons = self.mapButtons(pushNotificationModel.message[localizationKey]);
@@ -1746,11 +1751,11 @@
                     start: model.delivery.startDate,
                 };
                 if (model.delivery.type === SendEnum.LATER) {
-                    result.tz = model.timezone === TimezoneEnum.SAME;
+                    if (model.timezone === TimezoneEnum.DEVICE) {
+                        result.tz = true;
+                        result.sctz = new Date().getTimezoneOffset();
+                    }
                     result.delayed = model.audienceSelection === AudienceSelectionEnum.BEFORE;
-                }
-                if (model.timezone === TimezoneEnum.SAME && model.delivery.type === SendEnum.LATER) {
-                    result.sctz = new Date().getTimezoneOffset();
                 }
                 return [result];
             },
@@ -2523,6 +2528,7 @@
             },
             isDrawerOpen: false,
             dashboardTokens: {},
+            mobileMessagePlatform: null,
         };
     };
 
@@ -2618,6 +2624,9 @@
         },
         onSetPlatformFilterOptions: function(context, value) {
             context.commit('setPlatformFilterOptions', value);
+        },
+        onSetMobileMessagePlatform: function(context, value) {
+            context.commit('setMobileMessagePlatform', value);
         }
     };
 
@@ -2658,6 +2667,9 @@
         },
         setDashboardTokens: function(state, value) {
             state.dashboardTokens = value;
+        },
+        setMobileMessagePlatform: function(state, value) {
+            state.mobileMessagePlatform = value;
         }
     };
 
