@@ -125,6 +125,27 @@
 			if (jQuery.i18n.map["forgot.title"]) {
                 document.title = countlyTitle + " | " + jQuery.i18n.map["forgot.title"];
             }
+			$("#reset-password-form").submit(function() {
+				if ($("input[name=password]").val() != $("input[name=again]").val()) {
+					if ($("#message").length > 0) {
+						$("#message").text(jQuery.i18n.map["reset.dont-match"]);
+					}
+					else {
+						$('#header').css("margin-top","18px");
+						$("#header").before($(
+							"<div class='cly-vue-notification__alert-box cly-vue-notification__alert-box__alert-text--light-destructive' style='display: flex; min-width: 300px; max-width: fit-content; margin:auto;'> \n" +
+								"<div style='display: flex;justify-content: space-between; margin:8px; overflow: hidden;'>\n" +
+									"<div style='display: flex;'>\n" +
+										"<img src='../images/icons/notification-toast-destructive.svg' class='cly-vue-notification__alert-box-alert-image'/>\n" +
+										"<span style='margin-block: auto; margin-left: 16px; white-space:nowrap' id ='message'>\n" + 
+										"</span>\n" +
+									"</div>\n" +
+								"</div>\n" +
+							"</div>"));
+						$("#message").text(jQuery.i18n.map["reset.dont-match"]);
+					}
+				}
+			});
 		});
 		$(document).ready(function() {
 			$("*").click(function(event){
