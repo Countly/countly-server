@@ -102,7 +102,7 @@ class Sender {
      * Watch push collection for pushes to send, 
      */
     async watch() {
-        let oid = dbext.oidBlankWithDate(new Date(Date.now() + this.cfg.sendAhead));
+        let oid = dbext.oidBlankWithDate(new Date(Date.now()));
         try {
             await common.db.collection('push').watch([{$match: {_id: {$lte: oid}}}], {maxAwaitTimeMS: 60000}).next();
             return true;
