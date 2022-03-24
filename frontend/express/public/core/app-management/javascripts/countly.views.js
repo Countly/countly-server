@@ -742,17 +742,19 @@
         });
     };
 
-    app.route("/manage/apps", "manage-apps", function() {
-        var view = getMainView();
-        view.params = {app_id: countlyCommon.ACTIVE_APP_ID};
-        this.renderWhenReady(view);
-    });
+    if (countlyAuth.validateAnyAppAdmin()) {
+        app.route("/manage/apps", "manage-apps", function() {
+            var view = getMainView();
+            view.params = {app_id: countlyCommon.ACTIVE_APP_ID};
+            this.renderWhenReady(view);
+        });
 
-    app.route("/manage/apps/:app_id", "manage-apps", function(app_id) {
-        var view = getMainView();
-        view.params = {app_id: app_id};
-        this.renderWhenReady(view);
-    });
+        app.route("/manage/apps/:app_id", "manage-apps", function(app_id) {
+            var view = getMainView();
+            view.params = {app_id: app_id};
+            this.renderWhenReady(view);
+        });
+    }
 
     //old global handler
     app.manageAppsView = {
