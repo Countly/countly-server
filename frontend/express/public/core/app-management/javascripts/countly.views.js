@@ -742,7 +742,7 @@
         });
     };
 
-    if (countlyAuth.validateAppAdmin()) {
+    if (countlyAuth.validateAnyAppAdmin()) {
         app.route("/manage/apps", "manage-apps", function() {
             var view = getMainView();
             view.params = {app_id: countlyCommon.ACTIVE_APP_ID};
