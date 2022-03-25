@@ -795,13 +795,18 @@ plugins.setConfigs("crashes", {
                 else if (params.qstring.list) {
                     common.db.collection('app_users' + params.app_id).estimatedDocumentCount(function(errCount, total) {
                         if (!errCount && total && total < 10000) {
-                            common.db.collection('app_crashgroups' + params.app_id).find({_id: {$ne: "meta"}}, {name: 1}).toArray(function(err, res) {
-                                if (res) {
-                                    for (var i = 0; i < res.length; i++) {
-                                        res[i].name = (res[i].name + "").split("\n")[0].trim();
-                                    }
+                            common.db.collection('app_crashgroups' + params.app_id).find({}, {name: 1}).toArray(function(err, crashes) {
+                                if (crashes) {
+                                    const crashData = crashes.filter(crash => crash._id !== 'meta').map(crash => ({
+                                        _id: crash._id,
+                                        name: (crash.name + "").split("\n")[0].trim(),
+                                    }));
+
+                                    common.returnOutput(params, crashData || []);
                                 }
-                                common.returnOutput(params, res || []);
+                                else {
+                                    common.returnOutput(params, []);
+                                }
                             });
                         }
                         else {
@@ -933,15 +938,15 @@ plugins.setConfigs("crashes", {
                     if (params.qstring.filter !== "crash-hidden") {
                         filter.is_hidden = {$ne: true};
                     }
-                    if (typeof filter._id === "undefined") {
-                        filter._id = {$ne: "meta"};
-                    }
+
                     plugins.dispatch("/drill/preprocess_query", {
                         query: filter
                     });
+
                     common.db.collection('app_crashgroups' + params.app_id).estimatedDocumentCount(function(crashGroupsErr, total) {
                         total--;
                         var cursor = common.db.collection('app_crashgroups' + params.app_id).find(filter, {uid: 1, is_new: 1, is_renewed: 1, is_hidden: 1, os: 1, not_os_specific: 1, name: 1, error: 1, users: 1, lastTs: 1, reports: 1, latest_version: 1, is_resolved: 1, resolved_version: 1, nonfatal: 1, session: 1, is_resolving: 1, native_cpp: 1, plcrash: 1});
+
                         cursor.count(function(errCursor, count) {
                             if (params.qstring.iDisplayStart && params.qstring.iDisplayStart !== 0) {
                                 cursor.skip(parseInt(params.qstring.iDisplayStart));
@@ -955,17 +960,27 @@ plugins.setConfigs("crashes", {
                                 cursor.sort(obj);
                             }
 
-                            cursor.toArray(function(cursorErr, res) {
-                                res = res || [];
-                                if (res && res.length) {
-                                    res.forEach(function(crash) {
+                            cursor.toArray(function(cursorErr, crashes) {
+                                let crashData = crashes || [];
+                                if (crashes && crashes.length) {
+                                    crashData = crashes.filter(function(crash) {
+                                        if (crash._id === 'meta') {
+                                            total--;
+                                            count--;
+                                            return false;
+                                        }
+                                        else {
+                                            return true;
+                                        }
+                                    }).map(function(crash) {
                                         trace.postprocessCrash(crash);
                                         delete crash.threads;
                                         delete crash.oldthreads;
                                         delete crash.olderror;
+                                        return crash;
                                     });
                                 }
-                                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: Math.max(total, 0), iTotalDisplayRecords: count, aaData: res});
+                                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: Math.max(total, count, 0), iTotalDisplayRecords: count, aaData: crashData});
                             });
                         });
                     });
@@ -1538,6 +1553,7 @@ plugins.setConfigs("crashes", {
         common.db.collection('app_crashgroups' + appId).ensureIndex({"lastTs": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"groups": 1}, {background: true}, function() {});
+        common.db.collection('app_crashgroups' + appId).ensureIndex({"is_hidden": 1}, {background: true}, function() {});
         common.db.collection('app_crashusers' + appId).ensureIndex({"group": 1, "uid": 1}, {background: true}, function() {});
         common.db.collection('app_crashusers' + appId).ensureIndex({"group": 1, "crashes": 1, "fatal": 1}, {sparse: true, background: true}, function() {});
         common.db.collection('app_crashusers' + appId).ensureIndex({"uid": 1}, {background: true}, function() {});
@@ -1589,6 +1605,7 @@ plugins.setConfigs("crashes", {
             common.db.collection('app_crashgroups' + appId).ensureIndex({"lastTs": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"groups": 1}, {background: true}, function() {});
+            common.db.collection('app_crashgroups' + appId).ensureIndex({"is_hidden": 1}, {background: true}, function() {});
         });
         common.db.collection('crash_share').remove({'app_id': appId }, function() {});
         common.db.collection('crashdata').remove({'_id': {$regex: appId + ".*"}}, function() {});
@@ -1618,6 +1635,7 @@ plugins.setConfigs("crashes", {
             common.db.collection('app_crashgroups' + appId).ensureIndex({"lastTs": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"groups": 1}, {background: true}, function() {});
+            common.db.collection('app_crashgroups' + appId).ensureIndex({"is_hidden": 1}, {background: true}, function() {});
         });
         common.db.collection('crash_share').remove({'app_id': appId }, function() {});
         common.db.collection('crashdata').remove({'_id': {$regex: appId + ".*"}}, function() {});
