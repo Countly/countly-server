@@ -4,7 +4,6 @@
     	  <template v-slot:header-bottom>  
     <h2> {{i18n('compare.apps.title')}} 
     </h2>
-    <cly-tooltip-icon class="cly-vue-compare-apps__header--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
 	</template> 
   </cly-header>
   <cly-main>
@@ -13,8 +12,8 @@
       style="width:620px"
       v-model="value"
       multiple
+      popper-class="cly-vue-compare-apps__compare__width"
       filterable
-      allow-create
       default-first-option
       :multiple-limit=maxLimit
       :placeholder=placeholder>
@@ -31,16 +30,16 @@
     <div class="bu-pt-4 bu-mb-4">
     <cly-date-picker-g class="cly-vue-apps-all-date-picker"></cly-date-picker-g>
     </div>
-    <cly-section>
-    <div class="cly-vue-compare-apps__graph-section">
-      <div class="cly-vue-compare-apps__graph-section__dropdown">
-      <span class="text-big bu-pr-2" >{{i18n('compare.results.by')}}</span>
+    <div class="bu-pt-3 bu-mb-5">
+      <span class="text-big font-weight-bold bu-pr-2" >{{i18n('compare.results.by')}}</span>
       <el-select :arrow="false" :adaptiveLength="true" v-model="selectedGraph">
         <el-option v-for="item in availableMetrics" :key="item.key" :value="item.key" :label="item.label">
         </el-option>
       </el-select>
-      </div>
-      <cly-chart-time :option="lineChartData" :legend="lineLegend"></cly-chart-time>
+    </div>
+    <cly-section>
+    <div>
+      <cly-chart-time :option="lineChartData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading"></cly-chart-time>
     </div>
     </cly-section>
     <cly-section>

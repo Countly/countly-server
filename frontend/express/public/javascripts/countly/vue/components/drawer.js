@@ -90,13 +90,43 @@
         }
     ));
 
+    var hasDrawersMethodsMixin = function() {
+        return {
+            methods: {
+                openDrawer: function(name, initialEditedObject) {
+                    /**
+                     * Delete the hover key as its set by the data table on hovering a row
+                     * and we don't want to pass it to the drawer.
+                     */
+                    delete initialEditedObject.hover;
+                    if (this.drawers[name].isOpened) {
+                        return;
+                    }
+                    this.loadDrawer(name, initialEditedObject);
+                    this.drawers[name].isOpened = true;
+                },
+                loadDrawer: function(name, initialEditedObject) {
+                    /**
+                     * Delete the hover key as its set by the data table on hovering a row
+                     * and we don't want to pass it to the drawer.
+                     */
+                    delete initialEditedObject.hover;
+                    this.drawers[name].initialEditedObject = initialEditedObject || {};
+                },
+                closeDrawer: function(name) {
+                    this.drawers[name].isOpened = false;
+                }
+            }
+        };
+    };
+
     // @vue/component
     var hasDrawersMixin = function(names) {
         if (!Array.isArray(names)) {
             names = [names];
         }
 
-        return {
+        var result = {
             data: function() {
                 return {
                     drawers: names.reduce(function(acc, val) {
@@ -114,25 +144,13 @@
                     }, {})
                 };
             },
-            methods: {
-                openDrawer: function(name, initialEditedObject) {
-                    if (this.drawers[name].isOpened) {
-                        return;
-                    }
-                    this.loadDrawer(name, initialEditedObject);
-                    this.drawers[name].isOpened = true;
-                },
-                loadDrawer: function(name, initialEditedObject) {
-                    this.drawers[name].initialEditedObject = initialEditedObject || {};
-                },
-                closeDrawer: function(name) {
-                    this.drawers[name].isOpened = false;
-                }
-            }
         };
+        Object.assign(result, hasDrawersMethodsMixin());
+        return result;
     };
 
-    countlyVue.mixins.hasDrawers = hasDrawersMixin;
 
+    countlyVue.mixins.hasDrawers = hasDrawersMixin;
+    countlyVue.mixins.hasDrawersMethods = hasDrawersMethodsMixin;
 
 }(window.countlyVue = window.countlyVue || {}));

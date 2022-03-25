@@ -39,6 +39,17 @@ class Handle {
     }
 
     /**
+    * Cancel job if any exists
+    * 
+    * @param {string} name - job name
+    * @param {object} data - data about job
+    * @returns {Job} job
+    **/
+    cancel(name, data) {
+        return this.db.collection('jobs').updateMany({name, data, status: {$in: [job.STATUS.SCHEDULED, job.STATUS.WAITING, job.STATUS.PAUSED]}}, {$set: {status: job.STATUS.CANCELLED, error: 'Cancelled by user'}});
+    }
+
+    /**
     * run transient job
     * @param {string} name - job name
     * @param {object} data - data about job

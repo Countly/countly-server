@@ -27,26 +27,64 @@
                     </cly-select-x>
                 </div>
                 <div class="bu-level-item" v-if="hasExport">
-                    <cly-dropdown :width="230" placement="bottom-end" ref="exportDropdown">
+                    <cly-dropdown :width="332" placement="bottom-end" ref="exportDropdown">
                         <template v-slot:trigger="dropdown">
-                            <el-button size="small" icon="el-icon-download"></el-button>
+                            <el-button size="small" icon="cly-icon-btn cly-icon-download"></el-button>
                         </template>
                         <template>
-                            <div class="bu-m-4">
+                            <div class="bu-mx-4 bu-mt-4">
+                                <p class="bu-mb-4 color-cool-gray-100">{{i18n('export.export-as')}}</p>
                                 <el-radio-group
-                                    class="bu-mb-2"
-                                    v-model="selectedExportType"
-                                    size="small">
-                                    <el-radio-button v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value">{{exportType.name}}</el-radio-button>
+                                    class="bu-mb-5"
+                                    v-model="selectedExportType">
+                                    <el-radio-button v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value" style="width: 99px; display: inline-grid;">{{exportType.name}}</el-radio-button>
                                 </el-radio-group>
-                                <el-button size="small" @click="onExportClick">Download</el-button>
+                            </div>
+                            <div v-if="exportColumnSelection" class="cly-vue-eldatatable__export--extended">
+                                <div class="bu-mx-4 bu-mb-3">
+		                            <div class="bu-level bu-mb-3">
+                                        <div class="bu-level-left">
+                                            <el-checkbox v-model="exportAllColumns">
+                                                <span class="text-medium">
+                                                    {{i18n('export.export-all-columns')}}
+                                                </span>
+                                            </el-checkbox>
+                                        </div>
+		                            	<div class='bu-level-right text-small color-cool-gray-50' >
+                                            {{i18n('export.export-columns-selected-count',(exportColumns.length || 0 ),availableDynamicCols.length)}}
+                                        </div>
+		                            </div>
+                                    <div class="bu-level">
+                                        <div class="bu-level-item cly-vue-eldatatable__export--search">
+                                            <el-input
+                                                ref="searchBox"
+                                                autocomplete="off"
+                                                v-model="searchQuery"
+                                                placeholder="Search Columns">
+                                                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                                            </el-input>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bu-mx-2">
+                                    <cly-checklistbox 
+                                    v-model="exportColumns" 
+                                    :sortable="false"
+                                    :bordered="false"
+                                    :options.sync="getMatching(availableDynamicCols)">
+                                    </cly-checklistbox>
+                                </div>
+                                <slot name="export-config"></slot>
+                            </div>
+                            <div class="bu-mx-4 bu-mb-4">
+                                <el-button size="medium" @click="onExportClick" type="success" style="width: 100%">{{i18n('export.export')}}</el-button>
                             </div>
                         </template>
                     </cly-dropdown>
                 </div>
                 <div class="bu-level-item" v-if="displaySearch">
                     <form>
-                        <el-input autocomplete="off" size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
+                        <el-input autocomplete="off" size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="ion-ios-search-strong" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
                     </form>
                 </div>
             </div>
@@ -60,13 +98,20 @@
             v-bind="$attrs"
             v-on="$listeners"
             @sort-change="onSortChange"
+            @selection-change="onSelectionChange"
             @cell-mouse-enter="onCellMouseEnter"
             ref="elTable">
+                <template slot="empty" v-if="!isLoading">
+                    <cly-empty-datatable></cly-empty-datatable>
+                </template>
+                <template slot="empty" v-if="isLoading">
+                    <div class="cly-vue-eldatatable__empty-slot"></div>
+                </template>
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>
                 </template>
         </el-table>
-        <div class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white" @mouseenter="onNoCellMouseEnter">
+        <div v-if="!hideBottom" class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white" @mouseenter="onNoCellMouseEnter">
             <div class="bu-level-left">
                 <div class="bu-level-item text-smallish bu-mr-0">
                     {{ i18n("common.items-per-page") }}:
@@ -88,11 +133,11 @@
                         <el-select :borderless="true" :adaptiveLength="true" v-if="totalPages <= 200" v-model="controlParams.page" size="mini">
                             <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>
                         </el-select>
-                        <el-input v-else type="number" :min="1" :max="totalPages" v-model="controlParams.page" size="mini"></el-input>
+                        <el-input v-else type="number" :min="1" style="width: 160px" class="bu-mr-1" :max="totalPages" v-model="controlParams.page" size="mini"></el-input>
                     </div>
                 </div>
                 <div class="bu-level-item text-smallish">
-                    of {{totalPages}} pages
+                    of {{formatNumber(totalPages)}} pages
                 </div>
                 <div :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
                     <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="ion-ios-arrow-back"></i><i class="ion-ios-arrow-back"></i></span>

@@ -1,3 +1,27 @@
+## Version 21.11.2
+
+Fixes:
+- [core] update login time on external auth plugins
+- [hooks] use different sandbox for custom step
+- [package] colors dependency fix
+- [push] fix fetching by id
+- [scripts] centos 7 fix for python3
+
+Eneterprise:
+- [retention] fixed warning for namespace not existing
+- [survey] added tags option in nps and surverys
+- [surveys] added extension check to surveys file upload
+
+## Version 21.11.1
+
+- [push] removing TLS override
+
+## Version 21.11.0
+
+* Adding Custom Dashboards plugin
+* Adding Hooks plugin
+* Adding Recaptcha plugin
+* Adding Remote Config plugin
 
 ## Version 20.11.2.14
 

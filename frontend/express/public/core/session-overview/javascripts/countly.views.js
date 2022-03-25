@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlySessionOverview,app,countlyCommon, $, countlyAnalyticsAPI, countlySession,countlyTotalUsers*/
+/* global countlyVue,CV,countlySessionOverview,app,countlyCommon, $, countlySession,countlyTotalUsers*/
 var SessionOverviewView = countlyVue.views.create({
     template: CV.T("/core/session-overview/templates/session-overview.html"),
     mixins: [countlyVue.mixins.commonFormatters],
@@ -101,18 +101,27 @@ var SessionHomeWidget = countlyVue.views.create({
             chooseProperties: this.calculateProperties(),
             chosenProperty: "t",
             sessionGraphTab: "t",
+            isLoading: true,
+            headerData: {
+                label: CV.i18n("dashboard.audience"),
+                description: CV.i18n("session-overview.description"),
+                linkTo: {"label": CV.i18n('dashboard.go-to-sessions'), "href": "#/analytics/sessions"},
+            }
         };
     },
     mounted: function() {
         var self = this;
-        $.when(countlyAnalyticsAPI.initialize(["platforms", "devices", "carriers"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
+        $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
             self.calculateAllData();
         });
     },
     methods: {
-        refresh: function() {
+        refresh: function(force) {
             var self = this;
-            $.when(countlyAnalyticsAPI.initialize(["platforms", "devices", "carriers"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
+            if (force) {
+                this.isLoading = true;
+            }
+            $.when(countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {
                 self.calculateAllData();
             });
         },
@@ -120,11 +129,15 @@ var SessionHomeWidget = countlyVue.views.create({
             return this.calculateSeries(value);
         },
         calculateAllData: function() {
+            this.isLoading = false;
             this.chooseProperties = this.calculateProperties();
             this.lineOptions = this.calculateSeries();
         },
         calculateProperties: function() {
             var sessionData = countlySession.getSessionData();
+            if (!sessionData || !sessionData.usage || !sessionData.usage['total-sessions']) {
+                sessionData = {"usage": {"totals-sessions": {}}};
+            }
 
             var properties = [];
             //keep this way to allow also switching to different columns for different types later.  Supports also more or less columns.
@@ -156,7 +169,10 @@ var SessionHomeWidget = countlyVue.views.create({
                     "trend": sessionData.usage['total-duration'].trend,
                     "number": countlyCommon.getShortNumber(sessionData.usage['total-duration'].total || 0),
                     "trendValue": sessionData.usage['total-duration'].change,
-                    "description": CV.i18n('dashboard.time-spent-desc')
+                    "description": CV.i18n('dashboard.time-spent-desc'),
+                    "formatter": function(value) {
+                        return countlyCommon.formatSecond(value);
+                    }
                 });
             }
 
@@ -168,6 +184,9 @@ var SessionHomeWidget = countlyVue.views.create({
                     "number": countlyCommon.getShortNumber(sessionData.usage['avg-duration-per-session'].total || 0),
                     "trendValue": sessionData.usage['avg-duration-per-session'].change,
                     "description": CV.i18n('dashboard.avg-time-spent-desc'),
+                    "formatter": function(value) {
+                        return countlyCommon.formatSecond(Math.round(value));
+                    }
                 });
             }
 
@@ -185,28 +204,56 @@ var SessionHomeWidget = countlyVue.views.create({
         },
         calculateSeries: function(value) {
             var sessionDP = {};
-
-            switch (value || this.chosenProperty) {
+            value = value || this.chosenProperty;
+            switch (value) {
             case "t":
-                sessionDP = countlySession.getUserDPActive();
+                sessionDP = countlySession.getSessionDPTotal();
                 break;
             case "n":
                 sessionDP = countlySession.getUserDPNew();
+                if (sessionDP && sessionDP.chartDP && sessionDP.chartDP.length > 1) {
+                    sessionDP.chartDP[1].label = CV.i18n('common.table.new-sessions');
+                    sessionDP.chartDP[0].label = CV.i18n('common.table.new-sessions');
+                }
                 break;
             case "d":
-                sessionDP = countlySession.getDurationDPAvg();
+                sessionDP = countlySession.getDurationDP(true); //makes sure I get seconds, not minutes
+                if (sessionDP && sessionDP.chartDP && sessionDP.chartDP.length > 1) {
+                    sessionDP.chartDP[1].label = CV.i18n('dashboard.time-spent');
+                    sessionDP.chartDP[0].label = CV.i18n('dashboard.time-spent');
+                }
                 break;
             case "d-avg":
-                sessionDP = countlySession.getDurationDP();
+                sessionDP = countlySession.getDurationDPAvg(true);//makes sure I get seconds, not minutes
+                if (sessionDP && sessionDP.chartDP && sessionDP.chartDP.length > 1) {
+                    sessionDP.chartDP[1].label = CV.i18n('dashboard.avg-time-spent');
+                    sessionDP.chartDP[0].label = CV.i18n('dashboard.avg-time-spent');
+                }
                 break;
             case "e-avg":
                 sessionDP = countlySession.getEventsDPAvg();
                 break;
             }
             var series = [];
-            series.push({"name": sessionDP.chartDP[0].label + "(" + CV.i18n('common.previous-period') + ")", "data": sessionDP.chartDP[0].data, "color": "#39C0C8", lineStyle: {"color": "#39C0C8"} });
-            series.push({"name": sessionDP.chartDP[1].label, "data": sessionDP.chartDP[1].data});
-            return {"series": series};
+            if (sessionDP && sessionDP.chartDP && sessionDP.chartDP[0] && sessionDP.chartDP[1]) {
+                series.push({"name": sessionDP.chartDP[1].label, "data": sessionDP.chartDP[1].data});
+                series.push({"name": sessionDP.chartDP[0].label + "(" + CV.i18n('common.previous-period') + ")", "data": sessionDP.chartDP[0].data, "color": "#39C0C8", lineStyle: {"color": "#39C0C8"} });
+            }
+            if (value === "d" || value === "d-avg") {
+                return {
+                    "series": series,
+                    "yAxis": {
+                        axisLabel: {
+                            formatter: function(value2) {
+                                return countlyCommon.formatSecond(Math.round(value2));
+                            }
+                        }
+                    }
+                };
+            }
+            else {
+                return {"series": series};
+            }
         }
     },
     computed: {
@@ -224,14 +271,13 @@ var SessionHomeWidget = countlyVue.views.create({
 
 countlyVue.container.registerData("/home/widgets", {
     _id: "sessions-dashboard-widget",
+    permission: "core",
     label: CV.i18n('dashboard.audience'),
-    description: CV.i18n('session-overview.description'),
     enabled: {"default": true}, //object. For each type set if by default enabled
     available: {"default": true}, //object. default - for all app types. For other as specified.
     order: 0, //sorted by ascending
     placeBeforeDatePicker: false,
     component: SessionHomeWidget,
-    linkTo: {"label": CV.i18n('dashboard.go-to-sessions'), "href": "#/analytics/sessions"}
 });
 
 
@@ -252,8 +298,9 @@ app.route("/analytics/sessions/*tab", "sessions-tab", function(tab) {
 countlyVue.container.registerTab("/analytics/sessions", {
     priority: 1,
     name: "overview",
+    permission: "core",
     title: CV.i18n('session-overview.title'),
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/overview",
+    route: "#/analytics/sessions/overview",
     component: SessionOverviewView,
     vuex: [{
         clyModel: countlySessionOverview

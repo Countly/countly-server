@@ -195,6 +195,18 @@ var CountryView = countlyVue.views.create({
                 return this.$store.state.countlyCountry.selectedProperty;
             }
         },
+        selectedPropertyTitle: function() {
+            var selectedProperty = this.$store.state.countlyCountry.selectedProperty || "t";
+            if (selectedProperty === 't') {
+                return CV.i18n('common.table.total-sessions');
+            }
+            else if (selectedProperty === 'u') {
+                return CV.i18n('common.table.total-users');
+            }
+            else if (selectedProperty === 'n') {
+                return CV.i18n('common.table.new-users');
+            }
+        },
         isLoading: function() {
             return this.$store.state.countlyCountry.isLoading;
         },
@@ -237,6 +249,20 @@ var GeoAnalyticsView = countlyVue.views.create({
 
 var CountriesHomeWidget = countlyVue.views.create({
     template: CV.T("/core/geo-countries/templates/countriesHomeWidget.html"),
+    computed: {
+        selectedPropertyTitle: function() {
+            var selectedProperty = this.selectedProperty || "t";
+            if (selectedProperty === 't') {
+                return CV.i18n('common.table.total-sessions');
+            }
+            else if (selectedProperty === 'u') {
+                return CV.i18n('common.table.total-users');
+            }
+            else if (selectedProperty === 'n') {
+                return CV.i18n('common.table.new-users');
+            }
+        },
+    },
     data: function() {
         var buttonText = "";
         var buttonLink = "#/analytics/geo/countries/All";
@@ -254,8 +280,12 @@ var CountriesHomeWidget = countlyVue.views.create({
             buttonLink: buttonLink,
             chooseProperties: this.calculateProperties(),
             countriesData: this.calculateCountriesData(),
-            selectedProperty: "t"
-
+            selectedProperty: "t",
+            headerData: {
+                label: CV.i18n("countries.title"),
+                description: CV.i18n('countries.description'),
+                linkTo: {"label": CV.i18n('countries.go-to-countries'), "href": "#/analytics/geo/countries"}
+            }
         };
     },
     beforeCreate: function() {
@@ -316,14 +346,13 @@ var CountriesHomeWidget = countlyVue.views.create({
 
 countlyVue.container.registerData("/home/widgets", {
     _id: "countries-dashboard-widget",
+    permission: "core",
     label: CV.i18n('countries.title'),
-    description: CV.i18n('countries.description'),
     enabled: {"default": true}, //object. For each type set if by default enabled
     available: {"default": true}, //object. default - for all app types. For other as specified.
     order: 8, //sorted by ascending
     placeBeforeDatePicker: false,
-    component: CountriesHomeWidget,
-    linkTo: {"label": CV.i18n('countries.go-to-countries'), "href": "#/analytics/geo/countries"}
+    component: CountriesHomeWidget
 });
 
 
@@ -332,7 +361,7 @@ var getGeoAnalyticsView = function() {
     return new countlyVue.views.BackboneWrapper({
         component: GeoAnalyticsView,
         vuex: tabsVuex,
-        templates: []
+        templates: countlyVue.container.templates(['/geo/external/templates'])
     });
 };
 app.route("/analytics/geo", "analytics-geo", function() {
@@ -368,8 +397,9 @@ app.route("/analytics/geo/countries/*region", "analytics-geo", function(region) 
 countlyVue.container.registerTab("/analytics/geo", {
     priority: 1,
     name: "countries",
+    permission: "core",
     title: CV.i18n('sidebar.analytics.countries'),
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/geo/countries",
+    route: "#/analytics/geo/countries",
     component: CountryView,
     vuex: [{
         clyModel: countlyCountry

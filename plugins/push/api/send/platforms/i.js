@@ -4,6 +4,7 @@ const { ConnectionError, PushError, SendError, ERROR, Creds, Template } = requir
     { Agent } = require('https'),
     FORGE = require('node-forge'),
     logger = require('../../../../../api/utils/log'),
+    jwt = require('jsonwebtoken'),
     { threadId } = require('worker_threads'),
     HTTP2 = require('http2');
 
@@ -23,6 +24,16 @@ function extractor(qstring) {
     if (qstring.ios_token !== undefined && qstring.test_mode in FIELDS) {
         return [key, FIELDS[qstring.test_mode], qstring.ios_token];
     }
+}
+
+/**
+ * Make an estimated guess about request platform
+ * 
+ * @param {string} userAgent user-agent header
+ * @returns {string} platform key if it looks like request made by this platform
+ */
+function guess(userAgent) {
+    return userAgent.includes('iOS') && key;
 }
 
 /**
@@ -104,7 +115,7 @@ const CREDS = {
         validate() {
             if (this._data.fileType) {
                 let mime = this._data.cert.indexOf(';base64,') === -1 ? null : this._data.cert.substring(0, this._data.cert.indexOf(';base64,'));
-                if (mime === 'data:application/x-pkcs12' || (mime === 'data:application/octet-stream' && this._data.fileType === 'p12')) {
+                if (mime === 'data:application/x-pkcs12' || mime === 'data:application/pkcs12' || (mime === 'data:application/octet-stream' && this._data.fileType === 'p12')) {
                     this._data.cert = this._data.cert.substring(this._data.cert.indexOf(',') + 1);
                     delete this._data.fileType;
                 }
@@ -154,7 +165,7 @@ const CREDS = {
                                 tpks = tpks.value.replace(/0[\x00-\x1f\(\)!]/gi, '') //eslint-disable-line no-useless-escape
                                     .replace('\f\f', '\f')
                                     .split('\f')
-                                    .map(s => s.replace(/[^A-Za-z0-9\-\.]/gi, '').trim()); //eslint-disable-line  no-useless-escape
+                                    .map(s => s.replace(/[^A-Za-z\-\.]/gi, '').trim()); //eslint-disable-line  no-useless-escape
                                 tpks.shift();
 
                                 for (var i = 0; i < tpks.length; i++) {
@@ -263,7 +274,7 @@ const CREDS = {
         validate() {
             if (this._data.fileType) {
                 let mime = this._data.key.indexOf(';base64,') === -1 ? null : this._data.key.substring(0, this._data.key.indexOf(';base64,'));
-                if (mime === 'data:application/x-pkcs8' || mime === 'data:' || (mime === 'data:application/octet-stream' && this._data.fileType === 'p8')) {
+                if (mime === 'data:application/x-pkcs8' || mime === 'data:application/pkcs8' || mime === 'data:' || (mime === 'data:application/octet-stream' && this._data.fileType === 'p8')) {
                     this._data.key = this._data.key.substring(this._data.key.indexOf(',') + 1);
                     delete this._data.fileType;
                 }
@@ -300,17 +311,32 @@ const CREDS = {
                 type: this._data.type,
                 cert: 'APN Key File (P8)',
                 bundle: this._data.bundle,
-                topics: this._data.topics,
-                notBefore: this._data.notBefore,
-                notAfter: this._data.notAfter,
+                keyid: this._data.keyid,
+                team: this._data.team,
                 hash: this._data.hash,
             };
-            if (this._data.secret) {
-                json.secret = new Array(this._data.secret.length).fill('*').join('');
-            }
             return json;
         }
 
+        /**
+         * Generate new JWT token
+         */
+        get bearer() {
+            if (!this._bearer) {
+                let token = jwt.sign({
+                    iss: this._data.team,
+                    iat: Math.floor(Date.now() / 1000)
+                }, FORGE.util.decode64(this._data.key), {
+                    algorithm: 'ES256',
+                    header: {
+                        alg: 'ES256',
+                        kid: this._data.keyid
+                    }
+                });
+                this._bearer = `bearer ${token}`;
+            }
+            return this._bearer;
+        }
     }
 };
 
@@ -369,7 +395,7 @@ const map = {
      */
     buttons: function(t, buttons) {
         if (buttons) {
-            t.result.c.b = buttons;
+            t.result.c.b = buttons.map(b => ({t: b.title, l: b.url}));
         }
     },
 
@@ -464,6 +490,21 @@ const map = {
             template.result.c.e = e;
         }
     },
+
+    /**
+     * Sends platform specific fields
+     * 
+     * @param {Template} template template
+     * @param {object} specific platform specific props to be sent
+     */
+    specific: function(template, specific) {
+        if (specific) {
+            if (specific.subtitle) {
+                template.result.aps.alert = template.result.aps.alert || {};
+                template.result.aps.alert.subtitle = specific.subtitle;
+            }
+        }
+    },
 };
 
 /**
@@ -508,11 +549,6 @@ class APN extends Base {
             this.headersSecond[':path'] = '/3/device/' + token;
             return this.headersSecond;
         };
-        this.headersSecondWithTokenAndJWT = (token, jwt) => {
-            this.headersSecond[':path'] = '/3/device/' + token;
-            this.headersSecond.authentication = jwt;
-            return this.headersSecond;
-        };
 
         this.agent = options.proxy ? new ProxyAgent(options) : new Agent();
         this.agent.maxSockets = 1;
@@ -521,6 +557,10 @@ class APN extends Base {
         };
         if (this.creds instanceof CREDS.apn_universal) {
             Object.assign(this.sessionOptions, this.creds.tls);
+        }
+        if (this.creds instanceof CREDS.apn_token) {
+            this.headersFirst.authorization = this.headersSecond.authorization = this.creds.bearer;
+            this.headersFirst['apns-topic'] = this.headersSecond['apns-topic'] = this.creds._data.bundle;
         }
     }
 
@@ -533,7 +573,7 @@ class APN extends Base {
      */
     template(id) {
         let { PLATFORM } = require('../index');
-        return this.templates[id] || (this.templates[id] = new Template(this.messages[id], PLATFORM[this.type.substr(0, 1)]));
+        return this.templates[id] || (this.templates[id] = new Template(this.messages[id], PLATFORM[this.type.substr(0, 1)], true));
     }
 
     /**
@@ -576,8 +616,8 @@ class APN extends Base {
                  * Called on stream completion, returns results for this batch
                  */
                 streamDone = () => {
-                    if (oks.length + recoverableErrors + nonRecoverableError.left.length === pushes.length) {
-                        let errored = nonRecoverableError.bytes;
+                    if (oks.length + recoverableErrors + (nonRecoverableError && nonRecoverableError.left.length || 0) === pushes.length) {
+                        let errored = nonRecoverableError && nonRecoverableError.bytes || 0;
                         if (oks.length) {
                             this.send_results(oks, bytes - errored);
                         }
@@ -602,7 +642,7 @@ class APN extends Base {
                 }
 
                 let content = this.template(p.m).compile(p),
-                    stream = this.session.request(this.creds instanceof CREDS.apn_token ? this.headersSecondWithTokenAndJWT(p.t, this.jwt) : this.headersSecondWithToken(p.t)),
+                    stream = this.session.request(this.headersSecondWithToken(p.t)),
                     status,
                     data = '';
                 stream.on('error', err => {
@@ -643,41 +683,40 @@ class APN extends Base {
                     data += dt;
                 });
                 stream.on('end', () => {
-                    try {
-                        let json = JSON.parse(data);
-                        if (status === 400) {
-                            if (json.reason) {
-                                if (json.reason === 'DeviceTokenNotForTopic' || json.reason === 'BadDeviceToken') {
-                                    error(ERROR.DATA_TOKEN_INVALID, json.reason).addAffected(p._id, one);
+                    if (status === 400 || status === 403 || status === 429) {
+                        try {
+                            let json = JSON.parse(data);
+                            if (status === 400) {
+                                if (json.reason) {
+                                    if (json.reason === 'DeviceTokenNotForTopic' || json.reason === 'BadDeviceToken') {
+                                        error(ERROR.DATA_TOKEN_INVALID, json.reason).addAffected(p._id, one);
+                                    }
+                                    else {
+                                        error(ERROR.DATA_COUNTLY, json.reason).addAffected(p._id, one);
+                                    }
                                 }
                                 else {
-                                    error(ERROR.DATA_COUNTLY, json.reason).addAffected(p._id, one);
+                                    error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                                 }
                             }
-                            else {
+                            else if (status === 403) {
+                                if (!nonRecoverableError) {
+                                    nonRecoverableError = new ConnectionError(`APN Unauthorized: ${status} (${json.reason})`, ERROR.INVALID_CREDENTIALS).addAffected(p._id, one);
+                                }
+                                else {
+                                    nonRecoverableError.addAffected(p._id, one);
+                                }
+                            }
+                            else if (status === 429) {
                                 error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                             }
                         }
-                        else if (status === 403) {
-                            if (!nonRecoverableError) {
-                                nonRecoverableError = new ConnectionError(`APN Unauthorized: ${status} (${json.reason})`, ERROR.INVALID_CREDENTIALS).addAffected(p._id, one);
-                            }
-                            else {
-                                nonRecoverableError.addAffected(p._id, one);
-                            }
-                        }
-                        else if (status === 429) {
+                        catch (e) {
+                            self.log.e('provider returned %d: %s', status, data, e);
                             error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                         }
-                        else {
-                            error(ERROR.DATA_PROVIDER, `APN Unexpected response ${status} (${json.reason})`).addAffected(p._id, one);
-                        }
+                        streamDone();
                     }
-                    catch (e) {
-                        self.log.e('provider returned %d: %s', status, data);
-                        error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
-                    }
-                    streamDone();
                 });
                 stream.setEncoding('utf-8');
                 stream.end(content);
@@ -780,6 +819,7 @@ module.exports = {
     key,
     title: 'iOS',
     extractor,
+    guess,
     FIELDS,
     FIELDS_TITLES,
     FIELD_DEV,

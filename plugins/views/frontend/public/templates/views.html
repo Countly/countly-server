@@ -2,12 +2,12 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('views.title')}}</h2>
-            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description"></span>
+            <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
         </template>
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
             <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-              <span :class="item.icon"></span>
+			  <!--<span :class="item.icon"></span>-->
               <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
             </el-dropdown-item>
           </cly-more-options>
@@ -15,12 +15,12 @@
     </cly-header>
     <cly-main>
 		<cly-date-picker-g class="views-date-picker-container"></cly-date-picker-g>
-		<cly-in-page-notification :text="totalViewCountWarning" v-if="showViewCountWarning"></cly-in-page-notification>
+		<cly-notification :text="totalViewCountWarning" v-if="showViewCountWarning" color="light-destructive" class="bu-mb-5">
+			<template v-slot:close><a href="/dashboard#/manage/configurations/views" style="color: #0166D6;" class="el-button el-button--text">{{i18n('common.adjust-limit')}}</a></template>
+		</cly-notification>
 		<cly-section >
-			<cly-metric-cards>
-                <cly-metric-card :number="item.percent" :color="item.color" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
-                    {{item.name}}
-					<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="item.description"></span>
+			<cly-metric-cards :multiline="false">
+                <cly-metric-card :number="item.percent" :label="item.name" :tooltip="item.description" :color="item.color" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
 					<template v-slot:number>{{item.value}}</template>
                 </cly-metric-card>
             </cly-metric-cards>
@@ -37,20 +37,28 @@
 				<cly-multi-select ref="selectSegmentValue" @change="segmentChosen" :dependantFields="true" v-model="filter" :fields="filterFields"></cly-multi-select>
 			</div>
         </div>
-		
 		<cly-section>
-            <cly-chart-time :option="lineOptions" :legend="{position: 'right'}" ref="viewsGraph">
-            </cly-chart-time>
+			<div v-if="lineOptions.series.length < 3">
+				<cly-chart-time :option="lineOptions" :legend="{position: 'bottom'}"  v-loading="isGraphLoading" ref="viewsGraph">
+				</cly-chart-time>
+			</div>
+            <div v-else>
+				<cly-chart-time :option="lineOptions" :legend="{position: 'right'}" v-loading="isGraphLoading" ref="viewsGraph">
+				</cly-chart-time>
+			</div>
         </cly-section>
 		<cly-section>
-			<cly-datatable-n :default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols"  :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
+			<cly-datatable-n v-if="tableMode == 'selected'" :rows="selectedTableRows" :persist-key="tablePersistKey" :available-dynamic-cols="tableDynamicCols" >
 				<template v-slot:header-left>
-					<a href="#/analytics/views/manage" class="cly-vue-button button-light-skin ToLink">{{i18n('views.table.edit-views')}}</a>
+					<el-select v-model="tableMode" class="bu-mr-2">
+						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
+					</el-select>
+					<a v-if="canUserDelete || canUserUpdate" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
 				</template>
 				<template v-slot="scope">
-					<el-table-column width="65"  fixed="left">
+					<el-table-column width="65"  fixed="left" prop="selected">
 						<template slot-scope="scope">
-						<el-checkbox :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
+							<el-checkbox :disabled="persistentSettings.length === 1 && scope.row.selected" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
 						</template>
 					</el-table-column>
 					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('views.table.view')" fixed="left">
@@ -58,7 +66,6 @@
 							{{scope.row.view}}
 						</template>
 					</el-table-column>
-					
 					<template v-for="(col,idx) in scope.dynamicCols">
 						<el-table-column :min-width="col.width" v-if="col.value === 'd'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
 						<template slot-scope="scope">
@@ -70,18 +77,52 @@
 								{{scope.row.scrCalc}}
 							</template>
 						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								{{formatNumber(scope.row.br)}} %
+							</template>
+						</el-table-column>
 						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>
 					</template>
-					<el-table-column min-width="150"  v-if="showActionMapColumn"  prop="actionLink" :label="i18n('views.action-map')">
+				</template>
+			</cly-datatable-n>
+			<cly-datatable-n v-else :default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
+				<template v-slot:header-left>
+					<el-select v-model="tableMode" class="bu-mr-2" >
+						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
+					</el-select>
+					<a v-if="canUserDelete || canUserUpdate" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+				</template>
+		
+				<template v-slot="scope">
+					<el-table-column width="65"  fixed="left" prop="selected">
 						<template slot-scope="scope">
-								<cly-more-options  v-if="scope.row.useDropdown" :text="i18n('views.table.view')">
-									<el-dropdown-item :key="idx" v-for="(item, idx) in domains">
-									  <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value)" class="bu-ml-1 ">{{item.label}}</div>
-									</el-dropdown-item>
-								</cly-more-options>
-								<div v-else class="go-to-actions-link" @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" >{{i18n("views.table.view")}}</div>
+							<el-checkbox :disabled="persistentSettings.length === 1 && scope.row.selected" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
 						</template>
 					</el-table-column>
+					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('views.table.view')" fixed="left">
+						<template slot-scope="scope">
+							{{scope.row.view}}
+						</template>
+					</el-table-column>
+					<template v-for="(col,idx) in scope.dynamicCols">
+						<el-table-column :min-width="col.width" v-if="col.value === 'd'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+						<template slot-scope="scope">
+							{{scope.row.dCalc}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'scr'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								{{scope.row.scrCalc}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								{{scope.row.br}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>
+					</template>
 				</template>
 			</cly-datatable-n>
 		</cly-section>

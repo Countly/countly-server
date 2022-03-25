@@ -1,4 +1,4 @@
-/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise*/
+/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise, Map*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
         props: {
@@ -17,11 +17,6 @@
             description: {
                 type: String,
                 required: false,
-            },
-            hasTopMargin: {
-                type: Boolean,
-                required: false,
-                default: false,
             }
         },
         data: function() {
@@ -121,21 +116,11 @@
         },
         data: function() {
             return {
-                innerInput: "",
-                innerToggle: false
             };
         },
         computed: {
             hasDefaultSlot: function() {
                 return Boolean(this.$slots.default);
-            }
-        },
-        watch: {
-            input: function(value) {
-                this.innerInput = value;
-            },
-            toggle: function(value) {
-                this.innerToggle = value;
             }
         },
         methods: {
@@ -159,6 +144,10 @@
                 type: String,
                 default: ""
             },
+            usePre: {
+                type: Boolean,
+                default: false
+            }
         },
         computed: {
             hasDefaultSlot: function() {
@@ -174,18 +163,17 @@
                 type: Object,
                 default: function() {
                     return {
+                        id: "",
                         value: "",
                         fallback: "",
                         isUppercase: false,
+                        type: countlyPushNotification.service.UserPropertyTypeEnum.USER
                     };
                 }
             },
             isOpen: {
                 type: Boolean,
                 default: false
-            },
-            id: {
-                required: true,
             },
             container: {
                 type: String,
@@ -200,7 +188,7 @@
                 type: Object,
                 required: true,
                 default: function() {
-                    return {top: 0, left: 0};
+                    return {top: 0, left: 0, width: 0};
                 }
             },
             options: {
@@ -212,38 +200,71 @@
             }
         },
         data: function() {
-            return {};
+            return {
+                selectedPropertyCategory: "internal",
+                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum,
+                propertyCategoryOptions: [
+                    {label: CV.i18n('push-notification.internal-properties'), value: "internal"},
+                    {label: CV.i18n('push-notification.external-properties'), value: "external"}
+                ]
+            };
         },
         computed: {
             getStyleObject: function() {
-                var result = {};
-                var topOffset = 30;
-                result.width = this.width + 'px';
-                result.top = (this.position.top + topOffset) + 'px';
-                result.left = (this.position.left - (this.width / 2)) + 'px';
+                var editorWith = this.$refs.addUserPropertyPopover.offsetWidth;
+                var topOffset = 25;
+                var result = {
+                    width: this.width + 'px',
+                    top: this.position.top + topOffset + 'px',
+                };
+                if (this.position.left + this.width > editorWith) {
+                    result.right = 0;
+                }
+                else {
+                    result.left = this.position.left + "px";
+                }
                 return result;
             },
         },
+        watch: {
+            userProperty: function(value) {
+                if (value.type === this.UserPropertyTypeEnum.API) {
+                    this.selectedPropertyCategory = "external";
+                    return;
+                }
+                this.selectedPropertyCategory = "internal";
+            }
+        },
         methods: {
-            findOptionLabelByValue: function(value) {
-                for (var property in this.options) {
-                    if (this.options[property].value === value) {
-                        return this.options[property].label;
+            findCategoryOptionByValue: function(value, categoryOptions) {
+                return categoryOptions.find(function(item) {
+                    return item.value === value;
+                });
+            },
+            findOptionByValue: function(value) {
+                for (var index in this.options) {
+                    var item = this.findCategoryOptionByValue(value, this.options[index].options);
+                    if (item) {
+                        return item;
                     }
                 }
-                return "";
+                throw new Error('Unable to find user property option by value:' + value);
             },
             onSelect: function(value) {
-                this.$emit('select', {id: this.id, container: this.container, value: value, label: this.findOptionLabelByValue(value)});
+                var optionItem = this.findOptionByValue(value);
+                this.$emit('select', {id: this.userProperty.id, container: this.container, value: value, label: optionItem.label, type: optionItem.type});
             },
             onUppercase: function(value) {
-                this.$emit('check', {id: this.id, container: this.container, value: value});
+                this.$emit('uppercase', {id: this.userProperty.id, container: this.container, value: value});
             },
             onFallback: function(value) {
-                this.$emit('input', {id: this.id, container: this.container, value: value});
+                this.$emit('fallback', {id: this.userProperty.id, container: this.container, value: value});
+            },
+            onInput: function(value) {
+                this.$emit('input', {id: this.userProperty.id, container: this.container, value: value});
             },
             onRemove: function() {
-                this.$emit('remove', {id: this.id, container: this.container});
+                this.$emit('remove', {id: this.userProperty.id, container: this.container});
             },
             onClose: function() {
                 var self = this;
@@ -253,12 +274,6 @@
                     }
                 });
             },
-        },
-        mounted: function() {
-            document.body.appendChild(this.$el);
-        },
-        destroyed: function() {
-            document.body.removeChild(this.$el);
         },
         template: "#add-user-property-popover"
     });
@@ -289,7 +304,7 @@
                 return this.value.fallback;
             },
             description: function() {
-                return "User's \"" + this.userProperty + "\" property which falls back to " + this.fallback;
+                return CV.i18n('push-notification-fallback-value-description', this.userProperty, this.fallback);
             }
         }
     });
@@ -300,8 +315,8 @@
             return {
                 selectedPlatform: this.findInitialSelectedPlatform(),
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
-                MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
-                appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name')
+                appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name'),
+                videoRegex: new RegExp('video/*'),
             };
         },
         props: {
@@ -312,6 +327,10 @@
             title: {
                 type: String,
                 default: CV.i18n('push-notification.mobile-preview-default-title')
+            },
+            subtitle: {
+                type: String,
+                default: ""
             },
             content: {
                 type: String,
@@ -358,6 +377,7 @@
                 if (!this.selectedPlatform) {
                     this.selectedPlatform = this.findInitialSelectedPlatform();
                 }
+                this.$emit('select', this.selectedPlatform);
             }
         },
         methods: {
@@ -378,8 +398,14 @@
                 }
                 return null;
             },
+            isVideo: function(mime) {
+                return this.videoRegex.test(mime);
+            },
             setSelectedPlatform: function(value) {
                 this.selectedPlatform = value;
+            },
+            onPlatformChange: function() {
+                this.$emit('select', this.selectedPlatform);
             }
         },
         components: {
@@ -484,6 +510,29 @@
                 required: false,
                 default: false
             },
+            userProperty: {
+                type: Object,
+                default: function() {
+                    return {
+                        id: "",
+                        value: "",
+                        fallback: "",
+                        isUppercase: false,
+                        type: countlyPushNotification.service.UserPropertyTypeEnum.USER
+                    };
+                }
+            },
+            isOpen: {
+                type: Boolean,
+                default: false
+            },
+            options: {
+                type: Array,
+                required: true,
+                default: function() {
+                    return [];
+                }
+            },
             placeholder: {
                 type: String,
                 required: false,
@@ -498,11 +547,17 @@
         data: function() {
             return {
                 search: "",
-                defaultLabelValue: "Select property",
-                defaultLabelPreview: "Select property|",
+                defaultLabelValue: "Add user property",
+                defaultLabelPreview: "Add user property|",
                 defaultLocalizationValidationErrors: [],
                 selectionRange: null,
                 mutationObserver: null,
+                userPropertyEvents: new Map(),
+                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum,
+                position: {
+                    top: 0,
+                    left: 0,
+                }
             };
         },
         computed: {
@@ -523,9 +578,11 @@
         },
         methods: {
             onUserPropertyClick: function(id, element) {
-                var elementBound = element.getBoundingClientRect();
-                var leftCoordinate = elementBound.left + (elementBound.width / 2);
-                this.$emit("click", {id: id, container: this.container, position: {left: leftCoordinate, top: elementBound.top }});
+                this.position = {
+                    top: element.offsetTop,
+                    left: element.offsetLeft,
+                };
+                this.$emit("click", {id: id, container: this.container});
             },
             getOnUserPropertyClickEventListener: function(id) {
                 var self = this;
@@ -586,9 +643,12 @@
                 newElement.setAttribute("class", "cly-vue-push-notification-message-editor-with-emoji-picker__user-property");
                 newElement.setAttribute("data-user-property-label", this.defaultLabelValue);
                 newElement.setAttribute("data-user-property-value", "");
+                newElement.setAttribute("data-user-property-type", this.UserPropertyTypeEnum.USER);
                 newElement.setAttribute("data-user-property-fallback", "");
                 newElement.innerText = this.defaultLabelPreview;
-                newElement.onclick = this.getOnUserPropertyClickEventListener(id);
+                var onClickListener = this.getOnUserPropertyClickEventListener(id);
+                this.userPropertyEvents.set(id, onClickListener);
+                newElement.onclick = onClickListener;
                 this.insertNodeAtCaretPosition(newElement);
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.onUserPropertyClick(id, newElement);
@@ -597,7 +657,9 @@
             removeUserProperty: function(id) {
                 var userProperty = this.$refs.element.querySelector("#id-" + id);
                 if (userProperty) {
+                    userProperty.removeEventListener('click', this.userPropertyEvents.get(id));
                     userProperty.remove();
+                    this.userPropertyEvents.delete(id);
                     this.$emit('change', this.$refs.element.innerHTML);
                     this.validate();
                 }
@@ -612,11 +674,12 @@
                 }
                 return labelValue;
             },
-            setUserPropertyValue: function(id, previewValue, value) {
+            setUserPropertyValue: function(id, previewValue, value, type) {
                 var element = this.$refs.element.querySelector("#id-" + id);
                 element.innerText = previewValue;
                 element.setAttribute("data-user-property-value", value);
                 element.setAttribute("data-user-property-label", this.getLabelValueFromPreview(previewValue));
+                element.setAttribute("data-user-property-type", type);
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.validate();
             },
@@ -629,12 +692,22 @@
             addEventListeners: function(ids) {
                 var self = this;
                 ids.forEach(function(id) {
-                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id);
+                    var elementEvent = self.userPropertyEvents.get(id);
+                    if (elementEvent) {
+                        document.querySelector("#id-" + id).onclick = elementEvent;
+                    }
+                    else {
+                        var newElementEvent = self.getOnUserPropertyClickEventListener(id);
+                        self.userPropertyEvents.set(id, newElementEvent);
+                        document.querySelector("#id-" + id).onclick = newElementEvent;
+                    }
                 });
             },
             reset: function(htmlContent, ids) {
+                this.disconnectMutationObserver();
                 this.$refs.element.innerHTML = htmlContent;
                 this.addEventListeners(ids);
+                this.startMutationObserver();
             },
             appendEmoji: function(emoji) {
                 this.insertEmojiAtCaretPosition(document.createTextNode(emoji));
@@ -672,6 +745,8 @@
                 nodesList.forEach(function(removedNode) {
                     if (removedNode.id) {
                         var idValue = removedNode.id.split('-')[1];
+                        removedNode.removeEventListener('click', self.userPropertyEvents.get(idValue));
+                        self.userPropertyEvents.delete(idValue);
                         self.$emit('delete', {id: idValue, container: self.container});
                     }
                 });
@@ -709,6 +784,34 @@
             },
             removePasteEventListener: function(callback) {
                 this.$refs.element.removeEventListener('paste', callback);
+            },
+            removeUserPropertyEventListeners: function() {
+                var self = this;
+                this.userPropertyEvents.forEach(function(value, key) {
+                    var userProperty = self.$refs.element.querySelector("#id-" + key);
+                    if (userProperty) {
+                        userProperty.removeEventListener('click', value);
+                    }
+                });
+                this.userPropertyEvents.clear();
+            },
+            onSelectUserProperty: function(value) {
+                this.$emit('select', value);
+            },
+            onInputUserProperty: function(value) {
+                this.$emit('input', value);
+            },
+            onInputFallbackUserProperty: function(value) {
+                this.$emit('fallback', value);
+            },
+            onCheckUppercaseUserProperty: function(value) {
+                this.$emit('uppercase', value);
+            },
+            onRemoveUserProperty: function(value) {
+                this.$emit('remove', value);
+            },
+            closeAddUserPropertyPopover: function() {
+                this.$emit('close', this.container);
             }
         },
         mounted: function() {
@@ -726,16 +829,17 @@
             this.addPasteEventListener(this.onPaste);
         },
         beforeDestroy: function() {
-            //TODO-LA: remove all user properties elements' event listeners
+            this.removeUserPropertyEventListeners();
             this.disconnectMutationObserver();
             this.removePasteEventListener(this.onPaste);
         },
         components: {
-            'emoji-picker': countlyPushNotificationComponent.EmojiPicker
+            'emoji-picker': countlyPushNotificationComponent.EmojiPicker,
+            'add-user-property-popover': countlyPushNotificationComponent.AddUserPropertyPopover,
         },
     });
 
-    countlyPushNotification.DetailsTabRow = countlyVue.views.create({
+    countlyPushNotificationComponent.DetailsTabRow = countlyVue.views.create({
         template: '#details-tab-row',
         props: {
             value: {
@@ -746,6 +850,10 @@
                 type: String,
                 default: ""
             },
+            usePre: {
+                type: Boolean,
+                default: false,
+            }
         },
         computed: {
             hasDefaultSlot: function() {
@@ -758,27 +866,79 @@
         template: '#details-message-tab',
         data: function() {
             return {
-                selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                MessageTypeEnum: countlyPushNotification.service.MessageTypeEnum,
             };
         },
         computed: {
+            pushNotification: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification;
+            },
+            selectedMessageLocale: {
+                get: function() {
+                    return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
+                },
+                set: function(value) {
+                    this.$store.dispatch("countlyPushNotification/details/onSetMessageLocaleFilter", value);
+                }
+            },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
+                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocale];
             },
             localizations: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
             },
             previewMessageTitle: function() {
-                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.title);
+                if (this.message.title) {
+                    return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.title);
+                }
+                return "";
             },
             previewMessageContent: function() {
-                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.content);
+                if (this.message.content) {
+                    return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.content);
+                }
+                return "";
+            },
+            previewAndroidMedia: function() {
+                var result = "-";
+                if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL;
+                }
+                if (this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
+                }
+                return result;
+            },
+            previewIOSMedia: function() {
+                var result = "-";
+                if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
+                }
+                if (this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
+                }
+                return result;
+            },
+            hasAllPlatformMediaOnly: function() {
+                return !this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL && !this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
+            },
+            subtitle: function() {
+                return this.pushNotification.settings[this.PlatformEnum.IOS].subtitle;
+            },
+            selectedMobileMessagePlatform: function() {
+                return this.$store.state.countlyPushNotification.details.mobileMessagePlatform;
+            }
+        },
+        methods: {
+            prettifyJSON: function(value) {
+                return countlyPushNotification.helper.prettifyJSON(value, 2);
             }
         },
         components: {
             'user-property-preview': countlyPushNotificationComponent.UserPropertyPreview,
             'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview,
-            'details-tab-row': countlyPushNotification.DetailsTabRow
+            'details-tab-row': countlyPushNotificationComponent.DetailsTabRow
         }
     });
 
@@ -797,6 +957,10 @@
                 triggerNotMetOptions: countlyPushNotification.service.triggerNotMetOptions,
                 deliveryDateCalculationOptions: countlyPushNotification.service.deliveryDateCalculationOptions,
                 deliveryMethodOptions: countlyPushNotification.service.deliveryMethodOptions,
+                cohorts: [],
+                locations: [],
+                isFetchLocationsLoading: false,
+                isFetchCohortsLoading: false,
             };
         },
         computed: {
@@ -804,7 +968,7 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
             previewCohorts: function() {
-                return this.pushNotification.cohorts.map(function(cohortItem) {
+                return this.cohorts.map(function(cohortItem) {
                     return cohortItem.name;
                 });
             },
@@ -812,10 +976,60 @@
         methods: {
             convertDaysInMsToDays: function(daysInMs) {
                 return daysInMs / this.DAY_TO_MS_RATIO;
-            }
+            },
+            formatDateAndTime: function(date) {
+                return countlyPushNotification.helper.formatDateTime(date, 'MMMM Do, YYYY, h:mm a');
+            },
+            setCohorts: function(cohorts) {
+                this.cohorts = cohorts;
+            },
+            setLocations: function(locations) {
+                this.locations = locations;
+            },
+            fetchCohorts: function() {
+                var self = this;
+                if (this.pushNotification.type === this.TypeEnum.TRANSACTIONAL) {
+                    return;
+                }
+                this.isFetchCohortsLoading = true;
+                var cohortsList = [];
+                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
+                    cohortsList = this.pushNotification.cohorts;
+                }
+                if (this.pushNotification.type === this.TypeEnum.AUTOMATIC) {
+                    cohortsList = this.pushNotification.automatic.cohorts;
+                }
+                countlyPushNotification.service.fetchCohorts(cohortsList, false)
+                    .then(function(cohorts) {
+                        self.setCohorts(cohorts);
+                    }).catch(function() {
+                        self.setCohorts([]);
+                    }).finally(function() {
+                        self.isFetchCohortsLoading = false;
+                    });
+            },
+            fetchLocations: function() {
+                var self = this;
+                if (this.pushNotification.type === this.TypeEnum.TRANSACTIONAL) {
+                    return;
+                }
+                this.isFetchLocationsLoading = true;
+                countlyPushNotification.service.fetchLocations(this.pushNotification.locations, false)
+                    .then(function(locations) {
+                        self.setLocations(locations);
+                    }).catch(function() {
+                        self.setLocations([]);
+                    }).finally(function() {
+                        self.isFetchLocationsLoading = false;
+                    });
+            },
+        },
+        mounted: function() {
+            this.fetchCohorts();
+            this.fetchLocations();
         },
         components: {
-            'details-tab-row': countlyPushNotification.DetailsTabRow
+            'details-tab-row': countlyPushNotificationComponent.DetailsTabRow
         }
     });
 
@@ -825,11 +1039,6 @@
             errors: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.errors;
             },
-        },
-        methods: {
-            hasErrors: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.failed > 0;
-            }
         }
     });
 

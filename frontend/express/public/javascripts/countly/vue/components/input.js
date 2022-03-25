@@ -1,4 +1,4 @@
-/* global Vue, CV */
+/* global Vue, CV, _, Promise */
 
 (function(countlyVue) {
 
@@ -11,7 +11,8 @@
         ],
         props: {
             value: {type: [String, Object], default: "#FFFFFF"},
-            resetValue: { type: [String, Object], default: "#FFFFFF"}
+            resetValue: { type: [String, Object], default: "#FFFFFF"},
+            placement: {type: String, default: "left"}
         },
         data: function() {
             return {
@@ -34,7 +35,10 @@
                         this.setColor({hex: colorValue});
                     }
                 }
-            }
+            },
+            alignment: function() {
+                return "picker-body--" + this.placement;
+            },
         },
         methods: {
             setColor: function(color) {
@@ -48,22 +52,31 @@
             },
             close: function() {
                 this.isOpened = false;
+            },
+            confirm: function(color) {
+                this.$emit('change', color);
+                this.isOpened = false;
             }
         },
         components: {
             picker: window.VueColor.Sketch
         },
         template: '<div class="cly-vue-colorpicker">\n' +
-                        '<div @click.stop="open">\n' +
-                            '<div class="preview-box" :style="previewStyle"></div>\n' +
-                            '<input class="preview-input" type="text" v-model="localValue" />\n' +
+                        '<div @click.stop="open" class="preview">\n' +
+                            '<div>\n' +
+                                '<div class="drop bu-mt-auto" :style="previewStyle"></div>\n' +
+                                '<img src="/images/icons/blob.svg"/>\n' +
+                            '</div>\n' +
+                            '<input class="color-input" v-model="localValue" type="text"/>\n' +
+                            '<img height="12px" width="10px" class="bu-pt-2" v-if="!isOpened" src="/images/icons/arrow_drop_down_.svg"/>\n' +
+                            '<img height="12px" width="10px" class="bu-pt-2" v-if="isOpened" src="/images/icons/arrow_drop_up_.svg"/>\n' +
                         '</div>\n' +
-                        '<div class="picker-body" v-if="isOpened" v-click-outside="close">\n' +
+                        '<div class="picker-body" v-if="isOpened" v-click-outside="close" :class="alignment">\n' +
                             '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
                             '<div class="button-controls">\n' +
                                 '<cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
                                 '<cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
-                                '<cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green"></cly-button>\n' +
+                                '<cly-button :label="i18n(\'common.confirm\')" @click="confirm(setColor)" skin="green"></cly-button>\n' +
                             '</div>\n' +
                         '</div>\n' +
                       '</div>'
@@ -86,8 +99,14 @@
             },
             disabled: {type: Boolean, default: false, required: false},
             height: {type: [Number, String], default: 300, required: false},
+            expandOnHover: {type: Boolean, default: false, required: false},
+            hasRemovableOptions: {type: Boolean, default: false, required: false},
+            noMatchFoundPlaceholder: {type: String, default: CV.i18n('common.search.no-match-found'), required: false }
         },
         methods: {
+            onRemoveOption: function(option) {
+                this.$emit("remove-option", option);
+            },
             navigateOptions: function() {
                 if (!this.visible) {
                     this.visible = true;
@@ -117,6 +136,7 @@
                 scrollCfg: {
                     scrollPanel: {
                         initialScrollX: false,
+                        scrollingX: false
                     },
                     rail: {
                         gutterOfSide: "0px"
@@ -136,7 +156,9 @@
                     "is-focus": this.focused,
                     "cly-vue-listbox--bordered": this.bordered,
                     "cly-vue-listbox--disabled": this.disabled,
-                    "cly-vue-listbox--has-margin": this.margin && !(this.skin === "jumbo")
+                    "cly-vue-listbox--has-margin": this.margin && !(this.skin === "jumbo"),
+                    "is-expanded": this.expandOnHover && this.focused,
+                    "is-expandable": this.expandOnHover
                 };
                 classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
                 return classes;
@@ -147,6 +169,15 @@
                         'max-height': this.height + "px"
                     };
                 }
+                return false;
+            },
+            vueScrollStyle: function() {
+                if (this.searchable) {
+                    return {
+                        'height': 'calc(100% - 58px)'
+                    };
+                }
+
                 return false;
             }
         }
@@ -159,18 +190,44 @@
         },
         data: function() {
             return {
-                searchQuery: ''
+                searchQuery: '',
+                isQueryPending: false
             };
         },
+        mounted: function() {
+            this.callRemote();
+        },
+        watch: {
+            searchQuery: _.debounce(function(newVal) {
+                this.callRemote(newVal);
+            }, 500)
+        },
         methods: {
+            callRemote: function(query) {
+                if (this.remote && this.remoteMethod) {
+                    var self = this;
+                    this.isQueryPending = true;
+                    Promise.resolve(this.remoteMethod(query || '')).finally(function() {
+                        self.isQueryPending = false;
+                        self.updateDropdown && self.updateDropdown();
+                        if (!self.onlySelectedOptionsTab) {
+                            self.navigateToFirstRegularTab();
+                        }
+                    });
+                }
+            },
             getMatching: function(options) {
-                if (!this.searchQuery || !this.searchable) {
+                if (!this.searchQuery || !this.searchable || this.remote) {
                     return options;
                 }
                 var self = this;
-                var query = self.searchQuery.toLowerCase();
+                var query = (self.searchQuery + "").toLowerCase();
                 return options.filter(function(option) {
-                    return option.label.toLowerCase().indexOf(query) > -1;
+                    if (!option) {
+                        return false;
+                    }
+                    var compareTo = option.label || option.value || "";
+                    return compareTo.toLowerCase().indexOf(query) > -1;
                 });
             }
         }
@@ -188,6 +245,7 @@
             }
         },
         template: '<div\
+                    style="height: 100%"\
                     class="cly-vue-listbox"\
                     tabindex="0"\
                     :class="topClasses"\
@@ -207,13 +265,14 @@
                         </form>\
                     </div>\
                     <vue-scroll\
+                        :style="vueScrollStyle"\
                         v-if="searchedOptions.length > 0"\
                         :ops="scrollCfg"\>\
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <div\
                                 tabindex="0"\
                                 class="text-medium font-weight-bold"\
-                                :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group\': option.group}"\
+                                :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group text-uppercase\': option.group}"\
                                 :key="\'i\' + idx + \'.\' + option.value"\
                                 @focus="!option.group && handleItemHover(option)"\
                                 @mouseenter="!option.group && handleItemHover(option)"\
@@ -223,15 +282,16 @@
                                 <div class="cly-vue-listbox__item-content">\
                                     <div class="bu-level">\
                                         <div class="bu-level-left">\
-                                            <div v-if="!!$scopedSlots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-2">\
+                                            <div v-if="!!$scopedSlots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-1">\
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
                                             <slot name="option-label" v-bind="option">\
-                                                <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
+                                                <div class="cly-vue-listbox__item-label" v-tooltip="option.label">{{option.label}}</div>\
                                             </slot>\
                                         </div>\
-                                        <div class="bu-level-right" v-if="!!$scopedSlots[\'option-suffix\']">\
+                                        <div class="bu-level-right" v-if="hasRemovableOptions || !!$scopedSlots[\'option-suffix\']">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
+                                            <div class="cly-vue-listbox__remove-option" v-if="hasRemovableOptions" @click.stop="onRemoveOption(option)"><i class="el-icon-close"></i></div>\
                                         </div>\
                                     </div>\
                                 </div>\
@@ -239,7 +299,7 @@
                         </div>\
                     </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
-                        {{i18n(\'common.search.no-match-found\')}}\
+                        {{noMatchFoundPlaceholder}}\
                     </div>\
                 </div>'
     }));
@@ -345,6 +405,7 @@
             }
         },
         template: '<div\
+                    style="height: 100%"\
                     class="cly-vue-listbox"\
                     tabindex="0"\
                     :class="topClasses"\
@@ -353,6 +414,7 @@
                     @focus="handleHover"\
                     @blur="handleBlur">\
                     <vue-scroll\
+                        :style="vueScrollStyle"\
                         v-if="options.length > 0"\
                         :ops="scrollCfg"\>\
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
@@ -367,14 +429,14 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" :key="option.value">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
                         </div>\
                     </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
-                        {{i18n(\'common.search.no-match-found\')}}\
+                        {{noMatchFoundPlaceholder}}\
                     </div>\
                 </div>'
     }));
@@ -389,7 +451,9 @@
             },
             hideDefaultTabs: {type: Boolean, default: false},
             allPlaceholder: {type: String, default: 'All'},
-            hideAllOptionsTab: {type: Boolean, default: false}
+            hideAllOptionsTab: {type: Boolean, default: false},
+            onlySelectedOptionsTab: {type: Boolean, default: false},
+            prefixLabelWithTabId: {type: Boolean, default: false}
         },
         data: function() {
             return {
@@ -397,38 +461,161 @@
             };
         },
         computed: {
+            missingOptions: function() {
+                var query = this.value;
+
+                if (!query) {
+                    return [];
+                }
+
+                if (!Array.isArray(query)) {
+                    query = [query];
+                }
+                var self = this;
+                return query.filter(function(key) {
+                    return !self.flatOptions.some(function(option) {
+                        return key === option.value;
+                    });
+                }).map(function(missingKey) {
+                    return {
+                        label: missingKey,
+                        value: missingKey
+                    };
+                });
+            },
+            missingOptionsTab: function() {
+                if (this.missingOptions.length) {
+                    return {
+                        name: "__missing",
+                        label: "?",
+                        options: this.missingOptions
+                    };
+                }
+                return null;
+            },
+            selectedOptions: function() {
+                if (!this.onlySelectedOptionsTab && !this.flatOptions.length && !this.missingOptions.length) {
+                    return [];
+                }
+                var self = this,
+                    missingOptions = this.missingOptions || [];
+
+                if (this.onlySelectedOptionsTab) {
+                    var selected = null;
+                    if (Array.isArray(this.value)) {
+                        selected = this.value.slice();
+                    }
+                    else {
+                        selected = [this.value];
+                    }
+                    return this.flatOptions.reduce(function(acc, item) {
+                        var idx = acc.indexOf(item.value);
+                        if (idx > -1) {
+                            acc.splice(idx, 1);
+                        }
+                        return acc;
+                    }, selected).map(function(missingKey) {
+                        return {
+                            label: missingKey,
+                            value: missingKey
+                        };
+                    }).concat(this.flatOptions);
+                }
+
+                if (Array.isArray(this.value)) {
+                    return missingOptions.concat(this.flatOptions.filter(function(item) {
+                        return self.value.indexOf(item.value) > -1;
+                    }));
+                }
+                else {
+                    var matching = this.flatOptions.filter(function(item) {
+                        return item.value === self.value;
+                    });
+                    if (this.prefixLabelWithTabId && matching.length) {
+                        var selectedTab = this.publicTabs.filter(function(tab) {
+                            return self.val2tab[self.value] === tab.name;
+                        });
+                        if (selectedTab.length) {
+                            var valueTab = selectedTab[0];
+                            var singleOption = valueTab.options && valueTab.options.length === 1 && this.singleOptionSettings.hideList;
+                            if (!singleOption) {
+                                matching = [{
+                                    label: selectedTab[0].label + ", " + matching[0].label,
+                                    value: matching[0].value
+                                }];
+                            }
+                        }
+                    }
+                    return missingOptions.concat(matching);
+                }
+            },
+            selectedOptionsTab: function() {
+                if (this.hasSelectedOptionsTab && this.selectedOptions && this.selectedOptions.length) {
+                    return {
+                        name: "__selected",
+                        label: "Selected",
+                        options: this.selectedOptions
+                    };
+                }
+                return null;
+            },
             hasAllOptionsTab: function() {
                 if (this.hideAllOptionsTab || this.mode === "multi-check-sortable") {
                     return false;
                 }
                 return true;
             },
-            hasTabs: function() {
+            hasSelectedOptionsTab: function() {
+                return this.onlySelectedOptionsTab || (this.isMultiple && this.remote && this.value && this.value.length > 0);
+            },
+            showTabs: function() {
+                if (this.onlySelectedOptionsTab) {
+                    return false;
+                }
+                if (this.hasSelectedOptionsTab) {
+                    return true;
+                }
                 if (!this.options || !this.options.length) {
                     return false;
                 }
                 return !!this.options[0].options;
             },
             publicTabs: function() {
-                if (this.hasTabs && this.hasAllOptionsTab) {
-                    var allOptions = {
+                var missingOptionsTab = this.missingOptionsTab,
+                    selectedOptionsTab = this.selectedOptionsTab,
+                    prefixTabs = [],
+                    postfixTabs = [];
+
+                if (selectedOptionsTab) {
+                    postfixTabs.push(selectedOptionsTab);
+                }
+                else if (missingOptionsTab) {
+                    prefixTabs.push(missingOptionsTab);
+                }
+
+                if (this.showTabs && this.hasAllOptionsTab) {
+                    prefixTabs.unshift({
                         name: "__all",
                         label: this.allPlaceholder,
                         options: this.flatOptions
-                    };
-                    return [allOptions].concat(this.options);
+                    });
                 }
-                else if (this.hasTabs) {
-                    return this.options;
+
+                if (!this.showTabs && !this.onlySelectedOptionsTab) {
+                    prefixTabs.unshift({
+                        name: "__root",
+                        label: "__root",
+                        options: this.options
+                    });
                 }
-                return [{
-                    name: "__root",
-                    label: "__root",
-                    options: this.options
-                }];
+
+                if (!this.showTabs) {
+                    return prefixTabs.concat(postfixTabs);
+                }
+                return prefixTabs.concat(this.options).concat(postfixTabs);
             },
             flatOptions: function() {
-                if (!this.hasTabs || !this.options.length) {
+                if ((!this.showTabs && !this.onlySelectedOptionsTab) || !this.options.length) {
                     return this.options;
                 }
                 return this.options.reduce(function(items, tab) {
@@ -445,26 +632,6 @@
                     });
                     return items;
                 }, {});
-            },
-            selectedOptions: function() {
-                if (!this.flatOptions.length) {
-                    return {};
-                }
-                var self = this;
-                if (Array.isArray(this.value)) {
-                    return this.flatOptions.filter(function(item) {
-                        return self.value.indexOf(item.value) > -1;
-                    });
-                }
-                else {
-                    var matching = this.flatOptions.filter(function(item) {
-                        return item.value === self.value;
-                    });
-                    if (matching.length) {
-                        return matching[0];
-                    }
-                }
-                return {};
             }
         },
         methods: {
@@ -474,7 +641,10 @@
             determineActiveTabId: function() {
                 var self = this;
                 this.$nextTick(function() {
-                    if (!self.hasTabs) {
+                    if (self.onlySelectedOptionsTab) {
+                        self.activeTabId = "__selected";
+                    }
+                    else if (!self.showTabs) {
                         self.activeTabId = "__root";
                     }
                     else if (self.value && self.val2tab[self.value]) {
@@ -483,18 +653,31 @@
                     else if (this.hasAllOptionsTab) {
                         self.activeTabId = "__all";
                     }
-                    else if (!self.activeTabId || self.activeTabId === "__all" || self.activeTabId === "__root") {
+                    else if (!self.activeTabId || self.activeTabId === "0" || self.activeTabId === "__all" || self.activeTabId === "__root") {
                         self.activeTabId = self.publicTabs[0].name;
                     }
                 });
             },
+            navigateToFirstRegularTab: function() {
+                if (this.options && this.options[0]) {
+                    this.activeTabId = this.options[0].name;
+                }
+            }
         },
         watch: {
+            value: function() {
+                this.determineActiveTabId();
+            },
             hasAllOptionsTab: function() {
                 this.determineActiveTabId();
             },
-            hasTabs: function() {
+            showTabs: function() {
                 this.determineActiveTabId();
+            },
+            'flatOptions.length': function(newVal) {
+                if (!newVal && this.hasSelectedOptionsTab) {
+                    this.activeTabId = "__selected";
+                }
             }
         }
     };
@@ -505,6 +688,7 @@
         props: {
             title: {type: String, default: ''},
             placeholder: {type: String, default: 'Select'},
+            noMatchFoundPlaceholder: {default: CV.i18n('common.search.no-match-found'), required: false },
             value: { type: [String, Number, Array] },
             mode: {type: String, default: 'single-list'}, // multi-check,
             autoCommit: {type: Boolean, default: true},
@@ -547,7 +731,21 @@
                 type: Number,
                 default: Number.MAX_SAFE_INTEGER,
                 required: false
-            }
+            },
+            hasRemovableOptions: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            //
+            collapseTags: {
+                type: Boolean,
+                default: true,
+                required: false
+            },
+            //
+            remote: {type: Boolean, default: false},
+            remoteMethod: {type: Function, required: false}
         },
         data: function() {
             return {
@@ -555,10 +753,14 @@
             };
         },
         computed: {
+            isMultiple: function() {
+                return (this.mode + "").startsWith("multi");
+            },
             popClasses: function() {
                 return {
-                    "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.hasTabs,
-                    "cly-vue-select-x__pop--has-single-option": this.hasSingleOption
+                    "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.showTabs,
+                    "cly-vue-select-x__pop--has-single-option": this.hasSingleOption,
+                    "cly-vue-select-x__pop--has-slim-header": !this.searchable && !this.showTabs
                 };
             },
             currentTab: function() {
@@ -589,8 +791,7 @@
                 },
                 set: function(newVal) {
                     if (this.autoCommit && this.isItemCountValid) {
-                        this.$emit("input", newVal);
-                        this.$emit("change", newVal);
+                        this.commitValue(newVal);
                     }
                     else {
                         this.uncommittedValue = newVal;
@@ -653,8 +854,7 @@
                     return;
                 }
                 if (this.uncommittedValue) {
-                    this.$emit("input", this.uncommittedValue);
-                    this.$emit("change", this.uncommittedValue);
+                    this.commitValue(this.uncommittedValue);
                     this.uncommittedValue = null;
                 }
                 this.doClose();
@@ -662,6 +862,13 @@
             doDiscard: function() {
                 this.uncommittedValue = null;
                 this.doClose();
+            },
+            commitValue: function(val) {
+                this.$emit("input", val);
+                this.$emit("change", val);
+            },
+            removeOption: function(options) {
+                this.$emit("remove-option", options);
             }
         },
         watch: {
@@ -675,7 +882,10 @@
                     this.doCommit();
                 }
             },
-            value: function() {
+            value: function(newVal) {
+                if (!this.onlySelectedOptionsTab && this.isMultiple && this.remote && newVal && newVal.length === 0 && this.activeTabId === "__selected") {
+                    this.navigateToFirstRegularTab();
+                }
                 this.uncommittedValue = null;
             }
         }
@@ -780,6 +990,9 @@
                 if (this.radioDirection === "horizontal") {
                     classes = "radio-wrapper radio-wrapper-horizontal bu-columns bu-m-0";
                 }
+                else {
+                    classes = "radio-wrapper bu-is-flex bu-is-flex-direction-column";
+                }
                 return classes;
             },
             buttonClasses: function() {
@@ -797,6 +1010,9 @@
                 if (this.radioDirection === "horizontal") {
                     classes = "width: " + 100 / itemCn + "%;";
                 }
+
+                classes += "height: 100%;";
+
                 return classes;
             }
         },
@@ -807,20 +1023,26 @@
                 }
             }
         },
-        template: '<div class="cly-vue-radio-block" v-bind:class="topClasses">\n' +
-                             '<div :class="wrapperClasses">\n' +
-                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i"  :class="buttonClasses" :styles="buttonStyles" >\n' +
-                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex"><div class="bu-is-flex"><div class="box"></div></div>\n' +
-                                    '<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between"><div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\n' +
-                                    '<div class="bu-is-flex bu-is-align-items-baseline number">' +
-										'<h2>{{item.number}}</h2>' +
-										'<div v-if="item.trend == \'u\'" class="trend-up">\n' +
-											'<i class="fas fa-arrow-up"></i><span>{{item.trendValue}}</span>\n' +
-										'</div>\n' +
-										'<div v-if="item.trend == \'d\'" class="trend-down">\n' +
-											'<i class="fas fa-arrow-down"></i><span>{{item.trendValue}}</span>\n' +
-										'</div>\n' +
-									'</div></div></div>\n' +
+        template: '<div class="cly-vue-radio-block" v-bind:class="topClasses" style="height: 100%; overflow: auto; border-right: 1px solid #ececec">\n' +
+                             '<div :class="wrapperClasses" style="height: 100%">\n' +
+                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i"  :class="buttonClasses" :style="buttonStyles" >\n' +
+                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex bu-is-justify-content-center bu-is-align-items-center" style="height: 100%;">\
+                                        <div class="bu-is-flex">\
+                                            <div class="box"></div>\
+                                            <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
+                                                <div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\
+                                                <div class="bu-is-flex bu-is-align-items-baseline number">\
+                                                    <h2>{{item.number}}</h2>\
+                                                    <div v-if="item.trend == \'u\'" class="trend-up bu-ml-2">\
+                                                        <i class="cly-trend-up-icon ion-android-arrow-up"></i><span>{{item.trendValue}}</span>\
+                                                    </div>\
+                                                    <div v-if="item.trend == \'d\'" class="trend-down bu-ml-2">\
+                                                        <i class="cly-trend-down-icon ion-android-arrow-down"></i><span>{{item.trendValue}}</span>\
+                                                    </div>\
+                                                </div>\
+                                            </div>\
+                                        </div>\n' +
+                                    '</div>\n' +
                                 '</div>\n' +
                             '</div>\n' +
                         '</div>'
@@ -835,29 +1057,39 @@
         }
     }));
 
-    var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+    var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)',
+        SIMPLE_EMAIL = new RegExp('^' + REGEX_EMAIL + '$', 'i'),
+        NAMED_EMAIL = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
 
     Vue.component('cly-select-email', countlyVue.components.BaseComponent.extend({
-        template: '<el-select\
+        mixins: [
+            _mixins.i18n
+        ],
+        template: '<cly-select-x\
                         v-on="$listeners"\
                         v-bind="$attrs"\
-                        :remote-method="tryParsingEmail"\
+                        :options="options"\
                         :placeholder="placeholder"\
-                        :no-data-text="invalidEmailText"\
                         :value="value"\
-                        @input="handleInput"\
-                        remote\
-                        multiple\
-                        filterable\
+                        :searchable="false"\
+                        hideAllOptionsTab\
+                        mode="multi-check"\
+                        ref="selectx"\
+                        :noMatchFoundPlaceholder="i18n(\'common.no-email-addresses\')"\
                         class="cly-vue-select-email"\
-                        autocomplete="off">\
-                        <el-option\
-                            v-for="item in options"\
-                            :key="item.value"\
-                            :label="item.label"\
-                            :value="item.value">\
-                        </el-option>\
-                    </el-select>',
+                        @input="handleInput">\
+                        <template v-slot:header="selectScope">\
+                            <el-input\
+                                v-model="currentInput"\
+                                :class="{\'is-error\': hasError}"\
+                                :placeholder="i18n(\'common.email-example\')"\
+                                @keyup.enter.native="tryPush">\
+                            </el-input>\
+                            <div class="bu-mt-2 color-red-100 text-small" v-show="hasError">\
+                                {{i18n("common.invalid-email-address", currentInput)}}\
+                            </div>\
+                        </template>\
+                    </cly-select-x>',
         props: {
             value: {
                 type: Array
@@ -870,38 +1102,60 @@
         },
         data: function() {
             return {
-                options: [],
-                invalidEmailText: ''
+                currentInput: '',
             };
         },
-        mounted: function() {
-            this.resetOptions('');
+        computed: {
+            options: function() {
+                return this.value.map(function(val) {
+                    return {value: val, label: val};
+                });
+            },
+            parsedValue: function() {
+                var input = this.currentInput;
+                if (!input) {
+                    return false;
+                }
+                else if (SIMPLE_EMAIL.test(input)) {
+                    return {value: input, label: input};
+                }
+                else {
+                    var match = input.match(NAMED_EMAIL);
+                    if (match) {
+                        // Current implementation ignores name field
+                        return {value: match[2], label: match[2]};
+                    }
+                }
+            },
+            hasError: function() {
+                return !this.parsedValue && this.currentInput;
+            }
         },
         methods: {
             handleInput: function(value) {
                 this.$emit("input", value);
             },
-            resetOptions: function(input) {
-                this.options = [];
-                this.invalidEmailText = CV.i18n('common.invalid-email-address', input);
+            pushAddress: function(address) {
+                if (!this.value.includes(address.value)) {
+                    this.handleInput(this.value.concat([address.value]));
+                }
             },
-            tryParsingEmail: function(input) {
-                if (!input) {
-                    this.resetOptions(input);
+            tryPush: function() {
+                if (this.parsedValue) {
+                    this.pushAddress(this.parsedValue);
+                    this.currentInput = "";
                 }
-                else if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
-                    this.options = [{value: input, label: input}];
-                }
-                else {
-                    var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-                    if (match) {
-                        // Current implementation ignores name field
-                        this.options = [{value: match[2], label: match[2]}];
-                    }
-                    else {
-                        this.resetOptions(input);
-                    }
-                }
+            },
+            updateDropdown: function() {
+                this.$refs && this.$refs.selectx && this.$refs.selectx.updateDropdown();
+            }
+        },
+        watch: {
+            value: function() {
+                this.updateDropdown();
+            },
+            hasError: function() {
+                this.updateDropdown();
             }
         }
     }));

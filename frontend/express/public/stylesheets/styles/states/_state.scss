@@ -26,6 +26,10 @@
     text-transform: uppercase !important;
 }
 
+.text-capitalize {
+    text-transform: capitalize !important;
+}
+
 .text-big {
     color: map.get(c.$colors, "cool-gray-100");
     font-size: t.$text-big-size;
@@ -118,13 +122,32 @@
 
 .cly-trend-up {
     font-size: t.$text-md-size;
+    font-weight: t.$font-weight-primary;
     color: map.get(c.$colors, "green-80");
+    margin-left: -4px;
 }
 
 .cly-trend-down {
     font-size: t.$text-md-size;
+    font-weight: t.$font-weight-primary;
     color: map.get(c.$colors, "red-100");
+    margin-left: -4px;
 }
+
+.cly-trend-up-icon {
+    background-color: #ebfaee;
+    padding: 0px 5px !important;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+.cly-trend-down-icon {
+    background-color: #fbece5;
+    padding: 0px 5px !important;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
 .cursor-pointer {
     cursor: pointer
 }

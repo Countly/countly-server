@@ -57,14 +57,17 @@
             },
             publicDynamicCols: function() {
                 var self = this;
-                return this.controlParams.selectedDynamicCols.map(function(val) {
+                var cols = this.controlParams.selectedDynamicCols.map(function(val) {
                     return self.availableDynamicColsLookup[val];
+                }).filter(function(val) {
+                    return !!val;
                 });
+                return cols;
             },
             localSearchedRows: function() {
                 var currentArray = this.rows.slice();
                 if (this.displaySearch && this.controlParams.searchQuery) {
-                    var queryLc = this.controlParams.searchQuery.toLowerCase();
+                    var queryLc = (this.controlParams.searchQuery + "").toLowerCase();
                     currentArray = currentArray.filter(function(item) {
                         return Object.keys(item).some(function(fieldKey) {
                             if (item[fieldKey] === null || item[fieldKey] === undefined) {
@@ -84,10 +87,18 @@
 
                     currentArray = currentArray.slice();
                     currentArray.sort(function(a, b) {
-                        if (a[sorting.field] < b[sorting.field]) {
+                        var priA = a[sorting.field],
+                            priB = b[sorting.field];
+
+                        if (typeof priA === 'object' && priA !== null && priA.sortBy) {
+                            priA = priA.sortBy;
+                            priB = priB.sortBy;
+                        }
+
+                        if (priA < priB) {
                             return -dir;
                         }
-                        if (a[sorting.field] > b[sorting.field]) {
+                        if (priA > priB) {
                             return dir;
                         }
                         return 0;
@@ -137,9 +148,9 @@
 
                 if (filteredTotal > 0) {
                     info = this.i18n("common.showing")
-                        .replace("_START_", startEntries)
-                        .replace("_END_", endEntries)
-                        .replace("_TOTAL_", filteredTotal);
+                        .replace("_START_", countlyCommon.formatNumber(startEntries))
+                        .replace("_END_", countlyCommon.formatNumber(endEntries))
+                        .replace("_TOTAL_", countlyCommon.formatNumber(filteredTotal));
                 }
 
                 if (this.displaySearch && searchQuery) {
@@ -189,6 +200,9 @@
             },
             'controlParams.selectedDynamicCols': function() {
                 this.$refs.elTable.store.updateColumns(); // TODO: Hacky, check for memory leaks.
+            },
+            'controlParams.searchQuery': function(newVal) {
+                this.$emit('search-query-changed', newVal);
             },
             lastPage: function() {
                 this.checkPageBoundaries();
@@ -301,7 +315,10 @@
                 var loadedState = localStorage.getItem(this.persistKey);
                 try {
                     if (loadedState) {
-                        return JSON.parse(loadedState);
+                        var parsed = JSON.parse(loadedState);
+                        // disable loading of persisted searchQuery
+                        parsed.searchQuery = ""; // but we still need the field to be present for reactivity
+                        return parsed;
                     }
                     return defaultState;
                 }
@@ -320,7 +337,8 @@
     var MutationTrackerMixin = {
         data: function() {
             return {
-                patches: {}
+                patches: {},
+                hasSelection: false
             };
         },
         props: {
@@ -494,6 +512,12 @@
                 return DEFAULT_ROW;
             },
             onCellMouseEnter: function(row) {
+                if (this.hasSelection) {
+                    //If the table is in a selection mode, donot patch
+                    //Because if we patch to show action buttons the selection will be lost
+                    return;
+                }
+
                 var thisRowKey = this.keyOf(row);
                 var hovered = this.mutatedRows.filter(function(r) {
                     return r.hover;
@@ -511,7 +535,19 @@
                     this.patch(row, {hover: true});
                 }
             },
+            onSelectionChange: function(selected) {
+                this.hasSelection = selected.length ? true : false;
+                if (!this.hasSelection) {
+                    this.removeHovered();
+                }
+            },
             onNoCellMouseEnter: function() {
+                if (this.hasSelection) {
+                    //If the table is in a selection mode, donot unpatch
+                    //Because if we unpatch to hide action buttons selection will be lost on unpatch
+                    return;
+                }
+
                 this.removeHovered();
             },
             removeHovered: function() {
@@ -542,17 +578,28 @@
                 type: Function,
                 default: null,
                 required: false
+            },
+            exportColumnSelection: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            hasExport: {
+                type: Boolean,
+                default: true,
+                required: false
             }
         },
         data: function() {
             return {
-                hasExport: true,
+                selectedExportColumns: null,
                 selectedExportType: 'csv',
                 availableExportTypes: [
                     {'name': '.CSV', value: 'csv'},
                     {'name': '.JSON', value: 'json'},
                     {'name': '.XLSX', value: 'xlsx'}
-                ]
+                ],
+                searchQuery: ''
             };
         },
         methods: {
@@ -679,12 +726,52 @@
                     $('body').append(form);
                     form.submit();
                 }
+            },
+            getMatching: function(options) {
+                if (!this.searchQuery) {
+                    return options;
+                }
+                var self = this;
+                var query = (self.searchQuery + "").toLowerCase();
+                return options.filter(function(option) {
+                    if (!option) {
+                        return false;
+                    }
+                    var compareTo = option.label || option.value || "";
+                    return compareTo.toLowerCase().indexOf(query) > -1;
+                });
+            }
+        },
+        computed: {
+            exportColumns: {
+                get: function() {
+                    return this.selectedExportColumns || this.controlParams.selectedDynamicCols;
+                },
+                set: function(val) {
+                    this.selectedExportColumns = val;
+                }
+            },
+            exportAllColumns: {
+                get: function() {
+                    return this.exportColumns.length === this.availableDynamicCols.length;
+                },
+                set: function(val) {
+                    if (val) {
+                        this.exportColumns = this.availableDynamicCols.map(function(c) {
+                            return c.value;
+                        });
+                    }
+                    else {
+                        this.exportColumns = [];
+                    }
+                }
             }
         }
     };
 
     Vue.component("cly-datatable-n", countlyVue.components.create({
         mixins: [
+            _mixins.commonFormatters,
             _mixins.i18n,
             TableExtensionsMixin,
             MutationTrackerMixin,
@@ -715,6 +802,15 @@
             hideTop: {
                 type: Boolean,
                 default: false
+            },
+            hideBottom: {
+                type: Boolean,
+                default: false
+            },
+            forceLoading: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         data: function() {
@@ -752,6 +848,9 @@
                 }, {});
             },
             isLoading: function() {
+                if (this.forceLoading === true) {
+                    return true;
+                }
                 if (!this.dataSource) {
                     return false;
                 }
@@ -759,7 +858,7 @@
             },
             classes: function() {
                 var classes = [];
-                if (this.dataSource && this.externalStatus === 'silent-pending') {
+                if (!this.forceLoading && this.dataSource && this.externalStatus === 'silent-pending') {
                     classes.push("silent-loading");
                 }
 

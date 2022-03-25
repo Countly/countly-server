@@ -1,7 +1,6 @@
 /*global countlyAuth, _,$,countlyPlugins,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyVue,CV */
 
 (function() {
-    var FEATURE_PLUGIN_NAME = "global_plugins";
     var PluginsView = countlyVue.views.create({
         template: CV.T('/plugins/templates/plugins.html'),
         data: function() {
@@ -46,13 +45,20 @@
                 return $.when(countlyPlugins.initialize()).then(
                     function() {
                         try {
-                            self.pluginsData = JSON.parse(JSON.stringify(countlyPlugins.getData()));
+                            var plugins = JSON.parse(JSON.stringify(countlyPlugins.getData()));
+                            self.pluginsData = plugins.filter(function(row) {
+                                self.formatRow(row);
+                                if (self.filterValue === "enabled") {
+                                    return row.enabled;
+                                }
+                                else if (self.filterValue === "disabled") {
+                                    return !row.enabled;
+                                }
+                                return true;
+                            });
                         }
                         catch (ex) {
                             self.pluginsData = [];
-                        }
-                        for (var i = 0; i < self.pluginsData.length; i++) {
-                            self.formatRow(self.pluginsData[i]);
                         }
                     }
                 );
@@ -251,7 +257,6 @@
         }
     });
 
-    var FEATURE_CONFIG_NAME = "global_configurations";
     var ConfigurationsView = countlyVue.views.create({
         template: CV.T('/plugins/templates/configurations.html'),
         computed: {
@@ -312,8 +317,11 @@
                 .then(function() {
                     try {
                         self.configsData = JSON.parse(JSON.stringify(countlyPlugins.getConfigsData()));
+                        self.removeNonGlobalConfigs(self.configsData);
                     }
-                    catch (ex) {
+                    catch (error) {
+                        // eslint-disable-next-line no-console
+                        console.error(error);
                         self.configsData = {};
                     }
 
@@ -347,7 +355,7 @@
                     });
                     var plugins = [];
                     for (var key in self.configsData) {
-                        if (self.coreDefaults.indexOf(key) === -1) {
+                        if (self.coreDefaults.indexOf(key) === -1 && countlyGlobal.plugins.indexOf(key) !== -1) {
                             plugins.push(key);
                         }
                         if (!self.predefinedStructure[key]) {
@@ -397,6 +405,20 @@
                 });
         },
         methods: {
+            removeNonGlobalConfigs: function(configData) {
+                Object.keys(configData).forEach(function(configKey) {
+                    if ((configData[configKey].use_google || configData[configKey].google_maps_api_key) && configKey === 'frontend') {
+                        delete configData[configKey].use_google;
+                        delete configData[configKey].google_maps_api_key;
+                    }
+                    if (configData[configKey].rate && configKey === 'push') {
+                        delete configData[configKey].rate; // Note: push notification rate is app level config only
+                    }
+                    if (configData[configKey].test && configKey === 'push') {
+                        delete configData[configKey].test; // Note: push notification test is app level config only
+                    }
+                });
+            },
             goBack: function() {
                 app.back();
             },
@@ -436,7 +458,7 @@
                     return jQuery.i18n.map["configs.user-level-configuration"];
                 }
 
-                return app.configurationsView.getInputLabel(this.selectedConfig + "." + id);
+                return app.configurationsView.getInputLabel((ns || this.selectedConfig) + "." + id);
             },
             getHelperLabel: function(id, ns) {
                 ns = ns || this.selectedConfig;
@@ -542,6 +564,7 @@
                     newPassword: "",
                     confirmPassword: ""
                 },
+                components: {},
                 formId: "account-settings-form",
                 userData: countlyGlobal.member,
                 userConfigs: {},
@@ -566,6 +589,16 @@
                     if (!self.userConfigs.frontend) {
                         self.userConfigs.frontend = {};
                     }
+                    for (var key in app.configurationsView.predefinedUserInputs) {
+                        var parts = key.split(".");
+                        var val = app.configurationsView.predefinedUserInputs[key];
+                        if (!self.userConfigs[parts[0]]) {
+                            self.userConfigs[parts[0]] = {};
+                        }
+                        if (parts[1]) {
+                            self.userConfigs[parts[0]][parts[1]] = typeof val === "function" ? val() : val;
+                        }
+                    }
                     for (var subkey in self.userConfigs[self.selectedConfig]) {
                         if (!self.predefinedInputs[self.selectedConfig + "." + subkey]) {
                             var type = typeof self.userConfigs[self.selectedConfig][subkey];
@@ -580,37 +613,38 @@
                             }
                         }
                     }
+                    self.loadComponents();
                 });
         },
         methods: {
-            onChange: function(key, value) {
-                if (!this.changes[this.selectedConfig]) {
-                    this.changes[this.selectedConfig] = {};
+            onChange: function(id, key, value) {
+                if (!this.changes[id]) {
+                    this.changes[id] = {};
                 }
 
-                this.changes[this.selectedConfig][key] = value;
+                this.changes[id][key] = value;
 
                 var configsData = countlyPlugins.getUserConfigsData();
 
-                if (!this.changes[this.selectedConfig]) {
-                    this.changes[this.selectedConfig] = {};
+                if (!this.changes[id]) {
+                    this.changes[id] = {};
                 }
 
                 //delete value from diff if it already exists
-                delete this.changes[this.selectedConfig][key];
+                delete this.changes[id][key];
 
-                this.userConfigs[this.selectedConfig][key] = value;
+                this.userConfigs[id][key] = value;
 
-                if (Array.isArray(value) && Array.isArray(configsData[this.selectedConfig][key])) {
+                if (Array.isArray(value) && Array.isArray(configsData[id][key])) {
                     value.sort();
-                    configsData[this.selectedConfig][key].sort();
-                    if (JSON.stringify(value) !== JSON.stringify(configsData[this.selectedConfig][key])) {
-                        this.changes[this.selectedConfig][key] = value;
+                    configsData[id][key].sort();
+                    if (JSON.stringify(value) !== JSON.stringify(configsData[id][key])) {
+                        this.changes[id][key] = value;
                     }
 
                 }
-                else if (configsData[this.selectedConfig][key] !== value) {
-                    this.changes[this.selectedConfig][key] = value;
+                else if (configsData[id][key] !== value) {
+                    this.changes[id][key] = value;
                 }
             },
             passwordDialog: function() {
@@ -659,11 +693,11 @@
                     });
                 }
             },
-            getLabelName: function(id) {
-                return app.configurationsView.getInputLabel(this.selectedConfig + "." + id);
+            getLabelName: function(id, key) {
+                return app.configurationsView.getInputLabel(id + "." + key);
             },
-            getInputType: function(id) {
-                return app.configurationsView.getInputType(this.selectedConfig + "." + id);
+            getInputType: function(id, key) {
+                return app.configurationsView.getInputType(id + "." + key);
             },
             save: function(doc) {
                 var data = {
@@ -806,6 +840,18 @@
                     var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 100;
                     return {'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto 100px'};
                 }
+            },
+            loadComponents: function() {
+                var cc = countlyVue.container.dataMixin({
+                    'accountSettingsComponents': '/account/settings'
+                });
+                cc = cc.data();
+                var allComponents = cc.accountSettingsComponents;
+                for (var i = 0; i < allComponents.length; i++) {
+                    if (allComponents[i]._id && allComponents[i].title && allComponents[i].component) {
+                        this.components[allComponents[i]._id] = allComponents[i];
+                    }
+                }
             }
         }
     });
@@ -836,6 +882,7 @@
         predefinedInputs: {},
         predefinedLabels: {},
         predefinedStructure: {},
+        predefinedUserInputs: {},
         registerInput: function(id, callback) {
             this.predefinedInputs[id] = callback;
         },
@@ -845,12 +892,18 @@
         registerStructure: function(id, obj) {
             this.predefinedStructure[id] = obj;
         },
+        registerUserInput: function(id, getVal) {
+            this.predefinedUserInputs[id] = getVal;
+        },
         getInputLabel: function(id) {
             if (typeof this.predefinedLabels[id] !== "undefined") {
                 return jQuery.i18n.map[this.predefinedLabels[id]] || this.predefinedLabels[id];
             }
             else if (jQuery.i18n.map[id + ".title"]) {
                 return jQuery.i18n.map[id + ".title"];
+            }
+            else if (jQuery.i18n.map[id + ".plugin-title"]) {
+                return jQuery.i18n.map[id + ".plugin-title"];
             }
             else if (jQuery.i18n.map["configs." + id]) {
                 return jQuery.i18n.map["configs." + id];
@@ -920,7 +973,6 @@
 
     app.configurationsView.registerInput("security.api_additional_headers", {input: "el-input", attrs: {type: "textarea", rows: 5}});
 
-    app.configurationsView.registerInput("push.proxypass", {input: "el-input", attrs: {type: "password"}});
 
     app.configurationsView.registerInput("api.reports_regenerate_interval", {
         input: "el-select",
@@ -965,6 +1017,7 @@
             {label: "configs.api.batch", list: ["batch_processing", "batch_period", "batch_on_master"]},
             {label: "configs.api.cache", list: ["batch_read_processing", "batch_read_period", "batch_read_ttl", "batch_read_on_master"]},
             {label: "configs.api.limits", list: ["event_limit", "event_segmentation_limit", "event_segmentation_value_limit", "metric_limit", "session_duration_limit"]},
+            {label: "configs.api.others", list: ["safe", "domain", "export_limit", "offline_mode", "reports_regenerate_interval", "request_threshold", "sync_plugins", "send_test_email", "city_data", "session_cooldown", "total_users", "prevent_duplicate_requests", "metric_changes", "data_retention_period"]},
         ]
     });
 
@@ -976,18 +1029,44 @@
         ]
     });
 
-    var showInAppManagment = {"api": {"safe": true, "send_test_email": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true, "data_retention_period": true}};
-
-    if (countlyAuth.validateRead(FEATURE_PLUGIN_NAME)) {
+    var showInAppManagment = {};
+    if (countlyAuth.validateGlobalAdmin()) {
         if (countlyGlobal.plugins.indexOf("drill") !== -1) {
             showInAppManagment.drill = {"big_list_limit": true, "record_big_list": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_apm": true, "record_views": true};
         }
         if (countlyGlobal.plugins.includes("logger")) {
             showInAppManagment.logger = {"state": true, "limit": true};
         }
-    }
 
-    if (countlyAuth.validateUpdate(FEATURE_CONFIG_NAME)) {
+        app.route('/manage/plugins', 'plugins', function() {
+            if (countlyGlobal.COUNTLY_CONTAINER === 'frontend') {
+                app.navigate("#/", true);
+            }
+            else {
+                this.renderWhenReady(getPluginView());
+            }
+        });
+
+        app.route('/manage/configurations', 'configurations', function() {
+            var view = getConfigView();
+            view.params = {namespace: null, success: false};
+            this.renderWhenReady(view);
+        });
+
+        app.route('/manage/configurations/:namespace', 'configurations_namespace', function(namespace) {
+            var view = getConfigView();
+            view.params = {namespace: namespace, success: false};
+            this.renderWhenReady(view);
+        });
+
+        app.route('/manage/configurations/:namespace/:status', 'configurations_namespace', function(namespace, status) {
+            if (status === "success") {
+                var view = getConfigView();
+                view.params = {namespace: namespace, success: true};
+                this.renderWhenReady(view);
+            }
+        });
+
         countlyPlugins.initializeConfigs().always(function() {
             var pluginsData = countlyPlugins.getConfigsData();
             for (var key in showInAppManagment) {
@@ -1018,50 +1097,17 @@
         });
     }
 
-    if (countlyAuth.validateRead(FEATURE_PLUGIN_NAME)) {
-        app.route('/manage/plugins', 'plugins', function() {
-            if (countlyGlobal.COUNTLY_CONTAINER === 'frontend') {
-                app.navigate("#/", true);
-            }
-            else {
-                this.renderWhenReady(getPluginView());
-            }
-        });
-    }
-
-    if (countlyAuth.validateRead(FEATURE_CONFIG_NAME)) {
-        app.route('/manage/configurations', 'configurations', function() {
-            var view = getConfigView();
-            view.params = {namespace: null, success: false};
-            this.renderWhenReady(view);
-        });
-
-        app.route('/manage/configurations/:namespace', 'configurations_namespace', function(namespace) {
-            var view = getConfigView();
-            view.params = {namespace: namespace, success: false};
-            this.renderWhenReady(view);
-        });
-
-        app.route('/manage/configurations/:namespace/:status', 'configurations_namespace', function(namespace, status) {
-            if (status === "success") {
-                var view = getConfigView();
-                view.params = {namespace: namespace, success: true};
-                this.renderWhenReady(view);
-            }
-        });
-    }
-
     app.route('/account-settings', 'account-settings', function() {
         this.renderWhenReady(getAccountView());
     });
 
     $(document).ready(function() {
-        if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateRead(FEATURE_PLUGIN_NAME)) {
+        if (countlyAuth.validateGlobalAdmin()) {
             if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
-                app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 90});
+                app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
             }
         }
-        if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateRead(FEATURE_CONFIG_NAME)) {
+        if (countlyAuth.validateGlobalAdmin()) {
             app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 10});
 
             var isCurrentHostnameIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(window.location.hostname);

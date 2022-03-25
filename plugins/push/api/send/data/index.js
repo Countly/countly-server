@@ -1,12 +1,14 @@
-const { S, State, Status, STATUSES, TriggerKind } = require('./const'),
+const { S, State, Status, STATUSES, TriggerKind, MEDIA_MIME_ALL, MEDIA_MIME_IOS, MEDIA_MIME_ANDROID, DBMAP } = require('./const'),
     { PushError, SendError, ConnectionError, ValidationError, ERROR } = require('./error'),
     { Trigger, PlainTrigger, EventTrigger, CohortTrigger, APITrigger } = require('./trigger'),
+    { Info } = require('./info'),
     { Creds } = require('./creds'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Result } = require('./result'),
     { Message } = require('./message'),
-    { Template } = require('./template');
+    { Template } = require('./template'),
+    dbext = require('./db');
 
 module.exports = {
     S,
@@ -27,6 +29,7 @@ module.exports = {
     Filter,
     Content,
     Result,
+    Info,
 
     Message,
 
@@ -36,5 +39,12 @@ module.exports = {
     PushError,
     SendError,
     ConnectionError,
-    ValidationError
+    ValidationError,
+
+    MEDIA_MIME_ALL,
+    MEDIA_MIME_IOS,
+    MEDIA_MIME_ANDROID,
+
+    DBMAP,
+    dbext
 };

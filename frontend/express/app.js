@@ -601,7 +601,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             next();
         }
     });
-
+    var convertLink = function(val, defaultVal) {
+        if (typeof val === "undefined" || val === true) {
+            return defaultVal;
+        }
+        return val;
+    };
     app.use(flash());
     app.use(function(req, res, next) {
         req.template = {};
@@ -615,7 +620,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             type: COUNTLY_TYPE,
             page: COUNTLY_PAGE,
             title: COUNTLY_NAME,
-            favicon: "images/favicon.png"
+            favicon: "images/favicon.png",
+            documentationLink: convertLink(versionInfo.documentationLink, "https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base"),
+            helpCenterLink: convertLink(versionInfo.helpCenterLink, "https://support.count.ly/hc/en-us"),
+            featureRequestLink: convertLink(versionInfo.featureRequestLink, "https://support.count.ly/hc/en-us/community/topics/360001464272-Feature-Requests"),
+            feedbackLink: convertLink(versionInfo.feedbackLink, "https://count.ly/legal/privacy-policy"),
         };
         plugins.loadConfigs(countlyDb, function() {
             var securityConf = plugins.getConfig("security");
@@ -780,6 +789,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         if (req.session.uid) {
                             if (Date.now() > req.session.expires) {
                                 //logout user
+                                membersUtility.logout(req, res);
                                 res.send("logout");
                             }
                             else {
@@ -827,6 +837,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     /**
+     * Stringify all object nested properties named `prop`
+     * 
+     * @param {object} obj object to fix
+     * @param {string} prop property name
+     */
+    function stringifyIds(obj, prop = '_id') {
+        for (let k in obj) {
+            if (k === prop && common.dbext.isoid(obj[k])) {
+                obj[k] = obj[k].toString();
+            }
+            else if (typeof obj[k] === 'object') {
+                stringifyIds(obj[k]);
+            }
+        }
+    }
+
+    /**
     * Render dashboard
     * @param {object} req - request object
     * @param {object} res - response object
@@ -861,6 +888,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             adminOfApps = sortBy(adminOfApps, member.appSortList || []);
             userOfApps = sortBy(userOfApps, member.appSortList || []);
 
+            stringifyIds(adminOfApps);
+            stringifyIds(userOfApps);
+            stringifyIds(countlyGlobalApps);
+            stringifyIds(countlyGlobalAdminApps);
+
             var defaultApp = userOfApps[0];
             var serverSideRendering = req.query.ssr;
             _.extend(req.config, configs);
@@ -886,6 +918,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 message: req.flash("message"),
                 ssr: serverSideRendering,
                 timezones: timezones,
+                countlyTypeName: COUNTLY_NAMED_TYPE,
                 usermenu: {
                     feedbackLink: COUNTLY_FEEDBACK_LINK,
                     documentationLink: COUNTLY_DOCUMENTATION_LINK,
@@ -1038,12 +1071,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                     userOfApps = user_of;
 
                                     for (let i = 0; i < user_of.length; i++) {
-                                        if (user_of[i].apn) {
-                                            user_of[i].apn.forEach(a => a._id = '' + a._id);
-                                        }
-                                        if (user_of[i].gcm) {
-                                            user_of[i].gcm.forEach(a => a._id = '' + a._id);
-                                        }
                                         countlyGlobalApps[user_of[i]._id] = user_of[i];
                                         countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
                                         countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
@@ -1075,12 +1102,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                     userOfApps = readableApps.concat(writableApps);
 
                                     for (let i = 0; i < userOfApps.length; i++) {
-                                        if (userOfApps[i].apn) {
-                                            userOfApps[i].apn.forEach(a => a._id = '' + a._id);
-                                        }
-                                        if (userOfApps[i].gcm) {
-                                            userOfApps[i].gcm.forEach(a => a._id = '' + a._id);
-                                        }
                                         countlyGlobalApps[userOfApps[i]._id] = userOfApps[i];
                                         countlyGlobalApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
                                         countlyGlobalApps[userOfApps[i]._id].type = countlyGlobalApps[userOfApps[i]._id].type || "mobile";
@@ -1115,7 +1136,30 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.header('Expires', '0');
                 res.header('Pragma', 'no-cache');
                 var config = plugins.getConfig("security");
-                res.render('setup', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}});
+                res.render('setup', {
+                    documentationLink: req.countly.documentationLink,
+                    helpCenterLink: req.countly.helpCenterLink,
+                    feedbackLink: req.countly.feedbackLink,
+                    featureRequestLink: req.countly.featureRequestLink,
+                    languages: languages,
+                    countlyFavicon: req.countly.favicon,
+                    countlyTitle: req.countly.title,
+                    countlyPage: req.countly.page,
+                    "csrf": req.csrfToken(),
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    themeFiles: req.themeFiles,
+                    inject_template: req.template,
+                    params: {},
+                    error: {},
+                    security: {
+                        password_min: config.password_min,
+                        password_char: config.password_char,
+                        password_number: config.password_number,
+                        password_symbol: config.password_symbol,
+                        autocomplete: config.password_autocomplete || false
+                    }
+                });
             }
             else if (err) {
                 res.status(500).send('Server Error');
@@ -1143,7 +1187,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     res.header('Expires', '0');
                     res.header('Pragma', 'no-cache');
                     var config = plugins.getConfig("security");
-                    res.render('login', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": req.flash('info'), "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false}});
+                    res.render('login', {
+                        documentationLink: req.countly.documentationLink,
+                        helpCenterLink: req.countly.helpCenterLink,
+                        feedbackLink: req.countly.feedbackLink,
+                        featureRequestLink: req.countly.featureRequestLink,
+                        languages: languages,
+                        countlyFavicon: req.countly.favicon,
+                        countlyTitle: req.countly.title,
+                        countlyPage: req.countly.page,
+                        "message": req.flash('info'),
+                        "csrf": req.csrfToken(),
+                        path: countlyConfig.path || "",
+                        cdn: countlyConfig.cdn || "",
+                        themeFiles: req.themeFiles,
+                        inject_template: req.template,
+                        security: {autocomplete: config.password_autocomplete || false}
+                    });
                 }
                 else {
                     res.redirect(countlyConfig.path + '/setup');
@@ -1163,7 +1223,22 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
             res.header('Expires', '0');
             res.header('Pragma', 'no-cache');
-            res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "message": req.query.message || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+            res.render('forgot', {
+                documentationLink: req.countly.documentationLink,
+                helpCenterLink: req.countly.helpCenterLink,
+                feedbackLink: req.countly.feedbackLink,
+                featureRequestLink: req.countly.featureRequestLink,
+                languages: languages,
+                countlyFavicon: req.countly.favicon,
+                countlyTitle: req.countly.title,
+                countlyPage: req.countly.page,
+                "csrf": req.csrfToken(),
+                "message": req.query.message || "",
+                path: countlyConfig.path || "",
+                cdn: countlyConfig.cdn || "",
+                themeFiles: req.themeFiles,
+                inject_template: req.template
+            });
         }
     });
 
@@ -1186,7 +1261,25 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         res.header('Expires', '0');
                         res.header('Pragma', 'no-cache');
                         var config = plugins.getConfig("security");
-                        res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false, password_min: config.password_min}});
+                        res.render('reset', {
+                            documentationLink: req.countly.documentationLink,
+                            helpCenterLink: req.countly.helpCenterLink,
+                            feedbackLink: req.countly.feedbackLink,
+                            featureRequestLink: req.countly.featureRequestLink,
+                            languages: languages,
+                            countlyFavicon: req.countly.favicon,
+                            countlyTitle: req.countly.title,
+                            countlyPage: req.countly.page,
+                            "csrf": req.csrfToken(),
+                            "prid": req.params.prid,
+                            "message": req.query.message || "",
+                            path: countlyConfig.path || "",
+                            cdn: countlyConfig.cdn || "",
+                            "newinvite": passwordReset.newInvite,
+                            themeFiles: req.themeFiles,
+                            inject_template: req.template,
+                            security: {autocomplete: config.password_autocomplete || false, password_min: config.password_min}
+                        });
                     }
                 }
                 else {
@@ -1249,7 +1342,24 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.header('Expires', '0');
                 res.header('Pragma', 'no-cache');
                 var config = plugins.getConfig("security");
-                var data = { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: err || {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}};
+                var data = {
+                    documentationLink: req.countly.documentationLink,
+                    helpCenterLink: req.countly.helpCenterLink,
+                    feedbackLink: req.countly.feedbackLink,
+                    featureRequestLink: req.countly.featureRequestLink,
+                    languages: languages,
+                    countlyFavicon: req.countly.favicon,
+                    countlyTitle: req.countly.title,
+                    countlyPage: req.countly.page,
+                    "csrf": req.csrfToken(),
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    themeFiles: req.themeFiles,
+                    inject_template: req.template,
+                    params: {},
+                    error: err || {},
+                    security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}
+                };
                 if (params.email) {
                     data.params.email = params.email;
                 }

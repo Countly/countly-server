@@ -13,14 +13,13 @@ class Pool extends Duplex {
      * 
      * @param {string} id name of the pool
      * @param {string} type type of connection: ap, at, id, ia, ip, ht, hp
-     * @param {string} key authorization key: server key for FCM/HW, P8/P12 for APN
-     * @param {string} secret passphrase for P12
+     * @param {Creds} creds credentials instance
      * @param {Object[]} messages array of initial messages
      * @param {Object} options streaming options
      * @param {integer} options.bytes how much bytes can be processed simultaniously by a single connection
      * @param {integer} options.workers how much connections (workers) can be used in parallel
      */
-    constructor(id, type, key, secret, messages, options) {
+    constructor(id, type, creds, messages, options) {
         super({
             // writableHighWaterMark: options.bytes * options.workers,
             readableObjectMode: true,
@@ -45,14 +44,13 @@ class Pool extends Duplex {
             id: '' + ++this.workerCounter,
             log: this.log.id(),
             type,
-            key,
-            secret,
+            creds: creds.json,
             messages: this.messages,
             meta: this.meta,
             options
         }, options.workers);
 
-        this.log.i('initialized (%s)', key.toString().substr(0, 100));
+        this.log.i('initialized (%s)', creds.id);
         this.booting = true;
     }
 
@@ -212,7 +210,7 @@ class Pool extends Duplex {
      * How much notifications all our connections can accept
      */
     get free() {
-        return this.connections.map(c => c.free).reduce((a, b) => a + b, 0) + Math.max(0, (this.workers - this.connections.length) * this.bytes);
+        return this.connections ? this.connections.map(c => c.free).reduce((a, b) => a + b, 0) + Math.max(0, (this.workers - this.connections.length) * this.bytes) : 0;
     }
 
     /**
@@ -387,9 +385,9 @@ class Pool extends Duplex {
                     type = frame_type(data.buffer);
 
                 if (type === FRAME.CONNECT) {
-                    this.log.d('received messages %j', data.map(m => m._id));
-                    this.connections.forEach(conn => conn.messages(data));
-                    chunkCallback();
+                    this.log.d('received messages %j', decode(data.buffer).payload.map(m => m._id));
+                    let times = timesCallback(this.connections.length, chunkCallback);
+                    this.connections.forEach(conn => conn.write(data, times));
                 }
                 else if (type === FRAME.SEND) {
                     let sent = false,
@@ -643,5 +641,44 @@ class Pool extends Duplex {
     //     }
     // }
 }
+
+/**
+ * Make a function which would call callback only after times calls
+ * 
+ * @param {int} times how many times the function should be called before calling callback
+ * @param {function} callback callback to be called after times calls
+ * @returns {function} the function
+ */
+function timesCallback(times, callback) {
+    return function() {
+        if (times !== null && times <= 1) {
+            callback.apply(this, arguments);
+            times = null;
+        }
+        else {
+            times--;
+        }
+    };
+}
+
+// /**
+//  * Make a function which would call callback only after times calls
+//  * 
+//  * @param {int} times how many times the function should be called before calling callback
+//  * @param {function} callback callback to be called after times calls
+//  * @returns {function} the function
+//  */
+// function timesOrErrCallback(times, callback) {
+//     return function(err) {
+//         if (err && times !== null) {
+//             callback(err);
+//             times = null;
+//         }
+//         if (!err && times !== null && --times <= 0) {
+//             callback.apply(this, arguments);
+//             times = null;
+//         }
+//     };
+// }
 
 module.exports = { Pool };

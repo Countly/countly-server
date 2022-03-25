@@ -424,7 +424,7 @@ module.exports = function(name) {
                  */
                 f: function(l, fn, fl, ...fargs) {
                     if (ACCEPTABLE[l].indexOf(levels[name] || deflt) !== -1) {
-                        fn(log('ERROR', name + ':' + subname, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, l === 'w' ? styles.stylers.warn : l === 'e' ? styles.stylers.error : undefined));
+                        fn(log(l, name + ':' + subname, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, l === 'w' ? styles.stylers.warn : l === 'e' ? styles.stylers.error : undefined));
                         return true;
                     }
                     else if (fl) {

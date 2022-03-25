@@ -1,12 +1,12 @@
 'use strict';
 
 const { PushError } = require('./error'),
-    { toDate, TriggerKind, Jsonable } = require('./const');
+    { toDate, TriggerKind, Validatable } = require('./const');
 
 /**
  * Base clsss for message triggers
  */
-class Trigger extends Jsonable {
+class Trigger extends Validatable {
     /**
      * Constructor
      * 
@@ -162,7 +162,8 @@ class PlainTrigger extends Trigger {
      * Constructor
      * 
      * @param {object}              data        filter data
-     * @param {number|undefined}    data.tz     in case tz = true, this is scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {boolean}             data.tz     in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {number}              data.sctz   scheduler's timezone offset in minutes (GMT +3 is "-180")
      * @param {boolean}             delayed     true if audience calculation should be done right before sending the message
      */
     constructor(data) {
@@ -458,7 +459,7 @@ class EventTrigger extends AutoTrigger {
      */
     static get scheme() {
         return Object.assign({}, super.scheme, {
-            events: {type: 'String[]', required: true},
+            events: {type: 'String[]', required: true, 'min-length': 1},
         });
     }
 
@@ -536,7 +537,7 @@ class CohortTrigger extends AutoTrigger {
      */
     static get scheme() {
         return Object.assign({}, super.scheme, {
-            cohorts: {type: 'String[]', required: true},
+            cohorts: {type: 'String[]', required: true, 'min-length': 1},
             entry: {type: 'Boolean', required: false},
             cancels: {type: 'Boolean', required: false},
         });
@@ -643,7 +644,7 @@ class CohortTrigger extends AutoTrigger {
 /**
  * API (transactional) message trigger
  */
-class APITrigger extends Trigger {
+class APITrigger extends AutoTrigger {
     /**
      * Constructor
      * 

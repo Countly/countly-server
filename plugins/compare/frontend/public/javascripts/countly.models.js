@@ -1,4 +1,4 @@
-/*global countlyVue, CV, _, countlyCommon, jQuery */
+/*global countlyVue, CV, _, countlyCommon, CountlyHelpers, jQuery */
 (function(countlyCompareEvents) {
     countlyCompareEvents.helpers = {
         getTableRows: function(context) {
@@ -208,26 +208,26 @@
     };
 
     countlyCompareEvents.service = {
-        fetchAllEventsData: function(context) {
+        fetchAllEventsData: function(context, period) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_events",
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
             });
         },
-        fetchCompareEventsData: function(context) {
+        fetchCompareEventsData: function(context, period) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/compare/events",
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "events": JSON.stringify(context.state.selectedEvents)
                 },
                 dataType: "json",
@@ -266,20 +266,22 @@
                 allEventsGroupData: {},
                 allEventsList: [],
                 allEventsCompareData: {},
-                selectedDatePeriod: countlyCommon.getPeriod(),
                 selectedEvents: [],
                 tableRows: [],
                 lineChartData: {},
                 selectedGraphMetric: "c",
                 lineLegend: {},
                 groupData: {},
-                tableStateMap: {}
+                tableStateMap: {},
+                isChartLoading: false,
+                isTableLoading: false
             };
         };
 
         var compareEventsActions = {
             fetchAllEventsData: function(context) {
-                return countlyCompareEvents.service.fetchAllEventsData(context)
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyCompareEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsData", res);
@@ -296,14 +298,20 @@
                     });
             },
             fetchCompareEventsData: function(context) {
-                return countlyCompareEvents.service.fetchCompareEventsData(context)
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyCompareEvents.service.fetchCompareEventsData(context, period)
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsCompareData", res);
                             context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
                             context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, context.state.selectedEvents)));
                             context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, context.state.selectedEvents), context.state.groupData, context.state.allEventsData.map));
+                            context.dispatch('setTableLoading', false);
+                            context.dispatch('setChartLoading', false);
                         }
+                    }).catch(function() {
+                        context.dispatch('setTableLoading', false);
+                        context.dispatch('setChartLoading', false);
                     });
             },
             fetchRefreshCompareEventsData: function(context) {
@@ -320,14 +328,13 @@
                         }
                     });
             },
-            fetchSelectedDatePeriod: function(context, period) {
-                context.commit('setSelectedDatePeriod', period);
-            },
             fetchSelectedEvents: function(context, events) {
                 context.commit('setSelectedEvents', events);
             },
             fetchLineChartData: function(context, selectedEvents) {
                 context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, selectedEvents)));
+                context.dispatch('setTableLoading', false);
+                context.dispatch('setChartLoading', false);
             },
             fetchSelectedGraphMetric: function(context, metric) {
                 context.commit("setSelectedGraphMetric", metric);
@@ -347,7 +354,13 @@
                     }
                     context.state.tableStateMap[tableRows[i].id] = isSelected;
                 }
-            }
+            },
+            setTableLoading: function(context, value) {
+                context.commit("setTableLoading", value);
+            },
+            setChartLoading: function(context, value) {
+                context.commit("setChartLoading", value);
+            },
         };
 
         var compareEventsMutations = {
@@ -366,9 +379,6 @@
             setAllEventsCompareData: function(state, value) {
                 state.allEventsCompareData = value;
             },
-            setSelectedDatePeriod: function(state, value) {
-                state.selectedDatePeriod = value;
-            },
             setSelectedEvents: function(state, value) {
                 state.selectedEvents = value;
             },
@@ -386,6 +396,12 @@
             },
             setTableStateMap: function(state, value) {
                 state.tableStateMap = value;
+            },
+            setTableLoading: function(state, value) {
+                state.isTableLoading = value;
+            },
+            setChartLoading: function(state, value) {
+                state.isChartLoading = value;
             }
         };
         var compareEventsGetters = {
@@ -400,9 +416,6 @@
             },
             allEventsCompareData: function(_state) {
                 return _state.allEventsCompareData;
-            },
-            selectedDatePeriod: function(_state) {
-                return _state.selectedDatePeriod;
             },
             selectedEvents: function(_state) {
                 return _state.selectedEvents;
@@ -424,6 +437,12 @@
             },
             tableStateMap: function(_state) {
                 return _state.tableStateMap;
+            },
+            isTableLoading: function(_state) {
+                return _state.isTableLoading;
+            },
+            isChartLoading: function(_state) {
+                return _state.isChartLoading;
             }
         };
         return countlyVue.vuex.Module("countlyCompareEvents", {

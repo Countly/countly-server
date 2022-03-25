@@ -1,0 +1,73 @@
+<cly-main>
+    <cly-section class="bu-pt-4 cly-vue-complaince__hub_style_none cly-vue-complaince__hub_style_widthzero">
+        <cly-datatable-n :data-source="userTableDataSource" :default-sort="{prop: 'lac', order: 'descending'}">
+            <template v-slot="scope">
+                <el-table-column fixed="left" width="365" sortable="custom" prop="did" label="ID">
+                </el-table-column>
+                <el-table-column width="180" sortable="custom" prop="d" label="DEVICE">
+                    <template v-slot="rowScope">
+                        <div v-if="rowScope.row.d">
+                            {{rowScope.row.d}}
+                        </div>
+                        <div v-if="!rowScope.row.d">
+                            -
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column width="150" sortable prop="av" label="APP VERSION">
+                </el-table-column>
+                <el-table-column width="400" prop="consent" label="consent">
+                    <template v-slot="rowScope">
+                        <div v-if="rowScope.row.consent">
+                            <p class="color-primary-green text-smaller text-uppercase bu-mb-1" style="margin-top: 0px; font-weight: 700">{{i18n("consent.opt-i")}}</p>
+                            <span class="text-small bu-mb-4" v-html="rowScope.row.optin.join(',')"></span>
+                            <p class="color-red-100 text-smaller text-uppercase bu-mb-1" style="font-weight: 700;">{{i18n("consent.opt-o")}}</p>
+                            <span class="text-small" v-html="rowScope.row.optout.join(',')"></span>
+                        </div>
+                        <div v-if="!rowScope.row.consent">
+                            -
+                        </div>
+
+                    </template>
+
+                </el-table-column>
+
+                <el-table-column width="250" sortable="custom" prop="lac" label="TIME">
+                    <template v-slot="rowScope">
+                        {{rowScope.row.time}}
+
+                    </template>
+                </el-table-column>
+                <el-table-column type="options">
+                    <template v-slot="rowScope">
+                        <cly-more-options v-if="rowScope.row.hover" size="small">
+                            <el-dropdown-item>
+                                <el-link v-if="canUserRead" class="bu-ml-1" plain @click="switchToConsentHistory(rowScope.row.uid)"> {{i18n("consent.go-history")}} </el-link>
+                            </el-dropdown-item>
+                            <el-dropdown-item v-if="!rowScope.row.appUserExport && canUserRead">
+                                <el-link class="bu-ml-1" plain @click="exportUserData(rowScope.row.uid)">
+                                    {{i18n("app-users.export-userdata")}}</el-link>
+                            </el-dropdown-item>
+                            <el-dropdown-item v-if="rowScope.row.appUserExport && canUserRead">
+                                <el-link class="bu-ml-1" plain @click="downloadExportedData(rowScope.row.uid)">
+                                    {{i18n("app-users.download-export")}}</span>
+                                </el-link>
+                            </el-dropdown-item>
+                            <el-dropdown-item v-if="rowScope.row.appUserExport && canUserDelete">
+                                <el-link class="bu-ml-1" plain @click="deleteExport(rowScope.row.uid)">
+                                    {{i18n("app-users.delete-export")}}</span>
+                                </el-link>
+                            </el-dropdown-item>
+                            <el-dropdown-item v-if="canUserDelete">
+                                <el-link class="bu-ml-1" @click="deleteUserData(rowScope.row.uid)" plain>
+                                    {{i18n("app-users.delete-userdata")}}</el-link>
+                            </el-dropdown-item>
+                        </cly-more-options>
+                    </template>
+
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+
+    </cly-section>
+</cly-main>

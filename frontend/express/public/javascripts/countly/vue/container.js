@@ -1,4 +1,4 @@
-/* global  */
+/* global countlyAuth */
 
 (function(countlyVue) {
 
@@ -9,9 +9,15 @@
         this.dict = {};
     }
 
-    Container.prototype.registerData = function(id, value) {
+    Container.prototype.registerData = function(id, value, type) {
         if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
             this.dict[id] = {};
+        }
+        // Note: type property is used when registring data value as object type. By default, container keeps array type.
+        if (type === 'object') {
+            this.dict[id].data = {};
+            Object.assign(this.dict[id].data, value);
+            return;
         }
 
         if (!Object.prototype.hasOwnProperty.call(this.dict[id], "data")) {
@@ -92,10 +98,42 @@
         var self = this;
         var mixin = {
             data: function() {
-                return Object.keys(mapping).reduce(function(acc, val) {
-                    acc[val] = self.dict[mapping[val]] ? self.dict[mapping[val]].data : [];
+                var ob = Object.keys(mapping).reduce(function(acc, val) {
+                    var dataOb = self.dict[mapping[val]] ? self.dict[mapping[val]].data : [];
+                    if (Array.isArray(dataOb)) {
+                        acc[val] = dataOb.filter(function(data) {
+                            if (data && data.permission) {
+                                if (data.permission === 'anyadmin') {
+                                    return countlyAuth.validateAnyAppAdmin();
+                                }
+                                else {
+                                    return countlyAuth.validateRead(data.permission);
+                                }
+                            }
+                            return true;
+                        });
+                    }
+                    else {
+                        for (var key in dataOb) {
+                            if (dataOb[key] && dataOb[key].permission) {
+                                if (dataOb[key].permission === 'anyadmin') {
+                                    if (countlyAuth.validateAnyAppAdmin()) {
+                                        acc[val] = dataOb;
+                                    }
+                                }
+                                else if (countlyAuth.validateRead(dataOb[key].permission)) {
+                                    acc[val] = dataOb;
+                                }
+                            }
+                            else {
+                                acc[val] = dataOb;
+                            }
+                            break;
+                        }
+                    }
                     return acc;
                 }, {});
+                return ob;
             }
         };
         return mixin;
@@ -105,13 +143,42 @@
         var self = this;
         var mixin = {
             data: function() {
-                return Object.keys(mapping).reduce(function(acc, val) {
-                    acc[val] = self.dict[mapping[val]] ? self.dict[mapping[val]].tabs : [];
+                var ob = Object.keys(mapping).reduce(function(acc, val) {
+                    acc[val] = (self.dict[mapping[val]] ? self.dict[mapping[val]].tabs : []).filter(function(tab) {
+                        if (tab.permission) {
+                            return countlyAuth.validateRead(tab.permission);
+                        }
+                        return countlyAuth.validateGlobalAdmin();
+                    });
                     return acc;
                 }, {});
+                return ob;
             }
         };
         return mixin;
+    };
+
+    Container.prototype.getAllRoutes = function() {
+        var routes = [];
+
+        for (var id in this.dict) {
+            if (this.dict[id].data) {
+                for (var j = 0; j < this.dict[id].data.length; j++) {
+                    if (this.dict[id].data[j].url) {
+                        routes.push({url: this.dict[id].data[j].url, app_type: this.dict[id].data[j].app_type});
+                    }
+                }
+            }
+            if (this.dict[id].tabs) {
+                for (var k = 0; k < this.dict[id].tabs.length; k++) {
+                    if (this.dict[id].tabs[k].route) {
+                        routes.push({url: this.dict[id].tabs[k].route, app_type: this.dict[id].tabs[k].type});
+                    }
+                }
+            }
+        }
+
+        return routes;
     };
 
     Container.prototype.mixins = function(ids) {
@@ -141,7 +208,12 @@
         var vuex = [];
 
         ids.forEach(function(id) {
-            var tabs = self.dict[id] ? self.dict[id].tabs : [];
+            var tabs = (self.dict[id] ? self.dict[id].tabs : []).filter(function(tab) {
+                if (tab.permission) {
+                    return countlyAuth.validateRead(tab.permission);
+                }
+                return countlyAuth.validateGlobalAdmin();
+            });
 
             tabs.forEach(function(t) {
                 if (t.vuex) {

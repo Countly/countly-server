@@ -43,25 +43,44 @@ class Creds extends Mongoable {
     }
 
     /**
-     * Factory method for loading credentials from database and constructing a platform specific Credentials subclass instance.
+     * Factory method for loading credentials from database and constructing a platform specific Creds subclass instance.
      * 
      * @param {object|string|ObjectID} query MongoDB query
-     * @returns {Creds|null} platform specific Credentials subclass instance or null otherwise
+     * @returns {Creds|null} platform specific Creds subclass instance or null otherwise
      */
     static async load(query) {
         let c = await Creds.findOne(query);
         if (c) {
-            let Cls = require('../platforms').PLATFORM[c._data.platform].CREDS[c._data.type];
-            if (Cls) {
-                log.d('Loaded credentials %j', query);
-                return new Cls(c._data);
-            }
-            else {
-                log.e('No credentials %j for type %s', query, c._data.type);
-            }
+            return Creds.from(c._data);
         }
         else {
             log.w('No credentials for query %j', query);
+        }
+        return null;
+    }
+
+    /**
+     * Factory method for constructing a platform specific Creds subclass instance.
+     * 
+     * @param {object} data credentials data
+     * @returns {Creds|null} platform specific Creds subclass instance or null otherwise
+     */
+    static from(data) {
+        if (data instanceof Creds) {
+            return data;
+        }
+        let { PLATFORM, platforms } = require('../platforms'),
+            Cls;
+
+        platforms.forEach(p => {
+            Cls = Cls || PLATFORM[p].CREDS[data.type];
+        });
+
+        if (Cls) {
+            return new Cls(data);
+        }
+        else {
+            log.e('No credentials class for %j', data);
         }
         return null;
     }
@@ -119,7 +138,7 @@ class Creds extends Mongoable {
             data.key = c.key;
         }
         else if (c.type === 'hms') {
-            data.key = c.key;
+            data.app = c.key;
             data.secret = c.secret;
         }
         else {

@@ -3,6 +3,8 @@ const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
 const log = common.log("hooks:api:api_endpoint_trigger");
 
+
+
 /**
  * Email  effect
  */
@@ -19,24 +21,26 @@ class EmailEffect {
      * @return {object} - return processed options object.
      */
     async run(options) {
-        const {effect, params, rule} = options;
+        const {effect, params, rule, effectStep, _originalInput} = options;
         let emailAddress = effect.configuration.address;
+        let emailTemplate = effect.configuration.emailTemplate;
+
         if (typeof emailAddress === "string") {
             emailAddress = [emailAddress]; //parse to array
         }
 
         const logs = [];
         /**
-        * handle email sending promise
-        * @param {object} msg - message object
-        * @return {void}
-        */
+         * Promise for email sending
+         * @param {object} msg  - message object
+         * @returns {Promise} - promise object
+         */
         const promisifyEMailSending = (msg) => {
             return new Promise((resolve) => {
                 mail.sendMail(msg, (e) => {
                     if (e) {
                         logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
-                        utils.addErrorRecord(rule._id, e);
+                        utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
                         log.e("[hooks email effect]", e);
                     }
                     resolve();
@@ -45,11 +49,21 @@ class EmailEffect {
         };
         const sendTasks = [];
         await emailAddress.forEach(address => {
-            const formatedJSON = "<pre>" + JSON.stringify(params, null, 2) + "</pre>";
+            let formatedEmailContent = "<pre>" + JSON.stringify(params, null, 2) + "</pre>";
+            if (emailTemplate && emailTemplate.length > 0) {
+                try {
+                    formatedEmailContent = utils.parseStringTemplate(emailTemplate, params);
+                    formatedEmailContent = formatedEmailContent.replace(/\n/g, "<br />");
+                }
+                catch (e) {
+                    log.e(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                }
+
+            }
             var msg = {
                 to: address,
                 subject: "Countly Hooks",
-                html: formatedJSON,
+                html: formatedEmailContent,
             };
             sendTasks.push(promisifyEMailSending(msg));
             log.d("[hook email effect]", msg);

@@ -1,6 +1,9 @@
-/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyGlobal, countlyVue, countlyCrashesEventLogs, Promise */
+/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, CV, Promise, $ */
 
 (function(countlyCrashes) {
+    var _list = {};
+    var FEATURE_NAME = 'crashes';
+
     countlyCrashes.getVuexModule = function() {
         var _overviewSubmodule = {
             state: function() {
@@ -12,13 +15,18 @@
                         fatality: "both"
                     },
                     rawData: {},
-                    filteredData: {}
+                    filteredData: {},
+                    isLoading: false,
                 };
             },
             getters: {},
             actions: {},
             mutations: {},
             submodules: []
+        };
+
+        _overviewSubmodule.getters.isLoading = function(state) {
+            return state.isLoading;
         };
 
         _overviewSubmodule.getters.crashgroupsFilter = function(state) {
@@ -130,6 +138,7 @@
         };
 
         _overviewSubmodule.getters.chartData = function(state) {
+            state.isLoading = true;
             /**
             *  Crash metric calculations
             *  Total occurences ("cr")         - crf, crnf
@@ -158,13 +167,13 @@
 
                 if (typeof metricChartConfig !== "undefined") {
                     chartData = [
-                        {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: "#DDDDDD", mode: "ghost" },
+                        {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: "#52a3ef", mode: "ghost" },
                         {data: [], label: jQuery.i18n.map[metricChartConfig.labelKey], color: countlyCommon.GRAPH_COLORS[metricChartConfig.colorIndex]}
                     ];
                 }
                 else {
                     chartData = [
-                        {data: [], label: name, color: "#DDDDDD", mode: "ghost" },
+                        {data: [], label: name, color: "#52a3ef", mode: "ghost" },
                         {data: [], label: name, color: "#333933"}
                     ];
                 }
@@ -243,7 +252,7 @@
                     seriesData.lineStyle.color = results.chartDP[index].color;
                     chartOptions.series.push(seriesData);
                 });
-
+                state.isLoading = false;
                 return chartOptions;
             };
         };
@@ -255,11 +264,11 @@
                 statistics.users = {
                     affected: {
                         total: state.rawData.users.affected,
-                        totalPercent: (state.rawData.users.affected / state.rawData.users.total) * 100,
+                        totalPercent: parseFloat(((state.rawData.users.affected / state.rawData.users.total) * 100).toFixed(2)),
                         fatal: state.rawData.users.fatal,
-                        fatalPercent: (state.rawData.users.fatal / state.rawData.users.total) * 100,
+                        fatalPercent: parseFloat(((state.rawData.users.fatal / state.rawData.users.total) * 100).toFixed(2)),
                         nonFatal: (state.rawData.users.affected - state.rawData.users.fatal),
-                        nonFatalPercent: ((state.rawData.users.affected - state.rawData.users.fatal) / state.rawData.users.total) * 100,
+                        nonFatalPercent: parseFloat((((state.rawData.users.affected - state.rawData.users.fatal) / state.rawData.users.total) * 100).toFixed(2)),
                     },
                     notAffected: {
                         total: state.rawData.users.affected,
@@ -278,9 +287,9 @@
                     new: state.rawData.crashes.news,
                     newPercent: (state.rawData.crashes.news / state.rawData.crashes.total) * 100,
                     resolved: state.rawData.crashes.resolved,
-                    resolvedPercent: (state.rawData.crashes.resolved / state.rawData.crashes.total) * 100,
+                    resolvedPercent: parseFloat(((state.rawData.crashes.resolved / state.rawData.crashes.total) * 100).toFixed(2)),
                     unresolved: (state.rawData.crashes.total - state.rawData.crashes.resolved),
-                    unresolvedPercent: ((state.rawData.crashes.total - state.rawData.crashes.resolved) / state.rawData.crashes.total) * 100,
+                    unresolvedPercent: parseFloat((((state.rawData.crashes.total - state.rawData.crashes.resolved) / state.rawData.crashes.total) * 100).toFixed(2)),
                     reoccured: state.rawData.crashes.renewed
                 };
 
@@ -330,13 +339,12 @@
 
         _overviewSubmodule.actions.refresh = function(context) {
             var ajaxPromises = [];
-
             var requestParams = {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "period": countlyCommon.getPeriodForAjax(),
                 "method": "crashes",
                 "graph": 1,
-                "display_loader": false,
+                "display_loader": true,
             };
 
             var filterMapping = {"platform": "os", "version": "app_version"};
@@ -360,7 +368,6 @@
                                 json.crashes[crashKey] = "None";
                             }
                         });
-
                         context.state.filteredData = json;
                     }
                 }));
@@ -388,6 +395,30 @@
             return Promise.all(ajaxPromises);
         };
 
+        _overviewSubmodule.actions.setSelectedAsResolved = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "resolve");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsResolving = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "resolving");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsUnresolved = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "unresolve");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsShown = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "show");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsHidden = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "hide");
+        };
+
+        _overviewSubmodule.actions.setSelectedAsDeleted = function(context, selectedIds) {
+            return countlyCrashes.manipulateCrashgroup(selectedIds, "delete");
+        };
+
         var _crashgroupSubmodule = {
             state: function() {
                 return {
@@ -395,13 +426,22 @@
                         _id: undefined,
                         is_resolved: false,
                         is_new: false,
-                    }
+                    },
+                    userFilter: {
+                        platform: "all",
+                        version: "all",
+                    },
+                    isLoading: true,
                 };
             },
             getters: {},
             actions: {},
             mutations: {},
             submodules: []
+        };
+
+        _crashgroupSubmodule.getters.isLoading = function(state) {
+            return state.isLoading;
         };
 
         _crashgroupSubmodule.getters.crashgroup = function(state) {
@@ -430,7 +470,7 @@
             if (typeof state.crashgroup._id !== "undefined") {
                 return {
                     platform: state.crashgroup.os,
-                    occurances: state.crashgroup.total,
+                    occurrences: state.crashgroup.total,
                     affectedUsers: state.crashgroup.users,
                     crashFrequency: ("session" in state.crashgroup) ? state.crashgroup.session.total / state.crashgroup.session.count : 0,
                     latestAppVersion: state.crashgroup.latest_version
@@ -448,14 +488,23 @@
                     sessions: ("session" in state.crashgroup) ? state.crashgroup.session : {average: 0, max: 0, min: 0},
                 };
 
+                var tooltips = {
+                    ram: CV.i18n("crashes.help-ram"),
+                    disk: CV.i18n("crashes.help-disk"),
+                    battery: CV.i18n("crashes.help-battery"),
+                    running: CV.i18n("crashes.help-run"),
+                    sessions: CV.i18n("crashes.help-session")
+                };
+
                 Object.keys(diagnostics).forEach(function(diagnosticKey) {
                     diagnostics[diagnosticKey].average = diagnostics[diagnosticKey].total / diagnostics[diagnosticKey].count;
+                    diagnostics[diagnosticKey].tooltip = tooltips[diagnosticKey];
                 });
 
                 ["average", "max", "min"].forEach(function(key) {
                     diagnostics.running[key] = diagnostics.running[key] / 60;
                 });
-                diagnostics.running.unit = jQuery.i18n.prop("crashes.minutes-short");
+                diagnostics.running.unit = CV.i18n("crashes.minutes-short");
                 diagnostics.sessions.unit = "";
 
                 return diagnostics;
@@ -497,6 +546,7 @@
         };
 
         _crashgroupSubmodule.getters.chartData = function(state) {
+            state.isLoading = true;
             return function(chartBy) {
                 var mapObj = countlyCommon.dot(state.crashgroup, chartBy) || {};
                 var mapKeys = Object.keys(mapObj);
@@ -512,9 +562,11 @@
                         data: mapKeys
                     },
                     series: [
-                        {data: Object.values(mapObj)}
+                        {data: Object.values(mapObj), color: "#F96300", name: CV.i18n("crashes.fatal_crash_count") + ' by ' + chartBy}
                     ]
                 };
+
+                state.isLoading = false;
 
                 return chartOptions;
             };
@@ -529,7 +581,24 @@
             };
         };
 
+        _crashgroupSubmodule.getters.appVersions = function(state) {
+            return "data" in state.crashgroup ? Object.keys(state.crashgroup.app_version).map(function(version) {
+                return version.replaceAll(':', '.');
+            }) : [];
+        };
+
+        _crashgroupSubmodule.getters.platforms = function(state) {
+            return "data" in state.crashgroup ? Object.keys(state.crashgroup.os_version).map(function(version) {
+                return state.crashgroup.os + ' ' + version.replaceAll(':', '.');
+            }) : [];
+        };
+
+        _crashgroupSubmodule.getters.userFilter = function(state) {
+            return state.userFilter;
+        };
+
         _crashgroupSubmodule.actions.initialize = function(context, groupId) {
+            context.state.isLoading = true;
             context.state.crashgroup._id = groupId;
             return context.dispatch("refresh");
         };
@@ -548,13 +617,24 @@
                         "period": countlyCommon.getPeriodForAjax(),
                         "method": "crashes",
                         "group": context.state.crashgroup._id,
-                        "display_loader": false
+                        "display_loader": true
                     },
                     dataType: "json",
                     success: function(crashgroupJson) {
                         if (crashgroupJson.data && crashgroupJson.data.length > 0) {
                             var userIds = {};
                             var ajaxPromises = [];
+
+                            if (context.state.userFilter.platform !== "all") {
+                                crashgroupJson.data = crashgroupJson.data.filter(function(data) {
+                                    return data.os + ' ' + data.os_version === context.state.userFilter.platform;
+                                });
+                            }
+                            if (context.state.userFilter.version !== "all") {
+                                crashgroupJson.data = crashgroupJson.data.filter(function(data) {
+                                    return data.app_version === context.state.userFilter.version;
+                                });
+                            }
 
                             crashgroupJson.data.forEach(function(crash, crashIndex) {
                                 if (crash.uid in userIds) {
@@ -565,24 +645,26 @@
                                 }
                             });
 
-                            Object.keys(userIds).forEach(function(uid) { //
-                                ajaxPromises.push(countlyVue.$.ajax({
-                                    type: "GET",
-                                    url: countlyCommon.API_PARTS.data.r,
-                                    data: {
-                                        "app_id": countlyCommon.ACTIVE_APP_ID,
-                                        "method": "user_details",
-                                        "uid": uid,
-                                        "period": countlyCommon.getPeriodForAjax(),
-                                        "return_groups": "basic",
-                                    },
-                                    success: function(userJson) {
-                                        userIds[uid].forEach(function(crashIndex) {
-                                            crashgroupJson.data[crashIndex].user = userJson;
-                                        });
-                                    }
-                                }));
-                            });
+                            if (countlyAuth.validateRead('users')) {
+                                Object.keys(userIds).forEach(function(uid) { //
+                                    ajaxPromises.push(countlyVue.$.ajax({
+                                        type: "GET",
+                                        url: countlyCommon.API_PARTS.data.r,
+                                        data: {
+                                            "app_id": countlyCommon.ACTIVE_APP_ID,
+                                            "method": "user_details",
+                                            "uid": uid,
+                                            "period": countlyCommon.getPeriodForAjax(),
+                                            "return_groups": "basic",
+                                        },
+                                        success: function(userJson) {
+                                            userIds[uid].forEach(function(crashIndex) {
+                                                crashgroupJson.data[crashIndex].user = userJson;
+                                            });
+                                        }
+                                    }));
+                                });
+                            }
 
                             if (typeof countlyCrashSymbols !== "undefined") {
                                 var crashes = [{
@@ -613,6 +695,7 @@
 
                             Promise.all(ajaxPromises)
                                 .finally(function() {
+                                    context.state.isLoading = false;
                                     context.state.crashgroup = crashgroupJson;
                                     resolve(context.state.crashgroup);
                                 })
@@ -621,6 +704,7 @@
                                 });
                         }
                         else {
+                            context.state.isLoading = false;
                             context.state.crashgroup = crashgroupJson;
                             resolve(context.state.crashgroup);
                         }
@@ -758,6 +842,11 @@
             return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "delete_comment", {comment_id: commentId});
         };
 
+        _crashgroupSubmodule.actions.setUserFilter = function(context, value) {
+            context.state.userFilter = value;
+            context.dispatch("refresh");
+        };
+
         var _crashSubmodule = {
             state: function() {
                 return {
@@ -798,6 +887,7 @@
         };
 
         var crashgroupsResource = countlyVue.vuex.ServerDataTable("crashgroups", {
+            columns: ["name", "os", "reports", "lastTs", "users", "latest_version"],
             onRequest: function() {
                 return {
                     type: "GET",
@@ -875,41 +965,97 @@
         var badges = [];
 
         if (crash.nonfatal) {
-            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.nonfatal")});
+            badges.push({type: "neutral", content: CV.i18n("crashes.nonfatal")});
         }
         else {
-            badges.push({type: "negative", content: jQuery.i18n.prop("crashes.fatal")});
+            badges.push({type: "negative", content: CV.i18n("crashes.fatal")});
         }
 
         if (crash.is_resolved) {
-            badges.push({type: "positive", content: jQuery.i18n.prop("crashes.resolved") + " (" + crash.resolved_version + ")"});
+            badges.push({type: "positive", content: CV.i18n("crashes.resolved") + " (" + crash.resolved_version + ")"});
         }
         else if (crash.is_resolving) {
-            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.resolving")});
+            badges.push({type: "neutral", content: CV.i18n("crashes.resolving")});
         }
         else {
-            badges.push({type: "negative", content: jQuery.i18n.prop("crashes.unresolved")});
+            badges.push({type: "neutral", content: CV.i18n("crashes.unresolved")});
         }
 
         if (crash.is_renewed) {
-            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.reoccuring")});
+            badges.push({type: "neutral", content: CV.i18n("crashes.reoccuring")});
         }
 
 
         if ("session" in crash) {
             var frequency = Math.round(crash.session.total / crash.session.count);
             if (frequency === 1) {
-                badges.push({type: "info", content: jQuery.i18n.prop("crashes.every-session")});
+                badges.push({type: "info", content: CV.i18n("crashes.every-session")});
             }
             else if (frequency > 1) {
-                badges.push({type: "info", content: jQuery.i18n.prop("crashes.every-n-sessions", frequency)});
+                badges.push({type: "info", content: CV.i18n("crashes.every-n-sessions", frequency)});
             }
         }
 
         if (crash.is_new) {
-            badges.push({type: "info", content: jQuery.i18n.prop("crashes.new")});
+            badges.push({type: "info", content: CV.i18n("crashes.new")});
         }
 
         return badges;
     };
+
+    countlyCrashes.loadList = function(id) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": id,
+                "method": "crashes",
+                "list": 1,
+                "preventRequestAbort": true
+            },
+            dataType: "json",
+            success: function(json) {
+                for (var i = 0; i < json.length; i++) {
+                    _list[json[i]._id] = json[i].name;
+                }
+            }
+        });
+    };
+
+    countlyCrashes.userCrashes = function(userId) {
+        return new Promise(function(resolve) {
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "uid": userId,
+                    "fromExportAPI": true,
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "user_crashes"
+                },
+                dataType: "json",
+                success: function(response) {
+                    resolve(response);
+                }
+            });
+        });
+    };
+
+    if (countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME)) {
+        countlyCrashes.loadList(countlyCommon.ACTIVE_APP_ID);
+    }
+
+    app.addAppSwitchCallback(function(appId) {
+        if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME)) {
+            countlyCrashes.loadList(appId);
+        }
+    });
+
+    countlyCrashes.getCrashName = function(id) {
+        if (_list[id]) {
+            return _list[id];
+        }
+        return id;
+    };
+
 }(window.countlyCrashes = window.countlyCrashes || {}));

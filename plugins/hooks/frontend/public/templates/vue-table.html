@@ -1,0 +1,102 @@
+<cly-section>
+    <cly-datatable-n
+        :force-loading="!initialized"
+        :persist-key="tablePersistKey"
+        class="cly-vue-hook-table is-clickable"
+        :tracked-fields="localTableTrackedFields"
+        :rows="tableRows" :resizable="false"
+        :available-dynamic-cols="tableDynamicCols" >
+        <template v-slot:header-left="scope">
+            <div class="bu-mr-2">
+                <el-radio-group :plain="true" v-model="filterStatus">
+                    <el-radio-button label="all">{{i18n('hooks.status-all')}}</el-radio-button>
+                    <el-radio-button label="enabled">{{i18n('hooks.status-enabled')}}</el-radio-button>
+                    <el-radio-button label="disabled">{{i18n('hooks.status-disabled')}}</el-radio-button> 
+                </el-radio-group>
+            </div>
+            <div class="hooks-table-app-selector">
+                <cly-select-x
+                   :placeholder="i18n('hooks.all-applications')"
+                   mode="multi-check"
+                   v-model="filteredApps"
+                   :options="appsSelectorOption">
+                </cly-select-x>
+            </div>
+        </template>
+
+        <template v-slot="scope">
+            <el-table-column fixed="left" width="88" label="">
+                <template v-slot="rowScope">
+                    <el-switch :value="rowScope.row.enabled"
+                        class="bu-ml-4  bu-mr-2" 
+                        :disabled="!rowScope.row._canUpdate"
+                        @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
+                    </el-switch>
+                </template>
+            </el-table-column>
+           
+            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  min-width="240" class="is-clickable">
+                <template slot-scope="scope">
+                    <div>
+                        <div class="is-name-col bu-is-clickable" @click="onRowClick(scope.row)" >{{scope.row.name}}</div>
+                        <div v-if="scope.row.description" class="is-desc-col">{{scope.row.description}}</div>
+                    </div>
+                </template>
+            </el-table-column> 
+
+            <el-table-column min-width="270" >
+            <template v-slot:header="scope">
+               <span>{{i18n('hooks.trigger')}} <i class="el-icon-arrow-right el-icon-right"></i> {{ i18n('hooks.effects') }}</span>
+            </template>
+            <template slot-scope="scope" sortable="true">
+                <div v-html="scope.row.triggerEffectColumn"></div>
+            </template>
+                
+            </el-table-column>
+            <template v-for="(col,idx) in scope.dynamicCols">
+                <el-table-column 
+                    v-if="col.value === 'triggerCount'"  
+                    sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" min-width="155">
+                </el-table-column>
+                <el-table-column
+                    align="left"
+                    v-if="col.value === 'lastTriggerTimestampString'"  
+                    sortable="true"  prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" min-width="160" >
+                </el-table-column>
+            </template>
+
+
+            <el-table-column :label="i18n('hooks.create-by')" min-width="150" sortable="true">
+                <template slot-scope="scope">
+                    <div class="is-last-col">
+                        <div >
+                            <div class="is-created-by-col">
+                                {{scope.row.createdByUser || "-"}}
+                             </div>
+                             <div class="is-created-by-desc-col">
+                                 {{ scope.row.created_at_string }}
+                             </div>
+                        </div> 
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column type="options">
+                <template v-slot="rowScope">
+                    <cly-more-options v-if="rowScope.row.hover &&(rowScope.row._canUpdate || rowScope.row._canDelete)" size="small" @command="handleHookEditCommand($event,rowScope)">
+                        <el-dropdown-item v-if="rowScope.row._canUpdate" icon="el-icon-document-copy" command="edit-comment">
+                            {{i18n('hooks.edit')}}
+                        </el-dropdown-item>
+                        <el-dropdown-item v-if="rowScope.row._canDelete" icon="el-icon-delete" command="delete-comment">
+                            {{i18n('hooks.delete')}}
+                        </el-dropdown-item>
+                    </cly-more-options>
+                </template>
+            </el-table-column>
+        </template>
+        <template v-slot:bottomline="scope">
+            <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateStatus(scope)">
+            </cly-diff-helper>
+        </template>
+    </cly-datatable-n>
+    
+</cly-section>

@@ -1,17 +1,50 @@
 /*global countlyAuth, app, countlyGlobal, $, groupsModel, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
-    var FEATURE_NAME = "global_users";
 
     var DataTable = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/data-table.html"),
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
-            rows: Array
+            rows: Array,
+            loading: Boolean
         },
         data: function() {
             return {
                 tableFilter: null,
-                showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1
+                showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1,
+                tableDynamicCols: [
+                    {
+                        value: "full_name",
+                        label: CV.i18n('management-users.user'),
+                        default: true
+                    },
+                    {
+                        value: "username",
+                        label: CV.i18n('management-users.username'),
+                        default: true
+                    },
+                    {
+                        value: "email",
+                        label: CV.i18n('management-users.email'),
+                        default: true
+                    },
+                    {
+                        value: "role",
+                        label: CV.i18n('management-users.role'),
+                        default: true
+                    },
+                    {
+                        value: "created_at",
+                        label: CV.i18n('management-users.created'),
+                        default: true
+                    },
+                    {
+                        value: "last_login",
+                        label: CV.i18n('management-users.last_login'),
+                        default: true
+                    }
+                ],
+                userManagementPersistKey: 'userManagement_table_' + countlyCommon.ACTIVE_APP_ID
             };
         },
         computed: {
@@ -23,10 +56,10 @@
                             return row.global_admin;
                         }
                         else if (self.tableFilter === 'admin') {
-                            return !row.global_admin && row.permission._.a.length > 0;
+                            return !row.global_admin && (row.permission && row.permission._.a.length > 0);
                         }
                         else {
-                            return !row.global_admin && row.permission._.a.length === 0;
+                            return !row.global_admin && (row.permission && row.permission._.a.length === 0);
                         }
                     });
                 }
@@ -37,34 +70,30 @@
         },
         methods: {
             handleCommand: function(command, index) {
-                var self = this;
                 switch (command) {
                 case "delete-user":
-                    self.$confirm(CV.i18n('management-users.this-will-delete-user'), CV.i18n('management-users.warning'), {
-                        confirmButtonText: CV.i18n('common.ok'),
-                        cancelButtonText: CV.i18n('common.cancel'),
-                        type: 'warning'
-                    })
-                        .then(function() {
-                            countlyUserManagement.deleteUser(index, function() {
-                                self.$message({
-                                    message: CV.i18n('management-users.deleted-message'),
-                                    type: 'success'
-                                });
-                            });
-                        })
-                        .catch(function() {
-                            self.$message({
+                    CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "red", function(result) {
+                        if (!result) {
+                            CountlyHelpers.notify({
                                 type: 'info',
-                                message: CV.i18n('management-users.delete-canceled')
+                                message: CV.i18n('management-users.remove-canceled')
+                            });
+                            return true;
+                        }
+
+                        countlyUserManagement.deleteUser(index, function() {
+                            CountlyHelpers.notify({
+                                message: CV.i18n('management-users.removed-message'),
+                                type: 'success'
                             });
                         });
+                    }, [], { image: 'delete-user', title: CV.i18n('management-users.warning') });
                     break;
                 case 'edit-user':
                     this.$emit('edit-user', index);
                     break;
                 case 'show-logs':
-                    window.location.hash = "#/manage/systemlogs/query/" + JSON.stringify({"user_id": index});
+                    window.location.hash = "#/manage/logs/systemlogs/query/" + JSON.stringify({"user_id": index});
                     break;
                 }
             }
@@ -95,6 +124,7 @@
         ],
         data: function() {
             return {
+                pictureEditMode: false,
                 changePasswordFlag: false,
                 apps: [],
                 permissionSets: [],
@@ -120,6 +150,7 @@
             };
         },
         methods: {
+            featureBeautifier: countlyAuth.featureBeautifier,
             generatePassword: function() {
                 var generatedPassword = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
                 this.$refs.userDrawer.editedObject.password = generatedPassword;
@@ -251,30 +282,112 @@
 
                 for (var type in types) {
                     for (var feature in this.features) {
-                        permissionSet[types[type]].allowed[this.features[feature]] = false;
+                        if (!(types[type] === 'r' && this.features[feature] === 'core')) {
+                            permissionSet[types[type]].allowed[this.features[feature]] = false;
+                        }
                     }
                 }
 
                 this.permissionSets.push(permissionSet);
             },
             removePermissionSet: function(index) {
+                if (this.$refs.userDrawer.editedObject.permission._.u[index]) {
+                    for (var i = 0; i < this.$refs.userDrawer.editedObject.permission._.u[index].length; i++) {
+                        var app_id = this.$refs.userDrawer.editedObject.permission._.u[index][i];
+                        this.$refs.userDrawer.editedObject.permission.c[app_id] = undefined;
+                        this.$refs.userDrawer.editedObject.permission.r[app_id] = undefined;
+                        this.$refs.userDrawer.editedObject.permission.u[app_id] = undefined;
+                        this.$refs.userDrawer.editedObject.permission.d[app_id] = undefined;
+                    }
+                }
                 this.permissionSets.splice(index, 1);
                 this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u.splice(index, 1));
             },
             setPermissionByFeature: function(index, type, feature) {
+                var types = ['c', 'r', 'u', 'd'];
+
+                if (type !== 'r' && !(this.permissionSets[index].r.all || this.permissionSets[index].r.allowed[feature])) {
+                    this.permissionSets[index].r.allowed[feature] = true;
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.read-permission-given-feature') + ' ' + this.featureBeautifier(feature),
+                        type: 'info'
+                    });
+                }
+                if (type === 'r' && !this.permissionSets[index].r.allowed[feature]) {
+                    for (var _type in types) {
+                        this.permissionSets[index][types[_type]].allowed[feature] = false;
+                        if (this.permissionSets[index][types[_type]].all) {
+                            this.permissionSets[index][types[_type]].all = false;
+                            for (var _feature in this.features) {
+                                if (this.features[_feature] !== feature) {
+                                    this.permissionSets[index][types[_type]].allowed[this.features[_feature]] = true;
+                                }
+                            }
+                        }
+                    }
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.other-permissions-for') + ' ' + this.featureBeautifier(feature) + ' ' + CV.i18n('management-users.removed-because-disabled'),
+                        type: 'info'
+                    });
+                }
                 if (!this.permissionSets[index][type].allowed[feature] && this.permissionSets[index][type].all) {
                     this.permissionSets[index][type].all = false;
                 }
             },
             setPermissionByType: function(index, type) {
-                for (var feature in this.features) {
-                    this.permissionSets[index][type].allowed[this.features[feature]] = this.permissionSets[index][type].all;
+                var types = ['c', 'r', 'u', 'd'];
+                // set true read permissions automatically if read not selected yet
+                if (this.permissionSets[index][type].all && type !== 'r' && !this.permissionSets[index].r.all) {
+                    this.permissionSets[index].r.all = true;
+                    for (var feature in this.features) {
+                        if (this.features[feature] !== 'core') {
+                            this.permissionSets[index].r.allowed[this.features[feature]] = this.permissionSets[index][type].all;
+                        }
+                    }
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.read-permission-all'),
+                        type: 'info'
+                    });
+                }
+                // set false all other permissions automatically if read set as false
+                if (type === 'r' && !this.permissionSets[index].r.all) {
+                    for (var _type in types) {
+                        this.permissionSets[index][types[_type]].all = false;
+                        for (var feature1 in this.features) {
+                            if (!(types[_type] === 'r' && this.features[feature1] === 'core')) {
+                                this.permissionSets[index][types[_type]].allowed[this.features[feature1]] = false;
+                            }
+                        }
+                    }
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.other-permissions-removed'),
+                        type: 'info'
+                    });
+                }
+                // set type specific features for other cases
+                for (var feature2 in this.features) {
+                    if (!(type === 'r' && this.features[feature2] === 'core')) {
+                        this.permissionSets[index][type].allowed[this.features[feature2]] = this.permissionSets[index][type].all;
+                    }
+                }
+                if (this.permissionSets[index][type].all) {
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.future-plugins'),
+                        type: 'info'
+                    });
                 }
             },
             handleCommand: function(command, index) {
                 switch (command) {
                 case "remove-set":
                     this.removePermissionSet(index);
+                    break;
+                }
+            },
+            handlePPCommand: function(command) {
+                switch (command) {
+                case "edit-pp":
+                    this.pictureEditMode = true;
                     break;
                 }
             },
@@ -295,8 +408,11 @@
                     }
                 }
 
-                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin) {
-                    this.$message({
+                // block process if no app selected
+                // and user is not admin
+                // and user doesn't have assigned to any group
+                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin && typeof this.group._id === "undefined") {
+                    CountlyHelpers.notify({
                         message: CV.i18n('management-users.at-least-one-app-required'),
                         type: 'error'
                     });
@@ -307,22 +423,24 @@
                 var self = this;
                 this.addRolesToUserUnderEdit(submitted);
                 if (this.settings.editMode) {
-                    submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
+                    if (typeof this.group._id === "undefined") {
+                        submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
+                    }
                     countlyUserManagement.editUser(this.user._id, submitted, function(res) {
-                        if (res.result) {
-                            if (typeof self.group._id !== "undefined") {
-                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
-                                    .then(function() {});
+                        if (res.result && typeof res.result === "string") {
+                            if (self.groupsInput.length) {
+                                var group_id = self.group._id ? [self.group._id] : [];
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id }, function() {});
                             }
                             self.$emit('refresh-table');
                             self.group = {};
-                            if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
+                            if (self.$refs.userDrawerDropzone && self.$refs.userDrawerDropzone.getAcceptedFiles() && self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
                                 self.dropzoneOptions.member = { _id: self.user._id };
                                 self.$refs.userDrawerDropzone.processQueue();
                                 var checkUploadProcess = setInterval(function() {
                                     if (self.uploadCompleted) {
                                         // show success message
-                                        self.$message({
+                                        CountlyHelpers.notify({
                                             message: CV.i18n('management-users.updated-message'),
                                             type: 'success'
                                         });
@@ -337,19 +455,28 @@
                             }
                             else {
                                 // show success message
-                                self.$message({
+                                CountlyHelpers.notify({
                                     message: CV.i18n('management-users.updated-message'),
                                     type: 'success'
                                 });
                                 done();
                             }
                         }
+                        else if (typeof res === "object") {
+                            for (var i2 = 0; i2 < res.length; i2++) {
+                                CountlyHelpers.notify({
+                                    message: res[i2],
+                                    type: 'error'
+                                });
+                            }
+                            self.$refs.userDrawer.isSubmitPending = false;
+                        }
                         else {
-                            self.$message({
-                                message: res.result,
+                            CountlyHelpers.notify({
+                                message: CV.i18n('management-applications.plugins.smth'),
                                 type: 'error'
                             });
-                            done(res.result);
+                            self.$refs.userDrawer.isSubmitPending = false;
                         }
                     });
                 }
@@ -358,17 +485,16 @@
                     countlyUserManagement.createUser(submitted, function(res) {
                         if (res.full_name) {
                             if (typeof self.group._id !== "undefined") {
-                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
-                                    .then(function() {});
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] }, function() {});
                             }
                             self.group = {};
                             self.$emit('refresh-table');
-                            if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
+                            if (self.$refs.userDrawerDropzone && self.$refs.userDrawerDropzone.getAcceptedFiles() && self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
                                 self.dropzoneOptions.member = { _id: res._id };
                                 self.$refs.userDrawerDropzone.processQueue();
                                 var checkUploadProcess = setInterval(function() {
                                     if (self.uploadCompleted) {
-                                        self.$message({
+                                        CountlyHelpers.notify({
                                             message: CV.i18n('management-users.created-message'),
                                             type: 'success'
                                         });
@@ -382,24 +508,34 @@
                                 };
                             }
                             else {
-                                self.$message({
+                                CountlyHelpers.notify({
                                     message: CV.i18n('management-users.created-message'),
                                     type: 'success'
                                 });
                                 done();
                             }
                         }
+                        else if (res.length) {
+                            for (var i1 = 0; i1 < res.length; i1++) {
+                                CountlyHelpers.notify({
+                                    message: res[i1],
+                                    type: 'error'
+                                });
+                            }
+                            self.$refs.userDrawer.isSubmitPending = false;
+                        }
                         else {
-                            self.$message({
-                                message: res.result,
+                            CountlyHelpers.notify({
+                                message: CV.i18n('management-applications.plugins.smth'),
                                 type: 'error'
                             });
-                            done(res.result);
+                            self.$refs.userDrawer.isSubmitPending = false;
                         }
                     });
                 }
             },
             onOpen: function() {
+                this.changePasswordFlag = false;
                 // types
                 var types = ['c', 'r', 'u', 'd'];
 
@@ -409,7 +545,7 @@
                 // if it's in edit mode
                 if (this.settings.editMode) {
                     // is user member of a group?
-                    if (this.user.group_id) {
+                    if (this.user.group_id && countlyGlobal.plugins.indexOf('groups') > -1) {
                         // set group state
                         this.group = { _id: this.user.group_id[0] };
                         // add initial permission state for cases who unselected group
@@ -426,9 +562,10 @@
                                 var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
                                 for (var type in types) {
                                     for (var feature in this.features) {
-                                        permissionSet[types[type]].all = this.user.permission[types[type]][appFromSet].all;
-                                        if (this.features[feature] !== 'core') {
-                                            permissionSet[types[type]].allowed[this.features[feature]] = this.user.permission[types[type]][appFromSet].allowed[this.features[feature]];
+                                        // TODO: these checks will be converted to helper method
+                                        permissionSet[types[type]].all = typeof this.user.permission[types[type]][appFromSet].all === "boolean" ? this.user.permission[types[type]][appFromSet].all : false;
+                                        if (!(types[type] === "r" && this.features[feature] === 'core')) {
+                                            permissionSet[types[type]].allowed[this.features[feature]] = permissionSet[types[type]].all || (typeof this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] !== "undefined" ? this.user.permission[types[type]][appFromSet].allowed[this.features[feature]] : false);
                                         }
                                     }
                                 }
@@ -444,7 +581,7 @@
                 // initialize default permission sets for create mode
                 else {
                     if (this.features.length === 0) {
-                        this.$message({
+                        CountlyHelpers.notify({
                             message: 'Somethings went wrong when fetching feature list.',
                             type: 'error'
                         });
@@ -464,20 +601,19 @@
                     this.permissionSets.push(permissionSet_);
                 }
             },
-            // TODO: move this to countlyAuth
-            featureBeautifier: function(featureName) {
-                var fa = featureName.split('_');
-                var ret = '';
-                for (var i = 0; i < fa.length; i++) {
-                    ret += fa[i].substr(0, 1).toUpperCase() + fa[i].substr(1, fa[i].length - 1) + ' ';
-                }
-                return ret;
-            },
             onGroupChange: function(groupVal) {
                 this.group = groupVal;
             },
             onRoleChange: function(role) {
                 this.roles[role.name] = role;
+            }
+        },
+        watch: {
+            'group._id': function() {
+                if (typeof this.group._id === "undefined") {
+                    this.$refs.userDrawer.editedObject.permission._.u = [[]];
+                    this.$refs.userDrawer.editedObject.permission._.a = [];
+                }
             }
         },
         created: function() {
@@ -508,7 +644,8 @@
                     createButtonLabel: CV.i18n('management-users.create-user'),
                     editMode: false
                 },
-                features: []
+                features: [],
+                loading: true
             };
         },
         methods: {
@@ -534,7 +671,10 @@
                     .then(function() {
                         self.drawerSettings.editMode = true;
                         self.user = countlyUserManagement.getUser();
-                        self.openDrawer("user", countlyUserManagement.getUser());
+                        if (typeof self.user.permission === "undefined") {
+                            self.user.permission = { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] }};
+                        }
+                        self.openDrawer("user", self.user);
                     });
             }
         },
@@ -545,6 +685,7 @@
                 for (var user in usersObj) {
                     self.users.push(usersObj[user]);
                 }
+                self.loading = false;
                 self.features = countlyUserManagement.getFeatures().sort();
             });
         }
@@ -587,7 +728,7 @@
 
     app.ManageUsersView = ManageUsersView;
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
+    if (countlyAuth.validateGlobalAdmin()) {
         app.route("/manage/users", "manage-users", function() {
             var params = {
                 tab: "users"

@@ -5,17 +5,16 @@
 $bg-color: #24292e;
 
 #cly-vue-sidebar {
-    position: fixed;
     left: 0;
-    width: 272px;
-    background-color:#191C20;
     height: 100%;
-    z-index: 1998; //100000;
+    z-index: 2000;
     user-select: none;
     color: map.get(c.$colors, "warm-gray-40");
 }
 
 .cly-vue-sidebar {
+    height: 100%;
+
     .tooltip  {
         display: block !important;
         z-index: 10000;
@@ -32,13 +31,23 @@ $bg-color: #24292e;
         margin-left: 0px;
       }
       
-    width: 100%;
-    height: 100%;
     .cly-vue-listbox__item-label {
         width: 350px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    &__slide-transition-enter-active {
+        transition: all .3s ease;
+    }
+
+    &__slide-transition-leave-active {
+        transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+    }
+
+    &__slide-transition-enter, &__slide-transition-leave-to {
+        transform: translateX(-224px);
     }
 
     ul {
@@ -84,6 +93,8 @@ $bg-color: #24292e;
         height: 100%;
         overflow: auto;
         color: map.get(c.$colors, "cool-gray-40");
+        z-index: 2005;
+        background-color: #191c20;
 
         ul:first-child li:first-child {
             margin-top: 28px;
@@ -92,27 +103,15 @@ $bg-color: #24292e;
 
     &__menu-option {
         width: 48px;
-        height: 24px;
-        margin-top: 25px;
+        margin-top: 24px;
         font-size: t.$text-2xl-size;
         cursor: pointer;
 
-        i:hover,
-        &--selected {
-            color: map.get(c.$colors, "primary-green");
+        .el-popover__reference {
+            &:hover {
+                color: map.get(c.$colors, "white") !important;
+            }
         }
-    }
-
-    &__menu-option-app {
-        background-color: map.get(c.$colors, "primary-green");
-        border-radius: 4px;
-        height: 24px;
-        width: 24px;
-    }
-
-    &__menu-option-divider {
-        width: 24px;
-        border: 1px solid map.get(c.$colors, "warm-gray-70");
     }
 
     &__menu-option-toggle {
@@ -120,6 +119,20 @@ $bg-color: #24292e;
         background-color: $bg-color;
         border-top-left-radius: 50%;
         border-bottom-left-radius: 50%;
+
+        &--no-bg {
+            background-color: transparent;
+        }
+
+        &--rotate-right {
+            transform: rotate(180deg);
+            transition: transform .7s ease-in-out;
+        }
+
+        &--rotate-left {
+            transform: rotate(0deg);
+            transition: transform .7s ease-in-out;
+        }
     }
 
     &__menu {
@@ -129,6 +142,8 @@ $bg-color: #24292e;
         box-sizing: border-box;
         height: 100%;
         overflow: hidden;
+        z-index: 2004;
+        position: relative;
     }
 
     &__menu-items,
@@ -167,6 +182,16 @@ $bg-color: #24292e;
         }
     }
 
+    .el-collapse-item__header.focusing:focus:not(:hover) {
+        color: map.get(c.$colors, "warm-gray-40");
+    }
+
+    .el-collapse-item {
+        .cly-vue-sidebar__submenu-items {
+            padding-left: 32px;
+        }
+    }
+
     &__el-collapse--selected .el-collapse-item__header {
         border-radius: 4px;
         background-color:map.get(c.$colors, "warm-gray-80");
@@ -182,23 +207,23 @@ $bg-color: #24292e;
         border-bottom: 1px solid map.get(c.$colors, "warm-gray-70");
         background-color: $bg-color;
         box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
-        padding-bottom: 16px;
     }
 
     &__header {
         padding: 16px 12px;
         position: relative;
+    }
 
-        .el-input__inner {
-            height: 50px;
-            padding-left: 49px;
-        }
+    &__header-search {
+        input {
+            background-color: #383A3F;
+            border: none;
+            color: #d6d6d6;
 
-        .el-input__prefix {
-            left: 0px;
-            margin: 0px 12px;
-            height: auto;
-            margin-top: 12px;
+            &:focus {
+                outline: none;
+                box-shadow: none;
+            }
         }
     }
 
@@ -218,7 +243,7 @@ $bg-color: #24292e;
 
     &__main-menu {
         overflow: auto;
-        height: calc(100% - 82px);
+        height: calc(100% - 130px);
     }
 
     &__app-image {
@@ -236,6 +261,13 @@ $bg-color: #24292e;
         padding: 14px 0px;
         box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.18815);
         color: map.get(c.$colors, "cool-gray-100");
+    }
+
+    &__language-popper{
+        font-family: t.$font-family;
+        padding: 0px;
+        min-width: 130px;
+        box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.18815);
     }
 
     &__user-details {
@@ -331,8 +363,131 @@ $bg-color: #24292e;
     }
 
     &__user-divider {
-        border: 1px solid map.get(c.$colors, "warm-gray-30");;
+        border: 1px solid map.get(c.$colors, "warm-gray-30");
         margin-top: 5px;
         position: relative;
+    }
+
+    &__version {
+        position: absolute;
+        bottom: 0;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 224px;
+        font-size: 10px;
+        background-color: #24292e;
+    }
+
+    .cly-icon {
+        &-sidebar{
+            &-app {
+                background-image: url("../../../images/sidebar/default/app.svg");
+                height: 24px;
+                width: 24px;
+            }
+
+            &-analytics {
+                background-image: url("../../../images/sidebar/default/analytics-icon.svg");
+                height: 20px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/analytics-icon.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/analytics-icon.svg");
+                }
+            }
+
+            &-dashboards {
+                background-image: url("../../../images/sidebar/default/dashboards-icon.svg");
+                height: 20px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/dashboards-icon.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/dashboards-icon.svg");
+                }
+            }
+
+            &-divider {
+                background-image: url("../../../images/sidebar/default/divider.svg");
+                width: 32px;
+                height: 1px;
+            }
+
+            &-management {
+                background-image: url("../../../images/sidebar/default/management.svg");
+                height: 20px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/management.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/management.svg");
+                }
+            }
+
+            &-report-manager {
+                background-image: url("../../../images/sidebar/default/report-manager.svg");
+                height: 18px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/report-manager.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/report-manager.svg");
+                }
+            }
+
+            &-help-center {
+                background-image: url("../../../images/sidebar/default/help-center.svg");
+                height: 25px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/help-center.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/help-center.svg");
+                }
+            }
+
+            &-notifications {
+                background-image: url("../../../images/sidebar/default/notifications.svg");
+                height: 23px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/notifications.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/notifications.svg");
+                }
+            }
+
+            &-toggle-left {
+                background-image: url("../../../images/sidebar/default/toggle-left.svg");
+                height: 15px;
+                width: 11px;
+            }
+        }
+    }
+
+    &--floating {
+        position: absolute;
+        left: 48px;
     }
 }

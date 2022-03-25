@@ -40,7 +40,9 @@ function db_fixture(ret) {
                     }
                 };
             }
-        }
+        },
+        isoid: id => id && id instanceof ObjectID,
+        oid: id => !id ? id : id instanceof ObjectID ? id : ObjectID(id)
     };
 }
 
@@ -359,6 +361,7 @@ describe('API credentials', () => {
         should.equal(dbdata.credsDeletes.length, 0);
         should.equal(dbdata.credsSaves[0].type, 'apn_universal');
         should.ok(dbdata.credsSaves[0]._id);
+        should.ok(typeof data.app.plugins.push.i._id === 'object');
         should.ok(dbdata.credsSaves[0].cert);
         should.equal(dbdata.credsSaves[0].cert, cert.substr(cert.indexOf(',') + 1));
         should.equal(dbdata.credsSaves[0].secret, undefined);
@@ -370,6 +373,7 @@ describe('API credentials', () => {
         should.equal(dbdata.appUpdates[0].update.$set['plugins.push.i'].cert, 'APN Sandbox & Production Certificate (P12)');
         should.ok(data.app.plugins.push.i);
         should.ok(data.app.plugins.push.i._id);
+        should.ok(typeof data.app.plugins.push.i._id === 'string');
         should.ok(data.app.plugins.push.i.cert, cert.substr(cert.indexOf(',') + 1));
         should.equal(data.app.plugins.push.i.cert, 'APN Sandbox & Production Certificate (P12)');
         should.equal(data.app.plugins.push.i.type, 'apn_universal');

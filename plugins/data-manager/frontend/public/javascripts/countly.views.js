@@ -1,4 +1,4 @@
-/*global app, countlyAuth, countlyVue, CV, $, countlyDataManager, countlyCommon, moment, countlyPlugins, countlyGlobal */
+/*global app, countlyAuth, countlyVue, CV, $, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers */
 
 (function() {
 
@@ -6,7 +6,10 @@
 
     var EXTENDED_VIEWS = countlyDataManager.extended && countlyDataManager.extended.views || {};
     var COMPONENTS = EXTENDED_VIEWS.components || {};
-    var defaultTemplates = EXTENDED_VIEWS.defaultTemplates || ["/data-manager/templates/create-event-drawer-components.html"];
+    var defaultTemplates = EXTENDED_VIEWS.defaultTemplates || [
+        "/data-manager/templates/create-event-drawer-components.html",
+        "/data-manager/templates/manage-category-components.html"
+    ];
 
     //This is a redundant function in both the versions
     var statusClassObject = function(status) {
@@ -17,6 +20,122 @@
         classObject['tag--' + status] = true;
         return classObject;
     };
+
+    var ManageCategoryInput = countlyVue.views.create({
+        template: "#data-manager-manage-category-input",
+        props: {
+            value: {
+                type: Object
+            },
+            label: {
+                type: String
+            },
+            removable: {
+                type: Boolean,
+                default: true
+            },
+            categoryIndex: {
+                type: Number,
+                default: -1
+            }
+        },
+        data: function() {
+            return {
+                editing: false,
+                editedCategoryName: null
+            };
+        },
+        computed: {
+            category: function() {
+                return this.value;
+            },
+            categoryName: {
+                get: function() {
+                    return (this.editedCategoryName === null) ? this.category.name : this.editedCategoryName;
+                },
+                set: function(val) {
+                    this.editedCategoryName = val;
+                },
+                cache: false
+            }
+        },
+        methods: {
+            removeCategory: function() {
+                this.$emit("remove-me");
+            },
+            editCategory: function() {
+                this.editing = true;
+            },
+            saveCategory: function() {
+                if (this.editedCategoryName) {
+                    this.category.name = this.editedCategoryName;
+                    this.category.edited = true;
+                    this.editing = false;
+                    this.editedCategoryName = null;
+                }
+            },
+            cancelEdit: function() {
+                this.editedCategoryName = null;
+                this.editing = false;
+            }
+        }
+    });
+
+    var ManageCategory = countlyVue.views.create({
+        template: "#data-manager-manage-category",
+        data: function() {
+            return {
+                newCategoryName: null
+            };
+        },
+        props: {
+            value: {
+                type: Array
+            },
+            deletedCategories: {
+                type: Array
+            },
+            maxCategories: {
+                type: Number,
+                default: 10
+            },
+            focusedItemIdentifier: {
+                type: [String, Number],
+                default: ''
+            }
+        },
+        components: {
+            "data-manager-manage-category-input": ManageCategoryInput
+        },
+        methods: {
+            addNewCategory: function() {
+                if (this.newCategoryAllowed && this.newCategoryName) {
+                    this.categories.push({name: this.newCategoryName});
+                    this.newCategoryName = null;
+                }
+            },
+            removeCategoryAtIndex: function(index) {
+                // this.categories[index].isDeleted = true;
+                if (this.categories[index]._id) {
+                    this.deletedCategories.push(this.categories[index]);
+                }
+                this.$delete(this.categories, index);
+            }
+        },
+        computed: {
+            newCategoryAllowed: function() {
+                return this.categories.length < this.maxCategories;
+            },
+            categories: {
+                get: function() {
+                    return this.value;
+                },
+                set: function(value) {
+                    this.$emit("input", value);
+                }
+            }
+        }
+    });
 
     var EventsDrawer = countlyVue.views.create({
         template: CV.T('/data-manager/templates/create-events-drawer.html'),
@@ -48,6 +167,10 @@
                     {
                         label: CV.i18n("data-manager.created"),
                         value: 'created'
+                    },
+                    {
+                        label: CV.i18n("data-manager.unplanned"),
+                        value: 'unplanned'
                     },
                     {
                         label: CV.i18n("data-manager.approved"),
@@ -91,7 +214,8 @@
                         }
                     });
                     this.$refs.eventDrawer.editedObject.omit_list = list;
-                }
+                },
+                cache: false
             },
             title: function() {
                 if (this.controls && this.controls.initialEditedObject && this.controls.initialEditedObject.isEditMode) {
@@ -184,7 +308,8 @@
     var EventGroupDetailView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-group-detail.html'),
         mixins: [
-            countlyVue.mixins.hasDrawers(["eventgroup"])
+            countlyVue.mixins.hasDrawers(["eventgroup"]),
+            countlyVue.mixins.auth(FEATURE_NAME)
         ],
         components: {
             'event-group-drawer': EventGroupDrawer,
@@ -231,7 +356,7 @@
                 this.showDeleteDialog = false;
                 app.navigate("#/manage/data-manager/events/event-groups", true);
             },
-            statusClassObject: statusClassObject
+            statusClassObject: statusClassObject,
         },
         created: function() {
             this.initialize();
@@ -240,8 +365,11 @@
 
     var EventsDefaultTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events-default.html'),
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         components: {
-            'data-manager-manage-category': COMPONENTS.ManageCategory
+            'data-manager-manage-category': ManageCategory
         },
         data: function() {
             return {
@@ -259,16 +387,68 @@
                 deletedCategories: [],
                 baseColumns: [
                     {
+                        label: CV.i18n('data-manager.description'),
+                        value: 'description',
+                        default: true,
+                        sort: false
+                    },
+                    {
+                        label: "Category",
+                        value: 'category',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
+                        label: "Count",
+                        value: 'totalCount',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
+                        label: CV.i18n("data-manager.last-modified"),
+                        value: 'lastModifiedts',
+                        default: true,
+                        sort: 'custom'
+                    },
+                    {
                         label: 'Event key',
                         value: 'e',
+                        default: false,
+                        sort: 'custom'
                     },
                 ]
             };
         },
         computed: {
+            hasCreateRight: function() {
+                return countlyAuth.validateCreate(FEATURE_NAME);
+            },
+            hasDeleteRight: function() {
+                return countlyAuth.validateDelete(FEATURE_NAME);
+            },
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyDataManager/isLoading"];
+                },
+                cache: false
+            },
             dynamicEventCols: function() {
                 var cols = this.baseColumns;
                 var colMap = {};
+                var ltsAdded = false;
+                cols.forEach(function(col) {
+                    if (col.value === 'lts') {
+                        ltsAdded = true;
+                    }
+                });
+                if (this.isDrill && !ltsAdded) {
+                    cols.push({
+                        label: CV.i18n("data-manager.last-triggered"),
+                        value: 'lts',
+                        default: true,
+                        sort: 'custom'
+                    });
+                }
                 this.events.forEach(function(ev) {
                     for (var key in ev) {
                         if (key.indexOf('[CLY_input]_') === 0) {
@@ -293,8 +473,18 @@
             categoriesMap: function() {
                 return this.$store.getters["countlyDataManager/categoriesMap"];
             },
+            eventTransformationMap: function() {
+                if (this.isDrill) {
+                    return this.$store.getters["countlyDataManager/eventTransformationMap"];
+                }
+                else {
+                    return null;
+                }
+            },
             events: function() {
                 var self = this;
+                var isEventCountAvailable = this.$store.getters["countlyDataManager/isEventCountAvailable"];
+                var eventCount = this.$store.getters["countlyDataManager/eventCount"];
                 return this.$store.getters["countlyDataManager/events"]
                     .filter(function(e) {
                         var isCategoryFilter = true;
@@ -312,13 +502,17 @@
                             var currentVisibility = e.is_visible !== false;
                             isVisiblityFilter = currentVisibility === visibility;
                         }
-                        if (!e.status) {
-                            var config = countlyPlugins.getConfigsData()['data-manager'] || {};
-                            if (config.allowUnexpectedEvents || !self.isDrill) {
+                        if (!e.status || e.status === "unplanned") {
+                            // var config = countlyPlugins.getConfigsData()['data-manager'] || {};
+                            // if (config.showUnplannedEventsUI) {
+                            defaultUnexpectedFilter = true;
+                            e.status = 'unplanned';
+                            // }
+                            // else {
+                            //     defaultUnexpectedFilter = false;
+                            // }
+                            if (!self.isDrill) {
                                 defaultUnexpectedFilter = true;
-                            }
-                            else {
-                                defaultUnexpectedFilter = false;
                             }
                         }
                         return defaultUnexpectedFilter && isCategoryFilter && isStatusFilter && isVisiblityFilter;
@@ -327,14 +521,19 @@
                         if (e.isSelected === undefined) {
                             e.isSelected = false;
                         }
-                        if (self.isDrill) {
-                            e.categoryName = self.categoriesMap[e.category] || 'Uncategorized';
-                        }
+                        e.categoryName = self.categoriesMap[e.category] || 'Uncategorized';
                         e.lastModifiedts = e.audit && e.audit.ts ? e.audit.ts * 1000 : null;
                         e.lastModifiedDate = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("MMM DD,YYYY") : null;
                         e.lastModifiedTime = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("H:mm:ss") : null;
+                        if (e.lts) {
+                            e.lastTriggerDate = moment(e.lts).format("MMM DD,YYYY");
+                        }
                         if (!e.e) {
                             e.e = e.key;
+                        }
+                        if (isEventCountAvailable) {
+                            e.totalCount = eventCount[e.key] || 0;
+                            e.totalCountFormatted = countlyCommon.formatNumber(e.totalCount);
                         }
                         return e;
                     });
@@ -392,6 +591,16 @@
                 }
                 else {
                     return [{
+                        label: "Category",
+                        key: "category",
+                        options: [
+                            {value: "all", label: "All Categories"},
+                        ].concat(this.categories.map(function(c) {
+                            return {value: c.name, label: c.name};
+                        })),
+                        default: "all",
+                        action: true
+                    }, {
                         label: "Visibility",
                         key: "visibility",
                         options: [
@@ -481,18 +690,19 @@
                     this.$store.dispatch('countlyDataManager/saveCategories', newCatgories);
                 }
                 if (editedCategories.length) {
-                    var self = this;
+                    // var self = this;
                     this.$store
                         .dispatch('countlyDataManager/editCategories', editedCategories)
                         .then(function(res) {
                             if (res === 'Error') {
-                                self.$notify.error({
+                                CountlyHelpers.notify({
                                     title: CV.i18n("common.error"),
-                                    message: 'Categories Update Failed'
+                                    message: 'Categories Update Failed',
+                                    type: "error"
                                 });
                             }
                             else {
-                                self.$notify.success({
+                                CountlyHelpers.notify({
                                     title: CV.i18n("common.success"),
                                     message: 'Categories updated!'
                                 });
@@ -529,12 +739,15 @@
                 this.$store.dispatch('countlyDataManager/deleteEvents', events);
                 this.showDeleteDialog = false;
             },
-            statusClassObject: statusClassObject
+            statusClassObject: statusClassObject,
         },
     });
 
     var EventsGroupsTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-groups.html'),
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME)
+        ],
         data: function() {
             return {
                 eventsGroupTablePersistKey: "dm_event_groups_table_" + countlyCommon.ACTIVE_APP_ID,
@@ -550,6 +763,12 @@
             };
         },
         computed: {
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyDataManager/isLoading"];
+                },
+                cache: false
+            },
             eventGroups: function() {
                 var self = this;
                 var eventGroup = this.$store.getters["countlyDataManager/eventGroups"];
@@ -565,6 +784,7 @@
                         })
                         .map(function(m) {
                             m.isSelected = false;
+                            delete m.hover;
                             return m;
                         });
                 }
@@ -644,6 +864,7 @@
     var EventsView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events.html'),
         mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME),
             countlyVue.mixins.hasDrawers(["events", "transform", "segments", "eventgroup", "regenerate"]),
             countlyVue.container.tabsMixin({
                 "externalTabs": "/manage/data-manager/events"
@@ -661,7 +882,9 @@
                     acceptedFiles: 'text/csv',
                     dictDefaultMessage: 'a<br/> b',
                     maxFiles: 1,
-                    dictRemoveFile: this.i18n('surveys.generic.remove-file')
+                    dictRemoveFile: this.i18n('surveys.generic.remove-file'),
+                    previewTemplate: '<div class="cly-vue-data-manager__dropzone__preview bu-level bu-mx-4 bu-mt-3">\
+                                      <div class="dz-filename bu-ml-2"><span data-dz-name></span></div></div>'
                 },
                 localTabs: [
                     {
@@ -703,12 +926,12 @@
             initialize: function() {
                 this.$store.dispatch('countlyDataManager/loadEventsData');
                 this.$store.dispatch('countlyDataManager/loadEventGroups');
+                this.$store.dispatch('countlyDataManager/loadCategories');
                 if (this.isDrill) {
-                    this.$store.dispatch('countlyDataManager/loadCategories');
                     this.$store.dispatch('countlyDataManager/loadTransformations');
                     this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                     this.$store.dispatch('countlyDataManager/loadValidations');
-
+                    this.$store.dispatch('countlyDataManager/loadInternalEvents');
                 }
             },
             handleCreateCommand: function(event, tab) {
@@ -739,13 +962,18 @@
             },
             handleMetaCommands: function(event) {
                 if (event === 'regnerate') {
-                    this.openDrawer("regenerate", {});
+                    this.openDrawer("regenerate", {
+                        selectedDateRange: '30days'
+                    });
                 }
                 else if (event === 'export-schema') {
                     this.$store.dispatch('countlyDataManager/exportSchema');
                 }
                 else if (event === 'import-schema') {
                     this.importDialogVisible = true;
+                }
+                else if (event === 'navigate-settings') {
+                    app.navigate("#/manage/configurations/data-manager", true);
                 }
             },
             onSaveImport: function() {
@@ -788,9 +1016,14 @@
                         data.segments
                             .forEach(function(segment) {
                                 if (segment) {
-                                    var sg = data.sg[segment];
-                                    sg.name = segment;
-                                    segments.push(sg);
+                                    try {
+                                        var sg = data.sg[segment];
+                                        sg.name = segment;
+                                        segments.push(sg);
+                                    }
+                                    catch (e) {
+                                        // supress create mode
+                                    }
                                 }
                             });
                     }
@@ -823,7 +1056,13 @@
                 doc.isExistingEvent = 'true';
                 // doc.tab;
                 // delete doc.transformType;
+                if (doc.actionType === 'value') {
+                    doc.actionType = 'change-value';
+                }
                 doc.isEditMode = true;
+                if (doc.parentEvent) {
+                    doc.selectedParentEvent = doc.parentEvent;
+                }
                 self.openDrawer("transform", doc);
             });
             this.$root.$on('dm-open-edit-event-group-drawer', function(data) {
@@ -876,7 +1115,8 @@
     var EventDetailView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/event-detail.html'),
         mixins: [
-            countlyVue.mixins.hasDrawers(["events", "segments"])
+            countlyVue.mixins.hasDrawers(["events", "segments"]),
+            countlyVue.mixins.auth(FEATURE_NAME)
         ],
         components: {
             'events-drawer': EventsDrawer,
@@ -910,6 +1150,10 @@
                 if (!event.status) {
                     event.status = 'unplanned';
                 }
+                if (event.audit && event.audit.ts) {
+                    event.auditDate = moment(event.audit.ts * 1000).format("MMM DD,YYYY");
+                    event.auditTime = moment(event.audit.ts * 1000).format("H:mm:ss");
+                }
                 return event;
             },
             segments: function() {
@@ -927,12 +1171,25 @@
                     if (!seg.status) {
                         seg.status = 'unplanned';
                     }
+                    if (seg.audit && seg.audit.ts) {
+                        seg.auditTs = seg.audit.ts;
+                        seg.auditDate = moment(seg.audit.ts * 1000).format("MMM DD,YYYY");
+                        seg.auditTime = moment(seg.audit.ts * 1000).format("H:mm:ss");
+                    }
                     return seg;
                 });
             },
             categoriesMap: function() {
                 return this.$store.getters["countlyDataManager/categoriesMap"];
             },
+            eventTransformationMap: function() {
+                if (this.isDrill) {
+                    return this.$store.getters["countlyDataManager/eventTransformationMap"];
+                }
+                else {
+                    return null;
+                }
+            }
         },
         methods: {
             handleCommand: function(ev, event) {
@@ -952,9 +1209,11 @@
             },
             initialize: function() {
                 this.$store.dispatch('countlyDataManager/loadCategories');
-                this.$store.dispatch('countlyDataManager/loadTransformations');
-                this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                 this.$store.dispatch('countlyDataManager/loadEventsData');
+                if (this.isDrill) {
+                    this.$store.dispatch('countlyDataManager/loadTransformations');
+                    this.$store.dispatch('countlyDataManager/loadSegmentsMap');
+                }
                 // this.$store.dispatch('countlyDataManager/loadEventGroups');
                 // this.$store.dispatch('countlyDataManager/loadValidations');
             },
@@ -967,7 +1226,7 @@
             handleEditSegment: function(seg) {
                 this.openDrawer("segments", seg);
             },
-            statusClassObject: statusClassObject
+            statusClassObject: statusClassObject,
         },
         created: function() {
             this.initialize();
@@ -1003,44 +1262,41 @@
         });
     };
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
+    app.route("/manage/data-manager/:primaryTab", 'data-manager', function(primaryTab) {
+        var mainView = getMainView();
+        mainView.params = {
+            primaryTab: primaryTab
+        };
+        this.renderWhenReady(mainView);
+    });
 
-        app.route("/manage/data-manager/:primaryTab", 'data-manager', function(primaryTab) {
-            var mainView = getMainView();
-            mainView.params = {
-                primaryTab: primaryTab
-            };
-            this.renderWhenReady(mainView);
-        });
+    app.route("/manage/data-manager/:primaryTab/:secondaryTab", 'data-manager', function(primaryTab, secondaryTab) {
+        var mainView = getMainView();
+        mainView.params = {
+            primaryTab: primaryTab,
+            secondaryTab: secondaryTab
+        };
+        this.renderWhenReady(mainView);
+    });
 
-        app.route("/manage/data-manager/:primaryTab/:secondaryTab", 'data-manager', function(primaryTab, secondaryTab) {
-            var mainView = getMainView();
-            mainView.params = {
-                primaryTab: primaryTab,
-                secondaryTab: secondaryTab
-            };
-            this.renderWhenReady(mainView);
-        });
+    app.route("/manage/data-manager/events/events/:eventId", 'data-manager-event-detail', function(eventId) {
+        var detailView = getEventDetailView();
+        detailView.params = {
+            eventId: eventId
+        };
+        this.renderWhenReady(detailView);
+    });
 
-        app.route("/manage/data-manager/events/events/:eventId", 'data-manager-event-detail', function(eventId) {
-            var detailView = getEventDetailView();
-            detailView.params = {
-                eventId: eventId
-            };
-            this.renderWhenReady(detailView);
-        });
+    app.route("/manage/data-manager/events/event-groups/:eventGroupId", 'data-manager-event-group-detail', function(eventGroupId) {
+        var detailView = getEventGroupDetailView();
+        detailView.params = {
+            eventGroupId: eventGroupId
+        };
+        this.renderWhenReady(detailView);
+    });
 
-        app.route("/manage/data-manager/events/event-groups/:eventGroupId", 'data-manager-event-group-detail', function(eventGroupId) {
-            var detailView = getEventGroupDetailView();
-            detailView.params = {
-                eventGroupId: eventGroupId
-            };
-            this.renderWhenReady(detailView);
-        });
-
-        $(document).ready(function() {
-            app.addSubMenu("management", { code: "data-manager", url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 30 });
-        });
-    }
+    $(document).ready(function() {
+        app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
+    });
 
 })();

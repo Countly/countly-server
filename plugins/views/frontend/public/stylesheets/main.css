@@ -3,6 +3,10 @@
   cursor: pointer;
 }
 
+.routename-views-home .cly-vue-notification__alert-box .el-button--text:hover {
+	background-color: transparent;
+}
+
 .routename-views-home .views-date-picker-container {
     margin-bottom: 32px;
 }

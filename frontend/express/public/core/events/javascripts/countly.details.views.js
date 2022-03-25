@@ -20,7 +20,10 @@
             },
             labels: function() {
                 return this.$store.getters["countlyAllEvents/labels"];
-            }
+            },
+            isTableLoading: function() {
+                return this.$store.getters["countlyAllEvents/isTableLoading"];
+            },
         },
         methods: {
             isColumnAllowed: function(column) {
@@ -47,6 +50,9 @@
                     return true;
                 }
                 return false;
+            },
+            formatNumber: function(val) {
+                return countlyCommon.formatNumber(val);
             }
         },
     });
@@ -75,22 +81,22 @@
         components: {
             "detail-tables": EventsTable,
         },
+        methods: {
+            dateChanged: function() {
+                this.$store.dispatch('countlyAllEvents/setTableLoading', true);
+                this.$store.dispatch('countlyAllEvents/setChartLoading', true);
+                this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+            }
+        },
         computed: {
-            selectedDatePeriod: {
-                get: function() {
-                    return this.$store.getters["countlyAllEvents/selectedDatePeriod"];
-                },
-                set: function(value) {
-                    this.$store.dispatch('countlyAllEvents/fetchSelectedDatePeriod', value);
-                    countlyCommon.setPeriod(value);
-                    this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
-                }
-            },
             selectedEventFromSearchBar: {
                 get: function() {
                     return this.$store.getters["countlyAllEvents/selectedEventName"];
                 },
                 set: function(value) {
+                    this.$store.dispatch('countlyAllEvents/setTableLoading', true);
+                    this.$store.dispatch('countlyAllEvents/setChartLoading', true);
+
                     this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', value);
                     this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", "segment");
                     this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
@@ -101,6 +107,10 @@
                     return this.$store.getters["countlyAllEvents/currentActiveSegmentation"];
                 },
                 set: function(selectedItem) {
+                    this.$store.dispatch('countlyAllEvents/setChartLoading', true);
+
+                    this.$store.dispatch('countlyAllEvents/setTableLoading', true);
+
                     if (selectedItem === "segment") {
                         this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", "segment");
                     }
@@ -108,6 +118,7 @@
                         this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", selectedItem);
                     }
                     this.$store.dispatch("countlyAllEvents/fetchSelectedEventsData");
+                    this.$store.dispatch("countlyAllEvents/setSegmentDescription");
                 }
             },
             hasSegments: function() {
@@ -115,6 +126,9 @@
             },
             category: function() {
                 return this.$store.getters["countlyAllEvents/currentCategory"];
+            },
+            segmentDescription: function() {
+                return this.$store.getters["countlyAllEvents/segmentDescription"];
             },
             availableSegments: function() {
                 var availableSegments = this.$store.getters["countlyAllEvents/availableSegments"];
@@ -178,6 +192,9 @@
             },
             limitAlerts: function() {
                 return this.$store.getters["countlyAllEvents/limitAlerts"];
+            },
+            isChartLoading: function() {
+                return this.$store.getters["countlyAllEvents/isChartLoading"];
             }
 
         },
@@ -186,11 +203,27 @@
         },
         beforeCreate: function() {
             var self = this;
-            var currEvent = (this.$route.params && this.$route.params.eventKey) || localStorage.getItem("eventKey");
+            this.$store.dispatch('countlyAllEvents/setTableLoading', true);
+            this.$store.dispatch('countlyAllEvents/setChartLoading', true);
+            var appId = countlyCommon.ACTIVE_APP_ID;
+            var currEvent = this.$route.params && this.$route.params.eventKey;
+            if (!currEvent) {
+                var eventKey = localStorage.getItem("eventKey");
+                try {
+                    if (eventKey) {
+                        eventKey = JSON.parse(eventKey);
+                        currEvent = eventKey[appId];
+                    }
+                }
+                catch (err) {
+                    currEvent = undefined;
+                }
+            }
             if (currEvent) {
                 this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', currEvent);
             }
             if (countlyGlobal.plugins.indexOf("drill") > -1 && countlyGlobal.plugins.indexOf("data-manager") > -1) {
+                this.$store.dispatch('countlyAllEvents/fetchSegments');
                 this.$store.dispatch('countlyAllEvents/fetchCategories').then(function() {
                     self.$store.dispatch('countlyAllEvents/fetchAllEventsData');
                 });
@@ -199,11 +232,6 @@
                 this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
             }
 
-        },
-        methods: {
-            refresh: function() {
-                this.$store.dispatch("countlyAllEvents/fetchRefreshAllEventsData");
-            }
         }
     });
     var getAllEventsView = function() {
@@ -231,8 +259,9 @@
     countlyVue.container.registerTab("/analytics/events", {
         priority: 1,
         name: "detail",
+        permission: "events",
         title: "Event Stats",
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events",
+        route: "#/analytics/events",
         component: AllEventsView,
         vuex: [{
             clyModel: countlyAllEvents

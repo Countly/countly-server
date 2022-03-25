@@ -548,6 +548,26 @@ var pluginManager = function pluginManager() {
     };
 
     /**
+    * Dispatch specific event on api side
+    * 
+    * @param {string} event - event to dispatch
+    * @param {object} params - object with parameters to pass to event
+    * @returns {Promise} which resolves to array of objects returned by events if any or error
+    */
+    this.dispatchAsPromise = function(event, params) {
+        return new Promise((res, rej) => {
+            this.dispatch(event, params, (err, results) => {
+                if (err) {
+                    rej(err);
+                }
+                else {
+                    res(results || []);
+                }
+            });
+        });
+    };
+
+    /**
     * Load plugins frontend app.js and expose static paths for plugins
     * @param {object} app - express app
     * @param {object} countlyDb - connection to countly database
@@ -1293,7 +1313,7 @@ var pluginManager = function pluginManager() {
         }
 
         client.on('commandFailed', (event) => logDbRead.e("commandFailed %j", event));
-        client.on('serverHeartbeatFailed', (event) => logDbRead.e("serverHeartbeatFailed %j", event));
+        client.on('serverHeartbeatFailed', (event) => logDbRead.d("serverHeartbeatFailed %j", event));
 
         client._db = client.db;
 
@@ -1335,41 +1355,6 @@ var pluginManager = function pluginManager() {
                     logDbRead.i("Incorrect Object ID %j", ex);
                     return id;
                 }
-            };
-            countlyDb._ObjectID = mongodb.ObjectID;
-        }
-        if (!countlyDb.oid) {
-            /**
-             * Decode string to ObjectID if needed
-             * 
-             * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
-             * @returns {ObjectID} id
-             */
-            countlyDb.oid = function(id) {
-                return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
-            };
-            /**
-             * Create ObjectID with given timestamp. Uses current ObjectID random/server parts, meaning the 
-             * object id returned still has same uniquness guarantees as random ones.
-             * 
-             * @param {Date|number} date Date object or timestamp in seconds, current date by default
-             * @returns {ObjectID} with given timestamp
-             */
-            countlyDb.oidWithDate = (date = new Date()) => {
-                let seconds = typeof date === 'number' ? date : Math.floor(date.getTime() / 1000).toString(16),
-                    server = new countlyDb.ObjectId().toString().substr(8);
-                return new mongodb.ObjectId(seconds + server);
-            };
-            /**
-             * Create blank ObjectID with given timestamp. Everything except for date part is zeroed.
-             * For use in queries like {_id: {$gt: oidBlankWithDate()}}
-             * 
-             * @param {Date|number} date Date object or timestamp in seconds, current date by default
-             * @returns {ObjectID} with given timestamp and zeroes in the rest of the bytes
-             */
-            countlyDb.oidBlankWithDate = (date = new Date()) => {
-                let seconds = typeof date === 'number' ? date : Math.floor(date.getTime() / 1000).toString(16);
-                return new mongodb.ObjectId(seconds + '0000000000000000');
             };
         }
         countlyDb.encode = function(str) {

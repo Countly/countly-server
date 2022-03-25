@@ -1,6 +1,7 @@
 const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'),
     logger = require('../../../../../api/utils/log'),
     { Splitter } = require('./utils/splitter'),
+    { util } = require('../std'),
     { Creds } = require('../data/creds'),
     { threadId } = require('worker_threads'),
     FORGE = require('node-forge');
@@ -19,8 +20,18 @@ const key = 'a';
  */
 function extractor(qstring) {
     if (qstring.android_token !== undefined && qstring.test_mode in FIELDS && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
-        return [key, FIELDS[qstring.test_mode], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
+        return [key, FIELDS['0'], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
     }
+}
+
+/**
+ * Make an estimated guess about request platform
+ * 
+ * @param {string} userAgent user-agent header
+ * @returns {string} platform key if it looks like request made by this platform
+ */
+function guess(userAgent) {
+    return userAgent.includes('Android') && key;
 }
 
 /**
@@ -71,7 +82,7 @@ class FCM extends Splitter {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let content = this.template(pushes[0].m).compile(pushes[0]),
-                one = Math.floor(pushes.length / bytes);
+                one = Math.floor(bytes / pushes.length);
 
             content.registration_ids = pushes.map(p => p.t);
 
@@ -168,37 +179,6 @@ class FCM extends Splitter {
 
 }
 
-/** 
- * Flatten object using dot notation ({a: {b: 1}} becomes {'a.b': 1})
- * 
- * @param {object} ob - object to flatten
- * @returns {object} flattened object
- */
-function flattenObject(ob) {
-    var toReturn = {};
-
-    for (var i in ob) {
-        if (!Object.prototype.hasOwnProperty.call(ob, i)) {
-            continue;
-        }
-
-        if ((typeof ob[i]) === 'object' && ob[i] !== null) {
-            var flatObject = flattenObject(ob[i]);
-            for (var x in flatObject) {
-                if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
-                    continue;
-                }
-
-                toReturn[i + '.' + x] = flatObject[x];
-            }
-        }
-        else {
-            toReturn[i] = ob[i];
-        }
-    }
-    return toReturn;
-}
-
 /**
  * Create new empty payload for the note object given
  * 
@@ -206,7 +186,7 @@ function flattenObject(ob) {
  * @returns {object} empty payload object
  */
 function empty(msg) {
-    return {data: {}, c: {i: msg.id}};
+    return {data: {'c.i': msg.id}};
 }
 
 /**
@@ -266,7 +246,7 @@ const map = {
      */
     buttons: function(t, buttons) {
         if (buttons) {
-            t.result.c.b = buttons;
+            t.result.data['c.b'] = buttons.map(b => ({t: b.title, l: b.url}));
         }
     },
 
@@ -342,7 +322,7 @@ const map = {
      * @param {Object} data data to be sent
      */
     data: function(template, data) {
-        Object.assign(template.result.data, flattenObject(data));
+        Object.assign(template.result.data, util.flattenObject(data));
     },
 
     /**
@@ -360,6 +340,20 @@ const map = {
             }
         }
     },
+
+    /**
+     * Sends platform specific fields
+     * 
+     * @param {Template} template template
+     * @param {object} specific platform specific props to be sent
+     */
+    specific: function(template, specific) {
+        if (specific) {
+            if (specific.large_icon) {
+                template.result.data['c.li'] = specific.large_icon;
+            }
+        }
+    },
 };
 
 /**
@@ -368,7 +362,6 @@ const map = {
  */
 const FIELDS = {
     '0': 'p', // prod
-    '2': 't', // test
 };
 
 /**
@@ -376,8 +369,7 @@ const FIELDS = {
  * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
  */
 const FIELDS_TITLES = {
-    '0': 'FCM Production Token', // prod
-    '2': 'FCM Test Token', // test
+    '0': 'FCM Token',
 };
 
 /**
@@ -431,6 +423,7 @@ module.exports = {
     key: 'a',
     title: 'Android',
     extractor,
+    guess,
     FIELDS,
     FIELDS_TITLES,
     CREDS,

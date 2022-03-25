@@ -1,9 +1,9 @@
-const vm = require('vm');
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
-const log = common.log("hooks:api:api_endpoint_trigger");
-
+const log = common.log("hooks:api:api_custom_code_effect");
 const request = require("request");
+const {NodeVM} = require('vm2');
+
 /**
  * custom code effect
  */
@@ -20,44 +20,57 @@ class CustomCodeEffect {
      * @return {object} - return processed options object.
      */
     async run(options) {
-        const {effect, params, rule} = options;
+        const {effect, params, rule, effectStep, _originalInput} = options;
         let genCode = "";
         let runtimePassed = true ;
         let logs = [];
-        await new Promise(CUSTOM_CODE_RESOLVER => {
-            const code = effect.configuration.code;
-            /**
-            * log error
-            * @param {object} e - error object
-            */
-            const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
-                utils.addErrorRecord(rule._id, e);
-            };
+        try {
+            await new Promise(CUSTOM_CODE_RESOLVER => {
+                const code = effect.configuration.code;
+                /**
+                 * function for rejection of effect
+                 * @param {object} e - error object
+                 */
+                const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
+                    runtimePassed = false;
+                    log.e("got error when executing custom code", e, genCode, options);
+                    logs.push(`message:${e.message}
+                        stack: ${JSON.stringify(e.stack)}
+                    `);
+                    utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
+                };
 
-            genCode = `
-                const CUSTOM_MAIN = async () => {
-                   
-                    try {
-                        ${code}
-                     }
-                     catch(e) {
-                        CUSTOM_CODE_ERROR_CALLBACK(e);                        
-                        CUSTOM_CODE_RESOLVER();
-                     }
-                     CUSTOM_CODE_RESOLVER();
-                }
-                CUSTOM_MAIN();
-            `;
-            vm.runInNewContext(genCode, {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK}, { timeout: 30000, microtaskMode: 'afterEvaluate' });
-            options.params = params;
-        }).catch(e => {
+                genCode = `
+                    const CUSTOM_MAIN = async () => {
+                        try {
+                            ${code}
+                         }
+                         catch(e) {
+                            CUSTOM_CODE_ERROR_CALLBACK(e);                        
+                            CUSTOM_CODE_RESOLVER();
+                         }
+                         CUSTOM_CODE_RESOLVER();
+                    }
+                    CUSTOM_MAIN();
+                `;
+                const vm = new NodeVM({
+                    timeout: 30000,
+                    console: 'inherit',
+                    sandbox: {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK},
+                    require: false,
+                });
+                vm.run(genCode, 'vm.js');
+            });
+        }
+        catch (e) {
             runtimePassed = false;
             log.e("got error when executing custom code", e, genCode, options);
             logs.push(`message:${e.message}
-            stack: ${JSON.stringify(e.stack)}
-                `);
-        });
-        return runtimePassed ? options : {params: null, logs};
+                stack: ${JSON.stringify(e.stack)}
+            `);
+            utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
+        }
+        return runtimePassed ? options : {...options, logs};
     }
 }
 

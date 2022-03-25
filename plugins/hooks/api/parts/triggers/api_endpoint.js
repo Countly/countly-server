@@ -1,8 +1,7 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
-const log = common.log("hooks:api:api_endpoint_trigger");
-
+const log = common.log('hooks:api_endpoint_trigger');
 /**
  * API endpoint  trigger
  */
@@ -14,7 +13,18 @@ class APIEndPointTrigger {
      */
     constructor(options) {
         this._rules = options.rules || [];
-        this.pipeline = options.pipeline || (() => {});
+        this.pipeline = (() => {});
+        if (options.pipeline) {
+            this.pipeline = (data) => {
+                try {
+                    data.rule._originalInput = JSON.parse(JSON.stringify(data.params || {}));
+                }
+                catch (e) {
+                    log.e("[hooks api endpoint] parsing originalInput", e);
+                }
+                return options.pipeline(data);
+            };
+        }
         this.register();
     }
 
@@ -36,7 +46,7 @@ class APIEndPointTrigger {
      * @param {object} ob - trggered out from pipeline
      */
     async process(ob) {
-        log.d(JSON.stringify(ob), "[hook trigger api_endpoint]");
+        // log.d(JSON.stringify(ob), "[hook trigger api_endpoint]"); 
         const {params} = ob;
         const {paths} = params;
         const hookPath = paths.length >= 4 ? paths[3] : null;

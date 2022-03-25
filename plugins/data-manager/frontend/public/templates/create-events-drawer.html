@@ -3,130 +3,108 @@
     @close="onClose"
     ref="eventDrawer"
     :title="title"
-    :size="5"
     :saveButtonLabel="saveButtonLabel"
     v-bind="$props.controls">
     <template v-slot:default="drawerScope">
         <cly-form-step id="create-event-form" name="First Step">
-            <div class="text-medium text-heading">Enter Name</div>
-            <validation-provider name="name" v-slot="v">
+
+            <cly-form-field :label="i18n('data-manager.event.name')">
+                    <el-input
+                        v-model="drawerScope.editedObject.name"
+                        :placeholder="i18n('data-manager.event.name')">
+                    </el-input>
+            </cly-form-field>
+
+            <cly-form-field :label="i18n('data-manager.events.key')" rules="required">
                 <el-input
-                    :class="{'is-error': v.errors.length > 0}"
-                    v-model="drawerScope.editedObject.name"
-                    placeholder="Event Name">
+                :disabled="drawerScope.editedObject.isEditMode"
+                class="bu-mb-3" 
+                v-model="drawerScope.editedObject.key" 
+			    :placeholder="i18n('data-manager.events.enter-key')">
+			    </el-input>
+            </cly-form-field>
+
+            <div class="text-big text-heading bu-mt-2 bu-mb-1">{{i18n('data-manager.events.event-details')}}</div>
+
+            <cly-form-field :label="i18n('data-manager.events.event-description')" :optional="true">
+                <el-input
+                type="textarea"
+                :rows="2"
+                :placeholder="i18n('data-manager.events.enter-event-description')"
+                v-model="drawerScope.editedObject.description">
                 </el-input>
-            </validation-provider>
-            <div class="text-medium text-heading bu-mt-5">Event Key</div>
-            <el-input
-            :disabled="drawerScope.editedObject.isEditMode"
-            class="bu-mb-3" 
-            v-model="drawerScope.editedObject.key" 
-			placeholder="Enter Event Key">
-			</el-input>
-
-            <div class="text-big text-heading bu-mt-5">Event Details</div>
-            <div class="bu-level bu-mt-3">
-                <div class="text-medium text-heading bu-level-left bu-level-item">Event Description</div>
-                <div class="text-medium bu-level-item bu-level-right color-cool-gray-50">Optional</div>
-            </div>
-            <el-input
-            type="textarea"
-            :rows="2"
-            placeholder="Enter your description"
-            v-model="drawerScope.editedObject.description">
-            </el-input>
-
+            </cly-form-field>
 
             <div v-if="isDrill">
-                <div class="bu-level bu-mt-5">
-                    <div class="text-medium text-heading bu-level-left bu-level-item">Category</div>
-                    <div class="text-medium bu-level-item bu-level-right color-cool-gray-50">Optional</div>
-                </div>
-                <cly-select-x
-                    search-placeholder="Search Category"
-                    placeholder="Uncategorized" 
-                    v-model="drawerScope.editedObject.category"
-                    :auto-commit="!autoCommitDisabled" 
-                    :mode="selectX.mode"
-                    :hide-all-options-tab="allOptionsTabHidden"
-                    :options="categories">
-                </cly-select-x>
+                <cly-form-field :label="i18n('data-manager.category')" :optional="true">
+                    <cly-select-x
+                        class="bu-pt-1"
+                        :search-placeholder="i18n('data-manager.search-category')"
+                        :placeholder="i18n('data-manager.uncategorized')" 
+                        v-model="drawerScope.editedObject.category"
+                        :auto-commit="!autoCommitDisabled" 
+                        :mode="selectX.mode"
+                        :hide-all-options-tab="allOptionsTabHidden"
+                        :options="categories">
+                    </cly-select-x>
+                </cly-form-field>
             </div>
 
             <div v-if='drawerScope.editedObject.isEditMode'>
                 <div v-if="isDrill">
-                    <div class="bu-level bu-mt-5">
-                        <div class="text-medium text-heading bu-level-left bu-level-item">Status</div>
-                    </div>
-                    <el-select v-model="drawerScope.editedObject.status" >
-                        <el-option v-for="item in statusList" :key="item.value" :value="item.value">
+                    <cly-form-field :label="i18n('data-manager.status')">
+                        <el-select class="bu-pt-1" v-model="drawerScope.editedObject.status" >
+                            <el-option v-for="item in statusList" :key="item.value" :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </cly-form-field>
+                </div>
+
+                <cly-form-field :label="i18n('data-manager.visibility')">
+                    <el-select class="bu-pt-1" v-model="drawerScope.editedObject.is_visible" >
+                        <el-option :value=true :label="i18n('data-manager.visible')">
+                        </el-option>
+                        <el-option :value=false :label="i18n('data-manager.hidden')">
                         </el-option>
                     </el-select>
-                </div>
+                </cly-form-field>
 
-                <div class="bu-level bu-mt-5">
-                    <div class="text-medium text-heading bu-level-left bu-level-item">Visibility</div>
-                </div>
-                <el-select v-model="drawerScope.editedObject.is_visible" >
-                    <el-option :value=true label="Visible">
-                    </el-option>
-                    <el-option :value=false label="Hidden">
-                    </el-option>
-                </el-select>
+                <div class="text-big text-heading bu-mt-4 bu-pt-1">{{i18n('data-manager.events.event-properties')}}</div>
 
-                <div class="text-big text-heading bu-mt-5">Event Properties</div>
-                <div class="bu-mt-3">
-                    <div class="text-medium text-heading">Display Name for Count</div>
-                    <div class="text-medium color-cool-gray-50">A display name for the count property of this event</div>
-                </div>
-                <el-input
-                class="bu-mb-3" 
-                v-model="drawerScope.editedObject.count" 
-			    placeholder="Count">
-			    </el-input>
+                <cly-form-field class="bu-pt-0" :label="i18n('data-manager.display-name-for-count')" :optional="true" :subheading="i18n('data-manager.display-name-for-count-subheading')">
+                    <el-input
+                    v-model="drawerScope.editedObject.count" 
+			        :placeholder="i18n('data-manager.count')">
+			        </el-input>
+                </cly-form-field>
 
+                <cly-form-field :label="i18n('data-manager.display-name-for-sum')" :optional="true" :subheading="i18n('data-manager.display-name-for-sum')">
+                    <el-input
+                    v-model="drawerScope.editedObject.sum" 
+                    :placeholder="i18n('data-manager.sum')">
+                    </el-input>
+                </cly-form-field>
 
-                <div class="bu-mt-3">
-                    <div class="text-medium text-heading">Display Name for Sum</div>
-                    <div class="bu-level">
-                        <div class="text-medium text-heading bu-level-left bu-level-item color-cool-gray-50">A display name for the sum property of this event</div>
-                        <div class="text-medium bu-level-item bu-level-right color-cool-gray-50">Optional</div>
-                    </div>
-                </div>
-                <el-input
-                class="bu-mb-3" 
-                v-model="drawerScope.editedObject.sum" 
-                placeholder="Sum">
-                </el-input>
-
-
-                <div class="bu-mt-3">
-                    <div class="text-medium text-heading">Display Name for Duration</div>
-                    <div class="bu-level">
-                        <div class="text-medium text-heading bu-level-left bu-level-item color-cool-gray-50">A display name for the duration property of this event</div>
-                        <div class="text-medium bu-level-item bu-level-right color-cool-gray-50">Optional</div>
-                    </div>
-                </div>
-                <el-input
-                class="bu-mb-3" 
-                v-model="drawerScope.editedObject.dur" 
-                placeholder="Duration">
-                </el-input>
+                <cly-form-field :label="i18n('data-manager.display-name-for-duration')" :optional="true" :subheading="i18n('data-manager.display-name-for-duration')">
+                    <el-input
+                    v-model="drawerScope.editedObject.dur" 
+                    :placeholder="i18n('data-manager.duration')">
+                    </el-input>
+                </cly-form-field>
             </div>
 
             <div v-if="drawerScope.editedObject.isEditMode">
-                <div class="text-medium bu-mt-5 text-heading bu-level-left bu-level-item">Omit Segments</div>
-                <div class="text-medium bu-mb-4 bu-level-item bu-level-right color-cool-gray-50">
-                    Choose which segments of this custom event to omit. Omitted segments will not be saved in the future and past data for these segments will be purged immediately after you save these settings.
-                </div>
-                <el-select multiple v-model="omitList" >
-                    <el-option v-for="item in drawerScope.editedObject.segments" :key="item.name" :value="item.name">
-                    </el-option>
-                </el-select>
+                <cly-form-field :label="i18n('data-manager.omit-segments')" 
+                :tooltip="i18n('data-manager.omit-segments.tooltip')">
+                    <el-select multiple v-model="omitList" >
+                        <el-option v-for="item in drawerScope.editedObject.segments" :key="item.name" :value="item.name">
+                        </el-option>
+                    </el-select>
+                </cly-form-field>
             </div>
 
-            <div v-if="isDrill">
-                <div class="text-big text-heading bu-mt-5">Event Segmentation</div>
+            <div v-if="isDrill" class="bu-mt-1">
+                <div class="text-big text-heading bu-pt-4">{{i18n('data-manager.event-segmentation')}}</div>
                 <data-manager-create-segment
                 ref="segments"
 			    :max-segments="20"

@@ -1,7 +1,7 @@
 'use strict';
 
 const { PushError } = require('./error'),
-    { S, Jsonable } = require('./const');
+    { S, Validatable, PERS_TYPES } = require('./const');
 
 /**
  * Message `contents` array consists of Content objects, it's to be defined the following way (each line below is an element of `contents` array):
@@ -10,7 +10,7 @@ const { PushError } = require('./error'),
  * 2. {p: 'a', la: 'de'} - another override for Android devices with german locale, other locales would still use 0.
  * 3. {p: 'i', la: 'fr'} - applies on top of 'i' override for iOS devices with french locale, other locales would use 1.
  */
-class Content extends Jsonable {
+class Content extends Validatable {
     /**
      * Constructor
      * 
@@ -32,7 +32,11 @@ class Content extends Jsonable {
      * @param {string}      data.buttons[].url      button action URL
      * @param {string}      data.buttons[].title    button title
      * @param {string}      data.buttons[].pers     button title personalization
-     * @param {object[]}    data.specific[]         ... any other platform-specific field like {contentAvailable: true}, {delayWhileIdle}, {collapseKey: 'key'}, etc. (use with specific method)
+     * @param {object[]}    data.specific[]         ... any other platform-specific field in a form of Object[], i.e. [{subtitle: 'Subtitle'}, {large_icon: 'icon'}]. 
+     *                                              Currently supported for iOS:
+     *                                                  {subtitle: 'Subtitle'}
+     *                                              Currently supported for Android:
+     *                                                  {large_icon: 'icon'}
      */
     constructor(data) {
         super(data);
@@ -50,13 +54,13 @@ class Content extends Jsonable {
             },
             la: {type: 'String', required: false},
             title: {type: 'String', required: false},
-            titlePers: {type: 'Object', required: false, custom: Content.validatePers},
+            titlePers: {type: 'Object', required: false, nonempty: true, custom: Content.validatePers},
             message: {type: 'String', required: false},
-            messagePers: {type: 'Object', required: false, custom: Content.validatePers},
+            messagePers: {type: 'Object', required: false, nonempty: true, custom: Content.validatePers},
             sound: {type: 'String', required: false},
             badge: {type: 'Number', required: false},
-            data: {type: 'JSON', required: false},
-            extras: {type: 'String[]', required: false},
+            data: {type: 'JSON', required: false, nonempty: true},
+            extras: {type: 'String[]', required: false, 'min-length': 1},
             expiration: {type: 'Number', required: false, min: 60000, max: 365 * 24 * 3600000},
             url: {type: 'URL', required: false},
             media: {type: 'URL', required: false},
@@ -65,14 +69,14 @@ class Content extends Jsonable {
                 type: {
                     url: {type: 'URL', required: true},
                     title: {type: 'String', required: true},
-                    pers: {type: 'Object', required: false, custom: Content.validatePers},
+                    pers: {type: 'Object', required: false, nonempty: true, custom: Content.validatePers},
                 },
                 array: true,
                 'min-length': 1,
                 'max-length': 2,
                 required: false
             },
-            specific: { type: 'Object[]', required: false },
+            specific: { type: 'Object[]', required: false, 'min-length': 1 },
         };
     }
 
@@ -87,26 +91,42 @@ class Content extends Jsonable {
             return;
         }
         for (let k in obj) {
-            if (isNaN(parseInt(k))) {
+            if (isNaN(parseInt(k, 10))) {
                 return 'Personalisation key must be a number';
             }
             let opt = obj[k];
             if (Object.keys(opt).length === 0) {
                 return 'Personalisation object cannot be empty';
             }
+            let anykey = false;
             for (let kk in opt) {
-                if (kk === 'k' && (typeof opt[kk] !== 'string' || !opt[kk])) {
-                    return 'Personalisation key must be a non empty string';
+                anykey = true;
+                if (kk === 'k') {
+                    if (typeof opt[kk] !== 'string' || !opt[kk]) {
+                        return 'Personalisation key must be a non empty string';
+                    }
                 }
-                else if (kk === 'c' && typeof opt[kk] !== 'boolean') {
-                    return 'Personalisation capitalise option must be boolean';
+                else if (kk === 'c') {
+                    if (typeof opt[kk] !== 'boolean') {
+                        return 'Personalisation capitalise option must be boolean';
+                    }
                 }
-                else if (kk === 'f' && (typeof opt[kk] !== 'string' || !opt[kk])) {
-                    return 'Personalisation fallback must be a non empty string';
+                else if (kk === 'f') {
+                    if (typeof opt[kk] !== 'string' || !opt[kk]) {
+                        return 'Personalisation fallback must be a non empty string';
+                    }
+                }
+                else if (kk === 't') {
+                    if (typeof opt[kk] !== 'string' || PERS_TYPES.indexOf(opt[kk]) === -1) {
+                        return 'Personalisation type must be a non empty string equal to one of "e, u, c, a"';
+                    }
                 }
                 else {
                     return 'Invalid key in personalisation object';
                 }
+            }
+            if (!anykey) {
+                return 'Empty object in personalisation object';
             }
         }
     }
@@ -204,6 +224,18 @@ class Content extends Jsonable {
     }
 
     /**
+     * Getter for titlePers with leading "up." removed from field names
+     * 
+     * @returns {object|undefined} title personalization
+     */
+    get titlePersDeup() {
+        if (!this._titlePersDeup && this._data.titlePers) {
+            this._titlePersDeup = Content.deupPers(this._data.titlePers);
+        }
+        return this._titlePersDeup;
+    }
+
+    /**
      * Getter for message
      * 
      * @returns {string|undefined} message text
@@ -247,6 +279,38 @@ class Content extends Jsonable {
         else {
             delete this._data.messagePers;
         }
+    }
+
+    /**
+     * Getter for titlePers with leading "up." removed from field names
+     * 
+     * @returns {object|undefined} title personalization
+     */
+    get messagePersDeup() {
+        if (!this._messagePersDeup && this._data.messagePers) {
+            this._messagePersDeup = Content.deupPers(this._data.messagePers);
+        }
+        return this._messagePersDeup;
+    }
+
+    /**
+     * Deup (remove leading "up.") from personalisation object and return new one
+     * 
+     * @param {object} obj object to deup
+     * @returns {object} object with keys deupped
+     */
+    static deupPers(obj) {
+        let ret = {};
+        Object.keys(obj).forEach(idx => {
+            let {f, c, k, t} = obj[idx];
+            ret[idx] = {
+                f,
+                c,
+                t,
+                k: k.indexOf('up.') === 0 ? k.substring(3) : k,
+            };
+        });
+        return ret;
     }
 
     /**
@@ -342,6 +406,28 @@ class Content extends Jsonable {
         else {
             delete this._data.extras;
         }
+    }
+
+    /**
+     * Getter for extras with leading "up." removed
+     * 
+     * @returns {string[]} array of user prop keys to send
+     */
+    get extrasDeup() {
+        if (!this._extrasDeup && this._data.extras) {
+            this._extrasDeup = Content.deupExtras(this._data.extras);
+        }
+        return this._extrasDeup;
+    }
+
+    /**
+     * Deup (remove leading "up.") property key array
+     * 
+     * @param {string[]} arr array of property keys
+     * @returns {string[]} array with keys deupped
+     */
+    static deupExtras(arr) {
+        return arr.map(x => x.indexOf('up.') === 0 ? x.substring(3) : x);
     }
 
     /**
@@ -520,6 +606,29 @@ class Content extends Jsonable {
     }
 
     /**
+     * Getter for specific
+     * 
+     * @returns {object[]|undefined} media MIME type
+     */
+    get specific() {
+        return this._data.specific;
+    }
+
+    /**
+     * Setter for specific
+     * 
+     * @param {object[]|undefined} specific platform specific objects
+     */
+    set specific(specific) {
+        if (specific !== null && specific !== undefined) {
+            this._data.specific = specific;
+        }
+        else {
+            delete this._data.specific;
+        }
+    }
+
+    /**
      * Platform fields getter/setter
      * - call specific() to get an object containing all fields
      * - call specific(key) to get data for a key
@@ -530,7 +639,7 @@ class Content extends Jsonable {
      * @param {any|null|undefined} value field data (pass undefined to get, pass null to remove)
      * @returns {any} stored value
      */
-    specific(key, value) {
+    specifics(key, value) {
         if (key === undefined) {
             return this._data.specific ? JSON.parse(this._data.specific) : undefined;
         }

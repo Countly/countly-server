@@ -1,14 +1,45 @@
 .user-management-drawer-content {
 
+  &__pp-options {
+    height: fit-content;
+    align-self: center;
+    margin-left: 15px;
+    box-shadow: none;
+
+    .el-button {
+      box-shadow: none;
+      border: none;
+    }
+  }
+
+  &__user-pp {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+  }
+
   #user-drawer-dropzone {
     background-color: #F8FAFD;
+    border-radius: 6px;
+  }
+
+  &__custom-options  {
+    box-shadow: none;
+    div {
+      button {
+        box-shadow: none;
+        padding: 0px;
+        background: none;
+        border: none;
+      }
+    }
   }
 
   &__under-input-text {
     text-decoration: underline;
     cursor: pointer;
   }
-
+  
   &__top-section {
     display: flex;
     flex-direction: row;
@@ -31,10 +62,6 @@
     justify-content: space-between;
     flex-direction: column;
 
-    &--pl-10 {
-      padding-left: 10px;
-    }
-
     &--text-secondary {
       color: #81868D;
     }
@@ -55,7 +82,6 @@
     font-size: 12px;
     line-height: 16px;
     color: #81868D;
-    padding-bottom: 5px;
   }
 
   &__help-menu-icon {
@@ -80,6 +106,7 @@
 
   &__profile-picture-area {
     margin-top: 9px;
+    margin-left: 10px;
 
     &__upload-section {
       border: 1px dashed #81868D;
@@ -119,7 +146,6 @@
     background-color: #F8FAFD;
     margin-top: 10px;
     margin-bottom: 24px;
-    padding: 10px 0px;
   }
 
   &__drawer-sub-title {
@@ -138,13 +164,14 @@
     font-size: 12px;
     border-bottom: 1px solid #ebebeb;
     padding-bottom: 10px;
-    box-shadow: 0px 3px 5px rgb(0 0 0 / 8%);
+    //box-shadow: 0px 3px 5px rgb(0 0 0 / 8%);
   }
 
   &__feature-name-col {
     width: calc(40% - 15px);
     text-align: left;
     padding-left: 15px;
+    text-transform: uppercase;
   }
 
   &__permission-type-cols {
@@ -165,6 +192,10 @@
     .check-text {
       margin-top: 2px;
     }
+
+    .el-checkbox__label {
+      font-weight: medium !important;
+    }
   }
 
   &__permission-table-content {
@@ -177,6 +208,8 @@
     display: flex;
     flex-direction: row;
     height: 30px;
+    justify-content: center;
+    align-items: center;
   }
 
   &__feature-name {
@@ -208,7 +241,6 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin:0px 10px;
   }
 
   &__section-header {
@@ -228,16 +260,19 @@
   }
 
   &__role-section {
-    padding: 10px 10px 0px 10px;
+    //padding: 10px 10px 0px 10px;
 
     .check-text {
       margin-top: 4px !important;
     }
+
+    .el-checkbox__label {
+      font-weight: normal !important;
+    }
   }
 
   &__app-selector {
-    width: calc(100% - 20px);
-    margin: 5px 10px;
+    width: 100%;
   }
 
   &__add-permission-set {
@@ -271,10 +306,6 @@
 
   .el-icon-close:hover {
     color: #81868D !important;
-  }
-
-  .el-checkbox__label {
-    font-weight: normal !important;
   }
 
   .dropzone-custom-content {

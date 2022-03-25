@@ -1,4 +1,4 @@
-/* global Backbone, countlyAuth, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyTaskManager, countlyVue*/
+/* global Backbone, countlyAuth, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyVue*/
 /**
 * Default Backbone View template from which all countly views should inherit.
 * A countly view is defined as a page corresponding to a url fragment such
@@ -695,6 +695,7 @@ var AppRouter = Backbone.Router.extend({
     _subMenuForCodes: {},
     _subMenus: {},
     _internalMenuCategories: ["management", "user"],
+    _uniqueMenus: {},
     /**
     * Add menu category. Categories will be copied for all app types and its visibility should be controled from the app type plugin
     * @memberof app
@@ -766,73 +767,6 @@ var AppRouter = Backbone.Router.extend({
             node.callback(category, node, menu);
         }
     },
-    updateLongTaskViewsNofification: function(appChanged) {
-        countlyTaskManager.getLastReports(function(data) {
-            if (appChanged) {
-                app.haveUnreadReports = false;
-                $(".orange-side-notification-banner-wrapper").css("display", "none");
-            }
-            if (app.haveUnreadReports) {
-                $("#manage-long-tasks-icon").addClass('unread');
-            }
-            else {
-                $("#manage-long-tasks-icon").removeClass('unread');
-            }
-
-            var newHtml = "<table>";
-            for (var k = 0; k < data.length; k++) {
-                var color = "#E98010";
-                if (data[k].status === "completed") {
-                    color = "#2FA732";
-                }
-                if (data[k].status === "errored") {
-                    color = "#D63E40";
-                }
-                var name = data[k].name || "";
-                if (name.length > 30) {
-                    name = name.substring(0, 30) + "...";
-                }
-
-                var trclass = "";
-                var dataLink = '';
-                if (data[k].status === "completed") {
-                    name = name + '<i class="fa fa-chevron-right circle-arrow"></i>';
-                    trclass = " class='completed'";
-                    dataLink = ' data-link="' + data[k].view + data[k]._id + '" ';
-                }
-                newHtml = newHtml + "<tr" + trclass + dataLink + '><td><p class="title">' + name + '</p><p style="text-transform:capitalize">' + data[k].type + '<span>|</span>' + countlyCommon.formatTimeAgo(data[k].start) + '</p></td>' + '<td ><span class="status-color"><i class="fa fa-circle" style="color:' + color + ';"></i>' + data[k].status + '</span></td>';
-            }
-            newHtml += "<table>";
-
-            if (data.length === 0) {
-                $(".manage-long-tasks-menu .tasks-wrapper").html("<div class='graph-description' style='border:0'>" + jQuery.i18n.map["taskmanager.empty-warning"] + "</div>");
-            }
-            else {
-                $(".manage-long-tasks-menu .tasks-wrapper").html("<div class='tasks'>" + newHtml + "</div>");
-            }
-
-            $(".manage-long-tasks-menu .tasks tr").on("click", function() {
-                var link = $(this).data("link");
-                if (link && link !== "") {
-                    window.location.hash = link;
-                }
-            });
-
-            if (data.length > 5) {
-                $(".manage-long-tasks-menu .tasks-wrapper").css("height", "355px");
-                $(".manage-long-tasks-menu .tasks").first().slimScroll({
-                    height: '100%',
-                    start: 'top',
-                    wheelStep: 10,
-                    position: 'right',
-                    disableFadeOut: true
-                });
-            }
-            else {
-                $(".manage-long-tasks-menu .tasks-wrapper").css("height", "");
-            }
-        });
-    },
     /**
     * Add first level menu element for specific app type under specified category. You can only add app type specific menu to categories "understand", "explore", "reach", "improve", "utilities"
     * @memberof app
@@ -857,6 +791,22 @@ var AppRouter = Backbone.Router.extend({
             throw "Provide code, text, icon and priority properties for menu element";
         }
 
+        if (!this._uniqueMenus[app_type]) {
+            this._uniqueMenus[app_type] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][category]) {
+            this._uniqueMenus[app_type][category] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][category][node.code]) {
+            this._uniqueMenus[app_type][category][node.code] = true;
+        }
+        else {
+            //duplicate menu
+            return;
+        }
+
         //New sidebar container hook
         countlyVue.container.registerData("/sidebar/analytics/menu", {
             app_type: app_type,
@@ -866,6 +816,8 @@ var AppRouter = Backbone.Router.extend({
             title: node.text,
             url: node.url,
             icon: node.icon,
+            permission: node.permission,
+            tabsPath: node.tabsPath,
             node: node
             /*
                 Following secondary params are simply passed to registry, but not directly used for now:
@@ -975,6 +927,22 @@ var AppRouter = Backbone.Router.extend({
             throw "Provide text, code, url and priority for sub menu";
         }
 
+        if (!this._uniqueMenus[app_type]) {
+            this._uniqueMenus[app_type] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][parent_code]) {
+            this._uniqueMenus[app_type][parent_code] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][parent_code][node.code]) {
+            this._uniqueMenus[app_type][parent_code][node.code] = true;
+        }
+        else {
+            //duplicate menu
+            return;
+        }
+
         //New sidebar container hook
         countlyVue.container.registerData("/sidebar/analytics/submenu", {
             app_type: app_type,
@@ -983,6 +951,8 @@ var AppRouter = Backbone.Router.extend({
             priority: node.priority,
             title: node.text,
             url: node.url,
+            permission: node.permission,
+            tabsPath: node.tabsPath,
             node: node
             /*
                 Following secondary params are simply passed to registry, but not directly used for now:
@@ -1132,18 +1102,24 @@ var AppRouter = Backbone.Router.extend({
             return;
         }
         else if (Backbone.history.fragment !== "/" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
-            $("#" + countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type + "-type a").each(function() {
-                if (this.hash !== "#/" && this.hash !== "") {
-                    if ("#" + Backbone.history.fragment === this.hash && $(this).css('display') !== 'none') {
-                        change = false;
-                        return false;
-                    }
-                    else if (("#" + Backbone.history.fragment).indexOf(this.hash) === 0 && $(this).css('display') !== 'none') {
-                        redirect = this.hash;
-                        return false;
-                    }
-                }
+            var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type || "mobile";
+            var urls = countlyVue.container.getAllRoutes();
+            urls.sort(function(a, b) {
+                return b.url.length - a.url.length;
             });
+            for (var i = 0; i < urls.length; i++) {
+                if (urls[i].url === "#/") {
+                    continue;
+                }
+                if ("#" + Backbone.history.fragment === urls[i].url && (type === urls[i].app_type || !urls[i].app_type)) {
+                    change = false;
+                    break;
+                }
+                else if (("#" + Backbone.history.fragment).indexOf(urls[i].url) === 0 && (type === urls[i].app_type || !urls[i].app_type)) {
+                    redirect = urls[i].url;
+                    break;
+                }
+            }
         }
 
         if (redirect) {
@@ -1170,18 +1146,19 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard: function() {
-        var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
         if (countlyGlobal.member.restrict && countlyGlobal.member.restrict.indexOf("#/") !== -1) {
             return;
         }
         if (_.isEmpty(countlyGlobal.apps)) {
             this.renderWhenReady(this.manageAppsView);
         }
-        else if (type === "mobile" || type === "web" || type === "desktop") {
-            this.renderWhenReady(app.HomeView);
-        }
         else if (typeof this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== "undefined") {
-            this.renderWhenReady(this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]);
+            if (this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== null) {
+                this.renderWhenReady(this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]);
+            }
+            else {
+                this.renderWhenReady(app.HomeView);
+            }
         }
         else {
             this.renderWhenReady(this.dashboardView);
@@ -1221,9 +1198,8 @@ var AppRouter = Backbone.Router.extend({
     },
     renderWhenReady: function(viewName) { //all view renders end up here
         // If there is an active view call its destroy function to perform cleanups before a new view renders
-
-        if (this.activeView) {
-            this.activeView._removeMyRequests();
+        if (this.activeView && this.activeView.destroy) {
+            this.activeView._removeMyRequests && this.activeView._removeMyRequests();
             this.activeView.destroy();
         }
 
@@ -1269,13 +1245,14 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.parseAndShowMsg(countlyGlobal.message);
         }
 
-        // Init sidebar based on the current url
+        /**
+         * Identify the actuve sidebar menu item.
+         *
+         * countlyVue.sideBarComponent is null on the initial load.
+         * But don't worry, we identify selected menu items when its mounted aswell.
+         */
         if (countlyVue.sideBarComponent) {
-            var selectedMenuItem = countlyVue.sideBarComponent.$store.getters["countlySidebar/getSelectedMenuItem"];
-            var currLink = "#" + Backbone.history.fragment;
-            if (selectedMenuItem.item.url !== currLink) {
-                countlyVue.sideBarComponent.$store.dispatch("countlySidebar/updateSelectedMenuItem", {});
-            }
+            countlyVue.sideBarComponent.$children[0].identifySelected();
         }
     },
     sidebar: {
@@ -1417,17 +1394,16 @@ var AppRouter = Backbone.Router.extend({
             self.addMenuCategory("reach", {priority: 30});
             self.addMenuCategory("improve", {priority: 40});
             self.addMenuCategory("utilities", {priority: 50});
-            self.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.home", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10});
+            self.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.home", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10, bottom: 20});
             self.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
             self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
             // self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
-            self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
-            if (countlyAuth.validateRead('events')) {
-                self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
-            }
+            self.addSubMenu("events", {code: "events-overview", permission: "events", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
+            self.addSubMenu("events", {code: "all-events", permission: "events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
             // if (countlyAuth.validateUpdate('events') || countlyAuth.validateDelete('events')) {
             //     self.addSubMenu("events", {code: "manage-events", url: "#/analytics/manage-events", text: "sidebar.events.blueprint", priority: 100});
             // }
+
             self.addMenu("utilities", {
                 code: "management",
                 text: "sidebar.utilities",
@@ -1439,37 +1415,27 @@ var AppRouter = Backbone.Router.extend({
                 }
             });
 
-            if (countlyAuth.validateRead('core')) {
-                self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
-            }
+            // if (countlyAuth.validateRead('core')) {
+            //     self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
+            // }
 
             //management is also a menu category which goes in default menu i.e. visible to all users
 
             var jobsIconSvg = '<svg width="20px" height="16px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><title>list-24px 2</title><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="list-24px-2" fill="#9f9f9f" fill-rule="nonzero"><g id="list-24px"><path d="M0,6 L2,6 L2,4 L0,4 L0,6 Z M0,10 L2,10 L2,8 L0,8 L0,10 Z M0,2 L2,2 L2,0 L0,0 L0,2 Z M3,6 L12,6 L12,4 L3,4 L3,6 Z M3,10 L12,10 L12,8 L3,8 L3,10 Z M3,0 L3,2 L12,2 L12,0 L3,0 Z" id="Shape"></path></g></g></g></svg>';
-            if (countlyAuth.validateRead('global_applications')) {
-                self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 80});
+            if (countlyAuth.validateAppAdmin()) {
+                self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 30, permission: "anyadmin"});
             }
-            if (countlyAuth.validateRead('global_users')) {
-                self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 70});
+            if (countlyAuth.validateGlobalAdmin()) {
+                self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 10});
             }
-            if (countlyAuth.validateRead('global_jobs')) {
-                self.addMenu("management", {code: "jobs", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 140});
+            if (countlyAuth.validateGlobalAdmin()) {
+                self.addMenu("management", {code: "jobs", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 60});
             }
 
             // self.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});
 
             // self.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
             // self.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
-
-            if ((countlyGlobal.plugins.indexOf("surveys") > -1) ||
-                (countlyGlobal.plugins.indexOf("star-rating") > -1)) {
-                app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
-            }
-
-            if ((countlyGlobal.plugins.indexOf("crashes") > -1) ||
-                (countlyGlobal.plugins.indexOf("crash_symbolication") > -1)) {
-                app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-            }
 
             Backbone.history.checkUrl();
 
@@ -1534,7 +1500,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * {{> timezones }}
         */
-        Handlebars.registerPartial("timezones", $("#template-timezones").html());
+        Handlebars.registerPartial("timezones", $("#template-timezones").html() || "");
         /**
         * Display common app category selecting UI element
         * @name app-categories
@@ -1864,11 +1830,11 @@ var AppRouter = Backbone.Router.extend({
                     data: {check_session: true},
                     success: function(result) {
                         if (result === "logout") {
-                            $("#user-logout").click();
+                            CountlyHelpers.logout("/logout");
+
                         }
                         if (result === "login") {
-                            $("#user-logout").click();
-                            window.location = "/login";
+                            CountlyHelpers.logout();
                         }
                         setTimeout(function() {
                             validateSession();
@@ -1888,11 +1854,10 @@ var AppRouter = Backbone.Router.extend({
                         url: countlyGlobal.path + "/session",
                         success: function(result) {
                             if (result === "logout") {
-                                $("#user-logout").click();
+                                CountlyHelpers.logout("/logout");
                             }
                             if (result === "login") {
-                                $("#user-logout").click();
-                                window.location = "/login";
+                                CountlyHelpers.logout();
                             }
                             else if (result === "success") {
                                 shouldRecordAction = false;
@@ -2484,11 +2449,6 @@ var AppRouter = Backbone.Router.extend({
 
             $topbar.on("click", ".dropdown", function(e) {
                 var wasActive = $(this).hasClass("clicked");
-                if ($(this).hasClass('manage-long-tasks-menu-dropdown')) {
-                    $("#manage-long-tasks-icon").removeClass('unread');
-                    app.haveUnreadReports = false;
-                    $(".orange-side-notification-banner-wrapper").css("display", "none");
-                }
                 $topbar.find(".dropdown").removeClass("clicked");
 
                 if (wasActive) {
@@ -3446,7 +3406,12 @@ var AppRouter = Backbone.Router.extend({
     * app.addAppType("mobile", MobileDashboardView);
     */
     addAppType: function(name, view) {
-        this.appTypes[name] = new view();
+        if (view) {
+            this.appTypes[name] = new view();
+        }
+        else {
+            this.appTypes[name] = null;
+        }
         var menu = $("#default-type").clone();
         menu.attr("id", name + "-type");
         $("#sidebar-menu").append(menu);
@@ -3726,7 +3691,6 @@ var AppRouter = Backbone.Router.extend({
                 if (window.components && window.components.slider && window.components.slider.instance) {
                     window.components.slider.instance.close();
                 }
-                app.updateLongTaskViewsNofification(true);
             }
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal.apps[appId].type;
@@ -4306,7 +4270,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     //add to options for independent!!!
 
     var myurl = "";
-    var mydata = "";
+    var mydata = "{}";
     if (originalOptions && originalOptions.url) {
         myurl = originalOptions.url;
     }
@@ -4351,7 +4315,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         }
         else {
             if (app.activeView) {
-                if (app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata]) {
+                if (app.activeView._myRequests && app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata]) {
                     jqXHR.abort_reason = "duplicate";
                     jqXHR.abort(); //we already have same working request
                 }

@@ -14,6 +14,16 @@
     }
 }
 
+.cly-vue-push-notification-table {
+    td.el-table-column--clickable .cell:hover{
+        text-decoration: unset!important;
+    }
+    td.el-table-column--clickable .cell:hover .cly-vue-push-notification-table-column__first-line {
+        color: #1A75DA;
+        text-decoration: underline;
+    }
+}
+
 .cly-vue-push-notification-table-column {
     &__first-line {
         margin-bottom: 6px;
@@ -36,8 +46,9 @@
 }
 
 .cly-vue-platform-filter-label {
-    font-size: typography.$heading-3-size;
+    font-size: typography.$heading-4-size;
     font-weight: typography.$font-weight-primary;
+    color: map.get(colors.$colors,"cool-gray-100");
 }
 
 .blinker-wrapper {
@@ -240,36 +251,12 @@
     }
 
     &__platforms {
-
-        width: 70px;
-        margin: 18px auto 0;
-        height: 27px;
-        display: table;
-        table-layout: fixed;
-    }
-
-    &__icon-container {
-        display: table-cell;
-        width: 2%;
-        max-width: 80px;
-        text-align: center;
-        font-size: 12px;
-        padding: 6px 9px;
-        color: #A7A8A8;
-        background-color: #F5F5F5;
-        border: 1px solid #D0D0D0;
-        transition: .6s ease-out;
-        line-height: 15px;
-    }
-
-    &__icon-container:first-child {
-        border-radius: 2px 0 0 2px;
-    }
-
-    &__active-icon {
-        color: #636363;
-        background-color: white;
-        border: 1px solid #37BB29;
+        display: flex;
+        justify-content: center;
+        width: 280px;
+        .el-radio-button__inner {
+            width: 80px;
+        }
     }
 
     &__user-property {
@@ -281,6 +268,8 @@
 }
 
 .cly-vue-push-notification-details-summary {
+
+    margin-top: 64px;
     
     &__header {
         margin-top: 64px;
@@ -295,13 +284,16 @@
         }
     }
 
-    &__message-preview {
-        margin-top:214px;
-    }
+    // &__message-preview {
+    //     margin-top:214px;
+    // }
 }
 
 .cly-vue-push-notification-details-summary-card {
-    min-height: 715px;
+    min-height: 600px;
+    > .el-card__header {
+        padding: 12px 24px;
+    }
 }
 
 .cly-vue-push-notification-details-sub-header {
@@ -321,13 +313,13 @@
 .cly-vue-push-notification-details-summary {
 
     &__header {
-        font-weight: typography.$heading-3-weight;
-        font-size: typography.$heading-3-size;
+        font-weight: typography.$heading-4-weight;
+        font-size: typography.$heading-4-size;
     }
 
     &__label {
         flex-basis: 20%;
-        min-width: 20%;
+        min-width: 25%;
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
@@ -341,13 +333,6 @@
         font-weight: normal;
         min-width: 200px;
     }
-}
-
-.cly-vue-push-notification-details-no-errors-text {
-    display: flex;
-    justify-content: center;
-    height: 675px;
-    align-items: center;
 }
 
 .cly-vue-push-notification-details-summary-card {
@@ -397,6 +382,10 @@
 
 .cly-vue-push-notification-drawer {
 
+    &__section {
+        padding: 16px 0px;
+    }
+
     &__input-label {
         font-size: typography.$text-button-size;
         line-height: 13px;
@@ -404,15 +393,22 @@
         color: map.get(colors.$colors,"cool-gray-100");
     }
 
+    // &__link--button:hover {
+    //     border-color: inherit;
+    //     background-color: inherit;
+    // }
+
     &__input-description {
         font-size: typography.$text-small-size;
         line-height: 16px;
         color: map.get(colors.$colors,"text-secondary");
+        margin-top: 4px;
+        margin-bottom: 6px;
     }
 
     &__input-suffix {
         height:100%;
-        color: map.get(colors.$colors,"text-custom-1-active");
+        color: map.get(colors.$colors,"cool-gray-50");
     }
 
     //platform only
@@ -454,29 +450,44 @@
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
     }
 
     &__subsection-left {
-        background: #F8FAFD; 
+        background: #FFFFFF; 
         border-bottom-right-radius: 0px;
         border-top-right-radius: 0px;  
         border-bottom-left-radius: 6px;
         border-top-left-radius: 6px;
         border: 1px solid #E2E4E8;
         min-width: 200px;
+        overflow-y: auto;
+    }
+
+    &__subsection-left-row {
+        padding: 2.5px 0;
+        border-left: 2px solid transparent;
+        .el-checkbox__label {
+            width: 150px;
+        }
     }
 
     &__subsection-left-row-active {
-        background:#e1e1e1;
+        background:#F6F6F6;
     }
 
     &__subsection-left-row:hover {
-        background:darkgrey;
+        background:#F6F6F6;
+        border-left: 2px solid #0166D6;
     }
 
     &__subsection-left-list-item {
         list-style: none;
         width: 100%;
+        font-size: 13px;
+        line-height: 16px;
+        font-weight: normal;
+        color: #333C48;
 
         &:hover {
             cursor: pointer;
@@ -490,12 +501,20 @@
         border-top-left-radius: 0px;  
         border-bottom-right-radius: 6px;
         border-top-right-radius: 6px;
+        padding-top: 8px;
+        padding-bottom: 12px;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     &__subsection-border {
         border: 1px solid #E2E4E8;
         background: #F8FAFD;
         border-radius: 6px; 
+        padding-top: 12px;
+        padding-bottom: 12px;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     &__review-header {
@@ -522,8 +541,9 @@
 
     &__section-group {
         border-radius: 6px;
-        border: 1px solid #E2E4E8;
-        background: #F8FAFD;
+        background: map.get(colors.$colors,"cool-gray-10");
+        padding-left: 16px !important;
+        padding-right: 16px !important;
     }
 }
 
@@ -532,6 +552,14 @@
 .cly-vue-push-notification-large-radio-button-with-description {
     &__container {
         flex-basis: 0;
+        height: 100px;
+
+        label {
+            .el-radio__input {
+                vertical-align: top;
+                margin-top: 8px;
+            }
+        }
     }
 
     &__button {
@@ -542,7 +570,8 @@
     &__title {
         display: inline-block;
         color: map.get(colors.$colors,"text-primary");
-        white-space: pre-wrap;
+        white-space: break-spaces;
+        font-weight: 400;
     }
 
     &__content {
@@ -564,6 +593,7 @@
         display: inline-block;
         color: map.get(colors.$colors,"text-primary");
         white-space: pre-wrap;
+        font-weight: 400;
     }
 
     &__content {
@@ -576,6 +606,8 @@
     &__border {
         width: 100%;
         margin-left: 0px !important;
+        padding: 12px !important;
+        
         .el-radio__label {
             font-size: typography.$text-button-size;
             line-height: 16px;
@@ -610,6 +642,9 @@
     .el-collapse-item__header {
         flex: 1 0 auto;
         order: -1;
+    }
+    + .cly-vue-push-notification-accordion-with-left-side-arrow {
+        margin-top: 25px;
     }
 }
 
@@ -711,21 +746,22 @@
 
 .emoji-invoker {
     position: absolute;
-    top: 0.25rem;
-    right: 0.85rem;
+    top: 0.35rem;
+    right: 0.35rem;
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all .2s;
+    transform: scale(0.7);
 }
 
 .emoji-invoker:hover {
-    transform: scale(1.1);
+    transform: scale(1);
 }
 
 .emoji-invoker > svg {
-    fill: #b1c6d0;
+    fill: #81868D;
 }
 
 .emoji-picker {
@@ -784,5 +820,10 @@
 
 .emoji-picker .emojis span:hover {
     background: #ececec;
+    cursor: pointer;
+}
+
+.cly-vue-push-notification-details-chart-bars__item-legend-percentage + .text-medium span i{
+    margin-left: 6px;
     cursor: pointer;
 }

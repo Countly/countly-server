@@ -1,0 +1,66 @@
+    <cly-main v-show="consentDpChartloaded">
+        <div class="bu-level bu-my-4">
+            <div class="bu-level-left">
+                Consent Requests for
+                <cly-select-x
+                        class="bu-ml-3"
+                        :width="300"
+                        :arrow="false"
+                        :borderless="true"
+                        :adaptiveLength="true"
+                        :auto-commit="true"
+                        :hide-default-tabs="true"
+                        :hide-all-options-tab="true"
+                        :options="filter0"
+                        v-model="selectedfilterforMetrics">
+                    </cly-select-x>
+            </div>
+            <div class="bu-level-right">
+                <cly-date-picker-g type="daterange" range-separator="To" start-placeholder="Start date" end-placeholder="End date">
+                </cly-date-picker-g>
+            </div>
+        </div>
+        <cly-section>
+            <cly-chart-time
+                 :showDownload=false :showToggle=false :showZoom=false :option="consentDpChart" :legend="consentDpChartlegend"> </cly-chart-time>
+
+        </cly-section>
+            <div class="bu-is-flex">
+                <div class="white-bg cly-vue-compliance__user_chart bu-px-5 bu-mr-4 bu-is-flex bu-is-flex-direction-column">
+                    <div class="bu-is-flex bu-is-flex-direction-column bu-mt-3" style="width:85%; height: 50px">
+                        <div class="bu-is-flex bu-is-align-items-center" >
+                            <p class="bu-mr-2">{{userDatalegend.label}}</p>
+                            <cly-tooltip-icon></cly-tooltip-icon>
+                        </div>
+                        <div class="cly-vue-chart-legend__second-row bu-is-flex">
+                            <div class="cly-vue-chart-legend__p-number"> {{formatTableNumber(userDatalegend.value)}}</div>
+                            <div class="cly-vue-chart-legend__p-trend bu-is-flex bu-is-align-items-center bu-ml-2" v-bind:class="userDatalegend.class">
+                                <i v-if="userDatalegend.trend === 'u'" class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i>
+                                <i v-else class="cly-trend-down-icon ion-android-arrow-down bu-ml-2"></i>
+                                <div>{{userDatalegend.percentage}}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <cly-chart-time :height="277" :showDownload=false :showToggle=false :showZoom=false :legend={show:false} :option.sync="exportDpChart">
+                     </cly-chart-time>
+                </div>
+                <div class="white-bg cly-vue-compliance__user_chart bu-px-5 bu-is-flex bu-is-flex-direction-column">
+                        <div class="bu-is-flex bu-is-flex-direction-column bu-mt-3" style="width:85%; height: 50px;">
+                            <div class="bu-is-flex bu-is-align-items-center" >
+                                <p class="bu-mr-2">{{purgeDatalegend.label}}</p>
+                                <cly-tooltip-icon></cly-tooltip-icon>
+                            </div>
+                            <div class="cly-vue-chart-legend__second-row bu-is-flex">
+                                <div class="cly-vue-chart-legend__p-number"> {{formatTableNumber(purgeDatalegend.value)}}</div>
+                                <div class="cly-vue-chart-legend__p-trend bu-is-flex bu-is-align-items-center bu-ml-2" v-bind:class="purgeDatalegend.class">
+                                    <i v-if="purgeDatalegend.trend === 'u'" class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i>
+                                    <i v-else class="cly-trend-down-icon ion-android-arrow-down bu-ml-2"></i>
+                                    <div>{{purgeDatalegend.percentage}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    <cly-chart-time :showDownload="false" :showToggle="false" :showZoom="false" :legend={show:false} :height="277" :option.sync="purgeDpChart">
+                    </cly-chart-time>
+                </div>
+            </div>
+        </cly-main>

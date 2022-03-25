@@ -1,5 +1,45 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+/* inter-300 - vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.svg#Inter') format('svg'); /* Legacy iOS */
+}
+/* inter-regular - vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.svg#Inter') format('svg'); /* Legacy iOS */
+}
+/* inter-500 - vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-500.svg#Inter') format('svg'); /* Legacy iOS */
+}
 
 @font-face {
 font-family: 'Roboto Mono';
@@ -2016,9 +2056,10 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #top-bar .dropdown .item_info .user_name div:last-child {  font-size: 12px; white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis; }
 #top-bar .dropdown .item_info .api_key { margin-top: 10px;}
 #top-bar .dropdown .item_info .api_key div:first-child { color: #676464; font-size: 11px; text-transform: uppercase;font-weight: 500;}
-#user_api_key_item input {width:100%; border:none; color: #969696; font-size: 10px; font-family: Ubuntu,Helvetica,sans-serif; cursor:pointer;}
-#user_api_key_item input::selection {background: #2EB52B;color:white;}
+#user_api_key_item {display: flex;cursor: pointer;}
+#user_api_key_item input {width:100%; border:none; color: #969696; font-size: 10px; font-family: Ubuntu,Helvetica,sans-serif; cursor:pointer;margin-left: 5px;}
 #user_api_key_item input::-moz-selection {background: #2FA732;color:#ffffff;}
+#user_api_key_item input:hover {color:#0166D6;}
 #manage-menu {background-color:#0B131A; color: #FFF;}
 #top-bar .dropdown .menu #manage-menu.list .item{border: none; background-image: none; padding-top: 5px; padding-bottom: 5px; width: 180px;}
 #top-bar .dropdown .menu #manage-menu.list .item:hover {background-color:#0B131A;}
@@ -2072,8 +2113,8 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 
 #main-views-container .main-view.active { display: block; }
 #sidebar,
-#main-views-container #analytics-main-view.active #sidebar.hidden { transform:translate(-230px); opacity:0.8; transition: opacity 0.1s 0.2s, transform 0.55s; }
-#main-views-container #analytics-main-view.active #sidebar { transform:translate(0); opacity:1; transition: opacity 0.1s 0.2s, transform 0.55s; }
+/* #main-views-container #analytics-main-view.active #sidebar.hidden { transform:translate(-230px); opacity:0.8; transition: opacity 0.1s 0.2s, transform 0.55s; } */
+/* #main-views-container #analytics-main-view.active #sidebar { transform:translate(0); opacity:1; transition: opacity 0.1s 0.2s, transform 0.55s; } */
 #hide-sidebar-button { position: absolute; left: 16px; top: 21px; cursor: pointer; width: 21px; height: 18px; background-image: url("../images/dashboard/collapse-sprite.svg"); background-repeat: no-repeat;}
 #hide-sidebar-button:hover { background-position: -21px 0px; }
 #hide-sidebar-button.active { background-position: -42px 0px; }
@@ -2628,95 +2669,6 @@ padding-top: 0;
 .extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}
 #report-manager-view .left {width:500px;}
 
-#top-bar .dropdown .manage-long-tasks-menu {
-    background-color:#e9e9e9;
-}
-.manage-long-tasks-menu .menu-category-title{
-    background-color:#e9e9e9;
-    color:#636363;
-    position: relative;
-    text-transform:uppercase;
-    text-align:left;
-}
-.manage-long-tasks-menu .menu-category-title p {
-    font-size:17px;
-    padding: 20px;
-    line-height:17px;
-    margin:0px;
-    
-} 
-.manage-long-tasks-menu .menu-category-title a.see-all {
-    font-size:13px;
-    position:absolute;
-    right: 10px;
-    top:20px;
-} 
-.manage-long-tasks-menu .menu-category-title a.see-all:hover {
-    cursor:pointer;
-}
-.manage-long-tasks-menu .tasks{
-    padding: 0px 20px;
-}
-.manage-long-tasks-menu .tasks-wrapper{
-    margin-bottom:3px;
-    background-color:#ffffff;
-}
-
-.manage-long-tasks-menu .tasks-wrapper .graph-description{
-    text-align: center;
-    vertical-align: middle;
-    line-height: 140px;
-    height:140px;
-}
-
-.manage-long-tasks-menu .tasks table{
-    width:100%;
-    
-}
-.manage-long-tasks-menu .tasks table td {
-    font-size: 12px;
-    color:#636363;
-    border-bottom: 1px solid #d0d0d0;
-    text-align:left;
-    padding: 15px 0 15px 0;
-    font-family: Ubuntu,Helvetica,sans-serif;
-    
-}
-
-.manage-long-tasks-menu .tasks table tr:last-child td {
-    border-bottom: none;
-}
-.manage-long-tasks-menu .tasks table p {
-        line-height: normal;
-    margin: 0px;
-    padding: 0 0 7px 0;
-}
-
-.manage-long-tasks-menu .tasks table p.title {
-    color:#1e1e1e;
-}
-.manage-long-tasks-menu .tasks table p span{
-    padding-left:8px
-}
-.manage-long-tasks-menu .tasks table tr.completed td:hover {
-    cursor: pointer;
-}
-
-.manage-long-tasks-menu .tasks .circle-arrow {
-    border-radius: 50%;
-    width: 12px;
-    height: 10px;
-    background-color: #e8e8e8;
-    font-size: 8px;
-    text-align: center;
-    padding-top: 2px;
-    padding-left: 1px;
-    color: #636363;
-    vertical-align: middle;
-    margin-left:6px;
-    margin-top:-3px;
-}
-
 .orange-side-notification-banner-wrapper{
     position: absolute;
     width: 500px;
@@ -2763,33 +2715,6 @@ padding-top: 0;
     position: absolute;
     pointer-events: none;
     z-index: 2;
-}
-
-.manage-long-tasks-menu .tasks table tr:hover .title {
-    color:#2db52b;
-    cursor: pointer;
-}
-.manage-long-tasks-menu .tasks tr:hover .circle-arrow {
-    background-color:#2db52b;
-    color:#ffffff;
-}
-
-#top-bar .dropdown .manage-long-tasks-menu:before {
-    border-bottom-color: #e9e9e9;
-}
-
-#manage-long-tasks-icon {
-    position:relative;
-}
-#manage-long-tasks-icon.unread:after {
-    content: " ";
-    width: 4px;
-    height: 4px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    border-radius: 4px;
-    background-color: #FF8700;
 }
 
 .dashboard-summary .item .bar .bar-inner-new-e{
@@ -4079,40 +4004,6 @@ transform: rotate(45deg);
 .routename-attribution .zoom { margin-top: -25px; }
 .routename-compliance .zoom { margin-top: -12px; }
 .routename-messagingDashboardView .zoom { left: calc(50% - 51px); position: absolute; z-index: 999; top: 7%;}
-
-.cly-breadcrumbs {
-    padding: 0px 0px 20px 0px;
-}
-
-.cly-breadcrumbs ul {
-    padding: 0px;
-    list-style: none;
-}
-
-.cly-breadcrumbs ul li {
-    display: inline;
-    font-size: 18px;
-}
-
-.cly-breadcrumbs ul li+li:before {
-    padding: 8px;
-    content: "\f125";
-    font-family: 'Ionicons';
-    font-size: 8px;
-    vertical-align: middle;
-    color: #5f5f5f;
-}
-
-.cly-breadcrumbs ul li a {
-    text-decoration: none;
-    font-size: 13px;
-    text-transform: uppercase;
-    color: #5f5f5f;
-}
-
-.cly-breadcrumbs ul li a:hover {
-    text-decoration: underline;
-}
 
 .clip { max-height: 60px; line-height: 20px; text-overflow: ellipsis; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;}
 .clip.nothing { color: #bbb;}

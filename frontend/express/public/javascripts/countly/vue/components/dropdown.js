@@ -65,6 +65,9 @@
                         readonly="readonly" \
                         v-model="description"\
                         :placeholder="placeholder">\
+                        <template v-slot:prefix="scope">\
+                            <slot name="prefix" v-bind="scope"></slot>\
+                        </template>\
                         <template slot="suffix" v-if="arrow">\
                             <i class="el-select__caret" :class="[iconClass]"></i>\
                         </template>\
@@ -342,19 +345,19 @@
                         <div class="cly-multi-select default-skin">\
                             <div class="cly-multi-select__body">\
                                 <div>\
-                                    <div>\
+                                    <div class="cly-multi-select__title-wrapper">\
                                         <span class="cly-multi-select__title">{{title}}</span>\
                                         <el-button class="cly-multi-select__reset" @click="reset" type="text">{{resetLabel}}</el-button>\
                                     </div>\
                                     <table v-for="field in fields" :key="field.key">\
                                         <tr v-if="showThis(field.key)" class="cly-multi-select__field">{{field.label}}</tr>\
                                         <tr v-if="\'items\' in field && showThis(field.key)">\
-                                            <el-select class="cly-multi-select__field-dropdown" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                            <el-select class="cly-multi-select__field-dropdown" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
                                                 <el-option v-for="item in field.items" :key="item.value" :value="item.value" :label="item.label"></el-option>\
                                             </el-select>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
-                                            <cly-select-x ref="selectX" v-bind="field" class="cly-multi-select__field-dropdown" :width="320" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                            <cly-select-x ref="selectX" v-bind="field" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
                                                 <template v-slot:header="headerScope" v-if="field.header">\
                                                     <slot name="header" v-bind="headerScope"></slot>\
                                                 </template>\
@@ -369,8 +372,8 @@
                                     </table>\
                                 </div>\
                                 <div class="cly-multi-select__controls">\
-                                    <el-button v-bind="$attrs" class="cly-multi-select__cancel" @click="close">{{cancelLabel}}</el-button>\
-                                    <el-button v-bind="$attrs" class="cly-multi-select__confirm" @click="save">{{confirmLabel}}</el-button>\
+                                    <el-button v-bind="$attrs" class="el-button el-button--secondary el-button--small" @click="close">{{cancelLabel}}</el-button>\
+                                    <el-button v-bind="$attrs" class="el-button el-button--success el-button--small" @click="save">{{confirmLabel}}</el-button>\
                                 </div>\
                             </div>\
                         </div>\
@@ -380,6 +383,7 @@
             confirmLabel: {type: String, default: CV.i18n("events.general.confirm")},
             resetLabel: {type: String, default: "Reset Filters"},
             adaptiveLength: {type: Boolean, default: true},
+            selectXWidth: {type: Number, default: 320},
             emptyValue: {
                 type: String,
                 default: function() {

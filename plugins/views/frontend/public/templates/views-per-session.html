@@ -2,16 +2,16 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('views-per-session.title')}} </h2>
-            <cly-tooltip-icon :tooltip="i18n('views-per-session.description')" icon="ion ion-help-circled" style="margin-left:10px"> </cly-tooltip-icon>
+            <cly-tooltip-icon :tooltip="i18n('views-per-session.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
         </template>
     </cly-header>
     <cly-main>
         <cly-date-picker-g style="margin-bottom:32px"></cly-date-picker-g>
         <cly-section>
-            <cly-chart-bar :option="viewsPerSessionOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
+            <cly-chart-bar :option="viewsPerSessionOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="viewsPerSessionRows" :resizable="true" v-loading="isLoading">
+            <cly-datatable-n  :rows="viewsPerSessionRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="viewsBuckets" :label="i18n('views-per-session.table-views-buckets')">
                     </el-table-column>

@@ -224,6 +224,59 @@ countly_upgrade (){
         else
             echo "Error: Couldn't find any Enterprise Edition package, you should place archive file into '$(cd "$DIR/../../../"; pwd;)'"
         fi
+    elif [ "$1" == "ce" ]
+    then
+        FILE=$(ls -tr "$DIR/../../../"countly-community-edition*.tar.gz 2> /dev/null | tail -1 | awk -F' ' '{print $NF}')
+
+        if [ -f "$FILE" ]; then
+            tar -zxf "${FILE}" -C /tmp "countly/frontend/express/version.info.js"
+            NEW_VERSION="$(grep -oP 'version:\s*"\K[0-9\.]*' "/tmp/countly/frontend/express/version.info.js")"
+            rm -rf /tmp/countly
+
+            echo -e "\e[91m\n\n                        !!!   WARNING   !!!          \n\nYou are going to downgrade from Enterprise Edition to Community Edition;\nthis will disable all Enterprise Edition plugins, delete all Enterprise\nEdition plugins and also will drop 'countly_drill' database since it contains\ndata for Enterprise Edition features.\e[0m"
+            read -r -p "Are you sure you want to continue? [y/N] " response
+            if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
+            then
+                CONTINUE=1
+            fi
+
+            if [ "$CONTINUE" == "1" ]; then
+                if [ "$VERSION" == "$NEW_VERSION" ]; then
+                    cp -Rf "$DIR/../../"plugins/plugins.json "$DIR/../../"plugins/plugins.ee.json
+
+                    echo "Extracting Countly Community Edition..."
+                    (cd "$DIR/../../../";
+                    tar -zxf "${FILE}";)
+                    bash "$DIR/../scripts/detect.init.sh"
+
+                    CE_PLUGINS=$(sed 's/\"//g' "$DIR/../../plugins/plugins.default.json" | sed 's/\[//g' | sed 's/\]//g')
+                    EE_PLUGINS=$(sed 's/\"//g' "$DIR/../../plugins/plugins.ee.json" | sed 's/\[//g' | sed 's/\]//g')
+                    PLUGINS_DIFF=$(echo " ${CE_PLUGINS}, ${EE_PLUGINS}" | tr ',' '\n' | sort | uniq -u)
+                    echo "Disabling plugins..."
+                    for plugin in $PLUGINS_DIFF; do
+                        countly plugin disable "$plugin"
+                        rm -rf "$DIR/../../plugins/$plugin"
+                    done
+
+                    ## shellcheck requires variables and commands in double quote and this also add single quotes
+                    ## to command, so that's why I prepared whole command as variable and provide it to bash
+                    MONGO_URI="$(countly mongo)"
+                    DROP_COMMAND="mongo ${MONGO_URI} --eval 'db.getSiblingDB(\"countly_drill\").dropDatabase();'"
+                    echo "Dropping 'countly_drill' database..."
+                    bash -c "${DROP_COMMAND}"
+
+                    echo "Upgrading Countly..."
+                    countly upgrade
+                else
+                    echo "Version mismatch detected! Version of Enterprise Community Edition should be the same with Community Edition. Please upgrade Countly to  Enterprise Edition v${NEW_VERSION} first."
+                    echo "Enterprise Edition v${VERSION}"
+                    echo "Community Edition v${NEW_VERSION}"
+                    echo -e "\nYou can run the command below & 'countly upgrade ce' again if you think core of Countly v${VERSION} is compatible to work with v${NEW_VERSION}.\nsed -i 's/version: \"${VERSION}\"/version: \"${NEW_VERSION}\"/g' $(countly dir)/frontend/express/version.info.js\n"
+                fi
+            fi
+        else
+            echo "Error: Couldn't find any Community Edition package, you should place archive file into '$(cd "$DIR/../../../"; pwd;)'"
+        fi
     elif [ "$1" == "help" ]
     then
         echo "countly upgrade usage:"
@@ -240,12 +293,12 @@ countly_upgrade (){
         echo "    countly upgrade version fs <from> <to> [-y]      # run all filesystem upgrade scripts between provided versions";
         echo "    countly upgrade version db <from> <to> [-y]      # run all database upgrade scripts between provided versions";
         echo "    countly upgrade ee                               # upgrade from Community Edition to Enterprise Edition within the same version";
+        echo "    countly upgrade ce                               # upgrade from Enterprise Edition to Community Edition within the same version";
         echo "    countly upgrade help                             # this command";
     fi
 }
 
 countly_mark_version (){
-    countly_root ;
     if [ "$1" == "fs" ] || [ "$1" == "db" ]
     then
         UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" write_"$1" "$2");
@@ -259,7 +312,6 @@ countly_mark_version (){
 }
 
 countly_compare_version (){
-    countly_root ;
     if [ "$1" == "fs" ] || [ "$1" == "db" ]
     then
         UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" compare_"$1" "$2");

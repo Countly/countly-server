@@ -29,6 +29,18 @@ jobs:
         shell: bash
         run: sudo bash ./bin/countly.install.sh
         
+      - name: NodeJS version
+        shell: bash
+        run: nodejs --version
+        
+      - name: NPM version
+        shell: bash
+        run: npm --version
+        
+      - name: Mongo version
+        shell: bash
+        run: mongo --version
+        
       - name: Enable all plugins
         shell: bash
         run: sudo bash ./bin/scripts/countly.enable.all.plugins.sh

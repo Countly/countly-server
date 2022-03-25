@@ -1,0 +1,4 @@
+<cly-dialog ref="dialog" class="cly-vue-remote-config-conditions-drawer-json-editor"  :close-on-press-escape="false" :close-on-click-modal="false"  :visible.sync="isOpen" :show-close="false" width="500px"
+    :modal="false" center>
+    <cly-json-editor v-on:closed="handleClose" :emitClose="true" :isOpened="isOpen" ref="jsonEditor" v-model="currentVal"></cly-json-editor>
+</cly-dialog>

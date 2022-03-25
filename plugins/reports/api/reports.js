@@ -15,7 +15,7 @@ var reportsInstance = {},
     log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info'),
     countlyConfig = require('../../../frontend/express/config.js');
-
+var pdf = require('html-pdf');
 countlyConfig.passwordSecret || "";
 
 plugins.setConfigs("reports", {
@@ -640,30 +640,69 @@ var metricProps = {
 
     reports.send = function(report, message, callback) {
         if (report.emails) {
-            for (var i = 0; i < report.emails.length; i++) {
-                var msg = {
+            for (let i = 0; i < report.emails.length; i++) {
+                let unsubscribeLink = report.messages && report.messages[i] && report.messages[i].unsubscribeLink;
+                let html = report.messages && report.messages[i] && report.messages[i].html;
+                if (!html && message.data && message.template) { // report from dashboard
+                    const msg = reports.genUnsubscribeCode(report, report.emails[i]);
+                    message.data.unsubscribe_link = message.data.host + "/unsubscribe_report?data=" + encodeURIComponent(msg);
+                    html = ejs.render(message.template, message.data);
+                }
+                const msg = {
                     to: report.emails[i],
                     from: versionInfo.title,
                     subject: report.subject,
                     // if report contains customize message for each email address, use reports.messages[i]
-                    html: report.messages && report.messages[i] && report.messages[i].html || message,
+                    html: html,
                 };
 
+                const options = { "directory": "/tmp", "width": "1028px", height: "1000px", phantomArgs: ["--ignore-ssl-errors=yes"] };
+                const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
                 if (report.messages && report.messages[i]) {
                     msg.list = {
                         unsubscribe: {
-                            url: report.messages[i].unsubscribeLink,
+                            url: unsubscribeLink,
                             comment: report.unsubscribe_local_string || 'Unsubscribe'
                         }
                     };
                 }
 
-                if (mail.sendPoolMail) {
-                    mail.sendPoolMail(msg);
+                if (report.sendPdf === true) {
+                    pdf.create(msg.html, options).toFile(filePath, function(err, res) {
+                        if (err) {
+                            return log.d(err);
+                        }
+                        msg.attachments = [{filename: "Countly_Report.pdf", path: res.filename}];
+
+                        /**
+                         * callback function after sending email to delete pdf file
+                         */
+                        const deletePDFCallback = function() {
+                            if (fs.existsSync(filePath)) {
+                                fs.unlink(filePath, (e) => {
+                                    if (e) {
+                                        log.d(e);
+                                    }
+                                });
+                            }
+                        };
+                        if (mail.sendPoolMail) {
+                            mail.sendPoolMail(msg, deletePDFCallback);
+                        }
+                        else {
+                            mail.sendMail(msg, deletePDFCallback);
+                        }
+                    });
                 }
                 else {
-                    mail.sendMail(msg);
+                    if (mail.sendPoolMail) {
+                        mail.sendPoolMail(msg);
+                    }
+                    else {
+                        mail.sendMail(msg);
+                    }
                 }
+
             }
         }
         callback();

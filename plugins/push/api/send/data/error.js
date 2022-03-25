@@ -176,6 +176,16 @@ class PushError extends Error {
     }
 
     /**
+     * Check that error type is bitwise same as typ
+     * 
+     * @param {int} typ error flag
+     * @returns {boolean} true if the error corresponds to the typ
+     */
+    is(typ) {
+        return (this.type & typ) === typ;
+    }
+
+    /**
      * Convert this error to plain JSON
      * @returns {object} JSON contents of the error
      */
@@ -217,9 +227,7 @@ class PushError extends Error {
                     .setLeft(data.left, data.leftBytes);
             }
             else {
-                e = new PushError(data.message, data.type || ERROR.EXCEPTION)
-                    .setAffected(data.affected, data.affectedBytes)
-                    .setLeft(data.left, data.leftBytes);
+                e = new PushError(data.message, data.type || ERROR.EXCEPTION);
             }
 
             e.stack = data.stack;
@@ -258,6 +266,15 @@ class ValidationError extends PushError {
     constructor(errors) {
         super('Validation error', ERROR.DATA_COUNTLY);
         this.errors = typeof errors === 'string' ? [errors] : errors;
+    }
+
+    /**
+     * toString override
+     * 
+     * @returns {string} string representation of the error
+     */
+    toString() {
+        return `${super.message}: ${this.errors.join('; ')}`;
     }
 }
 

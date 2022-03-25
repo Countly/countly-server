@@ -1,11 +1,12 @@
 'use strict';
-
-const { State, Status, STATUSES, Mongoable, DEFAULTS, S } = require('./const'),
+const { State, Status, STATUSES, Mongoable, DEFAULTS, S, S_REGEXP } = require('./const'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
     { Result } = require('./result'),
-    { Info } = require('./info');
+    { Info } = require('./info'),
+    db = require('./db');
+
 
 /**
  * Message class encapsulating all the message-related data
@@ -44,7 +45,7 @@ class Message extends Mongoable {
             status: { type: 'String', in: Object.values(Status) },
             filter: {
                 type: Filter.scheme,
-                required: true,
+                required: false,
             },
             triggers: {
                 type: Trigger.scheme,
@@ -56,6 +57,7 @@ class Message extends Mongoable {
                 type: Content.scheme,
                 array: true,
                 required: true,
+                nonempty: true,
                 'min-length': 1,
             },
             result: {
@@ -74,6 +76,13 @@ class Message extends Mongoable {
      */
     setData(data) {
         super.setData(data);
+
+        if (!db.isoid(this._data._id)) {
+            this._data._id = db.oid(this._data._id);
+        }
+        if (this._data.app && !db.isoid(this._data.app)) {
+            this._data.app = db.oid(this._data.app);
+        }
         if (!(this._data.filter instanceof Filter)) {
             this._data.filter = new Filter(this._data.filter);
         }
@@ -91,17 +100,20 @@ class Message extends Mongoable {
      * Get query of messages active at data
      * 
      * @param {Date} date date
-     * @param {State} state state, queued by default
+     * @param {int} play period in ms to the left and right from the date
+     * @param {State} state state, streamable by default
      * @returns {object} MongoDB filter object
      */
-    static filter(date, state = State.Queued) {
+    static filter(date, play, state = State.Streamable) {
+        let $lte = new Date(date.getTime() + play),
+            $gte = new Date(date.getTime() - play);
         return {
-            state,
+            state: {$bitsAllSet: state},
             $or: [
-                {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte: date}, end: {$gte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte: date}, end: {$gte: date}}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte: date}, end: {$gte: date}}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte}}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
             ]
         };
     }
@@ -281,6 +293,15 @@ class Message extends Mongoable {
     }
 
     /**
+     * Search for cohort or event trigger
+     * 
+     * @returns {Trigger|undefined} plain trigger if message has it
+     */
+    triggerAuto() {
+        return this.triggerFind(t => t.kind === TriggerKind.Cohort || t.kind === TriggerKind.Event);
+    }
+
+    /**
      * Search for plain trigger
      * 
      * @returns {Trigger|undefined} plain trigger if message has it
@@ -369,10 +390,37 @@ class Message extends Mongoable {
      * @returns {string[]} array of app user field names
      */
     get userFields() {
-        let keys = this.contents.map(c => Object.values(c.messagePers || {}).concat(Object.values(c.titlePers || {})).map(obj => obj.k).concat(c.extras || []).map(Message.decodeFieldKey)).flat();
-        if (this.contents.length > 1) {
+        return Message.userFieldsFor(this.contents);
+    }
+
+    /**
+     * Get user fields used in a Content
+     * 
+     * @param {Content[]} contents array of Content instances
+     * @param {boolean} deup remove leading 'up.'
+     * @returns {string[]} array of app user field names
+     */
+    static userFieldsFor(contents, deup) {
+        let keys = contents.map(content => Object.values(content.messagePers || {}).concat(Object.values(content.titlePers || {}))
+            .map(obj => obj.k)
+            .concat(content.extras || [])
+            .map(Message.decodeFieldKey))
+            .flat();
+        if (deup) {
+            keys = keys.map(f => {
+                if (f.indexOf('up.') === 0) {
+                    return f.substring(3);
+                }
+                else {
+                    return f;
+                }
+            });
+        }
+        // if (contents.length > 1) { // commenting out for now because we always need locale now - for result subs
+        if (keys.indexOf('la') === -1) {
             keys.push('la');
         }
+        // }
         keys = keys.filter((k, i) => keys.indexOf(k) === i);
         return keys;
     }
@@ -384,7 +432,7 @@ class Message extends Mongoable {
      * @returns {string} key with dots replaced by separator
      */
     static encodeFieldKey(key) {
-        return key.replaceAll('.', S);
+        return key.replace(/\./g, S);
     }
 
     /**
@@ -394,7 +442,7 @@ class Message extends Mongoable {
      * @returns {string} original field name
      */
     static decodeFieldKey(key) {
-        return key.replaceAll(S, '.');
+        return key.replace(new RegExp(S_REGEXP, 'g'), '.');
     }
 
     /**
@@ -537,10 +585,10 @@ class Message extends Mongoable {
      */
     static test() {
         return new Message({
-            _id: '0',
-            app: '1',
+            _id: db.ObjectID(),
+            app: db.ObjectID(),
             platforms: ['t'],
-            state: State.Queued,
+            state: State.Streamable,
             status: Status.Scheduled,
             filter: new Filter(),
             triggers: [new PlainTrigger({start: new Date()})],
@@ -551,14 +599,61 @@ class Message extends Mongoable {
     }
 
     /**
-     * Create schedule job if needed
+     * Create schedule job if needed for plain messages, put auto/api into streamable
+     * 
+     * @param {log} log logger
      */
-    async schedule() {
-        let plain = this.triggerPlain();
-        if (plain) {
-            let date = plain.delayed ? plain.start.getTime() - DEFAULTS.schedule_ahead : Date.now();
-            await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id}).replace().once(date, true);
+    async schedule(log) {
+        if (this.is(State.Streamable) || this.is(State.Streaming)) {
+            await this.stop(log);
         }
+        let plain = this.triggerPlain();
+        if (plain && !this.is(State.Streamable)) {
+            if (this.is(State.Stopped)) {
+                await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Created, status: Status.Created}});
+            }
+            let date = plain.delayed ? plain.start.getTime() - DEFAULTS.schedule_ahead : Date.now();
+            await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app}).replace().once(date);
+        }
+        if (this.triggerAutoOrApi() && (this.is(State.Done) || this.state === State.Created)) {
+            await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Streamable | State.Created, status: Status.Scheduled}});
+            await require('../../../../pluginManager').getPluginsApis().push.cache.write(this.id, this.json);
+        }
+    }
+
+    /**
+     * Remove job, clear queue and put message into inactive state
+     * 
+     * @param {log} log logger
+     */
+    async stop(log) {
+        const { Audience } = require('../audience'),
+            JOBS = require('../../../../../api/parts/jobs'),
+            PLUGINS = require('../../../../pluginManager');
+
+        let plain = this.triggerPlain(),
+            auto = this.triggerAutoOrApi(),
+            removed = 0,
+            audience = new Audience(log, this);
+
+        await audience.getApp();
+
+        if (auto) {
+            removed += await audience.pop(auto).clear();
+        }
+        else if (plain) {
+            removed += await audience.pop(plain).clear();
+        }
+
+        await JOBS.cancel('push:schedule', {mid: this._id, aid: this.app});
+
+        await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Created | State.Done | State.Cleared, status: Status.Stopped}});
+
+        if (auto) {
+            await PLUGINS.getPluginsApis().push.cache.remove(this.id);
+        }
+
+        return removed;
     }
 }
 

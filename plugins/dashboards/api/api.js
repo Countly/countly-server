@@ -3,7 +3,6 @@ var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     customDashboards = require('./parts/dashboards.js'),
     path = require('path'),
-    ejs = require("ejs"),
     fs = require('fs'),
     log = common.log('dashboards:api'),
     authorize = require('../../../api/utils/authorizer'),
@@ -12,18 +11,13 @@ var pluginOb = {},
     ip = require("../../../api/parts/mgmt/ip"),
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
-
-const FEATURE_NAME = 'dashboards';
+    { validateUser } = require('../../../api/utils/rights.js');
 
 plugins.setConfigs("dashboards", {
     sharing_status: true
 });
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
 
     plugins.register("/o/dashboards", function(ob) {
         var paths = ob.paths;
@@ -37,7 +31,7 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
-            validateRead(params, FEATURE_NAME, function() {
+            validateUser(params, function() {
                 var member = params.member,
                     memberId = member._id + "";
 
@@ -45,10 +39,12 @@ plugins.setConfigs("dashboards", {
                     if (!err && dashboard) {
                         async.parallel([
                             hasViewAccessToDashboard.bind(null, params.member, dashboard),
-                            hasEditAccessToDashboard.bind(null, params.member, dashboard)
+                            hasEditAccessToDashboard.bind(null, params.member, dashboard),
+                            fetchMembersData.bind(null, [dashboard.owner_id], [])
                         ], function(er, res) {
                             var hasViewAccess = res[0];
                             var hasEditAccess = res[1];
+                            var ownerData = res[2];
 
                             if (er || !hasViewAccess) {
                                 return common.returnOutput(params, {error: true, dashboard_access_denied: true});
@@ -60,6 +56,10 @@ plugins.setConfigs("dashboards", {
 
                             if (hasEditAccess) {
                                 dashboard.is_editable = true;
+                            }
+
+                            if (ownerData && ownerData.length) {
+                                dashboard.owner = ownerData[0];
                             }
 
                             var parallelTasks = [
@@ -119,7 +119,7 @@ plugins.setConfigs("dashboards", {
                             return callback(null, {widgets: [], apps: []});
                         }
 
-                        fetchWidgetsMeta(params, dashboard.widgets, function(metaerr, meta) {
+                        fetchWidgetsMeta(params, dashboard.widgets, false, function(metaerr, meta) {
                             if (metaerr) {
                                 return callback(metaerr);
                             }
@@ -131,7 +131,7 @@ plugins.setConfigs("dashboards", {
                                 return callback(null, {widgets: widgets, apps: apps});
                             }
 
-                            customDashboards.fetchWidgetData(params, widgets, function(data) {
+                            customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
                                 var output = { widgets: data || [], apps: apps || [] };
                                 return callback(null, output);
                             });
@@ -150,8 +150,8 @@ plugins.setConfigs("dashboards", {
                         var sharedEditEmails = dash.shared_email_edit || [];
 
                         async.parallel([
-                            fetchSharedMembers.bind(null, sharedViewIds, sharedViewEmails), //View users
-                            fetchSharedMembers.bind(null, sharedEditIds, sharedEditEmails) //Edit users
+                            fetchMembersData.bind(null, sharedViewIds, sharedViewEmails), //View users
+                            fetchMembersData.bind(null, sharedEditIds, sharedEditEmails) //Edit users
                         ], function(er, result) {
                             var totalViewUsers = result[0] || [];
                             var totalEditUsers = result[1] || [];
@@ -207,23 +207,24 @@ plugins.setConfigs("dashboards", {
             return true;
         }
 
-        validateRead(params, FEATURE_NAME, function() {
-            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
+        validateUser(params, function() {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (!err && dashboard) {
                     hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
                         if (er || !status) {
                             return common.returnOutput(params, {error: true, dashboard_access_denied: true});
                         }
 
-                        common.db.collection("widgets").findOne({_id: common.db.ObjectID(widgetId)}, function(error, widget) {
-                            customDashboards.fetchWidgetData(params, [widget], function(data) {
+                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], false, function(e, meta) {
+                            var widgets = meta[0] || [];
+                            customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
                                 common.returnOutput(params, data);
                             });
                         });
                     });
                 }
                 else {
-                    common.returnMessage(params, 404, "Dashboard does not exist");
+                    common.returnMessage(params, 404, "Such dashboard and widget combination does not exist.");
                 }
             });
         });
@@ -242,7 +243,7 @@ plugins.setConfigs("dashboards", {
             //Error
         }
 
-        customDashboards.fetchWidgetData(params, widgets, function(data) {
+        customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
             common.returnOutput(params, data);
         });
 
@@ -259,6 +260,11 @@ plugins.setConfigs("dashboards", {
                 filterCond = {};
 
             if (!member.global_admin) {
+                var groups = member.group_id || [];
+                if (!Array.isArray(groups)) {
+                    groups = [groups];
+                }
+                groups = groups.map(group_id => group_id + "");
                 filterCond = {
                     $or: [
                         {owner_id: memberId},
@@ -267,8 +273,8 @@ plugins.setConfigs("dashboards", {
                         {shared_with_view: memberId},
                         {shared_email_view: memberEmail},
                         {shared_email_edit: memberEmail},
-                        {shared_user_groups_edit: {$in: member.group_id || []}},
-                        {shared_user_groups_view: {$in: member.group_id || []}}
+                        {shared_user_groups_edit: {$in: groups}},
+                        {shared_user_groups_view: {$in: groups}}
                     ]
                 };
             }
@@ -281,7 +287,8 @@ plugins.setConfigs("dashboards", {
                 async.forEach(dashboards, function(dashboard, done) {
                     async.parallel([
                         hasEditAccessToDashboard.bind(null, member, dashboard),
-                        fetchWidgetsMeta.bind(null, params, dashboard.widgets)
+                        fetchWidgetsMeta.bind(null, params, dashboard.widgets, false),
+                        fetchMembersData.bind(null, [dashboard.owner_id], [])
                     ], function(perr, result) {
                         if (perr) {
                             return done(perr);
@@ -289,6 +296,7 @@ plugins.setConfigs("dashboards", {
 
                         var hasEditAccess = result[0];
                         var widgetsMeta = result[1] || [];
+                        var ownerData = result[2];
 
                         if (dashboard.owner_id === memberId || member.global_admin) {
                             dashboard.is_owner = true;
@@ -296,6 +304,10 @@ plugins.setConfigs("dashboards", {
 
                         if (hasEditAccess) {
                             dashboard.is_editable = true;
+                        }
+
+                        if (ownerData && ownerData.length) {
+                            dashboard.owner = ownerData[0];
                         }
 
                         if (!dashboard.share_with) {
@@ -339,7 +351,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/o/dashboards/widget-layout", function(ob) {
         var params = ob.params;
 
-        validateRead(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id;
 
@@ -362,7 +374,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/create", function(ob) {
         var params = ob.params;
 
-        validateCreate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             var dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit || [],
                 sharedEmailView = params.qstring.shared_email_view || [],
@@ -480,7 +492,8 @@ plugins.setConfigs("dashboards", {
                     shared_email_view: sharedEmailView,
                     shared_user_groups_edit: sharedUserGroupEdit,
                     shared_user_groups_view: sharedUserGroupView,
-                    theme: theme
+                    theme: theme,
+                    created_at: new Date().getTime()
                 };
 
                 var widgets = dataObj.newWidgetIds;
@@ -588,7 +601,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/update", function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             var dashboardId = params.qstring.dashboard_id,
                 dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit,
@@ -753,7 +766,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/delete", function(ob) {
         var params = ob.params;
 
-        validateDelete(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             var dashboardId = params.qstring.dashboard_id,
                 memberId = params.member._id + "";
 
@@ -805,7 +818,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/add-widget", function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widget = params.qstring.widget || {};
@@ -871,7 +884,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/update-widget", function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -894,9 +907,9 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
-            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (err || !dashboard) {
-                    common.returnMessage(params, 400, "Dashboard with the given id doesn't exist");
+                    common.returnMessage(params, 400, "Such dashboard and widget combination does not exist.");
                 }
                 else {
                     async.parallel([
@@ -936,7 +949,7 @@ plugins.setConfigs("dashboards", {
     plugins.register("/i/dashboards/remove-widget", function(ob) {
         var params = ob.params;
 
-        validateDelete(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -959,9 +972,9 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
-            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (err || !dashboard) {
-                    common.returnMessage(params, 400, "Dashboard with the given id doesn't exist");
+                    common.returnMessage(params, 400, "Such dashboard and widget combination does not exist.");
                 }
                 else {
                     async.parallel([
@@ -1048,36 +1061,32 @@ plugins.setConfigs("dashboards", {
                                 options.dimensions = {width: 750, padding: 100};
                                 options.token = token;
                                 options.source = "dashboards/" + imageName;
-                                options.timeout = 60000;
+                                options.timeout = 120000;
                                 options.cbFn = function(opt) {
                                     var rep = opt.report || {};
                                     var reportDateRange = rep.date_range || "30days";
-                                    var reportTimeObj = rep.timeObj;
+                                    // eslint-disable-next-line no-undef
+                                    countlyCommon.setPeriod(reportDateRange);
+                                    // eslint-disable-next-line no-undef
+                                    var app = window.app;
+                                    app.activeView.vm.$emit("cly-date-change");
                                     // eslint-disable-next-line no-undef
                                     var $ = window.$;
-                                    $("#date-selector .date-selector[id='" + reportDateRange + "']").trigger("click");
-                                    $("body").css({ "min-width": "0px" });
-                                    $("html").alterClass('theme-*', 'theme-5');
-                                    $("#fullscreen, #fullscreen-alt").trigger("click");
-                                    $("#dashboards #fullscreen").remove();
-                                    $("#dashboards .logo.full-screen").remove();
-                                    $("#dashboards #dashboard-name").addClass("remove-before");
-                                    $("#dashboards #add-widget-button-group").remove();
-                                    $("#dashboards #date-selector").html("<div style='margin:8px 0px 0px 2px; font-size:18px;'>" + reportTimeObj.date + "</div>");
-                                    $("#dashboards .live").parents(".grid-stack-item").hide();
-                                    $("html.theme-5 body, html.full-screen.theme-5").css("background-color", "#fff");
-                                    $(".number").parents(".grid-stack-item").css("height", "220");
-                                    $(".number .spark").hide();
+                                    $("html").addClass("email-screen");
                                 };
 
-                                options.beforeScrnCbFn = function() {
-                                    // eslint-disable-next-line no-undef
-                                    var $ = window.$;
-                                    $(".funnels table colgroup col:first-child").width("145px");
-                                    $(".funnels table colgroup col:last-child").width("80px");
-                                };
+                                options.waitForRegexAfterCbfn = true;
+
+                                //options.beforeScrnCbFn = function() {
+                                // eslint-disable-next-line no-undef
+                                //var $ = window.$;
+                                //$(".funnels table colgroup col:first-child").width("145px");
+                                //$(".funnels table colgroup col:last-child").width("80px");
+                                //};
 
                                 options.waitForRegex = new RegExp(/o\/dashboards?/gi);
+
+                                options.id = "#content";
 
                                 formatDate(report, moment);
 
@@ -1114,8 +1123,10 @@ plugins.setConfigs("dashboards", {
                                                     name: report.imageName
                                                 };
 
-                                                var message = ejs.render(template, {"host": host, "report": report, "version": versionInfo, "properties": props, "image": image});
-
+                                                var message = {
+                                                    template: template,
+                                                    data: {"host": host, "report": report, "version": versionInfo, "properties": props, "image": image, "unsubscribe_link": ""}
+                                                };
                                                 var sDate = new Date();
                                                 sDate.setHours(23, 59);
                                                 var startDate = new Date(sDate.getTime());
@@ -1204,35 +1215,31 @@ plugins.setConfigs("dashboards", {
      * Function to fetch widget meta
      * @param  {object} params - params object
      * @param  {Array} widgetIds - widget id array
+     * @param  {Boolean} allProps - send all props or not
      * @param  {Function} callback - callback function
      */
-    function fetchWidgetsMeta(params, widgetIds = [], callback) {
+    function fetchWidgetsMeta(params, widgetIds = [], allProps, callback) {
         common.db.collection("widgets").find({_id: {$in: widgetIds}}).toArray(function(e, widgets = []) {
             if (e) {
-                log.d("Could not fetch widgets", e, widgetIds);
+                log.e("Could not fetch widgets", e, widgetIds);
             }
 
-            var appIds = [],
-                appObjIds = [];
+            for (var i = 0; i < widgets.length; i++) {
+                customDashboards.mapWidget(widgets[i]);
+            }
 
-            for (let i = 0; i < widgets.length; i++) {
-                for (var j = 0; j < widgets[i].apps.length; j++) {
-                    if (appIds.indexOf(widgets[i].apps[j]) === -1) {
-                        appIds.push(widgets[i].apps[j]);
+            customDashboards.fetchWidgetApps(params, widgets, function(err, apps = {}) {
+                var allApps = [];
+                for (var appId in apps) {
+                    if (allProps) {
+                        allApps.push(apps[appId]);
+                    }
+                    else {
+                        allApps.push({_id: apps[appId]._id, name: apps[appId].name, image: apps[appId].image, type: apps[appId].type});
                     }
                 }
-            }
 
-            for (let i = 0; i < appIds.length; i++) {
-                appObjIds.push(common.db.ObjectID(appIds[i]));
-            }
-
-            common.db.collection("apps").find({_id: {$in: appObjIds}}, {name: 1}).toArray(function(er, apps = []) {
-                if (er) {
-                    return callback(er);
-                }
-
-                return callback(null, [widgets, apps]);
+                return callback(null, [widgets, allApps]);
             });
         });
     }
@@ -1242,13 +1249,13 @@ plugins.setConfigs("dashboards", {
      * @param  {Array} emails - emails array
      * @param  {Function} callback - callback function
      */
-    function fetchSharedMembers(ids, emails, callback) {
+    function fetchMembersData(ids, emails, callback) {
         var dashboardUserIds = [];
         for (var i = 0; i < ids.length; i++) {
             dashboardUserIds.push(common.db.ObjectID(ids[i]));
         }
 
-        common.db.collection("members").find({$or: [{_id: { $in: dashboardUserIds }}, {email: { $in: emails }} ]}, {_id: 1, full_name: 1, email: 1}).toArray(function(err, users) {
+        common.db.collection("members").find({$or: [{_id: { $in: dashboardUserIds }}, {email: { $in: emails }} ]}, {_id: 1, full_name: 1, email: 1, username: 1}).toArray(function(err, users) {
             return callback(null, users);
         });
     }
@@ -1472,6 +1479,95 @@ plugins.setConfigs("dashboards", {
             return true;
         }
         return false;
+    });
+
+    plugins.register("/dashboard/data", async function({params, apps, widget}) {
+        try {
+            switch (widget.widget_type) {
+            case 'analytics':
+                await customDashboards.fetchAnalyticsData(params, apps, widget);
+                break;
+            case 'events':
+                await customDashboards.fetchEventsData(params, apps, widget);
+                break;
+            case 'push':
+                await customDashboards.fetchPushData(params, apps, widget);
+                break;
+            case 'crashes':
+                await customDashboards.fetchCrashData(params, apps, widget);
+                break;
+            case 'note':
+                await customDashboards.fetchNoteData(params, apps, widget);
+                break;
+            default:
+                break;
+            }
+        }
+        catch (e) {
+            log.d("Error while fetching data for widget - ", widget);
+            log.d("Error - ", e);
+        }
+    });
+
+    plugins.register("/o/dashboard/data", function(ob) {
+        var params = ob.params,
+            dashboardId = params.qstring.dashboard_id,
+            widgetId = params.qstring.widget_id;
+
+        if (typeof dashboardId === "undefined" || dashboardId.length !== 24) {
+            common.returnMessage(params, 401, 'Invalid parameter: dashboard_id');
+            return true;
+        }
+
+        if (typeof widgetId === "undefined" || widgetId.length !== 24) {
+            common.returnMessage(params, 401, 'Invalid parameter: widget_id');
+            return true;
+        }
+
+        validateUser(params, function() {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
+                if (!err && dashboard) {
+                    hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
+                        if (er || !status) {
+                            return common.returnOutput(params, {error: true, dashboard_access_denied: true});
+                        }
+
+                        fetchWidgetsMeta(params, [common.db.ObjectID(widgetId)], true, function(e, meta) {
+                            var widgets = meta[0] || [];
+                            var allApps = meta[1] || [];
+
+                            var apps = {};
+
+                            if (allApps) {
+                                for (var k = 0; k < allApps.length; k++) {
+                                    apps[allApps[k]._id + ""] = allApps[k];
+                                }
+                            }
+
+                            var newParams = {
+                                qstring: params.qstring,
+                                member: params.member
+                            };
+
+                            var widget = widgets[0] || {};
+
+                            plugins.dispatch("/dashboard/data", {
+                                params: JSON.parse(JSON.stringify(newParams)),
+                                apps: JSON.parse(JSON.stringify(apps)),
+                                widget: widget
+                            }, function() {
+                                common.returnOutput(params, widget);
+                            });
+                        });
+                    });
+                }
+                else {
+                    common.returnMessage(params, 404, "Such dashboard and widget combination does not exist.");
+                }
+            });
+        });
+
+        return true;
     });
 
     /**

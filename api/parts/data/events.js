@@ -62,8 +62,16 @@ countlyEvents.processEvents = function(params) {
                     continue;
                 }
 
-                if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key && currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
+                // Key fields is required
+                if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
                     continue;
+                }
+
+                if (currEvent.count && common.isNumber(currEvent.count)) {
+                    currEvent.count = parseInt(currEvent.count, 10);
+                }
+                else {
+                    currEvent.count = 1;
                 }
 
                 if (pluginsGetConfig.event_limit &&
@@ -206,9 +214,16 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
         tmpEventObj = {};
         tmpEventColl = {};
 
-        // Key and count fields are required
-        if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
+        // Key fields is required
+        if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
             continue;
+        }
+
+        if (currEvent.count && common.isNumber(currEvent.count)) {
+            currEvent.count = parseInt(currEvent.count, 10);
+        }
+        else {
+            currEvent.count = 1;
         }
 
         if (pluginsGetConfig.event_limit &&

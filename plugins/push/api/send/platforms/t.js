@@ -7,6 +7,16 @@ const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'
 const key = 't';
 
 /**
+ * Make an estimated guess about request platform
+ * 
+ * @param {string} userAgent user-agent header
+ * @returns {string} platform key if it looks like request made by this platform
+ */
+function guess(userAgent) {
+    return userAgent.includes('TestUserAgent') && key;
+}
+
+/**
  * Connection implementation for FCM
  */
 class TestConnection extends Base {
@@ -222,37 +232,6 @@ class TestConnection extends Base {
     }
 }
 
-/** 
- * Flatten object using dot notation ({a: {b: 1}} becomes {'a.b': 1})
- * 
- * @param {object} ob - object to flatten
- * @returns {object} flattened object
- */
-function flattenObject(ob) {
-    var toReturn = {};
-
-    for (var i in ob) {
-        if (!Object.prototype.hasOwnProperty.call(ob, i)) {
-            continue;
-        }
-
-        if ((typeof ob[i]) === 'object' && ob[i] !== null) {
-            var flatObject = flattenObject(ob[i]);
-            for (var x in flatObject) {
-                if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
-                    continue;
-                }
-
-                toReturn[i + '.' + x] = flatObject[x];
-            }
-        }
-        else {
-            toReturn[i] = ob[i];
-        }
-    }
-    return toReturn;
-}
-
 /**
  * Create new empty payload for the note object given
  * 
@@ -396,7 +375,7 @@ const map = {
      * @param {Object} data data to be sent
      */
     data: function(template, data) {
-        Object.assign(template.result.data, flattenObject(data));
+        Object.assign(template.result.data, util.flattenObject(data));
     },
 
     /**
@@ -477,6 +456,7 @@ module.exports = {
     key,
     title: 'Test',
     extractor,
+    guess,
     FIELDS,
     FIELDS_TITLES,
     FIELD_DEV,

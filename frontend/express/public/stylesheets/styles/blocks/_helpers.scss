@@ -1,7 +1,12 @@
+@use "../base/colors" as c;
+@use "sass:map";
+
 .cly-vue-tooltip-icon {
-    font-size: 20px;
+    font-size: 17px;
     color: #A7AEB8;
     vertical-align: middle;
+    width: 18px;
+    height: 18px;
 }
 
 .cly-in-page-notification {
@@ -20,7 +25,7 @@
     font-size: 12px;
     display: inline-block;
     text-transform: uppercase;
-    margin-bottom: 25px;
+    margin-bottom: 24px;
 
     &:visited {
         cursor: pointer;
@@ -61,5 +66,52 @@
     }
     .el-radio-button__inner {
         width: 100%;
+    }
+}
+
+.cly-vue-color-tag {
+    &__color-tag-wrapper {
+        width:20%;
+    }
+
+    &__color-tag {
+        width:92%;
+        height: 37px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        &__selected {
+            border: 2px solid #0166D6;
+        }
+    }
+
+    &__checkmark {
+        color: map.get(c.$colors, "white");
+    }
+}
+
+.cly-vue-json-editor {
+    .el-dialog__header{
+        text-align: left;
+        padding: 8px 16px 0 !important;
+		color: map.get(c.$colors, "white");
+    }
+    .el-dialog__body {
+        padding: 0 !important;
+    }
+    &__textarea{
+        width:100%;
+        box-sizing: border-box;
+        outline: none;
+        border: none;
+        border-top: 1px solid map.get(c.$colors, "warm-gray-30");
+        border-bottom: 1px solid map.get(c.$colors, "warm-gray-30");
+        background-color: map.get(c.$colors, "warm-gray-10");
+    }
+}
+
+
+.cly-breadcrumbs {
+    & a:hover {
+        text-decoration: underline;
     }
 }

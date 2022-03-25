@@ -2,16 +2,16 @@
   <cly-header>
       <template v-slot:header-left>
           <h2>{{i18n('sources.title')}}</h2>
-          <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="i18n('sources.description')"></span>
+          <cly-tooltip-icon :tooltip="i18n('sources.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
       </template>
       <template v-slot:header-right>
         <cly-more-options v-if="topDropdown" size="small">
           <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-            <span :class="item.icon"></span>
+            <!--<span :class="item.icon"></span>-->
             <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
           </el-dropdown-item>
           <el-dropdown-item>
-            <span class="ion-settings"></span>
+            <!--<span class="ion-settings"></span>-->
             <a href="#/manage/configurations/sources" class="bu-ml-1">{{ i18n('sources.plugin-settings') }}</a>
           </el-dropdown-item>
         </cly-more-options>
@@ -22,15 +22,15 @@
   <cly-section>
     <div class="bu-columns bu-is-gapless">
       <div class="bu-column bu-is-6">
-        <cly-chart-pie :option="pieSourcesTotalSessions" :showToggle="false" v-loading="isLoading"></cly-chart-pie>
+        <cly-chart-pie :option="pieSourcesTotalSessions" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
       </div>
       <div class="bu-column bu-is-6">
-        <cly-chart-pie :option="pieSourcesNewUsers" :showToggle="false" v-loading="isLoading"></cly-chart-pie>
+        <cly-chart-pie :option="pieSourcesNewUsers" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
       </div>
     </div>
   </cly-section>
   <cly-section>
-    <cly-datatable-n :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false" v-loading="isLoading">
+    <cly-datatable-n :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false" :force-loading="isLoading">
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">

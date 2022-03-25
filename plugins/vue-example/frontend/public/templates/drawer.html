@@ -12,13 +12,16 @@
             </div>
         </cly-content>
     </template>
+    <template v-slot:controls-left="formScope">
+        Some extra stuff here
+    </template>
     <template v-slot:default="formScope">
         <cly-form-step id="step1" name="First Step">
             <cly-form-field name="name" label="Name" rules="required">
                 <el-input v-model="formScope.editedObject.name" placeholder="Some required value"></el-input>
             </cly-form-field>
-            <cly-form-field-group label="Fields" highlight>
-                <cly-form-field name="field1" label="Field 1" rules="required">
+            <cly-form-field-group label="Fields" highlight tooltip="Hello">
+                <cly-form-field name="field1" label="Field 1" rules="required" tooltip="Hello">
                     <el-input v-model="formScope.editedObject.field1" placeholder="Some required value"></el-input>
                 </cly-form-field>
                 <cly-form-field name="field2" label="Field 2" optional>
@@ -71,7 +74,7 @@
                         <div>
                             {{item.label}}
                         </div>
-                        <div class="text-small">
+                        <div class="text-small color-cool-gray-50">
                             {{item.description}}
                         </div>
                     </el-radio>

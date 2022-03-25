@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars, countlyTaskManager*/
+/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars, countlyTaskManager, countlyVue*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -11,6 +11,14 @@
  */
 (function(CountlyHelpers) {
 
+    CountlyHelpers.logout = function(path) {
+        if (path) {
+            window.location = "/logout";
+        }
+        else {
+            window.location.reload();//this will log us out
+        }
+    };
     /**
     * Legacy method for displaying notifications. User {@link CountlyHelpers.notify} instead
     * @param {string} msg - msg to display
@@ -266,24 +274,32 @@
     * Display dashboard notification using Amaran JS library
     * @param {object} msg - notification message object
     * @param {string=} msg.title - title of the notification
+    * @deprecated 
     * @param {string=} msg.message - main notification text
     * @param {string=} msg.info - some additional information to display in notification
+    * @deprecated 
     * @param {number=} [msg.delay=10000] - delay time in miliseconds before displaying notification
+    * @deprecated 
     * @param {string=} [msg.type=ok] - message type, accepted values ok, error and warning
     * @param {string=} [msg.position=top right] - message position
+    * @deprecated 
     * @param {string=} [msg.sticky=false] - should message stick until closed
     * @param {string=} [msg.clearAll=false] - clear all previous notifications upon showing this one
+    * @deprecated 
     * @param {string=} [msg.closeOnClick=false] - should notification be automatically closed when clicked on
+    * @deprecated 
     * @param {function=} msg.onClick - on click listener
+    * @deprecated 
     * @example
     * CountlyHelpers.notify({
-    *    title: "This is title",
     *    message: "Main message text",
-    *    info: "Additional info"
     * });
     */
     CountlyHelpers.notify = function(msg) {
-        var iconToUse;
+        var payload = {};
+        payload.text = msg.message;
+        payload.autoHide = !msg.sticky;
+        var colorToUse;
 
         if (countlyGlobal.ssr) {
             return;
@@ -291,45 +307,42 @@
 
         switch (msg.type) {
         case "error":
-            iconToUse = "ion-close-circled";
+            colorToUse = "light-destructive";
             break;
         case "warning":
-            iconToUse = "ion-alert-circled";
+            colorToUse = "light-warning";
             break;
         case "yellow":
-        case "blue":
-        case "purple":
-            iconToUse = "ion-record";
+            colorToUse = "light-warning";
             break;
+        case "info":
+        case "blue":
+            colorToUse = "light-informational";
+            break;
+        case "purple":
+        case "ok":
+        case "success":
         default:
-            iconToUse = "ion-checkmark-circled";
+            colorToUse = "light-successful";
             break;
         }
-
-        $.titleAlert((msg.title || msg.message || msg.info || "Notification"), {
-            requireBlur: true,
-            stopOnFocus: true,
-            duration: (msg.delay || 10000),
-            interval: 1000
-        });
-        $.amaran({
-            content: {
-                title: msg.title || "Notification",
-                message: msg.message || "",
-                info: msg.info || "",
-                icon: iconToUse
-            },
-            theme: 'awesome ' + (msg.type || "ok"),
-            position: msg.position || 'top right',
-            delay: msg.delay || 10000,
-            sticky: msg.sticky || false,
-            clearAll: msg.clearAll || false,
-            closeButton: true,
-            closeOnClick: (msg.closeOnClick === false) ? false : true,
-            onClick: msg.onClick || null
-        });
+        payload.color = colorToUse;
+        countlyCommon.dispatchNotificationToast(payload);
     };
 
+    CountlyHelpers.goTo = function(options) {
+        app.backlinkUrl = options.from;
+        app.backlinkTitle = options.title;
+        window.location.hash = options.url;
+    };
+
+    CountlyHelpers.getBacklink = function() {
+        var url = app.backlinkUrl;
+        var title = app.backlinkTitle;
+        app.backlinkUrl = null;
+        app.backlinkTitle = null;
+        return {url: url, title: title};
+    };
     /**
     * Create new model
     */
@@ -585,31 +598,36 @@
             return;
         }
 
-        var dialog = $("#cly-alert").clone();
-        dialog.removeAttr("id");
+        if (window.countlyVue && window.countlyVue.vuex) {
 
-        if (moreData && moreData.image) {
-            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
-        }
-        else {
-            dialog.find(".image").css("display", "none");
-        }
+            var confirmLabel = countlyVue.i18n('common.ok'),
+                convertedType = "secondary";
 
-        if (moreData && moreData.title) {
-            dialog.find(".title").text(moreData.title);
-        }
-        else {
-            dialog.find(".title").css("display", "none");
-        }
+            if (moreData && moreData.button_title) {
+                confirmLabel = moreData.button_title;
+            }
 
-        if (moreData && moreData.button_title) {
-            dialog.find("#dialog-ok").text(moreData.button_title);
-            $(dialog.find("#dialog-ok")).removeAttr("data-localize");
-        }
+            if (type === "popStyleGreen") {
+                convertedType = "success";
+            }
+            else if (type === "red") {
+                convertedType = "danger";
+            }
 
-        dialog.find(".message").html(countlyCommon.encodeSomeHtml(msg));
-        dialog.addClass(type);
-        revealDialog(dialog);
+            var payload = {
+                intent: 'message',
+                message: (moreData && moreData.title) ? countlyCommon.encodeSomeHtml(msg) : "",
+                type: convertedType,
+                confirmLabel: confirmLabel,
+                title: (moreData && moreData.title) || countlyCommon.encodeSomeHtml(msg),
+                image: moreData && moreData.image
+            };
+
+            var currentStore = window.countlyVue.vuex.getGlobalStore();
+            if (currentStore) {
+                currentStore.dispatch('countlyCommon/onAddDialog', payload);
+            }
+        }
     };
 
     /**
@@ -635,41 +653,41 @@
             return;
         }
 
-        var dialog = $("#cly-confirm").clone();
-        dialog.removeAttr("id");
-        if (moreData && moreData.image) {
-            dialog.find(".image").html('<div style="background-image:url(\'images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
-        }
-        else {
-            dialog.find(".image").css("display", "none");
-        }
+        if (window.countlyVue && window.countlyVue.vuex) {
 
-        if (moreData && moreData.title) {
-            dialog.find(".title").text(moreData.title);
+            var cancelLabel = countlyVue.i18n('common.cancel'),
+                confirmLabel = countlyVue.i18n('common.continue'),
+                convertedType = "danger"; // Default type is "danger"
+
+            if (buttonText && buttonText.length === 2) {
+                cancelLabel = buttonText[0];
+                confirmLabel = buttonText[1];
+            }
+
+            if (type === "popStyleGreen") {
+                convertedType = "success";
+            }
+            // Default type is "danger"
+            // else if (type === "red") {
+            //     convertedType = "danger";
+            // }
+
+            var payload = {
+                intent: 'confirm',
+                message: countlyCommon.encodeSomeHtml(msg),
+                type: convertedType,
+                confirmLabel: confirmLabel,
+                cancelLabel: cancelLabel,
+                title: moreData && moreData.title,
+                image: moreData && moreData.image,
+                callback: callback
+            };
+
+            var currentStore = window.countlyVue.vuex.getGlobalStore();
+            if (currentStore) {
+                currentStore.dispatch('countlyCommon/onAddDialog', payload);
+            }
         }
-        else {
-            dialog.find(".title").css("display", "none");
-        }
-
-        dialog.find(".message").html(countlyCommon.encodeSomeHtml(msg));
-        if (buttonText && buttonText.length === 2) {
-            dialog.find("#dialog-cancel").text(buttonText[0]);
-            dialog.find("#dialog-continue").text(buttonText[1]);
-            //because in some places they are overwritten by localizing after few seconds
-            $(dialog.find("#dialog-cancel")).removeAttr("data-localize");
-            $(dialog.find("#dialog-continue")).removeAttr("data-localize");
-        }
-
-        dialog.addClass(type);
-        revealDialog(dialog);
-
-        dialog.find("#dialog-cancel").on('click', function() {
-            callback(false);
-        });
-
-        dialog.find("#dialog-continue").on('click', function() {
-            callback(true);
-        });
     };
 
     /**
@@ -3715,7 +3733,12 @@ $.extend(Template.prototype, {
      */
     store: function(name, raw) {
         T.raw[name] = raw;
-        T.cached[name] = Handlebars.compile(raw);
+        try {
+            T.cached[name] = Handlebars.compile(raw);
+        }
+        catch (ex) {
+            T.cached[name] = raw;
+        }
     },
     /**
      *  Generate request URL for template

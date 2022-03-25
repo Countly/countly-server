@@ -317,7 +317,7 @@
             </cly-section>
             <cly-section title="Helpers (cly-app-select, single)">
                 <div class="example-cell">
-                    <cly-app-select v-model="selectedApp"></cly-app-select>
+                    <cly-app-select v-model="selectedApp" :auth='{"feature": "drill", "permission": "c"}'></cly-app-select>
                     <cly-app-select v-model="selectedApp" allow-all></cly-app-select>
                 </div>
                 <div class="example-cell">
@@ -429,6 +429,9 @@
                         :disabled="dropdownsDisabled"
                         :hide-all-options-tab="allOptionsTabHidden"
                         :options="selectXOptions[0].options">
+                        <template v-slot:option-prefix="option">
+                            <div style="border: 2px solid #F96300; width: 15px; text-align: center">{{option.image}}</div>
+                        </template>
                     </cly-select-x>
                 </div>
                 <div class="example-cell">
@@ -451,6 +454,26 @@
                 </div>
                 <div class="example-cell">
                     {{selectX.currentVal}}
+                </div>
+            </cly-section>
+            <cly-section title="cly-select-x (Remote)">
+                <div class="example-cell">
+                    <cly-select-x
+                        remote
+                        :remote-method="remoteMethod"
+                        all-placeholder="All Properties" 
+                        search-placeholder="Search in Properties"
+                        placeholder="Select Property" 
+                        v-model="selectX.remoteVal" 
+                        :auto-commit="!autoCommitDisabled"
+                        :mode="selectX.mode"
+                        :disabled="dropdownsDisabled"
+                        :hide-all-options-tab="allOptionsTabHidden"
+                        :options="selectXRemoteOptions">
+                    </cly-select-x>
+                </div>
+                <div class="example-cell">
+                    {{selectX.remoteVal}}
                 </div>
             </cly-section>
             <cly-section title="cly-select-x (Tabs, custom header)">

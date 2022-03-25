@@ -6,7 +6,14 @@
     padding-bottom:4px;
 }
 
+.technology-analytics-wrapper{
+    &__metric-cards {
+        .bu-column:last-child {
+            margin-right: unset !important;
+        }
+    }
 
+}
 
 .technology-analytics-wrapper .technology-pie-graphs .cly-vue-chart__echart {
     padding-right:0px;
@@ -41,5 +48,5 @@
 }
 
 .technology-dashboard-widget>.bu-column:nth-child(even)>.cly-vue-section {
-    padding-left:8px;
+    padding-right:16px;
 }

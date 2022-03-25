@@ -5,10 +5,6 @@
 .cly-vue-theme-clydef {
 	.crashes-statistics-dashboard {
 		margin-bottom: 0 !important;
-
-		&__tiles-container {
-			height: 314px;
-		}
 	}
 
 	.crashes-trend {
@@ -94,9 +90,19 @@
 		}
 	}
 
+	.crash-group-title {
+		cursor: pointer;
+		color: #32659D;
+	}
+
+	.crash-group-title:hover {
+		text-decoration: underline !important;
+	}
+
 	.crashes-statistics-graph {
 		.cly-vue-section__content {
 			border-bottom-width: 1px !important;
+			border-radius: 4px;
 		}
 
 		.el-tabs {
@@ -106,6 +112,7 @@
 
 			&--card > .el-tabs__header .el-tabs__item {
 				border-bottom-width: 2px !important;
+				background-color: #FCFCFC;
 			}
 
 			&--card > .el-tabs__header .el-tabs__nav {
@@ -115,12 +122,12 @@
 			&__header .el-tabs__item.is-active {
 				border-bottom-color: #0166D6;
 				border-bottom-width: 2px;
+				background-color: #ffffff;
 			}
 
 			&__item {
 				border-left: 1px solid #ECECEC !important;
 				height: auto;
-				text-align: left;
 			}
 
 			&__item:last-of-type {
@@ -132,6 +139,7 @@
 	.crashgroup-mobile-diagnostics {
 		&__tiles-container {
  			height: 170px;
+			box-shadow: 0px 2px 0px #EAECEF;
 		}
 
 		&__tile-content {
@@ -139,11 +147,16 @@
 			margin-left: 24px;
 			margin-right: 24px;
 		}
+
+		&__tile-content .text-medium {
+			font-weight: 500;
+		}
 	}
 
 	.crashgroup-mobile-metrics {
 		&__tiles-container {
  			height: 104px;
+			box-shadow: 0px 2px 0px #EAECEF; 
 		}
 	}
 
@@ -199,16 +212,58 @@
 		&__tiles-container {
  			height: 104px;
 		}
+		box-shadow: 0px 1px 0px #EAECEF;
 	}
 
 	#crash-tabs {
-		.el-tabs__header {
-			margin-bottom: 0px;
+		.el-tabs__header .el-tabs__item {
+			background-color:#f6f6f6;
+			border-left: none;
+			border-right: none;
+			margin-left: 24px;
+		}
+
+		.el-tabs__header .el-tabs__nav {
+			border-right: 0px;
+		}
+
+		.el-tabs__header .el-tabs__item.is-active {
+			border-bottom-color: #0166d6;
+			border-bottom-width: 2px;
+		}
+
+		.el-tabs__item {
+			height: auto;
+			text-align: left;
+			background-color:#f6f6f6;
 		}
 
 		.el-tabs__content {
 			border-left: 1px solid #ececec;
 			border-right: 1px solid #ececec;
+		}
+
+		.el-tabs--card>.el-tabs__header {
+			margin: 0;
+		}
+
+		.el-tabs--card>.el-tabs__header {
+			box-sizing: border-box;
+		}
+
+		.el-tabs__nav-wrap{
+			background-color: #f6f6f6;
+			border-left: none;
+			border-right: 1px solid #ececec;
+		}
+
+		.el-tabs__nav-wrap.is-scrollable{
+			border-bottom: 0px;
+			background-color: #f6f6f6;
+		}
+
+		.el-textarea__inner{
+			overflow-y: auto;
 		}
 	}
 
@@ -220,6 +275,7 @@
 	.crash-badge {
 		@extend .text-smaller;
 
+		font-weight: 500;
 		padding: 0 4px;
 		letter-spacing: 0.5px;
 
@@ -261,11 +317,60 @@
 
 	.crashes-crashgroup-header {
 		&__name {
-			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
 			max-width: 50vw;
 		}
 	}
 
+	.crashes-action-bar {
+		padding-top: 16px;
+		padding-right: 16px;
+		position:fixed;
+		bottom:0;
+		right: 0;
+		height: 64px;
+		background: #FFFFFF;
+		z-index : 10000;
+		margin: 0px auto;
+		width: 100% !important;
+		border-top: 1px solid #ececec;
+		text-align: right;
+	}
+
+	.crash-icon-color-orange {
+		color: #E49700;
+	}
+
+	.crash-icon-color-blue {
+		color: #4D94E2;
+	}
+
+	.crash-icon-color-green {
+		color: #12AF51;
+	}
+
+	.crash-icon-color-gray {
+		color: #A7AEB8;
+	}
+
+	.cly-vue-header {
+		&__level {
+			align-items: flex-start !important;
+		}
+	}
+
+	.el-table {
+		&__expanded-cell {
+			padding-left: 24px !important;
+			padding-right: 24px !important;
+			padding-bottom: 0px !important;
+		}
+	}
+
+	.crash-occurences {
+		.cly-vue-eldatatable__header--white {
+			border-top: 1px;
+		}
+	}
 }

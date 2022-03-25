@@ -1,0 +1,20 @@
+<cly-form-field
+    name="breakdowns"
+    rules="required"
+    :label="i18nM('dashboards.breakdown')">
+    <el-select
+        :is-full-width="true"
+        style="width: 100%;"
+        v-bind="$attrs"
+        v-on="allListeners"
+        :collapse-tags="false"
+        v-model="selectedBreakdown"
+        :placeholder="i18nM('placeholder.dashboards.select-breakdown')">
+        <el-option
+            v-for="breakdown in breakdowns"
+            :key="breakdown.value"
+            :label="breakdown.label"
+            :value="breakdown.value">
+        </el-option>
+    </el-select>
+</cly-form-field>

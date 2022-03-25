@@ -69,10 +69,10 @@ plugins.connectToAllDatabases().then(function() {
         send_test_email: "",
         //data_retention_period: 0,
         batch_processing: true,
-        batch_on_master: false,
+        //batch_on_master: false,
         batch_period: 10,
         batch_read_processing: true,
-        batch_read_on_master: false,
+        //batch_read_on_master: false,
         batch_read_ttl: 600,
         batch_read_period: 60
     });
@@ -249,8 +249,13 @@ plugins.connectToAllDatabases().then(function() {
     };
 
     if (cluster.isMaster) {
+        common.runners = require('./parts/jobs/runner');
         common.cache = new CacheMaster(common.db);
-        common.cache.start().then(plugins.dispatch.bind(plugins, '/cache/init', {}), e => {
+        common.cache.start().then(() => {
+            setTimeout(() => {
+                plugins.dispatch('/cache/init', {});
+            }, 1000);
+        }, e => {
             console.log(e);
             process.exit(1);
         });

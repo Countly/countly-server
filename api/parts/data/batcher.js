@@ -42,7 +42,7 @@ class InsertBatcher {
         let config = plugins.getConfig("api");
         this.period = config.batch_period * 1000;
         this.process = config.batch_processing;
-        this.shared = config.batch_on_master;
+        this.shared = false;
     }
 
     /**
@@ -179,7 +179,7 @@ class WriteBatcher {
         let config = plugins.getConfig("api");
         this.period = config.batch_period * 1000;
         this.process = config.batch_processing;
-        this.shared = config.batch_on_master;
+        this.shared = false;
     }
 
     /**
@@ -356,7 +356,7 @@ class ReadBatcher {
         this.period = config.batch_read_period * 1000;
         this.ttl = config.batch_read_ttl * 1000;
         this.process = config.batch_read_processing;
-        this.onMaster = config.batch_read_on_master;
+        this.onMaster = false;
     }
 
     /**

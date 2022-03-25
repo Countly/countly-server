@@ -22,12 +22,15 @@
         },
         watch: {
             initialEditedObject: function() {
-                this.editedObject = this.copyOfEdited();
-                this.reset();
-                this.$emit("copy", this.editedObject);
+                this.reload();
             }
         },
         methods: {
+            reload: function() {
+                this.editedObject = this.copyOfEdited();
+                this.reset();
+                this.$emit("copy", this.editedObject);
+            },
             copyOfEdited: function() {
                 var copied = JSON.parse(JSON.stringify(this.initialEditedObject));
                 if (this.beforeCopyFn) {
@@ -164,19 +167,23 @@
                 }
             },
             setStepSafe: function(newIndex, originator) {
-                this.beforeLeavingStep();
+                this.beforeLeavingStep(newIndex < this.currentStepIndex ? "skip" : "onlyCurrent");
                 this.setStep(newIndex, originator, newIndex > this.lastValidIndex);
             },
             prevStep: function() {
                 this.setStep(this.currentStepIndex - 1, 'prev');
             },
             nextStep: function() {
-                this.beforeLeavingStep();
+                this.beforeLeavingStep("onlyCurrent");
                 this.setStep(this.currentStepIndex + 1, 'next', !this.isCurrentStepValid);
             },
             reset: function() {
-                this.callValidators("reset");
+                var self = this;
+                // this.callValidators("reset");
                 this.setStep(0, 'reset');
+                this.$nextTick(function() {
+                    self.callValidators("reset");
+                });
             },
             submit: function(force) {
                 this.beforeLeavingStep();
@@ -203,16 +210,29 @@
             validate: function() {
                 this.callValidators("touch");
             },
-            beforeLeavingStep: function() {
-                this.callValidators("touch");
+            beforeLeavingStep: function(touchPolicy) {
+                if (touchPolicy === "onlyCurrent") {
+                    this.callValidators("touch", true);
+                }
+                else if (touchPolicy !== "skip") {
+                    this.callValidators("touch");
+                }
                 this.$emit("before-leaving-step");
             },
-            callValidators: function(command) {
-                this.stepContents.forEach(function(current) {
-                    if (current[command]) {
-                        current[command]();
+            callValidators: function(command, onlyCurrent) {
+                if (onlyCurrent) {
+                    var target = this.stepContents[this.currentStepIndex];
+                    if (target && target[command]) {
+                        target[command]();
                     }
-                });
+                }
+                else {
+                    this.stepContents.forEach(function(current) {
+                        if (current[command]) {
+                            current[command]();
+                        }
+                    });
+                }
             }
         }
     };
@@ -293,7 +313,9 @@
             highlight: {
                 type: Boolean,
                 default: false
-            }
+            },
+            tooltip: {type: String, default: null},
+            description: {type: String, default: null}
         },
         computed: {
             groupingClasses: function() {
@@ -313,7 +335,11 @@
             }
         },
         template: "<div class='cly-vue-form-step__auto-group'>\
-                        <h4 :class=\"labelClasses\" v-if=\"label\">{{ label }}</h4>\
+                        <h4 class='bu-is-flex bu-is-align-items-baseline' :class=\"labelClasses\" v-if=\"label\">\
+                            {{ label }}\
+                            <cly-tooltip-icon v-if='tooltip' class='bu-is-flex-grow-1 bu-ml-2' :tooltip='tooltip'></cly-tooltip-icon>\
+                        </h4>\
+                        <span v-if='description' class='color-cool-gray-50 text-small bu-mb-1'>{{description}}</span>\
                         <div :class='groupingClasses'>\
                             <slot></slot>\
                         </div>\
@@ -323,7 +349,8 @@
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({
         props: {
-            label: String,
+            subheading: {required: false},
+            label: {required: false},
             optional: {
                 type: Boolean,
                 default: false
@@ -336,7 +363,8 @@
                 type: Boolean,
                 default: false,
                 required: false
-            }
+            },
+            tooltip: {type: String, default: null}
         },
         computed: {
             wrapperElement: function() {
@@ -354,16 +382,23 @@
         },
         mixins: [countlyVue.mixins.i18n],
         template: '<div class="cly-vue-form-field" :class="topClasses">\
-                        <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || label || optional">\
-                            <div class="text-small text-heading">{{label}}</div>\
+                        <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || tooltip || label || optional">\
+                            <div class="text-smallish font-weight-bold bu-mb-1" v-if="label">{{label}}</div>\
+                            <cly-tooltip-icon v-if="tooltip" class="bu-is-flex-grow-1 bu-ml-2" :tooltip="tooltip"></cly-tooltip-icon>\
                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
                         </div>\
-                        <component :is="wrapperElement">\
-                            <validation-provider v-bind="$attrs" v-on="$listeners" v-slot="validation">\
+                        <div v-if="subheading" class="color-cool-gray-50 text-small bu-mb-1">\
+                            {{subheading}}\
+                        </div>\
+                        <component :is="wrapperElement" @submit.prevent>\
+                            <validation-provider v-if="$attrs.rules" v-bind="$attrs" v-on="$listeners" v-slot="validation">\
                                 <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}">\
                                     <slot v-bind="validation"/>\
                                 </div>\
                             </validation-provider>\
+                            <div v-else class="cly-vue-form-field__inner el-form-item">\
+                                <slot/>\
+                            </div>\
                         </component>\
                   </div>'
     }));

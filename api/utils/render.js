@@ -107,9 +107,10 @@ exports.renderView = function(options, cb) {
                 var source = options.source;
                 var updatedTimeout = options.timeout || 30000;
                 var waitForRegex = options.waitForRegex;
+                var waitForRegexAfterCbfn = options.waitForRegexAfterCbfn;
 
                 options.dimensions = {
-                    width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
+                    width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1800,
                     height: options.dimensions && options.dimensions.height ? options.dimensions.height : 0,
                     padding: options.dimensions && options.dimensions.padding ? options.dimensions.padding : 0,
                     scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
@@ -140,6 +141,20 @@ exports.renderView = function(options, cb) {
                 await timeout(500);
 
                 await page.evaluate(cbFn, options);
+
+                if (waitForRegexAfterCbfn) {
+                    if (waitForRegex) {
+                        await page.waitForResponse(
+                            function(response) {
+                                var url = response.url();
+                                if (waitForRegex.test(url) && response.status() === 200) {
+                                    return true;
+                                }
+                            },
+                            { timeout: updatedTimeout }
+                        );
+                    }
+                }
 
                 await timeout(1500);
 
@@ -185,6 +200,13 @@ exports.renderView = function(options, cb) {
                             id: element.id
                         };
                     }, id);
+
+                    await page.setViewport({
+                        width: options.dimensions.width,
+                        height: parseInt(rect.height),
+                        deviceScaleFactor: options.dimensions.scale
+                    });
+
 
                     var clip = {
                         x: rect.left,

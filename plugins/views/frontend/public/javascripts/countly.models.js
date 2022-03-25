@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, Promise, CV, countlyVue, app*/
+/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, Promise, CV, countlyVue, app, countlyAuth */
 
 (function(countlyViews) {
 
@@ -16,7 +16,8 @@
         _selectedViews = [],
         _graphDataObj = {},
         _viewsCount = 0,
-        _viewsNames = {};
+        _viewsNames = {},
+        FEATURE_NAME = 'views';
 
 
     CountlyHelpers.createMetricModel(countlyViews, {name: "views"}, jQuery);
@@ -70,7 +71,7 @@
                     "method": "rename_views",
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         },
         deleteViews: function(view) {
             return CV.$.ajax({
@@ -82,7 +83,7 @@
                     "view_id": view
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
         }
     };
 
@@ -121,7 +122,7 @@
 
     var viewsTableResource = countlyVue.vuex.ServerDataTable("viewsMainTable", {
         columns: ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'uvc', 'scr', 'actionLink'],
-        onRequest: function(context, params) {
+        onRequest: function(context) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'views',
@@ -130,8 +131,9 @@
                 period: countlyCommon.getPeriodForAjax(),
             };
             data = data || {};
-            var selectedKey = params.segmentKey || "";//context.state.countlyViews.selectedSegment;
-            var selectedValue = params.segmentValue || "";//context.state.countlyViews.selectedSegmentValue;
+            var selectedInfo = context.getters.selectedData;
+            var selectedKey = selectedInfo.selectedSegment || "";//context.state.countlyViews.selectedSegment;
+            var selectedValue = selectedInfo.selectedSegmentValue || "";//context.state.countlyViews.selectedSegmentValue;
 
             if (selectedKey !== "" && selectedValue !== "") {
                 data.segment = selectedKey;
@@ -255,6 +257,51 @@
                 return path;
             }
         },
+        getTableData: function(dataObj, path, metric, name, segment, segmentVal) {
+            if (segment === "") {
+                segment = "no-segment";
+            }
+            var dbObj = {};
+            if (dataObj && dataObj[path] && dataObj[path][segment]) {
+                dbObj = dataObj[path][segment];
+                if (Object.keys(dbObj).length === 0) {
+                    return false;
+                }
+            }
+
+            var chartData = [];
+            var propData = [];
+            var clearObject = countlyViews.clearObject();
+            for (var key in clearObject) {
+                chartData.push({"data": [], label: key});
+                propData.push({"name": key});
+            }
+
+            var rr = countlyCommon.extractChartData(dbObj, countlyViews.clearObject, chartData, propData, segmentVal);
+
+            var totals = {"t": 0, "u": 0, "s": 0, "b": 0, "e": 0, "d": 0, "n": 0, "uvc": 0, "scr": 0};
+            for (var z = 0; z < rr.chartData.length; z++) {
+                for (var key2 in clearObject) {
+                    totals[key2] += (rr.chartData[z][key2] || 0);
+                }
+            }
+
+            if (totals.t > 0) {
+                totals.dCalc = countlyCommon.timeString((totals.d / totals.t) / 60);
+                var vv = parseFloat(totals.scr) / parseFloat(totals.t);
+                if (vv > 100) {
+                    vv = 100;
+                }
+                totals.scrCalc = countlyCommon.formatNumber(vv) + "%";
+                totals.br = Math.round(totals.b * 100 / totals.s);
+            }
+            else {
+                totals.dCalc = 0;
+                totals.scrCalc = 0;
+                totals.br = 0;
+            }
+            return totals;
+        },
         getChartData: function(dataObj, path, metric, name, segment, segmentVal) {
             if (segment === "") {
                 segment = "no-segment";
@@ -338,6 +385,7 @@
                 error: null,
                 selectedProperty: "t",
                 selectedSegment: "",
+                updateError: "",
                 selectedSegmentValue: "",
                 selectedViews: [],
                 segments: {},
@@ -390,17 +438,19 @@
                 });
             },
             updateViews: function(context, data) {
-                countlyViews.service.updateViews(data).then(function() {
+                context.dispatch('onUpdateError', "");
+                return countlyViews.service.updateViews(data).then(function() {
                     context.dispatch("fetchViewsEditTable");
                 }).catch(function(error) {
-                    context.dispatch('onFetchError', error);
+                    context.dispatch('onUpdateError', error);
                 });
             },
             deleteViews: function(context, data) {
-                countlyViews.service.deleteViews(data).then(function() {
+                context.dispatch('onUpdateError', "");
+                return countlyViews.service.deleteViews(data).then(function() {
                     context.dispatch("fetchViewsEditTable");
                 }).catch(function(error) {
-                    context.dispatch('onFetchError', error);
+                    context.dispatch('onUpdateError', error);
                 });
             },
             onFetchInit: function(context) {
@@ -408,6 +458,9 @@
             },
             onFetchError: function(context, error) {
                 context.commit('setFetchError', error);
+            },
+            onUpdateError: function(context, error) {
+                context.commit('setUpdateError', error);
             },
             onFetchSuccess: function(context) {
                 context.commit('setFetchSuccess');
@@ -453,6 +506,12 @@
                 state.hasError = true;
                 state.error = error;
             },
+            setUpdateError: function(state, error) {
+                if (error && error.responseJSON && error.responseJSON.result) {
+                    error = error.responseJSON.result;
+                }
+                state.updateError = error;
+            },
             setFetchSuccess: function(state) {
                 state.isLoading = false;
                 state.hasError = false;
@@ -477,6 +536,40 @@
         return countlyVue.vuex.Module("countlyViews", {
             state: getInitialState,
             actions: ViewsActions,
+            getters: {
+                selectedTableRows: function(context) {
+                    var rows = [];
+
+                    for (var p = 0; p < context.selectedViews.length; p++) {
+                        var chart = countlyViews.helpers.getTableData(context.data || {}, context.selectedViews[p], context.selectedProperty, "name", context.selectedSegment, context.selectedSegmentValue);
+                        if (chart) {
+                            chart.view = countlyViews.helpers.getChartLineName(context.data, context.selectedViews[p]);
+                            chart.name = countlyViews.helpers.getChartLineName(context.data, context.selectedViews[p]);
+                            chart._id = context.selectedViews[p];
+                            chart.selected = true;
+                            rows.push(chart);
+                        }
+                        else {
+                            var obj = countlyViews.clearObject();
+                            obj.view = context.selectedViews[p];
+                            obj.name = context.selectedViews[p];
+                            obj._id = context.selectedViews[p];
+                            obj.selected = true;
+                            rows.push(obj);
+                        }
+                    }
+                    return rows;
+                },
+                selectedData: function(context) {
+                    return {
+                        selectedSegment: context.selectedSegment,
+                        selectedSegmentValue: context.selectedSegmentValue
+                    };
+                },
+                updateError: function(context) {
+                    return context.updateError;
+                }
+            },
             mutations: ViewsMutations,
             submodules: [viewsTableResource, editTableResource]
         });
@@ -576,7 +669,7 @@
         });
     };
 
-    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0) {
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(FEATURE_NAME)) {
         countlyViews.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 

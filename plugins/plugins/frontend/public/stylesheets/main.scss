@@ -1,0 +1,67 @@
+/* PLUGINS */
+@use "sass:map";
+.config-section {border-bottom: 1px solid #ECECEC;}
+.config-section:last-child { border-bottom: none; }
+.config-section-overwritten { color: #F56C6C; font-size: 12px; line-height: 1; }
+.account-settings-avatar-box{border-left: 1px solid #ECECEC;}
+.account-settings-avatar{width: 100px; height: 100px; margin: auto; border-radius: 290486px; text-align: center; display: table;}
+.account-settings-avatar span{color: #fff; font-size: 60px; text-transform: uppercase; display: table-cell; vertical-align: middle;}
+.account-upload-instructions {font-size:12px; color: #81868D; text-align: center;}
+.account-settings-hint {font-size: 12px; line-height: 18px;}
+.account-settings-hint i.fa-check-circle {color: #67C23A;}
+.el-table tr.plugin-highlighted-row {background: #f0f9eb;}
+.config-image-uploader img {height: 100%; width: auto; vertical-align: middle; display: block; margin-left: auto;}
+.config-error {color:red;}
+.config-image-uploader:hover {
+    border-color: #409EFF;
+}
+.config-image-uploader-icon {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 28px;
+    color: #8c939d;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    float: left;
+}
+
+.configurations {
+    .cly-vue-section--has-default-skin .cly-vue-section__content{
+        border: 1px solid #ECECEC !important;
+        border-radius: 4px;
+        .config-section { 
+            margin: 0px !important;
+            font-size: 14px;
+            color: #333C48;
+            div p:first-child {
+                line-height: 14px;
+                margin: 0px;
+            }
+            div p:nth-child(2) {
+                line-height: 20px;
+                margin: 0px;
+            }
+            .bu-column {padding: 0px;}
+        } 
+    }
+    .selected-config {
+        h2 {letter-spacing: 0.3px;}
+        h3 {letter-spacing: 0.3px;}
+    }
+    .image-delete{
+        .el-button--text:active, .el-button--text:focus, .el-button--text:hover {
+            border-color: #fff;
+            background-color: #fff;
+            color: #D23F00;
+        }
+    }
+    .el-upload img {
+        width:165px;
+        height: 50px;
+        margin-left:24px;
+        cursor: default;
+    }
+}

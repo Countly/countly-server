@@ -31,8 +31,67 @@
         }
     });
 
+
+    var UnreadPin = countlyVue.views.create({
+        template: "<div v-if='isActive' class='cly-bullet cly-bullet--orange bu-mr-1'></div>",
+        props: {
+            appId: {
+                type: String
+            },
+            taskId: {
+                type: String,
+                default: null
+            },
+            autoRead: {
+                type: Boolean,
+                default: false
+            }
+        },
+        computed: {
+            isActive: function() {
+                var unread = this.$store.state.countlyTaskManager.unread;
+                return !!(unread && unread[this.appId] && unread[this.appId][this.taskId]);
+            }
+        },
+        data: function() {
+            return {
+                isMounted: false,
+            };
+        },
+        mounted: function() {
+            this.isMounted = true;
+        },
+        methods: {
+            checkAutoRead: function() {
+                if (this.autoRead && this.isMounted && this.isActive) {
+                    var store = this.$store,
+                        taskId = this.taskId,
+                        appId = this.appId;
+
+                    setTimeout(function() {
+                        store.commit("countlyTaskManager/setRead", {
+                            taskId: taskId,
+                            appId: appId
+                        });
+                    }, 3000);
+                }
+            }
+        },
+        watch: {
+            isActive: function() {
+                this.checkAutoRead();
+            },
+            isMounted: function() {
+                this.checkAutoRead();
+            }
+        }
+    });
+
     Vue.component("cly-report-manager-table", countlyVue.views.create({
         template: CV.T('/core/report-manager/templates/reportmanager-table.html'),
+        components: {
+            "unread-pin": UnreadPin
+        },
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
             reportType: {
@@ -46,6 +105,14 @@
             compact: {
                 type: Boolean,
                 default: false
+            },
+            disableAutoNavigationToTask: {
+                type: Boolean,
+                default: false
+            },
+            maxHeight: {
+                type: String,
+                default: null
             }
         },
         computed: {
@@ -64,23 +131,29 @@
                     q.type = this.selectedOrigin;
                 }
                 if (this.selectedRunTimeType && this.selectedRunTimeType !== "all") {
-                    q.autoRefresh = this.selectedRunTimeType;
+                    q.autoRefresh = this.selectedRunTimeType === "auto-refresh";
                 }
                 if (this.selectedState && this.selectedState !== "all") {
                     q.status = this.selectedState;
                 }
                 return q;
+            },
+            remoteOpId: function() {
+                return this.$store.state.countlyTaskManager.opId;
             }
         },
         watch: {
             "query": function() {
+                this.refresh(true);
+            },
+            remoteOpId: function() {
                 this.refresh(true);
             }
         },
         data: function() {
             var self = this;
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("reportsTable", {
-                columns: ["start"],
+                columns: ['report_name', '_placeholder0', 'status', 'type', "_placeholder1", "_placeholder2", "_placeholder3", 'end', 'start'],
                 onRequest: function() {
                     var queryObject = Object.assign({}, self.query);
                     if (self.isManual) {
@@ -113,7 +186,7 @@
                                     row.hasStatusDifferences = true;
                                 }
                                 stat = row.subtasks[k].status;
-                                if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                if (row.subtasks[k].status === "errored" || row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
                                     row.status = row.subtasks[k].status;
                                     row.start = row.subtasks[k].start || row.start;
                                 }
@@ -139,29 +212,31 @@
                 tableStore: tableStore,
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "reportsTable"),
                 availableOrigins: {
-                    "all": CV.i18n("common.all"),
+                    "all": CV.i18n("report-manager.all-origins"),
                     "funnels": CV.i18n("sidebar.funnels") || "Funnels",
                     "drill": CV.i18n("drill.drill") || "Drill",
                     "flows": CV.i18n("flows.flows") || "Flows",
                     "retention": CV.i18n("retention.retention") || "Retention",
                     "formulas": CV.i18n("calculated-metrics.formulas") || "Formulas",
-                    "dbviewer": CV.i18n("dbviewer.title") || "DBViewer"
+                    "dbviewer": CV.i18n("dbviewer.title") || "DBViewer",
+                    "data-manager": CV.i18n("data-manager.plugin-title") || "Data Manager",
+                    "views": CV.i18n("views.title") || "Views"
                 },
                 availableRunTimeTypes: {
-                    "all": CV.i18n("common.all"),
+                    "all": CV.i18n("report-manager.all-types"),
                     "auto-refresh": CV.i18n("taskmanager.auto"),
                     "none-auto-refresh": CV.i18n("taskmanager.manual")
                 },
                 availableStates: {
-                    "all": CV.i18n("common.all"),
+                    "all": CV.i18n("report-manager.all-statuses"),
                     "running": CV.i18n("common.running"),
                     "rerunning": CV.i18n("taskmanager.rerunning"),
                     "completed": CV.i18n("common.completed"),
                     "errored": CV.i18n("common.errored")
                 },
-                selectedOrigin: null,
-                selectedRunTimeType: null,
-                selectedState: null,
+                selectedOrigin: "all",
+                selectedRunTimeType: "all",
+                selectedState: "all",
                 lastRequestPayload: {}
             };
         },
@@ -180,6 +255,14 @@
             },
             getViewText: function(row) {
                 return (row.status !== "running" && row.status !== "rerunning") ? CV.i18n("common.view") : CV.i18n("taskmanager.view-old");
+            },
+            isDownloadable: function(row) {
+                if (row.type === "views" || row.type === "tableExport") {
+                    return true;
+                }
+                else {
+                    return false;
+                }
             },
             isReadyForView: function(row) {
                 return row.view && row.hasData;
@@ -207,6 +290,7 @@
                             if (!result) {
                                 return true;
                             }
+                            self.refresh();
                             countlyTaskManager.update(id, function(res, error) {
                                 if (res.result === "Success") {
                                     countlyTaskManager.monitor(id, true);
@@ -219,7 +303,15 @@
                         }, [CV.i18n("common.no-dont-do-that"), CV.i18n("taskmanager.yes-rerun-report")], {title: CV.i18n("taskmanager.confirm-rerun-title"), image: "rerunning-task"});
                     }
                     else if (command === "view-task") {
-                        window.location = row.view + id;
+                        self.$emit("view-task", row);
+                        if (!this.disableAutoNavigationToTask) {
+                            window.location = row.view + id;
+                        }
+                    }
+                    else if (command === "download-task") {
+                        self.$emit("download-task", row);
+                        var link = countlyCommon.API_PARTS.data.r + '/export/download/' + row._id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+                        window.location = link;
                     }
                 }
             },
@@ -254,6 +346,9 @@
 
     Vue.component("cly-report-manager-dialog", countlyVue.views.create({
         template: CV.T('/core/report-manager/templates/reportmanager-dialog.html'),
+        components: {
+            "unread-pin": UnreadPin
+        },
         props: {
             origin: {
                 type: String,
@@ -262,14 +357,45 @@
             disabled: {
                 type: Boolean,
                 default: false
+            },
+            disableRunningCount: {
+                type: Boolean,
+                default: false
+            },
+            disableAutoNavigationToTask: {
+                type: Boolean,
+                default: true
+            }
+        },
+        computed: {
+            remoteOpId: function() {
+                return this.$store.state.countlyTaskManager.opId;
+            },
+            unread: function() {
+                var unread = this.$store.getters["countlyTaskManager/unreadStats"];
+                if (unread[countlyCommon.ACTIVE_APP_ID]) {
+                    if (this.origin) {
+                        return unread[countlyCommon.ACTIVE_APP_ID][this.origin] || 0;
+                    }
+                    return unread[countlyCommon.ACTIVE_APP_ID]._total || 0;
+                }
+                return 0;
             }
         },
         data: function() {
             return {
-                isDialogVisible: false
+                isDialogVisible: false,
+                runningCount: 0,
+                fetchingCount: false
             };
         },
+        mounted: function() {
+            this.refresh();
+        },
         watch: {
+            remoteOpId: function() {
+                this.refresh();
+            },
             disabled: function(newVal) {
                 if (newVal) {
                     this.isDialogVisible = false;
@@ -277,10 +403,45 @@
             }
         },
         methods: {
+            refresh: function() {
+                this.fetchRunningCount();
+            },
+            fetchRunningCount: function() {
+                if (!this.disableRunningCount && !this.fetchingCount) {
+                    var q = {
+                            status: {$in: ["running", "rerunning"]},
+                            manually_create: {$ne: true}
+                        },
+                        self = this;
+
+                    if (this.origin) {
+                        q.type = this.origin;
+                    }
+                    this.fetchingCount = true;
+                    CV.$.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.r + "/tasks/count?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                        data: {
+                            query: JSON.stringify(q)
+                        }
+                    }, {disableAutoCatch: false})
+                        .then(function(resp) {
+                            self.runningCount = (resp && resp[0] && resp[0].c) || 0;
+                        })
+                        .catch(function() {})
+                        .finally(function() {
+                            self.fetchingCount = false;
+                        });
+                }
+            },
             showDialog: function() {
                 if (!this.disabled) {
                     this.isDialogVisible = true;
                 }
+            },
+            onViewTask: function(payload) {
+                this.$emit("view-task", payload);
+                this.isDialogVisible = false;
             }
         }
     }));

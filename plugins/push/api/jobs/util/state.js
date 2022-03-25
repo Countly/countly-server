@@ -1,4 +1,5 @@
-const EventEmitter = require("events");
+const EventEmitter = require("events"),
+    { Message } = require('../../send');
 
 /**
  * Data object shared across streams to hold state
@@ -6,8 +7,10 @@ const EventEmitter = require("events");
 class State extends EventEmitter {
     /**
      * Constructor
+     * 
+     * @param {object} opts general push plugin config options
      */
-    constructor() {
+    constructor(opts) {
         super();
 
         // objects here have form of {_id: object}
@@ -15,12 +18,13 @@ class State extends EventEmitter {
         this._messages = {};
         // this._credentials = {};
         this._pushes = {};
-        this._cfg = {
+        this._sending = {};
+        this._cfg = Object.assign({
             pool: {
                 bytes: 100000,
                 workers: 10
             }
-        };
+        }, opts || {});
     }
 
     /**
@@ -94,7 +98,7 @@ class State extends EventEmitter {
      * @returns {Message[]} array of messages
      */
     messages() {
-        return Object.values(this._messages);
+        return Object.values(this._messages).filter(m => !!m);
     }
 
     /**
@@ -103,6 +107,9 @@ class State extends EventEmitter {
      * @param {object} message message object
      */
     setMessage(message) {
+        if (!(message instanceof Message)) {
+            message = new Message(message);
+        }
         if (!(message._id in this._messages)) {
             this.emit('message', message);
         }
@@ -126,6 +133,35 @@ class State extends EventEmitter {
      */
     isMessageDiscarded(id) {
         return this._messages[id] === false;
+    }
+
+    /**
+     * Increment sending counter for given message id
+     * 
+     * @param {string|ObjectID} id message id
+     */
+    incSending(id) {
+        this._sending[id] = (this._sending[id] || 0) + 1;
+    }
+
+    /**
+     * Decrement sending counter for given message id
+     * 
+     * @param {string|ObjectID} id message id
+     * @param {int} count decrement
+     */
+    decSending(id, count = 1) {
+        this._sending[id] = (this._sending[id] || 0) - count;
+    }
+
+    /**
+     * Check if some pushes are still in processing
+     * 
+     * @param {string|ObjectID} id message id
+     * @returns {boolean} true if there're pushes in processing
+     */
+    isSending(id) {
+        return !!this._sending[id];
     }
 
     // /**

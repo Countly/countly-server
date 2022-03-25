@@ -1,0 +1,17 @@
+<cly-form-field
+    name="data_type"
+    rules="required"
+    :label="i18nM('dashboards.data-type')">
+    <el-select
+        v-bind="$attrs"
+        v-on="$listeners"
+        :collapse-tags="false"
+        :placeholder="placeholderText">
+        <el-option
+            v-for="metric in types"
+            :key="metric.value"
+            :label="metric.label"
+            :value="metric.value">
+        </el-option>
+    </el-select>
+</cly-form-field>

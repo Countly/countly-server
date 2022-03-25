@@ -29,6 +29,7 @@ plugins.setConfigs("remote-config", {
             params.qstring.app_id = params.app_id;
             var keys = [];
             var omitKeys = [];
+            var parametersCountArray = [];
 
             if (params.qstring.keys) {
                 try {
@@ -47,10 +48,20 @@ plugins.setConfigs("remote-config", {
                     console.log('Parse omit keys failed: ', params.qstring.omit_keys);
                 }
             }
-
+            params.parameter_criteria = {"$and": []};
+            params.parameter_criteria.$and.push({
+                $or: [
+                    {"status": {$exists: false}},
+                    {"status": {$exists: true, $eq: "Running"}},
+                ]
+            });
+            params.parameter_criteria.$and.push({
+                $or: [
+                    {"expiry_dttm": {$exists: true, $gt: Date.now()}},
+                    {"expiry_dttm": null}
+                ]
+            });
             if (keys.length || omitKeys.length) {
-                params.parameter_criteria = {"$and": []};
-
                 if (keys.length) {
                     params.parameter_criteria.$and.push({"parameter_key": { $in: keys }});
                 }
@@ -59,7 +70,6 @@ plugins.setConfigs("remote-config", {
                     params.parameter_criteria.$and.push({"parameter_key": { $nin: omitKeys }});
                 }
             }
-
             params.app_user = params.app_user || {};
             var user = JSON.parse(JSON.stringify(params.app_user));
             var processMetrics = params.processed_metrics;
@@ -121,10 +131,20 @@ plugins.setConfigs("remote-config", {
                         if (er || !res) {
                             output[parameter.parameter_key] = parameterValue;
                             log.w("Error while fetching condition", parameter);
+                            if (parameter.c) {
+                                parameter.c = parameter.c + 1;
+                            }
+                            else {
+                                parameter.c = 1;
+                            }
+                            parametersCountArray.push({
+                                parameter
+                            });
                             return callback(null);
                         }
 
                         var paramConditionsInfo = res[0];
+                        var conditionCount = false;
 
                         for (let i = 0; i < paramConditions.length; i++) {
                             var conditionInfo = paramConditionsInfo.filter(function(cond) {
@@ -157,11 +177,28 @@ plugins.setConfigs("remote-config", {
 
                             if (conditionStatus) {
                                 parameterValue = conditionObj.value;
+                                conditionCount = true;
+                                if (parameter.conditions[i].c) {
+                                    parameter.conditions[i].c = parameter.conditions[i].c + 1;
+                                }
+                                else {
+                                    parameter.conditions[i].c = 1;
+                                }
                                 break;
                             }
                         }
-
+                        if (!conditionCount) {
+                            if (parameter.c) {
+                                parameter.c = parameter.c + 1;
+                            }
+                            else {
+                                parameter.c = 1;
+                            }
+                        }
                         output[parameter.parameter_key] = parameterValue;
+                        parametersCountArray.push({
+                            parameter
+                        });
                         return callback(null);
                     });
                 }, function(e) {
@@ -169,7 +206,7 @@ plugins.setConfigs("remote-config", {
                         common.returnMessage(params, 400, 'Error while fetching remote config data.');
                         return reject(true);
                     }
-
+                    updateParametersInDb(params, parametersCountArray);
                     common.returnOutput(params, output, true);
                     return resolve(true);
                 });
@@ -338,7 +375,7 @@ plugins.setConfigs("remote-config", {
         var maximumParametersAllowed = plugins.getConfig("remote-config").maximum_allowed_parameters;
         var maximumConditionsAllowed = plugins.getConfig("remote-config").conditions_per_paramaeters;
         var collectionName = "remoteconfig_parameters" + appId;
-
+        parameter.ts = Date.now();
         var asyncTasks = [
             checkMaximumParameterLimit.bind(null, appId, maximumParametersAllowed),
             checkMaximumConditionsLimit.bind(null, parameter.conditions, maximumConditionsAllowed),
@@ -647,6 +684,44 @@ plugins.setConfigs("remote-config", {
                 return callback(err);
             }
         });
+    }
+    /**
+     * Function to update parameter in collection
+     * @param  {String} params - params object
+     * @param  {Object} parameters - parameters array
+     */
+    function updateParametersInDb(params, parameters) {
+        try {
+            let appId = params.qstring.app_id;
+            const collectionName = "remoteconfig_parameters" + appId;
+            let bulkArray = [];
+            parameters.forEach(parameter=> {
+                let id = parameter.parameter._id;
+                bulkArray.push({
+                    'updateOne': {
+                        'filter': {
+                            '_id': id
+                        },
+                        'update': {
+                            '$set': parameter.parameter
+                        }
+                    },
+                });
+            });
+            if (bulkArray.length > 0) {
+                common.outDb.collection(collectionName).bulkWrite(bulkArray, function(error) {
+                    if (error) {
+                        log.w("Error while bulk write of updating parameters count", error);
+                    }
+                    else {
+                        plugins.dispatch("/systemlogs", {params: params, action: "rc_parameters_edited", data: { parameters: parameters }});
+                    }
+                });
+            }
+        }
+        catch (e) {
+            log.w("Error while updating parameters count", e);
+        }
     }
 
     /**

@@ -4,15 +4,30 @@ const common = require('../../../api/utils/common'),
     log = common.log('push:api:dashboard'),
     { platforms, fields, FIELDS_TITLES, PLATFORMS_TITLES } = require('./send');
 
-module.exports.dashboard = async function(params) {
-    let app_id = params.qstring.app_id;
+/**
+ * Add chart data from from to to
+ * @param {object} from from obj
+ * @param {object} to to obj
+ */
+function add(from, to) {
+    from.data.forEach((n, i) => {
+        to.data[i] += n;
+    });
+}
 
-    if (!app_id || app_id.length !== 24) {
-        common.returnMessage(params, 400, 'Not enough args');
-        return false;
+module.exports.dashboard = async function(params) {
+    let app_id = common.validateArgs(params.qstring, {
+        app_id: {type: 'ObjectID', required: true},
+    }, true);
+    if (app_id.result) {
+        app_id = app_id.obj.app_id;
+    }
+    else {
+        common.returnMessage(params, 400, {errors: app_id.errors}, null, true);
+        return true;
     }
 
-    var not = new Date(),
+    let not = new Date(),
         mom = moment(not),
         noy = not.getFullYear(),
         nom = not.getMonth(),
@@ -35,23 +50,29 @@ module.exports.dashboard = async function(params) {
         wkt = wks.map(w => 'W' + w),
         // wkt = wks.map((w, i) => (i === 0 || w > wks[0] ? agy : noy) + '-w' + w),
 
-        // ids of event docs
-        suf = '_' + crypto.createHash('md5').update('true').digest('base64')[0],
-        ids = mts.map((m, i) => 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
-            .concat([
-                'a_' + noy + ':' + (nom + 1) + suf, // '_s' is from crypto.createHash('md5').update('false').digest('base64')[0]
-                'a_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
-            ])
-            .concat([
-                't_' + noy + ':' + (nom + 1) + suf, // '_s' is from crypto.createHash('md5').update('false').digest('base64')[0]
-                't_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
-            ]),
-        // mts.reduce((acc, m, i) => {
-        //     acc.push('no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m);
-        //     acc.push('a_' + (agm + i >= 12 ? noy : agy) + ':' + m + '_a');   
-        //     return acc;
-        // }, []),
-        que = {_id: {$in: ids}},
+        /**
+         * Generate ids of event docs
+         * 
+         * @param {string} seg segment name
+         * @param {string} val segment value
+         * @returns {string[]} event doc ids
+         */
+        ids = (seg, val) => ([
+            seg + '_' + noy + ':' + (nom + 1) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0],
+            seg + '_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0]
+        ]),
+
+        // event docs query
+        que = {
+            _id: {
+                $in: mts.map((m, i) => 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
+                    .concat(platforms.map(p => mts.map((m, i) => 'p_' + (agm + i >= 12 ? noy : agy) + ':' + m + '_' + crypto.createHash('md5').update(p).digest('base64')[0])).flat())
+                    .concat(ids('a', 'true'))
+                    .concat(ids('t', 'true'))
+                    .concat(platforms.map(p => ids('ap', 'true' + p)).flat())
+                    .concat(platforms.map(p => ids('tp', 'true' + p)).flat())
+            }
+        },
 
         sen = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + app_id).digest('hex'),
         act = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_action') + app_id).digest('hex'),
@@ -103,19 +124,49 @@ module.exports.dashboard = async function(params) {
             enabled[p] = counts[i] || 0;
         });
 
-        var events = results.slice(0, 2).map(events1 => {
-            var ret = {weekly: {data: Array(wks.length).fill(0), keys: wkt}, monthly: {data: Array(mts.length).fill(0), keys: mtt}, total: 0};
-            var retAuto = { daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)}, total: 0 };
-            var retTx = { daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)}, total: 0 };
+        let events = results.slice(0, 2).map(events1 => {
+            let ret = {
+                    weekly: {data: Array(wks.length).fill(0), keys: wkt},
+                    monthly: {data: Array(mts.length).fill(0), keys: mtt},
+                    total: 0,
+                    platforms: {}
+                },
+                retAuto = {
+                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)},
+                    total: 0,
+                    platforms: {}
+                },
+                retTx = {
+                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)},
+                    total: 0,
+                    platforms: {}
+                };
+
+            platforms.forEach(p => {
+                ret.platforms[p] = {
+                    weekly: {data: Array(wks.length).fill(0), keys: wkt},
+                    monthly: {data: Array(mts.length).fill(0), keys: mtt},
+                    total: 0
+                };
+                retAuto.platforms[p] = {
+                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)},
+                    total: 0
+                };
+                retTx.platforms[p] = {
+                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)},
+                    total: 0
+                };
+            });
+
             // log.d('events', events);
             events1.forEach(e => {
                 // log.d('event', e);
                 var par = e._id.match(rxp),
-                    yer = parseInt(par[1]),
-                    mon = parseInt(par[2]) - 1;
+                    yer = parseInt(par[1], 10),
+                    mon = parseInt(par[2], 10) - 1;
 
                 Object.keys(e.d).forEach(d => {
-                    d = parseInt(d);
+                    d = parseInt(d, 10);
                     if (yer === agy && mon === agm && d < agd) {
                         return;
                     }
@@ -135,38 +186,87 @@ module.exports.dashboard = async function(params) {
                         ret.monthly.data[mi] += e.d[d].c;
                         ret.total += e.d[d].c;
                     }
-                    else if (e.s === 'a' && 'true' in e.d[d]) {
-                        // log.d('%s / %d: %d', e.s, d, e.d[d]['true'].c);
+                    else {
                         date = moment({ year: yer, month: mon, day: d});
                         diff = moment().diff(date, 'days');
+                        if (e.s === 'a' && 'true' in e.d[d]) {
+                            if (diff <= 29) {
+                                target = 29 - diff;
+                                retAuto.daily.data[target] += e.d[d].true.c;
+                                retAuto.total += e.d[d].true.c;
+                            }
 
-                        if (diff <= 29) {
-                            target = 29 - diff;
-                            retAuto.daily.data[target] += e.d[d].true.c;
-                            retAuto.total += e.d[d].true.c;
+                            ret.weekly.data[wi] -= e.d[d].true.c;
+                            ret.monthly.data[mi] -= e.d[d].true.c;
+                            ret.total -= e.d[d].true.c;
                         }
+                        else if (e.s === 't' && 'true' in e.d[d]) {
+                            if (diff <= 29) {
+                                target = 29 - diff;
+                                retTx.daily.data[target] += e.d[d].true.c;
+                                retTx.total += e.d[d].true.c;
+                            }
 
-                        ret.weekly.data[wi] -= e.d[d].true.c;
-                        ret.monthly.data[mi] -= e.d[d].true.c;
-                        ret.total -= e.d[d].true.c;
-                    }
-                    else if (e.s === 't' && 'true' in e.d[d]) {
-                        // log.d('%s / %d: %d', e.s, d, e.d[d]['true'].c);
-                        date = moment({ year: yer, month: mon, day: d});
-                        diff = moment().diff(date, 'days');
-
-                        if (diff <= 29) {
-                            target = 29 - diff;
-                            retTx.daily.data[target] += e.d[d].true.c;
-                            retTx.total += e.d[d].true.c;
+                            ret.weekly.data[wi] -= e.d[d].true.c;
+                            ret.monthly.data[mi] -= e.d[d].true.c;
+                            ret.total -= e.d[d].true.c;
                         }
+                        else if (e.s === 'p') {
+                            platforms.forEach(p => {
+                                if (!e.d[d][p]) {
+                                    return;
+                                }
+                                ret.platforms[p].weekly.data[wi] += e.d[d][p].c;
+                                ret.platforms[p].monthly.data[mi] += e.d[d][p].c;
+                                ret.platforms[p].total += e.d[d][p].c;
+                            });
+                        }
+                        else if (e.s === 'ap' && diff <= 29) {
+                            target = 29 - diff;
+                            platforms.forEach(p => {
+                                let k = 'true' + p;
+                                if (!e.d[d][k]) {
+                                    return;
+                                }
+                                retAuto.platforms[p].daily.data[target] += e.d[d][k].c;
+                                retAuto.platforms[p].total += e.d[d][k].c;
 
-                        ret.weekly.data[wi] -= e.d[d].true.c;
-                        ret.monthly.data[mi] -= e.d[d].true.c;
-                        ret.total -= e.d[d].true.c;
+                                ret.platforms[p].weekly.data[wi] -= e.d[d][k].c;
+                                ret.platforms[p].monthly.data[mi] -= e.d[d][k].c;
+                                ret.platforms[p].total -= e.d[d][k].c;
+                            });
+                        }
+                        else if (e.s === 'tp' && diff <= 29) {
+                            target = 29 - diff;
+                            platforms.forEach(p => {
+                                let k = 'true' + p;
+                                if (!e.d[d][k]) {
+                                    return;
+                                }
+                                retTx.platforms[p].daily.data[target] += e.d[d][k].c;
+                                retTx.platforms[p].total += e.d[d][k].c;
+
+                                ret.platforms[p].weekly.data[wi] -= e.d[d][k].c;
+                                ret.platforms[p].monthly.data[mi] -= e.d[d][k].c;
+                                ret.platforms[p].total -= e.d[d][k].c;
+                            });
+                        }
                     }
                 });
             });
+
+            if (ret.platforms.h) {
+                add(ret.platforms.h.weekly, ret.platforms.a.weekly);
+                add(ret.platforms.h.monthly, ret.platforms.a.monthly);
+                add(retAuto.platforms.h.daily, retAuto.platforms.a.daily);
+                add(retTx.platforms.h.daily, retTx.platforms.a.daily);
+                delete ret.platforms.h;
+                delete retAuto.platforms.h;
+                delete retTx.platforms.h;
+            }
+            delete ret.platforms.t;
+            delete retAuto.platforms.t;
+            delete retTx.platforms.t;
 
             return {
                 m: ret,
@@ -174,6 +274,20 @@ module.exports.dashboard = async function(params) {
                 t: retTx
             };
         });
+
+        let pltfms = {},
+            tokens = {};
+
+        for (let p in PLATFORMS_TITLES) {
+            if (p !== 't' && p !== 'h') {
+                pltfms[p] = PLATFORMS_TITLES[p];
+                for (let tk in FIELDS_TITLES) {
+                    if (tk[2] === p) {
+                        tokens[tk] = FIELDS_TITLES[tk];
+                    }
+                }
+            }
+        }
 
         common.returnOutput(params, {
             sent: events[0].m,
@@ -184,8 +298,8 @@ module.exports.dashboard = async function(params) {
             actions_tx: events[1].t,
             enabled,
             users: results[2] ? results[2] : 0,
-            platforms: PLATFORMS_TITLES,
-            tokens: FIELDS_TITLES
+            platforms: pltfms,
+            tokens
         });
     }
     catch (error) {

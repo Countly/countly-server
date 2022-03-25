@@ -6,7 +6,19 @@
 
     Vue.component("cly-header", countlyBaseComponent.extend({
         props: {
-            title: String
+            title: String,
+            backlink: {
+                type: Object,
+                default: function() {
+                    return null;
+                },
+            },
+            headerClass: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
         },
         computed: {
             slotHeaderTop: function() {
@@ -19,12 +31,14 @@
                 return !!(this.$scopedSlots["header-tabs"] || this.$slots["header-tabs"]);
             },
             headerClasses: function() {
-                return {
+                var cls = {
                     "cly-vue-header": true,
                     "white-bg": true,
                     "cly-vue-header--no-mb": this.slotHeaderTabs,
                     "cly-vue-header--no-bb": this.slotHeaderTabs
                 };
+
+                return Object.assign(cls, this.headerClass);
             },
             midLevelClasses: function() {
                 return {
@@ -43,13 +57,22 @@
                                 <slot name="header-top"></slot>\
                             </div>\
                         </div>\
+                        <template v-if="backlink && backlink.url && backlink.title"> \
+                            <div class="bu-level bu-is-mobile">\
+                                <div class="bu-level-left">\
+                                    <cly-back-link :title="backlink.title" :link="backlink.url"></cly-back-link> \
+                                </div> \
+                            </div>\
+                        </template> \
                         <div :class="[midLevelClasses]">\
-                            <div class="bu-level-left">\
-                                <slot name="header-left">\
-                                    <div class="bu-level-item">\
-                                        <h2>{{title}}</h2>\
-                                    </div>\
-                                </slot>\
+                            <div class="bu-level-left bu-is-flex-shrink-1 bu-is-flex-grow-1" style="min-width: 0;"> \
+                                <template> \
+                                    <slot name="header-left">\
+                                        <div class="bu-level-item">\
+                                            <h2>{{title}}</h2>\
+                                        </div>\
+                                    </slot>\
+                                </template> \
                             </div>\
                             <div class="bu-level-right">\
                                 <slot name="header-right"></slot>\
@@ -84,6 +107,10 @@
                 type: Boolean,
                 default: false
             },
+            hideConfig: {
+                type: Boolean,
+                default: true
+            },
             skin: {
                 type: String,
                 default: "default",
@@ -92,6 +119,14 @@
                     return val === "default" || val === "configurator";
                 }
             },
+        },
+        data: function() {
+            return {
+                isMounted: false
+            };
+        },
+        mounted: function() {
+            this.isMounted = true;
         },
         computed: {
             levelClass: function() {
@@ -104,10 +139,7 @@
                 var classes = {};
                 classes["cly-vue-section--has-" + this.skin + "-skin"] = true;
                 return classes;
-            },
-            isConfigSlotUsed: function() {
-                return !!this.$slots.config;
-            },
+            }
         },
         template: '<div class="cly-vue-section" :class="topClasses">\
                         <div :class="[levelClass]">\
@@ -120,7 +152,7 @@
                             </div>\
                         </div>\
                         <div class="cly-vue-section__content white-bg">\
-                            <div v-if="isConfigSlotUsed" class="cly-vue-section__content-config bu-is-flex bu-px-4 bu-py-2"><slot name="config"></slot></div>\
+                            <div v-if="!hideConfig" class="cly-vue-section__content-config bu-is-flex bu-px-4 bu-py-2"><slot name="config"></slot></div>\
                             <slot></slot>\
                         </div>\
                     </div>'

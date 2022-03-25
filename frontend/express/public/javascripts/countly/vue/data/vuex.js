@@ -47,6 +47,7 @@
 
         var ref = {
             name: name,
+            destroy: options.destroy,
             module: module,
             _resetKey: resetKey,
             _parent: null

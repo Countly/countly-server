@@ -4,16 +4,15 @@ const asyncLib = require('async');
 const EventEmitter = require('events');
 
 const common = require('../../../api/utils/common.js');
+const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');
 const log = common.log('hooks:api');
 const _ = require('lodash');
 const utils = require('./utils');
-
-const { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+const rights = require('../../../api/utils/rights');
 
 const FEATURE_NAME = 'hooks';
 
-
 plugins.setConfigs("hooks", {
     batchActionSize: 0, // size for processing actions each time
     refreshRulesPeriod: 3000, // miliseconds to fetch hook records
@@ -28,6 +27,7 @@ plugins.setConfigs("hooks", {
     refreshRulesPeriod: 3000, // miliseconds to fetch hook records
     pipelineInterval: 1000, // milliseconds to batch process pipeline
 });
+
 
 /**
 * Hooks Class definition 
@@ -46,7 +46,6 @@ class Hooks {
         setInterval(() => {
             this.fetchRules();
         }, plugins.getConfig("hooks").refreshRulesPeriod);
-
         this.registerEffects();
         this.registerTriggers();
 
@@ -139,6 +138,7 @@ class Hooks {
                     for (let i = 0; i < rule.effects.length; i++) {
                         item.effect = rule.effects[i];
                         item.effectStep = i;
+                        item._originalInput = rule._originalInput;
                         try {
                             const result = await this._effects[item.effect.type].run(item);
                             log.d("[test trigger result]", result);
@@ -166,11 +166,6 @@ class Hooks {
     }
 }
 
-// push surveys to feature list
-plugins.register("/permissions/features", function(ob) {
-    ob.features.push(FEATURE_NAME);
-});
-
 const CheckHookProperties = function(hookConfig) {
     const rules = {
         'name': { 'required': hookConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
@@ -183,11 +178,14 @@ const CheckHookProperties = function(hookConfig) {
     return rules;
 };
 
+plugins.register("/permissions/features", function(ob) {
+    ob.features.push(FEATURE_NAME);
+});
 
 plugins.register("/i/hook/save", function(ob) {
     let paramsInstance = ob.params;
 
-    validateCreate(paramsInstance, FEATURE_NAME, function(params) {
+    validateCreate(ob.params, FEATURE_NAME, function(params) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
@@ -230,15 +228,43 @@ plugins.register("/i/hook/save", function(ob) {
             log.e('Parse hook failed', hookConfig);
             common.returnMessage(params, 500, "Failed to create an hook");
         }
-    });
+    }, paramsInstance);
     return true;
 });
 
+/**
+ * build mongodb query for app level permission control
+ * @param {objext} query - init mongodb query object
+ * @param {object} params - countly params from requested upstream
+ * @returns  {object} newQuery - new query object
+ */
+function getVisibilityQuery(query, params) {
+    let member = params.member;
+    rights.getUserAppsForFeaturePermission(member, FEATURE_NAME, 'r');
+
+    if (member.global_admin) {
+        return query;
+    }
+    let newQuery = _.extend({}, query);
+
+    newQuery.$or = [
+        {apps: {$in: rights.getAdminApps(member) || []}},
+        {apps: {$in: rights.getUserAppsForFeaturePermission(member, FEATURE_NAME, 'r') || []}}
+    ];
+    return newQuery;
+}
+
 plugins.register("/o/hook/list", function(ob) {
     const paramsInstance = ob.params;
+
     validateRead(paramsInstance, FEATURE_NAME, function(params) {
         try {
-            let query = { $query: {}, $orderby: { created_at: -1 } };
+
+            let query = { $query: getVisibilityQuery({}, paramsInstance), $orderby: { created_at: -1 } };
+
+            if (paramsInstance.qstring && paramsInstance.qstring.id) {
+                query.$query._id = common.db.ObjectID(paramsInstance.qstring.id);
+            }
             common.db.collection("hooks").find(query).sort({created_at: -1}).toArray(function(err, hooksList) {
                 if (err) {
                     return log.e('got error in listing hooks: %j', err);
@@ -259,7 +285,7 @@ plugins.register("/o/hook/list", function(ob) {
             log.e('get hook list failed');
             common.returnMessage(params, 500, "Failed to get hook list");
         }
-    });
+    }, paramsInstance);
     return true;
 });
 
@@ -283,7 +309,7 @@ plugins.register("/i/hook/status", function(ob) {
             log.d("hooks all updated.");
             common.returnOutput(params, true);
         });
-    });
+    }, paramsInstance);
     return true;
 });
 
@@ -308,15 +334,15 @@ plugins.register("/i/hook/delete", function(ob) {
             log.e('delete hook failed', hookID);
             common.returnMessage(params, 500, "Failed to delete an hook");
         }
-    });
+    }, paramsInstance);
     return true;
 });
 
 //  test hook with mock hook config data
 plugins.register("/i/hook/test", function(ob) {
     const paramsInstance = ob.params;
-    let validateUserForWriteAPI = ob.validateUserForWriteAPI;
-    validateUserForWriteAPI(async(params) => {
+
+    validateCreate(paramsInstance, FEATURE_NAME, async(params) => {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
@@ -383,6 +409,7 @@ plugins.register("/i/hook/test", function(ob) {
     }, paramsInstance);
     return true;
 });
+
 
 // init instnace;
 new Hooks();

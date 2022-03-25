@@ -1,12 +1,13 @@
 const { Duplex } = require('stream'),
     Measurement = require('./measure'),
-    { getHasher, OutputType, HashType, hashAsBigInt} = require('bigint-hash'),
+    { XXHash64 } = require('xxhash-addon'),
+    // { getHasher, OutputType, HashType, hashAsBigInt} = require('bigint-hash'),
     { ERROR, PushError, SendError, ConnectionError, ValidationError, Message} = require('./data'),
-    { FRAME } = require('./proto');
+    { FRAME, FRAME_NAME } = require('./proto');
     // ,
     // log = require('../../../../api/utils/log.js')('push:send:base');
 
-/* global BigInt */
+const xx64 = new XXHash64();
 
 /**
  * Waits for given time
@@ -50,16 +51,16 @@ class Base extends Duplex {
         // this.log.i('initialized %s', type);
     }
 
-    /**
-     * Initializes the connection by calling connect function & using default stream _construct method
-     * 
-     * @param {function} callback function called after fist connection is made
-     */
-    _construct(callback) {
-        this.connect().then(() => callback(), e => {
-            throw e;
-        });
-    }
+    // /**
+    //  * Initializes the connection by calling connect function & using default stream _construct method
+    //  * 
+    //  * @param {function} callback function called after fist connection is made
+    //  */
+    // _construct(callback) {
+    //     // this.connect().then(() => callback(), e => {
+    //     //     throw e;
+    //     // });
+    // }
 
     /**
      * Add message into local cache
@@ -95,6 +96,7 @@ class Base extends Duplex {
         }, error => {
             this.log.e('Sending %d chunks errored', chunks.length, error);
             this.send_push_fail(PushError.deserialize(error));
+            callback();
         });
         // Promise.all(chunks.map(chunk => {
         //     chunk = chunk.chunk;
@@ -111,14 +113,14 @@ class Base extends Duplex {
         chunks = chunks.map(c => c.chunk);
         for (let i = 0; i < chunks.length; i++) {
             let {frame, payload, length} = chunks[i];
-            this.log.d('do_writev %d (%d out of %d)', frame, i, chunks.length);
+            this.log.d('do_writev %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
             if (frame & FRAME.CMD) {
                 this.push(chunks[i]);
             }
             else {
                 await this.send(payload, length);
             }
-            this.log.d('do_writev done %d (%d out of %d)', frame, i, chunks.length);
+            this.log.d('do_writev done %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
         }
     }
 
@@ -264,30 +266,63 @@ class Base extends Duplex {
     }
 }
 
-const bigintBuffer = Buffer.alloc(8);
-
 /**
  * Hash 
  * 
  * @param {any} data data to hash
- * @param {BigInt} seed optional BigInt for chaining multiple hashes
- * @returns {BigInt} 64-bit hash code
+ * @returns {String} 64-bit hash hex string
  */
-function hash(data, seed) {
-    if (seed) {
-        let bufhash = getHasher(HashType.xxHash64);
-        bigintBuffer.writeBigUInt64BE(seed);
-        bufhash.update(bigintBuffer);
-        // eslint-disable-next-line no-unused-vars
-        for (let _ignored in data) {
-            bufhash.update(Buffer.from(JSON.stringify(data), 'utf-8'));
-            return bufhash.digest(OutputType.BigInt);
-        }
-        return BigInt(0);
-    }
-    else {
-        return hashAsBigInt(HashType.xxHash64, Buffer.from(JSON.stringify(data), 'utf-8'));
-    }
+function hash(data) {
+    xx64.reset();
+    xx64.update(Buffer.from(JSON.stringify(data), 'utf-8'));
+    return xx64.digest().toString('hex');
+    // if (seed) {
+    //     let bufhash = getHasher(HashType.xxHash64);
+    //     bigintBuffer.writeBigUInt64BE(seed);
+    //     bufhash.update(bigintBuffer);
+    //     // eslint-disable-next-line no-unused-vars
+    //     for (let _ignored in data) {
+    //         bufhash.update(Buffer.from(JSON.stringify(data), 'utf-8'));
+    //         return bufhash.digest(OutputType.BigInt);
+    //     }
+    //     return BigInt(0);
+    // }
+    // else {
+    //     return hashAsBigInt(HashType.xxHash64, Buffer.from(JSON.stringify(data), 'utf-8'));
+    // }
 }
 
-module.exports = { Base, util: {hash, wait}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };
+
+/** 
+ * Flatten object using dot notation ({a: {b: 1}} becomes {'a.b': 1})
+ * 
+ * @param {object} ob - object to flatten
+ * @returns {object} flattened object
+ */
+function flattenObject(ob) {
+    var toReturn = {};
+
+    for (var i in ob) {
+        if (!Object.prototype.hasOwnProperty.call(ob, i)) {
+            continue;
+        }
+
+        if ((typeof ob[i]) === 'object' && ob[i] !== null) {
+            var flatObject = flattenObject(ob[i]);
+            for (var x in flatObject) {
+                if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
+                    continue;
+                }
+
+                toReturn[i + '.' + x] = flatObject[x];
+            }
+        }
+        else {
+            toReturn[i] = ob[i];
+        }
+    }
+    return toReturn;
+}
+
+
+module.exports = { Base, util: {hash, wait, flattenObject}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };

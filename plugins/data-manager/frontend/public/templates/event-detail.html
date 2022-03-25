@@ -8,16 +8,29 @@
                 <div class="bu-mt-4">
                     <h3 class="bu-is-capitalized"> {{event.name || event.key}} </h3>
                     <div class="bu-mt-4 bu-mr-2">
-                        <span class="tag-container">
+                        <span v-if="isDrill" class="tag-container">
                             <span v-bind:class="statusClassObject(event.status)" class="bu-tag bu-mt-1"> 
                                 <span class="blinker"></span>
-                                <span>{{event.status || 'unplanned'}}</span>
+                                <span>{{event.status || i18n('data-manager.unplanned') }}</span>
                             </span>
                         </span>
-                        <span v-if="event.is_visible === false" class="bu-tag bu-mx-2"><i class="fa fa-eye-slash"></i></span>
-                        <span v-else class="bu-tag bu-mx-2"><i class="fa fa-eye"></i></ion-icon></span>
-                        <span v-if="event.audit" class="bu-mr-2 text-small color-cool-gray-50">
-                            <i class="el-icon-time"></i> Last modified on {{new Date( event.audit.ts * 1000 )}} by {{event.audit.userName}}
+                        <span v-if="event.is_visible === false" class="cly-vue-data-manager__hidden-icon bu-mx-1"><i class="ion-eye-disabled"></i></span>
+                        <span v-else class="cly-vue-data-manager__hidden-icon bu-mx-1"><i class="ion-eye"></i></ion-icon></span>
+                        <span v-if="eventTransformationMap && eventTransformationMap[event.name || event.key]" class="cly-vue-data-manager__transform-icon bu-mx-1">
+                            <svg width="12px" height="10px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                    <g id="transformations" transform="translate(-320.000000, -295.000000)" fill="#444444" fill-rule="nonzero">
+                                        <g id="Group-9" transform="translate(320.000000, 292.000000)">
+                                            <g id="merge_type-24px" transform="translate(46.500000, 8.000000) rotate(90.000000) translate(-46.500000, -8.000000) translate(38.500000, -38.500000)">
+                                                <path fill="#fff" d="M11.3333333,92.6066667 L12.2733333,91.6666667 L10,89.3933333 L9.06,90.3333333 L11.3333333,92.6066667 Z M5,84.3333333 L7.33333333,84.3333333 L7.33333333,88.06 L3.72666667,91.6666667 L4.66666667,92.6066667 L8.66666667,88.6066667 L8.66666667,84.3333333 L11,84.3333333 L8,81.3333333 L5,84.3333333 Z" id="Shape"></path>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </svg>
+                        </span>
+                        <span v-if="event.audit && event.auditDate" class="bu-mr-2 text-small color-cool-gray-50">
+                            <i class="el-icon-time"></i> {{i18n('data-manager.last-modified-on')}} {{event.auditDate}} {{event.auditTime}} by {{event.audit.userName}}
                         </span>
                     </div>
                 </div>
@@ -25,8 +38,8 @@
         </template>
         <template v-slot:header-right>
             <div class="bu-mt-6">
-                <el-button @click="handleEdit" size="small" icon="el-icon-edit">Edit Event</el-button>
-                <cly-more-options class="bu-ml-2" size="small" @command="handleCommand($event, event.key)">
+                <el-button v-if="canUserUpdate" @click="handleEdit" size="small" icon="ion-edit">{{i18n('data-manager.edit-event')}}</el-button>
+                <cly-more-options v-if="canUserDelete" class="bu-ml-2" size="small" @command="handleCommand($event, event.key)">
                     <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
                 </cly-more-options>
             </div>
@@ -37,37 +50,37 @@
         <div class="bu-columns bu-is-gapless">
             <div class="bu-column">
                 <div class="bu-mx-5 bu-my-5">
-                    <h4 class="bu-is-capitalized">
-                        Event Details
-                    </h4>
+                    <span class="text-medium font-weight-bold text-uppercase">
+                        {{i18n('data-manager.events.event-details')}}
+                    </span>
                     <table class="bu-mt-5 cly-vue-data-manager__box-container__table text-medium">
                         <colgroup>
-                            <col width="30%" />
-                            <col width="70%" />
+                            <col width="25%" />
+                            <col width="75%" />
                         </colgroup>
                         <tbody>
                             <tr>
-                                <td><span>Event Key</span>
+                                <td><span>{{i18n('data-manager.events.key')}}</span>
                                 </td>
                                 <td>{{event.key}}</td>
                             </tr>
                             <tr>
-                                <td><span>Event Name</span>
+                                <td><span>{{i18n('data-manager.event-name')}}</span>
                                 </td>
                                 <td>{{event.name}}</td>
                             </tr>
                             <tr>
-                                <td><span>Description</span>
+                                <td><span>{{i18n('data-manager.description')}}</span>
                                 </td>
-                                <td>{{event.description}}</td>
-                            </tr>
-                            <tr v-if="isDrill">
-                                <td><span>Category</span>
-                                </td>
-                                <td>{{categoriesMap[event.category] || 'Uncategorized'}}</td>
+                                <td v-html="event.description || '-' "></td>
                             </tr>
                             <tr>
-                                <td><span>First Triggered</span>
+                                <td><span>{{i18n('data-manager.category')}}</span>
+                                </td>
+                                <td>{{categoriesMap[event.category] || i18n('data-manager.uncategorized') }}</td>
+                            </tr>
+                            <tr>
+                                <td><span>{{i18n('data-manager.first-triggered')}}</span>
                                 </td>
                                 <td>{{event.last_trigger}}</td>
                             </tr>
@@ -80,31 +93,45 @@
 
     <cly-section class="bu-mx-5" v-if="isDrill && segments.length > 0">
         <template v-slot:header>
-            <h4>Event Segmentation</h4>
+            <h4>{{i18n('data-manager.event-segmentation')}}</h4>
         </template>
         <cly-datatable-n 
+        :keyFn="function(row) {return row.name}"
         :hasDynamicCols="false" 
         :rows="segments"
         >
             <template v-slot="scope">
-                <el-table-column label="Name">
+                <el-table-column :label="i18n('data-manager.segment-name')" sortable="custom" prop="name">
                     <template v-slot="rowScope">
                         {{rowScope.row.name}}
                     </template>
                 </el-table-column>
-                <el-table-column label="Description">
+                <el-table-column :label="i18n('data-manager.description')">
                     <template v-slot="rowScope">
                         {{rowScope.row.description}}
                     </template>
                 </el-table-column>
-                <el-table-column label="Status">
+                <el-table-column :label="i18n('data-manager.status')" sortable="custom" prop="status">
                     <template v-slot="rowScope">
-                        {{rowScope.row.status}}
+                        <span v-if="isDrill" class="tag-container">
+                            <span v-bind:class="statusClassObject(rowScope.row.status)" class="bu-tag bu-mt-1"> 
+                                <span class="blinker"></span>
+                                <span>{{rowScope.row.status}}</span>
+                            </span>
+                        </span>
                     </template>
                 </el-table-column>
-                <el-table-column width="90px">
+                <el-table-column :label="i18n('data-manager.last-modified')" prop="auditTs" sortable="custom">
                     <template v-slot="rowScope">
-                        <el-button @click="handleEditSegment(rowScope.row)" size="small">Edit</el-button>
+                        <div v-if="rowScope.row.audit && rowScope.row.audit.ts && rowScope.row.auditDate">
+                            <div>{{rowScope.row.auditDate}}</div>
+                            <span class="text-small color-cool-gray-50">{{rowScope.row.auditTime}}</span>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column type="options" width="90px" align="center">
+                    <template v-slot="rowScope">
+                        <el-button v-if="rowScope.row.hover" @click="handleEditSegment(rowScope.row)" size="small">Edit</el-button>
                     </template>
                 </el-table-column>
             </template>
@@ -119,9 +146,10 @@
     dialogType="danger" 
     :saveButtonLabel="i18n('common.delete')" 
     :cancelButtonLabel="i18n('common.no-dont-delete')" 
-    title="Delete Events" >
+    :title="i18n('data-manager.delete-events')" >
         <template slot-scope="scope">
-            Delete event(s) permanently?<br/> <small class="color-red-100">Warning: This is not reversible</small>
+            {{ i18n('data-manager.delete-event-permanently') }}<br/> 
+            <small class="color-red-100">{{ i18n('data-manager.delete-event-warning') }}</small>
             <ul>
              <li> {{deleteElement}}</li>
             </ul>

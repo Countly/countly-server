@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/ionicons/css/ionicons.min.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/material/material-icons.css?<%= countlyVersion %>" />
+    <link rel="stylesheet" href="<%- cdn %>stylesheets/vue/element-ui.css?<%= countlyVersion %>" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css?<%= countlyVersion %>" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css?<%= countlyVersion %>" />
     <% if (production) { %>
@@ -43,9 +44,10 @@
     	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
     <% } else { %>
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
-		<link rel="stylesheet" href="<%- cdn %>stylesheets/vue/element-ui.css?<%= countlyVersion %>" />
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/vue/clyvue.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/dom/gridstack/gridstack.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/dom/gridstack/gridstack-extra.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/leaflet/leaflet.css?<%= countlyVersion %>" />
@@ -76,6 +78,7 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/lodash.merge.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/prefixfree.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/gridstack/gridstack-h5.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment-with-locales.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/backbone-min.js?<%= countlyVersion %>"></script>
@@ -105,13 +108,13 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-color.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/v-tooltip.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vee-validate.full.min.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-clipboard.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2Dropzone.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/element-ui.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2-leaflet.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/inViewportMixin.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuescroll.min.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-google-charts.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js?<%= countlyVersion %>"></script>
@@ -159,8 +162,8 @@
 	<% } %>
 </head>
 <body>
-	<div id="main-views-container" class="bu-columns bu-is-gapless">
-        <div id="cly-vue-sidebar" class="bu-column">
+	<div id="main-views-container" class="bu-is-flex">
+        <div id="cly-vue-sidebar">
             <div id="sidebar-x"></div>
         </div>
         <div class="bu-column main-view">
@@ -650,8 +653,8 @@
                         </div>
                         <div class="" id="events-custom-settings-table">
                             <div class="cly-button-menu event-settings-menu" tabindex="1">
-                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
-                                <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="ion-eye-disabled"></i><span data-localize="events.general.action.hide"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="show"><i class="ion-eye" ></i><span data-localize="events.general.action.show"></span></a>
                                 <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
                             </div>
                             <table class="d-table help-zone-vb no-fix events-table" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
@@ -698,8 +701,8 @@
                         </div>
                         <div class="" id="event-groups-settings-table">
                             <div class="cly-button-menu event-groups-settings-menu" tabindex="1">
-                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
-                                <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="ion-eye-disabled"></i><span data-localize="events.general.action.hide"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="show"><i class="ion-eye" ></i><span data-localize="events.general.action.show"></span></a>
                                 <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
                             </div>
                             <table class="d-table help-zone-vb no-fix event-groups-table" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
@@ -1626,134 +1629,6 @@
             </div>
         </div>
     </script>
-    <script id="token-manager-template" type="text/x-handlebars-template">
-        <div class="widget" id="token-manager-view">
-            <div class="widget-header">
-                <div class="left">
-                    <div style="overflow: auto">
-                        {{#if filter1}}
-                            <div class="title small">{{page-title}}</div>
-                        {{else}}
-                            <div class="title">{{page-title}}</div>
-                        {{/if}}
-                    </div>
-                </div>
-                <div class="right btn-header" >
-                    <div class="icon-button green configs-changes" data-localize="token_manager.create-token" id="show_token_form"></div>
-                </div>
-            </div>
-            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
-                <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-            </div>
-        </div>
-        <div id="create-token-drawer" class="cly-drawer">
-            <div class="title">
-                <span data-localize="token_manager.create-token">Create token</span>
-                <div class="close"><i class="ion-ios-close-empty"></i></div>
-            </div>
-            <div class="details">
-                <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.purpose"></div>
-                    <input type="text" class="input" id="token_purpose" placeholder="{{purpose-desc}}" />
-                </div>
-                <div class="settings section">
-                    <div class="label"><span data-localize="token_manager.table.endpoint"></span><span style="float:right; color:#A0A0A0;" data-localize="common.optional"></span></div>
-                    <div class="desc" data-localize="token_manager.table.endpoint-desc"></div>
-                    <div class="endpoint_blocks_wrapper">
-                        <div class="token_endpoint_block" >
-                            <div class="delete-endpoint-block"><a class="cly-list-options"></a></div>
-                            <div class="label" data-localize="token_manager.table.endpoint-name"></div>
-                            <input type="text" class="input endpoint-text"  placeholder="{{endpoint}}" style="margin-bottom:10px;" />
-                            <div class="label" data-localize="token_manager.query-param"></div>
-                            <div class="param_blocks_wrapper">
-                                <div class="param_block">
-                                    <table>
-                                        <tr>
-                                            <td><input type="text" class="input param-key-input" placeholder="{{query-param}}" /></td>
-                                            <td ><input type="text" class="input param-value-input" placeholder="{{query-param-value}}" /></td>
-                                            <td style="padding-top:2px;"><i class="delete-param material-icons">highlight_off</i></td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-                            <a class="text-orange add-query-block">+ <span data-localize="token_manager.add-param"></span></a>
-                        </div>
-                        <div class="delete-new-endpoint-block-menu" tabindex="1">
-                            <a class="item clear-endpoint-block-item"><span data-localize="common.clear-values"></span></a>
-                            <a class="item delete-endpoint-block-item"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
-                        </div>
-                    </div>
-                    <div class="btn btn-orange add-endpoint-block" > + <span data-localize="token_manager.add-new-endpoint"></span></div>
-                    <div style="clear:both;"></div>
-                </div>
-                <div class="settings section">
-                    <a class="fa check-green check-header fa-square-o" id="use_multi" style="float:left; margin-right: 5px;"></a>
-                    <div class="label" data-localize="token_manager.table.multi-desc"></div>
-                </div>
-                <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.apps-title">Token exp</div>
-                    <div id="data-token-apps-selector" class="checks">
-                        <div data-from="apps-allow" class="check">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.apps-allow"></div>
-                        </div>
-                        <div data-from="apps-limit" class="check selected">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.apps-limit"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings section" id="limit_apps">
-                    <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">
-                                    <div class="default-text" data-localize="token_manager.select-apps"></div>
-                                </div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width: 100%;"></div>
-                    </div>
-                </div>
-                <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.limit-title">Token exp</div>
-                    <div id="data-token-exp-selector" class="checks">
-                        <div data-from="time-allow" class="check selected">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.limit-allow"></div>
-                        </div>
-                        <div data-from="time-limit" class="check">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.limit-limit">Token will expire after some time</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings section" id="limit_life" style="display:none;">
-                    <div class="label" data-localize="token_manager.token-expiration-time"></div>
-                    <div><input type="text" class="input" placeholder="{{enter-number}}" id="select_limit_value" /></div>
-                    <div>
-                        <div id="select_limit_span" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                            <div class="select-inner">
-                                <div class="text-container">
-                                    <div class="text">
-                                        <div class="default-text" data-localize="token_manager.select-time-unit"></div>
-                                    </div>
-                                </div>
-                                <div class="right combo"></div>
-                            </div>
-                            <div class="select-items square" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="buttons">
-                <div class="icon-button green disabled" id='create_new_token' data-localize="token_manager.create-token">Create token</div>
-            </div>
-        </div>
-    </script>
 
 	<script id="graph-note-create" type="text/x-handlebars-template">
 		<div class="graph-note-create">
@@ -1939,7 +1814,6 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.token.manager.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.version.history.js?<%= countlyVersion %>"></script>
@@ -1948,6 +1822,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/container.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/helpers.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/data/vuex.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/imports.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/nav.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/layout.js?<%= countlyVersion %>"></script>
@@ -1971,6 +1846,8 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/app-resolution/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/app-version/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/jobs/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/logs/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/token-manager/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/report-manager/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/platform/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/carrier/javascripts/countly.models.js?<%= countlyVersion %>"></script>
@@ -1991,6 +1868,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/geo-countries/javascripts/countly.models.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/user-analytics-overview/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/geo-countries/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/geo-countries/javascripts/countly.widgets.geo.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/app-management/javascripts/countly.models.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/app-management/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/user-management/javascripts/countly.models.js?<%= countlyVersion %>"></script>

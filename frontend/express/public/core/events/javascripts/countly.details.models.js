@@ -1,4 +1,4 @@
-/*global countlyVue, CV, _, countlyCommon, jQuery */
+/*global countlyVue, CV, _, countlyCommon, CountlyHelpers, jQuery */
 (function(countlyAllEvents) {
 
     countlyAllEvents.helpers = {
@@ -6,30 +6,48 @@
             var chartData = eventData.chartData;
             var graphData = [[], [], []];
             var labels = context.state.labels;
+            var count = 0;
+            var sum = 0;
+            var dur = 0;
             for (var i = 0; i < chartData.length; i++) {
                 graphData[0].push(chartData[i].c ? chartData[i].c : 0);
                 graphData[1].push(chartData[i].s ? chartData[i].s : 0);
                 graphData[2].push(chartData[i].dur ? chartData[i].dur : 0);
+                if (chartData[i].c) {
+                    count += chartData[i].c;
+                }
+                if (chartData[i].s) {
+                    sum += chartData[i].s;
+                }
+                if (chartData[i].dur) {
+                    dur += chartData[i].dur;
+                }
             }
             var series = [];
-            var countObj = {
-                name: labels.count,
-                data: graphData[0],
-                color: "#017AFF"
-            };
-            series.push(countObj);
-            var sumObj = {
-                name: labels.sum,
-                data: graphData[1],
-                color: "#F96300"
-            };
-            series.push(sumObj);
-            var durObj = {
-                name: labels.dur,
-                data: graphData[2],
-                color: "#FF9382"
-            };
-            series.push(durObj);
+            if (count > 0) {
+                var countObj = {
+                    name: labels.count,
+                    data: graphData[0],
+                    color: "#017AFF"
+                };
+                series.push(countObj);
+            }
+            if (sum > 0) {
+                var sumObj = {
+                    name: labels.sum,
+                    data: graphData[1],
+                    color: "#F96300"
+                };
+                series.push(sumObj);
+            }
+            if (dur > 0) {
+                var durObj = {
+                    name: labels.dur,
+                    data: graphData[2],
+                    color: "#FF9382"
+                };
+                series.push(durObj);
+            }
             var obj = {
                 series: series
             };
@@ -41,37 +59,23 @@
             var labels = context.state.labels;
             if (eventData.tableColumns.indexOf(labels.sum) !== -1 && eventData.tableColumns.indexOf(labels.dur) !== -1) {
                 tableRows.forEach(function(row) {
-                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : countlyCommon.formatNumber(row.s / row.c);
-                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : countlyCommon.formatNumber(row.dur / row.c);
-                    row.c = countlyCommon.formatNumber(row.c);
-                    row.s = countlyCommon.formatNumber(row.s);
-                    row.dur = countlyCommon.formatNumber(row.dur);
+                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : (row.s / row.c);
+                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : (row.dur / row.c);
                 });
                 eventData.tableColumns.push("AvgSum");
                 eventData.tableColumns.push("AvgDur");
             }
             else if (eventData.tableColumns.indexOf(labels.sum) !== -1) {
                 tableRows.forEach(function(row) {
-                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : countlyCommon.formatNumber(row.s / row.c);
-                    row.c = countlyCommon.formatNumber(row.c);
-                    row.s = countlyCommon.formatNumber(row.s);
-                    row.dur = countlyCommon.formatNumber(row.dur);
+                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : (row.s / row.c);
                 });
                 eventData.tableColumns.push("AvgSum");
             }
             else if (eventData.tableColumns.indexOf(labels.dur) !== -1) {
                 tableRows.forEach(function(row) {
-                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : countlyCommon.formatNumber(row.dur / row.c);
-                    row.c = countlyCommon.formatNumber(row.c);
-                    row.s = countlyCommon.formatNumber(row.s);
-                    row.dur = countlyCommon.formatNumber(row.dur);
+                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : (row.dur / row.c);
                 });
                 eventData.tableColumns.push("AvgDur");
-            }
-            else {
-                tableRows.forEach(function(row) {
-                    row.c = countlyCommon.formatNumber(row.c);
-                });
             }
             return tableRows;
         },
@@ -88,27 +92,45 @@
             var obSum = {};
             var obDuration = {};
             var labels = context.state.labels;
-            for (var i = 0; i < eventData.chartData.length; i++) {
+            var count = 0;
+            var sum = 0;
+            var dur = 0;
+            var maxLength = eventData.chartData.length > 15 ? 15 : eventData.chartData.length;
+            for (var i = 0; i < maxLength; i++) {
                 arrCount.push(eventData.chartData[i].c);
                 arrSum.push(eventData.chartData[i].s);
 
                 arrDuration.push(eventData.chartData[i].dur);
-                xAxisData.push(eventData.chartData[i].curr_segment);
+                xAxisData.push(typeof eventData.chartData[i].curr_segment === 'string' ? countlyAllEvents.helpers.decode(eventData.chartData[i].curr_segment) : eventData.chartData[i].curr_segment);
+                if (eventData.chartData[i].c) {
+                    count += eventData.chartData[i].c;
+                }
+                if (eventData.chartData[i].s) {
+                    sum += eventData.chartData[i].s;
+                }
+                if (eventData.chartData[i].dur) {
+                    dur += eventData.chartData[i].dur;
+                }
             }
-            obCount.name = labels.count;
-            obCount.data = arrCount;
-            obCount.color = "#017AFF";
             xAxis.data = xAxisData;
-            series.push(obCount);
-            obSum.name = labels.sum;
-            obSum.data = arrSum;
-            obSum.color = "#F96300";
-            series.push(obSum);
-            obDuration.name = labels.dur;
-            obDuration.data = arrDuration;
-            obDuration.color = "#FF9382";
-            series.push(obDuration);
-
+            if (count > 0) {
+                obCount.name = labels.count;
+                obCount.data = arrCount;
+                obCount.color = "#017AFF";
+                series.push(obCount);
+            }
+            if (sum > 0) {
+                obSum.name = labels.sum;
+                obSum.data = arrSum;
+                obSum.color = "#F96300";
+                series.push(obSum);
+            }
+            if (dur > 0) {
+                obDuration.name = labels.dur;
+                obDuration.data = arrDuration;
+                obDuration.color = "#FF9382";
+                series.push(obDuration);
+            }
             legend.show = false;
             obj.legend = legend;
             obj.series = series;
@@ -132,6 +154,9 @@
             }
 
             return obj;
+        },
+        decode: function(str) {
+            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
         },
         getEventLongName: function(eventKey, eventMap) {
             var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
@@ -305,26 +330,29 @@
             var eventsOverview = context.state.selectedEventsOverview;
             var labels = context.state.labels;
             var count = {};
-            count.name = labels.count;
-            count.value = eventsOverview.count.total;
-            count.trend = eventsOverview.count.trend === "u" ? "up" : "down";
-            count.percentage = eventsOverview.count.change;
-            count.tooltip = labels.count;
-            legendData.push(count);
+            if (eventsOverview.count.total > 0) {
+                count.name = labels.count;
+                count.value = countlyCommon.formatNumber(eventsOverview.count.total);
+                count.trend = eventsOverview.count.trend === "u" ? "up" : "down";
+                count.percentage = eventsOverview.count.change;
+                legendData.push(count);
+            }
             var sum = {};
-            sum.name = labels.sum;
-            sum.value = eventsOverview.sum.total;
-            sum.trend = eventsOverview.sum.trend === "u" ? "up" : "down";
-            sum.percentage = eventsOverview.sum.change;
-            sum.tooltip = labels.sum;
-            legendData.push(sum);
+            if (eventsOverview.sum.total > 0) {
+                sum.name = labels.sum;
+                sum.value = countlyCommon.formatNumber(eventsOverview.sum.total);
+                sum.trend = eventsOverview.sum.trend === "u" ? "up" : "down";
+                sum.percentage = eventsOverview.sum.change;
+                legendData.push(sum);
+            }
             var dur = {};
-            dur.name = labels.dur;
-            dur.value = eventsOverview.dur.total;
-            dur.trend = eventsOverview.dur.trend === "u" ? "up" : "down";
-            dur.percentage = eventsOverview.dur.change;
-            dur.tooltip = labels.dur;
-            legendData.push(dur);
+            if (eventsOverview.dur.total > 0) {
+                dur.name = labels.dur;
+                dur.value = countlyCommon.formatNumber(eventsOverview.dur.total);
+                dur.trend = eventsOverview.dur.trend === "u" ? "up" : "down";
+                dur.percentage = eventsOverview.dur.change;
+                legendData.push(dur);
+            }
             lineLegend.show = true;
             lineLegend.type = "primary";
             lineLegend.data = legendData;
@@ -336,7 +364,7 @@
         getAllEventsList: function(eventsList, groupList) {
             var map = eventsList.map || {};
             var allEvents = [];
-            if (eventsList) {
+            if (eventsList && eventsList.list) {
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
                         var obj = {
@@ -399,9 +427,9 @@
                 };
             }
             return {
-                count: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].count : CV.i18n("events.overview.count"),
-                sum: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].sum : CV.i18n("events.overview.sum"),
-                dur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration")
+                count: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].count ? allEventsData.map[selectedEventName].count : CV.i18n("events.overview.count"),
+                sum: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].sum ? allEventsData.map[selectedEventName].sum : CV.i18n("events.overview.sum"),
+                dur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].dur ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration")
             };
 
         },
@@ -454,22 +482,180 @@
                     selectedEventsData.meta[metaObj] = countlyCommon.union(prevState.meta[metaObj], selectedEventsData.meta[metaObj]);
                 }
             }
+        },
+        getSelectedEventsLegend: function(context, currentEventData) {
+            var periodObj = countlyCommon.periodObj;
+            var currentSegment = context.currentActiveSegmentation;
+            var lineLegend = {};
+            var legendData = [];
+            var labels = context.state.labels;
+            var count = {};
+            var tempX,
+                tempY,
+                currentTotal = 0,
+                previousTotal = 0,
+                currentSum = 0,
+                previousSum = 0,
+                currentDur = 0,
+                previousDur = 0;
+            var segment = "";
+            var tmpCurrCount = 0,
+                tmpCurrSum = 0,
+                tmpCurrDur = 0,
+                tmpPrevCount = 0,
+                tmpPrevSum = 0,
+                tmpPrevDur = 0;
+            if (periodObj.isSpecialPeriod) {
+                for (var i = 0; i < (periodObj.currentPeriodArr.length); i++) {
+                    tempX = countlyCommon.getDescendantProp(currentEventData, periodObj.currentPeriodArr[i]);
+                    tempY = countlyCommon.getDescendantProp(currentEventData, periodObj.previousPeriodArr[i]);
+                    tempX = countlyAllEvents.helpers.clearEventsObject(tempX);
+                    tempY = countlyAllEvents.helpers.clearEventsObject(tempY);
+
+                    if (currentSegment !== "segment") {
+                        tmpCurrCount = 0,
+                        tmpCurrSum = 0,
+                        tmpCurrDur = 0,
+                        tmpPrevCount = 0,
+                        tmpPrevSum = 0,
+                        tmpPrevDur = 0;
+                        for (segment in tempX) {
+                            tmpCurrCount += tempX[segment].c || 0;
+                            tmpCurrSum += tempX[segment].s || 0;
+                            tmpCurrDur += tempX[segment].dur || 0;
+
+                            if (tempY[segment]) {
+                                tmpPrevCount += tempY[segment].c || 0;
+                                tmpPrevSum += tempY[segment].s || 0;
+                                tmpPrevDur += tempY[segment].dur || 0;
+                            }
+                        }
+
+                        tempX = {
+                            "c": tmpCurrCount,
+                            "s": tmpCurrSum,
+                            "dur": tmpCurrDur
+                        };
+
+                        tempY = {
+                            "c": tmpPrevCount,
+                            "s": tmpPrevSum,
+                            "dur": tmpPrevDur
+                        };
+                    }
+
+                    currentTotal += tempX.c;
+                    previousTotal += tempY.c;
+                    currentSum += tempX.s;
+                    previousSum += tempY.s;
+                    currentDur += tempX.dur;
+                    previousDur += tempY.dur;
+                }
+            }
+            else {
+                tempX = countlyCommon.getDescendantProp(currentEventData, periodObj.activePeriod);
+                tempY = countlyCommon.getDescendantProp(currentEventData, periodObj.previousPeriod);
+                tempX = countlyAllEvents.helpers.clearEventsObject(tempX);
+                tempY = countlyAllEvents.helpers.clearEventsObject(tempY);
+
+                if (currentSegment !== "segment") {
+                    tmpCurrCount = 0,
+                    tmpCurrSum = 0,
+                    tmpCurrDur = 0,
+                    tmpPrevCount = 0,
+                    tmpPrevSum = 0,
+                    tmpPrevDur = 0;
+                    for (segment in tempX) {
+                        if (typeof tempX[segment].c === 'number') {
+                            tmpCurrCount += tempX[segment].c || 0;
+                        }
+                        if (typeof tempX[segment].s === 'number') {
+                            tmpCurrSum += tempX[segment].s || 0;
+                        }
+                        if (typeof tempX[segment].dur === 'number') {
+                            tmpCurrDur += tempX[segment].dur || 0;
+                        }
+
+                        if (tempY[segment]) {
+                            if (typeof tempY[segment].c === 'number') {
+                                tmpPrevCount += tempY[segment].c || 0;
+                            }
+                            if (typeof tempY[segment].s === 'number') {
+                                tmpPrevSum += tempY[segment].s || 0;
+                            }
+                            if (typeof tempY[segment].dur === 'number') {
+                                tmpPrevDur += tempY[segment].dur || 0;
+                            }
+                        }
+                    }
+
+                    tempX = {
+                        "c": tmpCurrCount,
+                        "s": tmpCurrSum,
+                        "dur": tmpCurrDur
+                    };
+
+                    tempY = {
+                        "c": tmpPrevCount,
+                        "s": tmpPrevSum,
+                        "dur": tmpPrevDur
+                    };
+                }
+
+                currentTotal = tempX.c;
+                previousTotal = tempY.c;
+                currentSum = tempX.s;
+                previousSum = tempY.s;
+                currentDur = tempX.dur;
+                previousDur = tempY.dur;
+            }
+
+            var	changeCount = countlyCommon.getPercentChange(previousTotal, currentTotal),
+                changeSum = countlyCommon.getPercentChange(previousSum, currentSum),
+                changeDur = countlyCommon.getPercentChange(previousDur, currentDur);
+            if (currentTotal > 0) {
+                count.name = labels.count;
+                count.value = countlyCommon.formatNumber(currentTotal);
+                count.trend = changeCount.trend === "u" ? "up" : "down";
+                count.percentage = changeCount.percent;
+                legendData.push(count);
+            }
+            var sum = {};
+            if (currentSum > 0) {
+                sum.name = labels.sum;
+                sum.value = countlyCommon.formatNumber(currentSum);
+                sum.trend = changeSum.trend === "u" ? "up" : "down";
+                sum.percentage = changeSum.percent;
+                legendData.push(sum);
+            }
+            var dur = {};
+            if (currentDur > 0) {
+                dur.name = labels.dur;
+                dur.value = countlyCommon.formatSecond(currentDur);
+                dur.trend = changeDur.trend === "u" ? "up" : "down";
+                dur.percentage = changeDur.percent;
+                legendData.push(dur);
+            }
+            lineLegend.show = true;
+            lineLegend.type = "primary";
+            lineLegend.data = legendData;
+            return lineLegend;
         }
     };
 
     countlyAllEvents.service = {
-        fetchAllEventsData: function(context) {
+        fetchAllEventsData: function(context, period) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_events",
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchAllEventsGroupData: function() {
             return CV.$.ajax({
@@ -481,9 +667,9 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
-        fetchSelectedEventsData: function(context) {
+        fetchSelectedEventsData: function(context, period) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -492,13 +678,13 @@
                     "method": "events",
                     "event": context.state.selectedEventName,
                     "segmentation": context.state.currentActiveSegmentation === "segment" ? "" : context.state.currentActiveSegmentation,
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
-        fetchSelectedEventsOverview: function(context) {
+        fetchSelectedEventsOverview: function(context, period) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -506,12 +692,12 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "events",
                     "events": JSON.stringify([context.state.selectedEventName]),
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "timestamp": new Date().getTime(),
                     "overview": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         },
         fetchCategories: function() {
             return CV.$.ajax({
@@ -522,7 +708,18 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json"
-            });
+            }, {"disableAutoCatch": true});
+        },
+        fetchSegmentMap: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + '/data-manager/event-segment',
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "preventRequestAbort": true,
+                },
+                dataType: "json"
+            }, {"disableAutoCatch": true});
         },
         fetchRefreshSelectedEventsData: function(context) {
             return CV.$.ajax({
@@ -536,7 +733,7 @@
                     "action": "refresh"
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});
         }
     };
 
@@ -546,7 +743,6 @@
                 allEventsData: {},
                 allEventsGroupData: [],
                 selectedEventsData: {},
-                selectedDatePeriod: countlyCommon.getPeriod(),
                 selectedEventName: undefined,
                 groupData: {},
                 currentActiveSegmentation: "segment",
@@ -555,25 +751,36 @@
                 allEventsProcessed: {},
                 barData: {},
                 lineChartData: {},
-                legendData: {},
+                legendData: {
+                    type: "primary",
+                    data: []
+                },
                 tableRows: [],
                 selectedEventsOverview: {},
                 allEventsList: [],
                 labels: [],
                 limitAlerts: [],
                 categoriesMap: [],
-                currentCategory: ""
+                currentCategory: "",
+                segments: [],
+                segmentDescription: "",
+                isChartLoading: true,
+                isTableLoading: true
             };
         };
 
         var allEventsActions = {
             fetchAllEventsData: function(context) {
-                return countlyAllEvents.service.fetchAllEventsData(context)
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyAllEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsData", res);
                             if (!context.state.selectedEventName) {
-                                localStorage.setItem("eventKey", res.list[0]);
+                                var appId = countlyCommon.ACTIVE_APP_ID;
+                                var eventKeyForStorage = {};
+                                eventKeyForStorage[appId] = res.list[0];
+                                localStorage.setItem("eventKey", JSON.stringify(eventKeyForStorage));
                                 context.commit('setSelectedEventName', res.list[0]);
                             }
                             context.commit("setCurrentCategory", countlyAllEvents.helpers.getCurrentCategory(context));
@@ -585,7 +792,7 @@
                                         context.commit("setAllEventsList", countlyAllEvents.helpers.getAllEventsList(res, result));
                                         context.commit("setGroupData", countlyAllEvents.helpers.getGroupData(result, context.state.selectedEventName));
                                         context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
-                                        countlyAllEvents.service.fetchSelectedEventsData(context)
+                                        countlyAllEvents.service.fetchSelectedEventsData(context, period)
                                             .then(function(response) {
                                                 if (response) {
                                                     context.commit("setSelectedEventsData", response);
@@ -593,18 +800,41 @@
                                                     context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
                                                     context.commit("setLimitAlerts", countlyAllEvents.helpers.getLimitAlerts(context) || []);
 
-                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context)
+                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context, period)
                                                         .then(function(resp) {
                                                             if (resp) {
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
-                                                                context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                                context.commit("setLegendData", countlyAllEvents.helpers.getSelectedEventsLegend(context, response));
+                                                                context.dispatch('setTableLoading', false);
+                                                                context.dispatch('setChartLoading', false);
                                                             }
                                                         });
                                                 }
+                                            }).catch(function() {
+                                                context.dispatch('setTableLoading', false);
+                                                context.dispatch('setChartLoading', false);
+                                                context.commit("setSelectedEventsData", {});
+                                                context.commit("setAvailableSegments", []);
+                                                context.commit("setTableRows", []);
+                                                context.commit("setLimitAlerts", []);
+                                                context.commit("setSelectedEventsOverview", {});
+                                                context.commit("setLegendData", {});
+                                                context.commit('setLineChartData', {});
+                                                context.commit('setBarData', {});
+                                                context.commit('setAllEventsProcessed', {});
+                                                context.commit('setHasSegments', false);
+                                                CountlyHelpers.notify({
+                                                    title: CV.i18n("common.error"),
+                                                    message: CV.i18n("events.all.error"),
+                                                    type: "error"
+                                                });
                                             });
                                     }
                                 });
                         }
+                    }).catch(function() {
+                        context.dispatch('setTableLoading', false);
+                        context.dispatch('setChartLoading', false);
                     });
             },
             fetchAllEventsGroupData: function(context) {
@@ -616,20 +846,27 @@
                     });
             },
             fetchSelectedEventsData: function(context) {
-                return countlyAllEvents.service.fetchSelectedEventsData(context)
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyAllEvents.service.fetchSelectedEventsData(context, period)
                     .then(function(res) {
                         if (res) {
                             context.commit("setSelectedEventsData", res);
                             context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, res) || []);
                             context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
+                            context.dispatch('setTableLoading', false);
+                            context.dispatch('setChartLoading', false);
+                            context.commit("setLegendData", countlyAllEvents.helpers.getSelectedEventsLegend(context, res));
                         }
+                    }).catch(function() {
+                        context.dispatch('setTableLoading', false);
+                        context.dispatch('setChartLoading', false);
                     });
             },
-            fetchSelectedDatePeriod: function(context, period) {
-                context.commit('setSelectedDatePeriod', period);
-            },
             fetchSelectedEventName: function(context, name) {
-                localStorage.setItem("eventKey", name);
+                var appId = countlyCommon.ACTIVE_APP_ID;
+                var eventKeyForStorage = {};
+                eventKeyForStorage[appId] = name;
+                localStorage.setItem("eventKey", JSON.stringify(eventKeyForStorage));
                 context.commit('setSelectedEventName', name);
             },
             fetchCurrentActiveSegmentation: function(context, name) {
@@ -640,20 +877,58 @@
             },
             fetchCategories: function(context) {
                 countlyAllEvents.service.fetchCategories().then(function(data) {
-                    var map = {};
-                    data.forEach(function(c) {
-                        map[c._id] = c.name;
-                    });
-                    context.commit('setCategoriesMap', map);
+                    if (data) {
+                        var map = {};
+                        data.forEach(function(c) {
+                            map[c._id] = c.name;
+                        });
+                        context.commit('setCategoriesMap', map);
+                    }
                 });
             },
+            fetchSegments: function(context) {
+                countlyAllEvents.service.fetchSegmentMap().then(function(data) {
+                    if (data) {
+                        var segments = [];
+                        data.forEach(function(segmap) {
+                            return segmap.sg.forEach(function(s) {
+                                s.event = segmap._id;
+                                segments.push(s);
+                            });
+                        });
+                        context.commit('setSegments', segments);
+                        return data;
+                    }
+                });
+            },
+            setSegmentDescription: function(context) {
+                var segment = context.state.segments.filter(function(seg) {
+                    return (seg.event === context.state.selectedEventName) && (seg.name === context.state.currentActiveSegmentation);
+                });
+                if (segment.length > 0 && segment[0].description) {
+                    context.commit('setSegmentDescription', segment[0].description);
+                }
+                else {
+                    context.commit('setSegmentDescription', "");
+                }
+            },
+            setTableLoading: function(context, value) {
+                context.commit("setTableLoading", value);
+            },
+            setChartLoading: function(context, value) {
+                context.commit("setChartLoading", value);
+            },
             fetchRefreshAllEventsData: function(context) {
-                return countlyAllEvents.service.fetchAllEventsData(context)
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyAllEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsData", res);
                             if (!context.state.selectedEventName) {
-                                localStorage.setItem("eventKey", res.list[0]);
+                                var appId = countlyCommon.ACTIVE_APP_ID;
+                                var eventKeyForStorage = {};
+                                eventKeyForStorage[appId] = res.list[0];
+                                localStorage.setItem("eventKey", JSON.stringify(eventKeyForStorage));
                                 context.commit('setSelectedEventName', res.list[0]);
                             }
                             countlyAllEvents.service.fetchAllEventsGroupData(context)
@@ -673,7 +948,7 @@
                                                     context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
                                                     context.commit("setLimitAlerts", countlyAllEvents.helpers.getLimitAlerts(context) || []);
 
-                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context)
+                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context, period)
                                                         .then(function(resp) {
                                                             if (resp) {
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
@@ -702,9 +977,6 @@
             },
             setSelectedEventsData: function(state, value) {
                 state.selectedEventsData = value;
-            },
-            setSelectedDatePeriod: function(state, value) {
-                state.selectedDatePeriod = value;
             },
             setSelectedEventName: function(state, value) {
                 state.selectedEventName = value;
@@ -751,6 +1023,18 @@
             setCurrentCategory: function(state, value) {
                 state.currentCategory = value;
             },
+            setSegments: function(state, value) {
+                state.segments = value;
+            },
+            setSegmentDescription: function(state, value) {
+                state.segmentDescription = value;
+            },
+            setTableLoading: function(state, value) {
+                state.isTableLoading = value;
+            },
+            setChartLoading: function(state, value) {
+                state.isChartLoading = value;
+            }
         };
         var allEventsGetters = {
             allEvents: function(_state) {
@@ -764,9 +1048,6 @@
             },
             selectedEvent: function(_state) {
                 return _state.selectedEventsData;
-            },
-            selectedDatePeriod: function(_state) {
-                return _state.selectedDatePeriod;
             },
             selectedEventName: function(_state) {
                 return _state.selectedEventName;
@@ -812,6 +1093,18 @@
             },
             currentCategory: function(_state) {
                 return _state.currentCategory;
+            },
+            segments: function(_state) {
+                return _state.segments;
+            },
+            segmentDescription: function(_state) {
+                return _state.segmentDescription;
+            },
+            isTableLoading: function(_state) {
+                return _state.isTableLoading;
+            },
+            isChartLoading: function(_state) {
+                return _state.isChartLoading;
             }
         };
         return countlyVue.vuex.Module("countlyAllEvents", {

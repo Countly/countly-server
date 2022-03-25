@@ -2,12 +2,12 @@
 	 <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('devices.devices-and-types.title')}} </h2>
-            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description"></span>
+            <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
         </template>
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
             <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-              <span :class="item.icon"></span>
+              <!--<span :class="item.icon"></span>-->
               <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
             </el-dropdown-item>
           </cly-more-options>

@@ -5,18 +5,13 @@ var plugin = {},
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
-    { validateRead, validateUpdate, validateCreate, validateUser } = require('../../../api/utils/rights.js');
-
-const FEATURE_NAME = 'global_plugins';
+    { validateUser, validateGlobalAdmin } = require('../../../api/utils/rights.js');
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
     plugins.register('/i/plugins', function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateGlobalAdmin(params, function() {
             if (process.env.COUNTLY_CONTAINER === 'api') {
                 common.returnMessage(params, 400, 'Not allowed in containerized environment');
                 return false;
@@ -67,7 +62,7 @@ const FEATURE_NAME = 'global_plugins';
 
     plugins.register('/o/plugins-check', function(ob) {
         var params = ob.params;
-        validateRead(params, FEATURE_NAME, function() {
+        validateGlobalAdmin(params, function() {
             common.db.collection('plugins').count({"_id": "failed"}, function(failedErr, failedCount) {
                 if (!failedErr && failedCount < 1) {
                     common.db.collection('plugins').count({"_id": "busy"}, function(busyErr, count) {
@@ -175,7 +170,7 @@ const FEATURE_NAME = 'global_plugins';
                 });
             });
         };
-        validateRead(params, FEATURE_NAME, function() {
+        validateGlobalAdmin(params, function() {
             var dir = path.resolve(__dirname, "../../");
             walk(dir, function(err, results) {
                 if (err) {
@@ -190,7 +185,7 @@ const FEATURE_NAME = 'global_plugins';
     plugins.register("/o/internal-events", function(ob) {
         var params = ob.params;
 
-        validateRead(params, FEATURE_NAME, function() {
+        validateGlobalAdmin(params, function() {
             var events = [];
             common.arrayAddUniq(events, plugins.internalEvents.concat(plugins.internalDrillEvents));
             common.returnOutput(params, events);
@@ -201,7 +196,7 @@ const FEATURE_NAME = 'global_plugins';
     plugins.register("/i/configs", function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateGlobalAdmin(params, function() {
             var data = {};
             if (params.qstring.configs) {
                 try {
@@ -243,7 +238,7 @@ const FEATURE_NAME = 'global_plugins';
 
     plugins.register("/o/configs", function(ob) {
         var params = ob.params;
-        validateRead(params, FEATURE_NAME, function() {
+        validateGlobalAdmin(params, function() {
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getAllConfigs();
                 delete confs.services;
@@ -255,7 +250,7 @@ const FEATURE_NAME = 'global_plugins';
 
     plugins.register("/i/userconfigs", function(ob) {
         var params = ob.params;
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateGlobalAdmin(params, function() {
             var data = {};
             if (params.qstring.configs) {
                 try {
@@ -338,7 +333,7 @@ const FEATURE_NAME = 'global_plugins';
 
     plugins.register("/o/email_test", function(ob) {
         // check if global admin
-        validateCreate(ob.params, FEATURE_NAME, function(params) {
+        validateGlobalAdmin(ob.params, function(params) {
             const member = ob.params.member || {};
 
             var fullpath = path.resolve(__dirname, "../");

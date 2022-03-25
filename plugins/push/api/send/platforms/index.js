@@ -3,6 +3,7 @@ const fs = require('fs'),
 
 let PLATFORM = {}, // i: {...}, a: {...}, h: {...}
     extractors = [], // {i: qstring => [field, token]}
+    guesses = [],
     FIELDS = {}, // {i0: 'ip', i1: 'id', i2: 'ia', 'a0': 'ap', 'a2': 'at', ...}
     FIELDS_TITLES = {}, // {'tkip': 'iOS Production Token', ...}
     PLATFORMS_TITLES = {}, // {'i': 'iOS', ...}
@@ -17,6 +18,9 @@ const platforms = Object.keys(PLATFORM);
 
 for (let p in PLATFORM) {
     extractors.push(PLATFORM[p].extractor);
+    if (PLATFORM[p].guess) {
+        guesses.push(PLATFORM[p].guess);
+    }
     PLATFORMS_TITLES[p] = PLATFORM[p].title;
     for (let num in PLATFORM[p].FIELDS) {
         FIELDS[p + num] = p + PLATFORM[p].FIELDS[num];
@@ -72,10 +76,27 @@ function extract(qstring) {
     }
 }
 
+/**
+ * Make an estimated guess about request platform
+ * 
+ * @param {string} userAgent user-agent header
+ * @returns {string} platform key if guessed successfully
+ */
+function guess(userAgent) {
+    for (let i = guesses.length - 1; i >= 0; i--) {
+        let res = guesses[i](userAgent);
+        if (res) {
+            return res;
+        }
+    }
+}
+
+
 module.exports = {
     platforms,
     PLATFORM,
     extract,
+    guess,
     FIELDS,
     FIELDS_TITLES,
     PLATFORMS_TITLES,

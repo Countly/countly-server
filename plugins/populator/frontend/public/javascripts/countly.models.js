@@ -1,4 +1,4 @@
-/*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
+/*global _, chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_app_version", "_density", "_locale", "_store"],
@@ -210,7 +210,6 @@
             }
         }
     ];
-
     /**
      * Generate random int between passed range
      * @param {number} min - min value of range
@@ -228,6 +227,7 @@
     function capitaliseFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
+
     /**
      * Create user properties with Facebook Login, Twitter Login,
      * Twitter Login name and Has Apple Watch Os properties
@@ -558,7 +558,8 @@
             }
             else if (id === "[CLY]_view") {
                 event.segmentation = {};
-                var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
+                // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
+                var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
                 Object.keys(viewSegments).forEach(function(key) {
                     var values = [];
                     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && key === "name") {
@@ -597,7 +598,7 @@
         this.getFeedbackEvents = function() {
             var events = [];
             events.push(this.getRatingEvent());
-            if (countlyGlobal.plugins.indexOf("surveys") !== -1) {
+            if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
                 events.push(this.getNPSEvent());
                 events.push(this.getSurveyEvent());
             }
@@ -726,7 +727,9 @@
 
         this.getHeatmapEvent = function() {
             this.stats.e++;
-            var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
+            // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
+            var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
+
             var views = ["/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html"];
             var event = {
                 "key": "[CLY]_action",
@@ -777,7 +780,9 @@
 
         this.getScrollmapEvent = function() {
             this.stats.e++;
-            var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
+            // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
+            var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
+
             var views = ["/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html"];
             var event = {
                 "key": "[CLY]_action",
@@ -927,6 +932,7 @@
     var userAmount = 1000;
     var queued = 0;
     var totalStats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
+    var _templateType = '';
     /**
      * Update populator UI
      * @param {object} stats - current populator stats
@@ -1267,7 +1273,7 @@
         }
 
         generateRatingWidgets(function() {
-            if (countlyGlobal.plugins.indexOf("surveys") !== -1) {
+            if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
                 generateNPSWidgets(function() {
                     generateSurveyWidgets(done);
                 });
@@ -1513,7 +1519,7 @@
                 template.events = JSON.stringify(template.events);
             }
         }
-
+        template.app_id = countlyCommon.ACTIVE_APP_ID;
         return template;
     }
 
@@ -1624,7 +1630,7 @@
             });
         }
 
-        if (countlyGlobal.plugins.indexOf("star-rating") !== -1) {
+        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
             generateWidgets(function() {});
         }
     };
@@ -1703,7 +1709,7 @@
 
         var template = this.currentTemplate || {};
 
-        if (typeof countlyCohorts !== "undefined") {
+        if (typeof countlyCohorts !== "undefined" && countlyAuth.validateCreate('cohorts')) {
             if (template && template.events && Object.keys(template.events).length > 0) {
                 var firstEventKey = Object.keys(template.events)[0];
 
@@ -1830,6 +1836,14 @@
         createMessage(messages[1]);
     };
 
+    countlyPopulator.getSelectedTemplate = function() {
+        return _templateType;
+    };
+
+    countlyPopulator.setSelectedTemplate = function(value) {
+        _templateType = value;
+    };
+
     countlyPopulator.getTemplate = function(templateId, callback) {
         var foundDefault = defaultTemplates.find(function(template) {
             return template._id === templateId;
@@ -1842,7 +1856,7 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/populator/templates",
-                data: {template_id: templateId},
+                data: {template_id: templateId, app_id: countlyCommon.ACTIVE_APP_ID},
                 success: callback,
                 error: function() {
                     CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-fetch-template", templateId), type: "error"});
@@ -1855,7 +1869,9 @@
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/populator/templates",
-            data: {},
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID
+            },
             success: function(templates) {
                 callback(templates.concat(defaultTemplates));
             },
@@ -1912,7 +1928,7 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/i/populator/templates/remove",
-                data: {template_id: templateId},
+                data: {template_id: templateId, app_id: countlyCommon.ACTIVE_APP_ID},
                 success: callback,
                 error: function() {
                     CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-remove-template", templateId), type: "error"});

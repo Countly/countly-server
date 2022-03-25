@@ -122,8 +122,9 @@
         globalFutureDaysRange = [],
         globalFutureMonthsRange = [],
         globalMin = moment([2010, 0, 1]),
-        globalMax = moment(),
-        globalFutureMax = moment().add(10, "y"),
+        globalMax = moment().endOf('day'),
+        globalFutureMin = moment().startOf('day'),
+        globalFutureMax = moment().startOf('day').add(10, "y"),
         daysCursor = moment(globalMin.toDate()),
         monthsCursor = moment(globalMin.toDate());
 
@@ -221,7 +222,7 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
-            globalMin: instance.isFuture ? globalMax : globalMin,
+            globalMin: instance.isFuture ? globalFutureMin : globalMin,
             globalMax: instance.isFuture ? globalFutureMax : globalMax
         };
 
@@ -235,6 +236,11 @@
      * @returns {String} Range label
      */
     function getRangeLabel(state, type) {
+
+        if (state.selectedShortcut === "0days") {
+            return countlyVue.i18n("common.all-time");
+        }
+
         type = type || "date";
         var level = type.replace("range", "");
 
@@ -635,6 +641,13 @@
             },
             weekdays: function() {
                 return moment.weekdaysMin();
+            },
+            warnings: function() {
+                if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {
+                    var lengthStr = this.rangeLimits.maxLength[0] + ' ' + CV.i18n('common.buckets.' + this.rangeLimits.maxLength[1]);
+                    return {'maxLength': CV.i18n('common.range-length-limit', lengthStr)};
+                }
+                return {};
             }
         },
         props: {
@@ -704,11 +717,24 @@
                 type: Number,
                 default: -1,
                 required: false
+            },
+            allowCustomRange: {
+                type: Boolean,
+                default: true,
+                required: false
+            },
+            rangeLimits: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
             }
         },
         data: function() {
             var data = getInitialState(this);
             data.isVisible = false;
+            data.commitTooltip = {};
             return data;
         },
         watch: {
@@ -836,6 +862,7 @@
             },
             handleDropdownHide: function(aborted) {
                 this.abortPicking();
+                this.clearCommitWarning(true);
                 if (aborted) {
                     this.loadValue(this.value);
                 }
@@ -856,8 +883,10 @@
                 this.refreshCalendarDOM();
             },
             handleCustomRangeClick: function() {
-                this.customRangeSelection = true;
-                this.refreshCalendarDOM();
+                if (this.allowCustomRange) {
+                    this.customRangeSelection = true;
+                    this.refreshCalendarDOM();
+                }
             },
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
@@ -926,8 +955,27 @@
             handleDiscardClick: function() {
                 this.doDiscard();
             },
+            triggerCommitWarning: function(errorType) {
+                var self = this;
+                clearTimeout(self.commitTooltip._timeout);
+                self.commitTooltip = {
+                    show: true,
+                    content: this.warnings[errorType],
+                    trigger: 'manual'
+                };
+                self.commitTooltip._timeout = setTimeout(function() {
+                    self.clearCommitWarning();
+                }, 3000);
+            },
+            clearCommitWarning: function(destroyTimeout) {
+                if (destroyTimeout) {
+                    clearTimeout(this.commitTooltip._timeout);
+                }
+                this.commitTooltip = {};
+            },
             doClose: function() {
                 this.$refs.dropdown.handleClose();
+                this.clearCommitWarning(true);
             },
             doDiscard: function() {
                 this.handleDropdownHide(true);
@@ -935,6 +983,12 @@
             },
             doCommit: function(value, isShortcut) {
                 if (value) {
+                    if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {
+                        var allowedMax = moment(this.minDate).add(this.rangeLimits.maxLength[0], this.rangeLimits.maxLength[1]);
+                        if (allowedMax < moment(this.maxDate)) {
+                            return this.triggerCommitWarning('maxLength');
+                        }
+                    }
                     var submittedVal = this.isRange ? value : value[0];
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     this.$emit("input", submittedVal);
@@ -949,6 +1003,9 @@
                     this.doClose();
                 }
             }
+        },
+        beforeDestroy: function() {
+            this.clearCommitWarning(true);
         },
         template: CV.T('/javascripts/countly/vue/templates/datepicker.html')
     }));

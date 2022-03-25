@@ -1,6 +1,6 @@
-const { FRAME } = require('../../send/proto'),
+const { FRAME, FRAME_NAME } = require('../../send/proto'),
     { SynFlushTransform } = require('./syn'),
-    { ERROR, Message } = require('../../send/data');
+    { ERROR, Result, TriggerKind, State, Status } = require('../../send/data');
 
 /**
  * Stream responsible for handling sending results:
@@ -27,21 +27,19 @@ class Resultor extends SynFlushTransform {
 
         // temporary storage to decrease number of database updates
         this.changed = {}; // {aid: {field: {uid: new token}}}
-        this.sent = {}; // {mid: int}
         this.processed = {}; // {mid: int}
-        this.sentUsers = {}; // {aid: {mid: [uid, uid, uid]}}
+        this.sentUsers = {}; // {aid: {mid: {users: [uid, uid, uid], 'a': 0, 'i': 2132}}}
         this.removeTokens = {}; // {aid: {field: [uid, uid, uid]}}
         this.errors = {}; // {mid: {platform: {InvalidToken: 0}}}
         this.fatalErrors = {}; // {mid: []}
         this.toDelete = []; // [push id, push id, ...]
         this.count = 0; // number of results cached
         this.last = null; // time of last data from 
-        this.messages = {}; // {_id: Message}
 
         this.data.on('app', app => {
             this.changed[app._id] = {};
-            this.sentUsers[app._id] = {};
             this.removeTokens[app._id] = {};
+            this.sentUsers[app._id] = {};
 
             let { PLATFORM } = require('../../send/platforms');
             for (let p in PLATFORM) {
@@ -53,11 +51,12 @@ class Resultor extends SynFlushTransform {
         });
 
         this.data.on('message', message => {
-            this.messages[message._id] = new Message(message);
-            this.sent[message._id] = 0;
             this.processed[message._id] = 0;
             this.fatalErrors[message._id] = [];
-            this.sentUsers[message.app][message._id] = [];
+            this.sentUsers[message.app][message._id] = {users: []};
+            message.platforms.forEach(p => {
+                this.sentUsers[message.app][message._id][p] = 0;
+            });
 
             this.errors[message._id] = {};
             let { PLATFORM } = require('../../send/platforms');
@@ -76,10 +75,13 @@ class Resultor extends SynFlushTransform {
      */
     _transform(chunk, encoding, callback) {
         let {frame, payload: results} = chunk;
+        this.log.d('in resultor _transform', FRAME_NAME[frame]);
         if (frame & FRAME.CMD) {
             if (frame & (FRAME.FLUSH | FRAME.SYN)) {
                 this.do_flush(() => {
+                    this.log.d('flush push');
                     this.push(chunk);
+                    this.log.d('flush callback');
                     callback();
                 });
             }
@@ -91,19 +93,32 @@ class Resultor extends SynFlushTransform {
         else if (frame & FRAME.RESULTS) {
             if (frame & FRAME.ERROR) {
                 [results.affected, results.left].forEach(arr => {
-                    if (results.type & (ERROR.DATA_TOKEN_EXPIRED | ERROR.DATA_TOKEN_INVALID)) {
+                    if (results.is(ERROR.DATA_TOKEN_EXPIRED) || results.is(ERROR.DATA_TOKEN_INVALID)) {
                         arr.forEach(id => {
+                            if (id < 0) {
+                                return;
+                            }
                             let {a, p, f, u} = this.data.pushes[id];
                             this.removeTokens[a][p + f].push(u);
                         });
                     }
                     arr.forEach(id => {
-                        let {p, m} = this.data.pushes[id],
-                            msg = this.messages[m];
+                        if (id < 0) {
+                            return;
+                        }
+                        let {p, m, pr} = this.data.pushes[id],
+                            msg = this.data.message(m),
+                            rp = msg.result.sub(p),
+                            rl = rp.sub(pr.la || 'default');
                         msg.result.processed++;
-                        msg.result.response(p, results.message, 1);
+                        msg.result.recordError(results.message, 1);
+                        rp.recordError(results.message, 1);
+                        rp.processed++;
+                        rl.recordError(results.message, 1);
+                        rl.processed++;
                         delete this.data.pushes[id];
                         this.toDelete.push(id);
+                        this.data.decSending(m);
                     });
                     this.count += arr.length;
                 });
@@ -124,14 +139,24 @@ class Resultor extends SynFlushTransform {
                         return;
                     }
 
-                    let m = this.messages[p.m];
+                    this.data.decSending(p.m);
+
+                    let m = this.data.message(p.m);
                     m.result.sent++;
                     m.result.processed++;
+
+                    let rp = m.result.sub(p.p),
+                        rl = rp.sub(p.pr.la || 'default');
+                    rp.sent++;
+                    rp.processed++;
+                    rl.sent++;
+                    rl.processed++;
 
                     this.toDelete.push(id);
                     delete this.data.pushes[id];
 
-                    this.sentUsers[p.a][p.m].push(p.u);
+                    this.sentUsers[p.a][p.m].users.push(p.u);
+                    this.sentUsers[p.a][p.m][p.p]++;
                     if (token) {
                         this.changed[p.a][p.p + p.f][p.u] = token;
                     }
@@ -155,19 +180,32 @@ class Resultor extends SynFlushTransform {
 
             [results.affected, results.left].forEach(arr => {
                 arr.forEach(id => {
-                    let {m} = this.data.pushes[id];
+                    if (id < 0) {
+                        return;
+                    }
+                    let {m, p, pr} = this.data.pushes[id];
                     mids[m] = (mids[m] || 0) + 1;
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
+
+                    m = this.data.message(m);
+                    let rp = m.result.sub(p),
+                        rl = rp.sub(pr.la || 'default');
+                    if (!rl) {
+                        rl = rp.sub(p.pr.la || 'default', new Result());
+                    }
+                    rp.processed++;
+                    rl.processed++;
                 });
 
                 this.count += arr.length;
             });
 
             for (let mid in mids) {
-                let m = this.messages[mid];
-                m.result.processed[m]++;
+                let m = this.data.message(mid);
+                m.result.processed[m] += mids[mid];
                 m.result.pushError(error);
+                this.data.decSending(mid);
             }
         }
 
@@ -185,11 +223,61 @@ class Resultor extends SynFlushTransform {
      * @param {function} callback callback
      */
     do_flush(callback) {
-        this.log.d('Flushing');
+        this.log.d('in resultor do_flush');
         this.count = 0;
 
         let updates = {},
-            promises = Object.values(this.messages).map(m => m.save());
+            promises = this.data.messages().map(m => {
+                if (this.data.isSending(m.id)) {
+                    this.log.d('message %s is still in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
+                    return m.save();
+                }
+                this.log.d('message %s is done processing', m.id);
+                let state, status, error;
+                if (m.triggerAutoOrApi()) {
+                    if (m.result.total === m.result.errored) {
+                        state = State.Created | State.Error | State.Done;
+                        status = Status.Stopped;
+                        error = 'Failed to send all notifications';
+                    }
+                    else {
+                        state = m.state & ~State.Streaming;
+                        status = Status.Scheduled;
+                    }
+                }
+                else {
+                    if (m.result.total === m.result.errored) {
+                        state = State.Created | State.Error | State.Done;
+                        status = Status.Failed;
+                        error = 'Failed to send all notifications';
+                    }
+                    else if (m.result.total === m.result.processed) {
+                        state = State.Created | State.Done;
+                        status = Status.Sent;
+                    }
+                    else {
+                        state = m.state & ~State.Streaming;
+                        status = Status.Scheduled;
+                    }
+                }
+
+                if (m.result.state !== state) {
+                    this.log.d('saving message', m.id, m.result.json, 'state', state, 'status', status, 'error', error);
+                    m.state = state;
+                    m.status = status;
+                    if (status === Status.Sent || status === Status.Failed) {
+                        m.info.finished = new Date();
+                    }
+                    if (error) {
+                        m.result.error = error;
+                    }
+                    return m.save();
+                }
+                else {
+                    this.log.d('message %s is in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
+                    return m.save();
+                }
+            });
 
         if (this.toDelete.length) {
             promises.push(this.db.collection('push').deleteMany({_id: {$in: this.toDelete.map(this.db.ObjectID)}}));
@@ -249,10 +337,10 @@ class Resultor extends SynFlushTransform {
                 updates[collection] = [];
             }
             for (let mid in this.sentUsers[aid]) {
-                if (this.sentUsers[aid][mid].length) {
+                if (this.sentUsers[aid][mid].users.length) {
                     updates[collection].push({
                         updateMany: {
-                            filter: {_id: {$in: this.sentUsers[aid][mid]}},
+                            filter: {_id: {$in: this.sentUsers[aid][mid].users}},
                             update: {
                                 $set: {
                                     ['msgs.' + mid]: now
@@ -260,8 +348,42 @@ class Resultor extends SynFlushTransform {
                             }
                         }
                     });
-                    this.sentUsers[aid][mid] = [];
+                    this.sentUsers[aid][mid].users = [];
                 }
+                let m = this.data.message(mid),
+                    app = this.data.app(aid),
+                    common = require('../../../../../api/utils/common');
+                m.platforms.forEach(p => {
+                    let sent = this.sentUsers[aid][mid][p];
+                    if (sent) {
+                        let a = !!m.triggerAuto(),
+                            t = !!m.triggerFind(TriggerKind.API),
+                            ap = a + p,
+                            tp = t + p,
+                            params = {
+                                qstring: {
+                                    events: [
+                                        { key: '[CLY]_push_sent', count: sent, segmentation: {i: mid, a, t, p, ap, tp} }
+                                    ]
+                                },
+                                app_id: app._id,
+                                appTimezone: app.timezone,
+                                time: common.initTimeObj(app.timezone)
+                            };
+
+                        this.log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
+                        require('../../../../../api/parts/data/events').processEvents(params);
+
+                        try {
+                            this.log.d('Recording %d data points', sent);
+                            require('../../../../server-stats/api/parts/stats').updateDataPoints(common.writeBatcher, app._id, 0, {"p": sent});
+                        }
+                        catch (e) {
+                            this.log.d('Error during dp recording', e);
+                        }
+                        this.sentUsers[aid][mid][p] = 0;
+                    }
+                });
                 // this.sentUsers[aid][mid].forEach(uid => {
                 //     updates[collection].push({
                 //         updateOne: {
@@ -285,12 +407,12 @@ class Resultor extends SynFlushTransform {
         }
 
         Promise.all(promises).then(() => {
-            this.log.d('Flushed');
+            this.log.d('do_flush done');
             if (callback) {
                 callback();
             }
         }, err => {
-            this.log.e('Flushing error', err);
+            this.log.e('do_flush error', err);
             if (callback) {
                 callback(err);
             }
@@ -559,12 +681,14 @@ class Resultor extends SynFlushTransform {
      * @param {function} callback callback
      */
     _flush(callback) {
-        this.log.d('_flush');
+        this.log.d('in resultor _flush');
         this.do_flush(err => {
             if (err) {
+                this.log.d('in resultor _flush err');
                 callback(err);
             }
             else {
+                this.log.d('in resultor _flush syn');
                 this.syn(callback);
             }
         });

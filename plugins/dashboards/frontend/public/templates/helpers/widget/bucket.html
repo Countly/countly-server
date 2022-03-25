@@ -1,0 +1,12 @@
+<el-select
+    :adaptive-length="true"
+    v-bind="$attrs"
+    :value="val"
+    @input="onChange">
+    <el-option
+        v-for="bucket in allBuckets"
+        :key="bucket.value"
+        :label="bucket.label"
+        :value="bucket.value">
+    </el-option>
+</el-select>

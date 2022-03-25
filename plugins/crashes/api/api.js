@@ -619,6 +619,7 @@ plugins.setConfigs("crashes", {
                                     if (Object.keys(groupMax).length > 0) {
                                         update.$max = groupMax;
                                     }
+                                    plugins.dispatch("/crashes/new", {data: {crash: groupInsert, user: dbAppUser}});
 
                                     update.$addToSet = {groups: hash};
 
@@ -905,8 +906,7 @@ plugins.setConfigs("crashes", {
                     });
                 }
                 else {
-                    //var columns = ["nonfatal", "session", "reports", "users", "os", "name", "lastTs", "latest_version", "is_resolved"];
-                    var columns = [null, "name", "os", "reports", "users", "lastTs", "latest_version"];
+                    var columns = ["name", "os", "reports", "lastTs", "users", "latest_version"];
                     var filter = {};
                     if (params.qstring.query && params.qstring.query !== "") {
                         try {
@@ -996,16 +996,16 @@ plugins.setConfigs("crashes", {
                             plcrash: 1
                         });
                         cursor.count(function(errCursor, count) {
+                            if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0]) {
+                                let obj = {};
+                                obj[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+                                cursor.sort(obj);
+                            }
                             if (params.qstring.iDisplayStart && params.qstring.iDisplayStart !== 0) {
                                 cursor.skip(parseInt(params.qstring.iDisplayStart));
                             }
                             if (params.qstring.iDisplayLength && params.qstring.iDisplayLength !== -1) {
                                 cursor.limit(parseInt(params.qstring.iDisplayLength));
-                            }
-                            if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0]) {
-                                let obj = {};
-                                obj[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-                                cursor.sort(obj);
                             }
 
                             cursor.toArray(function(cursorErr, res) {
@@ -1031,20 +1031,21 @@ plugins.setConfigs("crashes", {
                 if (params.qstring.uid) {
                     var columns = ["group", "reports", "last"];
                     var query = {group: {$ne: 0}, uid: params.qstring.uid};
-                    var cursor = common.db.collection('app_crashusers' + params.app_id).find(query, {_id: 0});
+                    var cursor = common.db.collection('app_crashusers' + params.app_id).find(query || {}, {_id: 0});
                     cursor.count(function(err, total) {
                         total = total || 0;
+                        if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0]) {
+                            let obj = {};
+                            obj[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+                            cursor.sort(obj);
+                        }
                         if (params.qstring.iDisplayStart && params.qstring.iDisplayStart !== 0) {
                             cursor.skip(parseInt(params.qstring.iDisplayStart));
                         }
                         if (params.qstring.iDisplayLength && params.qstring.iDisplayLength !== -1) {
                             cursor.limit(parseInt(params.qstring.iDisplayLength));
                         }
-                        if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0]) {
-                            let obj = {};
-                            obj[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-                            cursor.sort(obj);
-                        }
+
                         cursor.toArray(function(cursorErr, crashes) {
                             var res = [];
                             var groupIDs = [];
@@ -1063,10 +1064,10 @@ plugins.setConfigs("crashes", {
                                     if (groups) {
                                         for (let i = 0; i < groups.length; i++) {
                                             groups[i].name = (groups[i].name + "").split("\n")[0].trim();
-                                            res.forEach((eachCrash)=>{
-                                                groups[i].groups = groups[i].groups || [];
-                                                if (groups[i].groups.indexOf(eachCrash.group) !== -1) {
+                                            res.forEach(function(eachCrash) {
+                                                if (groups[i]._id === eachCrash.group) {
                                                     eachCrash.group = groups[i].name;
+                                                    eachCrash.id = groups[i]._id;
                                                 }
                                             });
                                         }

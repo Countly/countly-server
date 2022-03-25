@@ -3,8 +3,9 @@ var common = require('../../../api/utils/common.js'),
     async = require('async'),
     moment = require('moment-timezone'),
     log = require('../../../api/utils/log')('reports:api'),
+    ejs = require("ejs"),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps, getAdminApps } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps, } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'reports';
 
@@ -137,7 +138,7 @@ const FEATURE_NAME = 'reports';
                     }
                 }
 
-                if (notPermitted) {
+                if (notPermitted && !params.member.global_admin) {
                     return common.returnMessage(params, 401, 'User does not have right to access this information');
                 }
 
@@ -187,7 +188,7 @@ const FEATURE_NAME = 'reports';
                     }
                 }
 
-                if (notPermitted) {
+                if (notPermitted && !params.member.global_admin) {
                     return common.returnMessage(params, 401, 'User does not have right to access this information');
                 }
                 common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err_update, report) {
@@ -220,12 +221,6 @@ const FEATURE_NAME = 'reports';
                     return false;
                 }
 
-                const adminApps = getAdminApps(params.member);
-                const notPermitted = adminApps.indexOf(id) === -1;
-
-                if (notPermitted) {
-                    return common.returnMessage(params, 401, 'User does not have right to access this information');
-                }
                 common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err, props) {
                     common.db.collection('reports').remove(recordUpdateOrDeleteQuery(params, id), {safe: true}, function(err_del) {
                         if (err_del) {
@@ -242,7 +237,7 @@ const FEATURE_NAME = 'reports';
             });
             break;
         case 'send':
-            validateCreate(paramsInstance, FEATURE_NAME, function() {
+            validateRead(paramsInstance, FEATURE_NAME, function() {
                 var params = paramsInstance;
                 var argProps = {
                         '_id': { 'required': true, 'type': 'String'}
@@ -257,13 +252,6 @@ const FEATURE_NAME = 'reports';
                     if (err || !result) {
                         common.returnMessage(params, 200, 'Report not found');
                         return false;
-                    }
-
-                    const adminApps = getAdminApps(params.member);
-                    const notPermitted = adminApps.indexOf(id) === -1;
-
-                    if (notPermitted) {
-                        return common.returnMessage(params, 401, 'User does not have right to access this information');
                     }
 
                     reports.sendReport(common.db, id, function(err2) {
@@ -297,12 +285,6 @@ const FEATURE_NAME = 'reports';
                     }
 
                     // TODO: Handle report type check
-                    const userApps = getUserApps(params.member);
-                    const notPermitted = userApps.indexOf(id) === -1;
-
-                    if (notPermitted) {
-                        return common.returnMessage(params, 401, 'User does not have right to access this information');
-                    }
 
                     reports.getReport(common.db, result, function(err2, res) {
                         if (err2) {
@@ -310,7 +292,12 @@ const FEATURE_NAME = 'reports';
                         }
                         else {
                             if (params && params.res) {
-                                common.returnRaw(params, 200, res.message, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
+                                var html = res.message;
+                                if (result.report_type !== "core") {
+                                    html = ejs.render(res.message.template, res.message.data);
+                                }
+
+                                common.returnRaw(params, 200, html, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
                             }
                         }
                     });

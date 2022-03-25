@@ -3,22 +3,6 @@ var AppPlatformView = countlyVue.views.create({
     template: CV.T("/core/platform/templates/platform.html"),
     data: function() {
         return {
-            scrollOptions: {
-                vuescroll: {},
-                scrollPanel: {
-                    initialScrollX: false,
-                },
-                rail: {
-                    gutterOfSide: "1px",
-                    gutterOfEnds: "15px"
-                },
-                bar: {
-                    background: "#A7AEB8",
-                    size: "6px",
-                    specifyBorderRadius: "3px",
-                    keepShow: true
-                }
-            },
             scrollCards: {
                 vuescroll: {},
                 scrollPanel: {
@@ -32,6 +16,22 @@ var AppPlatformView = countlyVue.views.create({
                     size: "6px",
                     specifyBorderRadius: "3px",
                     keepShow: false
+                }
+            },
+            breakdownScrollOps: {
+                vuescroll: {},
+                scrollPanel: {
+                    initialScrollX: false,
+                },
+                rail: {
+                    gutterOfSide: "1px",
+                    gutterOfEnds: "15px"
+                },
+                bar: {
+                    background: "#A7AEB8",
+                    size: "6px",
+                    specifyBorderRadius: "3px",
+                    keepShow: true
                 }
             },
             description: CV.i18n('platforms.description'),
@@ -181,7 +181,6 @@ var AppPlatformView = countlyVue.views.create({
                     "color": this.graphColors[k % this.graphColors.length]
                 });
             }
-
             return display;
         },
         topDropdown: function() {
@@ -206,7 +205,7 @@ var AppPlatformView = countlyVue.views.create({
                     var percent = Math.round((data[k][property] || 0) * 1000 / (platforms[z][property] || 1)) / 10;
                     display.push({
                         "name": data[k].os_versions,
-                        "value": countlyCommon.getShortNumber(data[k][property] || 0),
+                        "description": countlyCommon.getShortNumber(data[k][property] || 0),
                         "percent": percent,
                         "bar": [{
                             percentage: percent,
@@ -215,7 +214,13 @@ var AppPlatformView = countlyVue.views.create({
                         ]
                     });
                 }
-                returnData.push({"data": display, "label": platforms[z].label, itemCn: display.length});
+                returnData.push({"values": display, "label": platforms[z].label, itemCn: display.length});
+            }
+            for (var i = 0; i < returnData.length; i++) {
+                returnData[i].values.sort(function(a, b) {
+                    return parseFloat(b.percent) - parseFloat(a.percent);
+                });
+                returnData[i].values = returnData[i].values.slice(0, 12);
             }
             return returnData;
         },
@@ -223,12 +228,13 @@ var AppPlatformView = countlyVue.views.create({
             return this.appPlatform.chartData;
         },
         isLoading: function() {
-            return this.$store.state.countlyDevicesAndTypes.isLoading;
+            return this.$store.state.countlyDevicesAndTypes.platformLoading;
         },
         tabs: function() {
             return this.platformTabs;
         }
     },
+
     mixins: [
         countlyVue.container.dataMixin({
             'externalLinks': '/analytics/platforms/links'
@@ -240,7 +246,8 @@ var AppPlatformView = countlyVue.views.create({
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 1,
     name: "platforms",
-    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/platforms",
+    permission: "core",
+    route: "#/analytics/technology/platforms",
     title: CV.i18n('platforms.title'),
     component: AppPlatformView
 });

@@ -1,11 +1,34 @@
-const { Jsonable, Mongoable } = require('../../../../../api/utils/models');
+const { Jsonable, Validatable, Mongoable } = require('../../../../../api/utils/models');
 
 /* eslint-disable key-spacing, no-multi-spaces */
 
+const MEDIA_MIME_ANDROID = [
+        'image/gif',
+        'image/png',
+        'image/jpg',
+        'image/jpeg',
+    ],
+    MEDIA_MIME_IOS = MEDIA_MIME_ANDROID.concat([
+        'audio/mpeg',
+        'audio/mp3',
+        'audio/wav',
+        'audio/x-wav',
+
+        'video/mp4',
+        'video/mpeg',
+        'video/quicktime'
+    ]),
+    MEDIA_MIME_ALL = MEDIA_MIME_IOS,
+
+    DBMAP = {
+        MESSAGING_ENABLED: 'm',
+        MESSAGE_ID: 'm',
+    };
 
 const DEFAULTS = {
     schedule_ahead: 5 * 60000,  // schedule job needs to be scheduled this much ms prior to the job date
     queue_insert_batch: 100000,  // insert into "push" collection in batches of 100 000 records
+    max_media_size: 1024 * 1024 // 1Mb is a very conservative limit for media attachments
 };
 
 /**
@@ -134,6 +157,17 @@ const TriggerKind = {
  * Separator used in property keys
  */
 const S = '|';
+const S_REGEXP = '\\|';
+
+/**
+ * Type of personalization object
+ */
+const PersType = {
+    Event: 'e',
+    User: 'u',
+    UserCustom: 'c',
+    Api: 'a'
+};
 
 /**
  * Convert whatever date we have to Date instance
@@ -156,4 +190,29 @@ function toDate(date) {
     }
 }
 
-module.exports = { S, State, Status, STATUSES: Object.values(Status), TriggerKind, toDate, DEFAULTS, Jsonable, Mongoable };
+module.exports = {
+    S,
+    S_REGEXP,
+
+    State,
+    Status,
+    STATUSES: Object.values(Status),
+
+    TriggerKind,
+
+    PersType,
+    PERS_TYPES: Object.values(PersType),
+
+    toDate,
+
+    DEFAULTS,
+    DBMAP,
+
+    MEDIA_MIME_ALL,
+    MEDIA_MIME_IOS,
+    MEDIA_MIME_ANDROID,
+
+    Jsonable,
+    Validatable,
+    Mongoable
+};

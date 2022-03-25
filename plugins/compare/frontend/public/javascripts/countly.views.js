@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCompareEvents, countlyCommon, countlyAuth CV*/
+/* global countlyVue, countlyCompareEvents, CV*/
 (function() {
     var FEATURE_NAME = "compare";
     var CompareEventsTable = countlyVue.views.create({
@@ -31,7 +31,10 @@
             },
             groupData: function() {
                 return this.$store.getters["countlyCompareEvents/groupData"];
-            }
+            },
+            isTableLoading: function() {
+                return this.$store.getters["countlyCompareEvents/isTableLoading"];
+            },
         },
         methods: {
             handleCurrentChange: function(selection) {
@@ -62,6 +65,8 @@
         },
         methods: {
             compareEvents: function() {
+                this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
+                this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                 this.$store.dispatch('countlyCompareEvents/fetchSelectedEvents', this.value);
                 this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData');
             },
@@ -70,6 +75,11 @@
                 if (selectedEvents.length > 0) {
                     this.$store.dispatch('countlyCompareEvents/fetchRefreshCompareEventsData');
                 }
+            },
+            dateChanged: function() {
+                this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
+                this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
+                this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData', this.value);
             }
         },
         computed: {
@@ -81,16 +91,6 @@
             },
             lineLegend: function() {
                 return this.$store.getters["countlyCompareEvents/lineLegend"];
-            },
-            selectedDatePeriod: {
-                get: function() {
-                    return this.$store.getters["countlyCompareEvents/selectedDatePeriod"];
-                },
-                set: function(period) {
-                    this.$store.dispatch('countlyCompareEvents/fetchSelectedDatePeriod', period);
-                    countlyCommon.setPeriod(period);
-                    this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData', this.value);
-                }
             },
             selectedGraph: {
                 get: function() {
@@ -105,6 +105,8 @@
                 },
                 set: function(selectedItem) {
                     var self = this;
+                    this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
+                    this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                     var selectedEvents = this.$store.getters["countlyCompareEvents/selectedEvents"];
                     if (selectedItem === "Sum") {
                         self.selectedMetric = "Sum";
@@ -123,6 +125,9 @@
                     }
                 }
             },
+            isChartLoading: function() {
+                return this.$store.getters["countlyCompareEvents/isChartLoading"];
+            }
         },
         data: function() {
             return {
@@ -142,15 +147,14 @@
 
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        countlyVue.container.registerTab("/analytics/events", {
-            priority: 2,
-            name: "compare",
-            title: "Compare Events",
-            component: CompareEvents,
-            vuex: [{
-                clyModel: countlyCompareEvents
-            }]
-        });
-    }
+    countlyVue.container.registerTab("/analytics/events", {
+        priority: 2,
+        name: "compare",
+        permission: FEATURE_NAME,
+        title: "Compare Events",
+        component: CompareEvents,
+        vuex: [{
+            clyModel: countlyCompareEvents
+        }]
+    });
 })();

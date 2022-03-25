@@ -1,7 +1,7 @@
 const common = require('../../../api/utils/common'),
     plugins = require('../../pluginManager'),
     log = common.log('push:api:push'),
-    { extract, field, allAppUserFields, platforms, PLATFORM, ValidationError, Creds } = require('./send');
+    { extract, field, allAppUserFields, platforms, PLATFORM, ValidationError, Creds, DBMAP } = require('./send');
 
 module.exports.onTokenSession = async(dbAppUser, params) => {
     let stuff = extract(params.qstring);
@@ -29,6 +29,9 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
             pushCollection.updateOne({_id: params.app_user.uid}, {$unset: {[pushField]: 1}}, function() {});
         }
     }
+    else {
+        log.d('no push token in token_session:', params.qstring);
+    }
     // else if (params.qstring.locale) {
     //     common.db.collection(`app_users${params.app_id}`).updateOne({_id: params.app_user_id}, {$set: {[common.dbUserMap.locale]: params.qstring.locale}}, function() {});
     //     dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
@@ -37,16 +40,20 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
 
 module.exports.onSessionUser = ({params, dbAppUser}) => {
     if (dbAppUser && dbAppUser[common.dbUserMap.first_seen]) {
-        let hasTokens = false;
+        let hasTokens = false,
+            platfs = [];
         allAppUserFields.forEach(f => {
             if (dbAppUser[f]) {
                 hasTokens = true;
+                platfs.push(f.substring(0, 1));
             }
         });
 
         if (!hasTokens) {
             return;
         }
+
+        platfs = platfs.filter((p, i) => platfs.indexOf(p) === i);
 
         let updateUsersZero = {},
             updateUsersMonth = {},
@@ -60,23 +67,28 @@ module.exports.onSessionUser = ({params, dbAppUser}) => {
             secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInMin)) {
-            updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + common.dbMap['messaging-enabled']] = 1;
+            updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + DBMAP.MESSAGING_ENABLED] = 1;
+            platfs.forEach(p => updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + DBMAP.MESSAGING_ENABLED + p] = 1);
         }
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInHour)) {
-            updateUsersMonth['d.' + params.time.day + '.' + common.dbMap['messaging-enabled']] = 1;
+            updateUsersMonth['d.' + params.time.day + '.' + DBMAP.MESSAGING_ENABLED] = 1;
+            platfs.forEach(p => updateUsersMonth['d.' + params.time.day + '.' + DBMAP.MESSAGING_ENABLED + p] = 1);
         }
 
-        if (userLastSeenDate.year() === parseInt(params.time.yearly) && Math.ceil(userLastSeenDate.format('DDD') / 7) < params.time.weekly) {
-            updateUsersZero['d.w' + params.time.weekly + '.' + common.dbMap['messaging-enabled']] = 1;
+        if (userLastSeenDate.year() === parseInt(params.time.yearly, 10) && Math.ceil(userLastSeenDate.format('DDD') / 7) < params.time.weekly) {
+            updateUsersZero['d.w' + params.time.weekly + '.' + DBMAP.MESSAGING_ENABLED] = 1;
+            platfs.forEach(p => updateUsersZero['d.w' + params.time.weekly + '.' + DBMAP.MESSAGING_ENABLED + p] = 1);
         }
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInMonth)) {
-            updateUsersZero['d.' + params.time.month + '.' + common.dbMap['messaging-enabled']] = 1;
+            updateUsersZero['d.' + params.time.month + '.' + DBMAP.MESSAGING_ENABLED] = 1;
+            platfs.forEach(p => updateUsersZero['d.' + params.time.month + '.' + DBMAP.MESSAGING_ENABLED + p] = 1);
         }
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInYear)) {
-            updateUsersZero['d.' + common.dbMap['messaging-enabled']] = 1;
+            updateUsersZero['d.' + DBMAP.MESSAGING_ENABLED] = 1;
+            platfs.forEach(p => updateUsersZero['d.' + DBMAP.MESSAGING_ENABLED + p] = 1);
         }
 
         if (Object.keys(updateUsersZero).length) {
@@ -93,10 +105,14 @@ module.exports.onSessionUser = ({params, dbAppUser}) => {
 
 module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     log.d('Updating app %s config: %j', app._id, config);
-
-    let pushcfg = app.plugins && app.plugins.push || (app.plugins.push = {}),
-        old = JSON.stringify(pushcfg);
-
+    if (!app.plugins) {
+        app.plugins = {};
+    }
+    if (!app.plugins.push) {
+        app.plugins.push = {};
+    }
+    let pushcfg = app.plugins.push;
+    let old = JSON.stringify(pushcfg);
     for (let i = 0; i < platforms.length; i++) {
         let p = platforms[i],
             c = config[p];
@@ -104,7 +120,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         if (c === null) { // delete credentials
             log.d('Unsetting %s config for app %s', p, app._id);
             if (pushcfg[p] && pushcfg[p]._id) {
-                await Creds.deleteOne(pushcfg[p]._id);
+                await Creds.deleteOne({_id: common.db.ObjectID(pushcfg[p]._id)});
             }
             pushcfg[p] = {};
             await common.db.collection('apps').updateOne({_id: app._id}, {$set: {[`plugins.push.${p}`]: {}}});
@@ -133,7 +149,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
 
                 // insert/update new credentials while removing old ones
                 if (pushcfg[p] && pushcfg[p]._id) {
-                    await Creds.deleteOne(pushcfg[p]._id);
+                    await Creds.deleteOne({_id: common.db.ObjectID(pushcfg[p]._id)});
                 }
                 creds._id = common.db.ObjectID();
                 pushcfg[p] = creds.view;
@@ -149,28 +165,76 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         }
     }
 
-    if (config.rate) {
-        pushcfg.rate = pushcfg.rate || {};
-        config.rate.rate = config.rate.rate ? parseInt(config.rate.rate) : 0;
-        config.rate.period = config.rate.period ? parseInt(config.rate.period) : 0;
+    if (config.rate !== undefined) {
+        let update = {};
+        if (config.rate) {
+            pushcfg.rate = pushcfg.rate || {};
+            config.rate.rate = config.rate.rate ? parseInt(config.rate.rate, 10) : 0;
+            config.rate.period = config.rate.period ? parseInt(config.rate.period, 10) : 0;
+
+            if (config.rate.rate) {
+                update.$set = {'plugins.push.rate.rate': config.rate.rate};
+                pushcfg.rate.rate = config.rate.rate;
+            }
+            else {
+                update.$unset = {'plugins.push.rate.rate': 1};
+                delete pushcfg.rate.rate;
+            }
+
+            if (config.rate.period) {
+                update.$set = update.$set || {};
+                update.$set['plugins.push.rate.period'] = config.rate.period;
+                pushcfg.rate.period = config.rate.period;
+            }
+            else {
+                update.$unset = update.$unset || {};
+                update.$unset['plugins.push.rate.period'] = 1;
+                delete pushcfg.rate.period;
+            }
+        }
+        else {
+            update.$unset = {'plugins.push.rate': 1};
+            delete pushcfg.rate;
+        }
+        await common.db.collection('apps').updateOne({_id: app._id}, update);
+    }
+
+    if (config.test !== undefined) {
+        let uids = [], cohorts = [];
+        if (config.test && config.test.uids) {
+            uids = await common.db.collection(`app_users${app._id}`).find({uid: {$in: config.test.uids.split(',')}}, {uid: 1}).toArray();
+            uids = uids.map(u => u.uid).join(',');
+        }
+
+        if (config.test && config.test.cohorts) {
+            cohorts = await common.db.collection(`cohorts`).find({app_id: app._id.toString(), _id: {$in: config.test.cohorts.split(',')}}, {_id: 1}).toArray();
+            cohorts = cohorts.map(c => c._id).join(',');
+        }
 
         let update = {};
-        if (config.rate.rate) {
-            update.$set = {'plugins.push.rate.rate': config.rate.rate};
-            pushcfg.rate.rate = config.rate.rate;
+        if (cohorts.length || uids.length) {
+            pushcfg.test = pushcfg.test || {};
+            if (uids.length) {
+                update.$set = {'plugins.push.test.uids': uids};
+                pushcfg.test.uids = uids;
+            }
+            else {
+                update.$unset = {'plugins.push.test.uids': 1};
+                delete pushcfg.test.uids;
+            }
+            if (cohorts.length) {
+                update.$set = update.$set || {};
+                update.$set['plugins.push.test.cohorts'] = cohorts;
+            }
+            else {
+                update.$unset = update.$unset || {};
+                update.$unset['plugins.push.test.cohorts'] = 1;
+                delete pushcfg.test.cohorts;
+            }
         }
         else {
-            update.$unset = {'plugins.push.rate.rate': 1};
-            delete pushcfg.rate.rate;
-        }
-
-        if (config.rate.period) {
-            update.$set = {'plugins.push.rate.period': config.rate.period};
-            pushcfg.rate.period = config.rate.period;
-        }
-        else {
-            update.$unset = {'plugins.push.rate.period': 1};
-            delete pushcfg.rate.period;
+            update.$unset = {'plugins.push.test': 1};
+            delete pushcfg.test;
         }
         await common.db.collection('apps').updateOne({_id: app._id}, update);
     }

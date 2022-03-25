@@ -245,5 +245,76 @@ describe("Common API utility functions", function() {
             should.deepEqual(common.validateArgs({num: 11}, scheme), false);
         });
 
+        it('should validate nonempty', () => {
+            let scheme = {
+                obj: { type: 'Object', nonempty: true },
+                objarr: { type: 'Object[]', nonempty: true },
+                inner: {
+                    type: {
+                        str: {type: 'String'}
+                    },
+                    nonempty: true
+                },
+                innerarr: {
+                    type: {
+                        str: {type: 'String'}
+                    },
+                    array: true,
+                    nonempty: true
+                },
+                innernonemptyarr: {
+                    type: {
+                        str: 'String',
+                    },
+                    array: true,
+                    nonempty: true
+                },
+                json: {
+                    type: 'JSON',
+                    nonempty: true
+                },
+                jsonarr: {
+                    type: 'JSON[]',
+                    nonempty: true
+                },
+            };
+
+            should.deepEqual(common.validateArgs({}, scheme), {});
+            should.deepEqual(common.validateArgs({obj: {}}, scheme), false);
+            should.deepEqual(common.validateArgs({obj: ['1']}, scheme), false);
+            should.deepEqual(common.validateArgs({obj: []}, scheme), false);
+            should.deepEqual(common.validateArgs({obj: {x: 1}}, scheme), {obj: {x: 1}});
+
+            should.deepEqual(common.validateArgs({objarr: []}, scheme), false);
+            should.deepEqual(common.validateArgs({objarr: [{}]}, scheme), false);
+            should.deepEqual(common.validateArgs({objarr: [{a: 1}]}, scheme), {objarr: [{a: 1}]});
+            should.deepEqual(common.validateArgs({objarr: [{}, {a: 1}]}, scheme), false);
+            should.deepEqual(common.validateArgs({objarr: [{b: 1}, {a: 1}]}, scheme), {objarr: [{b: 1}, {a: 1}]});
+
+            should.deepEqual(common.validateArgs({inner: {}}, scheme), false);
+            should.deepEqual(common.validateArgs({inner: {x: 1}}, scheme), {inner: {x: 1}});
+            should.deepEqual(common.validateArgs({inner: {str: 'str'}}, scheme), {inner: {str: 'str'}});
+
+            should.deepEqual(common.validateArgs({innerarr: {}}, scheme), false);
+            should.deepEqual(common.validateArgs({innerarr: [{}]}, scheme), false);
+            should.deepEqual(common.validateArgs({innerarr: [{x: 1}]}, scheme), {innerarr: [{x: 1}]});
+            should.deepEqual(common.validateArgs({innerarr: [{x: 1}, {}]}, scheme), false);
+            should.deepEqual(common.validateArgs({innerarr: [{x: 1}, {y: 2}]}, scheme), {innerarr: [{x: 1}, {y: 2}]});
+            should.deepEqual(common.validateArgs({innerarr: [{str: 'str'}]}, scheme), {innerarr: [{str: 'str'}]});
+
+            should.deepEqual(common.validateArgs({json: '{}'}, scheme), false);
+            should.deepEqual(common.validateArgs({json: '[]'}, scheme), false);
+            should.deepEqual(common.validateArgs({json: '{"x": 1}'}, scheme), {json: '{"x":1}'});
+            should.deepEqual(common.validateArgs({json: '{"str": "str"}'}, scheme), {json: '{"str":"str"}'});
+            should.deepEqual(common.validateArgs({json: '["a"]'}, scheme), {json: '["a"]'});
+
+            should.deepEqual(common.validateArgs({jsonarr: []}, scheme), false);
+            should.deepEqual(common.validateArgs({jsonarr: ['{}']}, scheme), false);
+            should.deepEqual(common.validateArgs({jsonarr: ['{"x":1}']}, scheme), {jsonarr: ['{"x":1}']});
+            should.deepEqual(common.validateArgs({jsonarr: ['{}', '{"x":1}']}, scheme), false);
+            should.deepEqual(common.validateArgs({jsonarr: ['{"x":1}', '{}']}, scheme), false);
+            should.deepEqual(common.validateArgs({jsonarr: ['{"x":1}', '{"y": 2}']}, scheme), {jsonarr: ['{"x":1}', '{"y":2}']});
+
+        });
     });
 });

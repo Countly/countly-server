@@ -3,7 +3,7 @@ var async = require('async'),
     fs = require('fs'),
     path = require('path');
 console.log("Installing crash plugin");
-pluginManager.dbConnection().then((countlyDb) => {
+pluginManager.dbConnection().then(function(countlyDb) {
     countlyDb.collection('apps').find({}).toArray(function(err, apps) {
 
         if (!apps || err) {

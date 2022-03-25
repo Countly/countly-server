@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, CV, moment */
+/*global app, countlyVue, countlyVueExample, countlyCommon, CV, moment, Promise */
 
 (function() {
     var TableView = countlyVue.views.create({
@@ -9,7 +9,10 @@
             },
             rTableData: function() {
                 return this.tableStore.getters.tooManyRecords;
-            }
+            },
+            remoteTableDataSource: function() {
+                return countlyVue.vuex.getServerDataSource(this.tableStore, "tooManyRecords");
+            },
         },
         data: function() {
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("tooManyRecords", {
@@ -57,7 +60,6 @@
                     default: true
                 }],
                 localTableTrackedFields: ['status'],
-                remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "tooManyRecords"),
                 tablePersistKey: "vueExample_localTable_" + countlyCommon.ACTIVE_APP_ID,
                 remoteTablePersistKey: "vueExample_remoteTable_" + countlyCommon.ACTIVE_APP_ID,
             };
@@ -185,6 +187,28 @@
                 };
             }
         },
+        methods: {
+            remoteMethod: function(rawQuery) {
+                var self = this;
+                var filtered = this.selectXOptions.map(function(group) {
+                    return {
+                        label: group.label,
+                        name: group.name,
+                        options: group.options.filter(function(option) {
+                            return option.label && option.label.includes(rawQuery);
+                        })
+                    };
+                }).filter(function(group) {
+                    return group.options.length > 0;
+                });
+                return new Promise(function(resolve) {
+                    setTimeout(function() {
+                        self.selectXRemoteOptions = filtered;
+                        resolve(filtered);
+                    }, 400);
+                });
+            }
+        },
         data: function() {
             var manyItems = [];
 
@@ -198,22 +222,23 @@
                 dropdownsDisabled: false,
                 autoCommitDisabled: false,
                 allOptionsTabHidden: false,
+                selectXRemoteOptions: [],
                 selectXOptions: [{
                     "label": "A Items",
                     "name": "type-1",
                     "options": [
-                        {"label": "windows 10", "value": 0},
-                        {"label": "hello how", "value": 1},
-                        {"label": "hello2", "value": 2},
-                        {"label": "hello3", "value": 3},
-                        {"label": "hello4", "value": 4},
-                        {"label": "hello5", "value": 5},
-                        {"label": "hello6", "value": 6},
-                        {"label": "hello7", "value": 7},
-                        {"label": "hello8", "value": 8},
-                        {"label": "hello9", "value": 9},
-                        {"label": "hello10", "value": 10},
-                        {"label": "hello11", "value": 11},
+                        {"label": "windows 10", "value": 0, "image": "I"},
+                        {"label": "hello how", "value": 1, "image": "I"},
+                        {"label": "hello2", "value": 2, "image": "I"},
+                        {"label": "hello3", "value": 3, "image": "I"},
+                        {"label": "hello4", "value": 4, "image": "I"},
+                        {"label": "hello5", "value": 5, "image": "I"},
+                        {"label": "hello6", "value": 6, "image": "I"},
+                        {"label": "hello7", "value": 7, "image": "I"},
+                        {"label": "hello8", "value": 8, "image": "I"},
+                        {"label": "hello9", "value": 9, "image": "I"},
+                        {"label": "hello10", "value": 10, "image": "I"},
+                        {"label": "hello11", "value": 11, "image": "I"},
                     ]
                 },
                 {
@@ -227,6 +252,7 @@
                 selectXModeBuffer: 'single-list',
                 selectX: {
                     currentVal: null,
+                    remoteVal: null,
                     mode: 'single-list',
                 },
 
@@ -287,11 +313,31 @@
                                 { value: 310, name: "Email" },
                                 { value: 234, name: "Ad Networks" },
                                 { value: 135, name: "Video Ads" },
-                                { value: 1548, name: "Search Engines is a long name" }
+                                { value: 1548, name: "Search Engines is a long name" },
+                                { value: 15, name: "Video Ads2" },
+                                { value: 115, name: "Video Ads3" },
+                                { value: 5, name: "Video Ads4" },
+                                { value: 50, name: "Video Ads5" },
+                                { value: 18, name: "Video Ads6" },
+                                { value: 15, name: "Video Ads7" },
                             ],
+                            // label: {
+                            //     formatter: function() {
+                            //         return "New users \n 12k";
+                            //     }
+                            // },
                             label: {
-                                formatter: function() {
-                                    return "New users \n 12k";
+                                formatter: "{a|" + "New Users" + "}\n" + "12K",
+                                fontWeight: 500,
+                                fontSize: 16,
+                                fontFamily: "Inter",
+                                lineHeight: 24,
+                                rich: {
+                                    a: {
+                                        fontWeight: "normal",
+                                        fontSize: 14,
+                                        lineHeight: 16
+                                    }
                                 }
                             },
                         }
@@ -307,14 +353,23 @@
                                 { value: 234, name: "Ad Networks" },
                             ],
                             label: {
-                                formatter: function() {
-                                    return "Total users \n 12k";
+                                formatter: "{a|" + "Total Users" + "}\n" + "12K",
+                                fontWeight: 500,
+                                fontSize: 16,
+                                fontFamily: "Inter",
+                                lineHeight: 24,
+                                rich: {
+                                    a: {
+                                        fontWeight: "normal",
+                                        fontSize: 14,
+                                        lineHeight: 16
+                                    }
                                 }
                             },
                         }
                     ]
                 },
-                lineOptions: {
+                lineOpts: {
                     // xAxis: {
                     //     data: [10, 11, 13, 14, 15, 16, 17]
                     // },
@@ -378,6 +433,15 @@
                             percentage: "3.4%",
                         }
                     ]
+                },
+                overflowOptions: {
+                    xAxis: {
+                        data: ['crash-analytics', 'rich-push-notifications', 'dashboards', 'remote-config', 'desktop-analytics', 'user-profiles', 'drill-segmentation', 'funnels', 'behavioral-cohorts', 'crash-symbolication', 'surveys', 'ab-testing', 'automated-push-notifications', 'web-analytics', 'web-heatmaps', 'nps', 'user-retention', 'hooks', 'views', 'online-users', 'ratings', 'flows', 'single-sign-on', 'db-viewer', 'email-reports', 'data-manager', 'mobile-analytics', 'performance-monitoring', 'density-metric', 'device-locale', 'filtering-rules', 'event-logs', 'updates', 'enterprise-info', 'compare', 'server-stats', 'iot-analytics', 'revenue-analytics', 'activity-maps', 'slipping-away-users', 'geolocations', 'github', 'white-label', 'ipip-database', 'data-migration', 'plugin-uploader', 'okta', 'formulas', 'consolidate', 'server-logs', 'aws-kinesis-streaming', 'recaptcha', 'alerts', 'data-populator', 'two-factor-auth', 'browsers-metric', 'assistant', 'video-intelligence-monetization', 'config-transfer', 'times-of-day', 'push-approver', 'compliance-hub']
+                    },
+                    series: [{
+                        name: '',
+                        data: [ 31, 28, 25, 22, 20, 20, 19, 14, 13, 13, 13, 11, 9, 9, 9, 9, 8, 8, 7, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                    }]
                 },
                 barOptions: {
                     xAxis: {
@@ -504,6 +568,12 @@
                         },
                         'Ankara': {
                             'value': 30
+                        },
+                        'Antalya': {
+                            'value': 200
+                        },
+                        'Izmir': {
+                            'value': 150
                         }
                     }
                 }
@@ -518,6 +588,9 @@
             },
             lineData: function() {
                 return this.$store.getters["countlyVueExample/lineData"];
+            },
+            lineOptions: function() {
+                return this.lineOpts;
             }
         },
         beforeCreate: function() {
@@ -538,6 +611,8 @@
             },
             refresh: function() {
                 this.$store.dispatch("countlyVueExample/fetchGraphPoints");
+                var obj = JSON.parse(JSON.stringify(this.lineOpts));
+                this.lineOpts = obj;
             }
         }
     });
@@ -1051,7 +1126,8 @@
         priority: 1,
         title: 'External tab 1',
         name: 'external1',
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/external1",
+        permission: "core",
+        route: "#/vue/example/external1",
         component: countlyVue.components.create({
             data: function() {
                 return {
@@ -1079,7 +1155,8 @@
         priority: 2,
         title: 'External tab 2',
         name: 'external2',
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/external2",
+        permission: "core",
+        route: "#/vue/example/external2",
         vuex: [{
             clyModel: window.foo
         }],

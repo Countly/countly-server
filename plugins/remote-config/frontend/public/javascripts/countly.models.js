@@ -8,7 +8,9 @@
                     parameter_key: "",
                     default_value: "",
                     description: "",
-                    conditions: []
+                    conditions: [],
+                    status: "Running",
+                    expiry_dttm: null
                 };
             }
         },
@@ -115,6 +117,11 @@
                 return countlyRemoteConfig.service.initialize().then(function(res) {
                     var parameters = res.parameters || [];
                     var conditions = res.conditions || [];
+                    parameters.forEach(function(parameter) {
+                        if (parameter.expiry_dttm && parameter.expiry_dttm < Date.now()) {
+                            parameter.status = "Expired";
+                        }
+                    });
                     context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
                     context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
                 });
@@ -124,22 +131,59 @@
         var parametersResource = countlyVue.vuex.Module("parameters", {
             state: function() {
                 return {
-                    all: []
+                    all: [],
+                    showJsonEditor: false,
+                    showJsonEditorForCondition: false,
+                    showConditionDialog: false,
+                    isTableLoading: true
                 };
             },
             getters: {
                 all: function(state) {
                     return state.all;
+                },
+                showJsonEditor: function(state) {
+                    return state.showJsonEditor;
+                },
+                showJsonEditorForCondition: function(state) {
+                    return state.showJsonEditorForCondition;
+                },
+                showConditionDialog: function(state) {
+                    return state.showConditionDialog;
+                },
+                isTableLoading: function(_state) {
+                    return _state.isTableLoading;
                 }
             },
             mutations: {
                 setAll: function(state, val) {
                     state.all = val;
+                },
+                setShowJsonEditor: function(state, val) {
+                    state.showJsonEditor = val;
+                },
+                setShowJsonEditorForCondition: function(state, val) {
+                    state.showJsonEditorForCondition = val;
+                },
+                setConditionDialog: function(state, val) {
+                    state.showConditionDialog = val;
+                },
+                setTableLoading: function(state, value) {
+                    state.isTableLoading = value;
                 }
             },
             actions: {
                 all: function(context, parameters) {
                     context.commit("setAll", parameters);
+                },
+                showJsonEditor: function(context, parameter) {
+                    context.commit("setShowJsonEditor", parameter);
+                },
+                showJsonEditorForCondition: function(context, parameter) {
+                    context.commit("setShowJsonEditorForCondition", parameter);
+                },
+                showConditionDialog: function(context, parameter) {
+                    context.commit("setConditionDialog", parameter);
                 },
                 create: function(context, parameter) {
                     return countlyRemoteConfig.service.createParameter(parameter).then(function() {
@@ -153,13 +197,17 @@
                 },
                 update: function(context, parameter) {
                     var id = parameter._id;
-
-                    delete parameter.value_list;
-                    delete parameter._id;
-                    return countlyRemoteConfig.service.updateParameter(id, parameter);
+                    var updateParameter = Object.assign({}, parameter);
+                    delete updateParameter.value_list;
+                    delete updateParameter._id;
+                    delete updateParameter.hover;
+                    return countlyRemoteConfig.service.updateParameter(id, updateParameter);
                 },
                 remove: function(context, parameter) {
                     return countlyRemoteConfig.service.removeParameter(parameter._id);
+                },
+                setTableLoading: function(context, value) {
+                    context.commit("setTableLoading", value);
                 }
             }
         });
@@ -167,17 +215,24 @@
         var conditionsResource = countlyVue.vuex.Module("conditions", {
             state: function() {
                 return {
-                    all: []
+                    all: [],
+                    isTableLoading: true
                 };
             },
             getters: {
                 all: function(state) {
                     return state.all;
+                },
+                isTableLoading: function(_state) {
+                    return _state.isTableLoading;
                 }
             },
             mutations: {
                 setAll: function(state, val) {
                     state.all = val;
+                },
+                setTableLoading: function(state, value) {
+                    state.isTableLoading = value;
                 }
             },
             actions: {
@@ -191,10 +246,14 @@
                     var id = condition._id;
 
                     delete condition._id;
+                    delete condition.hover;
                     return countlyRemoteConfig.service.updateCondition(id, condition);
                 },
                 remove: function(context, condition) {
                     return countlyRemoteConfig.service.removeCondition(condition._id);
+                },
+                setTableLoading: function(context, value) {
+                    context.commit("setTableLoading", value);
                 }
             }
         });

@@ -108,13 +108,13 @@
         },
         "HTTPEffect": {
             name: jQuery.i18n.map["hooks.HTTPEffect"],
-            init: function() {
+            init: function(dom) {
                 var methods = [
                     {value: "get", name: jQuery.i18n.map["hooks.http-method-get"]},
                     {value: "post", name: jQuery.i18n.map["hooks.http-method-post"]},
                 ];
-                $(".http-effect-method-dropdown").clySelectSetItems(methods);
-                $(".http-effect-method-dropdown").clySelectSetSelection(methods[0].value, methods[0].name);
+                $(dom).find(".http-effect-method-dropdown").clySelectSetItems(methods);
+                $(dom).find(".http-effect-method-dropdown").clySelectSetSelection(methods[0].value, methods[0].name);
             },
             getValidConfig: function(dom) {
                 var url = $(dom).find("#http-effect-url").val();

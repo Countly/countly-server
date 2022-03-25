@@ -12,10 +12,16 @@ var common = {},
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose'),
     argon2 = require('argon2'),
+    mongodb = require('mongodb'),
     _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
+
+/**
+ * Because why requiring both all the time
+ */
+common.plugins = plugins;
 
 /**
 * Escape special characters in the given string of html.
@@ -817,6 +823,34 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
                 }
+                else if (argProperties[arg].type === 'URLString') {
+                    if (toString.call(args[arg]) !== '[object String]') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    else {
+                        let { URL } = require('url');
+                        try {
+                            parsed = new URL(args[arg]);
+                        }
+                        catch (ignored) {
+                            if (returnErrors) {
+                                returnObj.errors.push('Invalid URL string ' + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                }
                 else if (argProperties[arg].type === 'Email') {
                     if (toString.call(args[arg]) !== '[object String]') {
                         if (returnErrors) {
@@ -910,6 +944,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             return false;
                         }
                     }
+                    else {
+                        parsed = args[arg];
+                    }
                 }
                 else if (argProperties[arg].type === 'Object') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
@@ -922,14 +959,17 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             return false;
                         }
                     }
+                    else {
+                        parsed = args[arg];
+                    }
                 }
                 else if (argProperties[arg].type === 'ObjectID') {
                     if (!argProperties[arg].required && args[arg] === null) {
                         // do nothing
                     }
                     else if (typeof args[arg] === 'string') {
-                        if (common.db._ObjectID.isValid(args[arg])) {
-                            parsed = common.db._ObjectID(args[arg]);
+                        if (mongodb.ObjectId.isValid(args[arg])) {
+                            parsed = mongodb.ObjectId(args[arg]);
                         }
                         else {
                             if (returnErrors) {
@@ -942,7 +982,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             }
                         }
                     }
-                    else if (args[arg] instanceof common.db._ObjectID) {
+                    else if (args[arg] instanceof mongodb.ObjectId) {
                         parsed = args[arg];
                     }
                     else {
@@ -995,7 +1035,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (typeof args[arg] === 'string') {
                         try {
-                            JSON.parse(args[arg]);
+                            parsed = JSON.stringify(JSON.parse(args[arg])); // to remove all whitespaces
                         }
                         catch (e) {
                             if (returnErrors) {
@@ -1041,7 +1081,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         return false;
                     }
                     else {
-                        parsed = subret.obj;
+                        parsed = args[arg];
+                        // parsed = subret.obj;
                     }
                 }
                 else if ((typeof argProperties[arg].type === 'object' && argProperties[arg].array) || argProperties[arg].type.indexOf('[]') === argProperties[arg].type.length - 2) {
@@ -1068,7 +1109,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
 
                         args[arg].forEach((v, i) => {
-                            scheme[i] = { type, required: true };
+                            scheme[i] = { type, nonempty: argProperties[arg].nonempty, required: true };
                         });
 
                         ret = common.validateArgs(args[arg], scheme, true);
@@ -1085,6 +1126,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         else {
                             parsed = Object.values(ret.obj);
                         }
+                    }
+                    else {
+                        parsed = args[arg];
                     }
                 }
                 else {
@@ -1231,6 +1275,31 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
+            if (argProperties[arg].nonempty) {
+                if (parsed !== null && parsed !== undefined) {
+                    let value = parsed;
+                    if (argProperties[arg].type === 'JSON') {
+                        value = JSON.parse(value);
+                    }
+                    let any = false;
+                    // eslint-disable-next-line no-unused-vars
+                    for (let ignored in value) {
+                        any = true;
+                        break;
+                    }
+                    if (!any) {
+                        if (returnErrors) {
+                            returnObj.errors.push(`Value of ${arg} must not be empty`);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+            }
+
             if (argProperties[arg].custom) {
                 let err = argProperties[arg].custom(args[arg]);
                 if (err) {
@@ -1360,11 +1429,12 @@ common.returnRaw = function(params, returnCode, body, heads) {
 * @param {number} returnCode - http code to use
 * @param {string|object} message - Message to output, will be encapsulated in JSON object under result property
 * @param {object} heads - headers to add to the output
+* @param {boolean} noResult - skip wrapping message object into stupid {result: }
 */
-common.returnMessage = function(params, returnCode, message, heads) {
+common.returnMessage = function(params, returnCode, message, heads, noResult = false) {
     params.response = {
         code: returnCode,
-        body: JSON.stringify(typeof message === 'object' ? message : {result: message}, escape_html_entities)
+        body: JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities)
     };
 
     if (params && params.APICallback && typeof params.APICallback === 'function') {
@@ -1373,7 +1443,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(returnCode !== 200, JSON.stringify(typeof message === 'object' ? message : {result: message}), heads, returnCode, params);
+            params.APICallback(returnCode !== 200, JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}), heads, returnCode, params);
         }
         return;
     }
@@ -1403,7 +1473,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
             }
             else {
-                params.res.write(JSON.stringify({result: message}, escape_html_entities));
+                params.res.write(JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities));
             }
 
             params.res.end();
@@ -1492,6 +1562,10 @@ common.getIpAddress = function(req) {
     var ipAddress = (req) ? req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '') : "";
     /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
     var ips = ipAddress.split(',');
+
+    if (req.headers['x-real-ip']) {
+        ips.push(req.headers['x-real-ip']);
+    }
 
     //if ignoreProxies not setup, use outmost left ip address
     if (!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length) {
@@ -2340,6 +2414,46 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
+        if (params.qstring.device_id && typeof user.did === "undefined") {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.did) {
+                update.$set.did = params.qstring.device_id;
+            }
+        }
+
+        //store device type and mark users as know by custome device id
+        if (params.qstring.t && typeof user.t !== params.qstring.t) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.t) {
+                update.$set.t = params.qstring.t;
+            }
+            if (params.qstring.t + "" !== "0" && !user.hasInfo && typeof update.$set.hasInfo === "undefined") {
+                update.$set.hasInfo = true;
+            }
+        }
+        else if (user.merges && !user.hasInfo) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (typeof update.$set.hasInfo === "undefined") {
+                update.$set.hasInfo = true;
+            }
+        }
+
+        //store user's timezone offset too
+        if (params.qstring.tz && typeof user.tz !== params.qstring.tz) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.tz) {
+                update.$set.tz = params.qstring.tz;
+            }
+        }
+
         if (callback) {
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
                 new: true,
@@ -2754,6 +2868,67 @@ common.mergeQuery = function(ob1, ob2) {
     }
 
     return ob1;
+};
+
+/**
+ * DB-related extensions / functions
+ */
+common.dbext = {
+    ObjectID: function(id) {
+        try {
+            return mongodb.ObjectId(id);
+        }
+        catch (ex) {
+            return id;
+        }
+    },
+
+    ObjectId: mongodb.ObjectId,
+
+    /**
+     * Check if passed value is an ObjectId
+     * 
+     * @param {any} id value
+     * @returns {boolean} true if id is instance of ObjectId
+     */
+    isoid: function(id) {
+        return id && (id instanceof mongodb.ObjectId);
+    },
+
+    /**
+     * Decode string to ObjectID if needed
+     * 
+     * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
+     * @returns {ObjectID} id
+     */
+    oid: function(id) {
+        return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
+    },
+
+    /**
+     * Create ObjectID with given timestamp. Uses current ObjectID random/server parts, meaning the 
+     * object id returned still has same uniquness guarantees as random ones.
+     * 
+     * @param {Date|number} date Date object or timestamp in seconds, current date by default
+     * @returns {ObjectID} with given timestamp
+     */
+    oidWithDate: function(date = new Date()) {
+        let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16),
+            server = new mongodb.ObjectId().toString().substr(8);
+        return new mongodb.ObjectId(seconds + server);
+    },
+
+    /**
+     * Create blank ObjectID with given timestamp. Everything except for date part is zeroed.
+     * For use in queries like {_id: {$gt: oidBlankWithDate()}}
+     * 
+     * @param {Date|number} date Date object or timestamp in seconds, current date by default
+     * @returns {ObjectID} with given timestamp and zeroes in the rest of the bytes
+     */
+    oidBlankWithDate: function(date = new Date()) {
+        let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16);
+        return new mongodb.ObjectId(seconds + '0000000000000000');
+    },
 };
 
 /**

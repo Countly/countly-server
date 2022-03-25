@@ -14,6 +14,7 @@ var ejs = require("ejs"),
     reportUtils = require('../../reports/api/utils.js');
 
 var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
+var surveysEnabled = plugins.getPlugins().indexOf('surveys') > -1;
 
 if (cohortsEnabled) {
     var cohorts = require('../../cohorts/api/parts/cohorts');
@@ -97,27 +98,45 @@ const widgetProperties = {
     logo: {
         required: false,
         type: "String"
+    },
+    appearance: {
+        required: false,
+        type: "Object"
+    },
+    showPolicy: {
+        required: false,
+        type: "String"
+    },
+    target_page: {
+        required: false,
+        type: "String"
+    },
+    target_pages: {
+        required: false,
+        type: "Array"
     }
 };
 
 const widgetPropertyPreprocessors = {
+    target_pages: function(targetPages) {
+        try {
+            return JSON.parse(targetPages);
+        }
+        catch (jsonParseError) {
+            if (Array.isArray(targetPages)) {
+                return targetPages;
+            }
+            else {
+                return ["/"];
+            }
+        }
+    },
     targeting: function(targeting) {
         try {
             return JSON.parse(targeting);
         }
         catch (jsonParseError) {
-            if ((targeting !== null) && (typeof targeting === "object")) {
-                return targeting;
-            }
-            else {
-                return {
-                    user_segmentation: JSON.stringify({
-                        query: "",
-                        queryText: ""
-                    }),
-                    steps: JSON.stringify([])
-                };
-            }
+            return null;
         }
     },
     ratings_texts: function(ratingsTexts) {
@@ -198,8 +217,14 @@ function uploadFile(myfile, id, callback) {
         return;
     }
 
+    var allowedExtensions = ["gif", "jpeg", "jpg", "png"];
     var ext = myfile.name.split(".");
     ext = ext[ext.length - 1];
+
+    if (allowedExtensions.indexOf(ext) === -1) {
+        callback("Invalid file extension. Must be .png, .jpg, .gif or .jpeg");
+        return;
+    }
 
     create_upload_dir(function() {
         fs.readFile(tmp_path, (err, data) => {
@@ -233,28 +258,73 @@ function uploadFile(myfile, id, callback) {
 }
 
 (function() {
-
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
 
-    // Api call to get all ratings widgets
+    /*
+    * we have two different /o/sdk handler endpoint in surveys and ratings
+    * this one is non-dominant
+    * if surveys enabled, this will ignore requests, if not, this will handle
+    */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
-
-        if (params.qstring.method !== "feedback" || (params.qstring.method === "feedback" && params.qstring.type !== "rating")) {
+        // do not respond if this isn't feedback fetch request 
+        // or surveys plugin enabled
+        if (params.qstring.method !== "feedback" || surveysEnabled) {
             return false;
         }
 
-        return new Promise(function(resolve/*, reject*/) {
+        return new Promise(function(resolve) {
+            var widgets = [];
+            plugins.dispatch("/feedback/widgets", { params: params, widgets: widgets }, function() {
+                common.returnMessage(params, 200, widgets);
+                return resolve(true);
+            });
+        });
+    });
+
+    /*
+    * internal event that fetch ratings widget
+    * and push them to passed widgets array.
+    */
+    plugins.register("/feedback/widgets", function(ob) {
+        return new Promise(function(resolve, reject) {
+            var params = ob.params;
             params.qstring.app_id = params.app_id;
             params.app_user = params.app_user || {};
-            var user = JSON.parse(JSON.stringify(params.app_user));
 
-            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating" }, { _id: 1, cohortID: 1 }).toArray(function(err, widgets) {
+            var user = JSON.parse(JSON.stringify(params.app_user));
+            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, popup_header_text: 1, cohortID: 1, type: 1, appearance: 1, showPolicy: 1, trigger_position: 1, hide_sticker: 1, trigger_bg_color: 1, trigger_font_color: 1, trigger_button_text: 1, trigger_size: 1, target_pages: 1}).toArray(function(err, widgets) {
                 if (err) {
                     log.e(err);
+                    reject(err);
                 }
+
+                widgets = widgets.map((widget) => {
+                    widget.appearance = {};
+                    widget.appearance.position = widget.trigger_position;
+                    widget.appearance.bg_color = widget.trigger_bg_color;
+                    widget.appearance.text_color = widget.trigger_font_color;
+                    widget.appearance.text = widget.trigger_button_text;
+                    widget.appearance.size = widget.trigger_size;
+                    if (widget.hide_sticker) {
+                        widget.appearance.hideS = true;
+                    }
+                    widget.tg = widget.target_pages;
+                    widget.name = widget.popup_header_text;
+                    // remove this props from response
+                    delete widget.hide_sticker;
+                    delete widget.trigger_position;
+                    delete widget.trigger_bg_color;
+                    delete widget.trigger_font_color;
+                    delete widget.trigger_button_text;
+                    delete widget.trigger_size;
+                    delete widget.target_pages;
+                    delete widget.popup_header_text;
+                    return widget;
+                });
+
                 if (widgets && widgets.length > 0) {
                     //filter out based on cohorts
                     if (cohortsEnabled) {
@@ -274,13 +344,10 @@ function uploadFile(myfile, id, callback) {
                             }
                         });
                     }
-                    common.returnMessage(params, 200, widgets);
-                    return resolve(true);
+                    // concat with tricky way
+                    ob.widgets.push.apply(ob.widgets, widgets);
                 }
-                else {
-                    common.returnMessage(params, 200, []);
-                    return resolve(true);
-                }
+                resolve();
             });
         });
     });
@@ -305,13 +372,22 @@ function uploadFile(myfile, id, callback) {
         }
         var widget = validatedArgs.obj;
         var type = "rating";
+        // yes it should be string, not boolean
+        widget.is_active = widget.status ? "true" : "false";
         widget.type = type;
         widget.created_at = Date.now();
         widget.timesShown = 0;
         widget.ratingsCount = 0;
         widget.ratingsSum = 0;
-        //widget.created_by = common.db.ObjectID(obParams.member._id);
+        widget.showPolicy = "afterPageLoad";
+        widget.appearance = {};
+        widget.target_devices = {
+            desktop: true,
+            phone: true,
+            tablet: true
+        };
 
+        //widget.created_by = common.db.ObjectID(obParams.member._id);
         validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
@@ -427,6 +503,10 @@ function uploadFile(myfile, id, callback) {
             }
             var changes = validatedArgs.obj;
 
+            if (changes.status) {
+                changes.is_active = changes.status ? "true" : "false";
+            }
+
             common.db.collection("feedback_widgets").findAndModify({"_id": widgetId }, {}, {$set: changes}, function(err, widget) {
                 if (!err && widget) {
                     widget = widget.value;
@@ -436,8 +516,9 @@ function uploadFile(myfile, id, callback) {
                                 //changes.targeting.app_id = widget.app_id + "";
                                 changes.targeting.steps = JSON.parse(changes.targeting.steps);
                                 changes.targeting.user_segmentation = JSON.parse(changes.targeting.user_segmentation);
+                                //changes.targeting = JSON.parse(changes.targeting);
                                 common.db.collection('cohorts').findAndModify({ _id: widget.cohortID }, {}, { $set: changes.targeting }, { new: true }, function(err2, res) {
-                                    if (err2 || !res || !res.value) {
+                                    if (err2) {
                                         common.returnMessage(params, 400, "widget updated. Error to update cohort");
                                     }
                                     else {
@@ -510,20 +591,20 @@ function uploadFile(myfile, id, callback) {
 
         common.db.collection("feedback_widgets").update({"_id": common.db.ObjectID(widgetId)}, { $inc: { timesShown: 1 } }, function(err, widget) {
             if (!err && widget) {
-                common.returnMessage(obParams, 200, 'Success');
                 return true;
             }
             else if (err) {
-                common.returnMessage(obParams, 500, err.message);
+                log.e('increaseWidgetShowCount: ' + err);
                 return false;
             }
             else {
-                common.returnMessage(obParams, 404, "Widget not found");
+                log.e('increaseWidgetShowCount: widget not found');
                 return false;
             }
         });
         return true;
     };
+
     var nonChecksumHandler = function(ob) {
         try {
             var events = JSON.parse(ob.params.qstring.events);
@@ -563,18 +644,19 @@ function uploadFile(myfile, id, callback) {
 
     plugins.register("/i/feedback/logo", function(ob) {
         var params = ob.params;
-        uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
-            if (good) {
-                common.returnMessage(params, 200, filename);
-            }
-            else {
-                common.returnMessage(params, 400, good);
-            }
+        validateCreate(params, FEATURE_NAME, function() {
+            uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
+                if (typeof good === 'boolean' && good) {
+                    common.returnMessage(params, 200, filename);
+                }
+                else {
+                    common.returnMessage(params, 400, good);
+                }
+            });
         });
         return true;
     });
 
-    plugins.register("/i/feedback/show-popup", increaseWidgetShowCount);
     plugins.register("/i/feedback/input", nonChecksumHandler);
     plugins.register("/i", function(ob) {
         var params = ob.params;
@@ -593,26 +675,25 @@ function uploadFile(myfile, id, callback) {
                     currEvent.segmentation.app_version = currEvent.segmentation.app_version || "undefined";
                     currEvent.segmentation.platform_version_rate = currEvent.segmentation.platform + "**" + currEvent.segmentation.app_version + "**" + currEvent.segmentation.rating + "**" + currEvent.segmentation.widget_id + "**";
                     // is provided email & comment fields
-                    if ((currEvent.segmentation.email && currEvent.segmentation.email.length > 0) || (currEvent.segmentation.comment && currEvent.segmentation.comment.length > 0)) {
-                        var collectionName = 'feedback' + ob.params.app._id;
-                        common.db.collection(collectionName).insert({
-                            "email": currEvent.segmentation.email,
-                            "comment": currEvent.segmentation.comment,
-                            "ts": (currEvent.timestamp) ? common.initTimeObj(params.appTimezone, currEvent.timestamp).timestamp : params.time.timestamp,
-                            "device_id": params.qstring.device_id,
-                            "cd": new Date(),
-                            "uid": params.app_user.uid,
-                            "contact_me": currEvent.segmentation.contactMe,
-                            "rating": currEvent.segmentation.rating,
-                            "platform": currEvent.segmentation.platform,
-                            "app_version": currEvent.segmentation.app_version,
-                            "widget_id": currEvent.segmentation.widget_id
-                        }, function(err) {
-                            if (err) {
-                                return false;
-                            }
-                        });
-                    }
+
+                    var collectionName = 'feedback' + ob.params.app._id;
+                    common.db.collection(collectionName).insert({
+                        "email": currEvent.segmentation.email || "No email provided",
+                        "comment": currEvent.segmentation.comment || "No comment provided",
+                        "ts": (currEvent.timestamp) ? common.initTimeObj(params.appTimezone, currEvent.timestamp).timestamp : params.time.timestamp,
+                        "device_id": params.qstring.device_id,
+                        "cd": new Date(),
+                        "uid": params.app_user.uid,
+                        "contact_me": currEvent.segmentation.contactMe,
+                        "rating": currEvent.segmentation.rating,
+                        "platform": currEvent.segmentation.platform,
+                        "app_version": currEvent.segmentation.app_version,
+                        "widget_id": currEvent.segmentation.widget_id
+                    }, function(err) {
+                        if (err) {
+                            return false;
+                        }
+                    });
                     // increment ratings count for widget
                     common.db.collection('feedback_widgets').update({
                         _id: common.db.ObjectID(currEvent.segmentation.widget_id)
@@ -871,6 +952,10 @@ function uploadFile(myfile, id, callback) {
                 common.returnMessage(params, 404, 'Widget not found.');
             }
             else {
+                // not from dashboard
+                if (params.qstring.nfd) {
+                    increaseWidgetShowCount(ob);
+                }
                 common.returnOutput(params, doc);
             }
         });
@@ -1297,9 +1382,8 @@ function uploadFile(myfile, id, callback) {
                 steps: JSON.parse(newAtt.steps),
                 user_segmentation: JSON.parse(newAtt.user_segmentation)
             }, function(cohortResult) {
-                cohorts.calculateSteps(params, common, cohortResult, function() {
-                    return callback(cohortResult._id);
-                });
+                cohorts.calculateSteps(params, common, cohortResult, function() {});
+                return callback(cohortResult._id);
             });
         }
 

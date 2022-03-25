@@ -1,0 +1,5 @@
+<l-map ref="lmap" :style="{height: height || '450px', width: '100%'}" :zoom="dynamicZoom" :center="centerCoordinates">
+    <l-tile-layer pane="tilePane" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
+    <l-marker  v-if="value" :lat-lng="value" :icon="markerIcon"></l-marker>
+    <l-circle v-if="value && radius" :lat-lng="value" color="red" :radius="radiusInMeters"></l-circle>
+</l-map>

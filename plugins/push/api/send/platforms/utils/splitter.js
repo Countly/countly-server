@@ -3,6 +3,7 @@ const { Template, Message, PushError, ERROR } = require('../../data'),
     { ProxyAgent } = require('./agent'),
     { Agent } = require('https'),
     https = require('https');
+const { FRAME } = require('../../proto');
 
 /**
  * Splitter stands in front of actual connection stream and splits incoming stream of pushes into stream of messages with the same content.
@@ -117,55 +118,52 @@ class Splitter extends Base {
      * @param {array} chunks Array of chunks
      */
     async do_writev(chunks) {
+        this.log.d('do_writev', chunks.length);
         chunks = chunks.map(c => c.chunk);
 
-        let results = [],
-            total = 0;
+        for (let i = 0; i < chunks.length; i++) {
+            let {payload, length, frame} = chunks[i];
 
-        try {
-            for (let i = 0; i < chunks.length; i++) {
-                let {payload, length} = chunks[i];
-
-                if (payload.length === 1) {
-                    await this.send(payload, length);
+            this.log.d('do_writev', i, frame, payload);
+            if (!(frame & FRAME.SEND)) {
+                if (frame & FRAME.CMD) {
+                    this.push(chunks[i]);
                 }
-                else {
-                    let p,
-                        one = Math.floor(length / payload.length),
-                        sent = 0,
-                        first = 0,
-                        hash = payload[0].h,
-                        mid = payload[0].n;
+                continue;
+            }
+            console.log(frame, length, payload);
 
-                    for (p = first + 1; p < payload.length; p++) {
-                        if (!mid || payload[p].n !== mid || payload[p].h !== hash) {
-                            let len = p === payload.length - 1 ? length - sent : (p - first) * one,
-                                res = await this.send(payload, first, p, len);
-                            results.push(res[0]);
-                            total += len;
-                            sent += len;
+            if (payload.length === 1) {
+                await this.send(payload, length);
+                this.log.d('do_writev sent one', i, frame, payload);
+            }
+            else {
+                let p,
+                    one = Math.floor(length / payload.length),
+                    sent = 0,
+                    first = 0,
+                    hash = payload[0].h,
+                    mid = payload[0].n;
 
-                            first = p;
-                            hash = payload[p].h;
-                            mid = payload[p].n;
-                        }
+                for (p = first + 1; p < payload.length; p++) {
+                    if (!mid || payload[p].n !== mid || payload[p].h !== hash) {
+                        let len = p === payload.length - 1 ? length - sent : (p - first) * one;
+                        await this.send(payload, first, p, len);
+                        this.log.d('do_writev sent', i, frame, payload);
+                        // total += len;
+                        sent += len;
+
+                        first = p;
+                        hash = payload[p].h;
+                        mid = payload[p].n;
                     }
+                }
 
-                    if (first < payload.length - 1) {
-                        let res = await this.send(payload, first, payload.length, length - sent);
-                        results.push(res[0]);
-                        total += length - sent;
-                    }
+                if (first < payload.length - 1) {
+                    await this.send(payload, first, payload.length, length - sent);
+                    // total += length - sent;
                 }
             }
-            this.send_results(results.flat(1), total);
-        }
-        catch (error) {
-            if (results.length) {
-                this.send_results(results.flat(1), total);
-            }
-
-            throw error;
         }
     }
 
@@ -178,20 +176,22 @@ class Splitter extends Base {
         this.messages.test = Message.test();
         let data = [];
         this.once('data', dt => data.push(dt));
-        return this.send([{_id: -1, m: 'test', pr: {}, t: Math.random() + ''}], 0).then(() => {
-            if (!data.length) {
-                throw new PushError('FCM IllegalState');
-            }
-            else if (data[0].p && data[0].p instanceof PushError) {
-                if (data[0].p.isCredentials) {
-                    return false;
+        return this.send([{_id: -Math.random(), m: 'test', pr: {}, t: Math.random() + ''}], 0).then(() => new Promise((res, rej) => {
+            setImmediate(() => {
+                if (!data.length) {
+                    return rej(new PushError('IllegalState: no data after connect'));
                 }
-                else if (data[0].p.type & ERROR.DATA_TOKEN_INVALID) {
-                    return true;
+                else if (data[0].p && data[0].p instanceof PushError) {
+                    if (data[0].p.isCredentials) {
+                        return res(false);
+                    }
+                    else if (data[0].p.type & ERROR.DATA_TOKEN_INVALID) {
+                        return res(true);
+                    }
                 }
-            }
-            throw new PushError('FCM WeirdState');
-        }, err => {
+                rej(new PushError('WeirdState'));
+            });
+        }), err => {
             if (err.isCredentials) {
                 return false;
             }

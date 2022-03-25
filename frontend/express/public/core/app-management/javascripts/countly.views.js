@@ -1,7 +1,5 @@
-/*global countlyAuth, ELEMENT, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment, sdks, countlyPlugins, countlySession, countlyLocation, countlyCity, countlyDevice, countlyCarrier, countlyDeviceDetails, countlyAppVersion, countlyEvent, _ ,*/
+/*global countlyAuth, ELEMENT, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment, sdks, countlyPlugins, countlySession, countlyLocation, countlyCity, countlyDevice, countlyCarrier, countlyDeviceDetails, countlyAppVersion, countlyEvent, _ , countlyAppManagement*/
 (function() {
-    var FEATURE_NAME = "global_applications";
-
     var ManageAppsView = countlyVue.views.create({
         mixins: [ELEMENT.utils.Emitter],
         template: CV.T('/core/app-management/templates/app-management.html'),
@@ -13,7 +11,7 @@
                 set: function(value) {
                     this.newApp = false;
                     this.selectedApp = value;
-                    this.broadcast('AppSettingsContainerObservable', 'selectedApp', value);
+                    this.$store.dispatch('countlyAppManagement/setSelectedAppId', value);
                     this.uploadData.app_image_id = countlyGlobal.apps[this.selectedApp]._id + "";
                     this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png")';
                     this.unpatch();
@@ -21,6 +19,12 @@
                     app.navigate("#/manage/apps/" + value);
                 }
             },
+            isCode: function() {
+                return countlyGlobal.config && countlyGlobal.config.code;
+            },
+            hasGlobalAdminRights: function() {
+                return countlyAuth.validateGlobalAdmin();
+            }
         },
         data: function() {
             var countries = [];
@@ -40,7 +44,7 @@
             timezones.sort(function(a, b) {
                 return a.label > b.label && 1 || -1;
             });
-            var appList = Object.keys(countlyGlobal.apps).map(function(id) {
+            var appList = Object.keys(countlyGlobal.admin_apps).map(function(id) {
                 countlyGlobal.apps[id].image = "appimages/" + id + ".png";
                 return {
                     label: countlyGlobal.apps[id].name,
@@ -56,10 +60,6 @@
                 });
             }
             var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
-            if (!countlyGlobal.apps[app_id]) {
-                this.createNewApp();
-            }
-
             return {
                 firstApp: this.checkIfFirst(),
                 newApp: this.newApp || false,
@@ -72,6 +72,7 @@
                 apps: countlyGlobal.apps,
                 adminApps: countlyGlobal.admin_apps || {},
                 appList: appList,
+                appListCount: "",
                 diff: [],
                 sdks: [],
                 server: "",
@@ -96,7 +97,10 @@
                 ],
                 loadingDetails: false,
                 appSettings: {},
-                appManagementViews: app.appManagementViews
+                appManagementViews: app.appManagementViews,
+                edited: true,
+                isAppAdmin: countlyAuth.validateAppAdmin(app_id),
+                isGlobalAdmin: countlyAuth.validateGlobalAdmin()
             };
         },
         watch: {
@@ -105,6 +109,18 @@
                     this.unpatch();
                 },
                 deep: true
+            },
+            appList: {
+                handler: function() {
+                    this.appListCount = CV.i18n('common.search') + " in " + this.appList.length + (this.appList.length > 1 ? " Apps" : " App");
+                },
+                immediate: true
+            }
+        },
+        created: function() {
+            var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
+            if (!countlyGlobal.apps[app_id]) {
+                this.createNewApp();
             }
         },
         beforeCreate: function() {
@@ -131,6 +147,14 @@
                 });
         },
         methods: {
+            joinNameList: function(names) {
+                return (names || []).map(function(user) {
+                    return user.full_name || user.username || user._id;
+                }).join(", ");
+            },
+            edit: function() {
+                this.edited = false;
+            },
             checkIfFirst: function() {
                 var isFirst = !Object.keys(countlyGlobal.apps).length;
                 if (isFirst && !this.newApp) {
@@ -139,6 +163,7 @@
                 return isFirst;
             },
             createNewApp: function() {
+                this.edited = false;
                 this.selectedApp = "new";
                 this.newApp = {};
                 if (Intl && Intl.DateTimeFormat) {
@@ -252,10 +277,10 @@
                                         countlyEvent.reset();
                                     }
                                     if (period === "reset") {
-                                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.reset-success"], "black");
+                                        CountlyHelpers.alert("", "black", {title: jQuery.i18n.map["management-applications.reset-success"]});
                                     }
                                     else {
-                                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-success"], "black");
+                                        CountlyHelpers.alert("", "black", {title: jQuery.i18n.map["management-applications.clear-success"]});
                                     }
                                 }
                             }
@@ -310,6 +335,7 @@
             },
             save: function(doc) {
                 var self = this;
+                self.edited = true;
                 if (this.newApp) {
                     $.ajax({
                         type: "GET",
@@ -330,6 +356,12 @@
                             });
                             self.selectedSearchBar = data._id + "";
                             self.$store.dispatch("countlyCommon/addToAllApps", data);
+                            if (self.firstApp) {
+                                countlyCommon.ACTIVE_APP_ID = data._id + "";
+                                app.onAppManagementSwitch(data._id + "", data && data.type || "mobile");
+                                self.$store.dispatch("countlyCommon/updateActiveApp", data._id + "");
+                                app.initSidebar();
+                            }
                             self.firstApp = self.checkIfFirst();
                         },
                         error: function(xhr, status, error) {
@@ -501,7 +533,7 @@
 
                                 //find next app
                                 var nextAapp = (self.appList[index2]) ? self.appList[index2].value : self.appList[0].value;
-                                self.$store.dispatch("countlyCommon/setActiveApp", nextAapp);
+                                self.$store.dispatch("countlyCommon/updateActiveApp", nextAapp);
                                 self.selectedApp = nextAapp;
                                 self.uploadData.app_image_id = countlyGlobal.apps[self.selectedApp]._id + "";
                                 self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png")';
@@ -536,6 +568,24 @@
                 if (!this.isChangeKeyFound(key)) {
                     self.changeKeys.push(key);
                 }
+            },
+            compare: function(editedObject, selectedApp) {
+                var differences = [];
+                if (!this.selectedApp || this.selectedApp === "new") {
+                    return differences;
+                }
+                else {
+                    ["name", "category", "type", "key", "country", "timezone", "salt", "_id"].forEach(function(currentKey) {
+                        if (editedObject[currentKey] !== selectedApp[currentKey]) {
+                            differences.push(currentKey);
+                        }
+                    });
+                    return differences;
+                }
+            },
+            discardForm: function() {
+                this.edited = true;
+                this.$refs.appForm.reload();
             },
             updateChangeByLevel: function(value, parts, change, currentLevel) {
                 if (!currentLevel) {
@@ -681,18 +731,18 @@
         },
         mounted: function() {
             var appId = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
-            this.broadcast('AppSettingsContainerObservable', 'selectedApp', appId);
+            this.$store.dispatch('countlyAppManagement/setSelectedAppId', appId);
         }
     });
 
     var getMainView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: ManageAppsView,
-            vuex: []
+            vuex: [{clyModel: countlyAppManagement}]
         });
     };
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
+    if (countlyAuth.validateAppAdmin()) {
         app.route("/manage/apps", "manage-apps", function() {
             var view = getMainView();
             view.params = {app_id: countlyCommon.ACTIVE_APP_ID};

@@ -1,4 +1,4 @@
-/*global countlyAuth, app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $ */
+/*global app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $ */
 (function() {
     var FEATURE_NAME = "sources";
 
@@ -102,11 +102,34 @@
                 }
 
                 // set charts center label
-                self.pieSourcesTotalSessions.series[0].label.formatter = function() {
-                    return CV.i18n('common.table.total-sessions') + "\n" + countlyCommon.getShortNumber(sumOfTotalSession || 0);
+                self.pieSourcesTotalSessions.series[0].label = {
+                    formatter: "{a|" + CV.i18n('common.table.total-sessions') + "}\n" + countlyCommon.getShortNumber(sumOfTotalSession || 0),
+                    textAlign: "center",
+                    fontWeight: 500,
+                    fontSize: 16,
+                    lineHeight: 24,
+                    rich: {
+                        a: {
+                            fontWeight: 400,
+                            fontSize: 14,
+                            lineHeight: 20
+                        }
+                    }
                 };
-                self.pieSourcesNewUsers.series[0].label.formatter = function() {
-                    return CV.i18n('common.table.new-users') + "\n " + countlyCommon.getShortNumber(sumOfNewUsers || 0);
+
+                self.pieSourcesNewUsers.series[0].label = {
+                    formatter: "{a|" + CV.i18n('common.table.new-users') + "}\n" + countlyCommon.getShortNumber(sumOfNewUsers || 0),
+                    textAlign: "center",
+                    fontWeight: 500,
+                    fontSize: 16,
+                    lineHeight: 24,
+                    rich: {
+                        a: {
+                            fontWeight: 400,
+                            fontSize: 14,
+                            lineHeight: 20
+                        }
+                    }
                 };
 
                 return {
@@ -250,6 +273,13 @@
                 ]
             };
         },
+        watch: {
+            tab: function(newVal) {
+                if (newVal === 'sources') {
+                    window.location.hash = "#/analytics/acquisition";
+                }
+            }
+        },
         created: function() {
             if (this.isWeb) {
                 this.tabs.push({
@@ -258,18 +288,160 @@
                     component: KeywordsTabContainer
                 });
             }
+            if (app.redirectFromHome) {
+                this.tab = 'keywords';
+            }
         }
     });
-
     var SourcesView = new countlyVue.views.BackboneWrapper({
         component: SourcesContainer
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route("/analytics/acquisition", 'acqusition', function() {
-            this.renderWhenReady(SourcesView);
-        });
-    }
+
+    app.route("/analytics/acquisition", 'acqusition', function() {
+        app.redirectFromHome = false;
+        this.renderWhenReady(SourcesView);
+    });
+
+    app.route("/analytics/acquisition/*search-terms", 'acqusition', function() {
+        app.redirectFromHome = true;
+        this.renderWhenReady(SourcesView);
+    });
+
+    var WidgetComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
+        data: function() {
+            return {
+                map: {
+                    "sources": this.i18n("sources.title")
+                },
+                tableMap: {
+                    "u": this.i18n("common.table.total-users"),
+                    "t": this.i18n("common.total-sessions"),
+                    "n": this.i18n("common.table.new-users"),
+                    "sources": this.i18n("sources.source"),
+                }
+            };
+        },
+        computed: {
+            title: function() {
+                if (this.data.title) {
+                    return this.data.title;
+                }
+
+                return this.i18n("sources.title");
+            },
+            showBuckets: function() {
+                return false;
+            },
+            metricLabels: function() {
+                return [];
+            },
+            getTableData: function() {
+                return this.calculateTableDataFromWidget(this.data);
+            },
+            tableStructure: function() {
+                return this.calculateTableColsFromWidget(this.data, this.tableMap);
+            },
+            stackedBarOptions: function() {
+                return this.calculateStackedBarOptionsFromWidget(this.data, this.tableMap);
+            },
+            pieGraph: function() {
+                return this.calculatePieGraphFromWidget(this.data, this.tableMap);
+            }
+        }
+    });
+
+    var DrawerComponent = countlyVue.views.create({
+        template: "#sources-drawer",
+        props: {
+            scope: {
+                type: Object
+            }
+        },
+        data: function() {
+            return {};
+        },
+        computed: {
+            metrics: function() {
+                return [
+                    { label: this.i18n("common.table.total-users"), value: "u" },
+                    { label: this.i18n("common.table.new-users"), value: "n" },
+                    { label: this.i18n("common.total-sessions"), value: "t" }
+                ];
+            },
+            enabledVisualizationTypes: function() {
+                return ['pie-chart', 'bar-chart', 'table'];
+            },
+            isMultipleMetric: function() {
+                var multiple = false;
+                var visualization = this.scope.editedObject.visualization;
+                if (visualization === 'table') {
+                    multiple = true;
+                }
+
+                return multiple;
+            }
+        },
+        methods: {
+            onDataTypeChange: function(v) {
+                var widget = this.scope.editedObject;
+                this.$emit("reset", {widget_type: widget.widget_type, data_type: v});
+            }
+        }
+    });
+
+    countlyVue.container.registerData("/custom/dashboards/widget", {
+        type: "analytics",
+        label: CV.i18nM("sources.title"),
+        priority: 1,
+        primary: false,
+        getter: function(widget) {
+            return widget.widget_type === "analytics" && widget.data_type === "sources";
+        },
+        templates: [
+            {
+                namespace: "sources",
+                mapping: {
+                    "drawer": "/sources/templates/widgetDrawer.html"
+                }
+            }
+        ],
+        drawer: {
+            component: DrawerComponent,
+            getEmpty: function() {
+                return {
+                    title: "",
+                    feature: FEATURE_NAME,
+                    widget_type: "analytics",
+                    app_count: 'single',
+                    data_type: "sources",
+                    apps: [],
+                    visualization: "table",
+                    custom_period: null,
+                    metrics: ["t"],
+                    bar_color: 1,
+                    isPluginWidget: true
+                };
+            },
+            beforeSaveFn: function() {
+            }
+        },
+        grid: {
+            component: WidgetComponent,
+            dimensions: function() {
+                return {
+                    minWidth: 2,
+                    minHeight: 4,
+                    width: 2,
+                    height: 4
+                };
+            },
+            onClick: function() {}
+        }
+    });
+
 
 
     var KeywordsDashboardWidget = countlyVue.views.create({
@@ -280,20 +452,31 @@
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
-                ]
+                ],
+                isLoading: true,
+                headerData: {
+                    label: CV.i18n("keywords.top_terms"),
+                    description: CV.i18n("sources.description"),
+                    linkTo: {"label": CV.i18n('keywords.go-to-keywords'), "href": "#/analytics/acquisition/search-terms"},
+                }
             };
         },
         mounted: function() {
             var self = this;
             $.when(countlySources.initializeKeywords()).then(function() {
                 self.searchTermsTop3 = self.calculateAllData();
+                self.isLoading = false;
             });
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 $.when(countlySources.initializeKeywords()).then(function() {
                     self.searchTermsTop3 = self.calculateAllData();
+                    self.isLoading = false;
                 });
             },
             calculateAllData: function() {
@@ -308,19 +491,16 @@
                     return a[1] - b[1];
                 }).reverse();
 
-                if (totalsArray.length === 0) {
-                    return [
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
-                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
-                    ];
+                var totalsData = [];
+                for (var z = 0; z < 3; z++) {
+                    if (totalsArray[z]) {
+                        totalsData.push({percentage: Math.round((data[totalsArray[z][0]].t / sum) * 100), label: data[totalsArray[z][0]]._id, value: countlyCommon.getShortNumber(totalsArray[z][1] || 0)});
+                    }
+                    else {
+                        totalsData.push({ percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 });
+                    }
                 }
-
-                return [
-                    {percentage: Math.round((data[totalsArray[0][0]].t / sum) * 100), label: data[totalsArray[0][0]]._id, value: countlyCommon.getShortNumber(totalsArray[0][1] || 0)},
-                    {percentage: Math.round((data[totalsArray[1][0]].t / sum) * 100), label: data[totalsArray[1][0]]._id, value: countlyCommon.getShortNumber(totalsArray[1][1] || 0)},
-                    {percentage: Math.round((data[totalsArray[2][0]].t / sum) * 100), label: data[totalsArray[2][0]]._id, value: countlyCommon.getShortNumber(totalsArray[2][1] || 0)}
-                ];
+                return totalsData;
             }
         }
     });
@@ -329,20 +509,32 @@
         template: CV.T("/sources/templates/sourcesHomeWidget.html"),
         data: function() {
             return {
-                sourceItems: []
+                sourceItems: [],
+                isLoading: true,
+                headerData: {
+                    label: CV.i18n("sidebar.acquisition"),
+                    description: CV.i18n("sources.description"),
+                    linkTo: {"label": CV.i18n('sources.go-to-acquisition'), "href": "#/analytics/acquisition"},
+                }
             };
         },
         mounted: function() {
             var self = this;
+
             $.when(countlySources.initialize(true)).then(function() {
                 self.calculateAllData();
+                self.isLoading = false;
             });
         },
         methods: {
-            refresh: function() {
+            refresh: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 $.when(countlySources.initialize(true)).then(function() {
                     self.calculateAllData();
+                    self.isLoading = false;
                 });
             },
             calculateAllData: function() {
@@ -380,47 +572,43 @@
                         "percent": percent,
                         "percentText": percent + " % " + CV.i18n('common.of-total'),
                         "info": "some description",
-                        "color": "#CDAD7A"
+                        "color": "#CDAD7A",
+                        "value_": values[k].t
                     });
                 }
+                blocks.sort(function(a, b) {
+                    return parseFloat(b.value_) - parseFloat(a.value_);
+                });
                 this.sourceItems = blocks;
             }
         }
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME) && (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" || countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile")) {
-        countlyVue.container.registerData("/home/widgets", {
-            _id: "sources-dashboard-widget",
-            label: CV.i18n('sidebar.acquisition'),
-            description: CV.i18n('sources.description'),
-            enabled: {"default": true}, //object. For each type set if by default enabled
-            available: {"default": false, "mobile": true, "web": true}, //object. default - for all app types. For other as specified.
-            placeBeforeDatePicker: false,
-            order: 3,
-            linkTo: {"label": CV.i18n('sources.go-to-acquisition'), "href": "#/analytics/acquisition"},
-            component: SourcesDashboardWidget
-        });
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "sources-dashboard-widget",
+        permission: FEATURE_NAME,
+        label: CV.i18n('sidebar.acquisition'),
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": false, "mobile": true, "web": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: false,
+        order: 3,
+        component: SourcesDashboardWidget
+    });
 
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-            countlyVue.container.registerData("/home/widgets", {
-                _id: "keywords-dashboard-widget",
-                label: CV.i18n('keywords.top_terms'),
-                description: CV.i18n('sources.description'),
-                enabled: {"default": true}, //object. For each type set if by default enabled
-                available: {"default": false, "web": true}, //object. default - for all app types. For other as specified.
-                placeBeforeDatePicker: false,
-                linkTo: {"label": CV.i18n('keywords.go-to-keywords'), "href": "#/analytics/acquisition/search-terms"},
-                order: 5,
-                width: 6,
-                component: KeywordsDashboardWidget
-            });
-        }
-    }
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "keywords-dashboard-widget",
+        permission: FEATURE_NAME,
+        label: CV.i18n('keywords.top_terms'),
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": false, "web": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: false,
+        order: 5,
+        width: 6,
+        component: KeywordsDashboardWidget
+    });
 
     $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
-            app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
-        }
+        app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
+        app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
     });
 })();

@@ -1,6 +1,7 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
+const log = common.log('hooks:internalEventTrigger');
 /**
  * Internal event trigger
  */
@@ -14,7 +15,15 @@ class InternalEventTrigger {
         this._rules = [];
         this.pipeline = () => {};
         if (options.pipeline) {
-            this.pipeline = options.pipeline;
+            this.pipeline = (data) => {
+                try {
+                    data.rule._originalInput = JSON.parse(JSON.stringify(data.params || {}));
+                }
+                catch (e) {
+                    log.e("[hooks internal_events] parsing originalInput", e);
+                }
+                return options.pipeline(data);
+            };
         }
         this.register();
     }
@@ -41,6 +50,9 @@ class InternalEventTrigger {
         let rule = null;
         if (ob.is_mock === true) {
             return ob;
+        }
+        if (eventType === '/master') {
+            this._rules = await common.db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray();
         }
         this._rules.forEach((r) => {
             if (r.trigger.configuration.eventType === eventType) {
@@ -71,6 +83,7 @@ class InternalEventTrigger {
                             this.pipeline({
                                 params: {cohort, user: u},
                                 rule: rule,
+                                eventType,
                             });
                         });
                     }
@@ -78,10 +91,59 @@ class InternalEventTrigger {
             }
             break;
         }
+        case "/i/users/create":
+        case "/i/users/update":
+        case "/i/users/delete":
+        case "/crashes/new":
+        case "/master":
+            utils.updateRuleTriggerTime(rule._id);
+            this.pipeline({
+                params: {data: ob.data, eventType},
+                rule: rule,
+                eventType,
+            });
+            break;
+        case "/systemlogs":
+            utils.updateRuleTriggerTime(rule._id);
+            this.pipeline({
+                params: {data: ob.data, action: ob.action},
+                rule: rule,
+                eventType,
+            });
+            break;
+        case '/i/apps/create':
+        case '/i/apps/update':
+        case '/i/apps/delete':
+        case '/i/apps/reset': {
+            const {appId, data} = ob;
+            try {
+                if (eventType === '/i/apps/create') {
+                    utils.updateRuleTriggerTime(rule._id);
+                    this.pipeline({
+                        params: {data, appId, eventType},
+                        rule: rule,
+                        eventType,
+                    });
+                }
+                else if (rule.apps[0] === appId + '') {
+                    utils.updateRuleTriggerTime(rule._id);
+                    this.pipeline({
+                        params: {data, appId, eventType},
+                        rule: rule,
+                        eventType,
+                    });
+                }
+            }
+            catch (err) {
+                console.log(err, "[InternalEventTrigger]");
+            }
+
+            break;
+        }
         case "/i/app_users/create":
         case "/i/app_users/update":
         case "/i/app_users/delete": {
-            const {app_id, user, query} = ob;
+            const {app_id, user} = ob;
 
             if (rule.apps[0] === app_id + '') {
                 try {
@@ -91,30 +153,17 @@ class InternalEventTrigger {
                     console.log(err, "[InternalEventTrigger]");
                 }
                 const userData = {user: user || {}};
-                if (eventType === '/i/app_users/update') {
-                    return common.db.collection('app_users' + app_id).find(query).toArray((queryUserErr, users) => {
-                        if (queryUserErr) {
-                            console.log(queryUserErr);
-                            return;
-                        }
-                        userData.user = users && users[0];
-                        userData.updateFields = ob.update;
-                        userData.query = query;
-                        rule.effects.forEach(e => {
-                            this.pipeline({
-                                params: userData,
-                                rule: rule,
-                                effect: e,
-                            });
-                        });
-                    });
+                if (ob.update) {
+                    userData.updateFields = ob.update;
                 }
                 if (eventType === '/i/app_users/delete') {
                     userData.user.uid = ob.uids;
                 }
+                userData.eventType = eventType;
                 this.pipeline({
                     params: userData,
                     rule: rule,
+                    eventType,
                 });
             }
             break;
@@ -130,6 +179,7 @@ class InternalEventTrigger {
                 this.pipeline({
                     params: ob,
                     rule: rule,
+                    eventType,
                 });
             }
             break;
@@ -144,6 +194,7 @@ class InternalEventTrigger {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
                 this.process(ob, e);
+                //console.log("mmmm", e);
             });
         });
     }

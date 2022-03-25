@@ -34,7 +34,8 @@
 
     var widgetJSONProperties = [
         "targeting",
-        "ratings_texts"
+        "ratings_texts",
+        "target_pages"
     ];
 
     starRatingPlugin.extractWidgetProperties = function(props) {
@@ -139,12 +140,15 @@
     starRatingPlugin.requestFeedbackData = function(filterObj) {
         var data = {app_id: countlyCommon.ACTIVE_APP_ID};
         if (filterObj.period) {
-            data.period = filterObj.period;
+            if (filterObj.period !== 'noperiod') {
+                data.period = filterObj.period;
+            }
         }
         else {
             var periodString = countlyCommon.getPeriodForAjax();
             data.period = periodString;
         }
+
         if (filterObj) {
             if (filterObj.rating && filterObj.rating !== "") {
                 data.rating = filterObj.rating;

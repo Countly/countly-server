@@ -13,37 +13,33 @@ bash "$DIR/scripts/logo.sh";
 # prerequisite per release
 yum -y install wget openssl-devel make git sqlite unzip bzip2
 
+yum install -y python3-pip
+pip3 install pip --upgrade
+pip3 install meld3
+pip3 install supervisor --ignore-installed meld3
+yum -y install python3-setuptools
+
 if grep -q -i "release 8" /etc/redhat-release ; then
+    yum -y install python3-policycoreutils
     yum -y group install "Development Tools"
-    
+
     if [ ! -f "/etc/centos-release" ]; then
         dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
     fi
-    
+
     yum -y install epel-release
     # see https://github.com/koalaman/shellcheck/issues/1871
     wget https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz
     tar -C /usr/local/bin/ -xf shellcheck-v0.7.1.linux.x86_64.tar.xz --no-anchored 'shellcheck' --strip=1
 
-    yum install -y python3-pip
-    pip3 install pip --upgrade
-    pip3 install meld3
-    pip3 install supervisor --ignore-installed meld3
-    yum -y install python3-setuptools
-    yum -y install python3-policycoreutils
-
-    ln -sf /usr/local/bin/echo_supervisord_conf /usr/bin/echo_supervisord_conf
-    ln -sf /usr/local/bin/pidproxy /usr/bin/pidproxy
     ln -sf /usr/local/bin/shellcheck /usr/bin/shellcheck
-    ln -sf /usr/local/bin/supervisorctl /usr/bin/supervisorctl
-    ln -sf /usr/local/bin/supervisord /usr/bin/supervisord
 
     if [ ! -x "$(command -v python)" ]; then
         ln -sf /usr/bin/python3 /usr/bin/python
     fi
 
     #Install raven-release for ipa-gothic-fonts required by puppeteer
-    yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-1.el8.noarch.rpm
+    yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm
 elif grep -q -i "release 7" /etc/redhat-release ; then
     yum -y install policycoreutils-python
     #install nginx
@@ -57,10 +53,6 @@ enabled=1" > /etc/yum.repos.d/nginx.repo
     if [ -f "/etc/centos-release" ]; then
         yum -y --enablerepo=extras install epel-release
     fi
-    yum install -y python-pip
-    pip install meld3
-    pip install supervisor --ignore-installed meld3
-    yum -y install python-setuptools
 
     yum install -y epel-release
     yum install -y ShellCheck
@@ -68,6 +60,11 @@ else
     echo "Unsupported OS version, only support RHEL/Centos 8 and 7"
     exit 1
 fi
+
+ln -sf /usr/local/bin/echo_supervisord_conf /usr/bin/echo_supervisord_conf
+ln -sf /usr/local/bin/pidproxy /usr/bin/pidproxy
+ln -sf /usr/local/bin/supervisorctl /usr/bin/supervisorctl
+ln -sf /usr/local/bin/supervisord /usr/bin/supervisord
 
 #Install dependancies required by the puppeteer
 yum -y install alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXrandr.x86_64 GConf2.x86_64 libXScrnSaver.x86_64 libXtst.x86_64 pango.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-fonts-cyrillic xorg-x11-fonts-misc xorg-x11-fonts-Type1 xorg-x11-utils ipa-gothic-fonts
@@ -104,7 +101,7 @@ yum -y install sendmail
 service sendmail start
 
 #install npm modules
-( cd "$DIR/..";  sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
+( cd "$DIR/..";  sudo npm install -g npm@6.14.13;  sudo npm install --unsafe-perm=true --allow-root; sudo npm install argon2 --build-from-source; )
 
 #install numactl
 yum install numactl -y
@@ -148,11 +145,11 @@ if [ ! -f "/etc/timezone" ]; then
     echo "Etc/UTC" > /etc/timezone
 fi
 
-#install nghttp2
-bash "$DIR/scripts/install.nghttp2.sh"
-
 #install plugins
 node "$DIR/scripts/install_plugins"
+
+#load city data into database
+nodejs "$DIR/scripts/loadCitiesInDb.js"
 
 #get web sdk
 countly update sdk-web
@@ -160,11 +157,9 @@ countly update sdk-web
 # close google services for China area
 if ping -c 1 google.com >> /dev/null 2>&1; then
     echo "Pinging Google successful. Enabling Google services."
-    countly plugin disable EChartMap
 else
     echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
     countly config "frontend.use_google" false --force
-    countly plugin enable EChartMap
 fi
 
 #compile scripts for production

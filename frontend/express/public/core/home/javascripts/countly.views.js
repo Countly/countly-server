@@ -1,4 +1,19 @@
-/* global jQuery,CountlyHelpers,countlyVue, CV, countlyCommon,countlyGlobal, app,countlyHomeView*/
+/* global jQuery,CountlyHelpers,countlyVue, CV,Vue, countlyCommon,countlyGlobal, app,countlyHomeView*/
+
+
+var HomeWidgetTitleComponent = countlyVue.views.create({
+    template: CV.T('/core/home/templates/widgetTitle.html'),
+    props: {
+        widget: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        }
+    }
+});
+
+Vue.component("clyd-home-widget-header", HomeWidgetTitleComponent);
 
 var HomeViewView = countlyVue.views.create({
     template: CV.T("/core/home/templates/home.html"),
@@ -12,7 +27,8 @@ var HomeViewView = countlyVue.views.create({
             selectedDynamicComponents: [],
             selectedText: "",
             registredComponents: {},
-            ordered: []
+            ordered: [],
+            isLoading: true
         };
     },
     mounted: function() {
@@ -22,6 +38,7 @@ var HomeViewView = countlyVue.views.create({
         refresh: function() {
             this.loadAllWidgets();
         },
+
         loadAllWidgets: function() {
             var userSettings = {};
             if (countlyGlobal && countlyGlobal.member && countlyGlobal.member.homeSettings && countlyCommon.ACTIVE_APP_ID) {
@@ -68,7 +85,7 @@ var HomeViewView = countlyVue.views.create({
                         if (enabled && !allComponents[k].placeBeforeDatePicker && this.selectedDynamicComponents.indexOf(allComponents[k]._id) === -1) {
                             this.selectedDynamicComponents.push(allComponents[k]._id);//add as selected
                         }
-                        this.registredComponents[allComponents[k]._id] = {"width": allComponents[k].width, "enabled": enabled, _id: allComponents[k]._id, "label": allComponents[k].label, "description": allComponents[k].description, "order": allComponents[k].order, "placeBeforeDatePicker": allComponents[k].placeBeforeDatePicker, "component": allComponents[k].component, "linkTo": allComponents[k].linkTo};
+                        this.registredComponents[allComponents[k]._id] = {"hide_header": allComponents[k].hide_header || false, "width": allComponents[k].width, "enabled": enabled, _id: allComponents[k]._id, "label": allComponents[k].label, "description": allComponents[k].description, "order": allComponents[k].order, "placeBeforeDatePicker": allComponents[k].placeBeforeDatePicker, "component": allComponents[k].component, "linkTo": allComponents[k].linkTo};
                         if (this.registredComponents[allComponents[k]._id].placeBeforeDatePicker) {
                             if (this.topComponents.length === 0) {
                                 this.topComponents.push(this.registredComponents[allComponents[k]._id]);
@@ -93,6 +110,7 @@ var HomeViewView = countlyVue.views.create({
             }
 
             this.calculatePlacedComponents();
+            this.isLoading = false;
 
         },
         calculatePlacedComponents: function() {
@@ -102,7 +120,7 @@ var HomeViewView = countlyVue.views.create({
 
             for (var k in this.registredComponents) {
                 if (!this.registredComponents[k].placeBeforeDatePicker) {
-                    this.componentSelector.push({"value": this.registredComponents[k]._id, label: this.registredComponents[k].label, "order": this.registredComponents[k].order});
+                    this.componentSelector.push({"fixed": this.registredComponents[k].placeBeforeDatePicker, "value": this.registredComponents[k]._id, label: CV.i18n(this.registredComponents[k].label), "order": this.registredComponents[k].order});
                 }
                 if (this.registredComponents[k].enabled) {
                     if (!this.registredComponents[k].placeBeforeDatePicker) {
@@ -128,6 +146,12 @@ var HomeViewView = countlyVue.views.create({
                 }
                 else {
                     forOrdering[z].classes = "";
+                }
+                if (z === 0) {
+                    forOrdering[z].topGapClasses = "bu-pt-4";
+                }
+                else {
+                    forOrdering[z].topGapClasses = "bu-pt-5 bu-mt-3";
                 }
             }
 
@@ -195,7 +219,7 @@ var HomeViewView = countlyVue.views.create({
         selected: function(command) {
             if (command === "download") {
                 var self = this;
-                CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: "Starting image generation.you will be notified when it is ready. Please do not leave site.", sticky: true, clearAll: true});
+                CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: "Starting the image generation process. You will be notified when it is ready. Please do not leave the website while the process is running.", sticky: true, clearAll: true});
                 this.$store.dispatch("countlyHomeView/downloadScreen").then(function() {
                     if (self.$store.state.countlyHomeView.image) {
                         CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: "<a href='" + self.$store.state.countlyHomeView.image + "'>Download</a>", sticky: true, clearAll: true});
