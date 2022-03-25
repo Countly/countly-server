@@ -615,10 +615,12 @@
         var self = this,
             removeQueue = [];
 
-        this.loadedModuleIds.forEach(function(mid, index) {
+        this.loadedModules.forEach(function(mid, index) {
             if (mid.destroy !== false) {
-                _globalVuexStore.dispatch(mid + "/reset");
-                _vuex.unregister(mid.name);
+                _globalVuexStore.dispatch(mid.name + "/reset");
+                setTimeout(function() {
+                    _vuex.unregister(mid.name);
+                }, 0);
                 removeQueue.push(index);
             }
         });
@@ -799,7 +801,7 @@
             this.templateLoader.destroy();
             $("body").removeClass("cly-vue-theme-clydef");
             mainVM.killViewComponent();
-            //self.vuexLoader.destroy();
+            this.vuexLoader.destroy();
         }
     });
 
