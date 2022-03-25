@@ -126,6 +126,7 @@ class Connector extends SynFlushTransform {
                 this.db.collection('messages').findOne(query).then(msg => {
                     if (msg) {
                         this.state.setMessage(msg); // only turns to app if there's one or more credentials found
+                        pools.message(app._id.toString(), [msg]);
                     }
                     else {
                         this.state.discardMessage(push.m);

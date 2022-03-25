@@ -309,6 +309,7 @@ else {
             }
             else {
                 connection.connect().then(() => {
+                    connection.connected = true;
                     if (data.payload && Array.isArray(data.payload)) {
                         data.payload.forEach(m => connection.message(m));
                     }

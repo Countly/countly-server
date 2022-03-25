@@ -107,6 +107,7 @@ exports.renderView = function(options, cb) {
                 var source = options.source;
                 var updatedTimeout = options.timeout || 30000;
                 var waitForRegex = options.waitForRegex;
+                var waitForRegexAfterCbfn = options.waitForRegexAfterCbfn;
 
                 options.dimensions = {
                     width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1800,
@@ -140,6 +141,20 @@ exports.renderView = function(options, cb) {
                 await timeout(500);
 
                 await page.evaluate(cbFn, options);
+
+                if (waitForRegexAfterCbfn) {
+                    if (waitForRegex) {
+                        await page.waitForResponse(
+                            function(response) {
+                                var url = response.url();
+                                if (waitForRegex.test(url) && response.status() === 200) {
+                                    return true;
+                                }
+                            },
+                            { timeout: updatedTimeout }
+                        );
+                    }
+                }
 
                 await timeout(1500);
 

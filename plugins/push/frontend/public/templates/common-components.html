@@ -304,11 +304,16 @@
                         {{i18n('push-notification-details.message-title')}}
                     </div>
                     <div class="bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__value">
-                        <template v-for="(component) in previewMessageTitle">
-                            <keep-alive>
-                                <component v-bind:is="component.name" :value="component.value"></component>
-                            </keep-alive>
-                        </template>    
+                        <template v-if="previewMessageTitle.length">
+                            <template v-for="(component) in previewMessageTitle">
+                                <keep-alive>
+                                    <component v-bind:is="component.name" :value="component.value"></component>
+                                </keep-alive>
+                            </template>    
+                        </template>
+                        <template v-else>
+                            <span>-</span> 
+                        </template>
                     </div>
                 </div>
                 <div v-if="selectedMobileMessagePlatform === PlatformEnum.IOS && subtitle" class="bu-level bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
@@ -324,11 +329,16 @@
                         {{i18n('push-notification-details.message-content')}}
                     </div>
                     <div class="bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__value">
-                        <template v-for="(component) in previewMessageContent">
-                            <keep-alive>
-                                <component v-bind:is="component.name" :value="component.value"></component>
-                            </keep-alive>
-                        </template>    
+                        <template v-if="previewMessageContent.length">
+                            <template v-for="(component) in previewMessageContent">
+                                <keep-alive>
+                                    <component v-bind:is="component.name" :value="component.value"></component>
+                                </keep-alive>
+                            </template>    
+                        </template>
+                        <template v-else>
+                            <span>-</span>
+                        </template>
                     </div>
                 </div>
                 <template v-if="message.buttons && message.buttons.length>0">
@@ -337,7 +347,7 @@
                         <details-tab-row :label="index === 0?i18n('push-notification-details.message-first-button-url'):i18n('push-notification-details.message-second-button-url')" :value="button.url"></details-tab-row>
                     </template>
                 </template>
-                <details-tab-row v-if="hasAllPlatformMediaOnly" :label="i18n('push-notification-details.message-media-url')" :value="this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL"> </details-tab-row>
+                <details-tab-row v-if="hasAllPlatformMediaOnly" :label="i18n('push-notification-details.message-media-url')" :value="this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL || '-'"> </details-tab-row>
                 <template v-else>
                     <details-tab-row :label="i18n('push-notification-details.ios-message-media-url')" :value="previewIOSMedia"></details-tab-row>
                     <details-tab-row :label="i18n('push-notification-details.android-message-media-url')" :value="previewAndroidMedia"></details-tab-row>
