@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "all-the-cities": "^3.1.0",
-    "apidoc": "^0.50.2",
+    "apidoc": "^0.51.0",
     "apidoc-template": "github:kanwarujjaval/dash-apidoc-template",
     "argon2": "0.28.5",
     "async": "3.2.3",
