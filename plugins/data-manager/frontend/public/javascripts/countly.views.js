@@ -470,6 +470,15 @@
             categories: function() {
                 return this.$store.getters["countlyDataManager/categories"];
             },
+            limits: function() {
+                var eventLimit = {};
+                var limits = this.$store.getters["countlyDataManager/limits"];
+                if (this.events.length >= limits.event_limit) {
+                    eventLimit.message = CV.i18n("events.max-event-key-limit", limits.event_limit);
+                    eventLimit.show = true;
+                }
+                return eventLimit;
+            },
             categoriesMap: function() {
                 return this.$store.getters["countlyDataManager/categoriesMap"];
             },
@@ -927,6 +936,7 @@
                 this.$store.dispatch('countlyDataManager/loadEventsData');
                 this.$store.dispatch('countlyDataManager/loadEventGroups');
                 this.$store.dispatch('countlyDataManager/loadCategories');
+                this.$store.dispatch('countlyDataManager/fetchLimits');
                 if (this.isDrill) {
                     this.$store.dispatch('countlyDataManager/loadTransformations');
                     this.$store.dispatch('countlyDataManager/loadSegmentsMap');
