@@ -1,0 +1,108 @@
+/*
+    All countly color sass variables are in this file
+*/
+
+$interface-color: #F8F9FA;
+
+$colors: (
+    "white": #FFFFFF,
+    "black": #000000,
+
+    "warm-gray-100": #24292E,
+    "warm-gray-90": #24292E,
+    "warm-gray-80": #383A3F,
+    "warm-gray-70": #424243,
+    "warm-gray-60": #616165,
+    "warm-gray-40": #D6D6D6,
+    "warm-gray-30": #ECECEC,
+    "warm-gray-20": #F6F6F6,
+    "warm-gray-10": #FCFCFC,
+
+    "cool-gray-100": #333C48,
+    "cool-gray-50": #81868D,
+    "cool-gray-40": #A7AEB8,
+    "cool-gray-30": #CFD6E4,
+    "cool-gray-20": #E2E4E8,
+    "cool-gray-10": #F8FAFD,
+    "cool-gray-05": #FBFDFE,
+
+    "charts-blue": #017AFF,
+    "charts-turquoise": #39C0C8,
+    "charts-amber": #F5C900,
+    "charts-orange": #F96300,
+    "charts-magenta": #F34971,
+    "charts-coral": #FF9382,
+    "charts-violet": #DA6EFC,
+    "charts-purple": #6C47FF,
+    "charts-tan": #CDAD7A,
+    "charts-olive": #AABB5D,
+    "charts-scarlet": #F62404,
+    "charts-pink": #FFB6F5,
+    "charts-teal": #39C0C8,
+
+    "yellow-100": #E49700,
+    "yellow-70": #FFC760,
+    "yellow-20": #FFF4CE,
+    "yellow-10": #FCF5E5,
+
+    "blue-100": #0166D6,
+    "blue-90": #1A75DA,
+    "blue-80": #3485DE,
+    "blue-70": #4D94E2,
+    "blue-60": #67A3E6,
+    "blue-50": #80B3EB,
+    "blue-40": #99C2EF,
+    "blue-30": #B3D1F3,
+    "blue-20": #CCE0F7,
+    "blue-10": #E6F0FB,
+
+    "sky-blue-100": #3F9AFF,
+
+    "shadow-blue-100": #9cbce0,
+
+    "light-blue-100": #E1EFFF,
+
+    "dark-blue-100": #32659D,
+
+    "teal": #00C3CA,
+
+    "red-100": #D23F00,
+    "red-10": #FBECE5,
+
+    "green-100": #10A14A,
+    "green-80": #12AF51,
+    "green-10": #EBFAEE,
+
+    "primary": #0166D6,
+    "primary-green": #12AF51,
+    "success": #67C23A,
+    "warning": #E49700,
+    "danger": #D23F00,
+    "info": #909399,
+
+    "text-secondary": #81868D,
+    "text-custom-1-active": #333C48,
+    "text-placeholder": #81868D,
+    "text-primary": #303133,
+    "text-regular": #333C48,
+    "text-custom-1-passive": #858A91,
+
+    "action-blue": #0166D6
+);
+
+//Data table colors
+$table-th-bgcolor: #F5F8F9;
+$table-text-color: #333C48;
+$table-footer-text-color: #808A9D;
+$table-border-color: #EEF2F5;
+
+//Text colors
+$border-color-light: #EBEBEF !default;
+$border-color-lighter: #ECECEC !default;
+$border-color-extra-light: #F2F6FC !default;
+
+// Background
+$background-color-base: #F5F7FA !default;
+
+//Border colors
+$border-color-base: #ECECEC !default;

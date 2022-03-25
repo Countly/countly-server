@@ -39,6 +39,12 @@ var testUtils = function testUtils() {
     this.username = "test";
     this.password = "Test1test$";
     this.email = "test@domain.com";
+    this.permission = {
+        "_": {
+            "u": [],
+            "a": []
+        }
+    };
     this.testScalingFactor = 1.5;//this is used to multiply the base timeout time for tests. Should be decreased of more powerful servers
     this.testWaitTimeForDrillEvents = 5300;//in ms, how long should the test wait for drill to finish it's actions
     this.testWaitTimeForResetApp = 1200;//in ms, how long should the test wait for a app reset

@@ -1,0 +1,27 @@
+/*
+    This file contains CSS overrides for Bulms's CSS
+*/
+
+.bu-level:not(:last-child) {
+    margin-bottom: 0px;
+}
+
+.bu-tag {
+    &.is-slim {
+        padding: 0 0.50em;
+        height: 1.5em;
+    }
+    &.is-legend {
+        padding: 0;
+        height: 0.5em;
+        width: 1em;
+        border-radius: 3px;
+    }
+    &.is-curved {
+        border-radius: 67px;
+        height: 16px;
+        padding-left: 4px;
+        padding-right: 4px;
+        min-width: 12px;
+    }
+}

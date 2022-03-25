@@ -1,17 +1,21 @@
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateGlobalAdmin, validateUser } = require('../../../api/utils/rights.js');
+
+//const FEATURE_NAME = 'systemlogs';
+plugins.setConfigs("systemlogs", {
+    preventIPTracking: false
+});
 
 (function() {
-    plugins.setConfigs("systemlogs", {
-        preventIPTracking: false
-    });
-
+    /*plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });*/
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring.method === 'systemlogs') {
             var query = {};
             if (typeof params.qstring.query === "string") {
@@ -32,7 +36,7 @@ var pluginOb = {},
                     console.log("Incorrect regex: " + params.qstring.sSearch);
                 }
                 if (reg) {
-                    query.i = {"$regex": reg};
+                    query.a = {"$regex": reg};
                 }
                 //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
             }
@@ -40,8 +44,8 @@ var pluginOb = {},
                 countlyCommon.getPeriodObj(params);
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
-            validate(params, function(paramsNew) {
-                var columns = [null, "ts", "u", "a", "ip", "i"];
+            validateGlobalAdmin(params, function(paramsNew) {
+                var columns = [null, "ts", "u", "ip", "a", "i"];
                 common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
                     total--;
                     var cursor = common.db.collection('systemlogs').find(query);
@@ -85,7 +89,7 @@ var pluginOb = {},
             return true;
         }
         else if (params.qstring.method === 'systemlogs_meta') {
-            validate(params, function(paramsNew) {
+            validateGlobalAdmin(params, function(paramsNew) {
                 //get all users
                 common.db.collection('members').find({}, {username: 1, email: 1, full_name: 1}).toArray(function(err1, users) {
                     common.db.collection('systemlogs').findOne({_id: "meta_v2"}, {_id: 0}, function(err2, res) {
@@ -108,7 +112,7 @@ var pluginOb = {},
 
     plugins.register("/i/systemlogs", function(ob) {
         var params = ob.params;
-        ob.validateUserForWriteAPI(params, function() {
+        validateUser(params, function() {
             if (typeof params.qstring.data === "string") {
                 try {
                     params.qstring.data = JSON.parse(params.qstring.data);
@@ -118,7 +122,7 @@ var pluginOb = {},
                 }
             }
             if (typeof params.qstring.action === "string") {
-                processRecording({params: params, action: params.qstring.action, user: {}, data: params.qstring.data || {}});
+                processRecording({params: params, action: params.qstring.action, user: params.member || {}, data: params.qstring.data || {}});
                 //recordAction(params, {}, params.qstring.action, params.qstring.data || {});
             }
 
@@ -336,6 +340,7 @@ var pluginOb = {},
         log.i = data;
         log.ts = Math.round(new Date().getTime() / 1000);
         log.cd = new Date();
+        user = user || {};
         log.u = user.email || user.username || "";
 
         var PreventIPTracking = plugins.getConfig("systemlogs").preventIPTracking;

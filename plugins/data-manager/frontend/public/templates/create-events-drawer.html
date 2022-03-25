@@ -1,0 +1,116 @@
+<cly-drawer 
+    @submit="onSubmit"
+    @close="onClose"
+    ref="eventDrawer"
+    :title="title"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="$props.controls">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="create-event-form" name="First Step">
+
+            <cly-form-field :label="i18n('data-manager.event.name')">
+                    <el-input
+                        v-model="drawerScope.editedObject.name"
+                        :placeholder="i18n('data-manager.event.name')">
+                    </el-input>
+            </cly-form-field>
+
+            <cly-form-field :label="i18n('data-manager.events.key')" rules="required">
+                <el-input
+                :disabled="drawerScope.editedObject.isEditMode"
+                class="bu-mb-3" 
+                v-model="drawerScope.editedObject.key" 
+			    :placeholder="i18n('data-manager.events.enter-key')">
+			    </el-input>
+            </cly-form-field>
+
+            <div class="text-big text-heading bu-mt-2 bu-mb-1">{{i18n('data-manager.events.event-details')}}</div>
+
+            <cly-form-field :label="i18n('data-manager.events.event-description')" :optional="true">
+                <el-input
+                type="textarea"
+                :rows="2"
+                :placeholder="i18n('data-manager.events.enter-event-description')"
+                v-model="drawerScope.editedObject.description">
+                </el-input>
+            </cly-form-field>
+
+            <div v-if="isDrill">
+                <cly-form-field :label="i18n('data-manager.category')" :optional="true">
+                    <cly-select-x
+                        class="bu-pt-1"
+                        :search-placeholder="i18n('data-manager.search-category')"
+                        :placeholder="i18n('data-manager.uncategorized')" 
+                        v-model="drawerScope.editedObject.category"
+                        :auto-commit="!autoCommitDisabled" 
+                        :mode="selectX.mode"
+                        :hide-all-options-tab="allOptionsTabHidden"
+                        :options="categories">
+                    </cly-select-x>
+                </cly-form-field>
+            </div>
+
+            <div v-if='drawerScope.editedObject.isEditMode'>
+                <div v-if="isDrill">
+                    <cly-form-field :label="i18n('data-manager.status')">
+                        <el-select class="bu-pt-1" v-model="drawerScope.editedObject.status" >
+                            <el-option v-for="item in statusList" :key="item.value" :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </cly-form-field>
+                </div>
+
+                <cly-form-field :label="i18n('data-manager.visibility')">
+                    <el-select class="bu-pt-1" v-model="drawerScope.editedObject.is_visible" >
+                        <el-option :value=true :label="i18n('data-manager.visible')">
+                        </el-option>
+                        <el-option :value=false :label="i18n('data-manager.hidden')">
+                        </el-option>
+                    </el-select>
+                </cly-form-field>
+
+                <div class="text-big text-heading bu-mt-4 bu-pt-1">{{i18n('data-manager.events.event-properties')}}</div>
+
+                <cly-form-field class="bu-pt-0" :label="i18n('data-manager.display-name-for-count')" :optional="true" :subheading="i18n('data-manager.display-name-for-count-subheading')">
+                    <el-input
+                    v-model="drawerScope.editedObject.count" 
+			        :placeholder="i18n('data-manager.count')">
+			        </el-input>
+                </cly-form-field>
+
+                <cly-form-field :label="i18n('data-manager.display-name-for-sum')" :optional="true" :subheading="i18n('data-manager.display-name-for-sum')">
+                    <el-input
+                    v-model="drawerScope.editedObject.sum" 
+                    :placeholder="i18n('data-manager.sum')">
+                    </el-input>
+                </cly-form-field>
+
+                <cly-form-field :label="i18n('data-manager.display-name-for-duration')" :optional="true" :subheading="i18n('data-manager.display-name-for-duration')">
+                    <el-input
+                    v-model="drawerScope.editedObject.dur" 
+                    :placeholder="i18n('data-manager.duration')">
+                    </el-input>
+                </cly-form-field>
+            </div>
+
+            <div v-if="drawerScope.editedObject.isEditMode">
+                <cly-form-field :label="i18n('data-manager.omit-segments')" 
+                :tooltip="i18n('data-manager.omit-segments.tooltip')">
+                    <el-select multiple v-model="omitList" >
+                        <el-option v-for="item in drawerScope.editedObject.segments" :key="item.name" :value="item.name">
+                        </el-option>
+                    </el-select>
+                </cly-form-field>
+            </div>
+
+            <div v-if="isDrill" class="bu-mt-1">
+                <div class="text-big text-heading bu-pt-4">{{i18n('data-manager.event-segmentation')}}</div>
+                <data-manager-create-segment
+                ref="segments"
+			    :max-segments="20"
+			    v-model="drawerScope.editedObject.segments"
+                ></data-manager-create-segment>
+            </div>
+        </cly-form-step>
+    </template>
+</cly-drawer>

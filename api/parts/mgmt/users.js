@@ -8,7 +8,9 @@ var usersApi = {},
     common = require('./../../utils/common.js'),
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.js'),
+    { hasAdminAccess, getUserApps, getAdminApps } = require('./../../utils/rights.js');
+
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
 const _ = require('lodash');
@@ -34,10 +36,6 @@ usersApi.getCurrentUser = function(params) {
 * @returns {boolean} true if fetched data from db
 **/
 usersApi.getUserById = function(params) {
-    if (!params.member.global_admin) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
     if (!params.qstring.id || params.qstring.id.length !== 24) {
         common.returnMessage(params, 401, 'Missing or incorrect user id parameter');
         return false;
@@ -54,15 +52,6 @@ usersApi.getUserById = function(params) {
 
         var memberObj = {};
 
-        if (member.admin_of && member.admin_of.length > 0 && member.admin_of[0] === "") {
-            member.admin_of.splice(0, 1);
-        }
-        if (member.user_of && member.user_of.length > 0 && member.user_of[0] === "") {
-            member.user_of.splice(0, 1);
-        }
-
-        member.admin_of = ((member.admin_of && member.admin_of.length > 0) ? member.admin_of : []);
-        member.user_of = ((member.user_of && member.user_of.length > 0) ? member.user_of : []);
         member.global_admin = (member.global_admin === true);
         member.locked = (member.locked === true);
         member.created_at = member.created_at || 0;
@@ -81,10 +70,6 @@ usersApi.getUserById = function(params) {
 * @returns {boolean} true if fetched data from db
 **/
 usersApi.getAllUsers = function(params) {
-    if (!params.member.global_admin) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
     common.db.collection('members').find({}, {
         password: 0,
         appSortList: 0
@@ -102,8 +87,6 @@ usersApi.getAllUsers = function(params) {
                 common.returnOutput(params, {});
                 return false;
             }
-
-
             const bruteforceFails = plugins.getConfig("security").login_tries;
             const bruteforceWait = plugins.getConfig("security").login_wait;
 
@@ -119,15 +102,6 @@ usersApi.getAllUsers = function(params) {
                     members[i].blocked = false;
                 }
 
-                if (members[i].admin_of && members[i].admin_of.length > 0 && members[i].admin_of[0] === "") {
-                    members[i].admin_of.splice(0, 1);
-                }
-                if (members[i].user_of && members[i].user_of.length > 0 && members[i].user_of[0] === "") {
-                    members[i].user_of.splice(0, 1);
-                }
-
-                members[i].admin_of = ((members[i].admin_of && members[i].admin_of.length > 0) ? members[i].admin_of : []);
-                members[i].user_of = ((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []);
                 members[i].global_admin = (members[i].global_admin === true);
                 members[i].locked = (members[i].locked === true);
                 members[i].created_at = members[i].created_at || 0;
@@ -151,11 +125,6 @@ usersApi.getAllUsers = function(params) {
 * @returns {boolean} true if timeban reseted
 **/
 usersApi.resetTimeBan = function(params) {
-    if (!params.member.global_admin) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
-
     common.db.collection('failed_logins').remove({_id: JSON.stringify(["login", params.qstring.username])}, (err) => {
         if (err) {
             common.returnMessage(params, 500, 'Remove from collection failed.');
@@ -175,11 +144,6 @@ usersApi.resetTimeBan = function(params) {
 * @returns {boolean} true if user created
 **/
 usersApi.createUser = function(params) {
-    if (!params.member.global_admin) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
-
     var argProps = {
             'full_name': {
                 'required': true,
@@ -205,6 +169,10 @@ usersApi.createUser = function(params) {
                 'required': false,
                 'type': 'String'
             },
+            'permission': {
+                'required': false,
+                'type': 'Object'
+            },
             'admin_of': {
                 'required': false,
                 'type': 'Array'
@@ -222,13 +190,41 @@ usersApi.createUser = function(params) {
 
     var createUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(newMember = createUserValidation.obj)) {
-        common.returnMessage(params, 400, 'Error: ' + createUserValidation.errors);
+        common.returnMessage(params, 400, createUserValidation.errors);
         return false;
+    }
+
+    //adding backwards compatability
+    newMember.permission = newMember.permission || {};
+    if (newMember.admin_of) {
+        if (Array.isArray(newMember.admin_of) && newMember.admin_of.length) {
+            newMember.permission.c = newMember.permission.c || {};
+            newMember.permission.r = newMember.permission.r || {};
+            newMember.permission.u = newMember.permission.u || {};
+            newMember.permission.d = newMember.permission.d || {};
+            for (let i = 0; i < newMember.admin_of.length; i++) {
+                newMember.permission.c[newMember.admin_of[i]] = newMember.permission.c[newMember.admin_of[i]] || {all: true, allowed: {}};
+                newMember.permission.r[newMember.admin_of[i]] = newMember.permission.r[newMember.admin_of[i]] || {all: true, allowed: {}};
+                newMember.permission.u[newMember.admin_of[i]] = newMember.permission.u[newMember.admin_of[i]] || {all: true, allowed: {}};
+                newMember.permission.d[newMember.admin_of[i]] = newMember.permission.d[newMember.admin_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete newMember.admin_of;
+    }
+
+    if (newMember.user_of) {
+        if (Array.isArray(newMember.user_of) && newMember.user_of.length) {
+            newMember.permission.r = newMember.permission.r || {};
+            for (let i = 0; i < newMember.user_of.length; i++) {
+                newMember.permission.r[newMember.user_of[i]] = newMember.permission.r[newMember.user_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete newMember.user_of;
     }
 
     common.db.collection('members').findOne({ $or: [{ email: newMember.email }, { username: newMember.username }] }, function(err, member) {
         if (member || err) {
-            common.returnMessage(params, 200, 'Email or username already exists');
+            common.returnMessage(params, 400, ['Email or username already exists']);
             return false;
         }
         else {
@@ -243,12 +239,15 @@ usersApi.createUser = function(params) {
     async function createUser() {
         //var passwordNoHash = newMember.password;
         var secret = countlyConfig.passwordSecret || "";
-
+        var accessTypes = ["c", "r", "u", "d"];
         newMember.password = await common.argon2Hash(newMember.password + secret);
         newMember.password_changed = 0;
         newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
-        newMember.admin_of = newMember.admin_of || [];
-        newMember.user_of = newMember.user_of || [];
+        for (var type in accessTypes) {
+            if (typeof newMember.permission[accessTypes[type]] === "undefined") {
+                newMember.permission[accessTypes[type]] = {};
+            }
+        }
         newMember.locked = false;
         newMember.username = newMember.username.trim();
         newMember.email = newMember.email.trim();
@@ -277,7 +276,7 @@ usersApi.createUser = function(params) {
                     common.returnOutput(params, member[0]);
                 }
                 else {
-                    common.returnMessage(params, 500, 'Error creating user');
+                    common.returnMessage(params, 400, ['Error creating user']);
                 }
             });
         });
@@ -319,6 +318,38 @@ function killAllSessionForUser(userId) {
 
 }
 
+usersApi.updateHomeSettings = function(params) {
+    params = params || {};
+    params.qstring = params.qstring || {};
+    if (!params.member) {
+        common.returnMessage(params, 400, 'Could not get member');
+    }
+    else if (!params.qstring.homeSettings) {
+        common.returnMessage(params, 400, '`homeSettings` should contain stringified object with home settings');
+    }
+    else if (!params.qstring.app_id) {
+        common.returnMessage(params, 400, '`app_id` must be passed');
+    }
+    else {
+        try {
+            params.qstring.homeSettings = JSON.parse(params.qstring.homeSettings);
+        }
+        catch (SyntaxError) {
+            params.qstring.homeSettings = {};
+        }
+        var updateObj = {};
+        updateObj["homeSettings." + params.qstring.app_id] = params.qstring.homeSettings;
+        common.db.collection('members').update({_id: common.db.ObjectID(params.member._id + "")}, {"$set": updateObj}, function(err3 /* , res1*/) {
+            if (err3) {
+                console.log(err3);
+                common.returnMessage(params, 400, 'Mongo error');
+            }
+            else {
+                common.returnMessage(params, 200, 'Success');
+            }
+        });
+    }
+};
 /**
 * Updates dashboard user's data and output result to browser
 * @param {params} params - params object
@@ -381,6 +412,10 @@ usersApi.updateUser = async function(params) {
             'member_image': {
                 'type': 'String',
                 'required': false
+            },
+            'permission': {
+                'required': false,
+                'type': 'Object'
             }
         },
         updatedMember = {},
@@ -388,12 +423,7 @@ usersApi.updateUser = async function(params) {
 
     var updateUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(updatedMember = updateUserValidation.obj)) {
-        common.returnMessage(params, 400, 'Error: ' + updateUserValidation.errors);
-        return false;
-    }
-
-    if (!(params.member.global_admin || params.member._id === params.qstring.args.user_id)) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
+        common.returnMessage(params, 400, updateUserValidation.errors);
         return false;
     }
 
@@ -414,6 +444,35 @@ usersApi.updateUser = async function(params) {
 
     if (updatedMember.member_image && updatedMember.member_image === 'delete') {
         updatedMember.member_image = "";
+    }
+
+    //adding backwards compatability
+    if (updatedMember.admin_of) {
+        if (Array.isArray(updatedMember.admin_of) && updatedMember.admin_of.length) {
+            updatedMember.permission = updatedMember.permission || {};
+            updatedMember.permission.c = updatedMember.permission.c || {};
+            updatedMember.permission.r = updatedMember.permission.r || {};
+            updatedMember.permission.u = updatedMember.permission.u || {};
+            updatedMember.permission.d = updatedMember.permission.d || {};
+            for (let i = 0; i < updatedMember.admin_of.length; i++) {
+                updatedMember.permission.c[updatedMember.admin_of[i]] = updatedMember.permission.c[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+                updatedMember.permission.r[updatedMember.admin_of[i]] = updatedMember.permission.r[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+                updatedMember.permission.u[updatedMember.admin_of[i]] = updatedMember.permission.u[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+                updatedMember.permission.d[updatedMember.admin_of[i]] = updatedMember.permission.d[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete updatedMember.admin_of;
+    }
+
+    if (updatedMember.user_of) {
+        if (Array.isArray(updatedMember.user_of) && updatedMember.user_of.length) {
+            updatedMember.permission = updatedMember.permission || {};
+            updatedMember.permission.r = updatedMember.permission.r || {};
+            for (let i = 0; i < updatedMember.user_of.length; i++) {
+                updatedMember.permission.r[updatedMember.user_of[i]] = updatedMember.permission.r[updatedMember.user_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete updatedMember.user_of;
     }
 
 
@@ -463,11 +522,6 @@ usersApi.deleteUser = function(params) {
             }
         },
         userIds = [];
-
-    if (!params.member.global_admin) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
 
     var deleteUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(deleteUserValidation.obj && (userIds = deleteUserValidation.obj.user_ids))) {
@@ -690,7 +744,7 @@ usersApi.checkNoteEditPermission = async function(params) {
                         return reject(false);
                     }
                     const globalAdmin = params.member.global_admin;
-                    const isAppAdmin = (params.member.admin_of && params.member.admin_of.indexOf(params.app_id + '') >= 0) ? true : false;
+                    const isAppAdmin = hasAdminAccess(params.member, params.qstring.args.app_id);
                     const noteOwner = (note.owner + '' === params.member._id + '');
                     return resolve(noteOwner || (isAppAdmin && note.noteType === 'public') || (globalAdmin && note.noteType === 'public'));
                 }
@@ -831,18 +885,20 @@ usersApi.deleteUserNotes = async function(params) {
 usersApi.fetchUserAppIds = async function(params) {
     const query = {};
     const appIds = [];
+    const adminApps = getAdminApps(params.member);
+    const userApps = getUserApps(params.member);
     if (!params.member.global_admin) {
-        if (params.member.admin_of) {
-            for (let i = 0; i < params.member.admin_of.length ;i++) {
-                if (params.member.admin_of[i] === "") {
+        if (adminApps.length > 0) {
+            for (let i = 0; i < adminApps.length ;i++) {
+                if (adminApps[i] === "") {
                     continue;
                 }
-                appIds.push(params.member.admin_of[i]);
+                appIds.push(adminApps[i]);
             }
         }
-        if (params.member.user_of) {
-            for (let i = 0; i < params.member.user_of.length ;i++) {
-                appIds.push(params.member.user_of[i]);
+        if (userApps.length > 0) {
+            for (let i = 0; i < userApps.length ;i++) {
+                appIds.push(userApps[i]);
             }
         }
     }
@@ -868,7 +924,7 @@ usersApi.fetchNotes = async function(params) {
             appIds = await usersApi.fetchUserAppIds(params);
         }
         filtedAppIds = appIds.filter((appId) => {
-            if (params.member.global_admin || params.member.user_of.indexOf(appId) > -1 || params.member.admin_of.indexOf(appId) > -1) {
+            if (hasAdminAccess(params.member, appId)) {
                 return true;
             }
             return false;

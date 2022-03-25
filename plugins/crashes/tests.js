@@ -1363,6 +1363,7 @@ describe('Testing Crashes', function() {
         });
     });
 
+    /*
     describe('Check public crash', function() {
         it('should be found', function(done) {
             request
@@ -1455,6 +1456,7 @@ describe('Testing Crashes', function() {
                 .expect(404, done);
         });
     });
+    */
 
     describe('Add comment', function() {
         it('should success', function(done) {
@@ -3055,7 +3057,7 @@ describe('Testing Crashes', function() {
 
     describe('Reset app', function() {
         it('should reset data', function(done) {
-            var params = {app_id: APP_ID, "period": "reset"};
+            var params = {app_id: APP_ID, period: "reset"};
             request
                 .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)

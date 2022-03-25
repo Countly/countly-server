@@ -11,10 +11,17 @@ var common = {},
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose'),
-    argon2 = require('argon2');
+    argon2 = require('argon2'),
+    mongodb = require('mongodb'),
+    _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
+
+/**
+ * Because why requiring both all the time
+ */
+common.plugins = plugins;
 
 /**
 * Escape special characters in the given string of html.
@@ -744,7 +751,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
     }
 
     for (var arg in argProperties) {
-        var argState = true;
+        let argState = true,
+            parsed;
         if (argProperties[arg].required) {
             if (args[arg] === void 0) {
                 if (returnErrors) {
@@ -762,6 +770,27 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg].type) {
                 if (argProperties[arg].type === 'Number' || argProperties[arg].type === 'String') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'IntegerString') {
+                    if (args[arg] === null && !argProperties[arg].required) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string' && !isNaN(parseInt(args[arg]))) {
+                        parsed = parseInt(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'number') {
+                        parsed = args[arg];
+                    }
+                    else {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
@@ -794,6 +823,34 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
                 }
+                else if (argProperties[arg].type === 'URLString') {
+                    if (toString.call(args[arg]) !== '[object String]') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    else {
+                        let { URL } = require('url');
+                        try {
+                            parsed = new URL(args[arg]);
+                        }
+                        catch (ignored) {
+                            if (returnErrors) {
+                                returnObj.errors.push('Invalid URL string ' + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                }
                 else if (argProperties[arg].type === 'Email') {
                     if (toString.call(args[arg]) !== '[object String]') {
                         if (returnErrors) {
@@ -823,6 +880,57 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             returnObj.result = false;
                             argState = false;
                         }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'BooleanString') {
+                    if (args[arg] === null && !argProperties[arg].required) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string' && (args[arg] === 'true' || args[arg] === 'false')) {
+                        parsed = args[arg] === 'true';
+                    }
+                    else if (typeof args[arg] === 'boolean') {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'Date') {
+                    if (args[arg] === null && !argProperties[arg].required) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string' && !isNaN(new Date(args[arg]))) {
+                        parsed = new Date(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'number' && args[arg] > 1000000000000 && args[arg] < 2000000000000) { // it's bad and I know it!
+                        parsed = new Date(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'number' && args[arg] > 1000000000 && args[arg] < 2000000000) { // it's bad and I know it!
+                        parsed = new Date(args[arg] * 1000);
+                    }
+                    else if (args[arg] instanceof Date && !isNaN(new Date(args[arg]))) {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
                     }
                 }
                 else if (argProperties[arg].type === 'Array') {
@@ -836,6 +944,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             return false;
                         }
                     }
+                    else {
+                        parsed = args[arg];
+                    }
                 }
                 else if (argProperties[arg].type === 'Object') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
@@ -847,6 +958,177 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         else {
                             return false;
                         }
+                    }
+                    else {
+                        parsed = args[arg];
+                    }
+                }
+                else if (argProperties[arg].type === 'ObjectID') {
+                    if (!argProperties[arg].required && args[arg] === null) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string') {
+                        if (mongodb.ObjectId.isValid(args[arg])) {
+                            parsed = mongodb.ObjectId(args[arg]);
+                        }
+                        else {
+                            if (returnErrors) {
+                                returnObj.errors.push('Incorrect ObjectID for ' + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                    else if (args[arg] instanceof mongodb.ObjectId) {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push('Neither ObjectID string or ObjectID instance for ' + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'RegExp') {
+                    if (!argProperties[arg].required && args[arg] === null) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string') {
+                        try {
+                            parsed = new RegExp(_.escapeRegExp(args[arg]), argProperties[arg].mods || undefined);
+                        }
+                        catch (ex) {
+                            if (returnErrors) {
+                                returnObj.errors.push('Incorrect regex: ' + args[arg]);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                    else if (args[arg] instanceof RegExp) {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push('Must be a valid regexp string or RegExp instance');
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'JSON') {
+                    if (typeof args[arg] === 'object') {
+                        parsed = JSON.stringify(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'string') {
+                        try {
+                            parsed = JSON.stringify(JSON.parse(args[arg])); // to remove all whitespaces
+                        }
+                        catch (e) {
+                            if (returnErrors) {
+                                returnObj.errors.push("Invalid JSON for " + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid JSON for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (typeof argProperties[arg].type === 'object' && !argProperties[arg].array) {
+                    if (typeof args[arg] !== 'object' && !(!argProperties[arg].required && args[arg] === null)) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+
+                    let subret = common.validateArgs(args[arg], argProperties[arg].type, returnErrors);
+                    if (returnErrors && !subret.result) {
+                        returnObj.errors.push(...subret.errors.map(e => `${arg}: ${e}`));
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else if (!returnErrors && !subret) {
+                        return false;
+                    }
+                    else {
+                        parsed = args[arg];
+                        // parsed = subret.obj;
+                    }
+                }
+                else if ((typeof argProperties[arg].type === 'object' && argProperties[arg].array) || argProperties[arg].type.indexOf('[]') === argProperties[arg].type.length - 2) {
+                    if (!Array.isArray(args[arg])) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    else if (args[arg].length) {
+                        let type,
+                            scheme = {},
+                            ret;
+
+                        if (typeof argProperties[arg].type === 'object' && argProperties[arg].array) {
+                            type = argProperties[arg].type;
+                        }
+                        else {
+                            type = argProperties[arg].type.substr(0, argProperties[arg].type.length - 2);
+                        }
+
+                        args[arg].forEach((v, i) => {
+                            scheme[i] = { type, nonempty: argProperties[arg].nonempty, required: true };
+                        });
+
+                        ret = common.validateArgs(args[arg], scheme, true);
+                        if (!ret.result) {
+                            if (returnErrors) {
+                                returnObj.errors.push(...ret.errors.map(e => `${arg}: ${e}`));
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                        else {
+                            parsed = Object.values(ret.obj);
+                        }
+                    }
+                    else {
+                        parsed = args[arg];
                     }
                 }
                 else {
@@ -899,10 +1181,36 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
+            if (argProperties[arg].max) {
+                if (args[arg] > argProperties[arg].max) {
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " is greater than max value");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
+            if (argProperties[arg].min) {
+                if (args[arg] < argProperties[arg].min) {
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " is lower than min value");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
             if (argProperties[arg]['has-number']) {
                 if (!/\d/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has number");
+                        returnObj.errors.push(arg + " should have number");
                         returnObj.result = false;
                         argState = false;
                     }
@@ -915,7 +1223,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg]['has-char']) {
                 if (!/[A-Za-z]/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has char");
+                        returnObj.errors.push(arg + " should have char");
                         returnObj.result = false;
                         argState = false;
                     }
@@ -928,7 +1236,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg]['has-upchar']) {
                 if (!/[A-Z]/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has upchar");
+                        returnObj.errors.push(arg + " should have upchar");
                         returnObj.result = false;
                         argState = false;
                     }
@@ -941,7 +1249,62 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg]['has-special']) {
                 if (!/[^A-Za-z\d]/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has special character");
+                        returnObj.errors.push(arg + " should have special character");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
+            if (argProperties[arg].in) {
+                let inn = typeof argProperties[arg].in === 'function' ? argProperties[arg].in() : argProperties[arg].in;
+
+                if ((Array.isArray(args[arg]) && args[arg].filter(x => inn.indexOf(x) === -1).length) ||
+                    (!Array.isArray(args[arg]) && inn.indexOf(args[arg]) === -1)) {
+                    if (returnErrors) {
+                        returnObj.errors.push("Value of " + arg + " is invalid");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
+            if (argProperties[arg].nonempty) {
+                if (parsed !== null && parsed !== undefined) {
+                    let value = parsed;
+                    if (argProperties[arg].type === 'JSON') {
+                        value = JSON.parse(value);
+                    }
+                    let any = false;
+                    // eslint-disable-next-line no-unused-vars
+                    for (let ignored in value) {
+                        any = true;
+                        break;
+                    }
+                    if (!any) {
+                        if (returnErrors) {
+                            returnObj.errors.push(`Value of ${arg} must not be empty`);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (argProperties[arg].custom) {
+                let err = argProperties[arg].custom(args[arg]);
+                if (err) {
+                    if (returnErrors) {
+                        returnObj.errors.push(err);
                         returnObj.result = false;
                         argState = false;
                     }
@@ -952,10 +1315,10 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
 
             if (argState && returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
-                returnObj.obj[arg] = args[arg];
+                returnObj.obj[arg] = parsed === undefined ? args[arg] : parsed;
             }
             else if (!returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
-                returnObj[arg] = args[arg];
+                returnObj[arg] = parsed === undefined ? args[arg] : parsed;
             }
         }
     }
@@ -1064,13 +1427,14 @@ common.returnRaw = function(params, returnCode, body, heads) {
 * Output message as request response with provided http code
 * @param {params} params - params object
 * @param {number} returnCode - http code to use
-* @param {string} message - Message to output, will be encapsulated in JSON object under result property
+* @param {string|object} message - Message to output, will be encapsulated in JSON object under result property
 * @param {object} heads - headers to add to the output
+* @param {boolean} noResult - skip wrapping message object into stupid {result: }
 */
-common.returnMessage = function(params, returnCode, message, heads) {
+common.returnMessage = function(params, returnCode, message, heads, noResult = false) {
     params.response = {
         code: returnCode,
-        body: JSON.stringify({result: message}, escape_html_entities)
+        body: JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities)
     };
 
     if (params && params.APICallback && typeof params.APICallback === 'function') {
@@ -1079,7 +1443,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(returnCode !== 200, JSON.stringify({result: message}), heads, returnCode, params);
+            params.APICallback(returnCode !== 200, JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}), heads, returnCode, params);
         }
         return;
     }
@@ -1109,7 +1473,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
             }
             else {
-                params.res.write(JSON.stringify({result: message}, escape_html_entities));
+                params.res.write(JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities));
             }
 
             params.res.end();
@@ -1198,6 +1562,10 @@ common.getIpAddress = function(req) {
     var ipAddress = (req) ? req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '') : "";
     /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
     var ips = ipAddress.split(',');
+
+    if (req.headers['x-real-ip']) {
+        ips.push(req.headers['x-real-ip']);
+    }
 
     //if ignoreProxies not setup, use outmost left ip address
     if (!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length) {
@@ -2046,6 +2414,46 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
+        if (params.qstring.device_id && typeof user.did === "undefined") {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.did) {
+                update.$set.did = params.qstring.device_id;
+            }
+        }
+
+        //store device type and mark users as know by custome device id
+        if (params.qstring.t && typeof user.t !== params.qstring.t) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.t) {
+                update.$set.t = params.qstring.t;
+            }
+            if (params.qstring.t + "" !== "0" && !user.hasInfo && typeof update.$set.hasInfo === "undefined") {
+                update.$set.hasInfo = true;
+            }
+        }
+        else if (user.merges && !user.hasInfo) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (typeof update.$set.hasInfo === "undefined") {
+                update.$set.hasInfo = true;
+            }
+        }
+
+        //store user's timezone offset too
+        if (params.qstring.tz && typeof user.tz !== params.qstring.tz) {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            if (!update.$set.tz) {
+                update.$set.tz = params.qstring.tz;
+            }
+        }
+
         if (callback) {
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
                 new: true,
@@ -2460,6 +2868,67 @@ common.mergeQuery = function(ob1, ob2) {
     }
 
     return ob1;
+};
+
+/**
+ * DB-related extensions / functions
+ */
+common.dbext = {
+    ObjectID: function(id) {
+        try {
+            return mongodb.ObjectId(id);
+        }
+        catch (ex) {
+            return id;
+        }
+    },
+
+    ObjectId: mongodb.ObjectId,
+
+    /**
+     * Check if passed value is an ObjectId
+     * 
+     * @param {any} id value
+     * @returns {boolean} true if id is instance of ObjectId
+     */
+    isoid: function(id) {
+        return id && (id instanceof mongodb.ObjectId);
+    },
+
+    /**
+     * Decode string to ObjectID if needed
+     * 
+     * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
+     * @returns {ObjectID} id
+     */
+    oid: function(id) {
+        return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
+    },
+
+    /**
+     * Create ObjectID with given timestamp. Uses current ObjectID random/server parts, meaning the 
+     * object id returned still has same uniquness guarantees as random ones.
+     * 
+     * @param {Date|number} date Date object or timestamp in seconds, current date by default
+     * @returns {ObjectID} with given timestamp
+     */
+    oidWithDate: function(date = new Date()) {
+        let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16),
+            server = new mongodb.ObjectId().toString().substr(8);
+        return new mongodb.ObjectId(seconds + server);
+    },
+
+    /**
+     * Create blank ObjectID with given timestamp. Everything except for date part is zeroed.
+     * For use in queries like {_id: {$gt: oidBlankWithDate()}}
+     * 
+     * @param {Date|number} date Date object or timestamp in seconds, current date by default
+     * @returns {ObjectID} with given timestamp and zeroes in the rest of the bytes
+     */
+    oidBlankWithDate: function(date = new Date()) {
+        let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16);
+        return new mongodb.ObjectId(seconds + '0000000000000000');
+    },
 };
 
 /**

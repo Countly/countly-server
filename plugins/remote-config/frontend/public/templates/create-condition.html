@@ -1,0 +1,20 @@
+<script type="text/x-template" id="remote-config-create-condition">
+<div class="data-manager-create-event__segment bu-my-5 bg-cool-gray-10">
+  <div class="bu-px-5 bu-py-5">
+    <div class="bu-level">
+      <i class="bu-is-clickable bu-mr-4 drag-icon ion-navicon-round"></i>
+      <div class="text-small text-heading bu-level-left bu-level-item text-uppercase">Condition Value</div>
+      <div @click="removeCondition" class="bu-is-clickable text-small bu-level-item bu-level-right color-red-100">Remove</div>
+    </div>
+    <div class="text-medium text-heading bu-mt-4">{{condition.name}}</div>
+    <div>
+      <el-input
+        v-model ="condition.value"
+        placeholder="Enter condition value">
+        <el-button type="text" slot="suffix" @click="openJsonEditorForCondition" class="cly-vue-remote-config-parameters-drawer__autocomplete-button">{ }</el-button>
+      </el-input>
+      <json-editor v-if="condition.open" :isOpen="isOpen" v-model="condition.value"></json-editor>
+    </div>
+  </div>
+</div>
+</script>

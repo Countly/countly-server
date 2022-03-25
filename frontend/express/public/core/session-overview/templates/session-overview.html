@@ -1,0 +1,38 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('session-overview.title')}} </h2>
+            <cly-tooltip-icon :tooltip="i18n('session-overview.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
+        </span>
+        </template>
+    </cly-header>
+    <cly-main>
+        <cly-date-picker-g class="session-overview-date-picker-container"></cly-date-picker-g>
+        <cly-section>
+            <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading" :force-loading="isLoading" :legend="legend"></cly-chart-line>
+        </cly-section>
+        <cly-section>
+            <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" :force-loading="isLoading">
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" prop="date" :label="i18n('common.date')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="totalSessions" :label="i18n('common.total-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.totalSessions)}}
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="newSessions" :label="i18n('common.new-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.newSessions)}}
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="uniqueSessions" :label="i18n('common.unique-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.uniqueSessions)}}
+                        </template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+    </cly-main>
+</div>

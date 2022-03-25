@@ -111,11 +111,11 @@ echo "$plugins" > plugins.json
 
 )
 
-#install nghttp2
-bash "$DIR/scripts/install.nghttp2.sh"
-
 #install plugins
 bash "$DIR/scripts/countly.install.plugins.sh"
+
+#load city data into database
+nodejs "$DIR/scripts/loadCitiesInDb.js"
 
 #compile scripts for production
 countly task dist-all

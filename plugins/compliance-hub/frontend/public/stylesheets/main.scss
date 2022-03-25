@@ -1,0 +1,46 @@
+.cly-vue-compliance__user_chart {
+    min-width: 45% !important;
+    border-top: 1px solid #ececec;
+    border-bottom: 2px solid #ececec;
+    max-height: 327px;
+}
+.cly-vue-complaince__hub {
+    .cly-vue-tabs {
+        margin-bottom: 16px !important;
+    }
+    .el-table__row {
+        height: 120px !important;
+    }
+    .cly-vue-chart-legend__line {
+        margin-top: 12px;
+    }
+    
+}
+.cly-vue-compliance__consent_history_expanded_column {
+    height: 16px;
+}
+.cly-vue-compliance__consent_history {
+    .el-table__expanded-cell {
+        padding-left: 68px !important;
+        padding-top: 32px !important;
+        padding-bottom: 32px !important;
+    }
+
+}
+
+.cly-vue-complaince__hub_style_none {
+    border-top: none;
+  }
+  .cly-vue-complaince__hub_style_widthzero {
+    
+    .cly-vue-section__content {
+        border-top: 0;
+        
+    }
+  }
+
+  .cly-vue-compliance__user_consent_history {
+    .bu-level:not(:last-child) {
+        margin-bottom: 1.5rem;
+    }
+  }

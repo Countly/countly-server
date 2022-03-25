@@ -1,0 +1,52 @@
+<div v-bind:class="[componentId]">
+    <cly-datatable-n  ref="compareApps" :force-loading="isTableLoading" :rows="appsTableRows" @select="handleCurrentChange" :keyFn="function(row) {return row.id}" @select-all="handleAllChange">
+      <template v-slot:header-left="selectScope">
+      </template>
+      <template v-slot="scope">
+        <el-table-column fixed="left" type="selection" :reserve-selection="true">
+        </el-table-column>
+        <el-table-column min-width="240" fixed sortable="true" prop="name" :label="i18n('compare.apps.table.name')">
+          <template v-slot="rowScope">
+            <div class="has-ellipsis">
+              {{rowScope.row.name}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column min-width="160" sortable="true" prop="totalSessions" :label="i18n('compare.apps.table.total.sessions')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.totalSessions}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column min-width="200" sortable="true" prop="totalUsers" :label="i18n('compare.apps.table.total.users')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.totalUsers}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column min-width="200" sortable="true" prop="newUsers" :label="i18n('compare.apps.table.new.users')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.newUsers}}
+            </div>
+          </template>
+        </el-table-column>
+              <el-table-column min-width="130" sortable="true" prop="timeSpent" :label="i18n('compare.apps.table.time.spent')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.timeSpent}}
+            </div>
+          </template>
+        </el-table-column>
+              <el-table-column min-width="210" sortable="true" prop="avgSessionDuration" :label="i18n('compare.apps.table.avg.session.duration')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.avgSessionDuration}}
+            </div>
+          </template>
+        </el-table-column>
+      </template>
+    </cly-datatable-n>
+  </div>

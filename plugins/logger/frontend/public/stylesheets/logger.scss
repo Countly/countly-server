@@ -1,0 +1,145 @@
+.cly-vue-logger {
+  & .cly-vue-eldatatable {
+    &__header {
+      border-top: 0px;
+    }
+  }
+
+  & .cly-vue-header {
+    margin-bottom: 24px !important;
+  }
+
+  &__title {
+    color: #24292e;
+  }
+  
+  &__subtitle {
+    color: #81868D;
+    font-size: 14px;
+    margin-top: -4px;
+  }
+
+  &__tooltip {
+    color: #a7aeb8;
+    margin-left: 4px;
+    margin-right: 24px;
+  }
+
+  & .oval {
+    width: 6px;
+    height: 6px;
+    border-radius: 6px;
+    margin: 0px 3px 2px 3px;
+    background-color: #333c48;
+    display: inline-block;
+  }
+  
+  & .shadow {
+    background: linear-gradient(360deg, #F7F7F7 0%, #FAFBFC 9.6%, #ECECEC 100%);
+    mix-blend-mode: normal;
+    opacity: 0.57;
+  }
+
+  & .el-tabs {
+    .el-tabs__header {
+      margin-bottom: 0px;
+    }
+
+    .el-tabs__header .el-tabs__item {
+			background-color:#f6f6f6;
+			border-left: none;
+			border-right: none;
+			margin-left: 24px;
+		}
+
+		.el-tabs__header .el-tabs__nav {
+			border-right: 0px;
+		}
+
+		.el-tabs__header .el-tabs__item.is-active {
+			border-bottom-color: #0166d6;
+			border-bottom-width: 2px;
+		}
+
+		.el-tabs__item {
+			height: auto;
+			text-align: left;
+			background-color:#f6f6f6;
+		}
+
+		.el-tabs__content {
+			border-left: 1px solid #ececec;
+			border-right: 1px solid #ececec;
+			border-bottom: 1px solid #ececec;
+      margin-bottom: 20px;
+      padding-left: 10px;
+		}
+
+		.el-tabs--card>.el-tabs__header {
+			margin: 0;
+		}
+
+		.el-tabs--card>.el-tabs__header {
+			box-sizing: border-box;
+		}
+
+		.el-tabs__nav-wrap{
+			background-color: #f6f6f6;
+			border-left: none;
+			border-right: 1px solid #ececec;
+		}
+
+		.el-tabs__nav-wrap.is-scrollable{
+			border-bottom: 0px;
+			background-color: #f6f6f6;
+		}
+
+		.el-textarea__inner{
+			overflow-y: auto;
+		}
+  }
+
+  #crash-tabs {
+    .cly-vue-section__content {
+      margin-bottom: 20px !important;
+    }
+  }
+
+  &__refresh {
+    font-size: 18px;
+    color: #a7aeb8;
+    margin-left: 10px;
+    &--enabled {
+      font-size: 14px;
+      color: #333c48;
+    }
+    &--enabled-color {
+      font-size: 14px;
+      color: #0064de;
+      margin-left: 5px;
+    }
+    &--disabled {
+      font-size: 14px;
+      color: #333c48;
+      margin-left: 10px;
+    }
+  }
+
+  &__next-page {
+    margin: auto;
+    border: solid 1px #a7aeb8;
+    border-radius: 2px;
+    &--first {
+      width: 8px;
+      height: 16px;
+      background-color: #a7aeb8;
+      float: left;
+    }
+    &--second {
+      width: 8px;
+      height: 16px;
+      background-color: #ffffff;
+      float: right;
+    }
+  }
+}

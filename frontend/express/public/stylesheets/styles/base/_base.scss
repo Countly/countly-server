@@ -1,0 +1,95 @@
+/*
+    CSS for base DOM tags rests here
+*/
+
+@use "sass:map";
+@use "./typography-variables" as t;
+@use "./colors" as c;
+
+* {
+    outline:none;
+}
+html {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    margin:0;
+    padding:0;
+    overflow:auto;
+    background-color:#F9F9F9;
+    user-select:text;
+    font-family: t.$font-family, Ubuntu,Helvetica,sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1 {
+    font-size: t.$heading-1-size;
+    line-height: t.$heading-1-line-height;
+    font-weight: t.$heading-1-weight;
+    margin: 0;
+    padding: 10;
+    color: map.get(c.$colors, "cool-gray-100");
+}
+
+h2 {
+    font-size: t.$heading-2-size;
+    line-height: t.$heading-2-line-height;
+    font-weight: t.$heading-2-weight;
+    margin: 0;
+    padding: 0;
+    color: map.get(c.$colors, "cool-gray-100");
+}
+
+h3 {
+    font-size: t.$heading-3-size;
+    line-height: t.$heading-3-line-height;
+    font-weight: t.$heading-3-weight;
+    margin: 0;
+    padding: 0;
+    color: map.get(c.$colors, "cool-gray-100");
+}
+
+h4 {
+    font-size: t.$heading-4-size;
+    line-height: t.$heading-4-line-height;
+    font-weight: t.$heading-4-weight;
+    margin: 0;
+    padding: 0;
+    color: map.get(c.$colors, "cool-gray-100");
+}
+
+h5 {
+    font-size: t.$heading-5-size;
+    line-height: t.$heading-5-line-height;
+    font-weight: t.$heading-5-weight;
+    margin: 0;
+    padding: 0;
+    color: map.get(c.$colors, "cool-gray-100");
+}
+
+h6 {
+    font-size: t.$heading-6-size;
+    line-height: t.$heading-6-line-height;
+    font-weight: t.$heading-6-weight;
+    margin: 0;
+    padding: 0;
+    color: map.get(c.$colors, "cool-gray-100");
+}
+
+textarea,
+input,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button  {
+    font-family: t.$font-family !important;
+}

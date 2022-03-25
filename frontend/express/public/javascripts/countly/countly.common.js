@@ -1,4 +1,4 @@
-/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
+/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS, Uint32Array*/
 (function(window, $) {
     /**
      * Object with common functions to be used for multiple purposes
@@ -134,7 +134,7 @@
         * @memberof countlyCommon
         * @param {string|array} period - new period, supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
         * @param {int} timeStamp - timeStamp for the period based
-        * @param {boolean} noSet - if set  - updates countly_date
+        * @param {boolean} noSet - if false  - updates countly_date
         */
         countlyCommon.setPeriod = function(period, timeStamp, noSet) {
             _period = period;
@@ -145,7 +145,7 @@
                 countlyCommon.periodObj = calculatePeriodObject(period);
             }
 
-            if (window.app && window.app.recordEvent) {
+            if (window.countlyCommon === this && window.app && window.app.recordEvent) {
                 window.app.recordEvent({
                     "key": "period-change",
                     "count": 1,
@@ -153,15 +153,18 @@
                 });
             }
 
-            if (window.countlyVue && window.countlyVue.vuex) {
+            if (noSet) {
+                /*
+                    Dont update vuex or local storage if noSet is true
+                */
+                return;
+            }
+
+            if (window.countlyCommon === this && window.countlyVue && window.countlyVue.vuex) {
                 var currentStore = window.countlyVue.vuex.getGlobalStore();
                 if (currentStore) {
                     currentStore.dispatch("countlyCommon/updatePeriod", {period: period, label: countlyCommon.getDateRangeForCalendar()});
                 }
-            }
-
-            if (noSet) {
-                return;
             }
 
             store.set("countly_date", period);
@@ -176,18 +179,9 @@
             return _period;
         };
 
-        /**
-        * Get currently selected period that can be used in ajax requests
-        * @memberof countlyCommon
-        * @returns {string} supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
-        */
+
         countlyCommon.getPeriodForAjax = function() {
-            if (Object.prototype.toString.call(_period) === '[object Array]') {
-                return JSON.stringify(_period);
-            }
-            else {
-                return _period;
-            }
+            return CountlyHelpers.getPeriodUrlQueryParameter(_period);
         };
 
         /**
@@ -209,6 +203,49 @@
                 },
                 success: function() { }
             });
+        };
+
+        /**
+         * Adds notification toast to the list.
+         * @param {*} payload notification toast
+         *  payload.color: color of the notification toast
+         *  payload.text: text of the notification toast
+         */
+        countlyCommon.dispatchNotificationToast = function(payload) {
+            if (window.countlyVue && window.countlyVue.vuex) {
+                var currentStore = window.countlyVue.vuex.getGlobalStore();
+                if (currentStore) {
+                    currentStore.dispatch('countlyCommon/onAddNotificationToast', payload);
+                }
+            }
+        };
+
+        /**
+         * Generates unique id string using unsigned integer array.
+         * @returns {string} unique id
+         */
+        countlyCommon.generateId = function() {
+            var crypto = window.crypto || window.msCrypto;
+            var uint32 = crypto.getRandomValues(new Uint32Array(1))[0];
+            return uint32.toString(16);
+        };
+
+        /**
+         * 
+         * @param {name} name drawer name
+         * @returns {object}  drawer data used by hasDrawers() mixin
+         */
+        countlyCommon.getExternalDrawerData = function(name) {
+            var result = {};
+            result[name] = {
+                name: name,
+                isOpened: false,
+                initialEditedObject: {},
+            };
+            result[name].closeFn = function() {
+                result[name].isOpened = false;
+            };
+            return result;
         };
 
         /**
@@ -1610,8 +1647,7 @@
                         activeDate = countlyCommon.periodObj.activePeriod;
                     }
                 }
-
-                for (var i = periodMin; i < periodMax; i++) {
+                for (var i = periodMin, counter = 0; i < periodMax; i++, counter++) {
 
                     if (!countlyCommon.periodObj.isSpecialPeriod) {
 
@@ -1634,11 +1670,11 @@
 
                     dataObj = clearFunction(dataObj);
 
-                    if (!tableData[i]) {
-                        tableData[i] = {};
+                    if (!tableData[counter]) {
+                        tableData[counter] = {};
                     }
 
-                    tableData[i].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                    tableData[counter].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
                     var propertyValue = "";
                     if (propertyFunctions[j]) {
                         propertyValue = propertyFunctions[j](dataObj);
@@ -1647,8 +1683,8 @@
                         propertyValue = dataObj[propertyNames[j]];
                     }
 
-                    chartData[j].data[chartData[j].data.length] = [i, propertyValue];
-                    tableData[i][propertyNames[j]] = propertyValue;
+                    chartData[j].data[chartData[j].data.length] = [counter, propertyValue];
+                    tableData[counter][propertyNames[j]] = propertyValue;
                 }
             }
 
@@ -2552,6 +2588,7 @@
         * @memberof countlyCommon
         * @param {string} bucket - time bucket, accepted values, hourly, weekly, monthly
         * @param {boolean} overrideBucket - override existing bucket logic and simply use current date for generating ticks
+        * @param {boolean} newChart - new chart implementation
         * @returns {object} object containing tick texts and ticks to use on time graphs
         * @example <caption>Example output</caption>
         *{
@@ -2564,7 +2601,7 @@
         *   "ticks":[[1,"23 Dec"],[4,"26 Dec"],[7,"29 Dec"],[10,"1 Jan"],[13,"4 Jan"],[16,"7 Jan"],[19,"10 Jan"],[22,"13 Jan"],[25,"16 Jan"],[28,"19 Jan"]]
         *}
         */
-        countlyCommon.getTickObj = function(bucket, overrideBucket) {
+        countlyCommon.getTickObj = function(bucket, overrideBucket, newChart) {
             var days = parseInt(countlyCommon.periodObj.numberOfDays, 10),
                 ticks = [],
                 tickTexts = [],
@@ -2583,6 +2620,7 @@
                 tickTexts[0] = countlyCommon.formatDate(thisDay, "D MMM, dddd");
             }
             else if ((days === 1 && _period !== "month" && _period !== "day") || (days === 1 && bucket === "hourly")) {
+                //When period is an array or string like Xdays, Xweeks
                 for (var z = 0; z < 24; z++) {
                     ticks.push([z, (z + ":00")]);
                     tickTexts.push((z + ":00"));
@@ -2601,7 +2639,7 @@
                     //so we would not start from previous year
                     start.add(1, 'day');
 
-                    var monthCount = moment().diff(start, "months") + 1;
+                    var monthCount = 12;
 
                     for (i = 0; i < monthCount; i++) {
                         allMonths.push(start.format(countlyCommon.getDateFormat("MMM YYYY")));
@@ -2653,10 +2691,11 @@
                 }
                 else {
                     if (_period === "day") {
+                        start.add(1, 'days');
                         for (i = 0; i < new Date(start.year(), start.month(), 0).getDate(); i++) {
-                            start.add(1, 'days');
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            start.add(1, 'days');
                         }
                     }
                     else {
@@ -2681,42 +2720,44 @@
             }
 
             var labelCn = ticks.length;
-            if (ticks.length <= 2) {
-                limitAdjustment = 0.02;
-                var tmpTicks = [],
-                    tmpTickTexts = [];
+            if (!newChart) {
+                if (ticks.length <= 2) {
+                    limitAdjustment = 0.02;
+                    var tmpTicks = [],
+                        tmpTickTexts = [];
 
-                tmpTickTexts[0] = "";
-                tmpTicks[0] = [-0.02, ""];
+                    tmpTickTexts[0] = "";
+                    tmpTicks[0] = [-0.02, ""];
 
-                for (var m = 0; m < ticks.length; m++) {
-                    tmpTicks[m + 1] = [m, ticks[m][1]];
-                    tmpTickTexts[m + 1] = tickTexts[m];
+                    for (var m = 0; m < ticks.length; m++) {
+                        tmpTicks[m + 1] = [m, ticks[m][1]];
+                        tmpTickTexts[m + 1] = tickTexts[m];
+                    }
+
+                    tmpTickTexts.push("");
+                    tmpTicks.push([tmpTicks.length - 1 - 0.98, ""]);
+
+                    ticks = tmpTicks;
+                    tickTexts = tmpTickTexts;
                 }
+                else if (!skipReduction && ticks.length > 10) {
+                    var reducedTicks = [],
+                        step = (Math.floor(ticks.length / 10) < 1) ? 1 : Math.floor(ticks.length / 10),
+                        pickStartIndex = (Math.floor(ticks.length / 30) < 1) ? 1 : Math.floor(ticks.length / 30);
 
-                tmpTickTexts.push("");
-                tmpTicks.push([tmpTicks.length - 1 - 0.98, ""]);
+                    for (var l = pickStartIndex; l < (ticks.length - 1); l = l + step) {
+                        reducedTicks.push(ticks[l]);
+                    }
 
-                ticks = tmpTicks;
-                tickTexts = tmpTickTexts;
-            }
-            else if (!skipReduction && ticks.length > 10) {
-                var reducedTicks = [],
-                    step = (Math.floor(ticks.length / 10) < 1) ? 1 : Math.floor(ticks.length / 10),
-                    pickStartIndex = (Math.floor(ticks.length / 30) < 1) ? 1 : Math.floor(ticks.length / 30);
-
-                for (var l = pickStartIndex; l < (ticks.length - 1); l = l + step) {
-                    reducedTicks.push(ticks[l]);
+                    ticks = reducedTicks;
                 }
+                else {
+                    ticks[0] = null;
 
-                ticks = reducedTicks;
-            }
-            else {
-                ticks[0] = null;
-
-                // Hourly ticks already contain 23 empty slots at the end
-                if (!(bucket === "hourly" && days !== 1)) {
-                    ticks[ticks.length - 1] = null;
+                    // Hourly ticks already contain 23 empty slots at the end
+                    if (!(bucket === "hourly" && days !== 1)) {
+                        ticks[ticks.length - 1] = null;
+                    }
                 }
             }
 
@@ -2800,6 +2841,25 @@
             var parts = x.toString().split(".");
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             return parts.join(".");
+        };
+
+
+        /**
+        * Formats the number by separating each 3 digits with, falls back to
+        * a default value in case of NaN
+        * @memberof countlyCommon
+        * @param {number} x - number to format
+        * @param {string} fallback - fallback value for unparsable numbers
+        * @returns {string} formatted number or fallback
+        * @example
+        * //outputs 1,234,567
+        * countlyCommon.formatNumberSafe(1234567);
+        */
+        countlyCommon.formatNumberSafe = function(x, fallback) {
+            if (isNaN(parseFloat(x))) {
+                return fallback || "N/A";
+            }
+            return countlyCommon.formatNumber(x);
         };
 
         /**
@@ -2967,71 +3027,100 @@
         * countlyCommon.formatTimeAgo(1484654066);
         */
         countlyCommon.formatTimeAgo = function(timestamp) {
+            var meta = countlyCommon.formatTimeAgoText(timestamp);
+            var elem = $("<span>");
+            elem.prop("title", meta.tooltip);
+            if (meta.color) {
+                elem.css("color", meta.color);
+            }
+            elem.text(meta.text);
+            elem.append("<a style='display: none;'>|" + meta.tooltip + "</a>");
+            return elem.prop('outerHTML');
+        };
+
+        /**
+        * Format timestamp to twitter like time ago format with real date as tooltip and hidden data for exporting
+        * @memberof countlyCommon
+        * @param {number} timestamp - timestamp in seconds or miliseconds
+        * @returns {string} formated time ago
+        * @example
+        * //outputs ago time without html tags
+        * countlyCommon.formatTimeAgo(1484654066);
+        */
+        countlyCommon.formatTimeAgoText = function(timestamp) {
             if (Math.round(timestamp).toString().length === 10) {
                 timestamp *= 1000;
             }
             var target = new Date(timestamp);
             var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
-            var elem = $("<span>");
-            elem.prop("title", tooltip);
+            var text = tooltip;
+            var color = null;
             var now = new Date();
             var diff = Math.floor((now - target) / 1000);
             if (diff <= -2592000) {
-                elem.text(tooltip);
+                return tooltip;
             }
             else if (diff < -86400) {
-                elem.text(jQuery.i18n.prop("common.in.days", Math.abs(Math.round(diff / 86400))));
+                text = jQuery.i18n.prop("common.in.days", Math.abs(Math.round(diff / 86400)));
             }
             else if (diff < -3600) {
-                elem.text(jQuery.i18n.prop("common.in.hours", Math.abs(Math.round(diff / 3600))));
+                text = jQuery.i18n.prop("common.in.hours", Math.abs(Math.round(diff / 3600)));
             }
             else if (diff < -60) {
-                elem.text(jQuery.i18n.prop("common.in.minutes", Math.abs(Math.round(diff / 60))));
+                text = jQuery.i18n.prop("common.in.minutes", Math.abs(Math.round(diff / 60)));
             }
             else if (diff <= -1) {
-                elem.css("color", "#50C354"); elem.text(jQuery.i18n.prop("common.in.seconds", Math.abs(diff)));
+                color = "#50C354";
+                text = (jQuery.i18n.prop("common.in.seconds", Math.abs(diff)));
             }
             else if (diff <= 1) {
-                elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.just-now"]);
+                color = "#50C354";
+                text = jQuery.i18n.map["common.ago.just-now"];
             }
             else if (diff < 20) {
-                elem.css("color", "#50C354"); elem.text(jQuery.i18n.prop("common.ago.seconds-ago", diff));
+                color = "#50C354";
+                text = jQuery.i18n.prop("common.ago.seconds-ago", diff);
             }
             else if (diff < 40) {
-                elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.half-minute"]);
+                color = "#50C354";
+                text = jQuery.i18n.map["common.ago.half-minute"];
             }
             else if (diff < 60) {
-                elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.less-minute"]);
+                color = "#50C354";
+                text = jQuery.i18n.map["common.ago.less-minute"];
             }
             else if (diff <= 90) {
-                elem.text(jQuery.i18n.map["common.ago.one-minute"]);
+                text = jQuery.i18n.map["common.ago.one-minute"];
             }
             else if (diff <= 3540) {
-                elem.text(jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60)));
+                text = jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60));
             }
             else if (diff <= 5400) {
-                elem.text(jQuery.i18n.map["common.ago.one-hour"]);
+                text = jQuery.i18n.map["common.ago.one-hour"];
             }
             else if (diff <= 86400) {
-                elem.text(jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600)));
+                text = jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600));
             }
             else if (diff <= 129600) {
-                elem.text(jQuery.i18n.map["common.ago.one-day"]);
+                text = jQuery.i18n.map["common.ago.one-day"];
             }
             else if (diff < 604800) {
-                elem.text(jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400)));
+                text = jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
             }
             else if (diff <= 777600) {
-                elem.text(jQuery.i18n.map["common.ago.one-week"]);
+                text = jQuery.i18n.map["common.ago.one-week"];
             }
             else if (diff <= 2592000) {
-                elem.text(jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400)));
+                text = jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
             }
             else {
-                elem.text(tooltip);
+                text = tooltip;
             }
-            elem.append("<a style='display: none;'>|" + tooltip + "</a>");
-            return elem.prop('outerHTML');
+            return {
+                text: text,
+                tooltip: tooltip,
+                color: color
+            };
         };
 
         /**
@@ -3474,6 +3563,9 @@
         * @returns {object} returns {@link countlyCommon.periodObj}
         */
         countlyCommon.getPeriodObj = function() {
+            if (countlyCommon.periodObj._period !== _period) {
+                countlyCommon.periodObj = calculatePeriodObject(_period);
+            }
             return countlyCommon.periodObj;
         };
 
@@ -3569,9 +3661,10 @@
                 previousUniquePeriodArr: [],
                 previousUniquePeriodCheckArr: [],
                 periodContainsToday: true,
+                _period: period
             };
 
-            endTimestamp = currentTimestamp.clone().utc().endOf("day");
+            endTimestamp = currentTimestamp.clone().endOf("day");
 
             if (period && period.indexOf(",") !== -1) {
                 try {
@@ -3600,8 +3693,8 @@
                     toDate = moment(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
                 }
 
-                startTimestamp = fromDate.clone().utc().startOf("day");
-                endTimestamp = toDate.clone().utc().endOf("day");
+                startTimestamp = fromDate.clone().startOf("day");
+                endTimestamp = toDate.clone().endOf("day");
                 // fromDate.tz(_appTimezone);
                 // toDate.tz(_appTimezone);
 
@@ -3619,8 +3712,8 @@
                     //incorrect range - reset to 30 days
                     nDays = 30;
 
-                    startTimestamp = currentTimestamp.clone().utc().startOf("day").subtract(nDays - 1, "days");
-                    endTimestamp = currentTimestamp.clone().utc().endOf("day");
+                    startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
+                    endTimestamp = currentTimestamp.clone().endOf("day");
 
                     cycleDuration = moment.duration(nDays, "days");
                     Object.assign(periodObject, {
@@ -3637,7 +3730,7 @@
                 }
             }
             else if (period === "month") {
-                startTimestamp = currentTimestamp.clone().utc().startOf("year");
+                startTimestamp = currentTimestamp.clone().startOf("year");
                 cycleDuration = moment.duration(1, "year");
                 periodObject.dateString = "MMM";
                 Object.assign(periodObject, {
@@ -3649,7 +3742,7 @@
                 });
             }
             else if (period === "day") {
-                startTimestamp = currentTimestamp.clone().utc().startOf("month");
+                startTimestamp = currentTimestamp.clone().startOf("month");
                 cycleDuration = moment.duration(1, "month");
                 periodObject.dateString = "D MMM";
                 Object.assign(periodObject, {
@@ -3661,7 +3754,7 @@
                 });
             }
             else if (period === "hour") {
-                startTimestamp = currentTimestamp.clone().utc().startOf("day");
+                startTimestamp = currentTimestamp.clone().startOf("day");
                 cycleDuration = moment.duration(1, "day");
                 Object.assign(periodObject, {
                     dateString: "HH:mm",
@@ -3674,8 +3767,8 @@
             else if (period === "yesterday") {
                 var yesterday = currentTimestamp.clone().subtract(1, "day");
 
-                startTimestamp = yesterday.clone().utc().startOf("day");
-                endTimestamp = yesterday.clone().utc().endOf("day");
+                startTimestamp = yesterday.clone().startOf("day");
+                endTimestamp = yesterday.clone().endOf("day");
                 cycleDuration = moment.duration(1, "day");
                 Object.assign(periodObject, {
                     dateString: "D MMM, HH:mm",
@@ -3690,7 +3783,7 @@
                 if (nDays < 1) {
                     nDays = 30; //if there is less than 1 day
                 }
-                startTimestamp = currentTimestamp.clone().utc().startOf("day").subtract(nDays - 1, "days");
+                startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
                 cycleDuration = moment.duration(nDays, "days");
                 Object.assign(periodObject, {
                     dateString: "D MMM",
@@ -3702,7 +3795,7 @@
                 if (nDays < 1) {
                     nDays = 30; //if there is less than 1 day
                 }
-                startTimestamp = currentTimestamp.clone().utc().startOf("day").subtract(nDays - 1, "days");
+                startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
                 cycleDuration = moment.duration(nDays, "days");
                 Object.assign(periodObject, {
                     dateString: "D MMM",
@@ -3714,7 +3807,7 @@
                 if (nDays < 1) {
                     nDays = 30; //if there is less than 1 day
                 }
-                startTimestamp = currentTimestamp.clone().utc().startOf("day").subtract(nDays - 1, "days");
+                startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
                 cycleDuration = moment.duration(nDays, "days");
                 Object.assign(periodObject, {
                     dateString: "D MMM",
@@ -3725,7 +3818,7 @@
             else {
                 nDays = 30;
 
-                startTimestamp = currentTimestamp.clone().utc().startOf("day").subtract(nDays - 1, "days");
+                startTimestamp = currentTimestamp.clone().startOf("day").subtract(nDays - 1, "days");
                 cycleDuration = moment.duration(nDays, "days");
                 Object.assign(periodObject, {
                     dateString: "D MMM",
@@ -4514,6 +4607,21 @@
             }
 
             return "rgba(" + +r + "," + +g + "," + +b + "," + a + ")";
+        };
+
+        /**
+		 * Unescapes provided string.
+         * -- Please use carefully --
+         * Mainly for rendering purposes.
+		 * @param {String} text - Arbitrary string
+         * @param {String} df - Default value
+		 * @returns {String} rgba string
+		 */
+        countlyCommon.unescapeString = function(text, df) {
+            if (text === undefined && df === undefined) {
+                return undefined;
+            }
+            return _.unescape(text || df).replace(/&#39;/g, "'");
         };
     };
 

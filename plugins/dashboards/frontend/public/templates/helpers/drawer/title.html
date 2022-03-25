@@ -1,0 +1,15 @@
+<div class="bu-py-3">
+    <el-checkbox v-model="checkbox">{{i18nM("dashboards.custom-widget-title")}}</el-checkbox>
+
+    <cly-form-field
+        v-if="checkbox"
+        name="title"
+        :rules="checkbox ? 'required' : ''">
+        <el-input
+            v-bind="$attrs"
+            v-model="title"
+            :placeholder="i18n('placeholder.dashboards.enter-widget-title')">
+        </el-input>
+    </cly-form-field>
+</div>
+

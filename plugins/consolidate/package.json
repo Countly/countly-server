@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "description": "Consolidate information from all apps into one by duplicating information",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly/plugins/consolidate/",
   "repository": {
     "type": "git",
     "url": "http://github.com/Countly/countly-server.git"

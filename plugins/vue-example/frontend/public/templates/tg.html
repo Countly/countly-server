@@ -1,36 +1,85 @@
 <div>
-    <cly-tabs id="basic-tabs2" v-model="activeTab">
-        <cly-content name='Graph' id="graph-tab" v-bind:always-mounted="false">
-            <cly-panel title="Graph" v-bind:date-selector="false">
-                <cly-tabs id="graph-sub-tabs" v-model="activeGraphTab" skin="graphs">
-                    <cly-content name='Pie Graph' id="sub-graph-tab1" v-bind:always-mounted="false">
-                        <cly-graph-w
-                            v-bind:data-points="pieData"
-                            graph-type="pie">
-                        </cly-graph-w>
-                    </cly-content>
-                    <cly-content name='Bar Graph' id="sub-graph-tab2" v-bind:always-mounted="false">
-                        <cly-graph-w
-                            v-bind:data-points="barData"
-                            graph-type="bar">
-                        </cly-graph-w>
-                    </cly-content>
-                    <cly-content name='Line Graph' id="sub-graph-tab3" v-bind:always-mounted="false">
-                        <cly-graph-w
-                            v-bind:data-points="lineData"
-                            graph-type="line">
-                        </cly-graph-w>
-                    </cly-content>
-                </cly-tabs>
-            </cly-panel>
-        </cly-content>
-        <cly-content name='Time Graph' id="time-tab" v-bind:always-mounted="false">
-            <cly-panel title="Time Graph">
-                <cly-time-graph-w
-                    v-bind:data-points="randomNumbers"
-                    v-bind:config-paths="paths">
-                </cly-time-graph-w>
-            </cly-panel>
-        </cly-content>
-    </cly-tabs>
+    <cly-header title="Chart components"></cly-header>
+    <cly-main>
+        <cly-section title="Line Chart">
+            <cly-chart-line :option="lineOptions" :legend="lineLegend">
+                <template v-slot:chart-left>
+                </template>
+            </cly-chart-line>
+        </cly-section>
+        <cly-section title="Time Graph">
+            <cly-chart-time :option="largeScaleOptions" :bucket="selBucket" :dummy="true">
+                <template v-slot:chart-left="scope">
+                    <div class="bu-level-item">
+                        <el-button @click="onTimeSeriesButtonClick" size="small">Change series</el-button>
+                    </div>
+                    <div class="bu-level-item" style="width: 100px;">
+                        <el-select v-model="selBucket">
+                            <el-option :key="item" :value="item" :label="item"
+                                v-for="item in ['daily', 'weekly', 'monthly', 'hourly']"></el-option>
+                        </el-select>
+                    </div>
+                </template>
+            </cly-chart-time>
+        </cly-section>
+        <cly-section>
+            <cly-chart-bar :option="overflowOptions"></cly-chart-bar>
+        </cly-section>
+        <cly-section title="Bar Chart">
+            <cly-chart-bar :option="barOptions" :legend="barLegend"></cly-chart-bar>
+        </cly-section>
+        <cly-section title="Stacked Bar Chart">
+            <cly-chart-bar :option="stackedBarOptions" :showToggle="false"></cly-chart-bar>
+        </cly-section>
+        <cly-section title="Bar charts right legend">
+            <cly-chart-bar :option="barOptions" :showDownload="false" :showZoom="false" :showToggle="false" :legend="{position: 'right'}"></cly-chart-bar>
+        </cly-section>
+        <cly-section title="Pie Chart">
+            <div class="bu-columns bu-is-gapless">
+                <div class="bu-column bu-is-half">
+                    <cly-chart-pie :option="pieOptions" :show-download="true"></cly-chart-pie>
+                </div>
+                <div class="bu-column bu-is-half">
+                    <cly-chart-pie :option="pieOptions" :legend="{show: false}" :showToggle="false"></cly-chart-pie>
+                </div>
+            </div>
+        </cly-section>
+        <cly-section>
+            <cly-chart-pie :option="newPieOptions" :showToggle="false"></cly-chart-pie>
+        </cly-section>
+        <cly-section title="Worldmap">
+            <cly-worldmap
+                style="height: 600px;"
+                countries-title="Sessions by Countries"
+                regions-title="Sessions by Regions"
+                cities-title="Sessions by Cities"
+                value-type="Sessions"
+                :countries-data="countriesData"
+                :regions-data="regionsData"
+                :cities-data="citiesData">
+                <!-- <template v-slot:regions-info>
+                    <span class="text-medium">Sessions</span>
+                </template>
+                <template v-slot:cities-info>
+                    <span class="text-medium">Sessions</span>
+                </template>
+                <template v-slot:tooltip-suffix>
+                    <span class="text-medium">Sessions</span>
+                </template> -->
+            </cly-worldmap>
+        </cly-section>
+        <cly-section title="Worldmap - Simple">
+            <cly-worldmap
+                style="height: 300px;"
+                external-country="TR"
+                external-detail-mode="cities"
+                value-type="Sessions"
+                :show-detail-mode-select="false"
+                :show-navigation="false"
+                :countries-data="countriesData"
+                :regions-data="regionsData"
+                :cities-data="citiesData">
+            </cly-worldmap>
+        </cly-section>
+    </cly-main>
 </div>

@@ -1,0 +1,287 @@
+@use "../base/colors" as c;
+@use "../base/typography-variables" as t;
+@use "../base/variables" as v;
+@use "sass:map";
+
+.cly-vue-select-x {
+    &__pop {
+        .cly-vue-listbox {
+            background-color: transparent !important;
+        }
+        .el-tabs {
+            &__active-bar{
+                background-color: #0166d6;
+            }
+            &__nav-wrap::after {
+                background-color: transparent;
+            }
+            &__nav-scroll {
+                // padding: 0 14px;
+                margin: 0 14px;
+            }
+            &__header {
+                margin: 0 0 1px 0;
+                z-index: 2000;
+                &::after {
+                    // shadow
+                    content: "";
+                    position: absolute;
+                    width: 100%;
+                    height: 12px;
+                    background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
+                    top: 40px;
+                    opacity: 0.12;
+                }
+            }
+            // &__active-bar {
+            //     padding: 0 15px;
+            //     left: -15px;
+            // }
+        }
+        &--hidden-tabs {
+            .el-tabs {
+                &__header {
+                    &::after {
+                        top: 0px;
+                    }
+                }
+                &__nav-scroll {
+                    display: none;
+                }
+            }
+        }
+        // .cly-vue-listbox {
+        //     padding: v.$select-dropdown-item-default-padding;
+        // }
+    }
+    &__title {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
+        color: #333c48;
+        padding-bottom: 16px;
+    }
+    &__header-slot {
+        padding-bottom: 16px;
+    }
+    &__header {
+        padding: 16px;
+        input[type=text] {
+            background-color: #F6F6F6;
+        }
+    }
+    &__footer {
+        border-top: 1px solid #ececec;
+    }
+    &__commit-section {
+        float: right;
+        margin: 16px;
+    }
+
+    &__pop--has-single-option, &__pop--has-slim-header {
+        .cly-vue-select-x__header-slot {
+            padding: 0;
+        }
+    }
+
+    &__pop--has-single-option {
+        .el-tabs__header::after {
+            content: none;
+        }
+    }
+
+    .el-select-head {
+        width: 100%;
+    }
+}
+
+.cly-vue-listbox {
+    background-color: map.get(c.$colors, "white");
+
+    label.el-checkbox {
+        width: 100%;
+        margin-left: 8px;
+    }
+
+    &.is-expandable {
+        transition: width 200ms;
+        width: 100%;
+        z-index: 100;
+    }
+
+    &.is-expanded {
+        width: 130%;
+        position: relative;
+        -webkit-box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
+        box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
+    }
+
+    &.cly-vue-listbox--bordered {
+        border-radius: 4px;
+        border: 1px solid map.get(c.$colors, "warm-gray-30");
+        // &.is-focus,
+        // &:focus-within {
+        //     border-color: map.get(c.$colors, "blue-100");
+        // }
+    }
+
+    .cly-vue-listbox__no-data {
+        padding: 8px;
+        line-height: 20px;
+        font-weight: t.$font-weight-primary;
+        color: #333c48;
+        font-size: 14px;
+    }
+
+    .el-checkbox-group {
+        overflow: hidden;
+    }
+
+    .el-checkbox__label {
+        line-height: 20px;
+        font-weight: t.$font-weight-text;
+        color: #333c48;
+        max-width: 330px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: bottom;
+    }
+
+    .el-checkbox__input.is-checked + .el-checkbox__label {
+        color: #333C48;
+    }
+
+    .drag-handler {
+        visibility: hidden;
+        margin-right: 8px;
+    }
+
+    &__header {
+        margin: 0 0 1px 0;
+        z-index: 1997;
+        border-bottom: 1px solid #ECECEC;
+        position: relative;
+        &::after {
+            // shadow
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 12px;
+            background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
+            top: 57px;
+            left: 0;
+            opacity: 0.12;
+        }
+    }
+    .cly-vue-listbox__group {
+        font-size: 12px;
+        line-height: 14px;
+        background-color: #F6F6F6;
+        border-bottom: solid 1px #ECECEC;
+        max-height: 32px;
+        display: flex;
+        align-items: center;
+        padding: v.$select-dropdown-item-default-padding;
+    }
+    .cly-vue-listbox__item {
+        display: flex;
+        cursor: pointer;
+        align-items: center;
+        justify-content: space-between;
+        &.selected{
+            background-color: v.$select-dropdown-item-default-selected-bg-color;
+            * {
+                color: v.$select-dropdown-item-default-selected-color;
+            }
+        }
+        .cly-vue-listbox__remove-option {
+            display: none;
+        }
+        &.hover {
+            .cly-vue-listbox__remove-option {
+                display: block;
+            }
+        }
+    }
+
+    .cly-vue-listbox__item-content {
+        width: 100%;
+    }
+
+    &__item-label {
+        max-width: 350px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &--disabled {
+        .cly-vue-listbox__item {
+            background-color: map.get(c.$colors, "warm-gray-20");
+            * {
+                color: map.get(c.$colors, "cool-gray-40");
+            }
+
+            &.selected {
+                opacity: .5;
+            }
+        }
+    }
+
+    &:not(.cly-vue-listbox--disabled) {
+        .cly-vue-listbox__item {
+            &:not(.selected):hover {
+                background-color: v.$select-dropdown-item-default-hover-bg-color;
+                .drag-handler {
+                    visibility: visible;
+                }
+                .cly-vue-listbox__item-prefix,
+                .cly-vue-listbox__item-prefix *,
+                .cly-vue-listbox__item-label,
+                .cly-vue-listbox__item-label *,
+                .cly-vue-listbox__item-suffix,
+                .cly-vue-listbox__item-suffix * {
+                    color: v.$select-dropdown-item-default-hover-color;
+                }
+
+            }
+
+            .cly-vue-listbox__remove-option:hover {
+                color: v.$select-dropdown-item-default-hover-color;
+            }
+        }
+    }
+
+    &--has-default-skin {
+        .cly-vue-listbox__item {
+            padding: v.$select-dropdown-item-default-padding;
+            border-radius: 4px;
+            line-height: v.$select-dropdown-item-default-height;
+        }
+    }
+    &--has-jumbo-skin {
+        .cly-vue-listbox__item {
+            padding: v.$select-dropdown-item-default-padding;
+            height: 55px;
+            box-sizing: border-box;
+            border-bottom: 1px solid #ECECEC;
+            &.selected{
+                border-left: 2px solid v.$select-dropdown-item-default-selected-bg-color;
+                background-color: map.get(c.$colors, "warm-gray-20");
+                * {
+                    color: v.$select-dropdown-item-default-selected-bg-color;
+                }
+            }
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+    }
+    &--has-margin {
+        .cly-vue-listbox__item {
+            margin: v.$select-dropdown-item-default-margin;
+        }
+    }
+}

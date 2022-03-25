@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/ionicons/css/ionicons.min.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/material/material-icons.css?<%= countlyVersion %>" />
+    <link rel="stylesheet" href="<%- cdn %>stylesheets/vue/element-ui.css?<%= countlyVersion %>" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css?<%= countlyVersion %>" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css?<%= countlyVersion %>" />
     <% if (production) { %>
@@ -45,13 +46,19 @@
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/vue/clyvue.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/dom/gridstack/gridstack.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/dom/gridstack/gridstack-extra.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/leaflet/leaflet.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/countly-checkbox/countly.checkbox.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/jsoneditor/codemirror.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/pace/pace-theme-flash.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/drop/drop-theme-countly.min.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/bulma/bulma-custom.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/styles/manifest.css?<%= countlyVersion %>" />
         <% if (stylesheets) { %>
 			<% for(var i=0, l=stylesheets.length; i<l; i++) {%>
         <link rel="stylesheet" href="<%- cdn %><%= stylesheets[i] %>?<%= countlyVersion %>" />
@@ -69,7 +76,9 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.easing.1.3.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfills.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/lodash.merge.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/prefixfree.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/gridstack/gridstack-h5.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment-with-locales.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/backbone-min.js?<%= countlyVersion %>"></script>
@@ -87,15 +96,25 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.xss.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/webfont.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/selectize.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/leaflet.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/js-deep-equals.unsorted.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfill/es6-promise.auto.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfill/intersection-observer.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/composition-api.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuex.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/echarts.5.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-echarts.umd.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-color.min.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuelidate.min.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/v-tooltip.min.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/validators.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/v-tooltip.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vee-validate.full.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-clipboard.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2Dropzone.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/element-ui.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2-leaflet.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/inViewportMixin.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuescroll.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js?<%= countlyVersion %>"></script>
@@ -111,7 +130,8 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/simpleUpload.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/Sortable.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuedraggable.umd.min.js?<%= countlyVersion %>"></script>
-
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/countly.checkbox.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.auth.js?<%= countlyVersion %>"></script>
     <% } %>
     <% if (themeFiles && themeFiles.css) { %>
         <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
@@ -142,180 +162,17 @@
 	<% } %>
 </head>
 <body>
-	<div id="top-bar">
-		<div class="logo-container">
-			<div id="hide-sidebar-button"></div>
-			<!--
-			Community Edition license doesn't include the right to remove Countly branding.
-			If you wish to implement your own branding (e.g. your own logo, colors, etc.), you must license Countly Enterprise Edition.
-			-->
-			<a href="#/"><div class="logo"></div></a>
-		</div>
-		<div class="left-menu">
-			<div id="app-navigation" class="dropdown bordered large">
-				<div class="selected">
-					<div id="active-app-icon" style="<% if (defaultApp){ %> background-image:url('<%- cdn %>appimages/<%= defaultApp._id %>.png'); <% } %>"></div>
-					<div id="active-app-name" title="<% if (defaultApp){ %><%= defaultApp.name %><% } %>"><% if (defaultApp){ %><%= defaultApp.name %><% } %></div>
-				</div>
-				<div class="empty-state">Apps</div>
-				<div class="menu">
-					<div class="search nav-search">
-						<input type="text" autofocus readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
-					</div>
-					<div class="list"></div>
-				</div>
-			</div>
-		</div>
-		<div class="right-menu">
-			<div class="dropdown icon manage-long-tasks-menu-dropdown">
-				<div id="manage-long-tasks-icon" class="empty-state unread">
-                    <i class="fa fa-clock"></i>
-					<div class="orange-side-notification-banner-wrapper">
-						<div class="orange-side-notification-banner" data-localize="taskmanager.query-added-long"></div>
-					</div>
-                </div>
-				<div class="menu right manage-long-tasks-menu" style="width:400px;">
-                    <div class="menu-category-title">
-						<p data-localize="sidebar.long-running-queries"></p>
-						<a class="see-all"  href="#/manage/tasks#report-automatically"><span data-localize="common.see-all"></span>&rarr;</a>
-					</div>
-					<div class="tasks-wrapper">
-						<div class="tasks scrollable"></div>
-						</div>
-				</div>
-			</div>
-            <div class="dropdown icon">
-				<div class="empty-state">
-                    <i class="fa fa-cog"></i>
-                </div>
-				<div class="menu right manage-menu">
-                    <div class="menu-category-title" data-localize="sidebar.management"></div>
-					<div id="manage-menu" class="list"></div>
-				</div>
-			</div>
-			<div class="dropdown icon">
-				<div class="empty-state">
-					<i class="ion-person"></i>
-				</div>
-				<div class="menu right" style="width: 200px;">
-					<div class="list">
-						<span class="item_info">
-							<div class="user_name">
-								<div>
-									<%= member.full_name %>
-								</div>
-								<div>
-									<%= member.email %>
-								</div>
-								<div class="member_image">
-								</div>
-							</div>
-							<div class="api_key">
-								<div data-localize="sidebar.api_key">
-								</div>
-                                <div id="user_api_key_item">
-                                    <input value="<%= member.api_key %>" readonly=true type="text"/>
-								</div>
-							</div>
-						</span>
-                        <div id="user-menu">
-                            <a class="item" href='#/manage/user-settings' data-priority="10">
-                                <i class="ion-gear-a icon"></i>
-                                <div data-localize="plugins.user-configs"></div>
-                            </a>
-                            <a href="#/manage/token_manager" class="item" data-priority="11">
-                                <i class="ion-key icon"></i>
-                                <div data-localize="token_manager.page-title"></div>
-                            </a>
-
-                            <% if (typeof helpCenterLink === "string") { %>
-                            <a class="item" href="<%= helpCenterLink %>" target="_blank" data-priority="19">
-                                <i class="ion-help-buoy icon"></i>
-                                <div data-localize="common.help-center"></div>
-                            </a>
-                            <% } %>
-                            <% if (typeof helpCenterLink === "boolean" && helpCenterLink) { %>
-                            <a class="item" href="https://support.count.ly" target="_blank" data-priority="19">
-                                <i class="ion-help-buoy icon"></i>
-                                <div data-localize="common.help-center"></div>
-                            </a>
-                            <% } %>
-
-                            <% if (typeof documentationLink === "string") { %>
-                            <a class="item" href="<%= documentationLink %>" target="_blank" data-priority="20">
-                                <i class="ion-android-document icon"></i>
-                                <div data-localize="common.documentation"></div>
-                            </a>
-                            <% } %>
-                            <% if (typeof documentationLink === "boolean" && documentationLink) { %>
-                            <a class="item" href="https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base" target="_blank" data-priority="20">
-                                <i class="ion-android-document icon"></i>
-                                <div data-localize="common.documentation"></div>
-                            </a>
-                            <% } %>
-
-                            <% if(typeof feedbackLink === "string") { %>
-                            <a target="_new" href="<%= feedbackLink %>" class="item" data-priority="30">
-                                <i class="ion-ios-star icon"></i>
-                                <div data-localize="common.provide-feedback"></div>
-                            </a>
-                            <% } %>
-
-                            <% if (typeof featureRequestLink === "string") { %>
-                            <a class="item" href="<%= featureRequestLink %>" target="_blank" data-priority="40">
-                                <i class="ion-android-textsms icon"></i>
-                                <div data-localize="common.feature-request"></div>
-                            </a>
-                            <% } %>
-                            <% if (typeof featureRequestLink === "boolean" && featureRequestLink) { %>
-                            <a class="item" href="https://support.count.ly/hc/en-us/community/topics/360001464272-Feature-Requests" target="_blank" data-priority="40">
-                                <i class="ion-android-textsms icon"></i>
-                                <div data-localize="common.feature-request"></div>
-                            </a>
-                            <% } %>
-
-                            <a id="user-logout" class="item" href="#" data-priority="1000000000">
-                                <i class="ion-android-exit icon"></i>
-                                <div data-localize="sidebar.logout"></div>
-                            </a>
-                        </div>
-					</div>
-				</div>
-			</div>
-			<div class="dropdown icon">
-				<div class="empty-state reveal-language-menu">EN</div>
-				<div class="menu right" style="width: 150px;">
-					<div id="language-menu" class="list">
-						<% for(var i=0, l=languages.length; i<l; i++) {%>
-    						<a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
-  						<% } %>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div style="clear: both"></div>
-	</div>
-
-	<div id="main-views-container">
-		<div id="dashboards-main-view" class="main-view">
-			<div id="custom-dashboard"></div>
-		</div>
-		<div id="analytics-main-view" class="main-view">
-			<div id="sidebar">
-				<div id="new-install-overlay"></div>
-				<div id="sidebar-menu">
-                    <div id="default-type" class="sidebar-menu" style="display: none;"></div>
-                </div>
-				<div id="version-info"><%= countlyTypeName %></div>
-			</div>
-			<div id="content-container">
-				<div id="content-top"></div>
-				<div id="content"></div>
-			</div>
-		</div>
+	<div id="main-views-container" class="bu-is-flex">
+        <div id="cly-vue-sidebar">
+            <div id="sidebar-x"></div>
+        </div>
+        <div class="main-view">
+            <div id="content"></div>
+        </div>
 	</div>
 
 	<div id="overlay"></div>
+	<div id="vue-modal-manager"></div>
     <div id="cly-resource" class="dialog black" style="max-width: 800px; max-height: 600px;">
         <div class="content"></div>
     </div>
@@ -726,450 +583,6 @@
 		</div>
 		<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
 	</script>
-
-	<script id="template-management-applications" type="text/x-handlebars-template">
-		<div id="app-management-bar">
-			<div id="app-nav-head">
-				<div id="app-nav-title" data-localize="management-applications.title"></div>
-			</div>
-            <% if(member['global_admin'] || config.autonomous) { %>
-            <a id="add-app-button" class="help-zone-vs" data-help-localize="help.manage-apps.app-add-button" >
-                <i class="icon ion-plus-circled"></i>
-                <span data-localize="common.add-new-app-button">Add new App</span>
-            </a>
-            <% } %>
-            <div class="nav-search">
-                <i class="fa fa-search"></i>
-                <input type="search" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
-            </div>
-			<div id="management-app-container" class="scrollable">
-				{{#eachOfObjectValue admin_apps}}
-				<div class="app-container searchable" data-key="{{this.key}}" data-id="{{this._id}}">
-					<div class="logo" style="background-image: url('<%- cdn %>appimages/{{this._id}}.png');"></div>
-					<div class="name">{{this.name}}</div>
-				</div>
-				{{/eachOfObjectValue}}
-			</div>
-			<div id="manage-new-app">
-				<div class="app-container">
-					<div class="logo"></div>
-					<div class="name" data-localize="management-applications.my-new-app"></div>
-				</div>
-			</div>
-		</div>
-		<div class="widget" style="margin-left:199px;">
-			<div id="add-new-app">
-				<div class="widget-header">
-					<div class="left">
-						<div class="title new-app-name" data-localize="management-applications.my-new-app"></div>
-					</div>
-				</div>
-				<div>
-					<table class="d-table horizontal" cellpadding="0" cellspacing="0">
-						<tbody>
-							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-name">
-								<td data-localize="management-applications.application-name"></td>
-								<td>
-									<input type="text" value="" placeholder="Enter application name..." data-localize="placeholder.app-name" id="app-add-name" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
-								</td>
-							</tr>
-                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-type">
-								<td data-localize="management-applications.type"></td>
-								<td>
-									<div class="cly-select select-app-types" style="width:283px;">
-										<div class="select-inner">
-											<div class="text-container">
-												<div class="text" id="app-add-type" data-localize="management-applications.type.tip"></div>
-											</div>
-											<div class="right combo"></div>
-										</div>
-										<div class="select-items square" style="width:283px;">
-											<div>
-												{{#eachOfObject app_types}}
-                                                    <div data-value="{{property}}" class="item">{{value}}</div>
-                                                {{/eachOfObject}}
-											</div>
-										</div>
-									</div>
-                                    <div class="hint" data-localize="management-applications.type.hint"></div>
-                                </td>
-							</tr>
-							<!--<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-category">
-								<td data-localize="management-applications.category"></td>
-								<td>
-									<div class="cly-select" style="width:280px;">
-										<div class="select-inner">
-											<div class="text-container">
-												<div class="text" id="app-add-category" data-localize="management-applications.category.tip"></div>
-											</div>
-											<div class="right combo"></div>
-										</div>
-										<div class="select-items square" style="width:280px;">
-											<div>
-												{{> app-categories }}
-											</div>
-										</div>
-									</div>
-								</td>
-							</tr>-->
-							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-timezone">
-								<td data-localize="management-applications.time-zone"></td>
-								<td id="app-add-timezone" >
-                                    <div>
-                                        <div style="float:left;">
-                                            <div id="country-select" class="cly-select" style="width:283px;">
-                                                <div class="select-inner">
-                                                    <div class="text-container">
-                                                        <div class="text"></div>
-                                                    </div>
-                                                    <div class="right combo"></div>
-                                                </div>
-                                                <div class="select-items square" style="width:283px;">
-                                                    <div id="country-items"></div>
-                                                </div>
-                                            </div>
-                                            <div id="timezone-select" class="cly-select" style="width:200px; display:none;">
-                                                <div class="select-inner">
-                                                    <div class="text-container">
-                                                        <div class="text"></div>
-                                                    </div>
-                                                    <div class="right combo"></div>
-                                                </div>
-                                                <div class="select-items square" style="width:200px;">
-                                                    <div id="timezone-items"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="selected" style="float:left; font-size:14px; padding:8px 10px 5px; color:#666;"></div>
-                                        <input type="hidden" value="" id="app-timezone"/>
-                                        <input type="hidden" value="" id="app-country"/>
-                                    </div>
-                                    <div class="hint" data-localize="management-applications.time-zone.hint"></div>
-                                </td>
-							</tr>
-                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-icon">
-								<td data-localize="management-applications.icon"></td>
-								<td>
-									<form action="/apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
-										<input type="file" id="app_add_image" name="app_image" />
-										<input type="hidden" id="app_add_image_id" name="app_image_id" />
-									</form>
-								</td>
-							</tr>
-							<tr class="table-add">
-								<td colspan="2">
-									<a id="save-app-add" class="icon-button light" data-localize="management-applications.add-application"></a>
-									<a id="cancel-app-add" class="icon-button light" data-localize="common.cancel"></a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</div>
-			<div id="add-first-app">
-				<div class="add-app-input-wrapper">
-					<label class="add-app-input-label" data-localize="management-applications.application-name"></label>
-					<input value="" placeholder="Enter application name..." data-localize="placeholder.app-name" class="add-app-input-text" type="text" id="first-app-add-name" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
-				</div>
-				<div class="add-app-input-wrapper">
-					<label class="add-app-input-label" id="select-app-type-label" data-localize="management-applications.type"></label>
-					<div class="add-app-input cly-select select-app-types" id="select-app-type" style="width:100%;">
-						<div class="select-inner">
-							<div class="text-container">
-								<div class="text" id="first-app-add-type" data-localize="management-applications.type.tip"></div>
-							</div>
-							<div class="right combo"></div>
-						</div>
-						<div class="select-items square" style="width:100%;">
-							<div>
-								{{#eachOfObject app_types}}
-								<div data-value="{{property}}" class="item">{{value}}</div>
-								{{/eachOfObject}}
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="add-app-input-wrapper">
-					<label class="add-app-input-label" data-localize="management-applications.time-zone"></label>
-					<div id="first-app-add-timezone">
-						<div>
-							<div id="country-select" class="cly-select" style="width:100%;">
-								<div class="select-inner">
-									<div class="text-container">
-										<div class="text"></div>
-									</div>
-									<div class="right combo"></div>
-								</div>
-								<div class="select-items square" style="width:100%;">
-									<div id="country-items"></div>
-								</div>
-							</div>
-							<div id="timezone-select" class="cly-select" style="width:100%; display:none;">
-								<div class="select-inner">
-									<div class="text-container">
-										<div class="text"></div>
-									</div>
-									<div class="right combo"></div>
-								</div>
-								<div class="select-items square" style="width:100%;">
-									<div id="timezone-items"></div>
-								</div>
-							</div>
-						</div>
-						<div id="selected" style="display:none; float:left; font-size:14px; padding:8px 10px 5px; color:#666;"></div>
-						<input type="hidden" value="" id="first-app-timezone"/>
-						<input type="hidden" value="" id="first-app-country"/>
-					</div>
-				</div>
-				<div class="add-app-input-wrapper">
-					<br>
-					<label class="add-app-input-label" data-localize="management-applications.icon"></label>
-					<form action="/apps/icon" enctype="multipart/form-data" id="add-first-app-image-form" method="post">
-						<input type="file" id="first-app_add_image" name="app_image" />
-						<input type="hidden" id="first-app_image_id" name="app_image_id" />
-					</form>
-				</div>
-				<div class="add-app-input-wrapper">
-					<a id="save-first-app-add" class="add-first-app-button" data-localize="management-applications.add-application"></a>
-				</div>
-				<div style="clear:both"></div>
-			</div>
-			<div id="view-app">
-				<div class="widget-header">
-					<div class="left">
-						<div class="title"></div>
-						<div class="lock-status"><i></i><span></span></div>
-					</div>
-					<div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
-                        <a class="right icon-button light cly-button-menu-trigger ion-more"></a>
-                        <div class="cly-button-menu app-management-menu" tabindex="100">
-                            <div id="app-edit-button" class="item" data-help-localize="help.manage-apps.app-edit-button">
-                                <span data-localize="common.edit"></span>
-                            </div>
-                            <hr/>
-                            <div id="app-lock-button" class="item">
-                                <div>
-                                    <span class="lock-status" style="margin-right: 3px;"><i></i></span>
-                                    <span class="lock-action"></span>
-                                </div>
-                                <div class="hint" data-localize="management-applications.application-lock-tooltip"></div>
-                            </div>
-                            <div id="app-reset-button" class="item clear-item">
-                                <span class="red" data-localize="management-applications.clear-reset-data"></span>
-                                <div class="hint" data-localize="management-applications.clear-reset-explanation"></div>
-                            </div>
-                            <div id="app-clear-button" class="item">
-                                <div class="container">
-                                    <span class="red" data-localize="management-applications.clear-data"></span>
-                                    <div class="hint" data-localize="help.manage-apps.app-clear-button-hint"></div>
-                                </div>
-                                <i class="ion-chevron-right"></i>
-                            </div>
-                            <div id="app-delete-button" class="item">
-                                <span class="red" data-localize="common.delete"></span>
-                                <div class="hint" data-localize="help.manage-apps.app-delete-button-hint"></div>
-                            </div>
-                        </div>
-                        <div class="cly-button-menu app-management-clear-menu" tabindex="100">
-                            <div class="item back">
-                                <i class="ion-chevron-left"></i>
-                                <span data-localize="common.back"></span>
-                            </div>
-                            <div id="clear-1month" class="item clear-item">
-                                <span class="red" data-localize="management-applications.clear-1month-data"></span>
-                            </div>
-                            <div id="clear-3month" class="item clear-item">
-                                <span class="red" data-localize="management-applications.clear-3month-data"></span>
-                            </div>
-                            <div id="clear-6month" class="item clear-item">
-                                <span class="red" data-localize="management-applications.clear-6month-data"></span>
-                            </div>
-                            <div id="clear-1year" class="item clear-item">
-                                <span class="red" data-localize="management-applications.clear-1year-data"></span>
-                            </div>
-                            <div id="clear-2year" class="item clear-item">
-                                <span class="red" data-localize="management-applications.clear-2year-data"></span>
-                            </div>
-                            <div id="clear-all" class="item clear-item">
-                                <span class="red" data-localize="management-applications.clear-all-data"></span>
-                            </div>
-                        </div>
-					</div>
-				</div>
-				<div class="app-details">
-					<input type="hidden" id="app-edit-id"/>
-					<table class="d-table horizontal" cellpadding="0" cellspacing="0">
-						<tbody>
-							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-name">
-								<td data-localize="management-applications.application-name"></td>
-								<td id="app-edit-name">
-									<div class="read"><span></span><a id="app_details" data-localize="management-applications.application-details"></a></div>
-									<div class="edit">
-										<input type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
-									</div>
-								</td>
-							</tr>
-                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-type">
-								<td data-localize="management-applications.type"></td>
-								<td id="app-edit-type">
-									<div class="read"></div>
-									<div class="edit">
-										<div class="cly-select select-app-types">
-											<div class="select-inner">
-												<div class="text-container">
-													<div class="text"></div>
-												</div>
-												<div class="right combo"></div>
-											</div>
-											<div class="select-items square">
-												<div>
-													{{#eachOfObject app_types}}
-                                                        <div data-value="{{property}}" class="item">{{value}}</div>
-                                                    {{/eachOfObject}}
-												</div>
-											</div>
-										</div>
-									</div>
-                                    <div class="hint" data-localize="management-applications.type.hint"></div>
-								</td>
-							</tr>
-							<!--<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-category">
-								<td data-localize="management-applications.category"></td>
-								<td id="app-edit-category">
-									<div class="read"></div>
-									<div class="edit">
-										<div class="cly-select">
-											<div class="select-inner">
-												<div class="text-container">
-													<div class="text"></div>
-												</div>
-												<div class="right combo"></div>
-											</div>
-											<div class="select-items square">
-												<div>
-													{{> app-categories }}
-												</div>
-											</div>
-										</div>
-									</div>
-								</td>
-							</tr>-->
-							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-key">
-								<td data-localize="management-applications.app-key"></td>
-								<td id="app-edit-key">
-									<div class="read"></div>
-									<div class="edit">
-										<input type="text" value="">
-										<input type="hidden" id="app_key_hidden" name="app_key_hidden" />
-									</div>
-                                    <div class="hint" data-localize="management-applications.app-key.hint"></div>
-                                </td>
-							</tr>
-							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-timezone">
-								<td data-localize="management-applications.time-zone"></td>
-								<td id="app-edit-timezone">
-									<div class="read">
-											<div class="flag"></div>
-											<div class="country"></div>
-											<div class="timezone"></div>
-									</div>
-									<div class="edit">
-										<div style="float:left;">
-											<div id="country-select" class="cly-select" style="width:283px;">
-												<div class="select-inner">
-													<div class="text-container">
-														<div class="text"></div>
-													</div>
-													<div class="right combo"></div>
-												</div>
-												<div class="select-items square" style="width:283px;">
-													<div id="country-items"></div>
-												</div>
-											</div>
-											<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
-												<div class="select-inner">
-													<div class="text-container">
-														<div class="text"></div>
-													</div>
-													<div class="right combo"></div>
-												</div>
-												<div class="select-items square" style="width:200px;">
-													<div id="timezone-items">
-
-													</div>
-												</div>
-											</div>
-										</div>
-										<div id="selected" style="float:left; font-size:14px; padding:8px 10px 5px; color:#666;"></div>
-										<input type="hidden" value="" id="app-timezone"/>
-										<input type="hidden" value="" id="app-country"/>
-									</div>
-                                    <div class="hint" data-localize="management-applications.time-zone.hint"></div>
-                                </td>
-							</tr>
-							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-icon">
-								<td data-localize="management-applications.icon"></td>
-								<td id="app-edit-image">
-									<div class="read">
-										<div class="logo"></div>
-									</div>
-									<div class="edit">
-										<form action="/apps/icon" enctype="multipart/form-data" id="add-edit-image-form" method="post">
-											<input type="file" id="app_edit_image" name="app_image" />
-											<input type="hidden" id="app_edit_image_id" name="app_image_id" />
-										</form>
-									</div>
-								</td>
-							</tr>
-                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.checksum-salt">
-								<td data-localize="management-applications.checksum-salt"></td>
-								<td id="app-edit-salt">
-									<div class="read"></div>
-									<div class="edit">
-										<input type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
-									</div>
-                                    <div class="hint" data-localize="management-applications.checksum-salt.hint"></div>
-								</td>
-							</tr>
-                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-id">
-                                <td data-localize="management-applications.app-id"></td>
-                                <td>
-                                    <div id="view-app-id"></div>
-                                    <div class="hint" data-localize="management-applications.app-id.hint"></div>
-                                </td>
-                            </tr>
-							<tr class="table-edit">
-								<td colspan="2">
-									<a id="save-app-edit" class="icon-button green" data-localize="common.save-changes"></a>
-									<a id="cancel-app-edit" class="icon-button light" data-localize="common.cancel"></a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<div class="widget-header">
-					<div class="left">
-						<div class="title" data-localize="management-applications.plugins"></div>
-					</div>
-				</div>
-				<div id="management-applications-description" class="graph-description" style="border-bottom-width: 0px;" data-localize="management-applications.plugins-description"></div>
-				<div class="app-details-plugins">
-				</div>
-			</div>
-			</div>
-            <div id="code-countly" style="display: none;">
-                <div id="code-countly-logo"></div>
-                <div id="code-countly-content">
-                    <h3 data-localize="common.integrate-sdks"></h3>
-                    <p data-localize="common.integrate-sdks-text"></p>
-                    <p class="select-platforms" data-localize="common.integrate-sdks-platforms"></p>
-                    <div class="sdks"></div>
-                </div>
-			</div>
-			<div id="no-app-warning" class="alert danger" data-localize="management-applications.no-app-warning"></div>
-			<div id="first-app-success" class="alert success" data-localize="management-applications.first-app-message2"></div>
-		</div>
-	</script>
     <script id="template-management-plugins"  type="text/x-handlebars-template">
     	<div class="mgmt-plugins">
     	{{#eachOfArray plugins}}
@@ -1228,8 +641,8 @@
                         </div>
                         <div class="" id="events-custom-settings-table">
                             <div class="cly-button-menu event-settings-menu" tabindex="1">
-                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
-                                <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="ion-eye-disabled"></i><span data-localize="events.general.action.hide"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="show"><i class="ion-eye" ></i><span data-localize="events.general.action.show"></span></a>
                                 <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
                             </div>
                             <table class="d-table help-zone-vb no-fix events-table" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
@@ -1276,8 +689,8 @@
                         </div>
                         <div class="" id="event-groups-settings-table">
                             <div class="cly-button-menu event-groups-settings-menu" tabindex="1">
-                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
-                                <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="ion-eye-disabled"></i><span data-localize="events.general.action.hide"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="show"><i class="ion-eye" ></i><span data-localize="events.general.action.show"></span></a>
                                 <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
                             </div>
                             <table class="d-table help-zone-vb no-fix event-groups-table" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
@@ -2185,166 +1598,6 @@
     </script>
 
 
-	<script id="report-manager-template" type="text/x-handlebars-template">
-        <div class="widget" id="report-manager-view">
-			<div id="reports-manager-tabs">
-				<ul>
-					<li><a href="#report-manaully"   data-localize="report-maanger.manually-created"></a></li>
-					<li><a href="#report-automatically" data-localize="report-maanger.automatically-created"></a></li>
-				</ul>
-				<div id="report-manaully" class='user-tab'></div>
-				<div id="report-automatically" class='user-tab'></div>
-			</div>
-
-            <div class="widget-header report-manager-widget-header">
-                <div class="left">
-                    <div style="overflow: auto">
-                        {{#if filter1}}
-                        <div class="title small" id="report-manager-table-title">{{page-title}}</div>
-                        {{else}}
-                        <div class="title">{{page-title}}</div>
-                        {{/if}}
-                    </div>
-                    {{#if filter1}}
-                    <div class="cly-select float filter1-segmentation">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">{{active-filter1}}</div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width:220px;">
-                            <div>
-                                {{#eachOfObject filter1}}
-                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
-                                {{/eachOfObject}}
-                            </div>
-                        </div>
-                    </div>
-                    {{#if filter2}}
-                    <div class="cly-select float filter2-segmentation">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">{{active-filter2}}</div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width:220px;">
-                            <div>
-                                {{#eachOfObject filter2}}
-                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
-                                {{/eachOfObject}}
-                            </div>
-                        </div>
-                    </div>
-					{{/if}}
-					{{#if filter3}}
-                    <div class="cly-select float filter3-segmentation">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">{{active-filter3}}</div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width:220px;">
-                            <div>
-                                {{#eachOfObject filter3}}
-                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
-                                {{/eachOfObject}}
-                            </div>
-                        </div>
-                    </div>
-					{{/if}}
-                    {{/if}}
-				</div>
-			</div>
-			{{#if graph-description}}
-			<div id="report-manager-graph-description" class="graph-description" style="border-bottom-width: 0px;">{{graph-description}}</div>
-			{{/if}}
-        </div>
-        <div class="report-manager-table data-table table-template" data-help-localize="help.{{{chart-helper}}}">
-            <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-        </div>
-
-		<div id="report-widget-drawer" class="cly-drawer">
-			<div class="title">
-				<span data-localize='drill.reportmanager-title'></span>
-					<div class="close"><i id='report-widge-close' class="ion-ios-close-empty"></i></div>
-			</div>
-
-			<div class="details">
-				<input type="text" id="current_report_id" hidden/>
-
-				<div class="section">
-					<div class="label" data-localize='drill.report-name'></div>
-					<div>
-						<input id="report-name-input" class="input" type="text" placeholder="Enter report name">
-					</div>
-				</div>
-
-				<div class="section">
-					<div class="label" data-localize='drill.report-desc' ></div>
-					<div>
-						<input id="report-desc-input" class="input" type="text" placeholder="Enter report description">
-					</div>
-				</div>
-
-				<div class="section">
-					<div class="label" data-localize='drill.report-visibility' ></div>
-					<div class="checks">
-						<div id="report-global-option" class="check selected">
-							<div class="box"></div>
-							<div class="text"  data-localize='drill.report-global-option'></div>
-							<div class="description" data-localize="drill.report-global-option-desc"></div>
-						</div>
-						<div id="report-private-option" class="check">
-							<div class="box"></div>
-							<div class="text"  data-localize='drill.report-private-option'></div>
-							<div class="description" data-localize="drill.report-private-option-desc"></div>
-						</div>
-					</div>
-
-				</div>
-
-				<div class="section" id="report-data-block">
-					<div class="label" data-localize='drill.report-data' ></div>
-					<div class="checks">
-						<div id="report-refresh-option" class="check selected">
-							<div class="box"></div>
-							<div class="text"  data-localize = 'drill.report-auto-refresh'></div>
-							<div class="description" data-localize = "drill.report-auto-refresh-desc"></div>
-						</div>
-						<div id="report-onetime-option" class="check">
-							<div class="box"></div>
-							<div class="text"  data-localize='drill.report-onetime-option'></div>
-							<div class="description" data-localozie="drill.report-oentime-option-desc"></div>
-						</div>
-					</div>
-					<div class="description" data-localize="drill.report-data-desc">
-
-					</div>
-				</div>
-
-				<div  class="section" id="report-period-block">
-					<div class="label" data-localize='drill.report-period' ></div>
-					<div id="single-period-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-						<div class="select-inner">
-							<div class="text-container">
-								<div class="text">
-									<div class="default-text" data-localize='drill.report-period-remind'></div>
-								</div>
-							</div>
-							<div class="right combo"></div>
-						</div>
-						<div class="select-items square" style="width: 100%;"></div>
-					</div>
-				</div>
-			</div>
-			<div class="buttons">
-					<div id="create-report" class="icon-button green disabled" data-localize='drill.report-save'></div>
-			</div>
-		</div>
-    </script>
     <script id="version-history-template" type="text/x-handlebars-template">
 		<div class="widget">
             <div>{{ package-version }}</div>
@@ -2361,134 +1614,6 @@
 			</div>
             <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
                 <table id="data-table-db" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-            </div>
-        </div>
-    </script>
-    <script id="token-manager-template" type="text/x-handlebars-template">
-        <div class="widget" id="token-manager-view">
-            <div class="widget-header">
-                <div class="left">
-                    <div style="overflow: auto">
-                        {{#if filter1}}
-                            <div class="title small">{{page-title}}</div>
-                        {{else}}
-                            <div class="title">{{page-title}}</div>
-                        {{/if}}
-                    </div>
-                </div>
-                <div class="right btn-header" >
-                    <div class="icon-button green configs-changes" data-localize="token_manager.create-token" id="show_token_form"></div>
-                </div>
-            </div>
-            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
-                <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-            </div>
-        </div>
-        <div id="create-token-drawer" class="cly-drawer">
-            <div class="title">
-                <span data-localize="token_manager.create-token">Create token</span>
-                <div class="close"><i class="ion-ios-close-empty"></i></div>
-            </div>
-            <div class="details">
-                <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.purpose"></div>
-                    <input type="text" class="input" id="token_purpose" placeholder="{{purpose-desc}}" />
-                </div>
-                <div class="settings section">
-                    <div class="label"><span data-localize="token_manager.table.endpoint"></span><span style="float:right; color:#A0A0A0;" data-localize="common.optional"></span></div>
-                    <div class="desc" data-localize="token_manager.table.endpoint-desc"></div>
-                    <div class="endpoint_blocks_wrapper">
-                        <div class="token_endpoint_block" >
-                            <div class="delete-endpoint-block"><a class="cly-list-options"></a></div>
-                            <div class="label" data-localize="token_manager.table.endpoint-name"></div>
-                            <input type="text" class="input endpoint-text"  placeholder="{{endpoint}}" style="margin-bottom:10px;" />
-                            <div class="label" data-localize="token_manager.query-param"></div>
-                            <div class="param_blocks_wrapper">
-                                <div class="param_block">
-                                    <table>
-                                        <tr>
-                                            <td><input type="text" class="input param-key-input" placeholder="{{query-param}}" /></td>
-                                            <td ><input type="text" class="input param-value-input" placeholder="{{query-param-value}}" /></td>
-                                            <td style="padding-top:2px;"><i class="delete-param material-icons">highlight_off</i></td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-                            <a class="text-orange add-query-block">+ <span data-localize="token_manager.add-param"></span></a>
-                        </div>
-                        <div class="delete-new-endpoint-block-menu" tabindex="1">
-                            <a class="item clear-endpoint-block-item"><span data-localize="common.clear-values"></span></a>
-                            <a class="item delete-endpoint-block-item"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
-                        </div>
-                    </div>
-                    <div class="btn btn-orange add-endpoint-block" > + <span data-localize="token_manager.add-new-endpoint"></span></div>
-                    <div style="clear:both;"></div>
-                </div>
-                <div class="settings section">
-                    <a class="fa check-green check-header fa-square-o" id="use_multi" style="float:left; margin-right: 5px;"></a>
-                    <div class="label" data-localize="token_manager.table.multi-desc"></div>
-                </div>
-                <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.apps-title">Token exp</div>
-                    <div id="data-token-apps-selector" class="checks">
-                        <div data-from="apps-allow" class="check">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.apps-allow"></div>
-                        </div>
-                        <div data-from="apps-limit" class="check selected">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.apps-limit"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings section" id="limit_apps">
-                    <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">
-                                    <div class="default-text" data-localize="token_manager.select-apps"></div>
-                                </div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width: 100%;"></div>
-                    </div>
-                </div>
-                <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.limit-title">Token exp</div>
-                    <div id="data-token-exp-selector" class="checks">
-                        <div data-from="time-allow" class="check selected">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.limit-allow"></div>
-                        </div>
-                        <div data-from="time-limit" class="check">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.limit-limit">Token will expire after some time</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings section" id="limit_life" style="display:none;">
-                    <div class="label" data-localize="token_manager.token-expiration-time"></div>
-                    <div><input type="text" class="input" placeholder="{{enter-number}}" id="select_limit_value" /></div>
-                    <div>
-                        <div id="select_limit_span" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                            <div class="select-inner">
-                                <div class="text-container">
-                                    <div class="text">
-                                        <div class="default-text" data-localize="token_manager.select-time-unit"></div>
-                                    </div>
-                                </div>
-                                <div class="right combo"></div>
-                            </div>
-                            <div class="select-items square" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="buttons">
-                <div class="icon-button green disabled" id='create_new_token' data-localize="token_manager.create-token">Create token</div>
             </div>
         </div>
     </script>
@@ -2677,18 +1802,75 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.token.manager.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.version.history.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/core.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/container.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/helpers.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/data/vuex.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/imports.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/nav.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/layout.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/form.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/date.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/dropdown.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/input.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/datatable-legacy.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/datatable.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/dialog.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/drawer.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/vis.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/helpers.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/progress.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/directives/scroll-shadow.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/legacy.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.vue.legacy.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.vue.components.js?<%= countlyVersion %>"></script>
-		<% if (javascripts) { %>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/device-and-type/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/device-and-type/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/app-resolution/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/app-version/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/jobs/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/logs/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/token-manager/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/report-manager/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/platform/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/carrier/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/carrier/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/user-activity/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/user-activity/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/session-overview/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/session-overview/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/session-durations/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/session-durations/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/session-frequency/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/session-frequency/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.details.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.details.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.overview.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.overview.views.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/geo-countries/javascripts/countly.cities.models.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/geo-countries/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/user-analytics-overview/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/geo-countries/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/geo-countries/javascripts/countly.widgets.geo.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/app-management/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/app-management/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/user-management/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/user-management/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/home/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/home/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+		
+        <% if (javascripts) { %>
 			<% for(var i=0, l=javascripts.length; i<l; i++) {%>
 				<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>
 			<% } %>
 		<% } %>
+
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/sidebar.js?<%= countlyVersion %>"></script>
 	<% } %>
 
     <% if (themeFiles && themeFiles.js) { %>

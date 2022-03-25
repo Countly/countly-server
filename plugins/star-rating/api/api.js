@@ -2,13 +2,25 @@ var exported = {},
     requestProcessor = require('../../../api/utils/requestProcessor'),
     common = require('../../../api/utils/common.js'),
     crypto = require('crypto'),
+    log = common.log('star-rating:api'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    {validateUserForWrite} = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
+    countlyFs = require('../../../api/utils/countlyFs.js');
 var fetch = require('../../../api/parts/data/fetch.js');
 var ejs = require("ejs"),
+    fs = require('fs'),
     path = require('path'),
     reportUtils = require('../../reports/api/utils.js');
+
+var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
+var surveysEnabled = plugins.getPlugins().indexOf('surveys') > -1;
+
+if (cohortsEnabled) {
+    var cohorts = require('../../cohorts/api/parts/cohorts');
+}
+
+const FEATURE_NAME = 'star_rating';
 
 const widgetProperties = {
     popup_header_text: {
@@ -47,22 +59,6 @@ const widgetProperties = {
         required: false,
         type: "String"
     },
-    target_devices: {
-        required: false,
-        type: "Object"
-    },
-    target_page: {
-        required: false,
-        type: "String"
-    },
-    target_pages: {
-        required: false,
-        type: "Array"
-    },
-    is_active: {
-        required: false,
-        type: "Boolean"
-    },
     hide_sticker: {
         required: false,
         type: "Boolean"
@@ -82,27 +78,46 @@ const widgetProperties = {
     trigger_size: {
         required: false,
         type: "String"
+    },
+    targeting: {
+        required: false,
+        type: "Object"
+    },
+    ratings_texts: {
+        required: false,
+        type: "Array"
+    },
+    rating_symbol: {
+        required: false,
+        type: "String"
+    },
+    status: {
+        required: true,
+        type: "Boolean"
+    },
+    logo: {
+        required: false,
+        type: "String"
+    },
+    appearance: {
+        required: false,
+        type: "Object"
+    },
+    showPolicy: {
+        required: false,
+        type: "String"
+    },
+    target_page: {
+        required: false,
+        type: "String"
+    },
+    target_pages: {
+        required: false,
+        type: "Array"
     }
 };
 
 const widgetPropertyPreprocessors = {
-    target_devices: function(targetDevices) {
-        try {
-            return JSON.parse(targetDevices);
-        }
-        catch (jsonParseError) {
-            if ((targetDevices !== null) && (typeof targetDevices === "object")) {
-                return targetDevices;
-            }
-            else {
-                return {
-                    desktop: true,
-                    phone: true,
-                    tablet: true
-                };
-            }
-        }
-    },
     target_pages: function(targetPages) {
         try {
             return JSON.parse(targetPages);
@@ -116,6 +131,33 @@ const widgetPropertyPreprocessors = {
             }
         }
     },
+    targeting: function(targeting) {
+        try {
+            return JSON.parse(targeting);
+        }
+        catch (jsonParseError) {
+            return null;
+        }
+    },
+    ratings_texts: function(ratingsTexts) {
+        try {
+            return JSON.parse(ratingsTexts);
+        }
+        catch (jsonParseError) {
+            if (Array.isArray(ratingsTexts)) {
+                return ratingsTexts;
+            }
+            else {
+                return [
+                    'Very dissatisfied',
+                    'Somewhat dissatisfied',
+                    'Neither satisfied Nor Dissatisfied',
+                    'Somewhat Satisfied',
+                    'Very Satisfied'
+                ];
+            }
+        }
+    },
     hide_sticker: function(hideSticker) {
         try {
             return !!JSON.parse(hideSticker);
@@ -123,10 +165,193 @@ const widgetPropertyPreprocessors = {
         catch (jsonParseError) {
             return !!hideSticker;
         }
+    },
+    status: function(status) {
+        try {
+            return !!JSON.parse(status);
+        }
+        catch (jsonParseError) {
+            return !!status;
+        }
     }
 };
 
+/**
+* Function to ensure we hav directory to upload files to
+* @param {function} callback - callback
+**/
+function create_upload_dir(callback) {
+    var dir = path.resolve(__dirname, './../images');
+    fs.mkdir(dir, function(err) {
+        if (err) {
+            if (err.code === 'EEXIST') {
+                callback(true);
+            }
+            else {
+                callback(false);
+            }
+        }
+        else {
+            callback(true);
+        }
+    });
+}
+
+/**
+* Used for file upload
+* @param {object} myfile - file object(if empty - returns)
+* @param {string} id - unique identifier
+* @param {function} callback = callback function
+**/
+function uploadFile(myfile, id, callback) {
+    if (!myfile) {
+        callback(true);
+        return;
+    }
+    var tmp_path = myfile.path;
+    var type = myfile.type;
+    myfile.name = myfile.name || "png";
+    if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+        fs.unlink(tmp_path, function() { });
+        callback("Invalid image format. Must be png or jpeg");
+        return;
+    }
+
+    var allowedExtensions = ["gif", "jpeg", "jpg", "png"];
+    var ext = myfile.name.split(".");
+    ext = ext[ext.length - 1];
+
+    if (allowedExtensions.indexOf(ext) === -1) {
+        callback("Invalid file extension. Must be .png, .jpg, .gif or .jpeg");
+        return;
+    }
+
+    create_upload_dir(function() {
+        fs.readFile(tmp_path, (err, data) => {
+            if (err) {
+                callback("Failed to upload image");
+                return;
+            }
+            //convert file to data
+            if (data) {
+                try {
+                    var pp = path.resolve(__dirname, './../frontend/public/images/star-rating/' + id + "." + ext);
+                    countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + ext, writeMode: "overwrite" }, function(err3) {
+                        if (err3) {
+                            callback("Failed to upload image");
+                        }
+                        else {
+                            fs.unlink(tmp_path, function() { });
+                            callback(true, id + "." + ext);
+                        }
+                    });
+                }
+                catch (SyntaxError) {
+                    callback("Failed to upload image");
+                }
+            }
+            else {
+                callback("Failed to upload image");
+            }
+        });
+    });
+}
+
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
+    /*
+    * we have two different /o/sdk handler endpoint in surveys and ratings
+    * this one is non-dominant
+    * if surveys enabled, this will ignore requests, if not, this will handle
+    */
+    plugins.register("/o/sdk", function(ob) {
+        var params = ob.params;
+        // do not respond if this isn't feedback fetch request 
+        // or surveys plugin enabled
+        if (params.qstring.method !== "feedback" || surveysEnabled) {
+            return false;
+        }
+
+        return new Promise(function(resolve) {
+            var widgets = [];
+            plugins.dispatch("/feedback/widgets", { params: params, widgets: widgets }, function() {
+                common.returnMessage(params, 200, widgets);
+                return resolve(true);
+            });
+        });
+    });
+
+    /*
+    * internal event that fetch ratings widget
+    * and push them to passed widgets array.
+    */
+    plugins.register("/feedback/widgets", function(ob) {
+        return new Promise(function(resolve, reject) {
+            var params = ob.params;
+            params.qstring.app_id = params.app_id;
+            params.app_user = params.app_user || {};
+
+            var user = JSON.parse(JSON.stringify(params.app_user));
+            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, popup_header_text: 1, cohortID: 1, type: 1, appearance: 1, showPolicy: 1, trigger_position: 1, hide_sticker: 1, trigger_bg_color: 1, trigger_font_color: 1, trigger_button_text: 1, trigger_size: 1, target_pages: 1}).toArray(function(err, widgets) {
+                if (err) {
+                    log.e(err);
+                    reject(err);
+                }
+
+                widgets = widgets.map((widget) => {
+                    widget.appearance = {};
+                    widget.appearance.position = widget.trigger_position;
+                    widget.appearance.bg_color = widget.trigger_bg_color;
+                    widget.appearance.text_color = widget.trigger_font_color;
+                    widget.appearance.text = widget.trigger_button_text;
+                    widget.appearance.size = widget.trigger_size;
+                    if (widget.hide_sticker) {
+                        widget.appearance.hideS = true;
+                    }
+                    widget.tg = widget.target_pages;
+                    widget.name = widget.popup_header_text;
+                    // remove this props from response
+                    delete widget.hide_sticker;
+                    delete widget.trigger_position;
+                    delete widget.trigger_bg_color;
+                    delete widget.trigger_font_color;
+                    delete widget.trigger_button_text;
+                    delete widget.trigger_size;
+                    delete widget.target_pages;
+                    delete widget.popup_header_text;
+                    return widget;
+                });
+
+                if (widgets && widgets.length > 0) {
+                    //filter out based on cohorts
+                    if (cohortsEnabled) {
+                        widgets = widgets.filter(function(widget) {
+                            if (widget.cohortID) {
+                                if (user && user.chr && user.chr[widget.cohortID] && user.chr[widget.cohortID].in === 'true') {
+                                    delete widget.cohortID; //no need to return more data than needed
+                                    return true;
+                                }
+                                else {
+                                    delete widget.cohortID; //no need to return more data than needed
+                                    return false;
+                                }
+                            }
+                            else {
+                                return true;
+                            }
+                        });
+                    }
+                    // concat with tricky way
+                    ob.widgets.push.apply(ob.widgets, widgets);
+                }
+                resolve();
+            });
+        });
+    });
+
     /**
      *    register internalEvent
      */
@@ -146,13 +371,51 @@ const widgetPropertyPreprocessors = {
             return false;
         }
         var widget = validatedArgs.obj;
-        widget.type = "rating";
+        var type = "rating";
+        // yes it should be string, not boolean
+        widget.is_active = widget.status ? "true" : "false";
+        widget.type = type;
+        widget.created_at = Date.now();
+        widget.timesShown = 0;
+        widget.ratingsCount = 0;
+        widget.ratingsSum = 0;
+        widget.showPolicy = "afterPageLoad";
+        widget.appearance = {};
+        widget.target_devices = {
+            desktop: true,
+            phone: true,
+            tablet: true
+        };
 
-        validateUserForWrite(obParams, function(params) {
+        //widget.created_by = common.db.ObjectID(obParams.member._id);
+        validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
-                    common.returnMessage(ob.params, 201, "Successfully created " + result.insertedIds[0]);
-                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
+                    if (cohortsEnabled && widget.targeting) {
+                        widget.targeting.app_id = params.app_id + "";//has to be string
+                        // eslint-disable-next-line
+                        createCohort(params, type, result.insertedIds[0], widget.targeting, function(cohortId) { //create cohort using this 
+                            if (cohortId) {
+                                //update widget record to have this cohortId
+                                common.db.collection("feedback_widgets").findAndModify({ "_id": result.insertedIds[0] }, {}, { $set: { "cohortID": cohortId } }, function(err1 /*, widget*/) {
+                                    if (err1) {
+                                        log.e(err1);
+                                    }
+                                    else {
+                                        common.returnMessage(params, 201, "Successfully created " + result.insertedIds[0]);
+                                        plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
+                                    }
+                                });
+                            }
+                            else {
+                                common.returnMessage(params, 400, { "error": "Failed to set cohort", "widgetId": result.insertedIds[0] });
+                            }
+                        });
+                    }
+                    else {
+                        common.returnMessage(params, 201, "Successfully created " + result.insertedIds[0]);
+                        plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
+                    }
                     return true;
                 }
                 else {
@@ -165,7 +428,7 @@ const widgetPropertyPreprocessors = {
     };
     var removeFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        validateUserForWrite(obParams, function(params) {
+        validateDelete(obParams, FEATURE_NAME, function(params) {
             var widgetId = params.qstring.widget_id;
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
@@ -176,6 +439,10 @@ const widgetPropertyPreprocessors = {
                         "_id": common.db.ObjectID(widgetId)
                     }, function(removeWidgetErr) {
                         if (!removeWidgetErr) {
+                            if (cohortsEnabled && widget.cohortID) {
+                                // eslint-disable-next-line
+                                deleteCohort(widget.cohortID, widget.app_id + "");
+                            }
                             // remove widget and related data
                             if (withData) {
                                 removeWidgetData(widgetId, app, function(removeError) {
@@ -213,8 +480,9 @@ const widgetPropertyPreprocessors = {
     };
     var editFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        validateUserForWrite(obParams, function(params) {
+        validateUpdate(obParams, FEATURE_NAME, function(params) {
             let widgetId;
+            var type = "rating";
 
             try {
                 widgetId = common.db.ObjectID(params.qstring.widget_id);
@@ -235,10 +503,61 @@ const widgetPropertyPreprocessors = {
             }
             var changes = validatedArgs.obj;
 
-            common.db.collection("feedback_widgets").findAndModify({"_id": widgetId}, {}, {$set: changes}, function(err, widget) {
+            if (changes.status) {
+                changes.is_active = changes.status ? "true" : "false";
+            }
+
+            common.db.collection("feedback_widgets").findAndModify({"_id": widgetId }, {}, {$set: changes}, function(err, widget) {
                 if (!err && widget) {
-                    common.returnMessage(params, 200, 'Success');
-                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_edited", data: {before: widget, update: changes}});
+                    widget = widget.value;
+                    if (cohortsEnabled && (widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting)) {
+                        if (widget.cohortID) {
+                            if (changes.targeting) { //we are not setting to empty one
+                                //changes.targeting.app_id = widget.app_id + "";
+                                changes.targeting.steps = JSON.parse(changes.targeting.steps);
+                                changes.targeting.user_segmentation = JSON.parse(changes.targeting.user_segmentation);
+                                //changes.targeting = JSON.parse(changes.targeting);
+                                common.db.collection('cohorts').findAndModify({ _id: widget.cohortID }, {}, { $set: changes.targeting }, { new: true }, function(err2, res) {
+                                    if (err2) {
+                                        common.returnMessage(params, 400, "widget updated. Error to update cohort");
+                                    }
+                                    else {
+                                        common.returnMessage(params, 200, "Success");
+                                        plugins.dispatch("/systemlogs", { params: params, action: "cohort_edited", data: { update: changes.targeting } });
+                                        cohorts.calculateSteps(params, common, res.value, function() { });
+                                    }
+                                });
+                            }
+                            else { //we have to delete that cohort
+                                // eslint-disable-next-line
+                                deleteCohort(widget.cohortID, widget.app_id + "");
+                                common.db.collection("feedback_widgets").findAndModify({"_id": widgetId}, {}, {$unset: {"cohortID": ""}}, function(err4/*, widget*/) { //updating record to do not contain cohortID. 
+                                    if (err4) {
+                                        log.e(err4);
+                                    }
+                                    common.returnMessage(params, 200, "Success");
+                                });
+                            }
+                        }
+                        else {
+                            changes.targeting.app_id = params.app_id + "";//has to be string
+                            // eslint-disable-next-line
+                            createCohort(params, type, widgetId, changes.targeting, function(cohortId) { //create cohort using this 
+                                if (cohortId) {
+                                    //update widget record to have this cohortId
+                                    common.db.collection("feedback_widgets").findAndModify({ "_id": widgetId }, {}, { $set: { "cohortID": cohortId } }, function(/*err, widget*/) {
+                                        common.returnMessage(params, 200, "Success");
+                                    });
+                                }
+                                else {
+                                    common.returnMessage(params, 400, "widget updated. Error to create cohort");
+                                }
+                            });
+                        }
+                    }
+                    else {
+                        common.returnMessage(params, 200, "Success");
+                    }
                     return true;
                 }
                 else if (err) {
@@ -266,6 +585,26 @@ const widgetPropertyPreprocessors = {
             }
         });
     };
+    var increaseWidgetShowCount = function(ob) {
+        var obParams = ob.params;
+        var widgetId = obParams.qstring.widget_id;
+
+        common.db.collection("feedback_widgets").update({"_id": common.db.ObjectID(widgetId)}, { $inc: { timesShown: 1 } }, function(err, widget) {
+            if (!err && widget) {
+                return true;
+            }
+            else if (err) {
+                log.e('increaseWidgetShowCount: ' + err);
+                return false;
+            }
+            else {
+                log.e('increaseWidgetShowCount: widget not found');
+                return false;
+            }
+        });
+        return true;
+    };
+
     var nonChecksumHandler = function(ob) {
         try {
             var events = JSON.parse(ob.params.qstring.events);
@@ -303,6 +642,21 @@ const widgetPropertyPreprocessors = {
         }
     };
 
+    plugins.register("/i/feedback/logo", function(ob) {
+        var params = ob.params;
+        validateCreate(params, FEATURE_NAME, function() {
+            uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
+                if (typeof good === 'boolean' && good) {
+                    common.returnMessage(params, 200, filename);
+                }
+                else {
+                    common.returnMessage(params, 400, good);
+                }
+            });
+        });
+        return true;
+    });
+
     plugins.register("/i/feedback/input", nonChecksumHandler);
     plugins.register("/i", function(ob) {
         var params = ob.params;
@@ -321,26 +675,35 @@ const widgetPropertyPreprocessors = {
                     currEvent.segmentation.app_version = currEvent.segmentation.app_version || "undefined";
                     currEvent.segmentation.platform_version_rate = currEvent.segmentation.platform + "**" + currEvent.segmentation.app_version + "**" + currEvent.segmentation.rating + "**" + currEvent.segmentation.widget_id + "**";
                     // is provided email & comment fields
-                    if ((currEvent.segmentation.email && currEvent.segmentation.email.length > 0) || (currEvent.segmentation.comment && currEvent.segmentation.comment.length > 0)) {
-                        var collectionName = 'feedback' + ob.params.app._id;
-                        common.db.collection(collectionName).insert({
-                            "email": currEvent.segmentation.email,
-                            "comment": currEvent.segmentation.comment,
-                            "ts": (currEvent.timestamp) ? common.initTimeObj(params.appTimezone, currEvent.timestamp).timestamp : params.time.timestamp,
-                            "device_id": params.qstring.device_id,
-                            "cd": new Date(),
-                            "uid": params.app_user.uid,
-                            "contact_me": currEvent.segmentation.contactMe,
-                            "rating": currEvent.segmentation.rating,
-                            "platform": currEvent.segmentation.platform,
-                            "app_version": currEvent.segmentation.app_version,
-                            "widget_id": currEvent.segmentation.widget_id
-                        }, function(err) {
-                            if (err) {
-                                return false;
-                            }
-                        });
-                    }
+
+                    var collectionName = 'feedback' + ob.params.app._id;
+                    common.db.collection(collectionName).insert({
+                        "email": currEvent.segmentation.email || "No email provided",
+                        "comment": currEvent.segmentation.comment || "No comment provided",
+                        "ts": (currEvent.timestamp) ? common.initTimeObj(params.appTimezone, currEvent.timestamp).timestamp : params.time.timestamp,
+                        "device_id": params.qstring.device_id,
+                        "cd": new Date(),
+                        "uid": params.app_user.uid,
+                        "contact_me": currEvent.segmentation.contactMe,
+                        "rating": currEvent.segmentation.rating,
+                        "platform": currEvent.segmentation.platform,
+                        "app_version": currEvent.segmentation.app_version,
+                        "widget_id": currEvent.segmentation.widget_id
+                    }, function(err) {
+                        if (err) {
+                            return false;
+                        }
+                    });
+                    // increment ratings count for widget
+                    common.db.collection('feedback_widgets').update({
+                        _id: common.db.ObjectID(currEvent.segmentation.widget_id)
+                    }, {
+                        $inc: { ratingsSum: currEvent.segmentation.rating, ratingsCount: 1 }
+                    }, function(err) {
+                        if (err) {
+                            return false;
+                        }
+                    });
                 }
                 return true;
             });
@@ -458,9 +821,11 @@ const widgetPropertyPreprocessors = {
                 return true;
             }
         }
+        if (params.qstring.uid) {
+            query.uid = params.qstring.uid;
+        }
 
-        var validateUserForRead = ob.validateUserForDataReadAPI;
-        validateUserForRead(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             var cursor = common.db.collection(collectionName).find(query);
             cursor.count(function(err, total) {
@@ -534,8 +899,7 @@ const widgetPropertyPreprocessors = {
      */
     plugins.register('/o/feedback/widgets', function(ob) {
         var params = ob.params;
-        var validateUserForRead = ob.validateUserForDataReadAPI;
-        validateUserForRead(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             var collectionName = 'feedback_widgets';
             var query = {type: "rating"};
             if (params.qstring.is_active) {
@@ -588,6 +952,10 @@ const widgetPropertyPreprocessors = {
                 common.returnMessage(params, 404, 'Widget not found.');
             }
             else {
+                // not from dashboard
+                if (params.qstring.nfd) {
+                    increaseWidgetShowCount(ob);
+                }
                 common.returnOutput(params, doc);
             }
         });
@@ -986,5 +1354,58 @@ const widgetPropertyPreprocessors = {
             ob.reportAPICallback(err, null);
         }
     });
+
+    if (cohortsEnabled) {
+        /**
+        * Create Cohort with passed arguments
+        * @param {object} params - params
+        * @param {string} type - type
+        * @param {object} id - id
+        * @param {object} newAtt - newAtt
+        * @param {string} callback - callback
+        **/
+        function createCohort(params, type, id, newAtt, callback) { // eslint-disable-line
+            newAtt.cohort_name = "[CLY]_" + type + id;
+
+            if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
+                newAtt.user_segmentation.query = "{}";
+                newAtt.user_segmentation.queryText = "{}";
+            }
+
+            var cohortId = common.crypto.createHash('md5').update(newAtt.steps + newAtt.app_id + Date.now() + newAtt.cohort_name).digest('hex');
+
+            cohorts.createCohort(common, params, {
+                _id: cohortId,
+                app_id: newAtt.app_id,
+                name: newAtt.cohort_name,
+                type: "auto",
+                steps: JSON.parse(newAtt.steps),
+                user_segmentation: JSON.parse(newAtt.user_segmentation)
+            }, function(cohortResult) {
+                cohorts.calculateSteps(params, common, cohortResult, function() {});
+                return callback(cohortResult._id);
+            });
+        }
+
+        /**
+         * Remove cohort
+         * @param {*} cohortId  - cohort id
+         * @param {*} appId  - application id
+         */
+        function deleteCohort(cohortId, appId) { // eslint-disable-line
+            common.db.collection('cohorts').findOne({ "_id": cohortId}, function(er, cohort) {
+                if (cohort) {
+                    plugins.dispatch("/cohort/delete", { "_id": cohortId, "app_id": appId + "", ack: 0 }, function() {
+                        common.db.collection('cohorts').remove({ "_id": cohortId }, function() {
+                            common.db.collection('cohortdata').remove({ '_id': { $regex: cohortId + ".*" } }, function() { });
+                            common.db.collection('app_users' + appId).update({}, { $unset: { ["chr." + cohortId]: "" } }, { multi: true }, function() { });
+                        });
+
+                        // plugins.dispatch("/systemlogs", {params: params, action: "cohort_deleted", data: cohort});
+                    });
+                }
+            });
+        }
+    }
 }(exported));
 module.exports = exported;

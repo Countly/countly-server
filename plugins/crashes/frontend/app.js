@@ -11,7 +11,7 @@ catch (err) {
 var trace = require('../api/parts/stacktrace.js');
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
-        app.get(countlyConfig.path + '/crash/*', function(req, res) {
+        app.get(countlyConfig.path + '/crashes/*', function(req, res) {
             var parts = req.url.split("/");
             var code = parts[parts.length - 1];
             countlyDb.collection('crash_share').findOne({_id: code}, function(err, crash) {
@@ -46,11 +46,11 @@ var trace = require('../api/parts/stacktrace.js');
                                             data.forEach(trace.postprocessCrash);
                                         }
                                         result.data = data;
-                                        res.render('../../../plugins/crashes/frontend/public/templates/crash', {path: countlyConfig.path || "", cdn: countlyConfig.cdn || "../../", countly: req.countly, data: result});
+                                        res.render('../../../plugins/crashes/frontend/public/templates/crash-legacy', {path: countlyConfig.path || "", cdn: countlyConfig.cdn || "../../", countly: req.countly, data: result});
                                     });
                                 }
                                 else {
-                                    res.render('../../../plugins/crashes/frontend/public/templates/crash', {path: countlyConfig.path || "", cdn: countlyConfig.cdn || "../../", countly: req.countly, data: result});
+                                    res.render('../../../plugins/crashes/frontend/public/templates/crash-legacy', {path: countlyConfig.path || "", cdn: countlyConfig.cdn || "../../", countly: req.countly, data: result});
                                 }
                             }
                             else {

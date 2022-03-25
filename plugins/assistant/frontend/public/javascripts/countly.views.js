@@ -1,17 +1,20 @@
-/*global countlyCommon, countlyAssistant, store, Countly, CountlyHelpers, AssistantView, app, $, jQuery, T*/
+/*global countlyCommon, countlyAuth, countlyAssistant, store, Countly, CountlyHelpers, AssistantView, app, $, jQuery, T*/
+var featureName = 'assistant';
 window.AssistantView = {
     initialize: function(isRefresh) {
-        if ($("#top-bar").find("#assistant-menu").length === 0) {
-            var assistantMenu =
-                '<div id="assistant-menu" class="dropdown icon" style="display: block">' +
-                    '<div id="notification-icon" class="empty-state">' +
-                        '<i class="ion-android-notifications"></i>' +
-                    '</div>' +
-                    '<div class="menu right" style="width: 400px; min-height:500px;"></div>' +
-                '</div>';
+        if (countlyAuth.validateRead(featureName)) {
+            if ($("#top-bar").find("#assistant-menu").length === 0) {
+                var assistantMenu =
+                    '<div id="assistant-menu" class="dropdown icon" style="display: block">' +
+                        '<div id="notification-icon" class="empty-state">' +
+                            '<i class="ion-android-notifications"></i>' +
+                        '</div>' +
+                        '<div class="menu right" style="width: 400px; min-height:500px;"></div>' +
+                    '</div>';
 
-            if (!store.get('first_app')) {
-                $("#top-bar").find(".right-menu").prepend(assistantMenu);
+                if (!store.get('first_app')) {
+                    $("#top-bar").find(".right-menu").prepend(assistantMenu);
+                }
             }
         }
 
@@ -221,26 +224,28 @@ window.AssistantView = {
 $(document).ready(function() {
     app.localize($("#assistant_container"));
 
-    AssistantView.initialize();
-
-    setInterval(function() {
-        // Don't refresh if the assistant popup is open
-        if (!$("#assistant-menu").hasClass("clicked")) {
-            AssistantView.initialize(true);
-        }
-    }, 60000);
-
-    app.addAppSwitchCallback(function() {
-        if (app._isFirstLoad !== true) {
-            AssistantView.initialize();
-        }
-    });
-
-    $(document).on("/i/apps/reset", function() {
+    if (countlyAuth.validateRead(featureName)) {
         AssistantView.initialize();
-    });
 
-    $(window).on("resize", function() {
-        $("#top-bar").find("#assistant-menu .menu").css("height", $(window).height() * 0.8);
-    });
+        setInterval(function() {
+            // Don't refresh if the assistant popup is open
+            if (!$("#assistant-menu").hasClass("clicked")) {
+                AssistantView.initialize(true);
+            }
+        }, 60000);
+
+        app.addAppSwitchCallback(function() {
+            if (app._isFirstLoad !== true) {
+                AssistantView.initialize();
+            }
+        });
+
+        $(document).on("/i/apps/reset", function() {
+            AssistantView.initialize();
+        });
+
+        $(window).on("resize", function() {
+            $("#top-bar").find("#assistant-menu .menu").css("height", $(window).height() * 0.8);
+        });
+    }
 });

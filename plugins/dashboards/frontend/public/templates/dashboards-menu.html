@@ -1,0 +1,39 @@
+<div style="height: 100%;">
+    <div class="cly-vue-sidebar__header">
+        <span class="cly-vue-sidebar__header-title">Dashboards</span>
+        <span class="cly-vue-sidebar__header-button" v-if="canCreate">
+            <el-button type="success" size="small" @click="addDashboard">
+                <i class="ion-plus-circled"></i>
+                <span>New</span>
+            </el-button>
+        </span>
+        <form>
+            <el-input
+                class="bu-mt-5 cly-vue-sidebar__header-search"
+                autocomplete="off"
+                v-model="searchQuery"
+                placeholder="Search in Dashboards">
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+            </el-input>
+        </form>
+    </div>
+    <div class="cly-vue-sidebar__main-menu">
+        <vue-scroll :ops="{scrollPanel: { scrollingX: false }}">
+            <ul>
+                <li v-for="(dashboard, idx) in allDashboards" :key="dashboard.id" :class="['bu-px-3 bu-mb-1 bu-is-clickable', {'bu-mb-6': (idx === (allDashboards.length - 1) ? true: false)}]">
+                    <a :href="'#/custom/' + dashboard._id">
+                        <div
+                            style="width: calc(100% - 24px);"
+                            :class="['cly-vue-sidebar__menu-items has-ellipsis',
+                            {'cly-vue-sidebar__menu-items--selected': selectedDashboard._id === dashboard._id}]"
+                            @click="onDashboardMenuItemClick(dashboard)">
+                            {{dashboard.name}}
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </vue-scroll>
+    </div>
+
+    <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
+</div>

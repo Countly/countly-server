@@ -1,0 +1,37 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('views-per-session.title')}} </h2>
+            <cly-tooltip-icon :tooltip="i18n('views-per-session.description')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
+        </template>
+    </cly-header>
+    <cly-main>
+        <cly-date-picker-g style="margin-bottom:32px"></cly-date-picker-g>
+        <cly-section>
+            <cly-chart-bar :option="viewsPerSessionOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
+        </cly-section>
+        <cly-section>
+            <cly-datatable-n  :rows="viewsPerSessionRows" :resizable="true" :force-loading="isLoading">
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" prop="viewsBuckets" :label="i18n('views-per-session.table-views-buckets')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.number-of-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.numberOfSessions)}}
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="percentage" :label="i18n('common.percent')">
+                        <template slot-scope="scope">
+                            <div class="bu-level-left">
+                                <div class="bu-level-item slipping-away-users-table-data-item">
+                                    <span>{{scope.row.percentage}} %</span>
+                                </div>
+                                <cly-progress-bar  :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
+                            </div>
+                        </template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>       
+    </cly-main>
+</div>

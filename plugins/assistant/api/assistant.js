@@ -5,6 +5,7 @@ const PromiseB = require("bluebird");
 const async = require("async");
 const _ = require('underscore');
 const moment = require('moment-timezone');
+const { getUserApps } = require('../../../api/utils/rights.js');
 
 (function(assistant) {
     const db_name_notifs = "assistant_notifs";
@@ -206,8 +207,9 @@ const moment = require('moment-timezone');
             });
         }
         else {
+            const userApps = getUserApps(member);
             //get user list from member field
-            getAppData(member.user_of);
+            getAppData(userApps);
         }
     };
 

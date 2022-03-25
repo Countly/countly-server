@@ -1,0 +1,12 @@
+<div v-bind:class="[componentId]">
+    <div class="bu-level">
+        <div class="bu-level-left">
+            <div class="bu-level-item">
+                {{title}}
+            </div>
+        </div>
+        <div class="bu-level-right">
+            <slot name="action"></slot>
+        </div>
+    </div>
+</div>

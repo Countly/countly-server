@@ -1,0 +1,75 @@
+<script type="text/x-template" id="data-manager-create-segment-input">
+	<div class="data-manager-create-event__segment bu-my-4 bg-cool-gray-10">
+        <div class="bu-px-4 bu-py-5">
+            <div class="bu-level">
+                <div class="text-small text-heading bu-level-left bu-level-item text-uppercase bu-mb-3">{{i18n('data-manager.segmentation.details')}}</div>
+                <div @click="removeSegment" class="bu-is-clickable text-small bu-level-item bu-level-right color-red-100">{{i18n('data-manager.segmentation.delete')}}</div>
+            </div>
+
+            <cly-form-field :label="i18n('data-manager.segmentation.key')">
+                <el-input
+                class="bu-pt-1"
+                v-model="segment.name" 
+		        :placeholder="i18n('data-manager.segmentation.enter.key')">
+		        </el-input>
+            </cly-form-field>
+
+            <cly-form-field class="bu-pt-1" :label="i18n('data-manager.segmentation.type')">
+                <el-select style="width: 280px;" v-model="segment.type" :placeholder="i18n('data-manager.segmentation.select.type')">
+                    <el-option
+                      class="bu-pt-1"
+                      v-for="item in dataTypes"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                </el-select>
+            </cly-form-field>  
+
+
+            <div class="bu-mt-3">
+                <el-checkbox v-model="segment.required" size="medium">
+                    <span class="text-smallish color-cool-gray-100">{{i18n('data-manager.segmentation.required')}}</span>
+                </el-checkbox>
+            </div>
+
+            <div v-if="segment.required" class="text-medium text-heading">
+                <cly-form-field :label="i18n('data-manager.segmentation.description')" class="bu-pb-0">
+                    <el-input
+                    class="bu-pt-1"
+                    v-if="segment.required"
+                    type="textarea"
+                    :rows="2"
+                    v-model="segment.description" 
+		            :placeholder="i18n('data-manager.segmentation.enter.description')">
+		            </el-input>
+                </cly-form-field>
+            </div>
+
+        </div>
+	</div>
+ </script>
+
+ <script type="text/x-template" id="data-manager-create-segment">
+	<div>
+		<data-manager-create-segment-input
+			ref="segmentInput"
+			v-for="(segment, i) in segments"
+			@remove-me="removeSegmentAtIndex(i)"
+			:removable="segments.length > 1"
+			:key="i"
+			:segment-index="i"
+			:max-choices="10"
+			v-model="segments[i]">
+		</data-manager-create-segment-input>
+		<el-button
+            class="bg-light-blue-100 color-blue-100"
+			size="small"
+			type="text"
+            :disabled="!newSegmentAllowed"
+			@click="addNewSegment">
+			{{i18n('data-manager.segmentation.add')}}
+		</el-button>
+
+	</div>
+ </script>

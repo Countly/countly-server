@@ -1,0 +1,65 @@
+<div class="dbviewer-aggregate">
+    <cly-header>
+        <template v-slot:header-left>
+            <div class="dbviewer-aggregate__title">
+                <div @click="backToDBViewer()" class="bu-is-size-7 dbviewer-aggregate__back-button">
+                    <i class="el-icon-back"></i> {{ i18n('dbviewer.back-to-dbviewer') }}
+                </div>
+                <h2 class="bu-mt-5"> {{ i18n('dbviewer.aggregation') }}</h2>
+            </div>
+        </template>
+    </cly-header>
+    <cly-main>
+        <div class="bu-is-size-5">
+            {{ i18n('dbviewer.execute-aggregation') }} <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+        </div>
+        <cly-section class="bg-white bu-p-5 bu-mt-4 dbviewer-aggregate__query-area">
+            <el-input
+            type="textarea"
+            :placeholder="i18n('dbviewer.enter-aggregation-pipeline')"
+            v-model="query">
+            </el-input>
+            <div class="dbviewer-aggregate__query-button-area">
+                <el-button :disabled="queryLoading" @click="executeQuery()" type="success" class="bu-mt-4">
+                    {{ i18n('dbviewer.generate-aggregate-report') }}
+                </el-button>
+            </div>
+        </cly-section>
+        <cly-section>
+            <cly-datatable-n :rows="aggregationResult">
+                <template v-slot="scope">
+                    <el-table-column prop="_id" label="_id" min-width="250" fixed>
+                        <template v-slot="rowScope">
+                            {{ rowScope.row._id }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="aggregationResult[0]._id === 'query_not_executed_yet'" prop="uid" label="uid" min-width="250" fixed>
+                        <template v-slot="rowScope">
+                            -
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="aggregationResult[0]._id === 'query_not_executed_yet'" prop="did" label="did" min-width="250" fixed>
+                        <template v-slot="rowScope">
+                            -
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="aggregationResult[0]._id === 'query_not_executed_yet'" prop="brw" label="brw" min-width="250" fixed>
+                        <template v-slot="rowScope">
+                            -
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="aggregationResult[0]._id === 'query_not_executed_yet'" prop="brwv" label="brwv" min-width="250" fixed>
+                        <template v-slot="rowScope">
+                            -
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="field !== '_id'" min-width="150" v-for="field in fields" prop="field" :label="field">
+                        <template v-slot="rowScope">
+                            <span>{{ rowScope.row[field] }}</span>
+                        </template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+    </cly-main>
+</div> 

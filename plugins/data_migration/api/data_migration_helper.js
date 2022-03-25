@@ -69,7 +69,7 @@ module.exports = function(my_db) {
             }
 
             if (bad_ids.length > 0) {
-                reject(Error("Given app id is/are not valid:" + bad_ids.join()));
+                reject(Error("data-migration.invalid_app_id" + bad_ids.join()));
             }
             db.collection("apps").find({_id: { $in: object_array }}).toArray(function(err, res) {
                 if (err) {
@@ -87,7 +87,7 @@ module.exports = function(my_db) {
                         }
                     }
                     if (bad_ids.length > 0) {
-                        reject(Error("You don't have any apps with given ids:" + bad_ids.join()));
+                        reject(Error("data-migration.some_bad_ids"));
                     }
                     else {
                         resolve(app_names);
@@ -113,17 +113,17 @@ module.exports = function(my_db) {
                     if (res) {
                         if ((res.step === 'sending' || res.step === 'importing') && res.status === 'failed') {
                             if (havefile) {
-                                reject(Error('You have valid export failed in sending state'));
+                                reject(Error('data-migration.you-have-valid-export-failed-in-sending'));
                             }
                             else {
                                 resolve();
                             }
                         }
                         else if (res.status === 'finished' && res.step === "exporting" && havefile) {
-                            reject(Error("You have already exported data."));
+                            reject(Error("data-migration.you-have-already-exported-data"));
                         }
                         else if (res.stopped === false && res.status !== 'finished' && res.status !== 'failed') {
-                            reject(Error('Already running exporting process'));
+                            reject(Error('data-migration.already-running-exporting-process'));
                         }
                         else {
                             self.clean_up_data('export', exportid, true).then(
@@ -228,7 +228,7 @@ module.exports = function(my_db) {
                         //removes default folder if exists
                         fse.remove(path.resolve(__dirname, './../' + folder + '/' + my_exportid), err => {
                             if (err) {
-                                reject0(Error('Unable to remove directory'));
+                                reject0(Error('data-migration.unable-to-remove-directory'));
                             }
                             else {
                                 resolve0();
@@ -259,7 +259,7 @@ module.exports = function(my_db) {
                                     if (my_dir && fs.existsSync(my_dir + '/' + my_exportid)) {
                                         fse.remove(my_dir + '/' + my_exportid, err1 => {
                                             if (err1) {
-                                                reject(Error('Unable to remove directory'));
+                                                reject(Error('data-migration.unable-to-remove-directory'));
                                             }
                                             else {
                                                 resolve();
@@ -274,7 +274,7 @@ module.exports = function(my_db) {
                                     if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + my_exportid))) {
                                         fse.remove(path.resolve(__dirname, './../' + folder + '/' + my_exportid), err1 => {
                                             if (err1) {
-                                                reject(Error('Unable to remove directory'));
+                                                reject(Error('data-migration.unable-to-remove-directory'));
                                             }
                                             else {
                                                 resolve();
@@ -297,7 +297,7 @@ module.exports = function(my_db) {
                                 if (mydata && mydata.my_folder) {
                                     fse.remove(mydata.my_folder + "/" + my_exportid, err => {
                                         if (err) {
-                                            reject(Error('Unable to remove directory'));
+                                            reject(Error('data-migration.unable-to-remove-directory'));
                                         }
                                         else {
                                             resolve();
@@ -328,7 +328,7 @@ module.exports = function(my_db) {
                 });
             }
             else {
-                reject(Error('No exportid given'));
+                reject(Error('data-migration.no-export-id-given'));
             }
         });
     };
@@ -377,7 +377,7 @@ module.exports = function(my_db) {
                 if (code === 0) {
                     if (update && exp_count > 0 && exportid && exportid !== "") {
                         if (update_progress(exportid, "exporting", "progress", 1, "") === false) {
-                            return reject(Error("Stopped exporting process"));
+                            return reject(Error("data-migration.export-stoppedStopped exporting process"));
                         }
                     }
                     return resolve();
@@ -505,7 +505,7 @@ module.exports = function(my_db) {
 
             db.collection("apps").findOne({_id: db.ObjectID(appid)}, function(err, res) {
                 if (err || !res) {
-                    reject(Error("Invalid app id"));
+                    reject(Error("data-migration.invalid-app-id"));
                 }
                 else {
                     if (!res.redirect_url || res.redirect_url === "") {
@@ -686,7 +686,7 @@ module.exports = function(my_db) {
                 var target_path = path.resolve(__dirname, '../import/' + var_name);
                 fs.rename(tmp_path, target_path, (err) => {
                     if (err) {
-                        reject(Error("Unable to copy file"));
+                        reject(Error("data-migration.unable-to-copy-file"));
                     }
                     resolve();
                 });
@@ -746,7 +746,7 @@ module.exports = function(my_db) {
             }
             folder = folder + '/countly_symbolication_files';
             if (!fs.existsSync(folder)) {
-                resolve("There are no symbolication  crash files");
+                resolve("data-migration.there-are-no-symbolication-files");
             }
             else {
                 var myapps = fs.readdirSync(folder);
@@ -1047,7 +1047,7 @@ module.exports = function(my_db) {
                     });
             }
             else {
-                reject(Error('There is no data for insert'));
+                reject(Error('data-migration.there-is-no-data-to-insert'));
             }
         });
     };
@@ -1080,15 +1080,15 @@ module.exports = function(my_db) {
                 }
                 if (res.statusCode >= 400 && res.statusCode < 500) {
                     if (msg === "Invalid path") {
-                        msg = "Invalid path. You have reached countly server, but it seems like data migration plugin is not enabled on it.";
+                        msg = "data-migration.invalid-server-path";
                     }
                     update_progress(my_exportid, "sending", "failed", 0, msg, true, {});
                 }
-                else if (res.statusCode === 200 && msg === "Importing process started.") {
+                else if (res.statusCode === 200 && msg === "data-migration.import-started") {
                     update_progress(my_exportid, "importing", "progress", 0, msg, true);
                 }
                 else {
-                    msg = "Sending failed. Target server address is not valid";
+                    msg = "data-migration.sending-failed-server-address-wrong";
                     update_progress(my_exportid, "sending", "failed", 0, msg, true, {});
                 }
             }
@@ -1298,7 +1298,7 @@ module.exports = function(my_db) {
                                                         function() {
                                                             log_me(my_logpath, "Clean up failed", false);
                                                             if (params.qstring.only_export && params.qstring.only_export === true) {
-                                                                update_progress(exportid, "exporting", "finished", 0, "Export completed. Unable to delete files", true, {}, params);
+                                                                update_progress(exportid, "exporting", "finished", 0, "data-migration.export-completed-unable-to-delete", true, {}, params);
                                                             }
                                                             else {
                                                                 log_me(my_logpath, "Preparing for sending files", false);
@@ -1318,13 +1318,13 @@ module.exports = function(my_db) {
 
                             }
                             else {
-                                reject(Error('Failed to generate export scripts'));
+                                reject(Error('data-migration.failed-generate-scripts'));
                             }
 
                         },
                         function(error) {
                             update_progress(exportid, "exporting", "failed", 0, error.message, true, {}, params);
-                            reject(Error('Failed to generate export scripts'));
+                            reject(Error('data-migration.failed-generate-scripts'));
                         });
                 },
                 function(error) {
@@ -1405,7 +1405,7 @@ module.exports = function(my_db) {
             })
             .then(function() {
                 log_me(logpath, 'Cleanup sucessfull', false);
-                report_import(params, "Import successful", "finished", foldername);
+                report_import(params, "systemlogs.action.import_finished", "finished", foldername);
             },
             function(err) {
                 log_me(logpath, err.message, true);

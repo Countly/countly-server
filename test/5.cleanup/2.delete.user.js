@@ -53,7 +53,7 @@ describe('Deleting user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'User is not a global administrator');
+                    ob.should.have.property('result', 'User does not have right');
                     done();
                 });
         });
@@ -70,7 +70,7 @@ describe('Deleting user', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    done();
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
     });

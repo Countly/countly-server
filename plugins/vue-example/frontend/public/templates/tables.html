@@ -1,0 +1,14 @@
+<div v-bind:class="[componentId]">
+    <cly-header title="Tables">
+        <template v-slot:header-right>
+            <div class="bu-level-item">
+                <el-button @click="add" type="primary" size="small" icon="el-icon-circle-plus">Create</el-button>
+            </div>
+        </template>
+        <template v-slot:header-tabs>
+            <cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs">
+            </cly-dynamic-tabs>
+        </template>
+    </cly-header>
+    <drawer @close="closeDrawer" :controls="drawers.main"></drawer>
+</div>

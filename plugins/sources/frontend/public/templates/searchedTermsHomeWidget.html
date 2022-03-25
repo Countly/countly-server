@@ -1,0 +1,28 @@
+<div v-bind:class="[componentId]">
+	<clyd-home-widget-header :widget="headerData"></clyd-home-widget-header>
+	<cly-section class="keywords-dashboard-widget">
+        <cly-metric-cards :multiline="true" v-loading="isLoading" style="min-height:100px;">
+            <cly-metric-card :label="searchTermsTop3[0].label">
+                <!-- {{ searchTermsTop3[0].label }} -->
+              <template v-slot:number>{{ searchTermsTop3[0].value }}</template>
+              <template v-slot:description>
+                <span class="text-medium">{{ searchTermsTop3[0].percentage }}% {{ i18n('keywords.total') }}</span>
+              </template>
+            </cly-metric-card>
+            <cly-metric-card :label="searchTermsTop3[1].label">
+                <!-- {{ searchTermsTop3[1].label }} -->
+              <template v-slot:number>{{ searchTermsTop3[1].value }}</template>
+              <template v-slot:description>
+                <span class="text-medium">{{ searchTermsTop3[1].percentage }}% {{ i18n('keywords.total') }}</span>
+              </template>
+            </cly-metric-card>
+            <cly-metric-card :label="searchTermsTop3[2].label">
+                <!-- {{ searchTermsTop3[2].label }} -->
+              <template v-slot:number>{{ searchTermsTop3[2].value }}</template>
+              <template v-slot:description>
+                <span class="text-medium">{{ searchTermsTop3[2].percentage }}% {{ i18n('keywords.total') }}</span>
+              </template>
+            </cly-metric-card>
+        </cly-metric-cards> 
+    </cly-section> 
+</div>

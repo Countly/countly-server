@@ -4,21 +4,19 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateUser, validateGlobalAdmin } = require('../../../api/utils/rights.js');
 
 (function() {
     plugins.register('/i/plugins', function(ob) {
         var params = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
-        validateUserForWriteAPI(function() {
+
+        validateGlobalAdmin(params, function() {
             if (process.env.COUNTLY_CONTAINER === 'api') {
                 common.returnMessage(params, 400, 'Not allowed in containerized environment');
                 return false;
             }
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
+
             if (typeof params.qstring.plugin !== 'undefined' && params.qstring.plugin !== 'plugins') {
                 try {
                     params.qstring.plugin = JSON.parse(params.qstring.plugin);
@@ -58,13 +56,13 @@ var plugin = {},
             else {
                 common.returnOutput(params, "Not enough parameters");
             }
-        }, params);
+        });
         return true;
     });
 
     plugins.register('/o/plugins-check', function(ob) {
         var params = ob.params;
-        ob.validateUserForDataReadAPI(params, function() {
+        validateGlobalAdmin(params, function() {
             common.db.collection('plugins').count({"_id": "failed"}, function(failedErr, failedCount) {
                 if (!failedErr && failedCount < 1) {
                     common.db.collection('plugins').count({"_id": "busy"}, function(busyErr, count) {
@@ -172,12 +170,7 @@ var plugin = {},
                 });
             });
         };
-        var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
-        validateUserForMgmtReadAPI(function() {
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
+        validateGlobalAdmin(params, function() {
             var dir = path.resolve(__dirname, "../../");
             walk(dir, function(err, results) {
                 if (err) {
@@ -185,14 +178,14 @@ var plugin = {},
                 }
                 common.returnOutput(params, results || {});
             });
-        }, params);
+        });
         return true;
     });
 
     plugins.register("/o/internal-events", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        validateUserForDataReadAPI(params, function() {
+
+        validateGlobalAdmin(params, function() {
             var events = [];
             common.arrayAddUniq(events, plugins.internalEvents.concat(plugins.internalDrillEvents));
             common.returnOutput(params, events);
@@ -202,12 +195,8 @@ var plugin = {},
 
     plugins.register("/i/configs", function(ob) {
         var params = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
-        validateUserForWriteAPI(function() {
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
+
+        validateGlobalAdmin(params, function() {
             var data = {};
             if (params.qstring.configs) {
                 try {
@@ -243,31 +232,25 @@ var plugin = {},
             else {
                 common.returnMessage(params, 400, 'Error updating configs');
             }
-        }, params);
+        });
         return true;
     });
 
     plugins.register("/o/configs", function(ob) {
         var params = ob.params;
-        var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
-        validateUserForMgmtReadAPI(function() {
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
+        validateGlobalAdmin(params, function() {
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getAllConfigs();
                 delete confs.services;
                 common.returnOutput(params, confs);
             });
-        }, params);
+        });
         return true;
     });
 
     plugins.register("/i/userconfigs", function(ob) {
         var params = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
-        validateUserForWriteAPI(function() {
+        validateGlobalAdmin(params, function() {
             var data = {};
             if (params.qstring.configs) {
                 try {
@@ -298,35 +281,36 @@ var plugin = {},
             else {
                 common.returnMessage(params, 400, 'Error updating configs');
             }
-        }, params);
+        });
         return true;
     });
 
     plugins.register("/o/userconfigs", function(ob) {
         var params = ob.params;
-        var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
-        validateUserForMgmtReadAPI(function() {
+        validateUser(params, function() {
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getUserConfigs(params.member.settings);
                 common.returnOutput(params, confs);
             });
-        }, params);
+        });
         return true;
     });
 
     plugins.register("/o/themes", function(ob) {
         var params = ob.params;
-        var themeDir = path.resolve(__dirname, "../../../frontend/express/public/themes/");
-        fs.readdir(themeDir, function(err, list) {
-            if (!Array.isArray(list)) {
-                list = [];
-            }
-            list.unshift("");
-            var index = list.indexOf(".gitignore");
-            if (index > -1) {
-                list.splice(index, 1);
-            }
-            common.returnOutput(params, list);
+        validateUser(params, function() {
+            var themeDir = path.resolve(__dirname, "../../../frontend/express/public/themes/");
+            fs.readdir(themeDir, function(err, list) {
+                if (!Array.isArray(list)) {
+                    list = [];
+                }
+                list.unshift("");
+                var index = list.indexOf(".gitignore");
+                if (index > -1) {
+                    list.splice(index, 1);
+                }
+                common.returnOutput(params, list);
+            });
         });
         return true;
     });
@@ -349,12 +333,8 @@ var plugin = {},
 
     plugins.register("/o/email_test", function(ob) {
         // check if global admin
-        ob.validateUserForGlobalAdmin(ob.params, function(params) {
+        validateGlobalAdmin(ob.params, function(params) {
             const member = ob.params.member || {};
-            if (!member.global_admin || !member.email) {
-                common.returnMessage(params, 401, 'User is not a global administrator or no valid email address');
-                return true;
-            }
 
             var fullpath = path.resolve(__dirname, "../");
             var local_path = fullpath + "/frontend/public/localization/plugins.properties";

@@ -1,0 +1,120 @@
+
+<html>
+
+    <title> Unsubscribe </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+
+    <style>
+        body {
+            font-family: Ubuntu,Helvetica,sans-serif;
+        }
+        .content {
+            display:flex;
+            justify-content: center;
+            flex-direction: column;
+            margin: auto;
+            max-width: 360px;
+        }
+
+        .logo {
+            background:url('../../../../images/dashboard/countly_logo.svg')  center center / cover no-repeat;
+            height: 77px;
+            width: 263px;
+            margin: auto;
+            margin-top: 20%;
+        }
+
+        <%= css %>
+
+        .title {
+            font-style: normal;
+            font-weight: bold;
+            font-size: 18px;
+            line-height: 22px;
+            color: #333C48;
+            margin-top: 65px;
+            display:flex;
+            flex-direction: row;
+        }
+
+        .check-icon {
+            width: 24px;
+            height: 24px;
+            background: url('../../../../reports/images/check.svg')  center center / cover no-repeat;
+            padding-left: -20px;
+            margin-right: 19px;
+        }
+
+
+        .subtitile{
+            margin-top: 11px;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 17px;
+            color: #333C48;
+        }
+
+
+        .action {
+            display:flex;
+            flex-direction: row;
+            margin-top: 63px;
+            align-items: center;
+        }
+
+        .action .hint {
+            font-style: normal;
+            font-weight: normal;
+            font-size: 12px;
+            line-height: 14px;
+            color: #979797;
+            flex-grow: 1;
+        }
+
+        .action .button {
+            background: #EBEBEB;
+            border-radius: 5px;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 12px;
+            line-height: 14px;
+            padding: 8px 20px;
+        }
+        .action .button:hover {
+            cursor: pointer;
+        }
+        .action .button:active {
+            background: #d4d3d3;
+        }
+    </style>
+    <script>
+        var _changeSubscriptions = function() {
+            if (window.location.pathname.indexOf("/unsubscribe_report") >= 0) {
+                window.location.href = "./subscribe_report" + window.location.search
+            } else {
+                window.location.href = "./unsubscribe_report" + window.location.search
+            }
+
+        }
+    </script>
+
+    <body>
+        <div class="content">
+            <div class="logo">
+            </div>
+            <div class="title">
+                <div class="check-icon" style="width:20px; height:20px;"> </div>
+                <div><%= i18n["title"] %></div>
+            </div>
+            <div class="subtitile">
+                <%= i18n["subtitle"] %>
+            </div>
+            <div class="action">
+                <div class="hint"><%= i18n["hint"] %></div>
+                <div class="button" onclick="_changeSubscriptions()"><%= i18n["button"] %> </div>
+            </div>
+        </div>
+    </body>
+</html>

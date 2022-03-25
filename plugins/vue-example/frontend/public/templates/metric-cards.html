@@ -1,0 +1,67 @@
+<div>
+    <cly-header title="Metric cards"></cly-header>
+    <cly-main>
+        <h5 class="bu-pb-4">Multiline orientation</h5>
+        <cly-metric-cards>
+            <cly-metric-breakdown 
+                :name="item.name" 
+                :values="item.values" 
+                :description="item.description"
+                :column-width="6" 
+                v-for="(item, idx) in breakdownItems">
+            </cly-metric-breakdown>
+        </cly-metric-cards>
+
+        <h5 class="bu-py-4">Horizontal orientation</h5>
+        <div style="height: 305px;">
+            <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
+                <cly-metric-cards :multiline="false">
+                    <cly-metric-breakdown 
+                        :name="item.name" 
+                        :values="item.values" 
+                        :description="item.description"
+                        :column-width="3" 
+                        :scroll-ops="breakdownScrollOps" 
+                        v-for="(item, idx) in breakdownItems">
+                    </cly-metric-breakdown>
+                </cly-metric-cards>
+            </vue-scroll>
+        </div>
+
+        <h5 class="bu-py-4">Synced scroll</h5>
+        <div style="height: 115px" class="bu-pb-5">
+            <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
+                <cly-metric-cards :multiline="false" :is-synced-scroll="true">
+                    <cly-metric-card 
+                        :is-percentage="true" 
+                        :column-width=3 
+                        :color="item.color" 
+                        :number="item.percent"
+                        :key="idx" 
+                        v-for="(item, idx) in cardItems">
+                        {{item.name}}
+                        <template v-slot:number>{{item.value}}</template>
+                        <template v-slot:description>
+                            <span class="text-medium">{{item.percentText}}</span>
+                        </template>
+                    </cly-metric-card>
+                </cly-metric-cards>
+            </vue-scroll>
+        </div>
+        <div style="height: 305px; padding-bottom: 20px;">
+            <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
+                <cly-metric-cards :multiline="false" :is-synced-scroll="true">
+                    <cly-metric-breakdown 
+                        :name="item.name" 
+                        :values="item.values" 
+                        :description="item.description"
+                        :column-width="3"
+                        :color="graphColors[idx % graphColors.length]"
+                        :scroll-ops="breakdownScrollOps" 
+                        v-for="(item, idx) in breakdownSyncItems">
+                    </cly-metric-breakdown>
+                </cly-metric-cards>
+            </vue-scroll>
+        </div>
+    </cly-main>
+</div>

@@ -1,0 +1,110 @@
+<div class="data-migration__drawer">
+  <cly-drawer
+    toggle-transition="stdt-fade"
+    ref="importDrawer"
+    @submit="onSubmit"
+    @open="onOpen"
+    :saveButtonLabel="importDrawerSaveButtonLabel"
+    :cancelButtonLabel="importDrawerCancelButtonLabel"
+    :requires-async-submit="true"
+    :title="$props.settings.title"
+    name="import-drawer"
+    v-bind="$props.controls">
+    <template v-slot:default="drawerScope">
+      <cly-form-step id="default">
+        <div v-if="!tokenGenerated" class="cly-vue-drawer-step__section">
+            <div class="text-medium text-heading bu-mb-2">
+              <span>
+                {{ i18n('data-migration.import-type') }}
+              </span>
+              <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+            </div>
+            <div class="bu-is-flex data-migration__drawer__full">
+              <el-radio-group :class="['data-migration__drawer__full bu-is-flex-direction-row bu-is-flex bu-is-align-items-baseline bu-is-justify-content-space-between']" v-model="drawerScope.editedObject.from_server" @change="updateImportType">
+                <el-radio class="data-migration__drawer__half data-migration__drawer__radio-item bu-is-flex" :label="1" border>
+                  <div class="data-migration__drawer__radio-label">
+                    {{ i18n('data-migration.import-type-token-label') }}
+                  </div>
+                </el-radio>
+                <el-radio class="data-migration__drawer__half data-migration__drawer__radio-item bu-is-flex" :label="0" border>
+                  <div class="data-migration__drawer__radio-label">
+                    {{ i18n('data-migration.import-type-upload-label') }}
+                  </div>
+                </el-radio>
+              </el-radio-group>
+            </div>
+        </div>
+        <div v-if="drawerScope.editedObject.from_server === 0 && !tokenGenerated" class="cly-vue-drawer-step__section">
+          <div class="text-medium text-heading">
+            <span class="ratings-section-title bu-mb-2">
+            {{ i18n('data-migration.select-file') }}
+            </span>
+            <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          </div>
+          <cly-dropzone
+            class="data-migration__drawer__dropzone"
+            ref="importDropzone"
+            id="import-dropzone"
+            @vdropzone-complete="onComplete"
+            :options="importDropzoneOptions"
+            :useCustomSlot="true">
+              <div class="dropzone-custom-content">
+                <h3 class="dropzone-custom-title">
+                  <img src="/images/icons/folder-icon.svg" alt="">
+                </h3>
+                <div class="subtitle text-medium bu-mt-2">
+                  <span class="bu-has-text-weight-light bu-has-text-grey">{{ i18n('feedback.drop-message') }}</span>
+                  <span class="color-blue-100 bu-has-text-weight-medium">{{ i18n('feedback.click-to-upload') }}</span>
+                </div>
+              </div>
+          </cly-dropzone>
+        </div>
+        <div v-if="drawerScope.editedObject.from_server === 1 && !tokenGenerated" class="cly-vue-drawer-step__section">
+          <div class="text-medium text-heading bu-mb-2">
+            <span>
+              {{ i18n('data-migration.import-from-another-server') }}
+            </span>
+            <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+            <div class="text-small data-migration__description">
+              {{ i18n('data-migration.import-type-token-description') }}
+            </div>
+          </div>
+        </div>
+        <div v-if="drawerScope.editedObject.from_server === 1 && tokenGenerated" class="data-migration__drawer__token-generated cly-vue-drawer-step__section bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-around">
+          <div class="text-medium text-heading bu-is-flex bu-is-align-items-center bu-is-flex-direction-column">
+            <div class="data-migration__drawer__success-icon">
+              <i class="fas fa-check"></i>
+            </div>
+            <h2 class="bu-mt-4">{{ i18n('data-migration.generated-token') }}</h2>
+          </div>
+          <div class="data-migration__drawer__tokens-area bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center bu-is-align-items-center bu-p-5">
+            <div class="text-medium data-migration__drawer__full bu-is-flex">
+              <div class="bu-has-text-weight-medium data-migration__drawer__title">
+                {{ i18n('data-migration.server-address') }}
+              </div>
+              <div class="data-migration__drawer__value">
+                {{ serverDomain }}
+                <input type="text" style="position:absolute;top:-1000px" id="data-migration-server-domain-input" v-model="serverDomain">
+                <span @click="copy('domain')" class="color-primary bu-is-clickable bu-has-text-weight-medium data-migration__link-text">
+                  {{ i18n('data-migration.copy-url') }}
+                </span>
+              </div>
+            </div>
+            <div class="text-medium data-migration__drawer__full bu-is-flex bu-mt-3">
+              <div class="bu-has-text-weight-medium data-migration__drawer__title">
+                {{ i18n('data-migration.server-token') }}
+              </div>
+              <div class="data-migration__drawer__value">
+                <input type="text" style="position:absolute;top:-1000px" id="data-migration-server-token-input" v-model="serverToken">
+                {{ serverToken }}
+                <span @click="copy('token')" class="color-primary bu-is-clickable bu-has-text-weight-medium data-migration__link-text">
+                  {{ i18n('data-migration.copy-token') }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </cly-form-step>
+    </template>
+  </cly-drawer>
+</div>

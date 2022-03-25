@@ -40,7 +40,6 @@
                         }
                         json.result[i].appnames = CountlyHelpers.appIdsToNames(json.result[i].apps);
 
-
                         var dd = new Date(json.result[i].ts);
                         json.result[i].time = dd.toLocaleDateString("en-US") + ' ' + dd.toLocaleTimeString("en-US");
                         json.result[i].step = jQuery.i18n.map["data-migration.step." + json.result[i].step];
@@ -48,7 +47,7 @@
                         json.result[i].applist = json.result[i].apps.join();
 
                         if ((json.result[i].status === 'failed' || json.result[i].status === 'finished' || json.result[i].stopped === true) && json.result[i].can_download === true) {
-                            json.result[i].can_resend = true;
+                            json.result[i].can_sendExport = true;
                         }
                         else {
                             json.result[i].can_resend = false;
@@ -119,7 +118,6 @@
                 _import_list = {result: "error", data: {xhr: xhr, status: status, error: error}};
             }
         });
-
     };
 
     countlyDataMigration.stopExport = function(exportid, callback) {
@@ -185,6 +183,43 @@
         });
     };
 
+    countlyDataMigration.saveImport = function(importData, callback) {
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_URL + "/i/datamigration/import",
+            dataType: 'multipart/form-data',
+            data: importData,
+            success: function(json) {
+                if (callback) {
+                    callback({result: "success", data: json.result});
+                }
+            },
+            error: function(xhr, status, error) {
+                if (callback) {
+                    callback({result: "error", data: {xhr: xhr, status: status, error: error}});
+                }
+            }
+        });
+    };
+
+    countlyDataMigration.saveExport = function(exportData, callback) {
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_URL + "/i/datamigration/export",
+            //dataType: 'application/json',
+            data: exportData,
+            success: function(json) {
+                if (callback) {
+                    callback({result: "success", data: json.result});
+                }
+            },
+            error: function(xhr, status, error) {
+                if (callback) {
+                    callback({result: "error", data: {xhr: xhr, status: status, error: error}});
+                }
+            }
+        });
+    };
 
     countlyDataMigration.createToken = function(callback) {
         $.ajax({
@@ -251,7 +286,6 @@
             }
         });
     };
-
 
     //return data that we have
     countlyDataMigration.getData = function() {

@@ -99,6 +99,7 @@ plugins.connectToAllDatabases().then(function() {
         password_expiration: 0,
         password_rotation: 3,
         password_autocomplete: true,
+        robotstxt: "User-agent: *\nDisallow: /",
         dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
         api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
         dashboard_rate_limit_window: 60,
@@ -248,8 +249,13 @@ plugins.connectToAllDatabases().then(function() {
     };
 
     if (cluster.isMaster) {
+        common.runners = require('./parts/jobs/runner');
         common.cache = new CacheMaster(common.db);
-        common.cache.start().then(plugins.dispatch.bind(plugins, '/cache/init', {}), e => {
+        common.cache.start().then(() => {
+            setTimeout(() => {
+                plugins.dispatch('/cache/init', {});
+            }, 1000);
+        }, e => {
             console.log(e);
             process.exit(1);
         });

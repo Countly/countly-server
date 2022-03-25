@@ -1,98 +1,106 @@
-/*global $, countlyTotalUsers, countlyLanguage, jQuery, app, LanguageView, countlyGlobalLang, Handlebars, countlyView, addDrill, countlyCommon, CountlyHelpers*/
-window.LanguageView = countlyView.extend({
-    beforeRender: function() {
-        return $.when(countlyLanguage.initialize(), countlyTotalUsers.initialize("languages")).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        var languageData = countlyLanguage.getData();
-
-        this.templateData = {
-            "page-title": jQuery.i18n.map["languages.title"],
-            "logo-class": "languages",
-            "graph-type-double-pie": true,
-            "pie-titles": {
-                "left": jQuery.i18n.map["common.total-sessions"],
-                "right": jQuery.i18n.map["common.new-users"]
+/* global countlyVue,CV,countlyCommon,countlyLanguage*/
+(function() {
+    var FEATURE_NAME = 'locale';
+    var LanguageView = countlyVue.views.create({
+        template: CV.T("/locale/templates/language.html"),
+        data: function() {
+            return {
+                description: CV.i18n('help.languages.chart')
+            };
+        },
+        mounted: function() {
+            this.$store.dispatch('countlyLanguage/fetchAll', true);
+        },
+        methods: {
+            refresh: function(force) {
+                this.$store.dispatch('countlyLanguage/fetchAll', force);
+            }
+        },
+        computed: {
+            data: function() {
+                return this.$store.state.countlyLanguage.Language;
             },
-            "chart-helper": "languages.chart",
-            "table-helper": ""
-        };
+            pieOptionsNew: function() {
+                var self = this;
+                return {
+                    series: [
+                        {
+                            name: CV.i18n('common.table.new-users'),
+                            data: self.data.pie.newUsers,
+                            label: {
+                                formatter: "{a|" + CV.i18n('common.table.new-users') + "}\n" + countlyCommon.getShortNumber(self.data.totals.newUsers || 0),
+                                fontWeight: 500,
+                                fontSize: 16,
+                                fontFamily: "Inter",
+                                lineHeight: 24,
+                                rich: {
+                                    a: {
+                                        fontWeight: "normal",
+                                        fontSize: 14,
+                                        lineHeight: 16
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                };
+            },
+            pieOptionsTotal: function() {
+                var self = this;
+                return {
+                    series: [
+                        {
+                            name: CV.i18n('common.table.total-sessions'),
+                            data: self.data.pie.totalSessions,
+                            label: {
+                                formatter: "{a|" + CV.i18n('common.table.total-sessions') + "}\n" + countlyCommon.getShortNumber(self.data.totals.totalSessions || 0),
+                                fontWeight: 500,
+                                fontSize: 16,
+                                fontFamily: "Inter",
+                                lineHeight: 24,
+                                rich: {
+                                    a: {
+                                        fontWeight: "normal",
+                                        fontSize: 14,
+                                        lineHeight: 16
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                };
+            },
+            appRows: function() {
+                return this.data.table || [];
+            },
+            isLoading: function() {
+                return this.$store.getters["countlyLanguage/isLoading"];
+            },
+            topDropdown: function() {
+                if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                    return this.externalLinks;
+                }
+                else {
+                    return null;
+                }
 
-        languageData.chartData.forEach(function(row) {
-            if (row.language in countlyGlobalLang.languages) {
-                row.language = countlyGlobalLang.languages[row.language].englishName;
             }
-        });
-
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-            if (typeof addDrill !== "undefined") {
-                $(".widget-header .left .title").after(addDrill("up.la"));
-            }
-            countlyCommon.drawGraph(languageData.chartDPTotal, "#dashboard-graph", "pie");
-            countlyCommon.drawGraph(languageData.chartDPNew, "#dashboard-graph2", "pie");
-
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": languageData.chartData,
-                "aoColumns": [
-                    { "mData": "langs", "sTitle": jQuery.i18n.map["languages.table.language"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
-                    },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-users"]
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.new-users"]
-                    }
-                ]
-            }));
-
-            $(".d-table").stickyTableHeaders();
-        }
-    },
-    refresh: function() {
-        var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-            self.renderCommon(true);
-            var languageData = countlyLanguage.getData();
-            countlyCommon.drawGraph(languageData.chartDPTotal, "#dashboard-graph", "pie");
-            countlyCommon.drawGraph(languageData.chartDPNew, "#dashboard-graph2", "pie");
-
-            CountlyHelpers.refreshTable(self.dtable, languageData.chartData);
-            app.localize();
-        });
-    }
-});
-
-//register views
-app.languageView = new LanguageView();
-
-app.route("/analytics/languages", "languages", function() {
-    this.renderWhenReady(this.languageView);
-});
-
-$(document).ready(function() {
-    Handlebars.registerHelper('languageTitle', function(context) {
-        return countlyGlobalLang.languages[context];
+        },
+        mixins: [
+            countlyVue.container.dataMixin({
+                'externalLinks': '/analytics/language/links'
+            })
+        ]
     });
-    app.addSubMenu("analytics", {code: "analytics-languages", url: "#/analytics/languages", text: "sidebar.analytics.languages", priority: 80});
-});
+    countlyVue.container.registerTab("/analytics/geo", {
+        priority: 10,
+        name: "languages",
+        permission: FEATURE_NAME,
+        title: CV.i18n('sidebar.analytics.languages'),
+        route: "#/analytics/geo/languages",
+        component: LanguageView,
+        vuex: [{
+            clyModel: countlyLanguage
+        }]
+    });
+})();

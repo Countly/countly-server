@@ -1,0 +1,51 @@
+@use "../base/typography-variables" as t;
+
+$default-color: #81868D;
+$primary-color: #0166D6;
+$secondary-color: #333C48;
+
+.cly-vue-tabs {
+    &__primary-tab-list {
+        padding: 24px;
+        box-sizing: border-box;
+    }
+
+    &__tab {
+        height: 34px;
+        padding: 10px 12px;
+        display: inline-block;
+        box-sizing: border-box;
+
+        &--default {
+            color: $default-color;
+            line-height: 14px;
+            font-weight: t.$font-weight-primary;
+            font-size: t.$text-md-size;
+            cursor: pointer;
+        }
+
+        &--primary {
+            border-radius: 6px;
+
+            &:hover {
+                color: $primary-color
+            }
+        }
+
+        &--secondary {
+            &:hover {
+                color: $secondary-color
+            }
+        }
+
+        &--primary-active {
+            color: $primary-color;
+            background-color: #E1EFFF;
+        }
+
+        &--secondary-active {
+            color: $secondary-color;
+            border-bottom: 2px solid $primary-color;
+        }
+    }
+}

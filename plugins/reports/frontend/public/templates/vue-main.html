@@ -1,0 +1,308 @@
+<script type="text/x-template" id="reports-home">
+<div id="reports-view" v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('reports.title')}}
+            </h2><span class="cly-vue-tooltip-icon ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('reports.tips')"/>
+        </template>
+        <template v-slot:header-right>
+            <el-button id="create-report-button" type="success" icon="el-icon-circle-plus" v-if="canUserCreate" @click="createReport">{{i18n('reports.create')}}</el-button>
+        </template>
+    </cly-header>
+
+    <cly-main>
+        <table-view v-on:open-drawer="openDrawer" :callCreateReportDrawer="createReport"></table-view>
+    </cly-main>
+    <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
+</div>
+</script>
+
+
+<script  type="text/x-template" id="reports-table">
+<div>
+<cly-empty-view 
+    v-if="rawTableRows.length === 0 && initialized"
+    :title="i18n('reports.empty-title')"
+    :subTitle="i18n('reports.empty-subtitle')"
+    :actionTitle="i18n('reports.empty-action-button-title')"
+    :hasAction="canUserCreate"
+    :actionFunc="createReport"
+/>
+<cly-section v-else>
+    <cly-datatable-n
+        :force-loading="!initialized"
+        class="cly-vue-reports-table"
+        :tracked-fields="localTableTrackedFields"
+        :rows="tableRows" :resizable="false" >
+        <template v-slot="scope">
+            <el-table-column type="switch" fixed="left" width="88" prop="enabled">
+                <template v-slot="rowScope">
+                    <el-switch :value="rowScope.row.enabled" class="bu-ml-4  bu-mr-2" :disabled="!rowScope.row._canUpdate"
+                        @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
+                    </el-switch>
+                </template>
+            </el-table-column>
+           
+            <el-table-column fixed :label="i18n('report.report-title')"  min-width="200" sortable="true">
+                <template slot-scope="scope">
+                    <div v-html="scope.row.title"></div>
+                </template>
+            </el-table-column> 
+
+            <el-table-column min-width="230" :label="(i18n('reports.emails'))" sortable="true">
+            <template slot-scope="scope" sortable="true">
+                <div class="email-column" v-html="scope.row.emails.join(' ')"></div>
+            </template>
+                
+            </el-table-column>
+
+            <el-table-column  min-width="230" sortable="true"  prop="dataColumn" :label="i18n('reports.metrics')">
+                
+            </el-table-column>
+
+            <el-table-column  min-width="130" sortable="true" :label="i18n('reports.frequency')">
+                <template slot-scope="scope" sortable="true">
+                    <span class="text-medium color-cool-gray-50">{{i18n("reports." + scope.row.frequency)}}</span>
+                </template>
+            </el-table-column>
+<!-- 
+            <el-table-column sortable="true" align="center" prop="timeColumn"  :label="i18n('reports.time')">
+    
+            </el-table-column> -->
+
+            <el-table-column  min-width="250" :label="i18n('reports.time')" sortable="true">
+                <template slot-scope="scope">
+                    <div class="bu-is-flex">
+                        <div class="bu-is-flex-grow-1">
+                            <div class="is-created-by-col">
+                                {{scope.row.timeColumn}}
+                             </div>
+                        </div> 
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column type="options">
+                <template v-slot="rowScope">
+                    <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleReportEditCommand($event,rowScope)">
+                        <el-dropdown-item v-if="rowScope.row._canUpdate" icon="el-icon-document-copy" command="edit-comment">
+                            Edit
+                        </el-dropdown-item>
+                        <el-dropdown-item  icon="el-icon-position" command="send-comment">
+                            Send Now
+                        </el-dropdown-item>
+                        <el-dropdown-item  icon="el-icon-chat-dot-square" command="preview-comment">
+                            Preview
+                        </el-dropdown-item>
+                        <el-dropdown-item v-if="rowScope.row._canDelete" icon="el-icon-delete" command="delete-comment">
+                            Delete
+                        </el-dropdown-item>
+                    </cly-more-options>
+                </template>
+            </el-table-column>
+        </template>
+        <template v-slot:bottomline="scope">
+            <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateStatus(scope)">
+            </cly-diff-helper>
+        </template>
+    </cly-datatable-n>
+</cly-section>
+</div>
+</script>
+
+
+
+<script  type="text/x-template" id="reports-drawer">
+<cly-drawer
+    class="cly-vue-report-drawer"
+    @submit="onSubmit"
+    @close="onClose"
+    @copy="onCopy"
+    :title="title"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="$props.controls">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="reports-drawer-main">
+
+        <cly-form-field name="title" :label="i18n('reports.report_name')" rules="required">
+            <el-input v-model="drawerScope.editedObject.title" :placeholder="i18n('reports.report-name')"></el-input>
+        </cly-form-field>
+
+        <cly-form-field name="email" :label="i18n('reports.email-to-receive')" rules="required">
+            <cly-select-email :collapse-tags="false" v-model="drawerScope.editedObject.emails"></cly-select-email>
+        </cly-form-field>
+
+        <cly-form-field class="bu-py-4 report-type-block">
+            <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                <div class="text-big text-heading bu-mb-3">
+                    {{i18n('reports.report-type')}} <span class="ion-help-circled color-cool-gray-50" v-tooltip.top-center="i18n('reports.type-tips')"/>
+                </div>
+            </div>
+            <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned report-types-block">
+                <el-radio
+                    v-on:change="reportTypeChange" 
+                    class="is-autosized "
+                    v-model="drawerScope.editedObject.report_type"
+                    :label="item.value"
+                    :key="idx"
+                    v-for="(item, idx) in reportTypeOptions"
+                    border
+                    >
+                    {{item.label}}
+                    <div class="text-small">
+                        {{item.description}}
+                    </div>
+                </el-radio>
+            </div>
+        </cly-form-field>
+
+        <cly-form-field name="apps" :label="i18n('reports.select-apps')" rules="required" v-if="showApps">
+            <cly-app-select 
+                :auth='{"feature": "reports", "permission":  drawerScope.editedObject._id ? "u": "c"}'
+                class="bu-is-flex"
+                :placeholder="i18n('reports.Select_apps')"
+                v-on:change="appsChange" 
+                :collapse-tags="false"
+                :multiple="true"
+                :multiple-limit="4"
+                v-model="drawerScope.editedObject.apps" 
+                multiple>
+            </cly-app-select>
+
+            <!-- <cly-select-x
+                :placeholder="i18n('reports.Select_apps')"
+                mode="multi-check"
+                v-on:change="appsChange"
+                v-model="drawerScope.editedObject.apps"
+                class="bu-is-flex"
+                :options="appsSelectorOption">
+            </cly-select-x> -->
+        </cly-form-field> 
+
+
+        <cly-form-field name="metrics" :label="i18n('reports.include-metrics')" rules="required" v-if="showMetrics">
+            <cly-select-x
+                :collapse-tags="false"
+                :placeholder="i18n('reports.Select_metrics')"
+                mode="multi-check"                
+                v-model="metricsArray"
+                class="bu-is-flex"
+                :options="metricOptions">
+            </cly-select-x>
+        </cly-form-field> 
+
+        <cly-form-field name="select_dashboards" :label="i18n('dashboards.select_dashboards')" rules="required" v-if="showDashboards">
+            <cly-select-x
+                :placeholder="i18n('dashboards.select')"
+                mode="single-list"
+                v-model="drawerScope.editedObject.dashboards"
+                class="bu-is-flex"
+                :options="dashboardsOptions">
+            </cly-select-x>
+        </cly-form-field> 
+
+        <!-- <cly-form-field name="selectedEvents" rules="required" :label="i18n('reports.select-events')"  v-if="metricsArray && metricsArray.indexOf('events') > -1">
+            <cly-select-x
+                :placeholder="i18n('reports.select-events')"
+                mode="multi-check"
+                v-model="drawerScope.editedObject.selectedEvents"
+                class="bu-is-flex"
+                :options="eventOptions">
+            </cly-select-x>
+        </cly-form-field> -->
+   
+        <div class="bu-py-4" v-if="metricsArray && metricsArray.indexOf('events') > -1">
+            <div class="text-small bu-pb-1 title text-heading">
+                {{i18n('reports.select-events')}} 
+            </div>
+            <validation-provider name="events" rules="required" v-slot="v">
+                <cly-select-x
+                   :placeholder="i18n('reports.select-events')"
+                   mode="multi-check"
+                   v-model="drawerScope.editedObject.selectedEvents"
+                   :maxInputWidth="300"
+                   :collapse-tags="true"
+                   :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
+                   :options="eventOptions">
+                </cly-select-x>
+            </validation-provider>
+        </div>
+        
+        <cly-form-field name="frequency" class="frequency-block" :label="i18n('reports.frequency')" rules="required">
+            <div class="cly-vue-report-drawer__report_description bu-mb-4 text-small  color-cool-gray-50">
+                {{i18n('reports.frequency-desc')}}
+            </div>
+            <el-radio
+                v-on:change="reportFrequencyChange" 
+                class="is-autosized"
+                v-model="drawerScope.editedObject.frequency"
+                :label="item.value"
+                :key="idx"
+                v-for="(item, idx) in frequencyOptions"
+            border>
+                    <span class="text-medium">{{item.label}}</span>
+                    <span class="text-small color-cool-gray-50">{{item.description}}</span>
+            </el-radio>
+        </cly-form-field>
+
+        <cly-form-field name="select-date-range" :label="i18n('dashboards.select-report-date-range')" rules="required" v-if="showDashboards">
+            <cly-select-x
+                :placeholder="i18n('dashboards.select-date-range')"
+                mode="single-list"
+                v-model="drawerScope.editedObject.date_range"
+                class="bu-is-flex"
+                :options="reportDateRangesOptions">
+            </cly-select-x>
+        </cly-form-field>
+
+        <cly-form-field name="dayOfWeek" :label="i18n('reports.dow')" rules="required" v-if="drawerScope.editedObject.frequency === 'weekly'">
+            <cly-select-x
+                :placeholder="i18n('reports.Select-dow')"
+                mode="single-list"
+                v-model="drawerScope.editedObject.day"
+                class="bu-is-flex"
+                :options="dayOfWeekOptions">
+            </cly-select-x>
+        </cly-form-field>
+
+        <cly-form-field name="select-time" :label="i18n('reports.select-time')" rules="required">
+            <div class="cly-vue-report-drawer__report_description bu-mb-2 text-small  color-cool-gray-50">
+                {{i18n('reports.time-desc')}}
+            </div>
+            <cly-select-x
+                :placeholder="i18n('reports.Select-time')"
+                mode="single-list"
+                v-model="drawerScope.editedObject.hour"
+                class="bu-is-flex"
+                :options="timeListOptions">
+            </cly-select-x>
+        </cly-form-field>
+
+    
+        <cly-form-field name="timezone" :label="i18n('reports.timezone')" rules="required">
+            <div class="cly-vue-report-drawer__report_description bu-mb-2 text-small  color-cool-gray-50">
+                {{i18n('reports.timezone-desc')}}
+            </div>
+            <cly-select-x
+                :placeholder="i18n('reports.Select-timezone')"
+                mode="single-list"
+                v-model="drawerScope.editedObject.timezone"
+                class="bu-is-flex"
+                :options="timezoneOptions">
+            </cly-select-x>
+        </cly-form-field>
+
+        <cly-form-field name="pdf">
+            <el-checkbox v-model="drawerScope.editedObject.sendPdf">{{i18n('reports.send-pdf')}}</el-checkbox>
+        </cly-form-field>
+        
+
+        <pre v-if="0">
+            {{drawerScope.editedObject}}
+        </pre>
+        </cly-form-step>
+    </template>
+</cly-drawer>
+
+
+
+</script>

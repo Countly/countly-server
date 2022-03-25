@@ -12,7 +12,7 @@
 var authorize = require('./../../../api/utils/authorizer.js'); //for token validations
 var common = require('./../../../api/utils/common.js');
 var plugins = require('./../../../plugins/pluginManager.js');
-
+var { getUserApps } = require('./../../../api/utils/rights.js');
 var configs = require('./../config', 'dont-enclose');
 var countlyMail = require('./../../../api/parts/mgmt/mail.js');
 var countlyStats = require('./../../../api/parts/data/stats.js');
@@ -39,6 +39,23 @@ if (membersUtility.countlyConfig.web && membersUtility.countlyConfig.web.track =
     membersUtility.countlyConfig.web.track = null;
 }
 
+/**
+ * @property {object} emptyPermission - empty crud permission
+ */
+membersUtility.emptyPermission = {
+    "permission": {
+        "c": {},
+        "r": {},
+        "u": {},
+        "d": {},
+        "_": {
+            "a": [],
+            "u": [
+                []
+            ]
+        }
+    }
+};
 
 /** Checks remote configuration and sets variables to configuration object
  * @param {object} countlyConfigOrig - configuration settings object. Original(ar read from file)
@@ -228,6 +245,7 @@ function setLoggedInVariables(req, member, countlyDb, callback) {
     req.session.uid = member._id;
     req.session.gadm = (member.global_admin === true);
     req.session.email = member.email;
+    req.session.settings = member.settings;
     var reuse = true;
     if (req.session.temporary_token) {
         reuse = false;
@@ -317,8 +335,9 @@ membersUtility.updateStats = function(member) {
 
     if ((!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) && !plugins.getConfig("api").offline_mode) {
         countlyStats.getUser(membersUtility.db, member, function(statsObj) {
+            const userApps = getUserApps(member);
             var custom = {
-                apps: (member.user_of) ? member.user_of.length : 0,
+                apps: (userApps) ? userApps.length : 0,
                 platforms: {"$addToSet": statsObj["total-platforms"]},
                 events: statsObj["total-events"],
                 pushes: statsObj["total-msg-sent"],
@@ -410,7 +429,6 @@ membersUtility.login = function(req, res, callback) {
                 }
 
                 setLoggedInVariables(req, member, membersUtility.db, function() {
-                    req.session.settings = member.settings;
                     callback(member, true);
                 });
             });
@@ -680,7 +698,16 @@ membersUtility.setup = function(req, callback) {
             argon2Hash(req.body.password + secret).then(password => {
                 req.body.email = (req.body.email + "").trim();
                 req.body.username = (req.body.username + "").trim();
-                var doc = {"full_name": req.body.full_name, "username": req.body.username, "password": password, "email": req.body.email, "global_admin": true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
+                var doc = {
+                    "full_name": req.body.full_name,
+                    "username": req.body.username,
+                    "password": password,
+                    "email": req.body.email,
+                    "global_admin": true,
+                    created_at: Math.floor(((new Date()).getTime()) / 1000),
+                    password_changed: Math.floor(((new Date()).getTime()) / 1000),
+                    permission: membersUtility.emptyPermission
+                };
                 if (req.body.lang) {
                     doc.lang = req.body.lang;
                 }
@@ -1104,6 +1131,7 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     user.user_of = data.user_of || [];
     user.restrict = data.restrict || [];
     user.app_restrict = data.app_restrict || {};
+    user.permission = data.permission || membersUtility.emptyPermission;
 
     if (data.admin_of && data.admin_of.length) {
         user.user_of = [...new Set([...data.admin_of, ...data.user_of])];
@@ -1148,6 +1176,66 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     catch (error) {
         console.error(`create member error ${provider} ${error.message}`, error);
         throw new Error(error);
+    }
+};
+
+/**
+ * Merge permission objects
+ * @method mergePermissions
+ * @param {object} current - current permission object
+ * @param {object} addition - permission object to merge
+ */
+membersUtility.mergePermissions = (current, addition) => {
+    var crud = {"c": true, "r": true, "u": true, "d": true};
+    for (var p in addition) {
+        //permission does not exist yet, just copy it
+        if (!current[p]) {
+            current[p] = addition[p];
+        }
+        else if (crud[p]) {
+            //iterating through the apps
+            if (addition[p]) {
+                if (!current[p]) {
+                    current[p] = {};
+                }
+                for (var app in addition[p]) {
+                    if (addition[p][app]) {
+                        if (!current[p][app]) {
+                            current[p][app] = {};
+                        }
+                        if (addition[p][app].all) {
+                            current[p][app].all = true;
+                        }
+                        if (addition[p][app].allowed) {
+                            current[p][app].allowed = current[p][app].allowed || {};
+                            for (var feat in addition[p][app].allowed) {
+                                if (addition[p][app].allowed[feat]) {
+                                    current[p][app].allowed[feat] = true;
+                                }
+                                else if (typeof current[p][app].allowed[feat] === "undefined") {
+                                    current[p][app].allowed[feat] = addition[p][app].allowed[feat];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else if (p === "_") {
+            //merge admin by merging arrays
+            if (addition[p].a) {
+                if (!current[p].a) {
+                    current[p].a = [];
+                }
+                current[p].a = [...(new Set([...current[p].a, ...addition[p].a]))];
+            }
+            if (addition[p].u) {
+                if (!current[p].u) {
+                    current[p].u = [];
+                }
+                current[p].u = [...(new Set([...current[p].u, ...addition[p].u]))];
+            }
+        }
     }
 };
 

@@ -1,0 +1,40 @@
+<cly-main>
+    <div class="bu-level bu-my-4">
+        <div class="bu-level-left">
+            <span class="text-big font-weight-bold">Export/Purge History for</span>
+            <cly-select-x
+                    class="bu-ml-3"
+                    :width="300"
+                    :arrow="false"
+                    :borderless="true"
+                    :adaptiveLength="true"
+                    :auto-commit="true"
+                    :hide-default-tabs="true"
+                    :hide-all-options-tab="true"
+                    :options="filter0"
+                    v-model="selectedfilterforMetrics">
+                </cly-select-x>
+        </div>
+        <div class="bu-level-right">
+            <cly-date-picker-g type="daterange" range-separator="To" start-placeholder="Start date" end-placeholder="End date">
+            </cly-date-picker-g>
+        </div>
+    </div>
+    <cly-section class="cly-vue-complaince__export__table cly-vue-complaince__hub_style_widthzero">
+        <cly-datatable-n :data-source="exportHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}">
+            <template v-slot="scope">
+                <el-table-column sortable="custom" prop="u" label="USER">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="ip" label="IP ADDRESS">
+                </el-table-column>
+                <el-table-column width="400" sortable="custom" label="ACTION">
+                    <template v-slot="rowScope">
+                        <span v-html="rowScope.row.actions"></span>
+                    </template>
+                </el-table-column>
+                <el-table-column sortable="custom" prop="time" label="TIME">
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+</cly-main>

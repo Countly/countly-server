@@ -1,0 +1,82 @@
+@use "../../../../../frontend/express/public/stylesheets/styles/base/_typography-variables.scss" as t;
+@use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
+@use "sass:map";
+.cly-vue-compare-events {
+    &__header {
+        padding: 8px 24px 24px 24px;
+        letter-spacing: .003em;
+        font-family: t.$font-family;
+        line-height: 32px;
+        background-color: #fff;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #ececec;
+
+    &--tooltip{
+        padding-left: 9.5px;
+    }
+        
+    }
+    &__button {
+        background-color: map.get(c.$colors, "primary-green");
+        color: map.get(c.$colors, "white");
+    }
+    &__graph-section {
+		margin: 0px 24px 0px 24px;
+        &__dropdown {
+			padding: 22px 0px 32px 0px;
+		}
+		&--text{
+			padding-right: 12px;
+			font-weight:500;
+			font-size:12px;
+			color: #333C48;
+			letter-spacing: 0.5px;
+			font-family:  t.$font-family;
+			line-height: 14.52px;
+        }
+    }
+}
+
+.cly-vue-compare-apps {
+    &__compare {
+      width: 100%;
+      &__width{
+        .el-select-dropdown__item {
+          max-width: 100%;
+        }
+      }
+    }
+    &__header {
+        padding: 8px 24px 24px 24px;
+        letter-spacing: .003em;
+        font-family: t.$font-family;
+        line-height: 32px;
+        background-color: #fff;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #ececec;
+
+    &--tooltip{
+        padding-left: 9.5px;
+    }
+        
+    }
+    &__button {
+        background-color: map.get(c.$colors, "primary-green");
+        color: map.get(c.$colors, "white");
+    }
+    &__graph-section {
+		margin: 0px 24px 0px 24px;
+        &__dropdown {
+			padding: 22px 0px 32px 0px;
+		}
+		&--text{
+			padding-right: 12px;
+			font-weight:500;
+			font-size:12px;
+			color: #333C48;
+			letter-spacing: 0.5px;
+			font-family:  t.$font-family;
+			line-height: 14.52px;
+        }
+    }
+}

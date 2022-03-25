@@ -1,0 +1,12 @@
+@use '../../user-management/stylesheets/drawer';
+@use '../../user-management/stylesheets/table';
+
+.user-management-view {
+  .el-tabs--button > .el-tabs__header {
+    padding: 24px 24px 0px 24px;
+  }
+
+  .manage-users-action-btn {
+    background-color: #12af51;
+  }
+}

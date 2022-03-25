@@ -1,0 +1,23 @@
+<cly-form-field
+    name="visualization"
+    :rules="{ required: { allowFalse: false } }"
+    :subheading="!mute && i18nM('dashbaords.visualization-description')"
+    :label="!mute && i18nM('dashbaords.visualization')">
+    <div class="bu-columns bu-is-multiline bu-m-0 clyd-visualization">
+        <div style="box-sizing: border-box; height: 64px;"
+            v-for="(item, index) in visualizationTypes"
+            :key="item.value"
+            :class="['bu-column bu-is-one-third bu-m-0 bu-p-0',
+                    {'bu-pr-2': ((index + 1) % 3 !== 0)},
+                    {'bu-mb-3': (index < (visualizationTypes.length - (visualizationTypes.length % 3)))}]">
+            <div style="height: 100%;"
+                :class="['clyd-visualization__item bu-is-clickable',
+                        'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center bu-is-align-items-center',
+                        {'selected': item.value === selectedType}]"
+                @click="onClick(item)">
+                <div class="text-smallish">{{item.label}}</div>
+            </div>
+        </div>
+        <cly-value :value="isSelected"></cly-value>
+    </div>
+</cly-form-field>

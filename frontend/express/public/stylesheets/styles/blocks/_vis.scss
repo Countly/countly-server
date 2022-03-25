@@ -1,0 +1,334 @@
+@use "../base/colors" as c;
+@use "sass:map";
+
+.cly-vue-chart {
+    width: 100%;
+    height: 100%;
+
+    &__echart {
+        box-sizing: border-box;
+        display: inline-block;
+        width: 100%;
+    }
+
+    &--padded &__echart {
+        padding: 20px 12px 20px 24px;
+    }
+
+    &--full &__echart {
+        padding: 0px;
+    }
+}
+
+.cly-vue-chart-legend {
+    display: inline-block;
+    width: 100%;
+
+    &__primary,
+    &__secondary {
+        white-space: nowrap;
+        overflow: auto;
+        box-sizing: border-box;
+        height: 100%;
+    }
+
+    &__secondary--text-center {
+        text-align: center;
+    }
+
+    &__p-series {
+        display: inline-block;
+        margin-left: 64px;
+        cursor: pointer;
+
+        &:first-child {
+            margin-left: 36px;
+        }
+
+        // &--deselected {
+        //     .cly-vue-chart-legend__p-title,
+        //     .cly-vue-chart-legend__p-number,
+        //     .cly-vue-chart-legend__p-trend--trend-up,
+        //     .cly-vue-chart-legend__p-trend--trend-down {
+        //         color: #a7aeb8;
+        //     }
+        // }
+    }
+
+    &__s-series {
+        display: inline-block;
+        margin-left: 48px;
+        cursor: pointer;
+
+        &:first-child {
+            margin-left: 0px;
+        }
+
+        &--deselected {
+            .cly-vue-chart-legend__s-rectangle,
+            .cly-vue-chart-legend__s-title,
+            .cly-vue-chart-legend__s-percentage {
+                color: #a7aeb8;
+            }
+        }
+    }
+
+    &__second-row {
+        margin-top: 3px;
+    }
+
+    &__p-checkbox {
+        height: 16px;
+        width: 16px;
+        border: 1px solid #A7AEB8;
+        display: inline-block;
+        box-shadow: inset 0 0 0px 1.5px #fff;
+        border-radius: 4px;
+        vertical-align: middle;
+        box-sizing: border-box;
+    }
+
+    &__p-title {
+        display: inline-block;
+        vertical-align: middle;
+        font-size: 14px;
+        color: map.get(c.$colors, "cool-gray-100");
+    }
+
+    &__p-tooltip {
+        display: inline-block;
+
+        i {
+            font-size: 15px;
+        }
+    }
+
+    &__p-number {
+        display: inline-block;
+        font-size: 24px;
+        font-weight: 500;
+        color: map.get(c.$colors, "cool-gray-100");
+    }
+
+    &__p-trend {
+        display: inline-block;
+        font-size: 14px;
+        font-weight: 500;
+
+        &--trend-up {
+            color: map.get(c.$colors, "green-80");
+        }
+
+        &--trend-down {
+            color: map.get(c.$colors, "red-100");
+        }
+    }
+
+    &__s-rectangle {
+        width: 12px;
+        height: 6px;
+        border-radius: 3px;
+        display: inline-block;
+        vertical-align: middle;
+        margin: 0px 5px;
+    }
+
+    &__s-title,
+    &__s-percentage {
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 3px;
+        font-size: 12px;
+        font-weight: 400;
+        color: #333C48;
+    }
+
+    &__bottom &__primary, &__bottom &__secondary {
+        padding: 0px 24px 20px;
+    }
+
+    &__right {
+        border-left: 1px solid #ECECEC;
+        width: 265px;
+
+        .cly-vue-chart-legend__secondary {
+            .cly-vue-chart-legend__s-series {
+                margin-left: 0px;
+                padding: 3px 7px;
+                box-sizing: border-box;
+                width: 100%;
+                display: block;
+                border-bottom: 1px solid #ECECEC;
+
+                &:hover {
+                    background-color: #F6F6F6;
+                    border-radius: 0px;
+
+                    .cly-vue-chart-legend__s-title,
+                    .cly-vue-chart-legend__s-percentage {
+                        font-weight: 500;
+                    }
+                }
+
+                .cly-vue-chart-legend__s-title,
+                .cly-vue-chart-legend__s-percentage {
+                    font-size: 14px;
+                    line-height: 30px;
+                }
+
+                .cly-vue-chart-legend__s-title {
+                    width: calc(100% - 30px);
+                    text-align: left;
+                }
+
+                .cly-vue-chart-legend__s-percentage {
+                    min-width: 50px;
+                    text-align: right;
+                }
+
+                &:first-child {
+                    padding-top: 10px;
+                }
+            }
+
+            .__vuescroll .__view::before {
+                content: "";
+                position: absolute;
+                width: 100%;
+                height: 8px;
+                background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
+                left: 0;
+                opacity: .12;
+            }
+        }
+    }
+
+    &__right.cly-vue-chart-legend__pie {
+        border-left:none;
+
+        .cly-vue-chart-legend__secondary {
+            padding-top: 30px;
+            padding-bottom: 30px;
+
+            .cly-vue-chart-legend__s-series {
+                border: none;
+
+                &:hover {
+                    border-radius: 8px;
+                }
+
+                .cly-vue-chart-legend__s-title {
+                    width: calc(100% - 86px);
+                }
+
+                &:first-child {
+                    padding-top: 3px;
+                }
+            }
+        }
+
+        .__vuescroll .__view {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            &::before {
+                background: none;
+                height: 0;
+            }
+        }
+    }
+}
+
+.chart-type-toggle-wrapper {
+    &__select {
+        width: 126px;
+    }
+
+    &__title {
+        margin-top: 16px;
+        margin-left: 16px;
+        letter-spacing: 0.5px;
+    }
+
+    &__type {
+        font-family: Inter;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 13px;
+        line-height: 13px;
+    }
+}
+
+.chart-zoom-button {
+    margin-right: 12px;
+}
+
+.cly-vue-zoom {
+    &__external {
+        .chart-zoom-button {
+            margin: 0;
+        }
+    }
+}
+
+.chart-download-button {
+    width: 42px;
+    height: 32px;
+}
+
+.shadow-container {
+    position: relative;
+}
+
+.shadow-container:after {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 100%;
+    margin: 0 auto;
+    height: 70px;
+    border: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, #FFFFFF 100%);
+  }
+
+.chart-tooltip {
+    margin-bottom: -24px;
+    max-height: 250px; 
+    overflow: auto; 
+    margin-bottom: 2px; 
+    max-width: 450px; 
+    white-space: nowrap;
+
+    &__bar {
+        width: 12px;
+        height: 6px;
+        border-radius: 3px;
+        margin-top: 5px;
+    }
+
+    &__header {
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    &__body {
+        background-color: #FFFFFF; 
+        display: flex; 
+        margin-bottom: 24px; 
+        margin-top: 16px
+    }
+
+    &__series {
+        margin-left: 10px; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: space-between;
+        width: calc(100% - 24px);
+    } 
+
+    &__value {
+        margin-top: 2px; 
+    }
+}

@@ -1,0 +1,7 @@
+<div class="crash-stacktrace bu-p-5">
+    <div class="crash-stacktrace__header bu-level is-mobile">
+        <div class="bu-level-left"><slot name="header-left"></slot></div>
+        <div class="bu-level-right"><slot name="header-right"></slot></div>
+    </div>
+    <pre><span class="crash-stacktrace__line-numbers">{{lineNumbers}}</span><code ref="code" class="crash-stacktrace__code" v-html="highlightedCode"></code></pre>
+</div>

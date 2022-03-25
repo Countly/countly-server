@@ -1,0 +1,169 @@
+<div>
+    <cly-tabs v-model="currentTab">
+        <el-tab-pane name="crash-groups">
+            <span slot="label">{{i18n("crashes.crash-groups")}}</span>
+            <cly-header>
+                <template v-slot:header-left>
+                    <h2>
+                        {{i18n("crashes.crash-groups")}}
+                        <cly-tooltip-icon :tooltip="i18n('crashes.help-crash-group')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
+                    </h2>
+                </template>
+            </cly-header>
+            <cly-main>
+                <cly-qb-bar v-if="hasDrillPermission" feature="crashes" class="bu-mb-5" v-model="crashgroupsFilter" :property-source-config="{drill: false}" queryStore="crashgroups" :additionalProperties="crashgroupsFilterProperties" :additionalRules="crashgroupsFilterRules" format="crashgroups"></cly-qb-bar>
+                <cly-datatable-n :data-source="remoteTableDataSource" @selection-change="handleSelectionChange" @row-click="handleRowClick" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey">
+                    <template v-slot="scope">
+                        <el-table-column type="selection" reserve-selection width="65" fixed="left"></el-table-column>
+                        <el-table-column :label="errorColumnLabel" min-width="415" fixed="left">
+                            <template slot-scope="col">
+                                <div class="bu-is-flex bu-is-flex-direction-column">
+                                    <div class="crash-group-title has-ellipsis" v-html="col.row.name"></div>
+                                    <div class="bu-mt-2 bu-is-flex">
+                                        <crash-badge :type="badge.type" v-html="badge.content" v-for="badge in badgesFor(col.row)"></crash-badge>
+                                    </div>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <template v-for="(col,idx) in scope.dynamicCols">
+                            <el-table-column v-if="col.value === 'os'" :key="idx" prop="os" :label="i18n('crashes.platform')" width="120" show-overflow-tooltip sortable></el-table-column>
+                            <el-table-column v-if="col.value === 'reports'" :key="idx" prop="reports" :label="i18n('crashes.reports')" width="150" sortable></el-table-column>
+                            <el-table-column v-if="col.value === 'lastTs'" :key="idx" prop="lastTs" :label="i18n('crashes.last_time')" :formatter="formatDate" width="180" sortable></el-table-column>
+                            <el-table-column v-if="col.value === 'users'" :key="idx" prop="users" :label="i18n('crashes.affected-users')" width="170" sortable></el-table-column>
+                            <el-table-column v-if="col.value === 'latest_version'" :key="idx" prop="latest_version" :label="i18n('crashes.latest_app')" width="190" sortable></el-table-column>
+                        </template>
+                    </template>
+                    <template v-slot:bottomline="scope">
+                        <div class="crashes-action-bar" v-if="selectedCrashgroups.length > 0 && (canUserDelete || canUserUpdate)">
+                            <el-button v-if="canUserUpdate"  @click="setSelectedAs('unresolved')" icon="fas fa-circle crash-icon-color-orange"> {{i18n("crashes.action-unresolved")}}</el-button>
+                            <el-button v-if="canUserDelete" @click="setSelectedAs('delete')" icon="el-icon-delete">{{i18n("crashes.action-delete")}}</el-button>
+                            <el-button v-if="canUserUpdate" @click="setSelectedAs('hide')" icon="fas fa-eye-slash crash-icon-color-gray"> {{i18n("crashes.action-hide")}}</el-button>
+                            <el-button v-if="canUserUpdate" @click="setSelectedAs('show')" icon="fas fa-eye crash-icon-color-gray"> {{i18n("crashes.action-view")}}</el-button>
+                            <el-button v-if="canUserUpdate" @click="setSelectedAs('resolved')" icon="fas fa-circle crash-icon-color-green"> {{i18n("crashes.action-resolved")}}</el-button>
+                            <el-button v-if="canUserUpdate" @click="setSelectedAs('resolving')" icon="fas fa-circle crash-icon-color-blue"> {{i18n("crashes.action-resolving")}}</el-button>
+                        </div>
+                    </template>
+                </cly-datatable-n>
+            </cly-main>
+        </el-tab-pane>
+        <el-tab-pane name="crash-statistics">
+            <span slot="label">
+                {{i18n("crashes.crash-statistics")}}
+            </span>
+            <cly-header>
+                <template v-slot:header-left>
+                    <h2>
+                        {{i18n("crashes.crash-statistics")}}
+                        <cly-tooltip-icon :tooltip="i18n('crashes.help-crash-statistics')" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
+                    </h2>
+                </template>
+            </cly-header>
+            <cly-main>
+                <cly-section class="crashes-statistics-dashboard">
+                    <div class="crashes-statistics-dashboard__tiles-container bu-columns bu-is-gapless bu-is-mobile">
+                        <cly-crashes-dashboard-tile v-if="Object.keys(statistics).length > 0">
+                            <div class="crashes-tile__content--fill bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column">
+                                <cly-metric-card :is-percentage="true" color="#CDAD7A" :number="statistics.users.affected.totalPercent" :tooltip="i18n('crashes.help-affected')">
+                                    {{i18n('crashes.affected-users')}}
+                                    <template v-slot:description>
+                                        <span class="text-medium" style="white-space: initial;">{{getShortNumber(statistics.users.affected.total)}} of {{getShortNumber(statistics.users.total)}} Total Users</span>
+                                    </template>
+                                </cly-metric-card>
+                                <div class="cly-divider"></div>
+                                <cly-metric-card :label="i18n('crashes.resolution-status')" :is-percentage="true" color="#F96300" :number="statistics.crashes.resolvedPercent" :tooltip="i18n('crashes.help-resolved')">
+                                    <template v-slot:description>
+                                        <span class="text-medium" style="white-space: initial;">{{getShortNumber(statistics.crashes.resolved)}} Resolved of {{getShortNumber(statistics.crashes.total)}} Total Crashes</span>
+                                    </template>
+                                </cly-metric-card>
+                                <div class="cly-divider"></div>
+                                <cly-metric-card :label="i18n('crashes.fatality')" :tooltip="i18n('crashes.help-crash-fatality')" :is-percentage="true" color="#F62404" :number="parseFloat(statistics.crashes.fatalPercent.toFixed(2))">
+                                    <template v-slot:description>
+                                        <span class="text-medium" style="white-space: initial;">{{getShortNumber(statistics.crashes.fatal)}} Fatal of {{getShortNumber(statistics.crashes.total)}} Total Crashes</span>
+                                    </template>
+                                </cly-metric-card>
+                            </div>
+                        </cly-crashes-dashboard-tile>
+                        <cly-crashes-dashboard-tile>
+                            <div class="crashes-tile__content--fill bu-columns bu-is-mobile bu-is-flex-direction-column bu-m-0 bu-px-4">
+                                <div class="bu-columns bu-m-0 bu-is-align-items-center bu-column text-small text-uppercase font-weight-bold color-gray-100" style="letter-spacing: 0.5px;">
+                                    <div>{{i18n("crashes.top-platforms")}}</div>
+                                    <div class="bu-ml-1"><cly-tooltip-icon icon="ion ion-help-circled" :tooltip="i18n('crashes.help-platforms')"></cly-tooltip-icon></div>
+                                </div>
+                                <div class="bu-column bu-pt-0" v-for="platform in statistics.topPlatformsOrder">
+                                    <div class="bu-columns bu-is-gapless bu-is-mobile text-medium color-gray-100 bu-mb-1">
+                                        <div class="bu-column">{{platform}}</div>
+                                        <div class="bu-column bu-has-text-right">
+                                            {{statistics.topPlatforms[platform].count}} Users ({{statistics.topPlatforms[platform].percent.toFixed(1)}}%)
+                                        </div>
+                                    </div>
+                                    <cly-progress-bar :percentage="statistics.topPlatforms[platform].percent" color="#F96300" backgroundColor="#ECECEC" :height="8">
+                                    </cly-progress-bar>
+                                </div>
+                            </div>
+                        </cly-crashes-dashboard-tile>
+                        <cly-crashes-dashboard-tile>
+                            <div class="crashes-tile__content--fill bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column" v-if="!!statistics.crashes">
+                                <cly-crashes-dashboard-tile isVertical :tooltip="i18n('crashes.help-new')">
+                                    <template v-slot:title>{{i18n("crashes.new-crashes")}}</template>
+                                    <template v-slot:value>{{getShortNumber(statistics.crashes.new)}}</template>
+                                </cly-crashes-dashboard-tile>
+                                <cly-crashes-dashboard-tile isVertical :tooltip="i18n('crashes.help-reoccurred')">
+                                    <template v-slot:title>{{i18n("crashes.renew-crashes")}}</template>
+                                    <template v-slot:value>{{getShortNumber(statistics.crashes.reoccured)}}</template>
+                                </cly-crashes-dashboard-tile>
+                                <cly-crashes-dashboard-tile isVertical :tooltip="i18n('crashes.help-loss')">
+                                    <template v-slot:title>{{i18n("crashes.loss")}}</template>
+                                    <template v-slot:value>{{getShortNumber(statistics.revenueLoss)}}</template>
+                                </cly-crashes-dashboard-tile>
+                            </div>
+                        </cly-crashes-dashboard-tile>
+                    </div>
+                </cly-section>
+                <div class="bu-is-flex bu-is-align-items-center bu-mt-5 bu-mb-4" style="margin-top: 32px !important;">
+                    <cly-date-picker-g></cly-date-picker-g>
+                    <div class="text-small text-uppercase bu-mx-3" style="color: #969FAD;">{{i18n("crashes.crash-filters")}}</div>
+                    <cly-multi-select v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
+                </div>
+                <cly-section class="crashes-statistics-graph">
+                    <el-tabs v-model="statisticsGraphTab" type="card" stretch>
+                        <el-tab-pane name="total-occurrences" style="border-top-left-radius: 4px;">
+                            <div class="bu-p-5" slot="label">
+                                <crash-tab-label :title="i18n('crashes.total')" :tooltip="i18n('crashes.help-total')" :data="dashboardData[{'both': 'cr', 'fatal': 'crf', 'nonfatal': 'crnf'}[activeFilter.fatality]]">
+                                </crash-tab-label>
+                            </div>
+                            <cly-chart-line :option="chartData('cr')"></cly-chart-line>
+                        </el-tab-pane>
+                        <el-tab-pane name="unique-crashes">
+                            <div class="bu-p-5" slot="label">
+                                <crash-tab-label :title="i18n('crashes.unique')" :tooltip="i18n('crashes.help-unique')" :data="dashboardData[{'both': 'cru', 'fatal': 'cruf', 'nonfatal': 'crunf'}[activeFilter.fatality]]">
+                                </crash-tab-label>
+                            </div>
+                            <cly-chart-line :option="chartData('cru')"></cly-chart-line>
+                        </el-tab-pane>
+                        <el-tab-pane name="crashes-per-session">
+                            <div class="bu-p-5" slot="label">
+                                <crash-tab-label :title="i18n('crashes.total-per-session')" :tooltip="i18n('crashes.help-frequency-short')" :data="dashboardData[{'both': 'cr-session', 'fatal': 'crtf', 'nonfatal': 'crtnf'}[activeFilter.fatality]]">
+                                </crash-tab-label>
+                            </div>
+                            <cly-chart-line :option="chartData('cr-session')"></cly-chart-line>
+                        </el-tab-pane>
+                        <el-tab-pane name="crashfree-users">
+                            <div class="bu-p-5" slot="label">
+                                <crash-tab-label :title="i18n('crashes.free-users')" :tooltip="i18n('crashes.help-free-users')" :data="dashboardData[{'both': 'crau', 'fatal': 'crauf', 'nonfatal': 'craunf'}[activeFilter.fatality]]" negateTrend>
+                                </crash-tab-label>
+                            </div>
+                            <cly-chart-line :option="chartData('crau')"></cly-chart-line>
+                        </el-tab-pane>
+                        <el-tab-pane name="crashfree-sessions" style="border-top-right-radius: 4px;">
+                            <div class="bu-p-5" slot="label">
+                                <crash-tab-label :title="i18n('crashes.free-sessions')" :tooltip="i18n('crashes.help-free-sessions')" :data="dashboardData[{'both': 'crses', 'fatal': 'crfses', 'nonfatal': 'crnfses'}[activeFilter.fatality]]" negateTrend>
+                                </crash-tab-label>
+                            </div>
+                            <cly-chart-line :option="chartData('crses')"></cly-chart-line>
+                        </el-tab-pane>
+                    </el-tabs>
+                </cly-section>
+            </cly-main>
+        </el-tab-pane>
+    </cly-tabs>
+</div>

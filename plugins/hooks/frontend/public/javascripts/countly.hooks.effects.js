@@ -127,7 +127,6 @@
             },
             renderConfig: function(data, dom) {
                 var configuration = data.configuration;
-                window.dd = dom;
                 $(dom).find("#http-effect-url").val(configuration.url);
                 $(dom).find(".http-effect-method-dropdown").clySelectSetSelection(configuration.method,
                     jQuery.i18n.map["hooks.http-method-" + configuration.method]);

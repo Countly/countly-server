@@ -1,111 +1,110 @@
-<div id="rc-parameter-drawer" class="cly-drawer">
-    <div class="title" style="width: 100%;top: 0px; box-sizing:border-box">
-        <span id="add-parameter-title" data-localize="remote-config.add-parameter-title"></span>
-        <span id="edit-parameter-title" data-localize="remote-config.edit-parameter-title"></span>
-        <div class="close"><i class="ion-ios-close-empty"></i></div>
-    </div>
-    <div class="details">
-        <div class="section" id="rc-parameter-name-section">
-            <div class="label" data-localize="remote-config.parameter-key"></div>
-            <div>
-                <input id="rc-parameter-name-input" class="input" type="text" data-localize="placeholder.parameter-key-name" maxlength="256">
-            </div>
-            <div class="description" style="color: #E95C6C;" data-localize="remote-config.param-key-error"></div>
-        </div>
-        <div class="section" id="rc-parameter-description-section">
-            <div class="label" style="position: relative">
-                <a class='fa fa-square-o check-green' id="parameter-description-checkbox" style="position:relative; vertical-align:middle; bottom: 1px"></a>
-                <span data-localize="remote-config.add-description" style="position: absolute; left: 20px"></span>
-            </div>
-            <input id="parameter-description" class="input" data-localize="placeholder.add-description" type="text" style="display: none;" />
-        </div>
-        <div class="section">
-            <div class="panel">
-                <div class="panel-heading" data-localize="remote-config.default-value"></div>
-                <div class="panel-body">
-                    <div class="label" data-localize="remote-config.default-value"></div>
-                    <cly-textarea-drop :items="items" v-model="defaultValue"></cly-textarea-drop>
-                </div>
-            </div>
-        </div>
-        {{#if drill-enabled}}
-            <div class="section">
-                <div class="panel">
-                    <div class="panel-heading" data-localize="remote-config.conditions"></div>
-                    <div class="panel-body">
-                        <div id="conditions-overview-table">
-                            <condition-sortable-table :items="items" :conditions="conditions"></condition-sortable-table>
-                        </div>
-                        <div class="condition-menu-trigger">
-                            <div class="btn btn-orange">+ Add value for condition</div>
-                            <div class="dropdown">
-                                <div class="menu">
-                                    <div class="condition-title" data-localize="remote-config.select-condition"></div>
-                                    <div class="wrapper">
-                                        <div class="search nav-search"><input type="text" autofocus readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"></div>
-                                        <div class="list"></div>
-                                    </div>
-                                    <div id="cly-create-new-condition" class="action"><i class="icon ion-plus-circled"></i><span>Create new condition</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {{/if}}
-    </div>
-
-    <div class="buttons">
-        <div id="create-parameter" class="icon-button green disabled" data-localize="common.create"></div>
-        <div id="save-parameter" class="icon-button green disabled" data-localize="common.save"></div>
-    </div>
-</div>
-
-<script type="text/x-template" id="cly-single-select">
-    <div class="cly-textarea-drop">
-        <div class="text-field" v-bind:class="{open: opened}">
-            <textarea
-                ref="write"
-                v-bind:placeholder="placeholder"
-                v-bind:value="value.name"
-                v-on:input="onInput"
-                @click="toggle"
+<cly-drawer
+  @submit="onSubmit"
+  @copy="onCopy"
+  :title="title"
+  :saveButtonLabel="saveButtonLabel"
+  v-bind="controls">
+  <template v-slot:default="drawerScope">
+    <cly-form-step id="parameters-drawer">
+      <div class="cly-vue-drawer-step__section">
+        <cly-form-field name="parameter-key" v-slot="validation" :label="i18n('remote-config.parameter-key')" rules="required|regex:^[a-zA-Z_][a-zA-Z0-9_]*$">
+          <el-input
+            v-model="drawerScope.editedObject.parameter_key"
+            :placeholder="i18n('remote-config.parameter-key.placeholder')">
+          </el-input>
+          <div v-if="validation.errors.length > 0" class="text-small color-red-100 bu-pt-1">
+            {{i18n('remote-config.param-key-error')}}
+          </div>
+        </cly-form-field>
+        <div class="bu-pt-3 bu-mt-2 bu-pb-1">
+          <el-checkbox class="text-smallish"
+            v-bind:label="i18n('remote-config.use.description')"
+            v-model="showDescription"
             >
-            </textarea>
-            <div class="jb">
-                <div class="json-braces">{ }</div>
-            </div>
+          </el-checkbox>
+          <div class="bu-pt-3 cly-vue-remote-config-conditions-drawer" v-if="showDescription">
+            <cly-form-field name="description" :label="i18n('remote-config.parameter.description')" rules="required">
+              <textarea
+                class="input"
+                v-model="drawerScope.editedObject.description"
+                :placeholder="i18n('remote-config.parameter.description.placeholder')">
+              </textarea>
+            </cly-form-field>
+          </div>
         </div>
-
-        <div class="items" v-show="opened">
-            <div v-for="(item, i) in items"
+        <div class="bu-py-1 cly-vue-remote-config-parameters-drawer__default-value">
+          <cly-form-field name="default-value"  :label="i18n('remote-config.default-value')" rules="required">
+            <el-autocomplete
+              class="cly-vue-remote-config-parameters-drawer__autocomplete"
+              v-model="defaultValue"
+              :fetch-suggestions="querySearch"
+              :placeholder="i18n('remote-config.default-value.placeholder')"
+              >
+              <el-button type="text" slot="suffix" @click="openJsonEditor" class="cly-vue-remote-config-parameters-drawer__autocomplete-button">{ }</el-button>
+            </el-autocomplete>
+          </cly-form-field>
+        </div>
+        <json-editor :isOpen="isOpen" v-model="defaultValue"></json-editor>
+        <div class="bu-py-4" v-if="isDrillEnabled">
+          <div class="font-weight-bold text-big bu-mb-1">
+            {{i18n('remote-config.conditions')}}
+          </div>
+          <div>
+            <draggable 
+              :disabled="false"
+              handle=".drag-icon" 
+              v-model="conditions">
+              <remote-config-add-condition
+                ref="addCondition"
+                v-for="(condition, i) in conditions"
+                @remove-me="removeConditionAtIndex(i)"
+                v-on:openJsonEditorForCondition="openJsonEditorForCondition(i)"
+                :removable="conditions.length > 1"
                 :key="i"
-                @click="setItem(item)"
-                class="item"
-                v-bind:data-value="item.value"
-                v-text="item.name"
-            >
-            </div>
+                :condition-index="i"
+                :max-choices="10"
+                v-model="conditions[i]">
+              </remote-config-add-condition>
+            </draggable>
+            <cly-select-x
+              ref="selectX"
+              @change="handleSelect"
+              v-model="currentConditionValue"
+              :options="conditionArray"
+              :width="450"
+              search-placeholder="Search in conditions">
+              <template v-slot:trigger>
+                <el-button class="bg-light-blue-100 color-blue-100" size="small" type="text">
+                  {{i18n('remote-config.parameter.conditions.add.value')}}
+                </el-button>
+              </template>
+              <template v-slot:action>
+                <div class="bu-ml-3">
+                  <el-button type="success" size="small" @click="showConditionDialog" icon="el-icon-circle-plus">{{i18n('remote-config.parameter.conditions.new.condition')}}
+                  </el-button>
+                </div>
+              </template>
+            </cly-select-x>
+            <condition-dialog  v-on:closeConditionDialog="handleConditionDialog" v-model="createdCondition"></condition-dialog>
+          </div>
         </div>
-    </div>
-</script>
-
-<script type="text/x-template" id="cly-rc-condition-sortable-table">
-    <table>
-        <tbody>
-            <tr v-for="(item, i) in conditions" v-bind:data-order-key="i" v-bind:key="i" v-bind:data-condition-id = "item._id">
-                <td>
-                    <div>
-                        <span><i class="fa fa-reorder condition-order"></i></span>
-                        <span style="margin-left:6px;">Value for <span class="condition-text-color" v-bind:class="'alt' + item.condition_color" v-text="item.condition_name"></span></span>
-                    </div>
-                    <div class="condition-input-container">
-                        <cly-textarea-drop :items="items" v-model="item.value"></cly-textarea-drop>
-                        <div class="delete text-light-gray"><a v-bind:data-order-key="i" class="material-icons">highlight_off</a></div>
-                    </div>
-                    <div class="block-line-row"></div>
-                </td>
-            </tr>
-        </tbody>
-    </table> 
-</script>
+        <div class="bu-mt-4 cly-vue-drawer-step__section-group cly-vue-drawer-step__section-group--filled">
+          <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+            <div>
+              <el-switch v-model="showExpirationDate"></el-switch>
+              <span class="cly-vue-remote-config-conditions-drawer__letter-spacing font-weight-bold text-small bu-mb-1">
+              {{i18n('remote-config.expiration.time')}}
+              </span>
+            </div>
+            <div class=" color-cool-gray-50 text-small bu-mb-1">
+              {{i18n('remote-config.expiration.time.description')}}
+            </div>
+          </div>
+          <div>
+            <cly-date-picker class="bu-mt-5" v-if="showExpirationDate" v-model="drawerScope.editedObject.expiry_dttm" timestampFormat="ms" type="date" :isFuture="true" :selectTime="true"></cly-date-picker>
+          </div>
+        </div>
+      </div>
+    </cly-form-step>
+  </template>
+</cly-drawer>

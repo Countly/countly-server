@@ -1,0 +1,539 @@
+<script type="text/x-template" id="form-basics-template">
+    <div>
+        <cly-header title="Basic Form components"></cly-header>
+        <cly-main>
+            <cly-section title="Element components">
+                <div class="example-cell" style="width:100%">
+                    <section>
+                        <h3>Simple el-input</h3>
+                        <el-input v-model="elInput" placeholder="Text"></el-input>
+                        <el-input v-model="elInput" size="medium" placeholder="Text"></el-input>
+                        <el-input v-model="elInput" size="small" placeholder="Text"></el-input>
+                        <el-input v-model="elInput" size="mini" placeholder="Text"></el-input>
+                        <el-input
+                            size="medium"
+                            prefix-icon="el-icon-search"
+                            placeholder="Pick a date"
+                            suffix-icon="el-icon-date"
+                            v-model="elInput">
+                        </el-input>
+                        <el-input
+                            size="small"
+                            prefix-icon="el-icon-search"
+                            placeholder="Pick a date"
+                            suffix-icon="el-icon-date"
+                            v-model="elInput">
+                        </el-input>
+                        <el-input
+                            size="mini"
+                            prefix-icon="el-icon-search"
+                            placeholder="Pick a date"
+                            suffix-icon="el-icon-date"
+                            v-model="elInput">
+                        </el-input>
+            
+                        <el-input v-model="elInput" placeholder="Text" type="textarea"></el-input>
+                    </section>
+            
+                    <section>
+                        <h3>Pseudo el-input (auto adjusts width)</h3>
+                        <el-pseudo-input v-model="elInput"></el-pseudo-input>
+                    </section>
+            
+                    <section>
+                        <h3>Simple el-select</h3>
+                        <el-select v-model="elSelectValue">
+                            <el-option v-for="item in elSelectItems" :key="item" :value="item" :label="item"></el-option>
+                        </el-select>
+                        <el-select size="medium" v-model="elSelectValue">
+                            <el-option v-for="item in elSelectItems" :key="item" :value="item" :label="item"></el-option>
+                        </el-select>
+                        <el-select size="small" v-model="elSelectValue">
+                            <el-option v-for="item in elSelectItems" :key="item" :value="item" :label="item"></el-option>
+                        </el-select>
+                        <el-select size="mini" v-model="elSelectValue">
+                            <el-option v-for="item in elSelectItems" :key="item" :value="item" :label="item"></el-option>
+                        </el-select>
+                    </section>
+            
+                    <section>
+                        <h3>Auto resizable and borderless el-select (uses el-pseudo-input)</h3>
+                        <el-select v-model="elSelectValue" :adaptive-length="true" :borderless="true">
+                            <el-option v-for="item in elSelectItems" :key="item" :value="item" :label="item"></el-option>
+                        </el-select>
+                    </section>
+            
+                    <section>
+                        <h3>El-select empty</h3>
+                        <el-select v-model="elSelectValue">
+                            <el-option v-for="item in []" :key="item" :value="item" :label="item"></el-option>
+                        </el-select>
+                    </section>
+            
+                    <section>
+                        <h3>Multiple el-select</h3>
+                        <el-select :multiple="true" v-model="elSelectMultiValue">
+                            <el-option v-for="item in elSelectItems" :key="item" :value="item" :label="item"></el-option>
+                        </el-select>
+                    </section>
+
+                    <cly-section title="Dropdown">
+                        <cly-more-options placement="top-start" @command="">
+                            <el-dropdown-item>{{i18n('common.edit')}}</el-dropdown-item>
+                            <el-dropdown-item>{{i18n('common.delete')}}</el-dropdown-item>
+                        </cly-more-options>
+                    </cly-section>
+
+                    <section>
+                        <h3>Default Buttons</h3>
+                        <el-button>Default</el-button>
+                        <el-button size="medium">Medium</el-button>
+                        <el-button size="small">Small</el-button>
+                        <el-button size="mini">Mini</el-button>
+                    </section>
+            
+                    <section>
+                        <h3>Success Buttons</h3>
+                        <el-button type="success">Default</el-button>
+                        <el-button type="success" size="medium">Medium</el-button>
+                        <el-button type="success" size="small">Small</el-button>
+                        <el-button type="success" size="mini">Mini</el-button>
+                    </section>
+            
+                    <section>
+                        <h3>Secondary Buttons</h3>
+                        <el-button type="secondary">Default</el-button>
+                        <el-button type="secondary" size="medium">Medium</el-button>
+                        <el-button type="secondary" size="small">Small</el-button>
+                        <el-button type="secondary" size="mini">Mini</el-button>
+                    </section>
+            
+                    <section>
+                        <h3>Text Buttons type - filled</h3>
+                        <el-button type="text" class="bg-light-blue-100">Default</el-button>
+                        <el-button type="text" size="medium">Medium</el-button>
+                        <el-button type="text" size="small">Small</el-button>
+                        <el-button type="text" size="mini">Mini</el-button>
+                    </section>
+            
+                    <section>
+                        <h3>Text Buttons type - plain</h3>
+                        <el-button type="text" plain>Default</el-button>
+                        <el-button type="text" size="medium" plain>Medium</el-button>
+                        <el-button type="text" size="small" plain>Small</el-button>
+                        <el-button type="text" size="mini" plain>Mini</el-button>
+                    </section>
+            
+                    <!-- <section>
+                        <el-button plain>Plain</el-button>
+                        <el-button type="success" plain>Default</el-button>
+                        <el-button type="success" plain size="medium">Medium</el-button>
+                        <el-button type="success" plain size="small">Small</el-button>
+                        <el-button type="success" plain size="mini">Mini</el-button>
+                    </section> -->
+            
+                    <section>
+                        <h3>Icon buttons</h3>
+                        <el-button icon="el-icon-edit"></el-button>
+                        <el-button icon="el-icon-edit" size="medium"></el-button>
+                        <el-button icon="el-icon-edit" size="small"></el-button>
+                        <el-button icon="el-icon-edit" size="mini"></el-button>
+                        <el-button icon="el-icon-download" size="mini"></el-button>
+                        <el-button type="success" icon="el-icon-circle-plus">Search</el-button>
+                    </section>
+            
+                    <section>
+                        <h3>Button groups</h3>
+                        <el-button-group>
+                            <el-button type="primary">Previous Page</el-button>
+                            <el-button type="primary">Next Page</el-button>
+                        </el-button-group>
+                    </section>
+            
+                    <section>
+                        <h3>Switch</h3>
+                        <el-switch v-model="elSwitchValue" active-text="Checked">
+                        </el-switch>
+                    </section>
+            
+                    <section>
+                        <h3>Checkbox</h3>
+                        <el-checkbox v-model="elCheckboxValue">Option</el-checkbox>
+                    </section>
+            
+                    <section>
+                        <h3>Radio</h3>
+                        <el-radio v-model="elRadioValue" label="1">Option A</el-radio>
+                        <el-radio v-model="elRadioValue" label="2">Option B</el-radio>
+                    </section>
+            
+                    <section>
+                        <h3>Radio group - filled</h3>
+                        <el-radio-group v-model="elRadioGroup">
+                            <el-radio-button label="New York"></el-radio-button>
+                            <el-radio-button label="Washington"></el-radio-button>
+                        </el-radio-group>
+                    </section>
+            
+                    <section>
+                        <h3>Radio group - plain</h3>
+                        <el-radio-group :plain="true" v-model="elRadioGroup">
+                            <el-radio-button label="New York"></el-radio-button>
+                            <el-radio-button label="Washington"></el-radio-button>
+                        </el-radio-group>
+                    </section>
+            
+                    <section>
+                        <h3>Checkbox group - filled</h3>
+                        <el-checkbox-group v-model="elCheckboxGroup">
+                            <el-checkbox-button v-for="city in elCities" :label="city" :key="city">{{city}}</el-checkbox-button>
+                        </el-checkbox-group>
+                    </section>
+            
+                    <section>
+                        <h3>Checkbox group - plain</h3>
+                        <el-checkbox-group v-model="elCheckboxGroup" :plain="true">
+                            <el-checkbox-button v-for="city in elCities" :label="city" :key="city">{{city}}</el-checkbox-button>
+                        </el-checkbox-group>
+                    </section>
+
+                    <section>
+                        <el-collapse v-model="elActiveNames">
+                            <el-collapse-item title="Consistency" name="1">
+                                <div>Consistent with real life: in line with the process and logic of real life, and comply with languages and habits that the users are used to;</div>
+                                <div>Consistent within interface: all elements should be consistent, such as: design style, icons and texts, position of elements, etc.</div>
+                            </el-collapse-item>
+                            <el-collapse-item title="Feedback" name="2" :icon="{position: 'right'}">
+                                <div>Operation feedback: enable the users to clearly perceive their operations by style updates and interactive effects;</div>
+                                <div>Visual feedback: reflect current state by updating or rearranging elements of the page.</div>
+                            </el-collapse-item>
+                            <el-collapse-item title="Efficiency" name="3" :icon="{direction: 'down', position: 'right'}">
+                                <div>Simplify the process: keep operating process simple and intuitive;</div>
+                                <div>Definite and clear: enunciate your intentions clearly so that the users can quickly understand and make decisions;</div>
+                                <div>Easy to identify: the interface should be straightforward, which helps the users to identify and frees them from memorizing and recalling.</div>
+                            </el-collapse-item>
+                            <el-collapse-item title="Controllability" name="4" :icon="{direction: 'up'}">
+                                <div>Decision making: giving advices about operations is acceptable, but do not make decisions for the users;</div>
+                                <div>Controlled consequences: users should be granted the freedom to operate, including canceling, aborting or terminating current operation.</div>
+                            </el-collapse-item>
+                        </el-collapse>
+                    </section>
+                </div>
+            </cly-section>
+            <cly-section title="ListBox">
+                <div class="example-cell">
+                    <cly-listbox v-model="selectedLB" :options="listBoxOptions">
+                    </cly-listbox>
+                </div>
+                <div class="example-cell">
+                    {{selectedLB}}
+                </div>
+            </cly-section>
+            <cly-section title="ListBox">
+                <div class="example-cell">
+                    <cly-listbox skin="jumbo" v-model="selectedLB" :options="listBoxOptions">
+                    </cly-listbox>
+                </div>
+                <div class="example-cell">
+                    {{selectedLB}}
+                </div>
+            </cly-section>
+            <cly-section title="CheckListBox">
+                <div class="example-cell">
+                    <cly-checklistbox v-model="selectedCLB" :margin="false" :options.sync="clistBoxOptions" :sortable="true">
+                    </cly-checklistbox>
+                </div>
+                <div class="example-cell">
+                    {{selectedCLB}}
+                    ---------------------
+                    {{clistBoxOptions}}
+                </div>
+            </cly-section>
+            <!-- <cly-section title="Basic text input">
+                <div class="example-cell">
+                    <cly-text-field v-model="typedText"></cly-text-field>
+                </div>
+                <div class="example-cell">
+                    {{typedText}}
+                </div>
+            </cly-section> -->
+            <!-- <cly-section title="RadioButtons">
+                <div class="example-cell">
+                    <cly-radio v-bind:items="availableRadio" v-model="selectedRadio"></cly-radio>
+                </div>
+                <div class="example-cell">
+                    Selected value: {{selectedRadio}}
+                </div>
+            </cly-section> -->
+            <!-- <cly-section title="Generic RadioButtons">
+                <div class="example-cell">
+                    <cly-generic-radio v-bind:items="availableGenericRadio" v-model="selectedGenericRadio">
+                    </cly-generic-radio>
+                </div>
+                <div class="example-cell">
+                    Selected value: {{selectedGenericRadio}}
+                </div>
+            </cly-section> -->
+            <!-- <cly-section title="Checkbox (flag)">
+                <div class="example-cell">
+                    <el-switch v-model="selectedCheckFlag" :active-text="'I am ' + (selectedCheckFlag ?'':'not') + ' checked.'"></el-switch>
+                    <div>
+                        <el-checkbox v-model="selectedCheckFlag">{{'I am ' + (selectedCheckFlag ?'':'not') + ' checked.'}}</el-checkbox>
+                    </div>
+                </div>
+                <div class="example-cell">
+                    Selected value: {{selectedCheckFlag}}
+                </div>
+            </cly-section> -->
+            <cly-section title="Form">
+                <div class="example-cell">
+                    <cly-form 
+                        :initial-edited-object="submittedForm"
+                        @submit="onFormSubmit">
+                        <template v-slot="formScope">
+                            <cly-form-step>
+                                <validation-provider rules="required" v-slot="v">
+                                    <el-input v-model="formScope.editedObject.name"></el-input>
+                                </validation-provider>
+                                <validation-provider rules="required" v-slot="v">
+                                    <el-input v-model="formScope.editedObject.surname"></el-input>
+                                </validation-provider>
+                            </cly-form-step>
+                            <el-button :disabled="!formScope.isSubmissionAllowed" @click="formScope.submit()">Submit</el-button>
+                        </template>
+                    </cly-form>
+                </div>
+                <div class="example-cell">
+                    Form value: {{submittedForm}}
+                </div>
+            </cly-section>
+            <cly-section title="Helpers (cly-event-select)">
+                <div class="example-cell">
+                    <cly-event-select v-model="selectedEvent" multiple></cly-event-select>
+                </div>
+                <div class="example-cell">
+                    Selected Event: {{selectedEvent}}
+                </div>
+            </cly-section>
+            <cly-section title="Helpers (cly-app-select, single)">
+                <div class="example-cell">
+                    <cly-app-select v-model="selectedApp" :auth='{"feature": "drill", "permission": "c"}'></cly-app-select>
+                    <cly-app-select v-model="selectedApp" allow-all></cly-app-select>
+                </div>
+                <div class="example-cell">
+                    Selected App: {{selectedApp}}
+                </div>
+            </cly-section>
+            <cly-section title="Helpers (cly-app-select, multiple)">
+                <div class="example-cell">
+                    <cly-app-select v-model="selectedApps" multiple></cly-app-select>
+                </div>
+                <div class="example-cell">
+                    Selected Apps: {{selectedApps}}
+                </div>
+            </cly-section>
+        </cly-main>
+    </div>
+</script>
+<script type="text/x-template" id="form-dropdown-template">
+    <div>
+        <cly-header title="Dropdown components"></cly-header>
+        <cly-main>
+            <el-card class="box-card options-box" style="position:fixed; bottom:25px; right: 25px">
+                <div slot="header" class="clearfix">
+                    <span>Options</span>
+                </div>
+                <div class="item">
+                    <el-switch
+                        active-text="Disable dropdowns"
+                        v-model="dropdownsDisabled"
+                        active-color="#2FA732">
+                    </el-switch>
+                </div>
+                <div class="item">
+                    <el-switch
+                        active-text="Disable auto-commit"
+                        v-model="autoCommitDisabled"
+                        active-color="#2FA732">
+                    </el-switch>
+                </div>
+                <div class="item">
+                    <el-switch
+                        active-text="Hide all options tab"
+                        v-model="allOptionsTabHidden"
+                        active-color="#2FA732">
+                    </el-switch>
+                </div>
+                <div class="item">
+                    <el-radio-group v-model="selectXModeBuffer" size="small">
+                        <el-radio-button label="single-list">Single</el-radio-button>
+                        <el-radio-button label="multi-check">Multi</el-radio-button>
+                        <el-radio-button label="multi-check-sortable">Multi w/ sorting</el-radio-button>
+                    </el-radio-group>
+                </div>
+            </el-card>
+            <cly-section title="el-select">
+                <div class="example-cell">
+                    <el-select v-model="selectedRadio" :disabled="dropdownsDisabled">
+                        <el-option :key="item.value" :value="item.value" :label="item.name"
+                            v-for="item in selectWItems"></el-option>
+                    </el-select>
+                </div>
+                <div class="example-cell">
+
+                </div>
+            </cly-section>
+            <cly-section title="cly-dropdown (Nested)">
+                <div class="example-cell">
+                    <cly-dropdown>
+                        <template v-slot:trigger>Click</template>
+                        <div>
+                            <cly-dropdown>
+                                <template v-slot:trigger>Click</template>
+                                <div>
+                                    <cly-dropdown>
+                                        <template v-slot:trigger>Click</template>
+                                        <div>
+                                            <cly-dropdown>
+                                                <template v-slot:trigger>Click</template>
+                                                <div>
+                                                    <cly-dropdown>
+                                                        <template v-slot:trigger>Click</template>
+                                                        <div>
+                                                            <cly-dropdown>
+                                                                <template v-slot:trigger>Click</template>
+                                                                Hello
+                                                            </cly-dropdown>
+                                                        </div>
+                                                    </cly-dropdown>
+                                                </div>
+                                            </cly-dropdown>
+                                        </div>
+                                    </cly-dropdown>
+                                </div>
+                            </cly-dropdown>
+                        </div>
+                    </cly-dropdown>
+                </div>
+                <div class="example-cell">
+                </div>
+            </cly-section>
+            <cly-section title="cly-select-x (Simple)">
+                <div class="example-cell">
+                    <cly-select-x
+                        search-placeholder="Search in Properties"
+                        placeholder="Select Property" 
+                        v-model="selectX.currentVal"
+                        :auto-commit="!autoCommitDisabled" 
+                        :mode="selectX.mode"
+                        :disabled="dropdownsDisabled"
+                        :hide-all-options-tab="allOptionsTabHidden"
+                        :options="selectXOptions[0].options">
+                        <template v-slot:option-prefix="option">
+                            <div style="border: 2px solid #F96300; width: 15px; text-align: center">{{option.image}}</div>
+                        </template>
+                    </cly-select-x>
+                </div>
+                <div class="example-cell">
+                    {{selectX.currentVal}}
+                </div>
+            </cly-section>
+            <cly-section title="cly-select-x (Tabs)">
+                <div class="example-cell">
+                    <cly-select-x
+                        all-placeholder="All Properties" 
+                        search-placeholder="Search in Properties"
+                        placeholder="Select Property" 
+                        v-model="selectX.currentVal" 
+                        :auto-commit="!autoCommitDisabled"
+                        :mode="selectX.mode"
+                        :disabled="dropdownsDisabled"
+                        :hide-all-options-tab="allOptionsTabHidden"
+                        :options="selectXOptions">
+                    </cly-select-x>
+                </div>
+                <div class="example-cell">
+                    {{selectX.currentVal}}
+                </div>
+            </cly-section>
+            <cly-section title="cly-select-x (Remote)">
+                <div class="example-cell">
+                    <cly-select-x
+                        remote
+                        :remote-method="remoteMethod"
+                        all-placeholder="All Properties" 
+                        search-placeholder="Search in Properties"
+                        placeholder="Select Property" 
+                        v-model="selectX.remoteVal" 
+                        :auto-commit="!autoCommitDisabled"
+                        :mode="selectX.mode"
+                        :disabled="dropdownsDisabled"
+                        :hide-all-options-tab="allOptionsTabHidden"
+                        :options="selectXRemoteOptions">
+                    </cly-select-x>
+                </div>
+                <div class="example-cell">
+                    {{selectX.remoteVal}}
+                </div>
+            </cly-section>
+            <cly-section title="cly-select-x (Tabs, custom header)">
+                <div class="example-cell">
+                    <cly-select-x 
+                        all-placeholder="All Properties" 
+                        search-placeholder="Search in Properties"
+                        placeholder="Select Property" 
+                        title="Custom header & title"
+                        :auto-commit="!autoCommitDisabled"
+                        :disabled="dropdownsDisabled"
+                        :hide-default-tabs="true"
+                        :options="selectXOptions"
+                        :mode="selectX.mode"
+                        :hide-all-options-tab="allOptionsTabHidden"
+                        v-model="selectX.currentVal">
+                        <template v-slot:header="selectScope">
+                            <el-radio-group 
+                                :value="selectScope.activeTabId" 
+                                @input="selectScope.updateTab"
+                                size="medium">
+                                <el-radio-button v-for="tab in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>
+                            </el-radio-group>
+                        </template>
+                    </cly-select-x>
+                </div>
+                <div class="example-cell">
+                    {{selectX.currentVal}}
+                </div>
+            </cly-section>
+            <cly-section title=" cly-select-x (Tabs, custom header #2)">
+                <div class="example-cell">
+                    <cly-select-x 
+                        all-placeholder="All Properties" 
+                        search-placeholder="Search in Properties"
+                        placeholder="Select Property" 
+                        title="Custom header & title"
+                        :auto-commit="!autoCommitDisabled"
+                        :mode="selectX.mode"
+                        :disabled="dropdownsDisabled"
+                        :hide-default-tabs="true"
+                        :options="selectXOptions"
+                        :hide-all-options-tab="allOptionsTabHidden"
+                        :width="400"
+                        v-model="selectX.currentVal">
+                        <template v-slot:header="selectScope">
+                            <div style="font-size: 12px; padding-bottom: 7px;">Property type</div>                                
+                            <el-select
+                                :popper-append-to-body="false" 
+                                :value="selectScope.activeTabId" 
+                                @input="selectScope.updateTab">
+                                <el-option v-for="tab in selectScope.tabs" :key="tab.name" :value="tab.name" :label="tab.label"></el-option>
+                            </el-select>
+                        </template>
+                    </cly-select-x>
+                </div>
+                <div class="example-cell">
+                    {{selectX.currentVal}}
+                </div>
+            </cly-section>
+        </cly-main>
+    </div>
+</script>

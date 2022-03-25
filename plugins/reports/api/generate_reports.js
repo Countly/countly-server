@@ -1,4 +1,5 @@
 //start db connection
+const { getAdminApps } = require('../../../api/utils/rights.js');
 var plugins = require('../../pluginManager.js'),
     moment = require('moment-timezone'),
     async = require("async");
@@ -53,7 +54,8 @@ plugins.dbConnection().then((countlyDb) => {
             var arr = [];
             for (var i = 0; i < res.length; i++) {
                 if (!res[i].global_admin) {
-                    arr.push({emails: [res[i].email], apps: res[i].admin_of || [], metrics: {"analytics": true, "revenue": true, "push": true, "crash": true }, frequency: "daily", hour: 17, minute: 0, day: 1, timezone: "Etc/GMT", user: res[i]._id});
+                    var adminApps = getAdminApps(res[i]);
+                    arr.push({emails: [res[i].email], apps: adminApps || [], metrics: {"analytics": true, "revenue": true, "push": true, "crash": true }, frequency: "daily", hour: 17, minute: 0, day: 1, timezone: "Etc/GMT", user: res[i]._id});
                 }
             }
             async.map(arr, function(report, done) {

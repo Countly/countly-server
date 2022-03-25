@@ -1,0 +1,117 @@
+@use "../base/colors" as c;
+@use "sass:map";
+
+.cly-vue-tooltip-icon {
+    font-size: 17px;
+    color: #A7AEB8;
+    vertical-align: middle;
+    width: 18px;
+    height: 18px;
+}
+
+.cly-in-page-notification {
+  border-radius: 4px;
+  text-align: center;
+  margin-bottom: 32px;
+
+  a {
+    text-decoration: underline;
+    cursor: hand;
+	}
+}
+.cly-vue-back-link {
+    cursor: pointer;
+    color: #616161;
+    font-size: 12px;
+    display: inline-block;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+
+    &:visited {
+        cursor: pointer;
+        color: #616161;
+        font-size: 12px;
+        display: inline-block;
+        text-transform: uppercase;
+    }
+
+    &:hover {
+        span {
+            text-decoration: underline;
+        }
+    }
+}
+
+.cly-divider {
+    width: 100%;
+    border-top: 1px solid #ECECEC;
+    &.is-2 {
+        border-top-width: 2px;
+    }
+    &.is-dashed {
+        border-top-style: dashed;
+    }
+    &.is-dotted {
+        border-top-style: dotted;
+    }
+}
+
+.cly-event-select {
+    .el-radio-group {
+        display: flex;
+    }
+
+    .el-radio-button {
+        flex-grow: 1;
+    }
+    .el-radio-button__inner {
+        width: 100%;
+    }
+}
+
+.cly-vue-color-tag {
+    &__color-tag-wrapper {
+        width:20%;
+    }
+
+    &__color-tag {
+        width:92%;
+        height: 37px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        &__selected {
+            border: 2px solid #0166D6;
+        }
+    }
+
+    &__checkmark {
+        color: map.get(c.$colors, "white");
+    }
+}
+
+.cly-vue-json-editor {
+    .el-dialog__header{
+        text-align: left;
+        padding: 8px 16px 0 !important;
+		color: map.get(c.$colors, "white");
+    }
+    .el-dialog__body {
+        padding: 0 !important;
+    }
+    &__textarea{
+        width:100%;
+        box-sizing: border-box;
+        outline: none;
+        border: none;
+        border-top: 1px solid map.get(c.$colors, "warm-gray-30");
+        border-bottom: 1px solid map.get(c.$colors, "warm-gray-30");
+        background-color: map.get(c.$colors, "warm-gray-10");
+    }
+}
+
+
+.cly-breadcrumbs {
+    & a:hover {
+        text-decoration: underline;
+    }
+}

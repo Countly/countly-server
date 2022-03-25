@@ -1,85 +1,134 @@
-<div class="widget views-widget">
-	<div class="widget-header">
-		<div class="left">
-            <div style="overflow:visible; {{#if segmentations}}height: 18px;{{/if}}">
-                {{#if segmentations}}
-                <div class="title small">{{page-title}}</div>
-                {{else}}
-                <div class="title">{{page-title}}</div>
-                {{/if}}
-            </div>
-            <div>
-				{{#if segmentations}}
-                    <div class="cly-select float" id="segment-key-dropdown">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">{{active-segmentation}}</div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width:220px;">
-                            <div>
-                                <div data-value="" class="segmentation-option item" data-localize="views.all-segments"></div>
-                                {{#each segmentations}}
-                                    <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
-                                {{/each}}
-                            </div>
-                        </div>
-                    </div>
-				{{/if}}
-            <div class="cly-select float" style='display:none;' id="segment-value-dropdown">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">{{active-segmentation-key}}</div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width:220px;">
-                            <div>
-                            </div>
-                        </div>
-                    </div>
-            </div>
-		</div>
-		{{> date-selector }}
-	</div>
-    <div class="widget-content" style="border:none;">
-        <div class="cly-button-menu-trigger"></div>
-        <div class="cly-button-menu dark" tabindex="1">
-            {{#eachOfArray domains}}
-            <div class="item">{{value}}</div>
-            {{/eachOfArray}}
-        </div>
-		<div id="big-numbers-container" class="dashboard">
-			{{#each usage}}
-			<div class="big-numbers top seven-column help-zone-vs" data-help-localize="help.{{this.help}}">
-				<div class="inner">
-					<div class="select" id="{{this.id}}">
-						<div class="title">{{this.title}}</div>
-					</div>
-				</div>
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('views.title')}}</h2>
+            <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
+        </template>
+		<template v-slot:header-right>
+          <cly-more-options v-if="topDropdown" size="small">
+            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+			  <!--<span :class="item.icon"></span>-->
+              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+            </el-dropdown-item>
+          </cly-more-options>
+        </template>
+    </cly-header>
+    <cly-main>
+		<cly-date-picker-g class="views-date-picker-container"></cly-date-picker-g>
+		<cly-notification :text="totalViewCountWarning" v-if="showViewCountWarning" color="light-destructive" class="bu-mb-5">
+			<template v-slot:close><a href="/dashboard#/manage/configurations/views" style="color: #0166D6;" class="el-button el-button--text">{{i18n('common.adjust-limit')}}</a></template>
+		</cly-notification>
+		<cly-section >
+			<cly-metric-cards :multiline="false">
+                <cly-metric-card :number="item.percent" :label="item.name" :tooltip="item.description" :color="item.color" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
+					<template v-slot:number>{{item.value}}</template>
+                </cly-metric-card>
+            </cly-metric-cards>
+		</cly-section>
+		<div class="bu-columns bu-is-gapless">
+			<h4 class="bu-pt-1">{{i18n('views.based-on')}}</h4>
+			<div class ="bu-pl-1 bu-pr-1">
+				<el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
+                    <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
+                </el-select>
 			</div>
-			{{/each}}
-		</div>
-	</div>
-	<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
-        <div id="empty-graph" data-localize="views.empty-graph"></div>
-		<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
-        <div class="graph-no-data">
-            <div class="inner">
-                <div class="icon"></div>
-                <div class="text" data-localize="common.graph.no-data"></div>
-            </div>
+			<h4 class="bu-pt-1">{{i18n('views.for')}}</h4>
+			<div class ="bu-pl-1">
+				<cly-multi-select ref="selectSegmentValue" @change="segmentChosen" :dependantFields="true" v-model="filter" :fields="filterFields"></cly-multi-select>
+			</div>
         </div>
-	</div>
+		<cly-section>
+			<div v-if="lineOptions.series.length < 3">
+				<cly-chart-time :option="lineOptions" :legend="{position: 'bottom'}"  v-loading="isGraphLoading" ref="viewsGraph">
+				</cly-chart-time>
+			</div>
+            <div v-else>
+				<cly-chart-time :option="lineOptions" :legend="{position: 'right'}" v-loading="isGraphLoading" ref="viewsGraph">
+				</cly-chart-time>
+			</div>
+        </cly-section>
+		<cly-section>
+			<cly-datatable-n v-if="tableMode == 'selected'" :rows="selectedTableRows" :persist-key="tablePersistKey" :available-dynamic-cols="tableDynamicCols" >
+				<template v-slot:header-left>
+					<el-select v-model="tableMode" class="bu-mr-2">
+						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
+					</el-select>
+					<a v-if="canUserDelete || canUserUpdate" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+				</template>
+				<template v-slot="scope">
+					<el-table-column width="65"  fixed="left" prop="selected">
+						<template slot-scope="scope">
+							<el-checkbox :disabled="persistentSettings.length === 1 && scope.row.selected" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
+						</template>
+					</el-table-column>
+					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('views.table.view')" fixed="left">
+						<template slot-scope="scope">
+							{{scope.row.view}}
+						</template>
+					</el-table-column>
+					<template v-for="(col,idx) in scope.dynamicCols">
+						<el-table-column :min-width="col.width" v-if="col.value === 'd'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+						<template slot-scope="scope">
+							{{scope.row.dCalc}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'scr'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								{{scope.row.scrCalc}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								{{formatNumber(scope.row.br)}} %
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>
+					</template>
+				</template>
+			</cly-datatable-n>
+			<cly-datatable-n v-else :default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
+				<template v-slot:header-left>
+					<el-select v-model="tableMode" class="bu-mr-2" >
+						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
+					</el-select>
+					<a v-if="canUserDelete || canUserUpdate" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+				</template>
+		
+				<template v-slot="scope">
+					<el-table-column width="65"  fixed="left" prop="selected">
+						<template slot-scope="scope">
+							<el-checkbox :disabled="persistentSettings.length === 1 && scope.row.selected" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
+						</template>
+					</el-table-column>
+					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('views.table.view')" fixed="left">
+						<template slot-scope="scope">
+							{{scope.row.view}}
+						</template>
+					</el-table-column>
+					<template v-for="(col,idx) in scope.dynamicCols">
+						<el-table-column :min-width="col.width" v-if="col.value === 'd'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+						<template slot-scope="scope">
+							{{scope.row.dCalc}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'scr'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								{{scope.row.scrCalc}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								{{scope.row.br}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>
+					</template>
+				</template>
+			</cly-datatable-n>
+		</cly-section>
+    </cly-main>
 </div>
-<div class="views-table-block">
-	<table id="ViewsDataTableOne" class="d-table views-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}">
-	</table>
-	<div class="cly-button-menu" tabindex="1">
-        <a class="item delete-view">
-            <i class="fa fa-trash" />
-            <span data-localize='common.delete'></span>
-        </a>
-	</div>
-</div>
+
+
+
+

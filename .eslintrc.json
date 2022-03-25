@@ -124,6 +124,10 @@
         {
             "files": [
                 "frontend/express/public/javascripts/countly/*.js",
+                "frontend/express/public/javascripts/countly/vue/*.js",
+                "frontend/express/public/javascripts/countly/vue/components/*.js",
+                "frontend/express/public/javascripts/countly/vue/data/*.js",
+                "frontend/express/public/core/*/javascripts/countly.*.js",
                 "plugins/*/frontend/public/javascripts/countly.*.js"
             ],
             "env": {
@@ -203,7 +207,7 @@
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 9
+                "ecmaVersion": 2020
             },
             "rules": {
                 "no-console": "off",
@@ -281,7 +285,7 @@
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 9
+                "ecmaVersion": 2020
             },
             "rules": {
                 "no-console": "off"
@@ -299,7 +303,7 @@
                 "mocha": true
             },
             "parserOptions": {
-                "ecmaVersion": 9
+                "ecmaVersion": 2020
             },
             "rules": {
                 "no-console": "off",

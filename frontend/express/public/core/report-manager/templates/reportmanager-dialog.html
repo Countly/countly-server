@@ -1,0 +1,16 @@
+<div>
+    <slot :showDialog="showDialog" name="trigger">
+        <el-button @click="showDialog" :disabled="disabled" type="default" size="small">
+            <div v-show="unread > 0" class="cly-bullet cly-bullet--orange bu-mr-1"></div>
+            Last queries
+            <span class="bu-tag is-curved">{{runningCount}}</span>
+        </el-button>
+    </slot>    
+    <cly-dialog
+        title="Recent reports"
+        width="1120px"
+        autoCentered
+        :visible.sync="isDialogVisible">
+        <cly-report-manager-table maxHeight="400px" @view-task="onViewTask" :disableAutoNavigationToTask="disableAutoNavigationToTask" report-type="auto" :fixed-origin="origin" compact></cly-report-manager-table>
+    </cly-dialog>
+</div>

@@ -1,0 +1,120 @@
+.dbviewer-tab {
+    height: 80vh;
+
+    &__detail-dialog {
+        width: 60% !important;
+        left: 20% !important;
+
+        pre {
+            height: 400px !important;
+        }
+    }
+
+    pre {
+        margin: 0px;
+    }
+
+    .el-table__expanded-cell {
+        padding: 0px 0px 0px 20px !important;
+    }
+
+    &__expand-button {
+        float: right;
+    }
+
+    &__code {
+        background-color: #FCFCFC;
+        max-height: 200px;
+    }
+
+    &__code-in-dialog {
+        max-height: 380px;
+        background-color: #FCFCFC;
+    }
+
+    .cly-vue-eldatatable__header {
+        border-bottom: 1px solid #ebebeb;
+    }
+
+    &__sidebar {
+        border-top-right-radius: 4px;
+        border-top-left-radius: 4px;
+        border: 1px solid #ECECEC;
+        height: calc(100vh - 250px);
+    }
+
+    &__app-selector-dropdown {
+        padding: 16px;
+        border-bottom: 1px solid #ECECEC;
+        
+        .el-select {
+            width: 100%;
+        }
+    }
+
+    &__filter-textarea {
+        textarea {
+            height: 150px;
+        }
+    }
+
+    &__popup-content {
+        display: flex;
+        flex-direction: column;
+        padding: 15px 0px;
+        min-height: 250px;
+        justify-content: space-evenly;
+
+        .el-select {
+            width: 100%;
+        }
+    }
+
+    &__sort-inputs {
+        display: flex;
+
+        .el-select {
+            width: 50%;
+        }
+
+        .el-switch {
+            width: 50%;
+            align-items: center;
+            height: 38px;
+            justify-content: center;
+        }
+    }
+
+    &__collections-list {
+        border-radius: 0px !important;
+        border: none !important;
+    }
+
+    .el-table__fixed-body-wrapper {
+        .cell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+}
+
+.dbviewer-aggregate {
+    &__query-area {
+        border: 1px solid #ECECEC;
+        border-radius: 4px;
+
+        .cly-vue-section__content {
+            border: none;
+        }
+    }
+
+    &__query-button-area {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    &__back-button {
+        cursor: pointer;
+    }
+}

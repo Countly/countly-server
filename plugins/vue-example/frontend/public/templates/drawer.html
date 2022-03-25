@@ -1,0 +1,92 @@
+<cly-drawer 
+    @submit="onSubmit"
+    @close="onClose"
+    @copy="onCopy"
+    :title="title"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="$props.controls">
+    <template v-slot:sidecars="formScope">
+        <cly-content id="mainSidecar" role="sidecar" :always-active="true">
+            <div class="bu-is-flex bu-is-justify-content-center bu-m-6">
+                <pre class="bg-cool-gray-20 bu-p-5" style="border-radius: 16px;">{{formScope.editedObject}}</pre>
+            </div>
+        </cly-content>
+    </template>
+    <template v-slot:controls-left="formScope">
+        Some extra stuff here
+    </template>
+    <template v-slot:default="formScope">
+        <cly-form-step id="step1" name="First Step">
+            <cly-form-field name="name" label="Name" rules="required">
+                <el-input v-model="formScope.editedObject.name" placeholder="Some required value"></el-input>
+            </cly-form-field>
+            <cly-form-field-group label="Fields" highlight tooltip="Hello">
+                <cly-form-field name="field1" label="Field 1" rules="required" tooltip="Hello">
+                    <el-input v-model="formScope.editedObject.field1" placeholder="Some required value"></el-input>
+                </cly-form-field>
+                <cly-form-field name="field2" label="Field 2" optional>
+                    <el-input v-model="formScope.editedObject.field2" placeholder="Some optional value"></el-input>
+                </cly-form-field>
+            </cly-form-field-group>
+        </cly-form-step>
+        <cly-form-step id="step2" name="Second Step">
+            <cly-form-field name="description" label="Description" optional>
+                <el-input type="textarea" v-model="formScope.editedObject.description" placeholder="A brief description (optional)"></el-input>
+            </cly-form-field>
+        </cly-form-step>
+        <cly-form-step id="step3" name="Third Step">
+            <div class="cly-vue-drawer-step__section">
+                <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered">
+                    <div class="bu-column bu-is-10">
+                        <el-input v-model="itemToBeAdded"></el-input>
+                    </div>
+                    <div class="bu-column bu-is-2">
+                        <el-button size="small" type="default" @click="formScope.editedObject.sortableItems.push(itemToBeAdded)">Add</el-button>
+                    </div>
+                </div>
+            </div>
+            <cly-form-field :label="i18n('cohorts.detail.drawer.added-items')">
+                <cly-sortable-items v-model="formScope.editedObject.sortableItems">
+                    <template v-slot="scope">
+                        <div class="text-medium">{{ scope.idx }}</div>
+                        <div class="text-medium">{{ scope.item }}</div>
+                    </template>
+                </cly-sortable-items>
+            </cly-form-field>
+        </cly-form-step>
+        <cly-form-step id="step4" name="Final Step">
+            <cly-form-field-group label="Allowed Props">
+                <cly-form-field name="selectedProps" rules="required|arrmin:2">
+                    <el-checkbox-group v-model="formScope.editedObject.selectedProps">
+                        <el-checkbox-button v-for="item in constants.availableProps" :label="item.value" :key="item.value">{{item.label}}</el-checkbox-button>
+                    </el-checkbox-group>                    
+                </cly-form-field>
+            </cly-form-field-group>
+            <cly-form-field-group label="Visibility" highlight>
+                <cly-form-field>
+                    <el-radio 
+                        class="is-autosized-vstack"
+                        v-model="formScope.editedObject.visibility" 
+                        :label="item.value" 
+                        :key="item.value"
+                        v-for="(item, idx) in constants.visibilityOptions"
+                        border>
+                        <div>
+                            {{item.label}}
+                        </div>
+                        <div class="text-small color-cool-gray-50">
+                            {{item.description}}
+                        </div>
+                    </el-radio>
+                </cly-form-field>
+                <cly-form-field optional label="Some email addresses" v-if="formScope.editedObject.visibility === 'private'">
+                    <cly-select-email v-model="formScope.editedObject.sharedEmailEdit">
+                    </cly-select-email>
+                </cly-form-field>
+                <cly-form-field>
+                    <el-checkbox v-model="formScope.editedObject.status" label="Set as active"></el-checkbox>
+                </cly-form-field>
+            </cly-form-field-group>
+        </cly-form-step>
+    </template>
+</cly-drawer>

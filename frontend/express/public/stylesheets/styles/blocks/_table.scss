@@ -1,0 +1,132 @@
+@use "../base/colors" as c;
+@use "../base/typography-variables" as t;
+@use "../base/variables" as v;
+@use "sass:map";
+
+.cly-vue-eldatatable {
+
+	&.silent-loading {
+		.el-loading-spinner {
+			visibility: hidden;
+		}
+		.el-loading-mask {
+			display: none!important;
+		}
+	}
+
+	&__header {
+		height: 56px;
+		border-left: none;
+		border-right: none;
+		box-sizing: border-box;
+		padding: 12px;
+        border-top: 1px solid map.get(c.$colors, "warm-gray-30");
+
+		&--white {
+			background-color: map.get(c.$colors, "white");
+			color: c.$table-text-color;
+			font-size: t.$text-smd-size;
+		}
+	}
+
+    &__export {
+        &--extended {
+            &::after {
+                // shadow
+                content: "";
+                position: absolute;
+                width: 100%;
+                height: 12px;
+                background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
+                top: 185px;
+                left: 0;
+                opacity: 0.12;
+            }
+        }
+        &--search {
+            input[type=text] {
+                background-color: #F6F6F6;
+            }
+        }
+    }
+
+	&__search {
+		&--grey {
+			input {
+				background-color: #FBFDFE;
+			}
+		}
+	}
+
+	&__footer {
+		height: 40px;
+        box-shadow: 0px 2px 0px #EEF2F5;
+		border-left: none;
+		border-right: none;
+		box-sizing: border-box;
+		padding: 0px 12px;
+
+		&--white {
+			background-color: map.get(c.$colors, "white");
+			color: c.$table-footer-text-color;
+			font-size: t.$text-smd-size;
+		}
+	}
+
+	.undo-row {
+		position: absolute;
+		left: 0;
+		padding: 9px 0px;
+		background-color: #FFD7D6;
+		color: #2b2b2b;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		z-index: 999;
+		vertical-align: middle;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		a {
+			color: #017AFF;
+			cursor: pointer;
+		}
+	}
+
+    .el-table-column--options .cly-vue-more-options {
+        position: absolute;
+        top: calc(50% - 16px);
+        right: calc(50% - 20px);
+    }
+
+	div.cell {
+		padding-left:16px;
+		padding-right: 8px;
+	}
+
+	&__empty-slot {
+		height: 200px;
+	}
+}
+
+//plain table
+.cly-vue-table {
+	width: 100%;
+	thead {
+		background-color: map.get(c.$colors, "warm-gray-20");
+		border-top: 1px solid map.get(c.$colors, "warm-gray-30");
+		border-bottom: 2px solid map.get(c.$colors, "warm-gray-30");
+		th {
+			color: map.get(c.$colors, "cool-gray-100");
+			font-weight: t.$font-weight-primary;
+			font-size: t.$text-sm-size;
+			padding: 9px;
+			text-align: left;
+		}
+	}
+	tbody {
+		td {
+			padding: 0px 9px;
+		}
+	}
+}

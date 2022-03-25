@@ -1,0 +1,18 @@
+<div v-bind:class="[componentId]">
+    <cly-blank>
+        <template v-slot:icon>
+            <img src="dashboards/images/no-widget.svg"></img>
+        </template>
+        <template v-slot:title>
+            <h3 class="bu-mt-4">...hmmm, seems its empty here</h3>
+        </template>
+        <template v-slot:subTitle v-if="canUpdate">
+            <p class="text-medium color-cool-gray-50 bu-m-0 bu-mt-4 bu-has-text-centered">Add a widget to create dashboard and see <br/> some informative explanation</p>
+            <div class="bu-has-text-centered bu-mt-5">
+                <el-button type="text" size="small" @click="newWidget">
+                    <span class="bu-has-text-weight-medium">+ Add a Widget</span>
+                </el-button>
+            </div>
+        </template>
+    </cly-blank>
+</div>

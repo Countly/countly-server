@@ -22,15 +22,20 @@
         "target_page",
         "target_pages",
         "hide_sticker",
-        "is_active",
         "trigger_size",
         "comment_enable",
-        "contact_enable"
+        "contact_enable",
+        "targeting",
+        "ratings_texts",
+        "rating_symbol",
+        "status",
+        "logo"
     ];
 
     var widgetJSONProperties = [
-        "target_pages",
-        "target_devices"
+        "targeting",
+        "ratings_texts",
+        "target_pages"
     ];
 
     starRatingPlugin.extractWidgetProperties = function(props) {
@@ -133,8 +138,17 @@
      * @return {func} ajax func to request data and store in _fd
      */
     starRatingPlugin.requestFeedbackData = function(filterObj) {
-        var periodString = countlyCommon.getPeriodForAjax();
-        var data = {app_id: countlyCommon.ACTIVE_APP_ID, period: periodString};
+        var data = {app_id: countlyCommon.ACTIVE_APP_ID};
+        if (filterObj.period) {
+            if (filterObj.period !== 'noperiod') {
+                data.period = filterObj.period;
+            }
+        }
+        else {
+            var periodString = countlyCommon.getPeriodForAjax();
+            data.period = periodString;
+        }
+
         if (filterObj) {
             if (filterObj.rating && filterObj.rating !== "") {
                 data.rating = filterObj.rating;
@@ -147,6 +161,9 @@
             }
             if (filterObj.widget && filterObj.widget !== "") {
                 data.widget_id = filterObj.widget;
+            }
+            if (filterObj.uid && filterObj.uid !== "") {
+                data.uid = filterObj.uid;
             }
         }
         // returning promise

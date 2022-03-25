@@ -21,10 +21,10 @@ else {
     localize.getProperties("en", function(err, properties) {
         plugins.dbConnection().then((db) => {
             plugins.loadConfigs(db, function() {
-                var cursor = db.collection("systemlogs").find({ts: {$gte: date.unix()}});
+                var stream = db.collection("systemlogs").find({ts: {$gte: date.unix()}}).stream();
                 var returned = false;
                 var first = true;
-                cursor.on('data', function(doc) {
+                stream.on('data', function(doc) {
                     if (format === "json" && first) {
                         first = false;
                     }
@@ -62,7 +62,7 @@ else {
                         console.log(JSON.stringify(doc));
                     }
                 });
-                cursor.on('error', function(err) {
+                stream.on('error', function(err) {
                     if (!returned) {
                         if (format === "json") {
                             console.log("]");
@@ -72,7 +72,7 @@ else {
                     }
                     console.log(err);
                 });
-                cursor.once('end', function() {
+                stream.once('end', function() {
                     if (!returned) {
                         if (format === "json") {
                             console.log("]");

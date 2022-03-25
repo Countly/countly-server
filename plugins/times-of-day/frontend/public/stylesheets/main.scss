@@ -1,0 +1,35 @@
+@use "sass:map";
+@use "../../../../../frontend/express/public/stylesheets/styles//base/typography-variables" as typography;
+@use "../../../../../frontend/express/public/stylesheets/styles//base/colors" as colors;
+
+.times-of-day {
+
+    &__scatter-chart-tooltip {
+        color: map.get(colors.$colors, "cool-gray-100");
+    }
+
+    &__scatter-chart-tooltip-text {
+        font-size: typography.$text-sm-size;
+        line-height: typography.$text-button-line-height;
+    }
+
+    &__scatter-chart-tooltip-total-users-value {
+        font-weight: typography.$font-weight-primary;
+        font-size: typography.$text-lg-size;
+        line-height: typography.$heading-5-line-height;
+    }
+
+    &__results-text {
+        font-size: typography.$heading-4-size;
+        line-height: typography.$heading-4-line-height;
+        color: map.get(colors.$colors, "cool-gray-100");
+        font-weight: typography.$font-weight-primary
+    }
+
+    &__scatter-chart-bar {
+        width: 12px;
+        height: 6px;
+        border-radius: 3px;
+        margin-top: 5px;
+    }
+}

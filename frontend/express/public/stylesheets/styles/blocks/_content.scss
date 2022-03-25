@@ -1,0 +1,66 @@
+/*
+    Contains CSS for the following components
+    - cly-main
+    - cly-section
+*/
+
+@use "../base/variables" as v;
+@use "../base/colors" as c;
+
+.cly-vue-theme-clydef {
+    background-color: c.$interface-color;
+}
+
+#main-views-container {
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+
+	.main-view {
+		min-width: 768px;
+		min-height: 400px;
+        width: 100%;
+		padding: 0px 0 35px 0 !important;
+		transition: width 0.55s;
+		will-change: width;
+        overflow: auto;
+	}
+}
+
+.cly-vue-main {
+	padding: 0px 24px;
+	margin: 0;
+}
+
+.cly-vue-section {
+	&--has-configurator-skin {
+		.cly-vue-section__content {
+			background: #FFFFFF;
+			border: 1px solid #ECECEC;
+			box-sizing: border-box;
+			box-shadow: 0px 1px 0px #ECECEC;
+			border-radius: 4px;
+			.cly-vue-section__sub {
+				border-top: none!important;
+				border-bottom: 1px solid #ECECEC;
+				align-items: center;
+				display: flex;
+			}
+		}
+	}
+
+	&--has-default-skin {
+		.cly-vue-section__content {
+			border-top: v.$border-base;
+			border-bottom: v.$border-base;
+		}
+	}
+
+	.cly-vue-section__content-config {
+		border-bottom: 1px solid #ececec;
+	}
+
+	&:not(:last-child) {
+		margin-bottom: 32px;
+	}
+}

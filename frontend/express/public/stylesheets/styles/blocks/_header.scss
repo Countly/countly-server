@@ -1,0 +1,40 @@
+/*
+    Contains CSS for the following component
+    - cly-header
+*/
+
+@use "../base/variables" as v;
+
+.cly-vue-header {
+    padding: 24px 24px;
+    margin-bottom: 32px;
+    border-bottom: v.$border-base;
+
+    &__level {
+        padding-top: 8px;
+        padding-bottom: 12px;
+
+        &--no-pt {
+            padding-top: 0px;
+        }
+
+        &--no-pb {
+            padding-bottom: 0px;
+        }
+    }
+
+    &--no-mb {
+        margin-bottom: 0px;
+    }
+
+    &--no-bb {
+        border-bottom: none;
+    }
+
+    &+ div > .cly-vue-tabs {
+        background-color: #fff;
+        border-bottom: v.$border-base;
+        margin-bottom: 32px;
+        padding: 0px 24px;
+    }
+}

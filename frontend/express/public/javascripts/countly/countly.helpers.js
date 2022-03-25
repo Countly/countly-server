@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars, countlyTaskManager*/
+/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars, countlyTaskManager, countlyVue*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -11,6 +11,14 @@
  */
 (function(CountlyHelpers) {
 
+    CountlyHelpers.logout = function(path) {
+        if (path) {
+            window.location = "/logout";
+        }
+        else {
+            window.location.reload();//this will log us out
+        }
+    };
     /**
     * Legacy method for displaying notifications. User {@link CountlyHelpers.notify} instead
     * @param {string} msg - msg to display
@@ -266,24 +274,32 @@
     * Display dashboard notification using Amaran JS library
     * @param {object} msg - notification message object
     * @param {string=} msg.title - title of the notification
+    * @deprecated 
     * @param {string=} msg.message - main notification text
     * @param {string=} msg.info - some additional information to display in notification
+    * @deprecated 
     * @param {number=} [msg.delay=10000] - delay time in miliseconds before displaying notification
+    * @deprecated 
     * @param {string=} [msg.type=ok] - message type, accepted values ok, error and warning
     * @param {string=} [msg.position=top right] - message position
+    * @deprecated 
     * @param {string=} [msg.sticky=false] - should message stick until closed
     * @param {string=} [msg.clearAll=false] - clear all previous notifications upon showing this one
+    * @deprecated 
     * @param {string=} [msg.closeOnClick=false] - should notification be automatically closed when clicked on
+    * @deprecated 
     * @param {function=} msg.onClick - on click listener
+    * @deprecated 
     * @example
     * CountlyHelpers.notify({
-    *    title: "This is title",
     *    message: "Main message text",
-    *    info: "Additional info"
     * });
     */
     CountlyHelpers.notify = function(msg) {
-        var iconToUse;
+        var payload = {};
+        payload.text = msg.message;
+        payload.autoHide = !msg.sticky;
+        var colorToUse;
 
         if (countlyGlobal.ssr) {
             return;
@@ -291,45 +307,42 @@
 
         switch (msg.type) {
         case "error":
-            iconToUse = "ion-close-circled";
+            colorToUse = "light-destructive";
             break;
         case "warning":
-            iconToUse = "ion-alert-circled";
+            colorToUse = "light-warning";
             break;
         case "yellow":
-        case "blue":
-        case "purple":
-            iconToUse = "ion-record";
+            colorToUse = "light-warning";
             break;
+        case "info":
+        case "blue":
+            colorToUse = "light-informational";
+            break;
+        case "purple":
+        case "ok":
+        case "success":
         default:
-            iconToUse = "ion-checkmark-circled";
+            colorToUse = "light-successful";
             break;
         }
-
-        $.titleAlert((msg.title || msg.message || msg.info || "Notification"), {
-            requireBlur: true,
-            stopOnFocus: true,
-            duration: (msg.delay || 10000),
-            interval: 1000
-        });
-        $.amaran({
-            content: {
-                title: msg.title || "Notification",
-                message: msg.message || "",
-                info: msg.info || "",
-                icon: iconToUse
-            },
-            theme: 'awesome ' + (msg.type || "ok"),
-            position: msg.position || 'top right',
-            delay: msg.delay || 10000,
-            sticky: msg.sticky || false,
-            clearAll: msg.clearAll || false,
-            closeButton: true,
-            closeOnClick: (msg.closeOnClick === false) ? false : true,
-            onClick: msg.onClick || null
-        });
+        payload.color = colorToUse;
+        countlyCommon.dispatchNotificationToast(payload);
     };
 
+    CountlyHelpers.goTo = function(options) {
+        app.backlinkUrl = options.from;
+        app.backlinkTitle = options.title;
+        window.location.hash = options.url;
+    };
+
+    CountlyHelpers.getBacklink = function() {
+        var url = app.backlinkUrl;
+        var title = app.backlinkTitle;
+        app.backlinkUrl = null;
+        app.backlinkTitle = null;
+        return {url: url, title: title};
+    };
     /**
     * Create new model
     */
@@ -585,31 +598,36 @@
             return;
         }
 
-        var dialog = $("#cly-alert").clone();
-        dialog.removeAttr("id");
+        if (window.countlyVue && window.countlyVue.vuex) {
 
-        if (moreData && moreData.image) {
-            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
-        }
-        else {
-            dialog.find(".image").css("display", "none");
-        }
+            var confirmLabel = countlyVue.i18n('common.ok'),
+                convertedType = "secondary";
 
-        if (moreData && moreData.title) {
-            dialog.find(".title").text(moreData.title);
-        }
-        else {
-            dialog.find(".title").css("display", "none");
-        }
+            if (moreData && moreData.button_title) {
+                confirmLabel = moreData.button_title;
+            }
 
-        if (moreData && moreData.button_title) {
-            dialog.find("#dialog-ok").text(moreData.button_title);
-            $(dialog.find("#dialog-ok")).removeAttr("data-localize");
-        }
+            if (type === "popStyleGreen") {
+                convertedType = "success";
+            }
+            else if (type === "red") {
+                convertedType = "danger";
+            }
 
-        dialog.find(".message").html(countlyCommon.encodeSomeHtml(msg));
-        dialog.addClass(type);
-        revealDialog(dialog);
+            var payload = {
+                intent: 'message',
+                message: (moreData && moreData.title) ? countlyCommon.encodeSomeHtml(msg) : "",
+                type: convertedType,
+                confirmLabel: confirmLabel,
+                title: (moreData && moreData.title) || countlyCommon.encodeSomeHtml(msg),
+                image: moreData && moreData.image
+            };
+
+            var currentStore = window.countlyVue.vuex.getGlobalStore();
+            if (currentStore) {
+                currentStore.dispatch('countlyCommon/onAddDialog', payload);
+            }
+        }
     };
 
     /**
@@ -635,41 +653,41 @@
             return;
         }
 
-        var dialog = $("#cly-confirm").clone();
-        dialog.removeAttr("id");
-        if (moreData && moreData.image) {
-            dialog.find(".image").html('<div style="background-image:url(\'images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
-        }
-        else {
-            dialog.find(".image").css("display", "none");
-        }
+        if (window.countlyVue && window.countlyVue.vuex) {
 
-        if (moreData && moreData.title) {
-            dialog.find(".title").text(moreData.title);
+            var cancelLabel = countlyVue.i18n('common.cancel'),
+                confirmLabel = countlyVue.i18n('common.continue'),
+                convertedType = "danger"; // Default type is "danger"
+
+            if (buttonText && buttonText.length === 2) {
+                cancelLabel = buttonText[0];
+                confirmLabel = buttonText[1];
+            }
+
+            if (type === "popStyleGreen") {
+                convertedType = "success";
+            }
+            // Default type is "danger"
+            // else if (type === "red") {
+            //     convertedType = "danger";
+            // }
+
+            var payload = {
+                intent: 'confirm',
+                message: countlyCommon.encodeSomeHtml(msg),
+                type: convertedType,
+                confirmLabel: confirmLabel,
+                cancelLabel: cancelLabel,
+                title: moreData && moreData.title,
+                image: moreData && moreData.image,
+                callback: callback
+            };
+
+            var currentStore = window.countlyVue.vuex.getGlobalStore();
+            if (currentStore) {
+                currentStore.dispatch('countlyCommon/onAddDialog', payload);
+            }
         }
-        else {
-            dialog.find(".title").css("display", "none");
-        }
-
-        dialog.find(".message").html(countlyCommon.encodeSomeHtml(msg));
-        if (buttonText && buttonText.length === 2) {
-            dialog.find("#dialog-cancel").text(buttonText[0]);
-            dialog.find("#dialog-continue").text(buttonText[1]);
-            //because in some places they are overwritten by localizing after few seconds
-            $(dialog.find("#dialog-cancel")).removeAttr("data-localize");
-            $(dialog.find("#dialog-continue")).removeAttr("data-localize");
-        }
-
-        dialog.addClass(type);
-        revealDialog(dialog);
-
-        dialog.find("#dialog-cancel").on('click', function() {
-            callback(false);
-        });
-
-        dialog.find("#dialog-continue").on('click', function() {
-            callback(true);
-        });
     };
 
     /**
@@ -2583,7 +2601,12 @@
             _period = null,
             _name = (metric.name) ? metric.name : metric,
             _estOverrideMetric = (metric.estOverrideMetric) ? metric.estOverrideMetric : "";
+        var _promises = {};
 
+
+        countlyMetric.getCurrentLoadState = function() {
+            return {"init": _initialized, "period": _period};
+        };
         //Public Methods
         /**
         * Initialize metric model to fetch initial data from server
@@ -2596,10 +2619,20 @@
         * }
         */
         countlyMetric.initialize = function(processed) {
-            if (_initialized && _period === countlyCommon.getPeriodForAjax() && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
+
+            var periodToFetch = countlyCommon.getPeriodForAjax();
+
+            var key = countlyCommon.ACTIVE_APP_ID + "-" + _name + "-" + periodToFetch;
+            var key_refresh = countlyCommon.ACTIVE_APP_ID + "-" + _name + "-refresh";
+            if (_promises[key]) {
+                return _promises[key]; //we are currently running request for that. So return that.
+            }
+            else if (_promises[key_refresh]) {
+                return _promises[key_refresh];
+            }
+            if (_initialized && _period === periodToFetch && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
                 return this.refresh();
             }
-
             _period = countlyCommon.getPeriodForAjax();
 
             if (!countlyCommon.DEBUG) {
@@ -2625,7 +2658,8 @@
                     });
                 }
                 else {
-                    return $.ajax({
+
+                    _promises[key] = $.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r,
                         data: {
@@ -2639,8 +2673,14 @@
                             if (countlyMetric.callback) {
                                 countlyMetric.callback(false, json);
                             }
+                            delete _promises[key];
+                        },
+                        error: function() {
+                            delete _promises[key];
                         }
                     });
+
+                    return _promises[key];
                 }
             }
             else {
@@ -2675,7 +2715,11 @@
                     }
                 }
                 else {
-                    return $.ajax({
+                    var key = countlyCommon.ACTIVE_APP_ID + "-" + _name + "-refresh";
+                    if (_promises[key]) {
+                        return _promises[key]; //we are currently running request for that. So return that.
+                    }
+                    _promises[key] = $.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r,
                         data: {
@@ -2689,8 +2733,14 @@
                             if (countlyMetric.callback) {
                                 countlyMetric.callback(true, json);
                             }
+                            delete _promises[key];
+                        },
+                        error: function() {
+                            delete _promises[key];
                         }
                     });
+
+                    return _promises[key];
                 }
             }
             else {
@@ -3181,6 +3231,8 @@
             chartData.chartDP.dp = chartDP;
 
             for (i = 0; i < chartData.chartData.length; i++) {
+                //TODO-LA: use only percent property when sessions views are finished
+                chartData.chartData[i].percentageNumber = chartData.chartData[i].percent;
                 chartData.chartData[i].percent = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i].percent) + "px;'></div>" + chartData.chartData[i].percent + "%";
             }
 
@@ -3406,6 +3458,128 @@
         $(breadcrumbsEl).prependTo(el);
     };
 
+    /**
+    * Get currently selected period that can be used in ajax requests
+    * @memberof CountlyHelpers
+    * @param {string} period selected date period    
+    * @returns {string} supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
+    */
+    CountlyHelpers.getPeriodUrlQueryParameter = function(period) {
+        if (Object.prototype.toString.call(period) === '[object Array]') {
+            return JSON.stringify(period);
+        }
+        else {
+            return period;
+        }
+    };
+    /**
+    * Format number to percentage value
+    * @memberof CountlyHelpers
+    * @param {number} value number to be converted to percentage    
+    * @param {number} decimalPlaces number of decimal places to keep for percentage, default is two
+    * @returns {number} percentage number for given value. Otherwise, returns 0 for falsy or non number values
+    */
+    CountlyHelpers.formatPercentage = function(value, decimalPlaces) {
+        if (isNaN(value) || !value) {
+            return 0;
+        }
+        if (!decimalPlaces) {
+            decimalPlaces = 2;
+        }
+        return parseFloat((Math.round(value * 100)).toFixed(decimalPlaces));
+    };
+
+    /*
+     * Function that returns difference between two arrays
+     * @param {Array} a1 - first array
+     * @param {Array} a2 - second array
+     */
+    CountlyHelpers.arrayDiff = function(a1, a2) {
+        var a = [], diff = [];
+
+        for (var i1 = 0; i1 < a1.length; i1++) {
+            a[a1[i1]] = true;
+        }
+
+        for (var i2 = 0; i2 < a2.length; i2++) {
+            if (a[a2[i2]]) {
+                delete a[a2[i2]];
+            }
+            else {
+                a[a2[i2]] = true;
+            }
+        }
+
+        for (var k in a) {
+            diff.push(k);
+        }
+
+        return diff;
+    };
+
+    /*
+     * Function that returns difference between two arrays
+     * @param {*} item - item
+     * @param {Array} array - array
+     */
+    CountlyHelpers.removeItemFromArray = function(item, array) {
+        var index = array.indexOf(item);
+        if (index > -1) {
+            array.splice(index, 1);
+        }
+        return array;
+    };
+
+    /**
+     * Function that clean duplicates from passed array.
+     * @param {Array} array - array
+     * @return {Array} - array without duplicates
+     */
+    CountlyHelpers.arrayUnique = function(array) {
+        var a = array.concat();
+        for (var i = 0; i < a.length; ++i) {
+            for (var j = i + 1; j < a.length; ++j) {
+                if (a[i] === a[j]) {
+                    a.splice(j--, 1);
+                }
+            }
+        }
+        return a;
+    };
+
+    /**
+     * Function that remove empty values from array.
+     * @param {array} array - array that contain empty values
+     * @return {array} - array without empty values
+     */
+    CountlyHelpers.removeEmptyValues = function(array) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i] === "") {
+                array.splice(i, 1);
+            }
+        }
+        return array;
+    };
+
+    /**
+     * Function that creates a shallow copy of an object excluding specified fields.
+     * Warning: If no excluded fields specified, returns the original reference
+     * @param {Object} obj Main object
+     * @param {Array} excluded Array of excluded fields
+     * @returns {Object} Shallow copy (If no excluded fields, the original reference)
+     */
+    CountlyHelpers.objectWithoutProperties = function(obj, excluded) {
+        if (!obj || !excluded || excluded.length === 0) {
+            return obj;
+        }
+        return Object.keys(obj).reduce(function(acc, val) {
+            if (excluded.indexOf(val) === -1) {
+                acc[val] = obj[val];
+            }
+            return acc;
+        }, {});
+    };
+
     $(document).ready(function() {
         $("#overlay").click(function() {
             var dialog = $(".dialog:visible:not(.cly-loading)");
@@ -3559,7 +3733,12 @@ $.extend(Template.prototype, {
      */
     store: function(name, raw) {
         T.raw[name] = raw;
-        T.cached[name] = Handlebars.compile(raw);
+        try {
+            T.cached[name] = Handlebars.compile(raw);
+        }
+        catch (ex) {
+            T.cached[name] = raw;
+        }
     },
     /**
      *  Generate request URL for template
@@ -3901,5 +4080,5 @@ $.widget("cly.datepickerExtended", {
             this.baseInstance.datepicker("setDate", date);
             this._syncWith("picker", 0);
         }
-    }
+    },
 });

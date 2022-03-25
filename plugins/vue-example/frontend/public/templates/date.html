@@ -1,0 +1,55 @@
+<div>
+    <cly-header title="Date picking"></cly-header>
+    <cly-main>
+        <cly-section title="Global picker (countlyCommon/period)">
+            <cly-date-picker-g :range-limits="{'maxLength': [10, 'days']}"></cly-date-picker-g>
+        </cly-section>
+        <cly-section title="Date range">
+            <cly-date-picker v-model="selectedDateRange" timestampFormat="ms"></cly-date-picker>
+            <pre>{{selectedDateRange}}</pre>
+        </cly-section>
+        <cly-section title="Date range">
+            <cly-date-picker v-model="selectedDateRangeWithoutOffsetCorr" :offset-correction="false" timestampFormat="ms"></cly-date-picker>
+            <pre>{{selectedDateRangeWithoutOffsetCorr}}</pre>
+        </cly-section>
+        <cly-section title="Month range">
+            <cly-date-picker v-model="selectedMonthRange" timestampFormat="ms" type="monthrange"></cly-date-picker>
+            <pre>{{selectedMonthRange}}</pre>
+        </cly-section>
+        <cly-section title="Date range (no shortcuts)">
+            <cly-date-picker v-model="selectedDateRange" timestampFormat="ms" :display-shortcuts="false"></cly-date-picker>
+            <pre>{{selectedDateRange}}</pre>
+        </cly-section>
+        <cly-section title="Date">
+            <cly-date-picker v-model="selectedDate" timestampFormat="ms" type="date"></cly-date-picker>
+            <pre>{{selectedDate}}</pre>
+        </cly-section>
+        <cly-section title="Date with Time">
+            <cly-date-picker v-model="selectedDateWTime" timestampFormat="ms" type="date" :select-time="true"></cly-date-picker>
+            <pre>{{selectedDateWTime}}</pre>
+        </cly-section>
+        <cly-section title="Month">
+            <cly-date-picker v-model="selectedMonth" timestampFormat="ms" type="month"></cly-date-picker>
+            <pre>{{selectedMonth}}</pre>
+        </cly-section>
+        <cly-section title="Time">
+            <cly-time-picker
+                v-model="selectedTime"
+                placeholder="Arbitrary time">
+            </cly-time-picker>
+            <pre>{{selectedTime}}</pre>
+        </cly-section>
+        <cly-section title="Dynamic type">
+            <el-select size="small" v-model="selectedDynamicType">
+                <el-option label="Date range" value="daterange"></el-option>
+                <el-option label="Month range" value="monthrange"></el-option>
+            </el-select>
+            <cly-date-picker v-model="selectedDynamicRange" :type="selectedDynamicType"></cly-date-picker>
+            <pre>{{selectedDynamicRange}}</pre>
+        </cly-section>
+        <cly-section title="Date with Time (Future)">
+            <cly-date-picker v-model="selectedDateWTimeFuture" :is-future="true" timestampFormat="ms" type="date" :select-time="true"></cly-date-picker>
+            <pre>{{selectedDateWTimeFuture}}</pre>
+        </cly-section>
+    </cly-main>
+</div>

@@ -1,0 +1,16 @@
+<div v-bind:class="[componentId]">
+    <div class="grid-stack">
+        <widget
+            v-for="(widget, index) in allWidgets"
+            v-if="widgetSettingsGetter(widget, true)"
+            :key="widget._id"
+            :widget="widget"
+            :settings="widgetSettingsGetter(widget, true)"
+            :autoPosition="autoPosition(allWidgets)"
+            :loading="loading"
+            @ready="onReady"
+            @command="onWidgetAction">
+        </widget>
+    </div>
+    <widgets-drawer @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
+</div>

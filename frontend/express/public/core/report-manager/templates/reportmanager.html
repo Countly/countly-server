@@ -1,0 +1,11 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('sidebar.management.longtasks')}} </h2>
+        </template>
+		<template v-slot:header-tabs>
+            <cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="localTabs">
+            </cly-dynamic-tabs>
+        </template>
+    </cly-header>
+</div>

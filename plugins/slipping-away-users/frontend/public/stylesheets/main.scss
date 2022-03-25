@@ -1,0 +1,19 @@
+.slipping-away-user-table-progress-bar-container {
+  width: 100%;
+}
+
+.slipping-away-users-table-data-item {
+  min-width: 4em;
+  margin-right: 0.25em;
+}
+.slipping-away-users-table {
+
+  &__data-item {
+    min-width: 4em;
+    margin-right: 0.25em;
+  }
+
+  &__link {
+    font-size:13px;
+  }
+}

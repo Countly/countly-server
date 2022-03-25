@@ -1,0 +1,146 @@
+const cluster = require('cluster'),
+    { Jsonable } = require('../../api/utils/models'),
+    { CacheMaster, CacheWorker, TestDataClass } = require('../../api/parts/data/cache'),
+    should = require('should');
+
+let J = {
+    '1': {_id: 1, str: 'string 1'},
+    '2': {_id: 2, str: 'string 2'},
+    '3': {_id: 3, str: 'string 3'},
+    '4': {_id: 4, str: 'string 4'},
+
+    '1update': {str: 'string 1 updated', num: 3},
+    '1updated': {_id: 1, str: 'string 1 updated', num: 3},
+    '3update': {num: 4, x: 'y'},
+    '3updated': {_id: 3, str: 'string 3', num: 4, x: 'y'},
+
+};
+
+let D = {
+    '1': new TestDataClass(J['1']),
+    '2': new TestDataClass(J['2'])
+};
+
+if (cluster.isMaster) {
+    it('should run cache master', async() => {
+        let db = await require('../../plugins/pluginManager').dbConnection(),
+            cache = new CacheMaster(db);
+        await cache.start();
+        cache.init('test', {
+            init: async() => {
+                return Object.keys(D).map(k => [k, D[k]]);
+            },
+            Cls: ['api/parts/data/cache', 'TestDataClass'],
+            read: async key => {
+                return D[key];
+            },
+            write: async(key, data) => {
+                D[key] = data instanceof TestDataClass ? data : new TestDataClass(data);
+            },
+            update: async(key, update) => {
+                if (key in D) {
+                    D[key].updateData(update);
+                }
+            },
+            remove: async(key) => {
+                let had = !!(key in D);
+                delete D[key];
+                return had;
+            }
+        });
+        console.log('m: started');
+
+        let w1 = cluster.fork({
+            WORKER: 'w1'
+        });
+
+        let cls = cache.cls('test');
+        should.deepEqual((await cls.read('1')).json, J['1']);
+        should.deepEqual((await cls.read('2')).json, J['2']);
+        should.deepEqual((await cls.read('3')), null);
+        should.deepEqual((await cls.read('4')), null);
+
+        console.log('m: waiting');
+        await new Promise(res => setTimeout(res, 3000));
+        console.log('m: updating 1');
+        await cls.update('1', J['1update']);
+
+        should.deepEqual((await cls.read('1')).json, J['1updated']);
+        should.deepEqual((await cls.read('2')), null);
+        should.deepEqual((await cls.read('3')).json, J['3']);
+        should.deepEqual((await cls.read('4')), null);
+        console.log('m: starting w2');
+
+        await cls.remove('1');
+        let w2 = cluster.fork({
+            WORKER: 'w2'
+        });
+        await new Promise(res => setTimeout(res, 1000));
+        await cls.update('3', J['3update']);
+        await cls.write('4', J['4']);
+
+        should.deepEqual((await cls.read('1')), null);
+        should.deepEqual((await cls.read('2')), null);
+        should.deepEqual((await cls.read('3')).json, J['3updated']);
+        should.deepEqual((await cls.read('4')).json, J['4']);
+
+        // await cls.write('b', new TestDataClass({_id: 'b', str: 'string b'}));
+        // await cls.remove('2');
+        await new Promise(res => setTimeout(res, 3000));
+
+        cache.stop();
+        db.close();
+
+        w1.kill(0);
+        w2.kill(0);
+    }).timeout(30000);
+}
+else {
+    it('should run cache worker', async() => {
+        let db = await require('../../plugins/pluginManager').dbConnection(),
+            cache = new CacheWorker(db),
+            cls = cache.cls('test');
+        await cache.start();
+
+        if (process.env.WORKER === 'w1') {
+            console.log('w1: started');
+
+            should.deepEqual((await cls.read('1')).json, D['1'].json);
+            should.deepEqual((await cls.read('2')).json, D['2'].json);
+            should.deepEqual((await cls.read('3')), null);
+
+            console.log('w1: initial data ok, writing 3, removing 2');
+
+            await cls.write('3', new TestDataClass(J['3']));
+            await cls.remove('2');
+            should.deepEqual((await cls.read('2')), null);
+            should.deepEqual((await cls.read('3')).json, J['3']);
+
+            console.log('w1: waiting for m updates');
+            await new Promise(res => setTimeout(res, 3000));
+            should.deepEqual((await cls.read('1')), null);
+            should.deepEqual((await cls.read('2')), null);
+            should.deepEqual((await cls.read('3')).json, J['3updated']);
+            should.deepEqual((await cls.read('4')).json, J['4']);
+
+            console.log('w1: done');
+        }
+        else if (process.env.WORKER === 'w2') {
+            console.log('w2: started');
+            await new Promise(res => setTimeout(res, 3000));
+
+            should.deepEqual((await cls.read('1')), null);
+            should.deepEqual((await cls.read('2')), null);
+            should.deepEqual((await cls.read('3')).json, J['3updated']);
+            should.deepEqual((await cls.read('4')).json, J['4']);
+            console.log('w2: done');
+
+        }
+        else {
+            should.fail('wrong WORKER env');
+        }
+
+        cache.stop();
+        db.close();
+    });
+}

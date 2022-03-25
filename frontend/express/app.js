@@ -49,7 +49,7 @@ var versionInfo = require('./version.info'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
-    // url = require('url'),
+    url = require('url'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     languages = require('../../frontend/express/locale.conf'),
     render = require('../../api/utils/render.js'),
@@ -57,7 +57,8 @@ var versionInfo = require('./version.info'),
     membersUtility = require("./libs/members.js"),
     argon2 = require('argon2'),
     countlyCommon = require('../../api/lib/countly.common.js'),
-    timezones = require('../../api/utils/timezones.js').getTimeZones;
+    timezones = require('../../api/utils/timezones.js').getTimeZones,
+    { validateCreate } = require('../../api/utils/rights.js');
 
 console.log("Starting Countly", "version", pack.version);
 
@@ -79,6 +80,25 @@ else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
     COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v" + COUNTLY_VERSION;
     COUNTLY_TYPE_CE = false;
     COUNTLY_TRACK_TYPE = "Enterprise";
+}
+
+/**
+* Create params object for validation
+* @param {obj} obj - express request object
+* @returns {object} params object
+**/
+function paramsGenerator(obj) {
+    var params = {
+        req: obj.req,
+        res: obj.res,
+        qstring: obj.req.query,
+        fullPath: url.parse(obj.req.url, true).pathname
+    };
+
+    params.qstring.auth_token = obj.req.session.auth_token;
+    params.qstring.app_id = obj.req.body.app_id;
+
+    return params;
 }
 
 if (!countlyConfig.cookie) {
@@ -119,6 +139,7 @@ plugins.setConfigs("security", {
     password_expiration: 0,
     password_rotation: 3,
     password_autocomplete: true,
+    robotstxt: "User-agent: *\nDisallow: /",
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
@@ -580,7 +601,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             next();
         }
     });
-
+    var convertLink = function(val, defaultVal) {
+        if (typeof val === "undefined" || val === true) {
+            return defaultVal;
+        }
+        return val;
+    };
     app.use(flash());
     app.use(function(req, res, next) {
         req.template = {};
@@ -594,7 +620,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             type: COUNTLY_TYPE,
             page: COUNTLY_PAGE,
             title: COUNTLY_NAME,
-            favicon: "images/favicon.png"
+            favicon: "images/favicon.png",
+            documentationLink: convertLink(versionInfo.documentationLink, "https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base"),
+            helpCenterLink: convertLink(versionInfo.helpCenterLink, "https://support.count.ly/hc/en-us"),
+            featureRequestLink: convertLink(versionInfo.featureRequestLink, "https://support.count.ly/hc/en-us/community/topics/360001464272-Feature-Requests"),
+            feedbackLink: convertLink(versionInfo.feedbackLink, "https://count.ly/legal/privacy-policy"),
         };
         plugins.loadConfigs(countlyDb, function() {
             var securityConf = plugins.getConfig("security");
@@ -734,6 +764,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         });
     });
 
+    app.get(countlyConfig.path + '/robots.txt', function(req, res) {
+        res.contentType('text/plain');
+        res.send(plugins.getConfig("security").robotstxt);
+    });
+
     app.get(countlyConfig.path + '/configs', function(req, res) {
         membersUtility.recheckConfigs(countlyConfigOrig, countlyConfig);
         res.send("Success");
@@ -754,6 +789,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         if (req.session.uid) {
                             if (Date.now() > req.session.expires) {
                                 //logout user
+                                membersUtility.logout(req, res);
                                 res.send("logout");
                             }
                             else {
@@ -801,6 +837,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     /**
+     * Stringify all object nested properties named `prop`
+     * 
+     * @param {object} obj object to fix
+     * @param {string} prop property name
+     */
+    function stringifyIds(obj, prop = '_id') {
+        for (let k in obj) {
+            if (k === prop && common.dbext.isoid(obj[k])) {
+                obj[k] = obj[k].toString();
+            }
+            else if (typeof obj[k] === 'object') {
+                stringifyIds(obj[k]);
+            }
+        }
+    }
+
+    /**
     * Render dashboard
     * @param {object} req - request object
     * @param {object} res - response object
@@ -835,6 +888,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             adminOfApps = sortBy(adminOfApps, member.appSortList || []);
             userOfApps = sortBy(userOfApps, member.appSortList || []);
 
+            stringifyIds(adminOfApps);
+            stringifyIds(userOfApps);
+            stringifyIds(countlyGlobalApps);
+            stringifyIds(countlyGlobalAdminApps);
+
             var defaultApp = userOfApps[0];
             var serverSideRendering = req.query.ssr;
             _.extend(req.config, configs);
@@ -859,7 +917,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 cdn: countlyConfig.cdn || "",
                 message: req.flash("message"),
                 ssr: serverSideRendering,
-                timezones: timezones
+                timezones: timezones,
+                countlyTypeName: COUNTLY_NAMED_TYPE,
+                usermenu: {
+                    feedbackLink: COUNTLY_FEEDBACK_LINK,
+                    documentationLink: COUNTLY_DOCUMENTATION_LINK,
+                    helpCenterLink: COUNTLY_HELPCENTER_LINK,
+                    featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
+                }
             };
 
             var toDashboard = {
@@ -972,52 +1037,85 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         var adminOfAppIds = [],
                             userOfAppIds = [];
 
-                        if (member.admin_of.length === 1 && member.admin_of[0] === "") {
-                            member.admin_of = [];
-                        }
-
-                        for (let i = 0; i < member.admin_of.length; i++) {
-                            if (member.admin_of[i] === "") {
-                                continue;
+                        /*
+                        We keep this section for backward compatibility.
+                        This block will run if member has legacy permission properties like user_of, admin_of.
+                        */
+                        if (typeof member.permission === "undefined") {
+                            if (member.admin_of.length === 1 && member.admin_of[0] === "") {
+                                member.admin_of = [];
                             }
 
-                            adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
-                        }
-
-                        for (let i = 0; i < member.user_of.length; i++) {
-                            if (member.user_of[i] === "") {
-                                continue;
+                            for (let i = 0; i < member.admin_of.length; i++) {
+                                if (member.admin_of[i] === "") {
+                                    continue;
+                                }
+                                adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
                             }
 
-                            userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
-                        }
-
-                        countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
-
-                            for (let i = 0; i < admin_of.length; i++) {
-                                countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
-                                countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
+                            for (let i = 0; i < member.user_of.length; i++) {
+                                if (member.user_of[i] === "") {
+                                    continue;
+                                }
+                                userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
                             }
 
-                            countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
-                                adminOfApps = admin_of;
-                                userOfApps = user_of;
-
-                                for (let i = 0; i < user_of.length; i++) {
-                                    if (user_of[i].apn) {
-                                        user_of[i].apn.forEach(a => a._id = '' + a._id);
-                                    }
-                                    if (user_of[i].gcm) {
-                                        user_of[i].gcm.forEach(a => a._id = '' + a._id);
-                                    }
-                                    countlyGlobalApps[user_of[i]._id] = user_of[i];
-                                    countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
-                                    countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                            countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
+                                for (let i = 0; i < admin_of.length; i++) {
+                                    countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
+                                    countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
                                 }
 
-                                renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
+                                    adminOfApps = admin_of;
+                                    userOfApps = user_of;
+
+                                    for (let i = 0; i < user_of.length; i++) {
+                                        countlyGlobalApps[user_of[i]._id] = user_of[i];
+                                        countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
+                                        countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                                    }
+
+                                    renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                });
                             });
-                        });
+                        }
+                        else {
+                            var writableAppIds = member.permission._.a;
+                            var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+                            var preparedReadableIds = [];
+                            var preparedWritableIds = [];
+
+                            for (let i = 0; i < readableAppIds.length; i++) {
+                                if (readableAppIds[i] !== 'undefined' && (member.permission.r[readableAppIds[i]].all || Object.keys(member.permission.r[readableAppIds[i]].allowed).length > 0)) {
+                                    preparedReadableIds.push(countlyDb.ObjectID(readableAppIds[i]));
+                                }
+                            }
+
+                            for (let i = 0; i < writableAppIds.length; i++) {
+                                preparedWritableIds.push(countlyDb.ObjectID(writableAppIds[i]));
+                            }
+
+                            countlyDb.collection('apps').find({ _id: { '$in': preparedReadableIds } }).toArray(function(err4, readableApps) {
+                                countlyDb.collection('apps').find({ _id: { '$in': preparedWritableIds } }).toArray(function(err5, writableApps) {
+                                    adminOfApps = writableApps;
+                                    userOfApps = readableApps.concat(writableApps);
+
+                                    for (let i = 0; i < userOfApps.length; i++) {
+                                        countlyGlobalApps[userOfApps[i]._id] = userOfApps[i];
+                                        countlyGlobalApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
+                                        countlyGlobalApps[userOfApps[i]._id].type = countlyGlobalApps[userOfApps[i]._id].type || "mobile";
+
+                                        if (adminOfApps.indexOf(userOfApps[i]) !== -1) {
+                                            countlyGlobalAdminApps[userOfApps[i]._id] = userOfApps[i];
+                                            countlyGlobalAdminApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
+                                            countlyGlobalAdminApps[userOfApps[i]._id].type = userOfApps[i].type || "mobile";
+                                        }
+                                    }
+                                    renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                });
+                            });
+                        }
                     }
                 }
                 else {
@@ -1038,7 +1136,30 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.header('Expires', '0');
                 res.header('Pragma', 'no-cache');
                 var config = plugins.getConfig("security");
-                res.render('setup', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}});
+                res.render('setup', {
+                    documentationLink: req.countly.documentationLink,
+                    helpCenterLink: req.countly.helpCenterLink,
+                    feedbackLink: req.countly.feedbackLink,
+                    featureRequestLink: req.countly.featureRequestLink,
+                    languages: languages,
+                    countlyFavicon: req.countly.favicon,
+                    countlyTitle: req.countly.title,
+                    countlyPage: req.countly.page,
+                    "csrf": req.csrfToken(),
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    themeFiles: req.themeFiles,
+                    inject_template: req.template,
+                    params: {},
+                    error: {},
+                    security: {
+                        password_min: config.password_min,
+                        password_char: config.password_char,
+                        password_number: config.password_number,
+                        password_symbol: config.password_symbol,
+                        autocomplete: config.password_autocomplete || false
+                    }
+                });
             }
             else if (err) {
                 res.status(500).send('Server Error');
@@ -1066,7 +1187,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     res.header('Expires', '0');
                     res.header('Pragma', 'no-cache');
                     var config = plugins.getConfig("security");
-                    res.render('login', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": req.flash('info'), "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false}});
+                    res.render('login', {
+                        documentationLink: req.countly.documentationLink,
+                        helpCenterLink: req.countly.helpCenterLink,
+                        feedbackLink: req.countly.feedbackLink,
+                        featureRequestLink: req.countly.featureRequestLink,
+                        languages: languages,
+                        countlyFavicon: req.countly.favicon,
+                        countlyTitle: req.countly.title,
+                        countlyPage: req.countly.page,
+                        "message": req.flash('info'),
+                        "csrf": req.csrfToken(),
+                        path: countlyConfig.path || "",
+                        cdn: countlyConfig.cdn || "",
+                        themeFiles: req.themeFiles,
+                        inject_template: req.template,
+                        security: {autocomplete: config.password_autocomplete || false}
+                    });
                 }
                 else {
                     res.redirect(countlyConfig.path + '/setup');
@@ -1086,7 +1223,22 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
             res.header('Expires', '0');
             res.header('Pragma', 'no-cache');
-            res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "message": req.query.message || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+            res.render('forgot', {
+                documentationLink: req.countly.documentationLink,
+                helpCenterLink: req.countly.helpCenterLink,
+                feedbackLink: req.countly.feedbackLink,
+                featureRequestLink: req.countly.featureRequestLink,
+                languages: languages,
+                countlyFavicon: req.countly.favicon,
+                countlyTitle: req.countly.title,
+                countlyPage: req.countly.page,
+                "csrf": req.csrfToken(),
+                "message": req.query.message || "",
+                path: countlyConfig.path || "",
+                cdn: countlyConfig.cdn || "",
+                themeFiles: req.themeFiles,
+                inject_template: req.template
+            });
         }
     });
 
@@ -1109,7 +1261,25 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         res.header('Expires', '0');
                         res.header('Pragma', 'no-cache');
                         var config = plugins.getConfig("security");
-                        res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false, password_min: config.password_min}});
+                        res.render('reset', {
+                            documentationLink: req.countly.documentationLink,
+                            helpCenterLink: req.countly.helpCenterLink,
+                            feedbackLink: req.countly.feedbackLink,
+                            featureRequestLink: req.countly.featureRequestLink,
+                            languages: languages,
+                            countlyFavicon: req.countly.favicon,
+                            countlyTitle: req.countly.title,
+                            countlyPage: req.countly.page,
+                            "csrf": req.csrfToken(),
+                            "prid": req.params.prid,
+                            "message": req.query.message || "",
+                            path: countlyConfig.path || "",
+                            cdn: countlyConfig.cdn || "",
+                            "newinvite": passwordReset.newInvite,
+                            themeFiles: req.themeFiles,
+                            inject_template: req.template,
+                            security: {autocomplete: config.password_autocomplete || false, password_min: config.password_min}
+                        });
                     }
                 }
                 else {
@@ -1172,7 +1342,24 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.header('Expires', '0');
                 res.header('Pragma', 'no-cache');
                 var config = plugins.getConfig("security");
-                var data = { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: err || {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}};
+                var data = {
+                    documentationLink: req.countly.documentationLink,
+                    helpCenterLink: req.countly.helpCenterLink,
+                    feedbackLink: req.countly.feedbackLink,
+                    featureRequestLink: req.countly.featureRequestLink,
+                    languages: languages,
+                    countlyFavicon: req.countly.favicon,
+                    countlyTitle: req.countly.title,
+                    countlyPage: req.countly.page,
+                    "csrf": req.csrfToken(),
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    themeFiles: req.themeFiles,
+                    inject_template: req.template,
+                    params: {},
+                    error: err || {},
+                    security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}
+                };
                 if (params.email) {
                     data.params.email = params.email;
                 }
@@ -1325,75 +1512,88 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.post(countlyConfig.path + '/apps/icon', function(req, res, next) {
-        if (!req.files.app_image || !req.body.app_image_id) {
-            res.end();
-            return true;
-        }
+        var params = paramsGenerator({req, res});
+        validateCreate(params, 'global_upload', function() {
+            if (!req.session.uid) {
+                res.end();
+                return false;
+            }
 
-        req.body.app_image_id = common.sanitizeFilename(req.body.app_image_id);
+            if (!req.files.app_image || !req.body.app_image_id) {
+                res.end();
+                return true;
+            }
 
-        var tmp_path = req.files.app_image.path,
-            target_path = __dirname + '/public/appimages/' + req.body.app_image_id + ".png",
-            type = req.files.app_image.type;
+            req.body.app_image_id = common.sanitizeFilename(req.body.app_image_id);
 
-        if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
-            fs.unlink(tmp_path, function() {});
-            res.send(false);
-            return true;
-        }
-        plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
-        try {
-            jimp.read(tmp_path, function(err, icon) {
-                if (err) {
-                    console.log(err, err.stack);
-                }
-                icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                    countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
-                        fs.unlink(tmp_path, function() {});
-                        res.send(countlyConfig.path + "/appimages/" + req.body.app_image_id + ".png");
-                    });
-                }); // save
-            });
-        }
-        catch (e) {
-            console.log(e.stack);
-        }
+            var tmp_path = req.files.app_image.path,
+                target_path = __dirname + '/public/appimages/' + req.body.app_image_id + ".png",
+                type = req.files.app_image.type;
+
+            if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+                fs.unlink(tmp_path, function() {});
+                res.send(false);
+                return true;
+            }
+            plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
+            try {
+                jimp.read(tmp_path, function(err, icon) {
+                    if (err) {
+                        console.log(err, err.stack);
+                    }
+                    icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
+                        countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
+                            fs.unlink(tmp_path, function() {});
+                            res.send("appimages/" + req.body.app_image_id + ".png");
+                        });
+                    }); // save
+                });
+            }
+            catch (e) {
+                console.log(e.stack);
+            }
+        });
     });
 
     app.post(countlyConfig.path + '/member/icon', function(req, res, next) {
-        if (!req.files.member_image || !req.body.member_image_id) {
-            res.end();
-            return true;
-        }
 
-        req.body.member_image_id = common.sanitizeFilename(req.body.member_image_id);
+        var params = paramsGenerator({req, res});
+        validateCreate(params, 'global_upload', function() {
+            if (!req.files.member_image || !req.body.member_image_id) {
+                res.end();
+                return true;
+            }
 
-        var tmp_path = req.files.member_image.path,
-            target_path = __dirname + '/public/memberimages/' + req.body.member_image_id + ".png",
-            type = req.files.member_image.type;
+            req.body.member_image_id = common.sanitizeFilename(req.body.member_image_id);
+            var tmp_path = req.files.member_image.path,
+                target_path = __dirname + '/public/memberimages/' + req.body.member_image_id + ".png",
+                type = req.files.member_image.type;
 
-        if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
-            fs.unlink(tmp_path, function() {});
-            res.send(false);
-            return true;
-        }
-        plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
-        try {
-            jimp.read(tmp_path, function(err, icon) {
-                if (err) {
-                    console.log(err, err.stack);
-                }
-                icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                    countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
-                        fs.unlink(tmp_path, function() {});
-                        res.send(countlyConfig.path + "/memberimages/" + req.body.member_image_id + ".png");
-                    });
-                }); // save
-            });
-        }
-        catch (e) {
-            console.log(e.stack);
-        }
+            if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+                fs.unlink(tmp_path, function() {});
+                res.send(false);
+                return true;
+            }
+            plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
+            try {
+                jimp.read(tmp_path, function(err, icon) {
+                    if (err) {
+                        console.log(err, err.stack);
+                    }
+                    icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
+                        countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
+                            fs.unlink(tmp_path, function() {});
+                            countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.session.uid + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
+                                res.send("memberimages/" + req.body.member_image_id + ".png");
+                            });
+                        });
+                    }); // save
+                });
+            }
+            catch (e) {
+                console.log(e.stack);
+            }
+        });
     });
 
     app.post(countlyConfig.path + '/user/settings', function(req, res/*, next*/) {
@@ -1402,6 +1602,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             return false;
         }
         membersUtility.settings(req, function(result, message) {
+            if (result && req.body.member_image === "delete") {
+                var target_path = __dirname + '/public/memberimages/' + req.session.uid + ".png";
+                countlyFs.deleteFile("memberimages", target_path, {id: req.session.uid + ".png"}, function() { });
+            }
             if (message) {
                 res.send(message);
             }
@@ -1524,7 +1728,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         return res.send(false);
                     }
 
-                    return res.send(true);
+                    return res.send({path: countlyConfig.path + "/images/screenshots/" + imageName});
                 });
             }
         });

@@ -1,0 +1,56 @@
+.cly-progress-bar-container {
+    width: 100%;
+    &.has-min-bradius {
+        .first-progress-bar-stack {
+            & .el-progress-bar__outer {
+                border-bottom-left-radius: 4px;
+                border-top-left-radius: 4px;
+            }
+        }
+        .last-progress-bar-stack {
+            & .el-progress-bar__outer {
+                border-bottom-right-radius: 4px;
+                border-top-right-radius: 4px;
+            }
+        }
+
+        .el-progress:not(.progress-bar-stack) {
+            & .el-progress-bar__outer {
+                border-radius: 4px;
+            }
+            & .el-progress-bar__inner {
+                border-radius: 4px;
+            }
+        }
+    }
+}
+
+.cly-progress-bar-stack-container {
+    float:left;
+}
+
+.progress-bar-stack {
+    & .el-progress-bar__inner {
+        border-radius: 0px;
+    }
+}
+
+.first-progress-bar-stack {
+    & .el-progress-bar__outer {
+        border-bottom-right-radius: 0px;
+        border-top-right-radius: 0px;
+    }
+}
+
+.middle-progress-bar-stack {
+    & .el-progress-bar__outer {
+        border-radius: 0px;
+    }
+}
+
+.last-progress-bar-stack {
+    & .el-progress-bar__outer {
+        border-bottom-left-radius: 0px;
+        border-top-left-radius: 0px;
+    }
+}

@@ -4,3 +4,4 @@
 !.gitignore
 !aws_ses.example.js
 !mail.debug.example.js
+!mail.example.js

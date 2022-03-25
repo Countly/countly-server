@@ -1,0 +1,304 @@
+/*
+    This file contains CSS overrides for elements CSS
+*/
+
+@use "../base/typography-variables" as t;
+@use "../base/colors" as c;
+@use "sass:map";
+
+//Element Table overrides
+.el-table {
+
+    th {
+        padding: 9px 0px;
+        box-sizing: border-box;
+        text-transform: uppercase;
+        font-size: t.$text-sm-size;
+        font-style: normal;
+        font-weight: 500;
+        border-bottom-width: 2px;
+
+        .cell {
+            line-height: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        &:hover {
+            .sort-caret.ascending {
+                border-bottom-color: #005DEF;
+            }
+
+            .sort-caret.descending {
+                border-top-color: #005DEF;
+            }
+        }
+
+        &.is-leaf {
+            border-bottom-width: 2px;
+
+            border-top: 1px solid c.$table-border-color;
+        }
+    }
+
+    td {
+        padding: 14px 0px;
+        font-style: normal;
+        font-weight: normal;
+        font-size: t.$text-md-size;
+        box-sizing: border-box;
+
+        .cell {
+            line-height: 20px;
+        }
+    }
+
+    &.el-table--has-options td {
+        .cell {
+            line-height: 23px;
+        }
+    }
+
+    th:first-child .cell,
+    td:first-child .cell {
+        padding-left: 16px;
+    }
+
+    th:last-child .cell,
+    td:last-child .cell {
+        padding-right: 16px;
+    }
+
+    .caret-wrapper {
+        height: 15px;
+    }
+
+    .sort-caret {
+        border-width: 4px;
+    }
+
+    .sort-caret.ascending {
+        top: -2px;
+    }
+
+    .sort-caret.descending {
+        bottom: -1px;
+    }
+
+    .ascending .sort-caret.ascending {
+        border-bottom-color: #005DEF;
+    }
+
+    .descending .sort-caret.descending {
+        border-top-color: #005DEF;
+    }
+
+    .cell {
+        word-break: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .cell > .el-checkbox,
+    .cell > .el-switch,
+    .cell > .el-radio {
+        overflow: unset;
+    }
+
+    table {
+        //Adding this rule to solve the table overflow issue in Safari.
+        //https://github.com/ElemeFE/element/issues/10308#issuecomment-946428051
+        width: 0px;
+    }
+}
+
+.el-radio {
+    &.is-autosized {
+        padding: 16px;
+        display: flex;
+        width: 100%;
+        margin-right: 0;
+        height: unset;
+        background-color: white;
+    }
+    &.is-autosized.is-bordered + &.is-autosized.is-bordered {
+        margin-left: 10px;
+    }
+    &.is-autosized.is-bordered {
+        border-color: #CFD6E4;
+    }   
+    &.is-autosized-vstack {
+        padding: 12px;
+        display: flex;
+        width: 100%;
+        margin-right: 0;
+        height: unset;
+        background-color: white;
+        .el-radio__label {
+            justify-content: space-between;
+            display: flex;
+            width: 100%;
+            align-items: baseline;
+        }
+    }
+    &.is-autosized-vstack.is-bordered + &.is-autosized-vstack.is-bordered {
+        margin-left: 0;
+        margin-top: 7px;
+    }
+	&.is-bordered {
+		border: 1px solid #CFD6E4;
+	}
+}
+
+.el-collapse {
+    &.is-bordered-box {
+        border: 1px solid #ECECEC;
+        box-sizing: border-box;
+        box-shadow: 0px 1px 0px #ECECEC;
+        border-radius: 4px;
+    
+        .el-collapse-item__header {
+            border-radius: 4px;
+            padding: 0rem 1.5rem 0rem 1.5rem;
+            &.is-active {
+                border-bottom-color: #ececec;
+            }
+        }
+        .el-collapse-item__wrap {
+            background-color: transparent;
+        }
+        .el-collapse-item__content {
+            margin: 0rem 1.5rem 0rem 1.5rem;
+        }
+    }
+}
+
+.el-switch {
+	&__label *{
+		font-weight: normal;
+		color: #A7AEB8;
+		font-size:12px;
+	}
+}
+
+.el-input {
+    &.is-adaptive {
+        .el-input__inner {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 10px;
+            vertical-align: middle;
+        }
+    }
+}
+
+.el-select .el-input.is-arrow .el-input__inner {
+    padding-right: 30px;
+}
+
+.el-button {
+    &.is-wireframe {
+        background: transparent;
+        border: 1px dotted #0166D6;
+        box-sizing: border-box;
+        box-shadow: 0px 2px 4px rgb(1 122 255 / 7%);
+    }
+    &.el-button--text.is-danger {
+        color: #D23F00;
+        &:hover {
+            background-color: #F6F6F6;
+        }
+    }
+    &.is-light-blue {
+        box-shadow: none;
+        -webkit-box-shadow: none;
+        border: none;
+        font-weight: 500;
+        height: 32px;
+        &:not(.is-disabled) {
+            color: map.get(c.$colors, "blue-100");
+            background-color: map.get(c.$colors, "light-blue-100");
+            &:hover {
+                background-color: #CCE0F7;
+            }
+        }
+    }
+}
+
+.el-button-group  {
+    > .el-select {
+        float: left;
+        &:first-child .el-button {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            -webkit-box-shadow: none;
+            box-shadow: none;
+        }
+        &:not(:last-child) {
+            margin-right: -1px;
+        }
+        &:active, &:focus, &:hover {
+            z-index: 1;
+            .el-button  {
+                z-index: 1;
+            }
+        }
+    }
+}
+
+.el-input-number {
+
+    &.is-slim .el-input__inner {
+        padding-left: 5px;
+        padding-right: 26px;
+    }
+
+    &.is-slim {
+        &.el-input-number--small .el-input-number__decrease, 
+        &.el-input-number--small .el-input-number__increase {
+            width: 22px;
+            font-size: 14px;
+        }
+    }
+}
+
+.el-tabs--card>.el-tabs__header {
+	.el-tabs__item:first-child {
+		border-top-left-radius: 3px;
+	}
+	.el-tabs__item:last-child {
+		border-top-right-radius: 3px;
+	}
+	
+	.el-tabs__item {
+		background-color:#fcfcfc;
+		padding: 0px;
+	}
+	.el-tabs__item:nth-child(2){
+		padding: 0px;
+	}
+	
+	.el-tabs__item.is-active {
+		border-bottom-color: #0166d6;
+		border-bottom-width: 2px;
+		background-color:#ffffff;
+	}
+}
+
+.el-tabs--top.el-tabs--card>.el-tabs__header .el-tabs__item:nth-child(2) {
+	padding: 0px;
+}
+
+.el-radio-group {
+    &.is-full {
+        display: flex;
+        .el-radio-button {
+            flex-grow: 1;
+            &__inner {
+                width: 100%;
+            }
+        }
+    }
+}

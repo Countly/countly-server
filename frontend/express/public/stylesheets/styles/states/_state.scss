@@ -1,0 +1,207 @@
+/*
+    Contains global state classes for DOM elements
+*/
+
+@use "../base/typography-variables" as t;
+@use "../base/colors" as c;
+@use "sass:map";
+
+.font-weight-bold {
+    font-weight: t.$font-weight-bold !important;
+}
+
+.font-weight-normal {
+    font-weight: t.$font-weight-text !important;
+}
+
+.font-italic {
+    font-style: italic !important;
+}
+
+.text-lowercase {
+    text-transform: lowercase !important;
+}
+
+.text-uppercase {
+    text-transform: uppercase !important;
+}
+
+.text-capitalize {
+    text-transform: capitalize !important;
+}
+
+.text-big {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: t.$text-big-size;
+    font-weight: t.$font-weight-text;
+    line-height: t.$text-big-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
+.text-medium {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: t.$text-medium-size;
+    font-weight: t.$font-weight-text;
+    line-height: t.$text-medium-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
+.text-smallish {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: t.$text-smd-size;
+    font-weight: t.$font-weight-text;
+    line-height: t.$text-button-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
+.text-small {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: t.$text-small-size;
+    font-weight: t.$font-weight-text;
+    line-height: t.$text-small-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
+.text-heading {
+    &.text-big {
+        line-height: t.$heading-4-line-height;
+        font-weight: t.$font-weight-primary !important;
+        margin-bottom: 16px;
+    }
+
+    &.text-medium {
+        line-height: t.$heading-5-line-height;
+        font-weight: t.$font-weight-primary !important;
+        margin-bottom: 8px;
+    }
+
+    &.text-small {
+        line-height: t.$heading-6-line-height;
+        font-weight: t.$font-weight-primary !important;
+        margin-bottom: 4px;
+    }
+}
+
+.text-smaller {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: t.$text-smaller-size;
+    font-weight: t.$font-weight-text;
+    line-height: t.$text-smaller-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
+.text-smallest {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: 10px;
+    font-weight: 700;
+    line-height: t.$text-smaller-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
+.text-button {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: t.$text-button-size;
+    font-weight: t.$font-weight-text;
+    line-height: t.$text-button-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
+.cly-trend-up {
+    font-size: t.$text-md-size;
+    font-weight: t.$font-weight-primary;
+    color: map.get(c.$colors, "green-80");
+    margin-left: -4px;
+}
+
+.cly-trend-down {
+    font-size: t.$text-md-size;
+    font-weight: t.$font-weight-primary;
+    color: map.get(c.$colors, "red-100");
+    margin-left: -4px;
+}
+
+.cly-trend-up-icon {
+    background-color: #ebfaee;
+    padding: 0px 5px !important;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+.cly-trend-down-icon {
+    background-color: #fbece5;
+    padding: 0px 5px !important;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+.cursor-pointer {
+    cursor: pointer
+}
+
+
+@for $i from 1 through 6 {
+    .icon-size-#{$i} {
+        font-size: #{$i*2 + 4}px;
+    }
+}
+
+.text-clickable {
+    cursor: pointer;
+}
+
+@each $name, $value in c.$colors {
+    .color-#{$name} {
+        color: $value!important;
+    }
+
+    .bg-#{$name} {
+        background-color: $value!important;
+    }
+}
+
+.white-bg {
+    background-color: map.get(c.$colors, "white");
+}
+
+.no-bg {
+    background-color: none;
+}
+
+.blinker {
+    position: relative;
+    top: -1px;
+    width: 6px;
+    height: 6px;
+    border-radius: 8px;
+    background-color: #2fa732;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+    animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+}
+
+.has-tooltip {
+    cursor: pointer;
+}
+
+.has-ellipsis {
+    word-break: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}

@@ -1,0 +1,7 @@
+<div class="sources-wrapper" :class="[componentId]">
+    <cly-dynamic-tabs v-model="tab" :tabs="tabs">
+        <template v-slot:tables="scope">
+            <span>{{scope.tab.title}}</span>
+        </template>
+    </cly-dynamic-tabs>
+</div>

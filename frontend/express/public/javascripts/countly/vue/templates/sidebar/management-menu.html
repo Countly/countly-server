@@ -1,0 +1,22 @@
+<div style="height: 100%;">
+    <div class="cly-vue-sidebar__header">
+        <span class="cly-vue-sidebar__header-title">Management</span>
+    </div>
+    <div class="cly-vue-sidebar__main-menu" style="margin-top: 26px;">
+        <vue-scroll :ops="{scrollPanel: { scrollingX: false }}">
+            <ul>
+                <li v-for="(item, idx) in menu" :key="item.name" class="bu-px-3 bu-mb-1 bu-is-clickable" :style="item.node && item.node.bottom ? {'marginBottom': item.node.bottom + 'px !important'} : {}">
+                    <a :href="item.url">
+                        <div
+                            style="width: calc(100% - 24px);"
+                            :class="['cly-vue-sidebar__menu-items has-ellipsis',
+                                {'cly-vue-sidebar__menu-items--selected': (selectedMenuItem && (selectedMenuItem.name === item.name))}]"
+                            @click="onMenuItemClick(item)">
+                            {{i18nM(item.title)}}
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </vue-scroll>
+    </div>
+</div>

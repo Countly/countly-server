@@ -47,7 +47,7 @@
 }
 
 #cly-heatmap-topbar {
-    min-height: 59px;
+    min-height: 64px;
     background-color: #FFFFFF;
     font-family: Ubuntu,Helvetica,sans-serif;  
     -webkit-font-smoothing: antialiased; 
@@ -67,11 +67,12 @@
     all: initial;
     font-family: Ubuntu,Helvetica,sans-serif; 
     line-height: 14px;
-    width: 580px; 
-    margin-left:auto; 
-    margin-right:auto; 
-    display: block; 
+    width: 750px; 
+    margin-left: auto; 
+    margin-right: 70px; 
+    display: flex; 
     color: #666;
+    height: 64px;
 }
 
 #cly-heatmap-topbar .cly-heatmap-logo {
@@ -79,10 +80,10 @@
     height:32px !important; 
     width: 185px;
     position:absolute; 
-    margin: 13px 19px
+    margin: 15px 20px
 }
 
-#cly-heatmap-topbar .cly-heatmap-block,
+/* #cly-heatmap-topbar .cly-heatmap-block,
 #cly-heatmap-topbar .cly-heatmap-dropdown {
     all: inherit;
     display: inline;
@@ -92,20 +93,38 @@
     cursor: pointer;
     float: left;
     padding: 21px 0px;
-}
+} */
 
 #cly-heatmap-topbar .cly-heatmap-block {
-    width: 130px;
-    padding: 21px 10px;
-    color: #2EB52C;
+    border: 1px solid #E2E4E8;
+    width: 120px;
+    height: 32px;
+    padding: 7px 12px 7px 7px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    /* position: absolute; */
+    border-radius: 4px;
+    box-sizing: border-box;
+    box-shadow: 0px 2px 4px rgb(0 0 0 / 5%);
+    color: #333C48;
+    font-weight: 400;
     font-size: 13px;
+    margin-left: 24px;
+    margin-top: 16px;
+    cursor: pointer;
 }
 
 #cly-heatmap-topbar .cly-heatmap-block:hover {
-    color: #56C055;
+    border-color: #81868D;
 }
 
-#cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-bordered {
+/* #cly-heatmap-topbar .cly-heatmap-block:hover {
+    color: #56C055;
+} */
+
+/* #cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-bordered {
     border-left: 1px solid #E7E7E7;
     border-right: 1px solid #E7E7E7
 }
@@ -113,10 +132,12 @@
 #cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-bordered:nth-child(2) {
     border-left: 0px solid #E7E7E7;
     border-right: 1px solid #E7E7E7
-}
+} */
 
 #cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-large {
-    width: 210px;
+    /* width: 210px; */
+    margin-top: 25px;
+    margin-left: 24px;
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-active .cly-heatmap-selected {
@@ -125,17 +146,32 @@
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-selected {
-    font-size: 14px;
-    color: #474747
+    font-size: 13px;
+    line-height: 16px;
+    color: #474747;
+    width: 200px;
+    height: 32px;
+    margin-top: 16px;
+    /* position: absolute; */
+    border: 1px solid #CFD6E4;
+    box-sizing: border-box;
+    box-shadow: 0px 1px 4px rgb(0 0 0 / 8%);
+    border-radius: 4px;
+    padding: 7px 10px 7px 10px;
+    cursor: pointer;
+}
+
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-selected:hover {
+    border-color: #81868D;
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-title {
-    vertical-align: top;
-    margin-top: -3px;
-    font-size: 10px;
-    color: #666;
-    margin-right: 25px;
-    text-transform: uppercase
+    font-size: 12px;
+    line-height: 15px;
+    letter-spacing: 0.5px;
+    margin-right: 8px;
+    text-transform: uppercase;
+    color: #333C48;
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-selected {
@@ -143,13 +179,31 @@
 }
 
 #cly-heatmap-topbar .cly-heatmap-block i {
-    font-size: 14px;
+    font-size: 15px;
     vertical-align: top;
     margin-top: 1px;
     margin-right: 6px;
     display: inline-block;
     font-weight: 700;
     line-height: 14px;
+}
+
+#cly-heatmap-topbal .cly-heatmap-block .cly-heatmap-reload {
+    border: 1px solid #E2E4E8;
+    width: 119px;
+    height: 32px;
+    padding: 7px 12px 7px 7px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    border-radius: 4px;
+    box-sizing: border-box;
+    box-shadow: 0px 2px 4px rgba(0,0,0,0.0485645);
+    color: #333C48;
+    font-weight: 400;
+    font-size: 13px;
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-large .cly-heatmap-selected:after {
@@ -164,36 +218,24 @@
 
 #cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-large.cly-heatmap-clicked .cly-heatmap-selected:after {
     content: "\f3d8";
-    color: #2fa732
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu {
     all: initial;
-    font-family: Ubuntu,Helvetica,sans-serif !important;  
+    font-family: Ubuntu,Helvetica,sans-serif !important;
     line-height: 14px;
-    box-shadow: 0 3px 7px rgba(0, 0, 0, .08);
-    border: 1px solid #d0d0d0;
+    box-shadow: 0 3px 7px rgb(0 0 0 / 8%);
+    border: 1px solid #A7AEB8;
     color: #474747;
     opacity: 0;
     cursor: default;
     position: absolute;
-    top: 67px;
-    left: 50%;
-    width: 180px;
-    margin-left: -90px;
+    top: 50px;
+    width: 190px;
+    margin-left: -140px;
     background-color: #FFFFFF;
-    border-radius: 2px;
-    visibility: hidden
-}
-
-#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu:after,
-#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu:before {
-    left: 50%;
-    content: " ";
-    height: 0;
-    width: 0;
-    position: absolute;
-    pointer-events: none
+    visibility: hidden;
+    border-radius: 4px;
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-clicked .cly-heatmap-menu {
@@ -202,19 +244,11 @@
     visibility: visible
 }
 
-#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu:before {
-    border: 6px solid rgba(194, 225, 245, 0);
-    border-bottom-color: #FFF;
-    margin-left: -6px;
-    top: -12px;
-    z-index: 2
-}
-
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu:after {
     border: 7px solid rgba(194, 225, 245, 0);
     border-bottom-color: #D0D0D0;
     margin-left: -7px;
-    top: -15px;
+    
     z-index: 1
 }
 
@@ -228,14 +262,16 @@
     line-height: 14px;
     display: block;
     cursor: pointer;
-    color: #474747;
-    border-bottom: 1px solid #d0d0d0;
     text-align: left;
-    padding: 10px;
+    padding: 8px;
     font-size: 13px;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis
+    color: #333C48;
+    border-radius: 4px;
+    margin: 8px;
+    text-overflow: ellipsis;
+    position: relative;
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu .cly-heatmap-list .cly-heatmap-item:last-child {
@@ -243,7 +279,8 @@
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu .cly-heatmap-list .cly-heatmap-item:hover {
-    background-color: #f3f3f3
+    background-color: #0166D6;
+    color: #fff;
 }
 
 #cly-heatmap-topbar .cly-heatmap-close {
@@ -259,8 +296,8 @@
     all: initial;
     position: absolute;
     line-height: 14px;
-    top: 21px;
-    right: 40px;
+    top: 24px;
+    right: 70px;
     color: #666;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -274,10 +311,11 @@
     margin: 0px;
     font-size: 13px;
     cursor: pointer;
-    vertical-align: top;
+    vertical-align: middle;
 }
 
 #cly-heatmap-topbar .cly-heatmap-checkmark {
+    all: initial;
     all: initial;
     cursor: pointer;
     position: absolute;
@@ -300,9 +338,9 @@
     display: block;
     left: 5px;
     top: 2px;
-    width: 3px;
-    height: 7px;
-    border: 1px solid #2CB529;
+    width: 2.5px;
+    height: 6px;
+    border: 1px solid #474747;
     border-width: 0 2px 2px 0;
     -webkit-transform: rotate(45deg);
     -ms-transform: rotate(45deg);

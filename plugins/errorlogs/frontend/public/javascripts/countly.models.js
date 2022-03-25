@@ -17,7 +17,7 @@
             success: function(json) {
                 _list = [];
                 for (var k in json) {
-                    _list.push({name: k + " Log", value: k});
+                    _list.push({ name: k.charAt(0).toUpperCase() + k.slice(1).toLowerCase() + " Log", value: k });
                 }
             }
         });

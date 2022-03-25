@@ -1,0 +1,23 @@
+<cly-main>
+	<cly-date-picker-g class="devices-date-picker-container"></cly-date-picker-g>
+	<cly-section>
+		<div class="bu-columns bu-is-gapless technology-pie-graphs">
+			<div class="bu-column bu-is-6 bu-pt-6 bu-pb-6">
+				<cly-chart-pie :option="pieOptionsTotal" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
+			</div>
+			<div class="bu-column bu-is-6 bu-pt-6 bu-pb-6">
+				<cly-chart-pie :option="pieOptionsNew" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
+			</div>
+		</div>
+	</cly-section>
+	<cly-section>
+		<cly-datatable-n  :rows="deviceTypesRows" :resizable="true" :force-loading="isLoading">
+			<template v-slot="scope">
+				<el-table-column sortable="custom" prop="device_type" :label="i18n('device_type.table.device_type')"></el-table-column>
+					<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
+					<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
+					<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
+				</template>
+		</cly-datatable-n>
+	</cly-section>
+</cly-main>

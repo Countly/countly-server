@@ -4,8 +4,14 @@ const plugins = require('../../pluginManager.js');
 const log = common.log('assistant:api');
 const assistant = require("./assistant.js");
 const _ = require('underscore');
+const { validateCreate, validateRead } = require('../../../api/utils/rights.js');
+const FEATURE_NAME = 'assistant';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
     plugins.register("/master", function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
@@ -18,16 +24,16 @@ const _ = require('underscore');
         const app_id = params.qstring.app_id;//get target apps id
 
         log.d('Assistant plugin request: Get All Notifications');
-        const validate = ob.validateUserForMgmtReadAPI;
-        validate(function(paramsInValidate) {
-            const member = paramsInValidate.member;
+
+        validateRead(params, FEATURE_NAME, function() {
+            const member = params.member;
             const api_key = member.api_key;
             if (_.isUndefined(app_id) || app_id === null) {
                 //app id not provided, not app targeted
 
                 //for a single user return all of his notifications for all of his apps
                 assistant.getNotificationsForUser(common.db, member, api_key, function(err, results) {
-                    common.returnOutput(paramsInValidate, results);
+                    common.returnOutput(params, results);
                 });
             }
             else {
@@ -35,10 +41,10 @@ const _ = require('underscore');
 
                 //for a single user return all of his notifications for a specific app
                 assistant.getNotificationsForUserForSingleApp(common.db, api_key, app_id, function(err, singleAppNotifications) {
-                    common.returnOutput(paramsInValidate, [singleAppNotifications]);
+                    common.returnOutput(params, [singleAppNotifications]);
                 });
             }
-        }, params);
+        });
         return true;
     });
 
@@ -47,9 +53,9 @@ const _ = require('underscore');
         const paths = ob.paths;
 
         log.d('Assistant plugin request: /i/assistant');
-        const validate = ob.validateUserForMgmtReadAPI;
-        validate(function(paramsInValidate) {
-            const api_key = paramsInValidate.member.api_key;
+
+        validateCreate(params, FEATURE_NAME, function() {
+            const api_key = params.member.api_key;
 
             let save_action;
             let notif;
@@ -60,18 +66,18 @@ const _ = require('underscore');
             switch (subAction) {
             case 'global':
             case 'private':
-                if (typeof paramsInValidate.qstring.save === "undefined") {
-                    common.returnMessage(paramsInValidate, 400, 'Missing parameter "save"');
+                if (typeof params.qstring.save === "undefined") {
+                    common.returnMessage(params, 400, 'Missing parameter "save"');
                     return true;
                 }
 
-                if (typeof paramsInValidate.qstring.notif === "undefined") {
-                    common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif"');
+                if (typeof params.qstring.notif === "undefined") {
+                    common.returnMessage(params, 400, 'Missing parameter "notif"');
                     return true;
                 }
 
-                notif = paramsInValidate.qstring.notif;
-                save_val = paramsInValidate.qstring.save;
+                notif = params.qstring.notif;
+                save_val = params.qstring.save;
 
                 if (save_val === "true") {
                     save_action = true;
@@ -85,14 +91,14 @@ const _ = require('underscore');
                     //this toggles the global save status
                     log.d('Assistant plugin request: Change global notification status');
                     assistant.changeNotificationSavedStatus(false, save_action, notif, api_key, common.db);
-                    common.returnOutput(paramsInValidate, "the global action was done " + save_action);
+                    common.returnOutput(params, "the global action was done " + save_action);
                 }
                 else if (subAction === 'private') {
                     //this is called when changing the save status of a notification from the frontend
                     //this toggles the private save status
                     log.d('Assistant plugin request: Change personal notification status');
                     assistant.changeNotificationSavedStatus(true, save_action, notif, api_key, common.db);
-                    common.returnOutput(paramsInValidate, "the private action was done " + save_action);
+                    common.returnOutput(params, "the private action was done " + save_action);
                 }
                 break;
             case 'create_external':
@@ -101,70 +107,70 @@ const _ = require('underscore');
 
                 try {
                     //read provided fields
-                    const notifData = JSON.parse(paramsInValidate.qstring.notif_data);
-                    const pluginName = paramsInValidate.qstring.owner_name;
-                    const notifType = paramsInValidate.qstring.notif_type;
-                    const notifSubType = paramsInValidate.qstring.notif_subtype;
-                    const i18nId = paramsInValidate.qstring.i18n_id;
-                    const notifAppId = paramsInValidate.qstring.notif_app_id;
-                    const notificationVersion = paramsInValidate.qstring.notif_version;
-                    const targetUserApiKey = paramsInValidate.qstring.target_user_api_key;
+                    const notifData = JSON.parse(params.qstring.notif_data);
+                    const pluginName = params.qstring.owner_name;
+                    const notifType = params.qstring.notif_type;
+                    const notifSubType = params.qstring.notif_subtype;
+                    const i18nId = params.qstring.i18n_id;
+                    const notifAppId = params.qstring.notif_app_id;
+                    const notificationVersion = params.qstring.notif_version;
+                    const targetUserApiKey = params.qstring.target_user_api_key;
 
                     //check if they are set
                     if (_.isUndefined(notifData)) {
-                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_data"');
+                        common.returnMessage(params, 400, 'Missing parameter "notif_data"');
                         return true;
                     }
 
                     if (_.isUndefined(pluginName)) {
-                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "owner_name"');
+                        common.returnMessage(params, 400, 'Missing parameter "owner_name"');
                         return true;
                     }
 
                     if (_.isUndefined(notifType)) {
-                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_type"');
+                        common.returnMessage(params, 400, 'Missing parameter "notif_type"');
                         return true;
                     }
 
                     if (_.isUndefined(notifSubType)) {
-                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_subtype"');
+                        common.returnMessage(params, 400, 'Missing parameter "notif_subtype"');
                         return true;
                     }
 
                     if (_.isUndefined(i18nId)) {
-                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "i18n_id"');
+                        common.returnMessage(params, 400, 'Missing parameter "i18n_id"');
                         return true;
                     }
 
                     if (_.isUndefined(notifAppId)) {
-                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_app_id"');
+                        common.returnMessage(params, 400, 'Missing parameter "notif_app_id"');
                         return true;
                     }
 
                     if (_.isUndefined(notificationVersion)) {
-                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_version"');
+                        common.returnMessage(params, 400, 'Missing parameter "notif_version"');
                         return true;
                     }
 
                     assistant.createNotificationExternal(common.db, notifData, pluginName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, targetUserApiKey, function(succeeded, err) {
                         if (succeeded) {
-                            common.returnOutput(paramsInValidate, prepareMessage("Succeded in creating notification", null, null));
+                            common.returnOutput(params, prepareMessage("Succeded in creating notification", null, null));
                         }
                         else {
                             if (_.isUndefined(err) || err === null) {
                                 err = "N/A";
                             }
-                            common.returnMessage(paramsInValidate, 500, prepareMessage('Failed to create notification', err, null));
+                            common.returnMessage(params, 500, prepareMessage('Failed to create notification', err, null));
                         }
                     });
                 }
                 catch (ex) {
-                    common.returnMessage(paramsInValidate, 500, prepareMessage('Problem while trying to create notification', ex, null));
+                    common.returnMessage(params, 500, prepareMessage('Problem while trying to create notification', ex, null));
                     return true;
                 }
                 break;
             default:
-                common.returnMessage(paramsInValidate, 400, 'Invalid path');
+                common.returnMessage(params, 400, 'Invalid path');
                 return true;
             }
 

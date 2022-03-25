@@ -1,0 +1,22 @@
+<div>
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th>{{ i18n('sources.source') }}</th>
+        <th> {{ i18n('common.table.total-sessions') }} </th>
+        <th> {{ i18n('common.table.total-users') }} </th>
+        <th> {{ i18n('common.new-users') }} </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr :key="row.sources" v-for="(row, index) in rowsComputed">
+        <td> {{rows[rowsComputed[index]].sources}} </td>
+        <td> {{rows[rowsComputed[index]].t}} </td>
+        <td> {{rows[rowsComputed[index]].u}} </td>
+        <td> {{rows[rowsComputed[index]].n}} </td>
+      </tr>
+    </tbody>
+  </table>
+</div> 
+
+

@@ -23,7 +23,7 @@ describe('create test user', function() {
         APP_ID = testUtils.get("APP_ID");
         APP_KEY = testUtils.get("APP_KEY");
 
-        var params = {full_name: "Cool guy", username: testUtils.username + "2", password: testUtils.password, email: testUtils.email + ".test2", global_admin: true};
+        var params = {full_name: "Cool guy", permission: testUtils.permission, username: testUtils.username + "2", password: testUtils.password, email: testUtils.email + ".test2", global_admin: true};
         request
             .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
             .expect(200)

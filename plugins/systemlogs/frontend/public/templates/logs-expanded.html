@@ -1,0 +1,36 @@
+<div v-if="change">
+    <p>{{ i18n('systemlogs.changed-data') }}</p>
+    <table style="width:100%">
+    <thead>
+        <tr>
+            <th class="bu-px-5">{{ i18n('systemlogs.field') }}</th>
+            <th class="bu-pl-5">{{ i18n('systemlogs.before') }}</th>
+            <th>{{ i18n('systemlogs.after') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr :key="index" v-for="(item, index) in row.i.before">
+            <td class="bu-px-5"> {{index}} </td>
+            <td class="bu-px-5"> {{row.i.before[index]}} </td>
+            <td> {{row.i.after[index]}} </td>
+        </tr>
+    </tbody>
+    </table>
+</div>
+<div v-else>
+    <p>{{ i18n('systemlogs.has-data') }}</p>
+    <table style="width:100%">
+    <thead>
+        <tr>
+            <th>{{ i18n('systemlogs.field') }}</th>
+            <th>{{ i18n('systemlogs.value') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr :key="index" v-for="(item, index) in row.i">
+            <td> {{index}} </td>
+            <td> {{item}} </td>
+        </tr>
+    </tbody>
+    </table>
+</div> 

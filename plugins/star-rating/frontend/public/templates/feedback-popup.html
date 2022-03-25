@@ -4,8 +4,9 @@
     <title>
         Countly Feedback Popup
     </title>
-    <link href="./star-rating/stylesheets/countly-feedback.css" rel="stylesheet"/>
-    <link href="stylesheets/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
+    <link href="../../star-rating/stylesheets/ratings-iframe.css" rel="stylesheet"/>
+    <link href="../../stylesheets/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
+    <link href="../stylesheets/ionicons/css/ionicons.min.css" rel="stylesheet"/>
     <% if (themeFiles && themeFiles.css) { %>
     <% for(var i=0, l=themeFiles.css.length; i < l; i++) {%>
     <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
@@ -16,57 +17,57 @@
 </head>
 <body class="ratings-popup">
 <div class="rating-loader-wrapper">
-    <img src="star-rating/images/star-rating/loader.svg" class="rating-loader"/>
+    <img src="../../star-rating/images/star-rating/loader.svg" class="rating-loader"/>
 </div>
 <div class="modal-content">
+    <div class="modal-content__top">
+        <div id="close-btn" class="close-button"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <p id="question-area">
+        What is your opinion
+        <br>
+        of this page?
+        </br>
+    </p>
     <div class="emotions-area">
-        <p id="question-area">
-            What is your opinion
-            <br>
-            of this page?
-            </br>
-        </p>
-        <span class="emotion-first">
-                    <img class="grow rating-emotion" data-score="1" src="star-rating/images/star-rating/0_gray.svg"
-                         title="Very dissatisfied">
-                    </img>
-                </span>
-        <span class="emotion">
-                    <img class="grow rating-emotion" data-score="2" src="star-rating/images/star-rating/1_gray.svg"
-                         title="Somewhat dissatisfied">
-                    </img>
-                </span>
-        <span class="emotion">
-                    <img class="grow rating-emotion" data-score="3" src="star-rating/images/star-rating/2_gray.svg"
-                         title="Neither satisfied nor dissatisfied">
-                    </img>
-                </span>
-        <span class="emotion">
-                    <img class="grow rating-emotion" data-score="4" src="star-rating/images/star-rating/3_gray.svg"
-                         title="Somewhat satisfied">
-                    </img>
-                </span>
-        <span class="emotion">
-                    <img class="grow rating-emotion" data-score="5" src="star-rating/images/star-rating/4_gray.svg"
-                         title="Very satisfied">
-                    </img>
-                </span>
+        <span title="Very dissatisfied" data-score="1" id="cf-rating-item-0" class="rating-emotion emotion-first">
+            😡
+        </span>
+        <span title="Somewhat dissatisfied" data-score="2" id="cf-rating-item-1" class="rating-emotion emotion">
+            🙁            
+        </span>
+        <span title="Neither satisfied nor dissatisfied" id="cf-rating-item-2" data-score="3" class="rating-emotion emotion">
+            😐
+        </span>
+        <span title="Somewhat satisfied" data-score="4" id="cf-rating-item-3" class="rating-emotion emotion">
+            😊
+        </span>
+        <span title="Very satisfied" data-score="5" id="cf-rating-item-4" class="rating-emotion emotion">
+            🔥
+        </span>
     </div>
     <div class="comment-area">
         <div id="comment-section" class="input-wrapper">
+            <!--
             <label class="countly-feedback-checkbox-container">
                 <input data-state="0" id="countly-feedback-show-comment" type="checkbox">
                 <span class="countly-feedback-show-comment-checkbox fa fa-square-o countly-feedback-check-green">
-                            </span>
+                </span>
                 <span class="countly-feedback-checkbox-title" id="cf-comment-text">
-                                Add comment
-                            </span>
+                    Add comment
+                </span>
                 </input>
             </label>
+            -->
+            <div class="countly-feedback-checkbox-wrapper">
+                <input data-state="0" id="countly-feedback-show-comment" type="checkbox">
+                <label id="cf-comment-text" for="countly-feedback-show-comment">Add comment</label>    
+            </div>
             <textarea id="countly-feedback-comment-textarea">
-                    </textarea>
+            </textarea>
         </div>
         <div id="contact-section" class="input-wrapper">
+            <!--
             <label class="countly-feedback-checkbox-container">
                 <input data-state="0" id="countly-feedback-show-email" type="checkbox">
                 <span class="countly-feedback-show-email-checkbox fa fa-square-o countly-feedback-check-green">
@@ -76,7 +77,12 @@
                             </span>
                 </input>
             </label>
-            <input id="contact-me-email" type="text">
+            -->
+            <div class="countly-feedback-checkbox-wrapper">
+                <input data-state="0" id="countly-feedback-show-email" type="checkbox">
+                <label id="cf-email-text" for="countly-feedback-show-email">Contact me by e-mail</label>
+            </div>
+            <input id="countly-feedback-contact-me-email" type="text">
             </input>
         </div>
     </div>
@@ -87,14 +93,14 @@
     </div>
     <div class="modal-footer">
         <a href="https://count.ly" target="_new">
-            <img id="powered-by-countly" src="star-rating/images/star-rating/powered-by-countly.svg">
+            <img id="powered-by-countly" src="../../star-rating/images/star-rating/powered-by-countly.svg">
             </img>
         </a>
     </div>
 </div>
 <div class="success-modal-content">
     <div class="success-icon-area">
-        <i class="fa fa-check fa-2x">
+        <i class="fa fa-check-circle fa-2x">
         </i>
     </div>
     <div class="success-emotions-area">
@@ -105,26 +111,28 @@
             </br>
         </p>
     </div>
-    <div class="buttons-area-on-success">
-    </div>
     <div class="modal-footer">
         <a href="https://count.ly" target="_new">
-            <img id="powered-by-countly" src="star-rating/images/star-rating/powered-by-countly.svg">
+            <img id="powered-by-countly" src="../../star-rating/images/star-rating/powered-by-countly.svg">
             </img>
         </a>
     </div>
 </div>
-<script src="star-rating/javascripts/tippy.all.min.js">
+<script src="../../star-rating/javascripts/tippy.all.min.js">
 </script>
-<script src="javascripts/dom/jquery/jquery-1.8.3.min.js">
+<script src="../../javascripts/dom/jquery/jquery-1.8.3.min.js">
 </script>
 <script>
     (function() {
+        if (document.location.href.split("feedback/rating").length === 1) {
+            $('#close-btn').hide();
+            $('#question-area').css({ marginTop: '50px' });
+        }
         /*
         Helper methods which we need
         */
         function hasClass(ele, cls) {
-            return !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+            return (typeof ele.className !== 'undefined' && !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)')));
         }
 
         function addClass(ele, cls) {
@@ -186,14 +194,13 @@
         var app_key = getParameterByName('app_key');
         var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
         var app_version = getParameterByName('app_version');
-        var url = window.location.origin + window.location.pathname;
-        // 9: length of "/feedback"
-        // remove /feedback from url and use remain as url
-        url = url.substr(0, url.length - 9);
-
+        var parentOrigin = getParameterByName('origin');
+        var url = window.location.origin;
         var d = new Date();
         var h = d.getHours();
         var dow = d.getDay();
+
+        $('.modal-content').hide();
         /*
           Get widget configurations for render
         */
@@ -201,7 +208,8 @@
             "type": "GET",
             "url": url + "/o/feedback/widget",
             "data": {
-                "widget_id": widget_id
+                "widget_id": widget_id,
+                "nfd": 1
             },
             "success": function(response) {
                 $('.rating-loader-wrapper').fadeOut();
@@ -212,12 +220,31 @@
                 $('#cf-email-text').html(response.popup_email_callout);
                 $('#cf-submit-button').html(response.popup_button_callout);
                 $('#thanks-area').html(response.popup_thanks_message);
+
+                if (response.logo) {
+                    $('#powered-by-countly').attr('src', url + '/star-rating/images/star-rating/' + response.logo);
+                    $('#powered-by-countly').parent().attr('href', 'void(0)');
+                    $('#powered-by-countly').css({'width':'100px'});
+                }
                 if (response.comment_enable === "false") {
                     $('#comment-section').hide();
                 }
                 if (response.contact_enable === "false") {
                     $('#contact-section').hide();
                 }
+
+                for (var i = 0; i < response.ratings_texts.length; i++) {
+                    $('#cf-rating-item-' + i).attr('title', response.ratings_texts[i]);
+                }
+
+                tippy('.rating-emotion', {
+                    theme: 'honeybee',
+                    delay: 100,
+                    arrow: true,
+                    arrowType: 'round',
+                    duration: 250,
+                    animation: 'scale'
+                });
             }
         });
 
@@ -239,26 +266,14 @@
             dow: dow
         };
 
-        /*
-          Inital tippy.js
-        */
-        tippy('.rating-emotion', {
-            theme: 'honeybee',
-            delay: 100,
-            arrow: true,
-            arrowType: 'round',
-            duration: 250,
-            animation: 'scale'
-        });
-
         document.getElementById('countly-feedback-comment-textarea').value = "";
-        document.getElementById('contact-me-email').value = "";
+        document.getElementById('countly-feedback-contact-me-email').value = "";
 
         /*
           Element variables
         */
         var contactMeCheckbox = document.getElementById('contact-me-checkbox');
-        var contactMeEmailInput = document.getElementById('contact-me-email');
+        var contactMeEmailInput = document.getElementById('countly-feedback-contact-me-email');
         var modalEmotionImages = document.getElementsByClassName('rating-emotion');
         var sendButton = document.getElementsByClassName('disabled-send-button')[0];
         var showCommentCheckbox = document.getElementById('countly-feedback-show-comment');
@@ -284,10 +299,12 @@
                 removeClass(modalEmotionImages[i], 'grow');
                 modalEmotionImages[i].src = 'star-rating/images/star-rating/' + i + '_gray.svg';
                 modalEmotionImages[i].style.transform = "scale(1)";
+                modalEmotionImages[i].style.opacity = 0.5;
                 addClass(modalEmotionImages[i], 'grow');
             }
             modalEmotionImages[index].src = 'star-rating/images/star-rating/' + index + '_color.svg';
             modalEmotionImages[index].style.transform = "scale(1.2)";
+            modalEmotionImages[index].style.opacity = 1;
             modalEmotionImages[index].classList.remove("grow");
             removeClass(sendButton, 'disabled-send-button');
             addClass(sendButton, 'send-button');
@@ -298,29 +315,21 @@
             if (showCommentCheckbox.getAttribute('data-state') == 0) {
                 document.getElementById('countly-feedback-comment-textarea').style.display = "block";
                 showCommentCheckbox.setAttribute('data-state', 1);
-                removeClass(showCommentCheckboxMask, 'fa-square-o');
-                addClass(showCommentCheckboxMask, 'fa-check-square');
             }
             else {
                 showCommentCheckbox.setAttribute('data-state', 0);
-                removeClass(showCommentCheckboxMask, 'fa-check-square');
-                addClass(showCommentCheckboxMask, 'fa-square-o');
                 document.getElementById('countly-feedback-comment-textarea').style.display = "none";
             }
         }
 
         function showHideEmailArea() {
             if (showEmailCheckbox.getAttribute('data-state') == 0) {
-                document.getElementById('contact-me-email').style.display = "block";
+                document.getElementById('countly-feedback-contact-me-email').style.display = "block";
                 showEmailCheckbox.setAttribute('data-state', 1);
-                removeClass(showEmailCheckboxMask, 'fa-square-o');
-                addClass(showEmailCheckboxMask, 'fa-check-square');
             }
             else {
                 showEmailCheckbox.setAttribute('data-state', 0);
-                document.getElementById('contact-me-email').style.display = "none";
-                removeClass(showEmailCheckboxMask, 'fa-check-square');
-                addClass(showEmailCheckboxMask, 'fa-square-o');
+                document.getElementById('countly-feedback-contact-me-email').style.display = "none";
             }
         }
 
@@ -329,13 +338,13 @@
             eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
             // make required validations and replace email value from dom
             if (showEmailCheckbox.getAttribute('data-state') == 1) {
-                if (!isValidEmail(document.getElementById('contact-me-email').value.trim())) {
-                    addClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
+                if (!isValidEmail(document.getElementById('countly-feedback-contact-me-email').value.trim())) {
+                    addClass(document.getElementById('countly-feedback-contact-me-email'), 'countly-feedback-verification-fail');
                     return;
                 }
                 else {
-                    removeClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
-                    eventObject["segmentation"].email = document.getElementById('contact-me-email').value;
+                    removeClass(document.getElementById('countly-feedback-contact-me-email'), 'countly-feedback-verification-fail');
+                    eventObject["segmentation"].email = document.getElementById('countly-feedback-contact-me-email').value;
                     eventObject["segmentation"].contactMe = true;
                 }
             }
@@ -343,25 +352,51 @@
                 "type": "GET",
                 "url": url + '/i/feedback/input?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version,
                 "success": function(response) {
-                    document.getElementsByClassName("success-modal-content")[0].style.display = "block";
+                    document.getElementsByClassName("success-modal-content")[0].style.display = "flex";
                     document.getElementsByClassName("modal-content")[0].style.display = "none";
                     // reset feedback popup after 10 seconds
                     setTimeout(function() {
+                        // set popup to default state
                         document.getElementsByClassName("success-modal-content")[0].style.display = "none";
-                        document.getElementsByClassName("modal-content")[0].style.display = "block";
+                        document.getElementsByClassName("modal-content")[0].style.display = "flex";
                         addClass(sendButton, 'disabled-send-button');
                         removeClass(sendButton, 'send-button');
                         document.getElementById('countly-feedback-comment-textarea').value = "";
-                        document.getElementById('contact-me-email').value = "";
+                        document.getElementById('countly-feedback-contact-me-email').value = "";
                         for (var i = 0; i < 5; i++) {
-                            $($('.rating-emotion')[i]).attr('src', 'star-rating/images/star-rating/' + i + '_gray.svg');
+                            $($('.rating-emotion')[i]).css({'opacity': 1});
                             $($('.rating-emotion')[i]).css({'transform':'scale(1.0)'});
-                        }    
-                    }, 10000);
+                        }
+                        closeHandler();
+                    }, 5000);
                 },
                 "error": function(e) {
                 }
             });
+        }
+
+        function closeHandler(e) {
+            if (window.parent && typeof window.parent.postMessage === "function") {
+                var d = JSON.stringify({"close": true});
+                window.parent.postMessage(d, parentOrigin);
+            }
+            else if (isFromWeb){
+                window.location.href += "&reset=true";
+                // This is used as a fallback for browsers where postMessage API doesn't work.
+                // Instead of sending a message to the parent window, one could reload this iframe,
+                // and listen to onload event of iframe in the parent window (sdk)
+                // In the onload function you can hide the iframe
+                // While the iframe is hidden, it undergoes the reload in background
+                // You need to handle the reload by passing reset in the url.
+                // You can then check for this reset value and if its true,
+                // set {shown: false} while fetching the survey bcz it was a reset and survey
+                // was already shown. Also in the reset you need to handle the css of the survey.
+                // Caveat -
+                // There is although one caveat, between initiating iframe reload and hiding
+                // it the onload there is a lag of few miniseconds. Which gives an impression
+                // that the window is unresponsive for a split second.
+                // Therefore, using postMessage for cross window communication.
+            }
         }
 
         // event handler for countly feedback show comment area checkbox
@@ -376,6 +411,8 @@
         // event handler for countly feedback emotion img
         // rate for feedback
         $('body').on('click', '.rating-emotion', rate);
+        // event handler for popup closer
+        $('body').on('click', '#close-btn', closeHandler);
     })();
 </script>
 <% if (themeFiles && themeFiles.js) { %>

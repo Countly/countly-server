@@ -1,0 +1,23 @@
+<cly-main>
+    <h1>Horizontal progress bar with entities</h1>
+    <cly-section title="Horizontal progress bar">
+        <cly-progress-bar :entities="singleProgressBar" :height=20></cly-progress-bar>
+    </cly-section>
+    <cly-section title="Stacked horizontal progress bar">
+        <cly-progress-bar :entities="stackedProgressBar" :height=30></cly-progress-bar>
+    </cly-section>
+    <cly-section title="100% progress bar">
+        <cly-progress-bar :entities="hundredPercentProgressBar"></cly-progress-bar>
+    </cly-section>
+    <cly-section title="0% horizontal progress bar">
+        <cly-progress-bar :entities="zeroPercentProgressBar"></cly-progress-bar>
+    </cly-section>
+    <cly-section title="Empty horizonal progress bar">
+        <cly-progress-bar :entities="[]"></cly-progress-bar>
+    </cly-section>
+
+    <h1>Horizontal progress bar without entities</h1>
+    <cly-section title="Horizontal progress bar">
+        <cly-progress-bar :percentage=40 color="#39C0C8" tooltip="simple tooltip"></cly-progress-bar>
+    </cly-section>
+</cly-main>

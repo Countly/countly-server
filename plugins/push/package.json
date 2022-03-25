@@ -1,13 +1,10 @@
 {
   "name": "countly-push",
   "title": "Push Notifications",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Increase loyalty, user retention & satisfaction with push notifications",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/rich-push-notifications",
-  "scripts": {
-    "postinstall": "if [ \"${COUNTLY_CONTAINER}\" != \"frontend\" ]; then cd ./api/parts/apn && npm install; else exit 0; fi"
-  },
   "repository": {
     "type": "git",
     "url": "http://github.com/Countly/countly-server.git"
@@ -23,8 +20,9 @@
     "notifications"
   ],
   "dependencies": {
-    "jsonwebtoken": "^8.0.1",
-    "node-forge": "0.7.6"
+    "jsonwebtoken": "8.0.1",
+    "node-forge": "1.2.1",
+    "xxhash-addon": "1.4.0"
   },
   "private": true
 }

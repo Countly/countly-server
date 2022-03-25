@@ -1,0 +1,493 @@
+@use "../base/typography-variables" as t;
+@use "../base/colors" as c;
+@use "sass:map";
+
+$bg-color: #24292e;
+
+#cly-vue-sidebar {
+    left: 0;
+    height: 100%;
+    z-index: 2000;
+    user-select: none;
+    color: map.get(c.$colors, "warm-gray-40");
+}
+
+.cly-vue-sidebar {
+    height: 100%;
+
+    .tooltip  {
+        display: block !important;
+        z-index: 10000;
+      .tooltip-inner {
+        background: white;
+        color: black;
+      }
+      .tooltip-arrow {
+        display: none;
+      }
+    }
+      
+    .tooltip[x-placement^="right"] {
+        margin-left: 0px;
+      }
+      
+    .cly-vue-listbox__item-label {
+        width: 350px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__slide-transition-enter-active {
+        transition: all .3s ease;
+    }
+
+    &__slide-transition-leave-active {
+        transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+    }
+
+    &__slide-transition-enter, &__slide-transition-leave-to {
+        transform: translateX(-224px);
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            padding: 0px;
+        }
+    }
+    &__app-selector__dialog_box {
+        .el-dialog__body {
+            padding: 0px !important;
+        }
+    }
+
+    .el-collapse {
+        border: none;
+    }
+
+    &__app-name {
+        font-size: 14px;
+    }
+    &__app-name-type {
+        width: 120px;
+    }
+
+    &__app-selector {
+        border: 1px solid #424243;
+        box-sizing: border-box;
+        box-shadow: 0px 11px 14px rgba(0, 0, 0, 0.371635);
+        border-radius: 4px;
+        height: 50px;
+    }
+
+    &__app-type {
+        opacity: .57;
+    }
+
+    &__menu-options {
+        width: 48px;
+        height: 100%;
+        overflow: auto;
+        color: map.get(c.$colors, "cool-gray-40");
+        z-index: 2005;
+        background-color: #191c20;
+
+        ul:first-child li:first-child {
+            margin-top: 28px;
+        }
+    }
+
+    &__menu-option {
+        width: 48px;
+        margin-top: 24px;
+        font-size: t.$text-2xl-size;
+        cursor: pointer;
+
+        .el-popover__reference {
+            &:hover {
+                color: map.get(c.$colors, "white") !important;
+            }
+        }
+    }
+
+    &__menu-option-toggle {
+        height: 48px;
+        background-color: $bg-color;
+        border-top-left-radius: 50%;
+        border-bottom-left-radius: 50%;
+
+        &--no-bg {
+            background-color: transparent;
+        }
+
+        &--rotate-right {
+            transform: rotate(180deg);
+            transition: transform .7s ease-in-out;
+        }
+
+        &--rotate-left {
+            transform: rotate(0deg);
+            transition: transform .7s ease-in-out;
+        }
+    }
+
+    &__menu {
+        width: 224px;
+        background-color: $bg-color;
+        color: map.get(c.$colors, "warm-gray-40");
+        box-sizing: border-box;
+        height: 100%;
+        overflow: hidden;
+        z-index: 2004;
+        position: relative;
+    }
+
+    &__menu-items,
+    &__submenu-items,
+    .el-collapse-item__header {
+        line-height: 20px;
+        height: 20px;
+        background-color: $bg-color;
+        color: map.get(c.$colors, "warm-gray-40");
+        border: none;
+        font-size: t.$text-md-size;
+        padding: 0;
+        font-weight: t.$font-weight-text;
+        font-family: t.$font-family;
+        padding: 6px 12px;
+
+        .el-collapse-item__arrow {
+            margin-right: 0px;
+        }
+
+        &:hover {
+            background-color: map.get(c.$colors, "warm-gray-80");
+            color: map.get(c.$colors, "white");
+            border-radius: 4px;
+        }
+
+        &--selected {
+            background-color: map.get(c.$colors, "primary-green");
+            border-radius: 4px;
+            color: map.get(c.$colors, "white");
+
+            &:hover {
+                background-color: map.get(c.$colors, "primary-green");
+                border-radius: 4px;
+            }
+        }
+    }
+
+    .el-collapse-item__header.focusing:focus:not(:hover) {
+        color: map.get(c.$colors, "warm-gray-40");
+    }
+
+    .el-collapse-item {
+        .cly-vue-sidebar__submenu-items {
+            padding-left: 32px;
+        }
+    }
+
+    &__el-collapse--selected .el-collapse-item__header {
+        border-radius: 4px;
+        background-color:map.get(c.$colors, "warm-gray-80");
+        color: map.get(c.$colors, "white");
+    }
+
+    .el-collapse-item__content {
+        margin: 0;
+        padding: 0;
+    }
+
+    .el-collapse-item__wrap {
+        border-bottom: 1px solid map.get(c.$colors, "warm-gray-70");
+        background-color: $bg-color;
+        box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
+    }
+
+    &__header {
+        padding: 16px 12px;
+        position: relative;
+    }
+
+    &__header-search {
+        input {
+            background-color: #383A3F;
+            border: none;
+            color: #d6d6d6;
+
+            &:focus {
+                outline: none;
+                box-shadow: none;
+            }
+        }
+    }
+
+    &__header-title {
+        font-size: t.$text-lg-size;
+        line-height: 24px;
+        font-weight: t.$font-weight-primary;
+        display: inline-block;
+        margin-top: 12px;
+    }
+
+    &__header-button {
+        float: right;
+        top: 5px;
+        position: relative;
+    }
+
+    &__main-menu {
+        overflow: auto;
+        height: calc(100% - 130px);
+    }
+
+    &__app-image {
+        width: 26px;
+        height: 26px;
+        background-size: 26px 26px;
+        border-radius: 4px;
+        background-position: center;
+        display: inline-block;
+    }
+
+    &__user-popper {
+        box-sizing: border-box;
+        font-family: t.$font-family;
+        padding: 14px 0px;
+        box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.18815);
+        color: map.get(c.$colors, "cool-gray-100");
+    }
+
+    &__language-popper{
+        font-family: t.$font-family;
+        padding: 0px;
+        min-width: 130px;
+        box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.18815);
+    }
+
+    &__user-details {
+        .bu-level {
+            padding: 6px 12px;
+        }
+    }
+
+    &__user-links {
+        .bu-level {
+            padding: 6px;
+            margin: 0px 6px;
+
+            &:hover {
+                background-color: #F1F3F4;
+                color: map.get(c.$colors, "blue-100");
+                border-radius: 4px;
+
+                .bu-level-item {
+                    i {
+                        color: map.get(c.$colors, "text-custom-1-active");
+                    }
+                }
+            }
+
+            .bu-level-item {
+                &:first-child {
+                    width: 15px;
+                }
+
+                i {
+                    color: map.get(c.$colors, "cool-gray-40");
+                }
+            }
+        }
+    }
+
+    &__user-info {
+        width: 140px;
+
+        p {
+            padding: 0;
+            margin: 0;
+
+            &:first-child {
+                font-size: t.$text-lg-size;
+                line-height: 14px;
+                font-weight: t.$font-weight-primary;
+            }
+
+            &:last-child {
+                margin-top: 7px;
+                line-height: 17px;
+                font-size: t.$text-md-size;
+                font-weight: t.$font-weight-text;
+            }
+        }
+    }
+
+    &__user-api {
+        width: 192px;
+
+        p {
+            padding: 0;
+            margin: 0;
+
+            &:first-child {
+                font-size: t.$text-sm-size;
+                line-height: 14px;
+                font-weight: t.$font-weight-primary;
+            }
+
+            &:last-child {
+                margin-top: 7px;
+                line-height: 17px;
+                font-size: t.$text-sm-size;
+                font-weight: t.$font-weight-text;
+            }
+        }
+    }
+
+    &__user-image {
+        height: 50px;
+        width: 50px;
+        border-radius: 25px;
+        text-align: center;
+    }
+
+    &__user-initials {
+        text-transform: uppercase;
+        color: map.get(c.$colors, "white");
+        font-size: t.$text-lg-size;
+    }
+
+    &__user-divider {
+        border: 1px solid map.get(c.$colors, "warm-gray-30");
+        margin-top: 5px;
+        position: relative;
+    }
+
+    &__version {
+        position: absolute;
+        bottom: 0;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 224px;
+        font-size: 10px;
+        background-color: #24292e;
+    }
+
+    .cly-icon {
+        &-sidebar{
+            &-app {
+                background-image: url("../../../images/sidebar/default/app.svg");
+                height: 24px;
+                width: 24px;
+            }
+
+            &-analytics {
+                background-image: url("../../../images/sidebar/default/analytics-icon.svg");
+                height: 20px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/analytics-icon.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/analytics-icon.svg");
+                }
+            }
+
+            &-dashboards {
+                background-image: url("../../../images/sidebar/default/dashboards-icon.svg");
+                height: 20px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/dashboards-icon.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/dashboards-icon.svg");
+                }
+            }
+
+            &-divider {
+                background-image: url("../../../images/sidebar/default/divider.svg");
+                width: 32px;
+                height: 1px;
+            }
+
+            &-management {
+                background-image: url("../../../images/sidebar/default/management.svg");
+                height: 20px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/management.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/management.svg");
+                }
+            }
+
+            &-report-manager {
+                background-image: url("../../../images/sidebar/default/report-manager.svg");
+                height: 18px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/report-manager.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/report-manager.svg");
+                }
+            }
+
+            &-help-center {
+                background-image: url("../../../images/sidebar/default/help-center.svg");
+                height: 25px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/help-center.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/help-center.svg");
+                }
+            }
+
+            &-notifications {
+                background-image: url("../../../images/sidebar/default/notifications.svg");
+                height: 23px;
+                width: 20px;
+
+                &:hover {
+                    background-image: url("../../../images/sidebar/hover/notifications.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/notifications.svg");
+                }
+            }
+
+            &-toggle-left {
+                background-image: url("../../../images/sidebar/default/toggle-left.svg");
+                height: 15px;
+                width: 11px;
+            }
+        }
+    }
+
+    &--floating {
+        position: absolute;
+        left: 48px;
+    }
+}

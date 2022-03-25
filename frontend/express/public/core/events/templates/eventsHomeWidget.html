@@ -1,0 +1,24 @@
+<div v-bind:class="[componentId]">
+	<div class="bu-level">
+		<div class="bu-level-left">
+			<h4 class="bu-pt-2 bu-mb-4 cly-vue-events-overview-subheadings--font">{{i18n('events.overview.top.events.by.count')}} </h4>
+		</div>
+		<div class="bu-level-right">
+			<a v-if="linkTo" class="cly-back-link text-medium" :href="linkTo.href"><span>{{linkTo.label}}<i class="fas fa-arrow-right bu-pl-3"></i></span></a>
+		</div>
+	</div>
+	<cly-section>
+		<!-- <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll"> -->
+			<cly-metric-cards :multiline="false" v-loading="isLoading">
+				<cly-metric-card formatting="long" :label="item.name" :box-type="5" color="#097EFF" :tooltip="item.info" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in items">
+					<template v-slot:number>{{item.value}}</template>
+					<span v-if="item.trend=='d'" slot="description" class="cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{item.change}}</span>
+					<span v-else slot="description" class="cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{item.change}}</span>
+				</cly-metric-card>
+				<div v-if="items.length <1 && !isLoading" class="technology-analytics-wrapper__empty-card" >
+					<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+				</div>
+			</cly-metric-cards>
+		<!-- </vue-scroll> -->
+	</cly-section>
+</div>

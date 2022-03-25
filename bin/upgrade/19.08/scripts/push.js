@@ -6,6 +6,7 @@ var fs = require('fs'),
     path = require('path'),
     pluginManager = require('../../../../plugins/pluginManager.js'),
     N = require('../../../../plugins/push/api/parts/note.js');
+const { getAdminApps } = require('../../../../api/utils/rights.js');
 
 console.log('Installing push plugin');
 
@@ -447,11 +448,13 @@ async function notifyGCM(db, apps) {
         console.log('[push] Checking member %s for GCM notifications', member.full_name);
 
         let aps = [];
+        let adminApps = getAdminApps(member);
+
         if (member.global_admin) {
             aps = apps;
         }
-        else if (member.admin_of && member.admin_of.length) {
-            aps = apps.filter(a => member.admin_of.indexOf(a._id.toString()) !== -1);
+        else if (adminApps && adminApps.length) {
+            aps = apps.filter(a => adminApps.indexOf(a._id.toString()) !== -1);
         }
 
         aps = aps.filter(a => a.plugins && a.plugins.push && a.plugins.push.a && a.plugins.push.a.key && a.plugins.push.a.key.length < 50);

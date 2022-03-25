@@ -145,11 +145,11 @@ if [ ! -f "/etc/timezone" ]; then
     echo "Etc/UTC" > /etc/timezone
 fi
 
-#install nghttp2
-bash "$DIR/scripts/install.nghttp2.sh"
-
 #install plugins
 node "$DIR/scripts/install_plugins"
+
+#load city data into database
+nodejs "$DIR/scripts/loadCitiesInDb.js"
 
 #get web sdk
 countly update sdk-web
@@ -157,11 +157,9 @@ countly update sdk-web
 # close google services for China area
 if ping -c 1 google.com >> /dev/null 2>&1; then
     echo "Pinging Google successful. Enabling Google services."
-    countly plugin disable EChartMap
 else
     echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
     countly config "frontend.use_google" false --force
-    countly plugin enable EChartMap
 fi
 
 #compile scripts for production

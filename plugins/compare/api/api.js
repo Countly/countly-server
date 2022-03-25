@@ -7,10 +7,15 @@ var exported = {},
     fetch = require('../../../api/parts/data/fetch.js'),
     crypto = require('crypto'),
     async = require('async'),
-    log = common.log('compare:api');
+    log = common.log('compare:api'),
+    { validateRead, getUserApps } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'compare';
 
 (function() {
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register('/o/compare/events', function(ob) {
         var params = ob.params;
 
@@ -31,7 +36,7 @@ var exported = {},
             return common.returnMessage(params, 400, 'Maximum length for parameter events is 20');
         }
 
-        ob.validateUserForDataReadAPI(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             var eventKeysArr = params.qstring.events;
             var collectionNames = [];
 
@@ -101,11 +106,12 @@ var exported = {},
         }
         params.qstring.app_id = appsToFetch[0];
 
-        ob.validateUserForDataReadAPI(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
+            const userApps = getUserApps(params.member);
             if (!params.member.global_admin) {
                 for (var i = 0; i < appsToFetch.length; i++) {
-                    if (params.member && params.member.user_of) {
-                        if (params.member.user_of.indexOf(appsToFetch[i]) === -1) {
+                    if (params.member && userApps) {
+                        if (userApps.indexOf(appsToFetch[i]) === -1) {
                             return common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
                         }
                     }

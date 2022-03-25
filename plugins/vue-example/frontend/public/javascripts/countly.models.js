@@ -1,4 +1,4 @@
-/*global $, countlyCommon, _, countlyVue */
+/*global countlyCommon, _, countlyVue, CV */
 
 (function(countlyVueExample) {
 
@@ -13,9 +13,26 @@
                 description: '',
                 status: false,
                 selectedProps: [],
-                visibility: 'private'
+                visibility: 'private',
+                sortableItems: ["Test #0", "Test #1"],
+                sharedEmailEdit: []
             };
             return _.extend(original, fields);
+        }
+    };
+
+    countlyVueExample.service = {
+        fetchRandomNumbers: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/o",
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    method: 'get-random-numbers'
+                }
+            }).then(function(o) {
+                return o || [];
+            });
         }
     };
 
@@ -62,22 +79,11 @@
         };
 
         var actions = {
-            initialize: function(context) {
-                context.dispatch("refresh");
-            },
-            refresh: function(context) {
+            initializeTable: function(context) {
                 context.dispatch("countlyVueExample/myRecords/fetchAll", null, {root: true});
-                context.dispatch("fetchGraphPoints");
             },
             fetchGraphPoints: function(context) {
-                return $.when($.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_URL + "/o",
-                    data: {
-                        app_id: countlyCommon.ACTIVE_APP_ID,
-                        method: 'get-random-numbers'
-                    }
-                })).then(function(obj) {
+                countlyVueExample.service.fetchRandomNumbers().then(function(obj) {
                     context.commit("setGraphPoints", [obj, obj.map(function(x) {
                         return x / 2;
                     })]);
@@ -93,55 +99,8 @@
 
         // Paged Resource
 
-        var tooManyRecordsResource = countlyVue.vuex.Module("tooManyRecords", {
-            resetFn: function() {
-                return {
-                    paged: {
-                        rows: []
-                    },
-                    requestParams: {}
-                };
-            },
-            getters: {
-                paged: function(state) {
-                    return state.paged;
-                }
-            },
-            mutations: {
-                setPaged: function(state, val) {
-                    state.paged = val;
-                },
-                setRequestParams: function(state, val) {
-                    state.requestParams = val;
-                }
-            },
-            actions: {
-                fetchPaged: function(context) {
-                    return $.when($.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o",
-                        data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID,
-                            method: 'large-col',
-                            table_params: JSON.stringify(context.state.requestParams)
-                        }
-                    }))
-                        .then(function(res) {
-                            context.commit("setPaged", res);
-                        })
-                        .catch(function() {
-                            context.commit("setPaged", {
-                                rows: [],
-                                totalRows: 0,
-                                notFilteredTotalRows: 0
-                            });
-                        });
-                }
-            }
-        });
-
         var recordsResource = countlyVue.vuex.Module("myRecords", {
-            resetFn: function() {
+            state: function() {
                 return {
                     all: []
                 };
@@ -158,7 +117,7 @@
             },
             actions: {
                 save: function(context, record) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "POST",
                         url: countlyCommon.API_PARTS.data.w + "/vue_example/save",
                         data: {
@@ -166,10 +125,10 @@
                             "record": JSON.stringify(record)
                         },
                         dataType: "json"
-                    }));
+                    });
                 },
                 remove: function(context, id) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.w + "/vue_example/delete",
                         data: {
@@ -177,10 +136,10 @@
                             "id": id
                         },
                         dataType: "json"
-                    }));
+                    });
                 },
                 status: function(context, updates) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.w + "/vue_example/status",
                         data: {
@@ -188,22 +147,22 @@
                             "records": JSON.stringify(updates)
                         },
                         dataType: "json"
-                    }));
+                    });
                 },
                 fetchAll: function(context) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_URL + "/o",
                         data: {
                             app_id: countlyCommon.ACTIVE_APP_ID,
                             method: 'vue-records'
                         }
-                    })).then(function(res) {
+                    }).then(function(res) {
                         context.commit("setAll", res);
                     });
                 },
                 fetchSingle: function(context, id) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_URL + "/o",
                         data: {
@@ -211,29 +170,77 @@
                             method: 'vue-records',
                             id: id
                         }
-                    })).then(function(records) {
+                    }).then(function(records) {
                         return records[0];
                     });
                 }
             }
         });
 
-        var table = countlyVue.vuex.DataTable("table", {
-            sourceRows: function(_state, _getters, _rootState, _rootGetters) {
-                return _rootGetters["countlyVueExample/myRecords/all"] || [];
-            },
-            trackedFields: ["status"],
-            keyFn: function(row) {
-                return row._id;
-            }
-        });
-
         return countlyVue.vuex.Module("countlyVueExample", {
-            resetFn: getEmptyState,
+            state: getEmptyState,
             getters: getters,
             actions: actions,
             mutations: mutations,
-            submodules: [recordsResource, tooManyRecordsResource, table]
+            submodules: [recordsResource]
+        });
+    };
+
+    window.foo = {};
+    window.foo.getVuexModule = function() {
+        var getEmptyState = function() {
+            return {
+                name: "foo"
+            };
+        };
+
+        var getters = {
+            getName: function(state) {
+                return state.name;
+            }
+        };
+
+        var actions = {
+            modifyName: function(context) {
+                context.commit("setName", "newFoo");
+            }
+        };
+
+        var mutations = {
+            setName: function(state, val) {
+                state.name = val;
+            }
+        };
+
+        var bar = countlyVue.vuex.Module("bar", {
+            state: function() {
+                return {
+                    name: "bar"
+                };
+            },
+            getters: {
+                getName: function(state) {
+                    return state.name;
+                }
+            },
+            actions: {
+                modifyName: function(context) {
+                    context.commit("setName", "newBar");
+                }
+            },
+            mutations: {
+                setName: function(state, val) {
+                    state.name = val;
+                }
+            }
+        });
+
+        return countlyVue.vuex.Module("foo", {
+            state: getEmptyState,
+            getters: getters,
+            actions: actions,
+            mutations: mutations,
+            submodules: [bar]
         });
     };
 

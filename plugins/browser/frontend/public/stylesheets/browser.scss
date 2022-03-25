@@ -1,0 +1,67 @@
+.technology-analytics-wrapper-browser {
+    &__date-picker {
+        margin-bottom:32px;
+    }
+
+    &__items {
+        height: 115px
+    }
+
+    &__versions {
+        height: 291px; 
+        padding-bottom: 20px;
+    }
+
+    &__version-graph-title {
+        font-family: Inter;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 20px;
+        color:#333C48;
+
+        div:first-child {
+            text-align:left;   
+        }
+
+        div:nth-child(2) {
+            text-align:right;
+        } 
+    }
+
+    &__empty-card {
+        min-height: 107px;
+        border-left: 1px solid #ececec;
+        width: 100%;
+        position: relative;
+        background-color: #ffffff;
+        top: 50%;
+        text-align: center;
+        border-bottom: 1px solid #ececec;
+
+        div {
+            position: absolute;
+            top: 50%;
+            text-align: center;
+            width: 100%;
+        }
+    }
+
+    &__versions-empty-card {
+        min-height: 250px;
+        border-left: 1px solid #ececec;
+        width: 100%;
+        position: relative;
+        background-color: #ffffff;
+        border-top: 1px solid #ececec;
+        border-right: 1px solid #ececec;
+        border-bottom: 1px solid #ececec;
+
+        div {
+            position: absolute;
+            top: 50%;
+            text-align: center;
+            width: 100%;
+        }
+    }
+}

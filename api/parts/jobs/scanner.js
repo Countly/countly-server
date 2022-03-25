@@ -34,7 +34,9 @@ module.exports = (db, filesObj, classesObj) => {
         let promises = jobs.map(job => {
             return new Promise((res) => {
                 fs.readdir(job.dir, (err, files) => {
-                    return err || !files ? res() : res(files.map(f => {
+                    return err || !files ? res() : res(files.filter(f => {
+                        return fs.statSync(job.dir + '/' + f).isFile();
+                    }).map(f => {
                         return {
                             category: job.category,
                             name: f.substr(0, f.length - 3),

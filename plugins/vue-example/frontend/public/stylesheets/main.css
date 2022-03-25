@@ -3,14 +3,17 @@
 }
 
 .vue-example-wrapper .example-cell{
-    margin: 20px;
+    padding: 20px;
     width: 25%;
-    height: 200px;
     display: inline-block;
     vertical-align: middle;
+    box-sizing: border-box;
 }
 
-.vue-example-wrapper .example-component{
-    border-bottom: 1px solid #ccc;
-    height: 200px;
+.vue-example-wrapper .example-cell section {
+    margin-bottom: 20px;
+}
+
+.vue-example-wrapper .options-box div.item {
+    padding: 10px 0;
 }

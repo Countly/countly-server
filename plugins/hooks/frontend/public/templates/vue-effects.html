@@ -1,0 +1,99 @@
+<script type="text/x-template" id="hooks-effects">
+<div>
+    <div class="section">
+        <div class="cly-vue-hook-drawer-action-card">
+            <div style="display:flex">
+                <div class="is-action-card-title" style="flex-grow: 1;font-size:12px;">{{i18n('hooks.action')}}</div>
+                <div class="is-action-card-title-right" v-if="$attrs.index > 0" @click="removeEffect($attrs.index)">{{i18n('hooks.remove-action')}}</div>
+            </div>
+            <validation-provider  rules="required">
+                <div class="cly-vue-drawer-step__section cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                    <el-radio
+                        class="is-autosized is-hook-effect-option"
+                        v-model="value.type"
+                        :label="item.value"
+                        :key="idx"
+                        v-for="(item, idx) in effectsOption"
+                    border>
+                        {{item.label}}
+                        <div class="text-small">
+                            {{item.description}}
+                        </div>
+                    </el-radio>
+                </div>
+            </validation-provider>
+            
+            <component
+                :is="value.type"
+                v-model="value.configuration"
+            />
+        </div>
+    </div>
+</div>
+</script>
+
+<script type="text/x-template" id="hooks-effect-EmailEffect">
+<div class="cly-vue-drawer-step__section">
+    <div class="text-medium text-heading">
+       {{i18n('hooks.send-email')}} 
+    </div>
+        <validation-provider name="action-email-address" rules="required">
+        <cly-select-email :collapse-tags="false" placeholder="Input Email Address" v-model="value.address"></cly-select-email>
+        </validation-provider>
+        <div class="bu-mt-2">
+            <textarea required v-html="value.emailTemplate" v-model="value.emailTemplate"  @change="textChange" style="width:100%;box-sizing: border-box; padding: 10px 10px;background: #FBFDFE;border-radius: 4px;border: 1px solid #CFD6E4;
+            resize: none; " name="email-template" rows="5"  cols="60" placeholder="Content template here"></textarea> 
+        </div>
+     </div>
+</div>
+</script>
+
+<script  type="text/x-template" id="hooks-effect-CustomCode">
+<div class="cly-vue-drawer-step__section">
+    <div class="text-medium text-heading">
+       {{i18n('hooks.CustomCodeEffect')}} 
+    </div>
+    <validation-provider name="action-customCode-code" tag="div" rules="required">
+    <textarea required  v-model="value.code" @change="textChange" style="width:100%;resize: none; box-sizing: border-box;border: 1px solid #d6d6d6;" name="custom-code-input" rows="5"  cols="60" placeholder="//Javascript code here"></textarea>
+    </validation-provider>
+</div>
+</script>
+
+<script type="text/x-template" id="hooks-effect-HTTPEffect">
+<div>   
+    <div class="cly-vue-drawer-step__section">
+        <div class="text-medium text-heading">
+           {{i18n('hooks.http-effect-url')}} 
+        </div>
+
+        <div style="display: flex;">
+            <div style="flex-grow:1; margin-right:10px;">
+                <validation-provider name="action-http-url"  rules="required">
+                <el-input v-model="value.url" placeholder="https://" ></el-input>
+                </validation-provider>
+            </div>
+            <div style="flex:1">
+                <validation-provider name="action-http-method"  rules="required">
+                <cly-select-x
+                   placeholder="Select method"
+                   mode="single-list"
+                   v-model="value.method"
+                   :options="methodOptions">
+                </cly-select-x>
+                </validation-provider>
+
+            </div>
+        </div>
+    </div>
+    
+    <div class="cly-vue-drawer-step__section">
+        <div class="text-medium text-heading">
+        {{i18n('hooks.http-intro')}}
+        </div>
+        <validation-provider name="action-http-data" tag="div" rules="required">
+        <textarea v-html="value.requestData" v-model="value.requestData" @change="textChange" style="width:100%;box-sizing: border-box; resize: none; border: 1px solid #d6d6d6;" name="http-effect-params" rows="5"  cols="60"></textarea>
+        </validation-provider>
+    </div>
+    
+</div>
+</script>

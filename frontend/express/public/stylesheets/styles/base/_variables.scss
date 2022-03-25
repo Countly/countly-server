@@ -1,0 +1,21 @@
+/*
+    All countly specific sass variables are in this file
+*/
+
+@use "./colors" as c;
+@use "sass:map";
+
+$border-width-base: 1px !default;
+$border-style-base: solid !default;
+
+$border-base: $border-width-base $border-style-base c.$border-color-base !default;
+$border-input: $border-width-base $border-style-base map.get(c.$colors, "cool-gray-30");
+
+$select-dropdown-item-default-height: 16px;
+$select-dropdown-item-default-font-size: 13px;
+$select-dropdown-item-default-padding: 8px;
+$select-dropdown-item-default-margin: 8px;
+$select-dropdown-item-default-selected-color: map.get(c.$colors, "white");
+$select-dropdown-item-default-selected-bg-color: map.get(c.$colors, "blue-100");
+$select-dropdown-item-default-hover-color: map.get(c.$colors, "blue-100");
+$select-dropdown-item-default-hover-bg-color: map.get(c.$colors, "warm-gray-20");

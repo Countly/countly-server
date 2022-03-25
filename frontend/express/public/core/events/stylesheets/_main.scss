@@ -1,0 +1,310 @@
+@use "../../../stylesheets/styles/base/_typography-variables.scss" as t;
+@use "../../../stylesheets/styles/base/colors" as c;
+@use "sass:map";
+
+.cly-events-breakdown-horizontal-tile {
+    &__wrapper {
+        border-right: 1px solid #ECECEC; 
+        border-top: 1px solid c.$table-border-color;
+        box-shadow: 0px 2px 0px #EAECEF;
+        padding: 24px 24px 0px 24px;
+    }
+    &__titleoverview {
+        color: #333c48;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        font-family: t.$font-family;
+    }
+    &:nth-of-type(3n) {
+        .cly-events-breakdown-horizontal-tile__wrapper {
+            border-right: 0;
+        }
+    }
+    &__values-list {
+        align-items: center;
+    }
+    &__item {
+        height: 33.3333333%;
+        padding: 0px 0px 24px 0px;
+    }
+    &__item-title {
+        padding: 12px 0px 8px 0px;
+    }
+    &__value {
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 30px;
+    font-family: t.$font-family;
+    color: #333c48;
+    letter-spacing: 0.003em;
+    }
+    &__overviewvalue {
+        font-weight: 500;
+        font-size: 24px;
+        line-height: 32px;
+        }
+    &__percentage {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        font-family: t.$font-family;
+        color: #333c48;
+    }
+    &__trend {
+        font-weight: 500;
+        line-height: 14px;
+    }
+    &__arrow {
+        padding-right: 3px;
+    }
+}
+.cly-vue-events-overview-top-events {
+    padding-left: 24px;
+    padding-bottom: 16.5px;
+    &--tooltip {
+        margin-left: 5.5px;
+    }
+    &__description {
+        font-weight: 500;
+        line-height: 14px;
+    }
+    &__trend {
+        padding-right: 3px;
+    }
+}
+
+.cly-vue-events-overview-monitor-events {
+    &__charts{
+    .cly-vue-chart__echart{
+        padding: 0px;
+    }
+    }
+    &__empty {
+        min-height: 100px;
+        &__block {
+            margin: 32px auto 32px auto;
+            max-width: 586px;
+        }
+        &--image {
+            width: 242px;
+            height: 242px;
+            background-image: url('../../../images/dashboard/events-overview-noevents.svg');
+        }
+    }
+    &--text{
+        font-weight:t.$heading-4-weight;
+        font-size:t.$text-small-size;
+        color: map.get(c.$colors, "cool-gray-40");
+        letter-spacing: 0.5px;
+        font-family:  t.$font-family;
+        line-height: 14.52px;
+    }
+    .cly-vue-section__content{
+    border: 1px solid #ECECEC;
+    border-radius: 4px;
+    }
+    &--grey {
+      color: #A7AEB8 
+    }
+    &__heading {
+      padding:8px 0px 16px 0px  
+    }
+    &__configure {
+        &--position {
+            float:right;
+            margin-left: auto;
+        }
+    }
+}
+
+.cly-events-overview-drawer {
+&__subheading {
+    font-size: t.$heading-4-size;
+    line-height: t.$heading-4-line-height;
+    font-weight: t.$heading-4-weight;
+    font-family: t.$font-family;
+    color: map.get(c.$colors, "cool-gray-100");
+}
+&--dragicon {
+    margin-right:18px;
+}
+&__event-records {
+    border-radius: 6px;
+    width: 100%;
+    padding: 14px 16px;
+    background-color: map.get(c.$colors, "cool-gray-10");
+}
+&__basis {
+    flex-basis: 0;
+}
+&__dropdown {
+    min-width: 230px;
+    width: 100%;
+}
+&__close-icon {
+    line-height: 1;
+    font-size: 24px;
+}
+}
+
+.cly-monitor-events-breakdown-horizontal-tile {
+    &__wrapper {
+        border-right: 1px solid #ECECEC; 
+        border-top: 1px solid #ECECEC; 
+        border-bottom: 1px solid #ECECEC;
+        padding: 24px 24px 0px 24px;
+    }
+    &__title {
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 20px;
+        padding-bottom: 8px;
+    }
+    &__titleoverview {
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 20px;
+    }
+    &__eventproperty {
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 20px;
+        color:#81868D;
+    }
+    &:nth-of-type(2n) {
+        .cly-monitor-events-breakdown-horizontal-tile__wrapper {
+            border-right: 0;
+        }
+    }
+    &__values-list {
+        align-items: center;
+    }
+    &__item {
+        height: 33.3333333%;
+        padding: 0px 0px 16px 0px;
+    }
+    &__item-title {
+        padding-top: 4px;
+    }
+    &__value {
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 30px;
+    }
+    &__overviewvalue {
+        font-weight: 500;
+        font-size: 24px;
+        line-height: 32px;
+        }
+    &__percentage {
+        font-size: 14px;
+        font-weight: 300;
+        line-height: 20px;
+    }
+    &__trend {
+        font-weight: 500;
+        line-height: 14px;
+    }
+    &__arrow {
+        padding-right: 3px;
+    }
+    &__overview-name {
+        z-index: 1;
+    }
+    &__width-50 {
+        width:50%
+    }
+}
+
+.cly-vue-events-all {
+    &__alerts {
+        a {
+            text-decoration: underline
+        }
+    }
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 500;
+    padding-top: 6px;
+    letter-spacing: .003em;
+    font-family: t.$font-family;
+    color: #333c48;
+
+    &__subheading {
+        font-size: 14px;
+        line-height: 20px;
+        color: map.get(c.$colors, "cool-gray-100");
+    }
+    &--padding {
+        padding-top:32px;
+    }
+    &--margin {
+        margin-right:32px;
+    }
+} 
+
+.cly-vue-events-group {
+    color: #FFFFFF;
+    background-color: map.get(c.$colors, "cool-gray-40");
+    font-size: 10px;
+    line-height: 10px;
+    font-weight: 500;
+    letter-spacing: 0.0042em;
+    vertical-align: middle;
+    padding: 3px 4px;
+    border-radius: 4px;
+} 
+
+.cly-vue-events-all-placeholder-text {
+    color: map.get(c.$colors, "text-placeholder");
+    font-size: 12px;
+    line-height: 14.52px;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    white-space: nowrap;
+} 
+.cly-vue-events-all-date-picker {
+    margin-right:26px
+} 
+.cly-vue-events-all-tooltip {
+    margin-left:10px
+} 
+.cly-vue-overview-events-header {
+    padding-right: 9.5px;
+    letter-spacing: .003em;
+}
+.cly-vue-events-header {
+    padding: 8px 24px 24px 24px;
+    letter-spacing: .003em;
+    font-family: t.$font-family;
+    line-height: t.$heading-2-line-height;
+    border-bottom: 1px solid #ececec;
+    background-color: #fff;
+    &__subheading {
+        &--widget {
+            padding-right: 5.33px;
+            color: #81868d;
+        }
+        &--text {
+            font-family: t.$font-family;
+            line-height: 20px;
+            font-size: 14px;
+            color: #81868d;
+        }
+    }
+    &--tooltip{
+        padding-left: 9.5px;
+    }
+}
+.cly-vue-events-overview-subheadings {
+    padding-right: 9.5px;
+    letter-spacing: .003em;
+    font-family: t.$font-family;
+    &--tooltip {
+        padding-top:3px;
+    }
+    &--font {
+        font-family: t.$font-family;
+    }
+}

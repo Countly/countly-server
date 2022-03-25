@@ -1,0 +1,286 @@
+.hooks-button-group {
+    color: #020202;
+    background-color: #fff;
+    border-color: #bdb3b3;
+}
+
+.cly-vue-hook-drawer {
+    &__help-text {
+        font-family: Inter;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        color: #81868D;
+    }
+      
+    &__is-hidden {
+        visibility: hidden;
+    }
+    &__is-full-line {
+        width: 100%;
+    }
+
+    &__no-margin {
+        margin-bottom: 0px !important;
+    }
+    &__small-icon {
+        margin-left: 5px;
+        font-size: 15px;
+    }
+    &__small-icon-right {
+        margin-right: 2px;
+        font-size: 15px;
+    }
+    &__check_icon {
+        width: 18px;
+        border-radius: 18px;
+        text-align: center;
+        margin-left: 9px;
+        margin-right: 9px;
+    }
+ 
+}
+
+.hook-detail-card {
+    background: #FFFFFF;
+    border: 1px solid #ECECEC;
+    box-sizing: border-box;
+    box-shadow: 0px 1px 0px #ECECEC;
+    border-radius: 4px;
+}
+.hook-filter-block {
+    background: #F8FAFD;
+    border-radius: 6px;
+}
+.hook-segmentation-block{
+    background: #F8FAFD;
+}
+.hook-api-url-block input {
+    color:#333C48 !important;
+}
+.cly-vue-drawer-hook_description {
+    font-size: 13px;
+    line-height: 16px;
+    color: #81868D;
+    margin-bottom: 14px;
+}
+.cly-vue-drawer-hook_section_margin {
+    margin-top: 24px;
+}
+
+.hooks-APIEndpointTrigger .el-input.is-disabled .el-input__inner {
+    background-color: #FBFDFE;
+}
+.hook-test-output-field {
+    padding: 16px 16px;
+    background: #F6F6F6;
+    border-radius: 4px;
+}
+.hooks-test-result-row {
+    padding: 0px 2px;
+    margin: 8px 0px;
+    background-color: #fff;
+    border: 1px solid;
+    border: 1px solid #E2E4E8;
+    box-sizing: border-box;
+    box-shadow: 0px 1px 0px #ececec;
+    border-radius: 4px;
+    .el-collapse-item__content {
+        margin: 0 12px !important;
+    }
+}
+.hook-test-card-list {
+    border: none !important;
+}
+
+.hooks-trigger-switch .el-switch__label span {
+    font-size: 12px;
+    color: #333C48;
+    font-weight: 500;
+}
+.hooks-trigger-switch .el-switch__label.is-active span {
+    color: #333C48;
+}
+
+.hook-test-collapse-item .el-collapse-item__header {
+    border: none !important;
+}
+.cly-vue-hook-drawer-action-card {
+    background: #F8FAFD;
+    border: 1px solid #E2E4E8;
+    box-sizing: border-box;
+    border-radius: 6px;
+    padding: 22px 16px;
+    margin: 24px 0px;
+      .is-action-card-title-right {
+          font-family: Inter;
+          font-style: normal;
+          font-weight: 500;
+          font-size: 13px;
+          line-height: 13px;
+          text-align: right;
+          color: #D23F00;
+          margin: 2px px 12px 0px;
+      }
+      .is-action-card-title-right:hover {
+          cursor: pointer;
+      }
+
+      .is-hook-effect-option {
+          padding: 17px !important;
+          background-color: #fff;
+      }
+}
+
+.cly-vue-hook-table {
+    .is-name-col {
+        font-size: 14px;
+        line-height: 20px;
+        color: #32659D;
+        word-break: break-word;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+    .is-name-col:hover {
+        color: #0166D6;
+        text-decoration: underline;
+        cursor: pointer !important;
+    }
+    .is-desc-col {
+        font-size: 12px;
+        line-height: 16px;
+        color: #A7AEB8;
+        margin-top: 6px;
+    }
+    .is-trigger-col-tag {
+        background: #FCF5E5;
+        border-radius: 4px;
+        color: #CDAD7A;
+        font-weight: bold;
+        font-size: 10px;
+        line-height: 12px;
+        letter-spacing: 0.5px;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        padding: 4px;
+        width: fit-content;
+    }
+    .is-effect-col {
+        display: flex;
+        margin-top: 18px;
+
+        .is-effect-col-arrow {
+            margin-right: 7.75px;
+        }
+    }
+
+    .is-trigger-effect-desc {
+        font-size: 14px;
+        line-height: 20px;
+        color: #333C48;
+        white-space: nowrap;
+        max-width: 400px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .is-created-by-col {
+        font-size: 14px;
+        line-height: 20px;
+        color: #333C48;
+    }
+    .is-created-by-desc-col {
+        font-size: 12px;
+        line-height: 16px;
+        color: #A7AEB8;
+    }
+    .is-last-col {
+        display: flex;
+        flex-direction: row;
+        .flex-grow {
+            flex-grow: 1;
+        }
+    }
+    
+}
+.hook-error-table {
+    .el-table__expanded-cell {
+        padding: 23px 24px;
+    }
+    tr td:nth-child(4) .cell {
+        background: #F6F6F6;
+        border-radius: 4px;
+        margin-left: 16px;
+        padding-left: 14.81px !important;
+    }
+    tr td:nth-child(5) .cell {
+        background: #F6F6F6;
+        border-radius: 4px;
+        margin: 0px 14.32px;
+        padding-left: 14.81px !important;;
+    }
+}
+
+.is-hook-table-option-dropdown {
+    background: #FFFFFF;
+    border: 1px solid #A7AEB8;
+    box-sizing: border-box;
+    border-radius: 4px;
+    .is-hook-table-option-item {
+        border-radius: 4px;
+        color: #333C48;
+        height:  29px;
+        line-height: 29px;
+        margin: 8px 6px;
+    }
+    .is-hook-table-option-item:hover {
+        background: #F6F6F6;
+        color: #0166D6;
+    }
+}
+
+.hook-app-selector-image {
+    border-radius: 3px; 
+    width: 16px; 
+    height: 16px;
+    background-size: cover;
+}
+.code-pre-line {
+    white-space: pre-line;
+}
+
+.hooks-table-app-selector .el-input input::placeholder { 
+    color: #333C48;
+    opacity: 1;
+}
+
+.hook-log-lines-bar {
+    font-family: "Roboto Mono", monospace;
+    font-size: 12px;
+    line-height: 17px;
+    color: #A7AEB8;
+    float: left;
+    padding-right: 0.5em;
+    margin-right: 1em;
+    border-right: 1px solid #ECECEC;
+}
+.hook-log-code {
+    font-family: "Roboto Mono", monospace !important;
+    font-size: 12px;
+    line-height: 17px;
+}
+.hook-logs-card {
+    padding: 20px 24px;
+    background: #FFFFFF;
+    border: 1px solid #ECECEC;
+    box-sizing: border-box;
+    border-radius: 4px;
+}
+.hook-trigger-url {
+    color:#0166D6;
+    margin: 0px 12px;
+    cursor:pointer;
+    font-size: 12px;
+    font-weight: 500;
+}

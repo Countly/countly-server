@@ -17,14 +17,16 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Error: Missing \'args\' parameter');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Missing \'args\' parameter');
                     done();
                 });
         });
     });
     describe('without name', function() {
         it('should bad request', function(done) {
-            var params = {username: testUtils.username, password: testUtils.password, email: testUtils.email};
+            var params = {username: testUtils.username, permission: testUtils.permission, password: testUtils.password, email: testUtils.email};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(400)
@@ -33,14 +35,16 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Error: Missing full_name argument');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Missing full_name argument');
                     done();
                 });
         });
     });
     describe('without username', function() {
         it('should bad request', function(done) {
-            var params = {full_name: testUtils.name, password: testUtils.password, email: testUtils.email};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, password: testUtils.password, email: testUtils.email};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(400)
@@ -49,14 +53,16 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Error: Missing username argument');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Missing username argument');
                     done();
                 });
         });
     });
     describe('without password', function() {
         it('should bad request', function(done) {
-            var params = {full_name: testUtils.name, username: testUtils.username, email: testUtils.email};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username, email: testUtils.email};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(400)
@@ -65,14 +71,16 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Error: Missing password argument');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Missing password argument');
                     done();
                 });
         });
     });
     describe('without email', function() {
         it('should bad request', function(done) {
-            var params = {full_name: testUtils.name, username: testUtils.username, password: testUtils.password};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username, password: testUtils.password};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(400)
@@ -81,46 +89,52 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Error: Missing email argument');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Missing email argument');
                     done();
                 });
         });
     });
     describe('with same username', function() {
         it('should bad request', function(done) {
-            var params = {full_name: testUtils.name, username: testUtils.username, password: testUtils.password, email: testUtils.email + ".test"};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username, password: testUtils.password, email: testUtils.email + ".test"};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
-                .expect(200)
+                .expect(400)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Email or username already exists');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Email or username already exists');
                     done();
                 });
         });
     });
     describe('with same username', function() {
         it('should bad request', function(done) {
-            var params = {full_name: testUtils.name, username: testUtils.username + "1", password: testUtils.password, email: testUtils.email};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username + "1", password: testUtils.password, email: testUtils.email};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
-                .expect(200)
+                .expect(400)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Email or username already exists');
+                    ob.should.have.property('result');
+                    ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
+                    ob.result[0].should.be.exactly('Email or username already exists');
                     done();
                 });
         });
     });
     describe('successfully create', function() {
         it('should create user', function(done) {
-            var params = {full_name: testUtils.name, username: testUtils.username + "1", password: testUtils.password, email: testUtils.email + ".test"};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username + "1", password: testUtils.password, email: testUtils.email + ".test"};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)

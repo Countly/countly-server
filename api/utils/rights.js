@@ -90,10 +90,11 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                     reject('No app_id provided');
                     return false;
                 }
+                const userApps = module.exports.getUserApps(member);
 
-                if (!((member.user_of && Array.isArray(member.user_of) && member.user_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
-                    common.returnMessage(params, 401, 'User does not have view right for this application');
-                    reject('User does not have view right for this application');
+                if (!((userApps.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
+                    common.returnMessage(params, 401, 'User does not have right');
+                    reject('User does not have right');
                     return false;
                 }
 
@@ -118,8 +119,8 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
                         if (!params.res.finished) {
-                            common.returnMessage(params, 401, 'User does not have permission');
-                            reject('User does not have permission');
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
                         }
                         return false;
                     }
@@ -180,9 +181,9 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
-                    common.returnMessage(params, 401, 'User does not have write right for this application');
-                    reject('User does not have write right for this application');
+                if (!(module.exports.hasAdminAccess(member, params.qstring.app_id))) {
+                    common.returnMessage(params, 401, 'User does not have right');
+                    reject('User does not have right');
                     return false;
                 }
 
@@ -212,8 +213,8 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
                         if (!params.res.finished) {
-                            common.returnMessage(params, 401, 'User does not have permission');
-                            reject('User does not have permission');
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
                         }
                         return false;
                     }
@@ -270,8 +271,8 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
                 }
 
                 if (!member.global_admin) {
-                    common.returnMessage(params, 401, 'User does not have global admin right');
-                    reject('User does not have global admin right');
+                    common.returnMessage(params, 401, 'User does not have right');
+                    reject('User does not have right');
                     return false;
                 }
 
@@ -285,8 +286,84 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
 
                 if (plugins.dispatch("/validation/user", {params: params})) {
                     if (!params.res.finished) {
-                        common.returnMessage(params, 401, 'User does not have permission');
-                        reject('User does not have permission');
+                        common.returnMessage(params, 401, 'User does not have right');
+                        reject('User does not have right');
+                    }
+                    return false;
+                }
+                resolve(callbackParam);
+            });
+        },
+        function() {
+            common.returnMessage(params, 401, 'Token is invalid');
+            reject('Token is invalid');
+            return false;
+        });
+    });
+};
+
+/**
+* Validate user for admin access for specific app by api_key (required parameter for the request). 
+* User must exist, must not be locked, must pass plugin validation (if any).
+* If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
+* Additionally populates params with member information.
+* @param {params} params - {@link params} object
+* @param {function} callback - function to call only if validation passes
+* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @returns {Promise} promise
+*/
+exports.validateAppAdmin = function(params, callback, callbackParam) {
+    return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
+        validate_token_if_exists(params).then(function(result) {
+            var query = "";
+            // then result is owner id
+            if (result !== 'token-not-given' && result !== 'token-invalid') {
+                query = {'_id': common.db.ObjectID(result)};
+            }
+            else {
+                if (!params.qstring.api_key) {
+                    if (result === 'token-invalid') {
+                        common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        return false;
+                    }
+                }
+                params.qstring.api_key = params.qstring.api_key + "";
+                query = {'api_key': params.qstring.api_key};
+            }
+            common.db.collection('members').findOne(query, function(err, member) {
+                if (!member || err) {
+                    common.returnMessage(params, 401, 'User does not exist');
+                    reject('User does not exist');
+                    return false;
+                }
+
+                if (!params.qstring.app_id) {
+                    common.returnMessage(params, 400, 'No app id provided');
+                    return false;
+                }
+
+                if (!member.global_admin && member.permission._.a.indexOf(params.qstring.app_id) === -1) {
+                    common.returnMessage(params, 401, 'User does not have right');
+                    reject('User does not have right');
+                    return false;
+                }
+
+                if (member && member.locked) {
+                    common.returnMessage(params, 401, 'User is locked');
+                    reject('User is locked');
+                    return false;
+                }
+                params.member = member;
+                params.member.auth_token = params.qstring.auth_token || params.req.headers["countly-token"] || "";
+
+                if (plugins.dispatch("/validation/user", {params: params})) {
+                    if (!params.res.finished) {
+                        common.returnMessage(params, 401, 'User does not have right');
+                        reject('User does not have right');
                     }
                     return false;
                 }
@@ -357,8 +434,8 @@ exports.validateUser = function(params, callback, callbackParam) {
 
                 if (plugins.dispatch("/validation/user", {params: params})) {
                     if (!params.res.finished) {
-                        common.returnMessage(params, 401, 'User does not have permission');
-                        reject('User does not have permission');
+                        common.returnMessage(params, 401, 'User does not have right');
+                        reject('User does not have right');
                     }
                     return false;
                 }
@@ -383,17 +460,28 @@ exports.validateUser = function(params, callback, callbackParam) {
 */
 function wrapCallback(params, callback, callbackParam, func) {
     var promise = new Promise(func);
-    if (callback) {
+    if (typeof callback === "function") {
         promise.asCallback(function(err) {
             if (!err) {
+                let ret;
                 if (callbackParam) {
-                    callback(callbackParam, params);
+                    ret = callback(callbackParam, params);
                 }
                 else {
-                    callback(params);
+                    ret = callback(params);
+                }
+
+                if (ret && typeof ret.then === 'function') {
+                    ret.catch(e => {
+                        log.e('Error in CRUD callback', e);
+                        common.returnMessage(params, 500, 'Server error');
+                    });
                 }
             }
         });
+    }
+    else if (callback) {
+        console.log("Incorrect callback function", callback);
     }
     return promise;
 }
@@ -489,30 +577,20 @@ exports.dbLoadEventsData = dbLoadEventsData;
 * @returns {function} returns callback
 **/
 exports.dbUserHasAccessToCollection = function(params, collection, callback) {
-    if (params.member.global_admin && !params.qstring.app_id) {
+    if (params.member.global_admin) {
         //global admin without app_id restriction just has access to everything
         return callback(true);
     }
-
     var apps = [];
-    if (params.qstring.app_id) {
-        //if app_id was provided, we need to check if user has access for this app_id
-        // is user_of array contain current app_id?
-        var isUserOf = params.member.user_of && Array.isArray(params.member.user_of) && params.member.user_of.indexOf(params.qstring.app_id) !== -1;
-        var isRestricted = params.member.app_restrict && params.member.app_restrict[params.qstring.app_id] && params.member.app_restrict[params.qstring.app_id].indexOf("#/manage/db");
-        if (params.member.global_admin || isUserOf && !isRestricted) {
-            apps = [params.qstring.app_id];
-        }
-    }
-    else {
-        //use whatever user has permission for
-        apps = params.member.user_of || [];
-        // also check for app based restrictions
-        if (params.member.app_restrict) {
-            for (var app_id in params.member.app_restrict) {
-                if (params.member.app_restrict[app_id].indexOf("#/manage/db") !== -1 && apps.indexOf(app_id) !== -1) {
-                    apps.splice(apps.indexOf(app_id), 1);
-                }
+    var userApps = module.exports.getUserApps(params.member);
+
+    //use whatever user has permission for
+    apps = userApps || [];
+    // also check for app based restrictions
+    if (params.member.app_restrict) {
+        for (var app_id in params.member.app_restrict) {
+            if (params.member.app_restrict[app_id].indexOf("#/manage/db") !== -1 && apps.indexOf(app_id) !== -1) {
+                apps.splice(apps.indexOf(app_id), 1);
             }
         }
     }
@@ -563,5 +641,424 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
             }
         }
         return callback(false);
+    }
+};
+
+/**
+* Validate user for read access by api_key for provided app_id (both required parameters for the request).
+* User must exist, must not be locked, must pass plugin validation (if any) and have at least read access to the provided app (which also must exist).
+* If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
+* Additionally populates params with member information and app information.
+* @param {params} params - {@link params} object
+* @param {string} feature - feature that trying to access
+* @param {function} callback - function to call only if validation passes
+* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @returns {Promise} promise
+*/
+exports.validateRead = function(params, feature, callback, callbackParam) {
+    return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
+        validate_token_if_exists(params).then(function(result) {
+            var query = "";
+            // then result is owner id
+            if (result !== 'token-not-given' && result !== 'token-invalid') {
+                query = {'_id': common.db.ObjectID(result)};
+            }
+            else {
+                if (!params.qstring.api_key) {
+                    if (result === 'token-invalid') {
+                        common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        return false;
+                    }
+                }
+                params.qstring.api_key = params.qstring.api_key + "";
+                query = {'api_key': params.qstring.api_key};
+            }
+            common.db.collection('members').findOne(query, function(err, member) {
+                if (!member || err) {
+                    common.returnMessage(params, 401, 'User does not exist');
+                    reject('User does not exist');
+                    return false;
+                }
+
+                if (!member.global_admin && typeof params.qstring.app_id === "undefined") {
+                    common.returnMessage(params, 401, 'No app_id provided');
+                    reject('No app_id provided');
+                    return false;
+                }
+
+                // is member.permission exist?
+                // is member.permission an object?
+                // is params.qstring.app_id property of member.permission object?
+                // is member.permission.r[app_id].all is true?
+                // or member.global_admin?
+                if (!member.global_admin) {
+                    if (typeof member.permission !== 'undefined') {
+                        var isPermissionObjectExistForRead = (typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object");
+                        var isFeatureAllowedInReadPermissionObject = false;
+                        if (typeof feature === "string") {
+                            isFeatureAllowedInReadPermissionObject = isPermissionObjectExistForRead && (member.permission.r[params.qstring.app_id].all || (member.permission.r[params.qstring.app_id].allowed && member.permission.r[params.qstring.app_id].allowed[feature]));
+                        }
+                        else {
+                            isFeatureAllowedInReadPermissionObject = false;
+                            for (var i = 0; i < feature.length; i++) {
+                                if (isPermissionObjectExistForRead && (member.permission.r[params.qstring.app_id].all || (member.permission.r[params.qstring.app_id].allowed && member.permission.r[params.qstring.app_id].allowed[feature[i]]))) {
+                                    isFeatureAllowedInReadPermissionObject = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission._ === "object" && typeof member.permission._.a === "object") && member.permission._.a.indexOf(params.qstring.app_id) > -1;
+                        // don't allow if user has not permission for feature and has no admin access for current app
+                        if (!(isFeatureAllowedInReadPermissionObject) && !(hasAdminAccess)) {
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
+                            return false;
+                        }
+                    }
+                    else {
+                        // check for legacy auth
+                        if (!((member.user_of && Array.isArray(member.user_of) && member.user_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
+                            return false;
+                        }
+                    }
+                }
+
+                if (member && member.locked) {
+                    common.returnMessage(params, 401, 'User is locked');
+                    reject('User is locked');
+                    return false;
+                }
+
+                if (params.qstring.app_id) {
+                    common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
+                        if (!app) {
+                            common.returnMessage(params, 401, 'App does not exist');
+                            reject('App does not exist');
+                            return false;
+                        }
+                        else if (app) {
+                            params.app_id = app._id;
+                            params.app_cc = app.country;
+                            params.appTimezone = app.timezone;
+                            params.app = app;
+                            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                        }
+
+                        params.member = member;
+
+                        if (plugins.dispatch("/validation/user", {params: params})) {
+                            if (!params.res.finished) {
+                                common.returnMessage(params, 401, 'User does not have right');
+                                reject('User does not have right');
+                            }
+                            return false;
+                        }
+
+                        if (app) {
+                            plugins.dispatch("/o/validate", {
+                                params: params,
+                                app: app
+                            });
+                        }
+
+                        resolve(callbackParam);
+                    });
+                }
+                else {
+                    params.member = member;
+
+                    if (plugins.dispatch("/validation/user", {params: params})) {
+                        if (!params.res.finished) {
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
+                        }
+                        return false;
+                    }
+
+                    resolve(callbackParam);
+                }
+            });
+        },
+        function() {
+            common.returnMessage(params, 401, 'Token is invalid');
+            reject('Token is invalid');
+            return false;
+        });
+    });
+};
+
+/**
+* Validate user for write access by api_key for provided app_id (both required parameters for the request).
+* User must exist, must not be locked, must pass plugin validation (if any) and have accessType that passed as accessType parameter to the provided app (which also must exist).
+* If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
+* Additionally populates params with member information and app information.
+* @param {params} params - {@link params} object
+* @param {string} feature - feature that trying to access
+* @param {string} accessType - required access type for related request (c: create, u: update and d: delete)
+* @param {function} callback - function to call only if validation passes
+* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @returns {Promise} promise
+*/
+function validateWrite(params, feature, accessType, callback, callbackParam) {
+    return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
+        validate_token_if_exists(params).then(function(result) {
+            var query = "";
+            //var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
+            // then result is owner id
+            if (result !== 'token-not-given' && result !== 'token-invalid') {
+                query = {'_id': common.db.ObjectID(result)};
+            }
+            else {
+                if (!params.qstring.api_key) {
+                    if (result === 'token-invalid') {
+                        common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        return false;
+                    }
+                }
+                params.qstring.api_key = params.qstring.api_key + "";
+                query = {'api_key': params.qstring.api_key};
+            }
+            common.db.collection('members').findOne(query, function(err, member) {
+                if (!member || err) {
+                    common.returnMessage(params, 401, 'User does not exist');
+                    reject('User does not exist');
+                    return false;
+                }
+
+                if (!member.global_admin && /*appIdExceptions.indexOf(feature) === -1 && */ typeof params.qstring.app_id === "undefined") {
+                    common.returnMessage(params, 401, 'No app_id provided');
+                    reject('No app_id provided');
+                    return false;
+                }
+
+                if (!member.global_admin) {
+                    if (typeof member.permission !== 'undefined') {
+                        var isPermissionObjectExistForAccessType = (typeof member.permission[accessType] === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object");
+                        var isFeatureAllowedInRelatedPermissionObject = false;
+
+                        // if feature name passed as single string
+                        if (typeof feature === "string") {
+                            isFeatureAllowedInRelatedPermissionObject = isPermissionObjectExistForAccessType && (member.permission[accessType][params.qstring.app_id].all || (member.permission[accessType][params.qstring.app_id].allowed && member.permission[accessType][params.qstring.app_id].allowed[feature]));
+                        }
+                        // or feature name passed as string array
+                        else {
+                            isFeatureAllowedInRelatedPermissionObject = false;
+                            for (var i = 0; i < feature.length; i++) {
+                                if (isPermissionObjectExistForAccessType && (member.permission[accessType][params.qstring.app_id].all || (member.permission[accessType][params.qstring.app_id].allowed && member.permission[accessType][params.qstring.app_id].allowed[feature[i]]))) {
+                                    isFeatureAllowedInRelatedPermissionObject = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        var hasAdminAccess = (typeof member.permission === "object" && typeof member.permission._ === "object" && typeof member.permission._.a === "object") && member.permission._.a.indexOf(params.qstring.app_id) > -1;
+                        // don't allow if user has not permission for feature and has no admin access for current app
+                        if (!(isFeatureAllowedInRelatedPermissionObject) && !(hasAdminAccess)) {
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
+                            return false;
+                        }
+                    }
+                    else {
+                        if (!module.exports.hasAdminAccess(member, params.qstring.app_id)) {
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
+                            return false;
+                        }
+                    }
+                }
+
+                if (member && member.locked) {
+                    common.returnMessage(params, 401, 'User is locked');
+                    reject('User is locked');
+                    return false;
+                }
+
+                if (params.qstring.app_id) {
+                    common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
+                        if (!app) {
+                            common.returnMessage(params, 401, 'App does not exist');
+                            reject('App does not exist');
+                            return false;
+                        }
+                        else if ((params.populator || params.qstring.populator) && app.locked) {
+                            common.returnMessage(params, 403, 'App is locked');
+                            reject('App is locked');
+                            return false;
+                        }
+                        else if (app) {
+                            params.app_id = app._id;
+                            params.app = app;
+                            params.appTimezone = app.timezone;
+                            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                        }
+
+                        params.member = member;
+
+                        if (plugins.dispatch("/validation/user", {params: params})) {
+                            if (!params.res.finished) {
+                                common.returnMessage(params, 401, 'User does not have right');
+                                reject('User does not have right');
+                            }
+                            return false;
+                        }
+
+                        resolve(callbackParam);
+                    });
+                }
+                else {
+                    params.member = member;
+
+                    if (plugins.dispatch("/validation/user", {params: params})) {
+                        if (!params.res.finished) {
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
+                        }
+                        return false;
+                    }
+
+                    resolve(callbackParam);
+                }
+            });
+        },
+        function() {
+            common.returnMessage(params, 401, 'Token is invalid');
+            reject('Token is invalid');
+            return false;
+        });
+    });
+}
+
+/**
+* Validate user for create access by api_key for provided app_id (both required parameters for the request).
+* @param {params} params - {@link params} object
+* @param {string} feature - feature that trying to access
+* @param {function} callback - function to call only if validation passes
+* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+*/
+exports.validateCreate = function(params, feature, callback, callbackParam) {
+    validateWrite(params, feature, 'c', callback, callbackParam);
+};
+
+/**
+* Validate user for update access by api_key for provided app_id (both required parameters for the request).
+* @param {params} params - {@link params} object
+* @param {string} feature - feature that trying to access
+* @param {function} callback - function to call only if validation passes
+* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+*/
+exports.validateUpdate = function(params, feature, callback, callbackParam) {
+    validateWrite(params, feature, 'u', callback, callbackParam);
+};
+
+/**
+* Validate user for delete access by api_key for provided app_id (both required parameters for the request).
+* @param {params} params - {@link params} object
+* @param {string} feature - feature that trying to access
+* @param {function} callback - function to call only if validation passes
+* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+*/
+exports.validateDelete = function(params, feature, callback, callbackParam) {
+    validateWrite(params, feature, 'd', callback, callbackParam);
+};
+
+/**
+ * Is user has admin access on selected app?
+ * @param {object} member - member object from params
+ * @param {string} app_id - id value of related app
+ * @returns {boolean} isAdmin - is that user has admin access on that app?
+ */
+exports.hasAdminAccess = function(member, app_id) {
+    var isAdmin = true;
+    // check users who has permission property
+    if (typeof member.permisson !== "undefined") {
+        var types = ["c", "r", "u", "d"];
+        for (var i = 0; i < types.length; i++) {
+            if (!member.permission[types[i]][app_id].all) {
+                isAdmin = false;
+            }
+        }
+    }
+    // check legacy users who has admin_of property
+    // users should have at least one app in admin_of array
+    else {
+        isAdmin = typeof member.admin_of !== "undefined" && member.admin_of.indexOf(app_id) > -1;
+    }
+    return isAdmin || member.global_admin;
+};
+
+exports.hasCreateRight = function(feature, app_id, member) {
+    return member.global_admin || member.permission.c[app_id].allowed[feature] || member.permission.c[app_id].all;
+};
+
+exports.hasReadRight = function(feature, app_id, member) {
+    return member.global_admin || member.permission.r[app_id].allowed[feature] || member.permission.r[app_id].all;
+};
+
+exports.hasUpdateRight = function(feature, app_id, member) {
+    return member.global_admin || member.permission.u[app_id].allowed[feature] || member.permission.u[app_id].all;
+};
+
+exports.hasDeleteRight = function(feature, app_id, member) {
+    return member.global_admin || member.permission.d[app_id].allowed[feature] || member.permission.d[app_id].all;
+};
+
+exports.getUserApps = function(member) {
+    let userApps = [];
+    if (member.global_admin) {
+        return userApps;
+    }
+    else {
+        if (typeof member.permission !== "undefined") {
+            for (var i = 0; i < member.permission._.u.length; i++) {
+                userApps = userApps.concat(member.permission._.u[i]);
+            }
+            return userApps.concat(member.permission._.a);
+        }
+        else {
+            return member.user_of;
+        }
+    }
+};
+
+exports.getUserAppsForFeaturePermission = function(member, feature, permissionType) {
+    let userApps = [];
+    if (member.global_admin) {
+        return userApps;
+    }
+    if (typeof member.permission !== "undefined") {
+        const permissionList = member.permission[permissionType];
+        for (var appId in permissionList) {
+            const targetPermissionForApp = permissionList[appId];
+            if (targetPermissionForApp.all === true || targetPermissionForApp.allowed[feature] === true) {
+                userApps.push(appId);
+            }
+        }
+    }
+    return userApps;
+};
+
+exports.getAdminApps = function(member) {
+    if (member.global_admin) {
+        return [];
+    }
+    else {
+        if (typeof member.permission !== "undefined") {
+            return member.permission._.a;
+        }
+        else {
+            return member.admin_of;
+        }
     }
 };

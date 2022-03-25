@@ -1,0 +1,17 @@
+<cly-dialog :visible.sync="centerDialogVisible" custom-class="cly-vue-sidebar__app-selector__dialog_box" :show-close="false" width="500px"
+    :modal="false" center @closed="handleClose()">
+    <span slot="title" class="dialog-title bu-level">
+        <span class="bu-level-left text-big">Apps</span>
+        <span class="bu-level-right">
+            <el-button v-if="showCompare" @click="compare" type="text"><span class="text-medium">Compare Apps <i class="ion-arrow-right-c"></i> </span></el-button>
+        </span>
+    </span>
+    <cly-listbox height="624" :options="allApps" :searchable="true" :bordered="false" v-model="activeApp">
+        <template v-slot:option-prefix="option">
+            <img style="width: 21px;border-radius: 10px;" :src="option.image"></img>
+        </template>
+        <template v-slot:option-suffix="option">
+            <span class="bu-pr-2 bu-is-capitalized text-medium">{{option.type}}</span>
+        </template>
+    </cly-listbox>
+</cly-dialog>

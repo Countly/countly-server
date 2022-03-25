@@ -1,0 +1,23 @@
+<cly-form-field
+    name="metrics"
+    rules="required"
+    :label="i18nM(multiple ? 'dashboards.metrics-multi': 'dashboards.metrics-single')">
+    <el-select
+        :is-full-width="true"
+        :key="rerender"
+        style="width: 100%;"
+        v-bind="$attrs"
+        v-on="allListeners"
+        v-model="selectedMetrics"
+        :collapse-tags="false"
+        :multiple="multiple"
+        :multiple-limit="multipleLimit"
+        :placeholder="placeholderText">
+        <el-option
+            v-for="metric in metrics"
+            :key="metric.value"
+            :label="metric.label"
+            :value="metric.value">
+        </el-option>
+    </el-select>
+</cly-form-field>
