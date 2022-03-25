@@ -1430,8 +1430,32 @@ plugins.setConfigs("dashboards", {
             (shareWith === "selected-users" && (sharedEmailEdit.length || sharedEmailView.length || sharedUserGroupEdit.length || sharedUserGroupView.length))) {
             sharing = shartingStatus || (globalAdmin && (restrict.indexOf("#/manage/configurations") < 0));
         }
-
+        sendEmailInvitaion(member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit, sharedUserGroupView)
         return sharing;
+    }
+
+    async function sendEmailInvitaion(member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit, sharedUserGroupView) {
+        console.log("sendEmailInvitaion")
+        let viewEamilList = [];
+        let editEmailList =[];
+        
+        console.log(member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit, sharedUserGroupView,"@fffff")
+        if (shareWith === 'all-users') {
+            const allMemberEmail = await common.db.collection("members").find({_id: {$ne: member._id}}, {"email": 1, "_id": -1}).toArray();
+            console.log(allMemberEmail,"allMemberEmail!!!")
+            viewEamilList = viewEamilList.concat(allMemberEmail.map(item => item.email));
+        }
+        if (sharedUserGroupView && sharedUserGroupView.length > 0) {
+            const viewGroupEmail = await common.db.collection("members").find({_id: {$ne: member._id}, group_id: {$in: sharedUserGroupView }}, {"email": 1, "_id": -1}).toArray();
+            viewEamilList = viewEamilList.concat(viewGroupEmail.map(item => item.email));
+        }
+        if (sharedUserGroupEdit && sharedUserGroupEdit.length > 0) {
+            const editGroupEmail = await common.db.collection("members").find({_id: {$ne: member._id}, group_id: {$in: sharedUserGroupEdit }}, {"email": 1, "_id": -1}).toArray();
+            viewEamilList = viewEamilList.concat(editGroupEmail.map(item => item.email));
+        }
+        viewEamilList = viewEamilList.concat(sharedEmailView);
+        editEmailList = editEmailList.concat(sharedEmailEdit);
+        console.log(viewEamilList,editEmailList,"#3333")
     }
 
     /**

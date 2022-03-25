@@ -34,6 +34,10 @@
                     </el-radio>
                 </el-radio-group>
             </cly-form-field>
+
+            <cly-form-field name="send-email">
+                <el-checkbox v-model="drawerScope.editedObject.send_email_invitation">{{i18n('dashboards.send-email')}}</el-checkbox>
+            </cly-form-field>
             
             <div v-if="drawerScope.editedObject.share_with === 'selected-users'">
                 <div class="text-big font-weight-bold">
