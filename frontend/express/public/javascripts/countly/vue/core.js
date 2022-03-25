@@ -617,10 +617,15 @@
 
         this.loadedModules.forEach(function(mid, index) {
             if (mid.destroy !== false) {
-                _globalVuexStore.dispatch(mid.name + "/reset");
-                setTimeout(function() {
-                    _vuex.unregister(mid.name);
-                }, 0);
+                /*
+                    Unregistering causes some unexpected behavior,
+                    Should stay commented out until we find the reason
+                    TODO(vck)
+                */
+                //_globalVuexStore.dispatch(mid.name + "/reset");
+                // setTimeout(function() {
+                //     _vuex.unregister(mid.name);
+                // }, 0);
                 removeQueue.push(index);
             }
         });
