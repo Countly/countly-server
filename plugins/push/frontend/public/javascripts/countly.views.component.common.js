@@ -872,21 +872,21 @@
         },
         computed: {
             pushNotification: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification;
             },
             selectedMessageLocale: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
+                    return this.$store.state.countlyPushNotificationDetails.messageLocaleFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/details/onSetMessageLocaleFilter", value);
+                    this.$store.dispatch("countlyPushNotificationDetails/onSetMessageLocaleFilter", value);
                 }
             },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocale];
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.message[this.selectedMessageLocale];
             },
             localizations: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.localizations;
             },
             previewMessageTitle: function() {
                 if (this.message.title) {
@@ -927,7 +927,7 @@
                 return this.pushNotification.settings[this.PlatformEnum.IOS].subtitle;
             },
             selectedMobileMessagePlatform: function() {
-                return this.$store.state.countlyPushNotification.details.mobileMessagePlatform;
+                return this.$store.state.countlyPushNotificationDetails.mobileMessagePlatform;
             }
         },
         methods: {
@@ -965,7 +965,7 @@
         },
         computed: {
             pushNotification: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification;
             },
             previewCohorts: function() {
                 return this.cohorts.map(function(cohortItem) {
@@ -1037,7 +1037,7 @@
         template: '#details-errors-tab',
         computed: {
             errors: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.errors;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.errors;
             },
         }
     });

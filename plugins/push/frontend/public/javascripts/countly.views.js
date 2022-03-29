@@ -39,6 +39,7 @@
     var InitialEnabledUsers = {
         ios: 0,
         android: 0,
+        all: 0,
     };
 
     var InitialPushNotificationDrawerSettingsState = {
@@ -657,13 +658,26 @@
                 }
                 return platform;
             },
+            hasAnyFilters: function() {
+                return this.pushNotificationUnderEdit.user || this.pushNotificationUnderEdit.drill;
+            },
+            estimateIfNecessary: function() {
+                if (this.pushNotificationUnderEdit.type === this.TypeEnum.ONE_TIME || this.type === this.TypeEnum.ONE_TIME) {
+                    if (this.from) {
+                        this.estimate();
+                        return;
+                    }
+                    if (this.hasAnyFilters()) {
+                        this.estimate();
+                        return;
+                    }
+                }
+            },
             onPlatformChange: function(platform) {
                 if (!this.isPlatformSelected(platform)) {
                     if (this.hasPlatformConfig(platform)) {
                         this.pushNotificationUnderEdit.platforms.push(platform);
-                        if (this.from) {
-                            this.estimate();
-                        }
+                        this.estimateIfNecessary();
                         return;
                     }
                     CountlyHelpers.notify({type: 'error', message: 'No push credentials found for ' + this.getPlatformLabel(platform) + ' platform' });
@@ -672,9 +686,7 @@
                     this.pushNotificationUnderEdit.platforms = this.pushNotificationUnderEdit.platforms.filter(function(item) {
                         return item !== platform;
                     });
-                    if (this.from) {
-                        this.estimate();
-                    }
+                    this.estimateIfNecessary();
                 }
             },
             isPlatformSelected: function(platform) {
@@ -699,9 +711,8 @@
                     return;
                 }
                 this.updatePlatformsBasedOnAppConfig();
-                if (this.from && !this.isQueryFilterEmpty()) {
-                    this.estimate();
-                }
+                this.estimateIfNecessary();
+                this.setEnabledUsers(this.$store.state.countlyPushNotificationDashboard.enabledUsers);
             },
             addButton: function() {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.push({label: "", url: ""});
@@ -1010,17 +1021,6 @@
             setEnabledUsers: function(enabledUsers) {
                 this.enabledUsers = enabledUsers;
             },
-            fetchDashboard: function() {
-                var self = this;
-                countlyPushNotification.service.fetchDashboard(this.type, countlyCommon.generateId())
-                    .then(function(response) {
-                        self.setEnabledUsers(response.enabledUsers);
-                    })
-                    .catch(function(error) {
-                        console.error(error);
-                        self.setEnabledUsers(JSON.parse(JSON.stringify(InitialEnabledUsers)));
-                    });
-            },
             setPushNotificationUnderEdit: function(value) {
                 this.pushNotificationUnderEdit = value;
             },
@@ -1103,6 +1103,13 @@
                         if (self.pushNotificationUnderEdit.type === self.TypeEnum.TRANSACTIONAL) {
                             self.updateTransactionalOptions();
                         }
+                        if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME) {
+                            if (self.hasAnyFilters()) {
+                                self.estimate();
+                                return;
+                            }
+                            self.setEnabledUsers(self.$store.state.countlyPushNotificationDashboard.enabledUsers);
+                        }
                     })
                     .catch(function(error) {
                         console.error(error);
@@ -1136,7 +1143,6 @@
             this.fetchCohorts();
             this.fetchLocations();
             this.fetchEvents();
-            this.fetchDashboard();
             this.getAppConfig();
         },
         components: {
@@ -1192,23 +1198,23 @@
         },
         computed: {
             selectedPushNotificationType: function() {
-                return this.$store.state.countlyPushNotification.main.selectedPushNotificationType;
+                return this.$store.state.countlyPushNotificationMain.selectedPushNotificationType;
             },
             isDashboardLoading: function() {
-                return this.$store.state.countlyPushNotification.main.isDashboardLoading;
+                return this.$store.getters['countlyPushNotificationDashboard/isLoading'];
             },
             areRowsLoading: function() {
-                return this.$store.state.countlyPushNotification.main.areRowsLoading;
+                return this.$store.state.countlyPushNotificationMain.areRowsLoading;
             },
             isUserCommandLoading: function() {
-                return this.$store.getters['countlyPushNotification/main/isLoading'];
+                return this.$store.getters['countlyPushNotificationMain/isLoading'];
             },
             pushNotificationRows: function() {
                 var self = this;
                 if (this.selectedStatusFilter === countlyPushNotification.service.ALL_FILTER_OPTION_VALUE) {
-                    return this.$store.state.countlyPushNotification.main.rows;
+                    return this.$store.state.countlyPushNotificationMain.rows;
                 }
-                return this.$store.state.countlyPushNotification.main.rows.filter(function(rowItem) {
+                return this.$store.state.countlyPushNotificationMain.rows.filter(function(rowItem) {
                     return rowItem.status === self.selectedStatusFilter;
                 });
             },
@@ -1221,10 +1227,10 @@
                 };
             },
             totalAppUsers: function() {
-                return this.$store.state.countlyPushNotification.main.dashboard.totalAppUsers;
+                return this.$store.state.countlyPushNotificationDashboard.totalAppUsers;
             },
             enabledUsers: function() {
-                return this.$store.state.countlyPushNotification.main.dashboard.enabledUsers[this.PlatformEnum.ALL];
+                return this.$store.state.countlyPushNotificationDashboard.enabledUsers[this.PlatformEnum.ALL];
             },
             enabledUsersPercentage: function() {
                 if (!this.totalAppUsers) {
@@ -1233,11 +1239,11 @@
                 return parseInt(this.formatPercentage(this.enabledUsers / this.totalAppUsers));
             },
             xAxisPushNotificationPeriods: function() {
-                return this.$store.state.countlyPushNotification.main.dashboard.periods[this.selectedPeriodFilter];
+                return this.$store.state.countlyPushNotificationDashboard.periods[this.selectedPushNotificationType][this.selectedPeriodFilter];
             },
             yAxisPushNotificationSeries: function() {
                 var self = this;
-                return this.$store.state.countlyPushNotification.main.dashboard.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
+                return this.$store.state.countlyPushNotificationDashboard.series[this.selectedPushNotificationType][this.selectedPeriodFilter].map(function(pushNotificationSerie) {
                     return {
                         data: pushNotificationSerie.data[self.selectedPlatformFilter] || [],
                         name: pushNotificationSerie.label
@@ -1251,12 +1257,12 @@
                     data: [
                         {
                             name: CV.i18n('push-notification.sent-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalSent[this.selectedPushNotificationType][this.selectedPlatformFilter]),
+                            value: this.formatNumber(this.$store.state.countlyPushNotificationDashboard.totalSent[this.selectedPushNotificationType][this.selectedPlatformFilter]),
                             tooltip: CV.i18n('push-notification.sent-serie-description')
                         },
                         {
                             name: CV.i18n('push-notification.actions-performed-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.dashboard.totalActions[this.selectedPushNotificationType][this.selectedPlatformFilter]),
+                            value: this.formatNumber(this.$store.state.countlyPushNotificationDashboard.totalActions[this.selectedPushNotificationType][this.selectedPlatformFilter]),
                             tooltip: CV.i18n('push-notification.actions-performed-serie-description')
                         }
                     ]
@@ -1264,18 +1270,18 @@
             },
             selectedStatusFilter: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.main.statusFilter;
+                    return this.$store.state.countlyPushNotificationMain.statusFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/main/onSetStatusFilter", value);
+                    this.$store.dispatch("countlyPushNotificationMain/onSetStatusFilter", value);
                 }
             },
             selectedPlatformFilter: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.main.platformFilter;
+                    return this.$store.state.countlyPushNotificationMain.platformFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/main/onSetPlatformFilter", value);
+                    this.$store.dispatch("countlyPushNotificationMain/onSetPlatformFilter", value);
                 }
             },
             selectedPlatformFilterLabel: function() {
@@ -1298,7 +1304,7 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyPushNotification/main/fetchAll', false);
+                this.$store.dispatch('countlyPushNotificationMain/fetchAll', false);
             },
             formatPercentage: function(value, decimalPlaces) {
                 return this.formatNumber(CountlyHelpers.formatPercentage(value, decimalPlaces));
@@ -1312,50 +1318,50 @@
                 this.handleUserCommands(this.UserCommandEnum.APPROVE, id);
             },
             handleUserCommands: function(command, pushNotificationId) {
-                this.$store.dispatch('countlyPushNotification/main/onUserCommand', {type: command, pushNotificationId: pushNotificationId});
+                this.$store.dispatch('countlyPushNotificationMain/onUserCommand', {type: command, pushNotificationId: pushNotificationId});
                 switch (command) {
                 case this.UserCommandEnum.RESEND: {
-                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationMain/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.DUPLICATE: {
-                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationMain/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.DELETE: {
-                    this.$store.dispatch('countlyPushNotification/main/onDelete', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotificationMain/onDelete', pushNotificationId);
                     break;
                 }
                 case this.UserCommandEnum.REJECT: {
-                    this.$store.dispatch('countlyPushNotification/main/onReject', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotificationMain/onReject', pushNotificationId);
                     break;
                 }
                 case this.UserCommandEnum.APPROVE: {
-                    this.$store.dispatch('countlyPushNotification/main/onApprove', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotificationMain/onApprove', pushNotificationId);
                     break;
                 }
                 case this.UserCommandEnum.EDIT: {
-                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationMain/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.EDIT_DRAFT: {
-                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationMain/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.EDIT_REJECT: {
-                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationMain/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.STOP: {
-                    this.$store.dispatch('countlyPushNotification/main/onToggle', {id: pushNotificationId, isActive: false});
+                    this.$store.dispatch('countlyPushNotificationMain/onToggle', {id: pushNotificationId, isActive: false});
                     break;
                 }
                 case this.UserCommandEnum.START: {
-                    this.$store.dispatch('countlyPushNotification/main/onToggle', {id: pushNotificationId, isActive: true});
+                    this.$store.dispatch('countlyPushNotificationMain/onToggle', {id: pushNotificationId, isActive: true});
                     break;
                 }
                 case this.UserCommandEnum.CREATE: {
-                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationMain/onSetIsDrawerOpen', true);
                     break;
                 }
                 default: {
@@ -1447,8 +1453,7 @@
             }
         },
         mounted: function() {
-            this.$store.dispatch('countlyPushNotification/main/fetchDashboard');
-            this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
+            this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
         }
     });
 
@@ -1468,19 +1473,18 @@
         computed: {
             selectedPushNotificationTab: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.main.selectedPushNotificationType;
+                    return this.$store.state.countlyPushNotificationMain.selectedPushNotificationType;
                 },
                 set: function(value) {
-                    this.$store.dispatch('countlyPushNotification/main/onSetPushNotificationType', value);
-                    this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
-                    this.$store.dispatch('countlyPushNotification/main/fetchDashboard');
+                    this.$store.dispatch('countlyPushNotificationMain/onSetPushNotificationType', value);
+                    this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
                 }
             },
             isDrawerOpen: function() {
-                return this.$store.state.countlyPushNotification.main.isDrawerOpen;
+                return this.$store.state.countlyPushNotificationMain.isDrawerOpen;
             },
             userCommand: function() {
-                return this.$store.state.countlyPushNotification.main.userCommand;
+                return this.$store.state.countlyPushNotificationMain.userCommand;
             },
         },
         watch: {
@@ -1492,28 +1496,33 @@
         },
         methods: {
             onCreatePushNotification: function() {
-                this.$store.dispatch('countlyPushNotification/main/onUserCommand', {type: this.UserCommandEnum.CREATE, pushNotificationId: null});
-                this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                this.$store.dispatch('countlyPushNotificationMain/onUserCommand', {type: this.UserCommandEnum.CREATE, pushNotificationId: null});
+                this.$store.dispatch('countlyPushNotificationMain/onSetIsDrawerOpen', true);
             },
             onDrawerClose: function() {
-                this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', false);
+                this.$store.dispatch('countlyPushNotificationMain/onSetIsDrawerOpen', false);
             },
             onSave: function() {
-                this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
+                this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
             }
+        },
+        mounted: function() {
+            this.$store.dispatch('countlyPushNotificationDashboard/fetchDashboard');
         },
         components: {
             "push-notification-drawer": PushNotificationDrawer
         }
     });
 
-    var pushNotificationVuex = [{
-        clyModel: countlyPushNotification
+    var mainPushNotificationVuex = [{
+        clyModel: countlyPushNotification.main
+    }, {
+        clyModel: countlyPushNotification.dashboard
     }];
 
     var pushNotificationViewWrapper = new countlyVue.views.BackboneWrapper({
         component: PushNotificationView,
-        vuex: pushNotificationVuex,
+        vuex: mainPushNotificationVuex,
         templates: [
             "/push/templates/common-components.html",
             "/push/templates/push-notification.html",
@@ -1573,10 +1582,10 @@
         },
         computed: {
             pushNotification: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification;
             },
             platformFilterOptions: function() {
-                return this.$store.state.countlyPushNotification.details.platformFilterOptions;
+                return this.$store.state.countlyPushNotificationDetails.platformFilterOptions;
             },
             localeFilterOptions: function() {
                 if (this.pushNotification.dashboard[this.selectedPlatformFilter]) {
@@ -1587,10 +1596,10 @@
                 return [];
             },
             selectedMessageLocaleFilter: function() {
-                return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
+                return this.$store.state.countlyPushNotificationDetails.messageLocaleFilter;
             },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocaleFilter];
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.message[this.selectedMessageLocaleFilter];
             },
             selectedDashboard: function() {
                 var selectedDashboardFilter = this.pushNotification.dashboard[this.selectedPlatformFilter];
@@ -1640,7 +1649,7 @@
                 };
             },
             isLoading: function() {
-                return this.$store.getters['countlyPushNotification/details/isLoading'];
+                return this.$store.getters['countlyPushNotificationDetails/isLoading'];
             },
             hasApproverPermission: function() {
                 return countlyPushNotification.service.hasApproverPermission();
@@ -1653,26 +1662,26 @@
                 return result;
             },
             isDrawerOpen: function() {
-                return this.$store.state.countlyPushNotification.details.isDrawerOpen;
+                return this.$store.state.countlyPushNotificationDetails.isDrawerOpen;
             },
             userCommand: function() {
-                return this.$store.state.countlyPushNotification.details.userCommand;
+                return this.$store.state.countlyPushNotificationDetails.userCommand;
             },
             selectedLocaleFilter: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.details.localeFilter;
+                    return this.$store.state.countlyPushNotificationDetails.localeFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/details/onSetLocaleFilter", value);
+                    this.$store.dispatch("countlyPushNotificationDetails/onSetLocaleFilter", value);
                 }
             },
             selectedPlatformFilter: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.details.platformFilter;
+                    return this.$store.state.countlyPushNotificationDetails.platformFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/details/onSetPlatformFilter", value);
-                    this.$store.dispatch("countlyPushNotification/details/onSetLocaleFilter", null);
+                    this.$store.dispatch("countlyPushNotificationDetails/onSetPlatformFilter", value);
+                    this.$store.dispatch("countlyPushNotificationDetails/onSetLocaleFilter", null);
                 }
             },
             shouldShowGoToSentUrl: function() {
@@ -1685,7 +1694,7 @@
                 return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.actioned > 0;
             },
             dashboardTokens: function() {
-                return this.$store.state.countlyPushNotification.details.dashboardTokens;
+                return this.$store.state.countlyPushNotificationDashboard.tokens;
             }
         },
         watch: {
@@ -1703,53 +1712,53 @@
                 this.handleUserCommands(this.UserCommandEnum.REJECT, id);
             },
             handleUserCommands: function(command, pushNotificationId) {
-                this.$store.dispatch('countlyPushNotification/details/onUserCommand', {type: command, pushNotificationId: pushNotificationId});
+                this.$store.dispatch('countlyPushNotificationDetails/onUserCommand', {type: command, pushNotificationId: pushNotificationId});
                 switch (command) {
                 case this.UserCommandEnum.RESEND: {
-                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationDetails/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.DUPLICATE: {
-                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationDetails/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.DELETE: {
-                    this.$store.dispatch('countlyPushNotification/details/onDelete', pushNotificationId)
+                    this.$store.dispatch('countlyPushNotificationDetails/onDelete', pushNotificationId)
                         .then(function() {
                             window.location.hash = "#/messaging";
                         });
                     break;
                 }
                 case this.UserCommandEnum.REJECT: {
-                    this.$store.dispatch('countlyPushNotification/details/onReject', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotificationDetails/onReject', pushNotificationId);
                     break;
                 }
                 case this.UserCommandEnum.APPROVE: {
-                    this.$store.dispatch('countlyPushNotification/details/onApprove', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotificationDetails/onApprove', pushNotificationId);
                     break;
                 }
                 case this.UserCommandEnum.EDIT: {
-                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationDetails/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.EDIT_DRAFT: {
-                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationDetails/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.EDIT_REJECT: {
-                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationDetails/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.STOP: {
-                    this.$store.dispatch('countlyPushNotification/details/onToggle', {id: pushNotificationId, isActive: false});
+                    this.$store.dispatch('countlyPushNotificationDetails/onToggle', {id: pushNotificationId, isActive: false});
                     break;
                 }
                 case this.UserCommandEnum.START: {
-                    this.$store.dispatch('countlyPushNotification/details/onToggle', {id: pushNotificationId, isActive: true});
+                    this.$store.dispatch('countlyPushNotificationDetails/onToggle', {id: pushNotificationId, isActive: true});
                     break;
                 }
                 case this.UserCommandEnum.CREATE: {
-                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    this.$store.dispatch('countlyPushNotificationDetails/onSetIsDrawerOpen', true);
                     break;
                 }
                 default: {
@@ -1854,7 +1863,7 @@
                 return {data: [100 - value], itemStyle: {color: "#E2E4E8"}, silent: true};
             },
             onDrawerClose: function() {
-                this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', false);
+                this.$store.dispatch('countlyPushNotificationDetails/onSetIsDrawerOpen', false);
             },
             onGoToSent: function() {
                 var queryData = {message: {$in: [this.pushNotification._id]}};
@@ -1920,7 +1929,7 @@
                 });
             },
             onMobileMessagePlatformChange: function(value) {
-                this.$store.dispatch('countlyPushNotification/details/onSetMobileMessagePlatform', value);
+                this.$store.dispatch('countlyPushNotificationDetails/onSetMobileMessagePlatform', value);
             },
         },
         components: {
@@ -1929,14 +1938,21 @@
         },
         mounted: function() {
             if (this.$route.params.id) {
-                this.$store.dispatch('countlyPushNotification/details/fetchById', this.$route.params.id);
+                this.$store.dispatch('countlyPushNotificationDetails/fetchById', this.$route.params.id);
+                this.$store.dispatch('countlyPushNotificationDashboard/fetchDashboard');
             }
         }
     });
 
+    var detailsPushNotificationVuex = [{
+        clyModel: countlyPushNotification.details
+    }, {
+        clyModel: countlyPushNotification.dashboard
+    }];
+
     var pushNotificationDetailsViewWrapper = new countlyVue.views.BackboneWrapper({
         component: PushNotificationDetailsView,
-        vuex: pushNotificationVuex,
+        vuex: detailsPushNotificationVuex,
         templates: [
             "/push/templates/common-components.html",
             "/push/templates/push-notification-details.html"
