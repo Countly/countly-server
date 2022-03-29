@@ -396,6 +396,7 @@ const map = {
     buttons: function(t, buttons) {
         if (buttons) {
             t.result.c.b = buttons.map(b => ({t: b.title, l: b.url}));
+            t.result.aps['mutable-content'] = 1;
         }
     },
 
