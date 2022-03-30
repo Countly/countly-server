@@ -307,6 +307,12 @@
             shouldDisplayAndroidSettings: function() {
                 return this.shouldDisplayPlatformSettings(this.PlatformEnum.ANDROID);
             },
+            shouldDisplayNumberOfUsers: function() {
+                if (this.pushNotificationUnderEdit.type === this.TypeEnum.ONE_TIME || this.type === this.TypeEnum.ONE_TIME) {
+                    return this.pushNotificationUnderEdit[this.TypeEnum.ONE_TIME].audienceSelection === this.AudienceSelectionEnum.NOW;
+                }
+                return true;
+            },
             previewPlatforms: function() {
                 return this.pushNotificationUnderEdit.platforms.map(function(selectedPlatform) {
                     return countlyPushNotification.service.platformOptions[selectedPlatform].label;
@@ -460,6 +466,9 @@
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
                     countlyPushNotification.service.estimate(preparePushNotificationModel, options).then(function(response) {
+                        if (response._id) {
+                            self.setId(response._id);
+                        }
                         self.setLocalizationOptions(response.localizations);
                         self.setCurrentNumberOfUsers(response.total);
                         if (self.pushNotificationUnderEdit.type === self.TypeEnum.ONE_TIME || self.type === self.TypeEnum.ONE_TIME) {
@@ -467,8 +476,9 @@
                                 self.updateEnabledNumberOfUsers(response.total);
                             }
                         }
-                        if (response._id) {
-                            self.setId(response._id);
+                        if (self.type === self.TypeEnum.ONE_TIME && self.pushNotificationUnderEdit[self.TypeEnum.ONE_TIME].audienceSelection === self.AudienceSelectionEnum.BEFORE) {
+                            resolve(true);
+                            return;
                         }
                         if (response.total === 0) {
                             resolve(false);
@@ -1158,7 +1168,7 @@
         },
     });
 
-    var PushNotificationTabView = countlyVue.views.BaseView.extend({
+    var PushNotificationTabView = countlyVue.views.create({
         template: "#push-notification-tab",
         mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.auth(featureName)],
         data: function() {
@@ -1457,7 +1467,7 @@
         }
     });
 
-    var PushNotificationView = countlyVue.views.BaseView.extend({
+    var PushNotificationView = countlyVue.views.create({
         template: "#push-notification",
         mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer"), countlyVue.mixins.auth(featureName)],
         data: function() {
@@ -1504,6 +1514,9 @@
             },
             onSave: function() {
                 this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
+            },
+            refresh: function() {
+                this.$store.dispatch('countlyPushNotificationDashboard/fetchDashboard', true);
             }
         },
         mounted: function() {

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise, Map*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
@@ -972,6 +973,11 @@
                     return cohortItem.name;
                 });
             },
+            previewLocations: function() {
+                return this.locations.map(function(locationItem) {
+                    return locationItem.name;
+                });
+            }
         },
         methods: {
             convertDaysInMsToDays: function(daysInMs) {
@@ -1002,7 +1008,8 @@
                 countlyPushNotification.service.fetchCohorts(cohortsList, false)
                     .then(function(cohorts) {
                         self.setCohorts(cohorts);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setCohorts([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
@@ -1017,7 +1024,8 @@
                 countlyPushNotification.service.fetchLocations(this.pushNotification.locations, false)
                     .then(function(locations) {
                         self.setLocations(locations);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setLocations([]);
                     }).finally(function() {
                         self.isFetchLocationsLoading = false;

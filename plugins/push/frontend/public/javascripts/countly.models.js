@@ -222,7 +222,6 @@
                 _id: null,
                 name: "",
                 platforms: [],
-                audienceSelection: AudienceSelectionEnum.BEFORE,
                 message: {
                     default: {
                         title: "",
@@ -285,6 +284,7 @@
             baseModel.oneTime = {
                 targeting: TargetingEnum.ALL,
                 pastSchedule: PastScheduleEnum.SKIP,
+                audienceSelection: AudienceSelectionEnum.NOW,
             };
             return baseModel;
         },
@@ -1332,7 +1332,7 @@
                     endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
-                model.audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
+                model[TypeEnum.ONE_TIME].audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
                 model.timezone = triggerDto.tz ? TimezoneEnum.DEVICE : TimezoneEnum.SAME;
                 return model;
             },
@@ -1739,8 +1739,8 @@
                         result.tz = true;
                         result.sctz = new Date().getTimezoneOffset();
                     }
-                    result.delayed = model.audienceSelection === AudienceSelectionEnum.BEFORE;
                 }
+                result.delayed = model[TypeEnum.ONE_TIME].audienceSelection === AudienceSelectionEnum.BEFORE;
                 return [result];
             },
             mapAutomaticTrigger: function(model, options) {
@@ -2135,7 +2135,7 @@
                             if (locationIdsList && locationIdsList.length) {
                                 targetLocations = targetLocations.filter(function(targetLocationItem) {
                                     return locationIdsList.some(function(locationId) {
-                                        return targetLocationItem.id === locationId;
+                                        return targetLocationItem._id === locationId;
                                     });
                                 });
                             }
@@ -2863,6 +2863,9 @@
     var dashboardActions = {
         fetchDashboard: function(context, shouldRefresh) {
             if (context.state.isFetched && !shouldRefresh) {
+                return;
+            }
+            if (context.state.countlyFetch.isLoading) {
                 return;
             }
             context.dispatch('onFetchInit', {useLoader: true});
