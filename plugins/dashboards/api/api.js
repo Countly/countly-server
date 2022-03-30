@@ -11,6 +11,7 @@ var pluginOb = {},
     ip = require("../../../api/parts/mgmt/ip"),
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
+    mail = require("../../../api/parts/mgmt/mail"),
     { validateUser } = require('../../../api/utils/rights.js');
 
 plugins.setConfigs("dashboards", {
@@ -1455,7 +1456,30 @@ plugins.setConfigs("dashboards", {
         }
         viewEamilList = viewEamilList.concat(sharedEmailView);
         editEmailList = editEmailList.concat(sharedEmailEdit);
-        console.log(viewEamilList,editEmailList,"#3333")
+        console.log(viewEamilList,editEmailList,"#3333");
+
+        const msg = {
+            to: viewEamilList,
+            from: versionInfo.title,
+            subject: 'New dashboard view invitation',
+            html: 'view',
+        };
+        const msg2 = {
+            to: editEmailList,
+            from: versionInfo.title,
+            subject: 'New dashboard edit invitation',
+            html: 'edit',
+        };
+
+        if (mail.sendPoolMail) {
+            mail.sendPoolMail(msg, null);
+            mail.sendPoolMail(msg2, null);
+
+        }
+        else {
+            mail.sendMail(msg, null);
+            mail.sendMail(msg2, null);
+        }
     }
 
     /**
