@@ -78,6 +78,18 @@ apt-get -y install numactl
 #install sendmail
 apt-get -y install sendmail
 
+#Install GCC > 7 version
+apt-get -y install software-properties-common
+add-apt-repository ppa:ubuntu-toolchain-r/test -y
+apt-get -y install build-essential gcc-8 
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
+update-alternatives --set gcc "/usr/bin/gcc-8"
+
+#Install G++ > 7 version
+apt-get -y install build-essential g++-8
+update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
+update-alternatives --set g++ "/usr/bin/g++-8"
+
 #install npm modules
 ( cd "$DIR/.."; sudo npm install -g npm@6.14.13; sudo npm install --unsafe-perm=true --allow-root; sudo npm install argon2 --build-from-source; )
 

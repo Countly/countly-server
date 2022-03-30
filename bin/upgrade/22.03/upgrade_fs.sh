@@ -37,7 +37,66 @@ then
     cp -n "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
     rm -f "$DIR/../frontend/express/public/robots.txt"
     
-    
+# Checking GCC version and Installing it to match the compatibility version
+GCC_VERSION_CURRENT="$(gcc -dumpversion)"
+REQ_GCC_VERSION="8.0.0"
+if [ "$(printf '%s\n' "$REQ_GCC_VERSION" "$GCC_VERSION_CURRENT" | sort -V | head -n1)" = "$REQ_GCC_VERSION" ]; then
+    echo "Greater than or equal to ${REQ_GCC_VERSION}"
+else
+    echo "Less than ${REQ_GCC_VERSION}"
+    if [ -f /etc/redhat-release ]; then
+        if grep -i "release 8" /etc/redhat-release; then
+            echo " Upgrading GCC in RHEL 8"
+            dnf -y group install "Development Tools"
+        else grep -i "release 7" /etc/redhat-release;
+            echo " Upgrading GCC in RHEL 7"       
+            yum update -y
+	        yum install centos-release-scl -y
+            yum -y group install "Development Tools"
+            yum install devtoolset-8 -y
+            source /opt/rh/devtoolset-8/enable
+        fi
+    fi
+    if [ -f /etc/lsb-release ]; then
+        echo " Upgrading GCC in Ubuntu"
+        apt-get -y install software-properties-common
+        add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        apt-get -y install build-essential gcc-8 
+        update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
+        update-alternatives --set gcc "/usr/bin/gcc-8"
+    fi
+fi
+
+# Checking G++ version and Installing it to match the compatibility version
+GPP_VERSION_CURRENT="$(g++ -dumpversion)"
+REQ_GPP_VERSION="8.0.0"
+if [ "$(printf '%s\n' "$REQ_GPP_VERSION" "$GPP_VERSION_CURRENT" | sort -V | head -n1)" = "$REQ_GPP_VERSION" ]; then
+    echo "Greater than or equal to ${REQ_GPP_VERSION}"
+else
+    echo "Less than ${REQ_GPP_VERSION}"
+    if [ -f /etc/redhat-release ]; then
+        if grep -i "release 8" /etc/redhat-release ; then
+            echo " Upgrading G++ in RHEL 8"
+            dnf -y group install "Development Tools"
+        else grep -i "release 7" /etc/redhat-release ;
+            echo " Upgrading G++ in RHEL 7"      
+            yum update -y
+	        yum install centos-release-scl -y
+            yum -y group install "Development Tools"
+            yum install devtoolset-8 -y
+            source /opt/rh/devtoolset-8/enable
+        fi
+    fi
+    if [ -f /etc/lsb-release ]; then
+        echo " Upgrading G++ in Ubuntu"
+        apt-get -y install software-properties-common
+        add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        apt-get -y install build-essential g++-8
+        update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
+        update-alternatives --set g++ "/usr/bin/g++-8"
+    fi
+fi
+
     (cd "$DIR/.." && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
     
     #upgrade plugins

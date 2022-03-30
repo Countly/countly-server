@@ -25,6 +25,7 @@ if grep -q -i "release 8" /etc/redhat-release ; then
 
     if [ ! -f "/etc/centos-release" ]; then
         dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+        dnf -y group install "Development Tools"
     fi
 
     yum -y install epel-release
@@ -48,10 +49,17 @@ name=nginx repo
 baseurl=http://nginx.org/packages/rhel/7/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
-    yum -y install gcc-c++-4.8.5
 
     if [ -f "/etc/centos-release" ]; then
         yum -y --enablerepo=extras install epel-release
+        yum install centos-release-scl
+        yum install devtoolset-7 -y
+        source /opt/rh/devtoolset-7/enable
+    fi
+
+    if [ ! -f "/etc/centos-release" ]; then
+        yum install devtoolset-7 -y
+        source /opt/rh/devtoolset-7/enable
     fi
 
     yum install -y epel-release
