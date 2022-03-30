@@ -21,7 +21,7 @@
   ],
   "dependencies": {
     "jsonwebtoken": "8.0.1",
-    "node-forge": "1.2.1",
+    "node-forge": "1.3.1",
     "xxhash-addon": "1.4.0"
   },
   "private": true
