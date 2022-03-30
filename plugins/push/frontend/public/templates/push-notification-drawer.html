@@ -77,7 +77,7 @@
                                 :label="TargetingEnum.ALL"  
                                 v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting"
                                 :title="i18n('push-notification.all-push-enabled-users')">   
-                                <div class="bu-is-flex bu-is-justify-content-flex-start bu-is-align-items-baseline">
+                                <div v-if="pushNotificationUnderEdit[TypeEnum.ONE_TIME].audienceSelection === AudienceSelectionEnum.NOW" class="bu-is-flex bu-is-justify-content-flex-start bu-is-align-items-baseline">
                                     <span class="cly-vue-push-notification-large-radio-button-with-description__content-header">{{totalEnabledUsers}}</span> 
                                     <span class="bu-ml-2">{{i18n('push-notification.push-enabled-users')}}</span>
                                 </div>
@@ -137,25 +137,25 @@
                                 </el-select>    
                             </validation-provider>
                         </div>
-                        <div class="cly-vue-drawer-step__section">
-                            <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
-                                {{i18n('push-notification.when-to-determine-users')}}
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.when-to-determine-users-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-                            </div>
-                            <div class="bu-is-flex bu-is-flex-direction-column">
-                                <line-radio-button-with-description 
-                                    :label="AudienceSelectionEnum.BEFORE"
-                                    v-model="pushNotificationUnderEdit.audienceSelection"
-                                    :title="i18n('push-notification.determine-users-before')">
-                                </line-radio-button-with-description>
-                                <line-radio-button-with-description 
-                                    :label="AudienceSelectionEnum.NOW"
-                                    v-model="pushNotificationUnderEdit.audienceSelection"
-                                    :title="i18n('push-notification.determine-users-now')">
-                                </line-radio-button-with-description>
-                            </div>
-                        </div>
                     </template>
+                    <div class="cly-vue-drawer-step__section">
+                        <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                            {{i18n('push-notification.when-to-determine-users')}}
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.when-to-determine-users-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
+                        <div class="bu-is-flex bu-is-flex-direction-column">
+                            <line-radio-button-with-description 
+                                :label="AudienceSelectionEnum.NOW"
+                                v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].audienceSelection"
+                                :title="i18n('push-notification.determine-users-now')">
+                            </line-radio-button-with-description>
+                            <line-radio-button-with-description 
+                                :label="AudienceSelectionEnum.BEFORE"
+                                v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].audienceSelection"
+                                :title="i18n('push-notification.determine-users-before')">
+                            </line-radio-button-with-description>
+                        </div>
+                    </div>
                 </template>
                 <template v-else-if="type === TypeEnum.AUTOMATIC">
                     <div class="cly-vue-drawer-step__section">
@@ -992,7 +992,11 @@
                                 </review-section-row>
                                 <review-section-row :label="i18n('push-notification.current-number-of-users')" :value="currentNumberOfUsers"></review-section-row>
                                 <review-section-row v-if="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED" :label="i18n('push-notification.geolocations')" :value="previewLocations.join(', ')"></review-section-row>
-                                <review-section-row :label="i18n('push-notification.when-to-determine')" :value="audienceSelectionOptions[pushNotificationUnderEdit.audienceSelection].label"></review-section-row>
+                                <review-section-row 
+                                    v-if="type === TypeEnum.ONE_TIME" 
+                                    :label="i18n('push-notification.when-to-determine')" 
+                                    :value="audienceSelectionOptions[pushNotificationUnderEdit[TypeEnum.ONE_TIME].audienceSelection].label">
+                                </review-section-row>
                             </template>
                             <template v-if="type === TypeEnum.AUTOMATIC">
                                 <review-section-row :label="i18n('push-notification.trigger-type')" :value="triggerOptions[pushNotificationUnderEdit.automatic.trigger].label"></review-section-row>
