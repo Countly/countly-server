@@ -1162,7 +1162,7 @@
         },
     });
 
-    var PushNotificationTabView = countlyVue.views.BaseView.extend({
+    var PushNotificationTabView = countlyVue.views.create({
         template: "#push-notification-tab",
         mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.auth(featureName)],
         data: function() {
@@ -1461,7 +1461,7 @@
         }
     });
 
-    var PushNotificationView = countlyVue.views.BaseView.extend({
+    var PushNotificationView = countlyVue.views.create({
         template: "#push-notification",
         mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer"), countlyVue.mixins.auth(featureName)],
         data: function() {
@@ -1508,6 +1508,9 @@
             },
             onSave: function() {
                 this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
+            },
+            refresh: function() {
+                this.$store.dispatch('countlyPushNotificationDashboard/fetchDashboard', true);
             }
         },
         mounted: function() {

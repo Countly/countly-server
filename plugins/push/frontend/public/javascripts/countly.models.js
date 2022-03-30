@@ -2865,6 +2865,9 @@
             if (context.state.isFetched && !shouldRefresh) {
                 return;
             }
+            if (context.state.countlyFetch.isLoading) {
+                return;
+            }
             context.dispatch('onFetchInit', {useLoader: true});
             countlyPushNotification.service.fetchDashboard()
                 .then(function(response) {
