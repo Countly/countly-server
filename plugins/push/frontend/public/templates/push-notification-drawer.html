@@ -990,7 +990,7 @@
                                         {{previewCohorts(pushNotificationUnderEdit.cohorts).join(', ')}}
                                     </template>
                                 </review-section-row>
-                                <review-section-row :label="i18n('push-notification.current-number-of-users')" :value="currentNumberOfUsers"></review-section-row>
+                                <review-section-row v-if="shouldDisplayNumberOfUsers" :label="i18n('push-notification.current-number-of-users')" :value="currentNumberOfUsers"></review-section-row>
                                 <review-section-row v-if="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED" :label="i18n('push-notification.geolocations')" :value="previewLocations.join(', ')"></review-section-row>
                                 <review-section-row 
                                     v-if="type === TypeEnum.ONE_TIME" 

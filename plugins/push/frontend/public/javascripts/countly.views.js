@@ -307,6 +307,12 @@
             shouldDisplayAndroidSettings: function() {
                 return this.shouldDisplayPlatformSettings(this.PlatformEnum.ANDROID);
             },
+            shouldDisplayNumberOfUsers: function() {
+                if (this.pushNotificationUnderEdit.type === this.TypeEnum.ONE_TIME || this.type === this.TypeEnum.ONE_TIME) {
+                    return this.pushNotificationUnderEdit[this.TypeEnum.ONE_TIME].audienceSelection === this.AudienceSelectionEnum.NOW;
+                }
+                return true;
+            },
             previewPlatforms: function() {
                 return this.pushNotificationUnderEdit.platforms.map(function(selectedPlatform) {
                     return countlyPushNotification.service.platformOptions[selectedPlatform].label;
