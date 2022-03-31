@@ -54,6 +54,7 @@ else
 	        yum install centos-release-scl -y
             yum -y group install "Development Tools"
             yum install devtoolset-8 -y
+            yum install devtoolset-8-gcc* -y
             source /opt/rh/devtoolset-8/enable
         fi
     fi
@@ -84,6 +85,7 @@ else
 	        yum install centos-release-scl -y
             yum -y group install "Development Tools"
             yum install devtoolset-8 -y
+            yum install devtoolset-8-gcc* -y
             source /opt/rh/devtoolset-8/enable
         fi
     fi

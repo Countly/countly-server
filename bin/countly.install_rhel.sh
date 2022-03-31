@@ -52,14 +52,16 @@ enabled=1" > /etc/yum.repos.d/nginx.repo
 
     if [ -f "/etc/centos-release" ]; then
         yum -y --enablerepo=extras install epel-release
-        yum install centos-release-scl
-        yum install devtoolset-7 -y
-        source /opt/rh/devtoolset-7/enable
+        yum install centos-release-scl -y
+        yum install devtoolset-8 -y
+        yum install devtoolset-8-gcc* -y
+        source /opt/rh/devtoolset-8/enable
     fi
 
     if [ ! -f "/etc/centos-release" ]; then
-        yum install devtoolset-7 -y
-        source /opt/rh/devtoolset-7/enable
+        yum install devtoolset-8 -y
+        yum install devtoolset-8-gcc* -y
+        source /opt/rh/devtoolset-8/enable
     fi
 
     yum install -y epel-release
