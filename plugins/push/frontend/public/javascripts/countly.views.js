@@ -1544,7 +1544,7 @@
     });
 
     app.route('/messaging', 'messagingDashboardView', function() {
-        if (!countlyPushNotification.helper.isActiveAppMobile()) {
+        if (!CountlyHelpers.isActiveAppMobile()) {
             window.location.hash = "/";
             return;
         }
@@ -1977,7 +1977,7 @@
     });
 
     app.route('/messaging/details/*id', "messagingDetails", function(id) {
-        if (!countlyPushNotification.helper.isActiveAppMobile()) {
+        if (!CountlyHelpers.isActiveAppMobile()) {
             window.location.hash = "/";
             return;
         }
