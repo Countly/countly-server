@@ -172,6 +172,9 @@
     });
 
     countlyPushNotification.helper = {
+        isActiveAppMobile: function() {
+            return countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile';
+        },
         getMessageMediaInitialState: function() {
             var result = {};
             result[PlatformEnum.ALL] = {};
