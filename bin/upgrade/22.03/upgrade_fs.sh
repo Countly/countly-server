@@ -55,6 +55,7 @@ else
             yum -y group install "Development Tools"
             yum install devtoolset-8 -y
             yum install devtoolset-8-gcc* -y
+            #shellcheck source=/dev/null
             source /opt/rh/devtoolset-8/enable
         fi
     fi
@@ -86,6 +87,7 @@ else
             yum -y group install "Development Tools"
             yum install devtoolset-8 -y
             yum install devtoolset-8-gcc* -y
+            #shellcheck source=/dev/null
             source /opt/rh/devtoolset-8/enable
         fi
     fi

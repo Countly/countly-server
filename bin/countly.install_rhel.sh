@@ -25,7 +25,6 @@ if grep -q -i "release 8" /etc/redhat-release ; then
 
     if [ ! -f "/etc/centos-release" ]; then
         dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-        dnf -y group install "Development Tools"
     fi
 
     yum -y install epel-release
@@ -53,19 +52,15 @@ enabled=1" > /etc/yum.repos.d/nginx.repo
     if [ -f "/etc/centos-release" ]; then
         yum -y --enablerepo=extras install epel-release
         yum install centos-release-scl -y
-        yum install devtoolset-8 -y
-        yum install devtoolset-8-gcc* -y
-        source /opt/rh/devtoolset-8/enable
     fi
 
-    if [ ! -f "/etc/centos-release" ]; then
-        yum install devtoolset-8 -y
-        yum install devtoolset-8-gcc* -y
-        source /opt/rh/devtoolset-8/enable
-    fi
-
+    yum install devtoolset-8 -y
+    yum install devtoolset-8-gcc* -y
+    #shellcheck source=/dev/null
+    source /opt/rh/devtoolset-8/enable
     yum install -y epel-release
     yum install -y ShellCheck
+
 else
     echo "Unsupported OS version, only support RHEL/Centos 8 and 7"
     exit 1
