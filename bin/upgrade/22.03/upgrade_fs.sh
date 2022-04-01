@@ -51,7 +51,7 @@ else
         else grep -i "release 7" /etc/redhat-release;
             echo " Upgrading GCC in RHEL 7"       
             yum update -y
-	        yum install centos-release-scl -y
+            yum install centos-release-scl -y
             yum -y group install "Development Tools"
             yum install devtoolset-8 -y
             yum install devtoolset-8-gcc* -y
@@ -83,7 +83,7 @@ else
         else grep -i "release 7" /etc/redhat-release ;
             echo " Upgrading G++ in RHEL 7"      
             yum update -y
-	        yum install centos-release-scl -y
+            yum install centos-release-scl -y
             yum -y group install "Development Tools"
             yum install devtoolset-8 -y
             yum install devtoolset-8-gcc* -y
