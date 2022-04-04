@@ -57,6 +57,9 @@
             var eventData = context.state.allEventsProcessed;
             var tableRows = eventData.chartData.slice();
             var labels = context.state.labels;
+            tableRows.forEach(function(row, i) {
+                row.dateVal = i; //because we get them all always sorted by date
+            });
             if (eventData.tableColumns.indexOf(labels.sum) !== -1 && eventData.tableColumns.indexOf(labels.dur) !== -1) {
                 tableRows.forEach(function(row) {
                     row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : (row.s / row.c);
