@@ -402,7 +402,7 @@
     //switching apps. show message if redirect url is set
     app.addAppSwitchCallback(function(appId) {
         if (appId && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].redirect_url && countlyGlobal.apps[appId].redirect_url !== "") {
-            var mm = "<h4 class='bu-pt-3 bu-pb-1'>" + jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal.apps[appId].name) + "</h4><p bu-pt-1>" + jQuery.i18n.map["data-migration.app-redirected-explanation"] + " <b>" + countlyGlobal.apps[appId].redirect_url + "</b><p><a href='#/manage/apps' style='color:rgb(1, 102, 214);'>" + jQuery.i18n.map["data-migration.app-redirected-remove"] + "</a>";
+            var mm = "<h4 class='bu-pt-3 bu-pb-1' style='overflow-wrap: break-word;'>" + jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal.apps[appId].name) + "</h4><p bu-pt-1>" + jQuery.i18n.map["data-migration.app-redirected-explanation"] + " <b><span style='overflow-wrap: break-word;'>" + countlyGlobal.apps[appId].redirect_url + "<span></b><p><a href='#/manage/apps' style='color:rgb(1, 102, 214); cursor:pointer;'>" + jQuery.i18n.map["data-migration.app-redirected-remove"] + "</a>";
             var msg = {
                 title: jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal.apps[appId].name),
                 message: mm,
