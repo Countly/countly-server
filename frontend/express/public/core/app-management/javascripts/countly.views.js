@@ -390,6 +390,10 @@
             },
             saveApp: function(doc) {
                 doc.app_id = this.selectedApp;
+                if (doc.redirect_url) {
+                    doc.redirect_url = doc.redirect_url.replace(" ", "");
+                }
+
                 delete doc._id;
                 var self = this;
                 $.ajax({
@@ -575,7 +579,7 @@
                     return differences;
                 }
                 else {
-                    ["name", "category", "type", "key", "country", "timezone", "salt", "_id"].forEach(function(currentKey) {
+                    ["name", "category", "type", "key", "country", "timezone", "salt", "_id", "redirect_url"].forEach(function(currentKey) {
                         if (editedObject[currentKey] !== selectedApp[currentKey]) {
                             differences.push(currentKey);
                         }
