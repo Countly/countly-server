@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise, Map*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
@@ -872,21 +873,21 @@
         },
         computed: {
             pushNotification: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification;
             },
             selectedMessageLocale: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
+                    return this.$store.state.countlyPushNotificationDetails.messageLocaleFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/details/onSetMessageLocaleFilter", value);
+                    this.$store.dispatch("countlyPushNotificationDetails/onSetMessageLocaleFilter", value);
                 }
             },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocale];
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.message[this.selectedMessageLocale];
             },
             localizations: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.localizations;
             },
             previewMessageTitle: function() {
                 if (this.message.title) {
@@ -927,7 +928,7 @@
                 return this.pushNotification.settings[this.PlatformEnum.IOS].subtitle;
             },
             selectedMobileMessagePlatform: function() {
-                return this.$store.state.countlyPushNotification.details.mobileMessagePlatform;
+                return this.$store.state.countlyPushNotificationDetails.mobileMessagePlatform;
             }
         },
         methods: {
@@ -965,13 +966,18 @@
         },
         computed: {
             pushNotification: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification;
             },
             previewCohorts: function() {
                 return this.cohorts.map(function(cohortItem) {
                     return cohortItem.name;
                 });
             },
+            previewLocations: function() {
+                return this.locations.map(function(locationItem) {
+                    return locationItem.name;
+                });
+            }
         },
         methods: {
             convertDaysInMsToDays: function(daysInMs) {
@@ -1002,7 +1008,8 @@
                 countlyPushNotification.service.fetchCohorts(cohortsList, false)
                     .then(function(cohorts) {
                         self.setCohorts(cohorts);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setCohorts([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
@@ -1017,7 +1024,8 @@
                 countlyPushNotification.service.fetchLocations(this.pushNotification.locations, false)
                     .then(function(locations) {
                         self.setLocations(locations);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setLocations([]);
                     }).finally(function() {
                         self.isFetchLocationsLoading = false;
@@ -1037,7 +1045,7 @@
         template: '#details-errors-tab',
         computed: {
             errors: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.errors;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.errors;
             },
         }
     });

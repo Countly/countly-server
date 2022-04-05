@@ -145,6 +145,19 @@
                                                 </el-input>
                                             </cly-inline-form-field>
                                         </div>
+										<div v-if="!newApp && apps[selectedApp] && apps[selectedApp].redirect_url">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.redirect_url')" :help="i18n('management-applications.redirect_url.help')">
+                                                {{formScope.editedObject.redirect_url}}
+											</cly-inline-form-field>
+											<cly-inline-form-field v-else rules="" :label="i18n('management-applications.redirect_url')" prop="redirect_url" :help="i18n('management-applications.redirect_url.help')">
+												<el-switch 
+													:active-value="apps[selectedApp].redirect_url"
+													inactive-value=" "
+													:active-text = "apps[selectedApp].redirect_url"
+													v-model="formScope.editedObject.redirect_url">
+												</el-switch>
+                                            </cly-inline-form-field> 
+                                        </div>
                                     </cly-form-step>
                                     <div v-if="newApp" class="bu-has-text-right" @mouseenter="formScope.validate()">
                                         <el-button 

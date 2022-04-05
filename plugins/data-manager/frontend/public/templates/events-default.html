@@ -1,4 +1,6 @@
 <div class="cly-vue-data-manager__events">
+    <cly-notification v-if="limits && limits.show" class="cly-vue-data-manager__alerts bu-mx-5 bu-mb-5" :text="limits.message" color="light-warning">
+    </cly-notification>
     <cly-datatable-n
     ref="eventsDefaultTable"
     :searchPlaceholder="i18n('data-manager.event-search-placeholder')"

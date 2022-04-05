@@ -103,12 +103,7 @@
                     if (Array.isArray(dataOb)) {
                         acc[val] = dataOb.filter(function(data) {
                             if (data && data.permission) {
-                                if (data.permission === 'anyadmin') {
-                                    return countlyAuth.validateAnyAppAdmin();
-                                }
-                                else {
-                                    return countlyAuth.validateRead(data.permission);
-                                }
+                                return countlyAuth.validateRead(data.permission);
                             }
                             return true;
                         });
@@ -116,12 +111,7 @@
                     else {
                         for (var key in dataOb) {
                             if (dataOb[key] && dataOb[key].permission) {
-                                if (dataOb[key].permission === 'anyadmin') {
-                                    if (countlyAuth.validateAnyAppAdmin()) {
-                                        acc[val] = dataOb;
-                                    }
-                                }
-                                else if (countlyAuth.validateRead(dataOb[key].permission)) {
+                                if (countlyAuth.validateRead(dataOb[key].permission)) {
                                     acc[val] = dataOb;
                                 }
                             }

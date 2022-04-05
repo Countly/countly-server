@@ -191,4 +191,11 @@
     .cly-vue-diff-helper{
         z-index: 2000 !important;
     }
+    &__alerts {
+        width:unset;
+        a {
+                text-decoration: underline
+        }
+    }
+    
 }

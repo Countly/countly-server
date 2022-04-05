@@ -222,7 +222,6 @@
                 _id: null,
                 name: "",
                 platforms: [],
-                audienceSelection: AudienceSelectionEnum.BEFORE,
                 message: {
                     default: {
                         title: "",
@@ -285,6 +284,7 @@
             baseModel.oneTime = {
                 targeting: TargetingEnum.ALL,
                 pastSchedule: PastScheduleEnum.SKIP,
+                audienceSelection: AudienceSelectionEnum.NOW,
             };
             return baseModel;
         },
@@ -487,7 +487,7 @@
                 return true;
             }
             if (model.type === TypeEnum.ONE_TIME) {
-                return model.oneTime.targeting === TargetingEnum.SEGMENTED;
+                return model.oneTime.targeting === TargetingEnum.SEGMENTED || model.user || model.drill;
             }
             if (model.type === TypeEnum.AUTOMATIC) {
                 return true;
@@ -930,32 +930,26 @@
                     daily: [{data: dailySendData || [], label: messagesSentLabel}, {data: dailyActionsData || [], label: actionsPerformedLabel}]
                 };
             },
-            mapSeries: function(dto, type) {
-                if (type === TypeEnum.ONE_TIME) {
-                    return this.mapOneTimeSeriesData(dto);
-                }
-                if (type === TypeEnum.AUTOMATIC) {
-                    return this.mapAutomaticSeriesData(dto);
-                }
-                if (type === TypeEnum.TRANSACTIONAL) {
-                    return this.mapTransactionalSeriesData(dto);
-                }
-                throw new Error('Unknown push notification type:' + type);
+            mapSeries: function(dto) {
+                var result = {};
+                result[TypeEnum.ONE_TIME] = this.mapOneTimeSeriesData(dto);
+                result[TypeEnum.AUTOMATIC] = this.mapAutomaticSeriesData(dto);
+                result[TypeEnum.TRANSACTIONAL] = this.mapTransactionalSeriesData(dto);
+                return result;
             },
-            mapPeriods: function(dto, type) {
-                if (type === TypeEnum.ONE_TIME) {
-                    return {
-                        weekly: dto.actions.weekly.keys,
-                        monthly: dto.actions.monthly.keys
-                    };
-                }
-                if (type === TypeEnum.AUTOMATIC) {
-                    return { daily: dto.actions_automated.daily.keys};
-                }
-                if (type === TypeEnum.TRANSACTIONAL) {
-                    return {daily: dto.actions_tx.daily.keys};
-                }
-                throw new Error('Unknown push notification type:' + type);
+            mapPeriods: function(dto) {
+                var result = {};
+                result[TypeEnum.ONE_TIME] = {
+                    weekly: dto.actions.weekly.keys,
+                    monthly: dto.actions.monthly.keys
+                };
+                result[TypeEnum.AUTOMATIC] = {
+                    daily: dto.actions_automated.daily.keys
+                };
+                result[TypeEnum.TRANSACTIONAL] = {
+                    daily: dto.actions_tx.daily.keys
+                };
+                return result;
             },
             mapPlatforms: function(dto) {
                 return dto.reduce(function(allPlatformItems, currentPlatformItem) {
@@ -1211,38 +1205,28 @@
                 result[type][PlatformEnum.ANDROID] = dto[property].platforms[PlatformDtoEnum.ANDROID].total;
                 return result;
             },
-            mapTotalActions: function(dto, type) {
-                if (type === TypeEnum.ONE_TIME) {
-                    return this.mapDashboardTotal(dto, type, 'actions');
-                }
-                if (type === TypeEnum.AUTOMATIC) {
-                    return this.mapDashboardTotal(dto, type, 'actions_automated');
-                }
-                if (type === TypeEnum.TRANSACTIONAL) {
-                    return this.mapDashboardTotal(dto, type, 'actions_tx');
-                }
-                throw new Error('Unknown push notification type:' + type);
+            mapTotalActions: function(dto) {
+                var result = {};
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.ONE_TIME, 'actions'));
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.AUTOMATIC, 'actions_automated'));
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.TRANSACTIONAL, 'actions_tx'));
+                return result;
             },
-            mapTotalSent: function(dto, type) {
-                if (type === TypeEnum.ONE_TIME) {
-                    return this.mapDashboardTotal(dto, type, 'sent');
-                }
-                if (type === TypeEnum.AUTOMATIC) {
-                    return this.mapDashboardTotal(dto, type, 'sent_automated');
-                }
-                if (type === TypeEnum.TRANSACTIONAL) {
-                    return this.mapDashboardTotal(dto, type, 'sent_tx');
-                }
-                throw new Error('Unknown push notification type:' + type);
+            mapTotalSent: function(dto) {
+                var result = {};
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.ONE_TIME, 'sent'));
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.AUTOMATIC, 'sent_automated'));
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.TRANSACTIONAL, 'sent_tx'));
+                return result;
             },
-            mapMainDashboard: function(dashboardDto, type) {
+            mapMainDashboard: function(dashboardDto) {
                 return {
-                    series: this.mapSeries(dashboardDto, type),
-                    periods: this.mapPeriods(dashboardDto, type),
+                    series: this.mapSeries(dashboardDto),
+                    periods: this.mapPeriods(dashboardDto),
                     totalAppUsers: parseInt(dashboardDto.users),
                     enabledUsers: this.mapEnabledUsers(dashboardDto),
-                    totalActions: this.mapTotalActions(dashboardDto, type),
-                    totalSent: this.mapTotalSent(dashboardDto, type),
+                    totalActions: this.mapTotalActions(dashboardDto),
+                    totalSent: this.mapTotalSent(dashboardDto),
                     tokens: dashboardDto.tokens,
                 };
             },
@@ -1348,7 +1332,7 @@
                     endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
-                model.audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
+                model[TypeEnum.ONE_TIME].audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
                 model.timezone = triggerDto.tz ? TimezoneEnum.DEVICE : TimezoneEnum.SAME;
                 return model;
             },
@@ -1755,8 +1739,8 @@
                         result.tz = true;
                         result.sctz = new Date().getTimezoneOffset();
                     }
-                    result.delayed = model.audienceSelection === AudienceSelectionEnum.BEFORE;
                 }
+                result.delayed = model[TypeEnum.ONE_TIME].audienceSelection === AudienceSelectionEnum.BEFORE;
                 return [result];
             },
             mapAutomaticTrigger: function(model, options) {
@@ -2151,7 +2135,7 @@
                             if (locationIdsList && locationIdsList.length) {
                                 targetLocations = targetLocations.filter(function(targetLocationItem) {
                                     return locationIdsList.some(function(locationId) {
-                                        return targetLocationItem.id === locationId;
+                                        return targetLocationItem._id === locationId;
                                     });
                                 });
                             }
@@ -2227,12 +2211,12 @@
                 });
             });
         },
-        fetchDashboard: function(type, echo) {
+        fetchDashboard: function(echo) {
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.getDashboard(echo)
                     .then(function(response) {
                         try {
-                            resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));
+                            resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response));
                         }
                         catch (error) {
                             console.error(error);
@@ -2527,7 +2511,6 @@
                 pushNotificationId: null
             },
             isDrawerOpen: false,
-            dashboardTokens: {},
             mobileMessagePlatform: null,
         };
     };
@@ -2540,19 +2523,9 @@
                     context.commit('setPushNotification', model);
                     context.dispatch('onSetPlatformFilterOptions', model);
                     context.dispatch('onFetchSuccess', {useLoader: true});
-                    context.dispatch('fetchDashboardTokens', model.type);
                 }).catch(function(error) {
                     console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
-                });
-        },
-        fetchDashboardTokens: function(context, type) {
-            countlyPushNotification.service.fetchDashboard(type)
-                .then(function(mainDashboard) {
-                    context.commit('setDashboardTokens', mainDashboard.tokens || {});
-                })
-                .catch(function(error) {
-                    console.error(error);
                 });
         },
         onUserCommand: function(context, payload) {
@@ -2673,47 +2646,22 @@
         }
     };
 
-    var pushNotificationDetailsModule = countlyVue.vuex.Module("details", {
-        state: getDetailsInitialState,
-        actions: detailsActions,
-        mutations: detailsMutations,
-        submodules: [countlyVue.vuex.FetchMixin()]
-    });
+    countlyPushNotification.details = {};
+    countlyPushNotification.details.getVuexModule = function() {
+        return countlyVue.vuex.Module("countlyPushNotificationDetails", {
+            state: getDetailsInitialState,
+            actions: detailsActions,
+            mutations: detailsMutations,
+            submodules: [countlyVue.vuex.FetchMixin()]
+        });
+    };
 
     var getMainInitialState = function() {
-        var enabledUsers = {};
-        enabledUsers[PlatformEnum.ALL] = 0;
-        enabledUsers[PlatformEnum.IOS] = 0;
-        enabledUsers[PlatformEnum.ANDROID] = 0;
-
-        var totalActions = {};
-        totalActions[TypeEnum.ONE_TIME] = 0;
-        totalActions[TypeEnum.AUTOMATIC] = 0;
-        totalActions[TypeEnum.TRANSACTIONAL] = 0;
-
-        var totalSent = {};
-        totalSent[TypeEnum.ONE_TIME] = 0;
-        totalSent[TypeEnum.AUTOMATIC] = 0;
-        totalSent[TypeEnum.TRANSACTIONAL] = 0;
-
         return {
             rows: [],
-            dashboard: {
-                series: {
-                    monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
-                    weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
-                    daily: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
-                },
-                periods: {monthly: [], weekly: []},
-                totalAppUsers: 0,
-                enabledUsers: enabledUsers,
-                totalActions: totalActions,
-                totalSent: totalSent,
-            },
             selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
             statusFilter: ALL_FILTER_OPTION_VALUE,
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
-            isDashboardLoading: false,
             areRowsLoading: false,
             userCommand: {
                 type: null,
@@ -2735,17 +2683,6 @@
                     console.error(error);
                 }).finally(function() {
                     context.dispatch('onSetAreRowsLoading', false);
-                });
-        },
-        fetchDashboard: function(context) {
-            context.dispatch('onSetIsDashboardLoading', true);
-            countlyPushNotification.service.fetchDashboard(context.state.selectedPushNotificationType)
-                .then(function(response) {
-                    context.commit('setDashboard', response);
-                }).catch(function(error) {
-                    console.error(error);
-                }).finally(function() {
-                    context.dispatch('onSetIsDashboardLoading', false);
                 });
         },
         onDelete: function(context, id) {
@@ -2806,9 +2743,6 @@
         onSetAreRowsLoading: function(context, value) {
             context.commit('setAreRowsLoading', value);
         },
-        onSetIsDashboardLoading: function(context, value) {
-            context.commit('setIsDashboardLoading', value);
-        },
         onSetPushNotificationType: function(context, value) {
             context.commit('resetPushNotifications');
             context.commit('setPushNotificationType', value);
@@ -2827,12 +2761,6 @@
         },
         resetPushNotifications: function(state) {
             Object.assign(state, getMainInitialState());
-        },
-        setDashboard: function(state, value) {
-            state.dashboard = value;
-        },
-        setIsDashboardLoading: function(state, value) {
-            state.isDashboardLoading = value;
         },
         setAreRowsLoading: function(state, value) {
             state.areRowsLoading = value;
@@ -2854,17 +2782,123 @@
         },
     };
 
-    var pushNotificationMainModule = countlyVue.vuex.Module("main", {
-        state: getMainInitialState,
-        actions: mainActions,
-        mutations: mainMutations,
-        submodules: [countlyVue.vuex.FetchMixin()]
-    });
-
-    countlyPushNotification.getVuexModule = function() {
-        return countlyVue.vuex.Module("countlyPushNotification", {
-            submodules: [pushNotificationMainModule, pushNotificationDetailsModule]
+    countlyPushNotification.main = {};
+    countlyPushNotification.main.getVuexModule = function() {
+        return countlyVue.vuex.Module("countlyPushNotificationMain", {
+            state: getMainInitialState,
+            actions: mainActions,
+            mutations: mainMutations,
+            submodules: [countlyVue.vuex.FetchMixin()]
         });
     };
 
+    var getDashboardInitialState = function() {
+        var enabledUsers = {};
+        enabledUsers[PlatformEnum.ALL] = 0;
+        enabledUsers[PlatformEnum.IOS] = 0;
+        enabledUsers[PlatformEnum.ANDROID] = 0;
+
+        var totalActions = {};
+        totalActions[TypeEnum.ONE_TIME] = {};
+        totalActions[TypeEnum.ONE_TIME][PlatformEnum.IOS] = 0;
+        totalActions[TypeEnum.ONE_TIME][PlatformEnum.ANDROID] = 0;
+        totalActions[TypeEnum.ONE_TIME][PlatformEnum.ALL] = 0;
+        totalActions[TypeEnum.AUTOMATIC] = {};
+        totalActions[TypeEnum.AUTOMATIC][PlatformEnum.IOS] = 0;
+        totalActions[TypeEnum.AUTOMATIC][PlatformEnum.ANDROID] = 0;
+        totalActions[TypeEnum.AUTOMATIC][PlatformEnum.ALL] = 0;
+        totalActions[TypeEnum.TRANSACTIONAL] = {};
+        totalActions[TypeEnum.TRANSACTIONAL][PlatformEnum.IOS] = 0;
+        totalActions[TypeEnum.TRANSACTIONAL][PlatformEnum.ANDROID] = 0;
+        totalActions[TypeEnum.TRANSACTIONAL][PlatformEnum.ALL] = 0;
+
+        var totalSent = {};
+        totalSent[TypeEnum.ONE_TIME] = {};
+        totalSent[TypeEnum.ONE_TIME][PlatformEnum.IOS] = 0;
+        totalSent[TypeEnum.ONE_TIME][PlatformEnum.ANDROID] = 0;
+        totalSent[TypeEnum.ONE_TIME][PlatformEnum.ALL] = 0;
+        totalSent[TypeEnum.AUTOMATIC] = {};
+        totalSent[TypeEnum.AUTOMATIC][PlatformEnum.IOS] = 0;
+        totalSent[TypeEnum.AUTOMATIC][PlatformEnum.ANDROID] = 0;
+        totalSent[TypeEnum.AUTOMATIC][PlatformEnum.ALL] = 0;
+        totalSent[TypeEnum.TRANSACTIONAL] = {};
+        totalSent[TypeEnum.TRANSACTIONAL][PlatformEnum.IOS] = 0;
+        totalSent[TypeEnum.TRANSACTIONAL][PlatformEnum.ANDROID] = 0;
+        totalSent[TypeEnum.TRANSACTIONAL][PlatformEnum.ALL] = 0;
+
+        var series = {};
+        series[TypeEnum.ONE_TIME] = {
+            monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
+            weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
+        };
+        series[TypeEnum.AUTOMATIC] = {
+            daily: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
+        };
+        series[TypeEnum.TRANSACTIONAL] = {
+            daily: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
+        };
+        var periods = {};
+        periods[TypeEnum.ONE_TIME] = {
+            weekly: [],
+            monthy: [],
+        };
+        periods[TypeEnum.AUTOMATIC] = {
+            daily: [],
+        };
+        periods[TypeEnum.TRANSACTIONAL] = {
+            daily: []
+        };
+
+        return {
+            series: series,
+            periods: periods,
+            totalAppUsers: 0,
+            enabledUsers: enabledUsers,
+            totalActions: totalActions,
+            totalSent: totalSent,
+            isFetched: false
+        };
+    };
+
+    var dashboardActions = {
+        fetchDashboard: function(context, shouldRefresh) {
+            if (context.state.isFetched && !shouldRefresh) {
+                return;
+            }
+            if (context.state.countlyFetch.isLoading) {
+                return;
+            }
+            context.dispatch('onFetchInit', {useLoader: true});
+            countlyPushNotification.service.fetchDashboard()
+                .then(function(response) {
+                    context.commit('setDashboard', response);
+                    context.dispatch('onFetchSuccess', {useLoader: true});
+                    context.commit('setIsFetched', true);
+                }).catch(function(error) {
+                    context.dispatch('onFetchError', {error: error, useLoader: true});
+                    console.error(error);
+                });
+        },
+    };
+
+    var dashboardMutations = {
+        setDashboard: function(state, value) {
+            value.isFetched = state.isFetched;
+            Object.assign(state, value);
+        },
+        setIsFetched: function(state, value) {
+            state.isFetched = value;
+        }
+    };
+
+    countlyPushNotification.dashboard = {};
+    countlyPushNotification.dashboard.getVuexModule = function() {
+        return countlyVue.vuex.Module("countlyPushNotificationDashboard", {
+            state: getDashboardInitialState,
+            actions: dashboardActions,
+            mutations: dashboardMutations,
+            submodules: [countlyVue.vuex.FetchMixin()],
+            destroy: false,
+        });
+    };
 }(window.countlyPushNotification = window.countlyPushNotification || {}));
