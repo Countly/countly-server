@@ -700,3 +700,5 @@ function mimeInfo(url, method = 'HEAD') {
         }
     });
 }
+
+module.exports.mimeInfo = mimeInfo;
