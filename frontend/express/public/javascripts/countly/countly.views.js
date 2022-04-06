@@ -1,4 +1,4 @@
-/* global countlyView, countlyCommon, countlyAuth, app, CountlyHelpers, countlyGlobal, Handlebars, countlyTaskManager, countlyVersionHistoryManager, DownloadView, VersionHistoryView, GraphNotesView, Backbone, moment, jQuery, $*/
+/* global countlyView, countlyCommon, app, CountlyHelpers, countlyGlobal, Handlebars, countlyTaskManager, countlyVersionHistoryManager, DownloadView, VersionHistoryView, GraphNotesView, Backbone, moment, jQuery, $*/
 
 
 window.GraphNotesView = countlyView.extend({
@@ -590,19 +590,6 @@ app.VersionHistoryView = new VersionHistoryView();
 app.route("/analytics/graph-notes", "graphNotes", function() {
     this.renderWhenReady(this.graphNotesView);
 });
-
-
-if (countlyAuth.validateGlobalAdmin()) {
-    app.route("/manage/users", "manageUsers", function() {
-        this.manageUsersView._id = null;
-        this.renderWhenReady(this.manageUsersView);
-    });
-
-    app.route('/manage/users/:id', 'manageUsersId', function(id) {
-        this.manageUsersView._id = id;
-        this.renderWhenReady(this.manageUsersView);
-    });
-}
 
 // app.route("/analytics/events", "events", function() {
 //     this.renderWhenReady(this.eventsView);
