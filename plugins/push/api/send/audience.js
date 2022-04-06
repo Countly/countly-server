@@ -684,10 +684,11 @@ class Pusher extends PusherPopper {
             }
         }
 
-        await this.audience.message.update({$inc: updates}, () => {});
-
-        this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
-        await batch.flush([11000]);
+        if (result.total) {
+            await this.audience.message.update({$inc: updates}, () => {});
+            this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
+            await batch.flush([11000]);
+        }
 
         return result;
     }
