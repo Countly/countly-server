@@ -56,6 +56,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/webfont.js',
                     'frontend/express/public/javascripts/utils/selectize.min.js',
                     'frontend/express/public/javascripts/utils/leaflet.js',
+                    'frontend/express/public/javascripts/utils/localforage.min.js',
                     'frontend/express/public/javascripts/utils/js-deep-equals.unsorted.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/es6-promise.auto.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/intersection-observer.js',
@@ -111,6 +112,7 @@ module.exports = function(grunt) {
             },
             lib: {
                 src: [
+                    'frontend/express/public/javascripts/countly/countly.indexeddb.service.js',
                     'frontend/express/public/javascripts/countly/countly.auth.js',
                     'frontend/express/public/javascripts/countly/countly.helpers.js',
                     'frontend/express/public/javascripts/countly/countly.map.helper.js',
