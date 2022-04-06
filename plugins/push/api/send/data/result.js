@@ -48,7 +48,7 @@ class Result extends Validatable {
             sent: {type: 'Number', required: true},
             actioned: {type: 'Number', required: true},
             errored: {type: 'Number', required: false},
-            error: {type: 'Object', required: false},
+            error: {type: 'String', required: false},
             errors: {type: 'Object', required: false},
             lastErrors: {type: 'Object[]', required: false},
             lastRuns: {type: 'Object[]', required: false},
