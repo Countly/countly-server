@@ -305,7 +305,7 @@
                         },
                         dataType: "json",
                         success: function() {
-                            context.dispatch("countlyHooks/table/fetchAll");
+                            context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
                         }
                     });
                 },
