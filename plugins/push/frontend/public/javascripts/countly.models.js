@@ -1480,6 +1480,7 @@
                 if (this.hasAppLevelPlatformConfig(dto, PlatformDtoEnum.HUAWEI)) {
                     return {
                         _id: dto[PlatformDtoEnum.HUAWEI]._id || '',
+                        type: dto[PlatformDtoEnum.HUAWEI].type,
                         appId: dto[PlatformDtoEnum.HUAWEI].appId,
                         appSecret: dto[PlatformDtoEnum.HUAWEI].secret
                     };
@@ -1974,11 +1975,17 @@
             },
             mapHuaweiAppLevelConfig: function(model) {
                 if (model[PlatformEnum.HUAWEI]) {
-                    return {
-                        _id: model[PlatformEnum.HUAWEI]._id || "",
-                        key: model[PlatformEnum.HUAWEI].appId,
+                    var result = {
+                        type: model[PlatformEnum.HUAWEI].type,
+                        app: model[PlatformEnum.HUAWEI].appId,
                         secret: model[PlatformEnum.HUAWEI].appSecret
                     };
+
+                    if (model[PlatformEnum.HUAWEI]._id) {
+                        result._id = model[PlatformEnum.HUAWEI]._id;
+                    }
+
+                    return result;
                 }
                 return null;
             },

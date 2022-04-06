@@ -1,16 +1,18 @@
 const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'),
     logger = require('../../../../../api/utils/log'),
     { Splitter } = require('./utils/splitter'),
-    { util } = require('../std'),
     { Creds } = require('../data/creds'),
     { threadId } = require('worker_threads'),
+    { util } = require('../std'),
+    https = require('https'),
+    qs = require('querystring'),
     FORGE = require('node-forge');
 
 
 /**
  * Platform key
  */
-const key = 'a';
+const key = 'h';
 
 /**
  * Extract token & field from token_session request
@@ -19,7 +21,7 @@ const key = 'a';
  * @returns {string[]|undefined} array of [platform, field, token] if qstring has platform-specific token data, undefined otherwise
  */
 function extractor(qstring) {
-    if (qstring.android_token !== undefined && qstring.test_mode in FIELDS && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
+    if (qstring.android_token !== undefined && (qstring.token_provider === 'HMS' || qstring.token_provider === 'HPK')) {
         return [key, FIELDS['0'], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
     }
 }
@@ -31,18 +33,18 @@ function extractor(qstring) {
  * @returns {string} platform key if it looks like request made by this platform
  */
 function guess(userAgent) {
-    return userAgent.includes('Android') && key;
+    return userAgent.includes('Android') && userAgent.includes('Huawei') && key;
 }
 
 /**
  * Connection implementation for FCM
  */
-class FCM extends Splitter {
+class HPK extends Splitter {
     /**
      * Standard constructor
      * @param {string} log logger name
-     * @param {string} type type of connection: ap, at, id, ia, ip, ht, hp
-     * @param {Credentials} creds FCM server key
+     * @param {string} type type of connection: ht, hp
+     * @param {Credentials} creds HMS server key
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
      * @param {number} options.concurrency number of notifications which can be processed concurrently, this parameter is strictly set to 500
@@ -54,20 +56,80 @@ class FCM extends Splitter {
     constructor(log, type, creds, messages, options) {
         super(log, type, creds, messages, Object.assign(options, {concurrency: 500}));
 
-        this.log = logger(log).sub(`wa-${threadId}`);
+        this.log = logger(log).sub(`wh-${threadId}`);
         this.opts = {
             agent: this.agent,
-            hostname: 'fcm.googleapis.com',
+            hostname: 'push-api.cloud.huawei.com',
             port: 443,
-            path: '/fcm/send',
+            path: '/v1/' + creds._data.app + '/messages:send',
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': `key=${creds._data.key}`,
+                'Authorization': null,
             },
         };
         this.log.i('Initialized');
+    }
+
+    /**
+     * Get new access token from Huawei
+     * 
+     * @return {Promise} resolves to {token: "token string", until: expiration timestamp} or error
+     */
+    getToken() {
+        return new Promise((resolve, reject) => {
+            let data = qs.stringify({
+                grant_type: 'client_credentials',
+                client_id: this.creds._data.app,
+                client_secret: this.creds._data.secret
+            });
+
+            let req = https.request({
+                hostname: 'oauth-login.cloud.huawei.com',
+                port: 443,
+                path: '/oauth2/v2/token',
+                method: 'POST',
+                headers: {
+                    accept: 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Length': data.length
+                }
+            }, res => {
+                let text = '', json;
+                res.on('data', chunk => {
+                    text = text + chunk;
+                });
+                res.on('end', () => {
+                    this.log.d('Done updating access token: %s', text);
+                    try {
+                        json = JSON.parse(text);
+                    }
+                    catch (e) {
+                        this.log.d('Not json received during token acquisition: %j', e);
+                    }
+                    if (res.statusCode === 200 && json && json.access_token) {
+                        resolve({token: json.access_token, expires: Date.now() + json.expires_in * 1000 - 10000});
+                    }
+                    else if (!json) {
+                        reject('Authorization error: bad response');
+                    }
+                    else if (json.error_description) {
+                        reject('Huawei authorization error: ' + json.error_description);
+                    }
+                    else {
+                        reject('Authorization error: unknown (' + text + ')');
+                    }
+                });
+            });
+
+            req.on('error', err => {
+                this.log.e('Error during token acquisition: %j', err);
+                reject('Authorization error' + (err.message && ': ' + err.message || ''));
+            });
+
+            req.end(data);
+        });
     }
 
     /**
@@ -78,13 +140,22 @@ class FCM extends Splitter {
      * @returns {Promise} sending promise
      */
     send(data, length) {
+        if (!this.token) {
+            return this.getToken().then(token => {
+                if (token && token.token) {
+                    this.token = token;
+                    this.opts.headers.Authorization = `Bearer ${token.token}`;
+                }
+            }).then(() => this.send(data, length));
+        }
+
         return this.with_retries(data, length, (pushes, bytes, attempt) => {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let content = this.template(pushes[0].m).compile(pushes[0]),
                 one = Math.floor(bytes / pushes.length);
 
-            content.registration_ids = pushes.map(p => p.t);
+            content.message.token = pushes.map(p => p.t);
 
             return this.sendRequest(JSON.stringify(content)).then(resp => {
                 try {
@@ -186,20 +257,23 @@ class FCM extends Splitter {
  * @returns {object} empty payload object
  */
 function empty(msg) {
-    return {data: {'c.i': msg.id}};
+    return {data: {'c.i': msg.id}, android: {}};
 }
 
 /**
  * Finish data object after setting all the properties
  * 
- * @param {object} data platform-specific data to finalize
+ * @param {object} obj platform-specific obj to finalize
  * @return {object} resulting object
  */
-function finish(data) {
-    if (!data.data.message && !data.data.sound) {
-        data.data.data['c.s'] = 'true';
+function finish(obj) {
+    if (!obj.data.message && !obj.data.sound) {
+        obj.data.data['c.s'] = 'true';
     }
-    return data;
+
+    obj.data = JSON.stringify(obj.data);
+
+    return {message: obj};
 }
 
 /**
@@ -248,7 +322,7 @@ const map = {
      */
     buttons: function(t, buttons) {
         if (buttons) {
-            t.result.data['c.b'] = buttons.map(b => ({t: b.title, l: b.url}));
+            t.result.data['c.b'] = buttons.map(b => ({t: b.title, l: b.link}));
         }
     },
 
@@ -280,7 +354,7 @@ const map = {
      */
     collapseKey: function(template, ck) {
         if (ck) {
-            template.collapse_key = ck;
+            template.android.collapse_key = ck;
         }
     },
 
@@ -292,7 +366,7 @@ const map = {
      */
     timeToLive: function(template, ttl) {
         if (ttl) {
-            template.time_to_live = ttl;
+            template.android.time_to_live = ttl;
         }
     },
 
@@ -359,26 +433,26 @@ const map = {
 };
 
 /**
- * Token types for FCM
- * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
+ * Token types for HMS
+ * A number comes from SDK, we need to map it into smth like tkhp/tkht
  */
 const FIELDS = {
-    '0': 'p', // prod
+    '0': 'p',
 };
 
 /**
- * Token types for FCM
- * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
+ * Token types for HMS
+ * A number comes from SDK, we need to map it into smth like tkhp/tkht
  */
 const FIELDS_TITLES = {
-    '0': 'FCM Token',
+    '0': 'HMS Token',
 };
 
 /**
- * Credential types for FCM
+ * Credential types for HMS
  */
 const CREDS = {
-    'fcm': class FCMCreds extends Creds {
+    'hms': class HMSCreds extends Creds {
         /**
          * Validation scheme of this class
          * 
@@ -386,7 +460,8 @@ const CREDS = {
          */
         static get scheme() {
             return Object.assign(super.scheme, {
-                key: { required: true, type: 'String', 'min-length': 100},
+                app: { required: true, type: 'String', 'min-length': 7, 'max-length': 12},
+                secret: { required: true, type: 'String', 'min-length': 64, 'max-length': 64},
             });
         }
 
@@ -401,7 +476,7 @@ const CREDS = {
             if (res) {
                 return res;
             }
-            this._data.hash = FORGE.md.sha256.create().update(this._data.key).digest().toHex();
+            this._data.hash = FORGE.md.sha256.create().update(this._data.secret).digest().toHex();
         }
 
         /**
@@ -413,7 +488,8 @@ const CREDS = {
             return {
                 _id: this._id,
                 type: this._data.type,
-                key: `FCM server key "${this._data.key.substr(0, 10)} ... ${this._data.key.substr(this._data.key.length - 10)}"`,
+                app: this._data.app,
+                secret: `HPK secret "${this._data.secret.substr(0, 10)} ... ${this._data.secret.substr(this._data.secret.length - 10)}"`,
                 hash: this._data.hash,
             };
         }
@@ -422,8 +498,8 @@ const CREDS = {
 };
 
 module.exports = {
-    key: 'a',
-    title: 'Android',
+    key,
+    title: 'Android (Huawei Push Kit)',
     extractor,
     guess,
     FIELDS,
@@ -434,6 +510,6 @@ module.exports = {
     finish,
     fields,
     map,
-    connection: FCM,
+    connection: HPK,
 
 };
