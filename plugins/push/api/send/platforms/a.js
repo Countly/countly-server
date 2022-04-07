@@ -19,7 +19,7 @@ const key = 'a';
  * @returns {string[]|undefined} array of [platform, field, token] if qstring has platform-specific token data, undefined otherwise
  */
 function extractor(qstring) {
-    if (qstring.android_token !== undefined && qstring.test_mode in FIELDS && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
+    if (qstring.android_token !== undefined && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
         return [key, FIELDS['0'], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
     }
 }
