@@ -84,13 +84,13 @@ plugins.dbConnection().then(async db => {
                 }
 
                 if (app.plugins.push.i && app.plugins.push.i._id && app.plugins.push.i._id.toString() === c._id.toString()) {
-                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'app.plugins.push.i': creds.view}});
+                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.i': creds.view}});
                 }
                 else if (app.plugins.push.a && app.plugins.push.a._id && app.plugins.push.a._id.toString() === c._id.toString()) {
-                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'app.plugins.push.a': creds.view}});
+                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.a': creds.view}});
                 }
                 else if (app.plugins.push.h && app.plugins.push.h._id && app.plugins.push.h._id.toString() === c._id.toString()) {
-                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'app.plugins.push.h': creds.view}});
+                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.h': creds.view}});
                 }
                 else {
                     return console.error('Illegal state: credentials %s are not found in app %s', cid, app._id);
