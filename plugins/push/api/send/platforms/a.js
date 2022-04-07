@@ -13,13 +13,26 @@ const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'
 const key = 'a';
 
 /**
+ * Virtual subplatforms. A virtual platform:
+ *  - has its own token fields, is stored in db separately;
+ *  - has its own compilation part;
+ *  - has its own sending part;
+ *  - has no distinct representation in UI, therefore it's virtual.
+ * 
+ * Huawei push is only available on select Android devices, therefore it doesn't deserve a separate checkbox in UI from users perspective.
+ * Yet notification payload, provider communication and a few other things are different, therefore it's a virtual platform. You can send to huawei directly using
+ * API, but whenever you send to Android you'll also send to huawei if Huawei credentials are set.
+ */
+const virtuals = ['h'];
+
+/**
  * Extract token & field from token_session request
  * 
  * @param {object} qstring request params
  * @returns {string[]|undefined} array of [platform, field, token] if qstring has platform-specific token data, undefined otherwise
  */
 function extractor(qstring) {
-    if (qstring.android_token !== undefined && qstring.test_mode in FIELDS && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
+    if (qstring.android_token !== undefined && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
         return [key, FIELDS['0'], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
     }
 }
@@ -193,11 +206,13 @@ function empty(msg) {
  * Finish data object after setting all the properties
  * 
  * @param {object} data platform-specific data to finalize
+ * @return {object} resulting object
  */
 function finish(data) {
     if (!data.data.message && !data.data.sound) {
         data.data.data['c.s'] = 'true';
     }
+    return data;
 }
 
 /**
@@ -421,6 +436,7 @@ const CREDS = {
 
 module.exports = {
     key: 'a',
+    virtuals,
     title: 'Android',
     extractor,
     guess,

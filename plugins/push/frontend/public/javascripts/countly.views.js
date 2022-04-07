@@ -2011,6 +2011,7 @@
     };
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.HUAWEI] = {
         _id: "",
+        type: "hms",
         appId: "",
         appSecret: ""
     };

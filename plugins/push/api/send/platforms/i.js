@@ -309,7 +309,7 @@ const CREDS = {
             let json = {
                 _id: this._id,
                 type: this._data.type,
-                cert: 'APN Key File (P8)',
+                key: 'APN Key File (P8)',
                 bundle: this._data.bundle,
                 keyid: this._data.keyid,
                 team: this._data.team,
