@@ -193,6 +193,7 @@ plugins.register("/i/hook/save", function(ob) {
                 common.returnMessage(params, 200, 'Not enough args');
                 return true;
             }
+
             if (hookConfig._id) {
                 const id = hookConfig._id;
                 delete hookConfig._id;
@@ -200,6 +201,7 @@ plugins.register("/i/hook/save", function(ob) {
                     { _id: common.db.ObjectID(id) },
                     {},
                     {$set: hookConfig},
+                    {new: true},                   
                     function(err, result) {
                         if (!err) {
                             common.returnOutput(params, result && result.value);
