@@ -1544,6 +1544,10 @@
     });
 
     app.route('/messaging', 'messagingDashboardView', function() {
+        if (!CountlyHelpers.isActiveAppMobile()) {
+            window.location.hash = "/";
+            return;
+        }
         this.renderWhenReady(pushNotificationViewWrapper);
     });
 
@@ -1973,6 +1977,10 @@
     });
 
     app.route('/messaging/details/*id', "messagingDetails", function(id) {
+        if (!CountlyHelpers.isActiveAppMobile()) {
+            window.location.hash = "/";
+            return;
+        }
         pushNotificationDetailsViewWrapper.params = {
             id: id
         };
