@@ -33,6 +33,7 @@ then
     bash "$DIR/scripts/detect.init.sh"
     
     #removing files
+    bash "$CUR/scripts/remove_old_files.sh"
     mv "$DIR/../frontend/express/public/javascripts/countly/countly.config.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.backup.20.11.js"
     cp -n "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
     rm -f "$DIR/../frontend/express/public/robots.txt"
