@@ -1480,6 +1480,7 @@ plugins.setConfigs("crashes", {
                             common.db.collection('app_crashgroups' + params.qstring.app_id).remove({'_id': group._id }, function() {});
                             if (common.drillDb) {
                                 common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + params.qstring.app_id).digest('hex')).remove({"sg.crash": group._id}, function() {});
+                                plugins.dispatch("/crash/delete", {appId: params.qstring.app_id, crash: group._id + ""});
                             }
                             var id = common.crypto.createHash('sha1').update(params.qstring.app_id + group._id + "").digest('hex');
                             common.db.collection('crash_share').remove({'_id': id }, function() {});
