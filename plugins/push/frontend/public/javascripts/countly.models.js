@@ -1481,7 +1481,7 @@
                     return {
                         _id: dto[PlatformDtoEnum.HUAWEI]._id || '',
                         type: dto[PlatformDtoEnum.HUAWEI].type,
-                        appId: dto[PlatformDtoEnum.HUAWEI].appId,
+                        appId: dto[PlatformDtoEnum.HUAWEI].app,
                         appSecret: dto[PlatformDtoEnum.HUAWEI].secret
                     };
                 }

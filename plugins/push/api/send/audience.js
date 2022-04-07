@@ -107,6 +107,15 @@ class Audience {
         return new Popper(this, trigger);
     }
 
+    /**
+     * Add any virtual platforms to the message platforms array
+     * 
+     * @returns {string[]} new array containing all message platforms and their virtual platforms
+     */
+    platformsWithVirtuals() {
+        return this.message.platforms.concat(this.message.platforms.map(p => PLATFORM[p].virtuals || []).flat());
+    }
+
     // /**
     //  * Find users defined by message filter and put corresponding records into queue
     //  * 
@@ -151,7 +160,7 @@ class Audience {
      * @param {Object[]} steps aggregation steps array to add steps to
      */
     async addFields(steps) {
-        let flds = fields(this.message.platforms, true).map(f => ({[f]: true}));
+        let flds = fields(this.platformsWithVirtuals(), true).map(f => ({[f]: true}));
         steps.push({$match: {$or: flds}});
     }
 
@@ -506,7 +515,7 @@ class PusherPopper {
         this.audience = audience;
         this.trigger = trigger;
         this.mappers = {};
-        this.audience.message.platforms.forEach(p => Object.values(PLATFORM[p].FIELDS).forEach(f => {
+        this.audience.platformsWithVirtuals().forEach(p => Object.values(PLATFORM[p].FIELDS).forEach(f => {
             if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
                 this.mappers[p + f] = new PlainApiMapper(audience.app, audience.message, trigger, p, f);
             }
@@ -711,7 +720,7 @@ class Popper extends PusherPopper {
      * @returns {number} number of records removed
      */
     async clear() {
-        let deleted = await Promise.all(this.audience.message.platforms.map(async p => {
+        let deleted = await Promise.all(this.audience.platformsWithVirtuals().map(async p => {
             let res = await common.db.collection('push').deleteMany({m: this.audience.message._id, p});
             return res.deletedCount;
         }));

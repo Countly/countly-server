@@ -37,7 +37,7 @@ function guess(userAgent) {
 }
 
 /**
- * Connection implementation for FCM
+ * Connection implementation for Huawei Push Kit
  */
 class HPK extends Splitter {
     /**
@@ -140,16 +140,16 @@ class HPK extends Splitter {
      * @returns {Promise} sending promise
      */
     send(data, length) {
-        if (!this.token) {
-            return this.getToken().then(token => {
-                if (token && token.token) {
-                    this.token = token;
-                    this.opts.headers.Authorization = `Bearer ${token.token}`;
-                }
-            }).then(() => this.send(data, length));
-        }
-
         return this.with_retries(data, length, (pushes, bytes, attempt) => {
+            if (!this.token) {
+                return this.getToken().then(token => {
+                    if (token && token.token) {
+                        this.token = token;
+                        this.opts.headers.Authorization = `Bearer ${token.token}`;
+                    }
+                }).then(() => this.send(data, length));
+            }
+
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let content = this.template(pushes[0].m).compile(pushes[0]),
@@ -159,90 +159,154 @@ class HPK extends Splitter {
 
             return this.sendRequest(JSON.stringify(content)).then(resp => {
                 try {
+                    if (typeof resp === 'string' && resp[0] === '"' && resp[resp.length - 1] === '"') {
+                        resp = resp.substring(1, resp.length - 2);
+                    }
                     resp = JSON.parse(resp);
                 }
                 catch (error) {
-                    this.log.e('Bad FCM response format: %j', resp, error);
+                    this.log.e('Bad HW response format: %j', resp, error);
                     throw PushError.deserialize(error);
                 }
 
-                if (resp.failure === 0 && resp.canonical_ids === 0) {
+
+                /**
+                 * Send error for all tokens
+                 * 
+                 * @param {string} message error message
+                 * @param {string} code error code
+                 * @returns {undefined}
+                 */
+                let sendFullError = (message, code) => this.send_push_error(new SendError(message, code).setAffected(pushes.map(p => p._id), bytes));
+
+                if (resp.code === '80000000') {
                     this.send_results(pushes.map(p => p._id), bytes);
-                    return;
                 }
+                else if (resp.code === '80100000') {
+                    // Some tokens are successfully sent. Tokens identified by illegal_token are those failed to be sent.
+                    try {
+                        let sub = JSON.parse(resp.msg),
+                            illegal_tokens = sub.illegal_tokens && sub.illegal_tokens.map(t => pushes.filter(p => p.t === t)[0]).filter(x => !!x) || [];
 
-                if (resp.results) {
-                    let oks = [],
-                        errors = {},
-                        /**
-                         * Get an error for given code & message, create it if it doesn't exist yet
-                         * 
-                         * @param {number} code error code
-                         * @param {string} message error message
-                         * @returns {SendError} error instance
-                         */
-                        error = (code, message) => {
-                            let err = code + message;
-                            if (!(err in errors)) {
-                                errors[err] = new SendError(message, code);
+                        if (illegal_tokens.length) {
+                            let illegal_bytes = illegal_tokens.length * one;
+                            this.send_push_error(new SendError('IllegalToken', ERROR.DATA_TOKEN_INVALID)
+                                .setAffected(illegal_tokens.map(p => p._id), illegal_bytes));
+                            if (illegal_tokens.length < this.pushes.length) {
+                                let successes = pushes.filter(p => illegal_tokens.filter(i => i._id === p._id).length === 0);
+                                this.send_results(successes.map(s => s._id), bytes - illegal_bytes);
                             }
-                            return errors[err];
-                        };
-
-                    resp.results.forEach((r, i) => {
-                        if (r.message_id) {
-                            if (r.registration_id) {
-                                oks.push([pushes[i]._id, r.registration_id]);
-                                // oks.push([pushes[i]._id, r.registration_id], one); ???
-                            }
-                            else {
-                                oks.push(pushes[i]._id);
-                            }
-                        }
-                        else if (r.error === 'NotRegistered') {
-                            this.log.d('Token %s expired (%s)', pushes[i].t, r.error);
-                            error(ERROR.DATA_TOKEN_EXPIRED, r.error).addAffected(pushes[i]._id, one);
-                        }
-                        else if (r.error === 'InvalidRegistration' || r.error === 'MismatchSenderId' || r.error === 'InvalidPackageName') {
-                            this.log.d('Token %s is invalid (%s)', pushes[i].t, r.error);
-                            error(ERROR.DATA_TOKEN_INVALID, r.error).addAffected(pushes[i]._id, one);
-                        }
-                        else if (r.error === 'InvalidParameters') { // still hasn't figured out why this error is thrown, therefore not critical yet
-                            error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
-                        }
-                        else if (r.error === 'MessageTooBig' || r.error === 'InvalidDataKey' || r.error === 'InvalidTtl') {
-                            error(ERROR.DATA_PROVIDER, '' + r.error).addAffected(pushes[i]._id, one);
                         }
                         else {
-                            error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
+                            this.log.w('Failed to filter illegal_tokens, sending success for all: %j / %j', resp, sub);
+                            this.send_results(pushes.map(s => s._id), bytes);
                         }
+                    }
+                    catch (e) {
+                        this.log.e('Failed to filter illegal_tokens: %j / %j', resp, e);
+                        sendFullError('BadResponse', ERROR.DATA_PROVIDER);
+                    }
+                }
+                else if (resp.code === '80100001') {
+                    // Some token parameters are incorrect.
+                    this.log.e('Huawei: failed to filter illegal_tokens: %j', resp);
+                    sendFullError('BadResponse', ERROR.DATA_PROVIDER);
+                }
+                else if (resp.code === '80100003') {
+                    // Incorrect message structure.
+                    this.log.e('Huawei: incorrect message structure (80100003) %j', resp);
+                    sendFullError('BadResponse', ERROR.DATA_PROVIDER);
+                }
+                else if (resp.code === '80100004') {
+                    // The message expiration time is earlier than the current time.
+                    this.log.e('Huawei: message expiration time is earlier than the current time (80100004) %j', resp);
+                    sendFullError('BadResponse', ERROR.DATA_PROVIDER);
+                }
+                else if (resp.code === '80100013') {
+                    // the collapse_key message field is invalid
+                    this.log.e('Huawei: the collapse_key message field is invalid (80100013) %j', resp);
+                    sendFullError('BadResponse', ERROR.DATA_PROVIDER);
+                }
+                else if (resp.code === '80100016') {
+                    // The message contains sensitive information.
+                    this.log.e('Huawei: the message contains sensitive information (80100016) %j', resp);
+                    sendFullError('BadResponse', ERROR.DATA_PROVIDER);
+                }
+                else if (resp.code === '80200001') {
+                    // OAuth authentication error.
+                    this.log.w('Huawei auth error (80200001) %j', resp);
+                    return this.getToken().then(token => {
+                        if (token && token.token) {
+                            this.token = token;
+                            this.opts.headers.Authorization = `Bearer ${token.token}`;
+                        }
+                    }).then(() => {
+                        throw new PushError('AuthRetryError', ERROR.CONNECTION_PROVIDER);
                     });
-                    let errored = 0;
-                    for (let k in errors) {
-                        errored += errors[k].affectedBytes;
-                        this.send_push_error(errors[k]);
-                    }
-                    if (oks.length) {
-                        this.send_results(oks, bytes - errored);
-                    }
+                }
+                else if (resp.code === '80200003') {
+                    // OAuth token expired.
+                    this.log.w('Huawei OAuth token expired (80200003) %j', resp);
+                    return this.getToken().then(token => {
+                        if (token && token.token) {
+                            this.token = token;
+                            this.opts.headers.Authorization = `Bearer ${token.token}`;
+                        }
+                    }).then(() => {
+                        throw new PushError('AuthRetryError', ERROR.WRONG_CREDENTIALS);
+                    });
+                }
+                else if (resp.code === '80300002') {
+                    // The current app does not have the permission to send push messages
+                    this.log.e('Huawei: the current app does not have the permission to send push messages (80300002) %j', resp);
+                    sendFullError('BadResponse', ERROR.DATA_PROVIDER);
+                }
+                else if (resp.code === '80300007') {
+                    // All tokens are invalid
+                    sendFullError('IllegalToken', ERROR.DATA_TOKEN_INVALID);
+                }
+                else if (resp.code === '80300008') {
+                    // The message body size exceeds the default value
+                    this.log.e('Huawei: the message body size exceeds the default value (80300008) %j', resp);
+                    sendFullError('MessageBodyTooBig', ERROR.DATA_COUNTLY);
+                }
+                else if (resp.code === '80300010') {
+                    // The number of tokens in the message body exceeds the default value
+                    this.log.e('Huawei: the number of tokens in the message body exceeds the default value (80300010) %j', resp);
+                    sendFullError('TooManyTokens', ERROR.DATA_COUNTLY);
+                }
+                else if (resp.code === '80300011') {
+                    // You are not authorized to send high-priority notification messages
+                    this.log.e('Huawei: you are not authorized to send high-priority notification messages (80300011) %j', resp);
+                    sendFullError('NotAuthorizedPriority', ERROR.DATA_PROVIDER);
+                }
+                else if (resp.code === '81000001') {
+                    // System internal error.
+                    this.log.e('Huawei: system internal error. (81000001) %j', resp);
+                    sendFullError('InternalHuaweiError', ERROR.CONNECTION_PROVIDER);
+                }
+                else {
+                    // Unknown error.
+                    this.log.e('Huawei: uknown error %j', resp);
+                    sendFullError('UnknownError', ERROR.CONNECTION_PROVIDER);
                 }
 
             }, ([code, error]) => {
-                this.log.w('FCM error %d / %j', code, error);
+                this.log.w('Huawei error %d / %j', code, error);
                 if (code === 0) {
                     throw PushError.deserialize(error);
                 }
                 else if (code >= 500) {
-                    throw new ConnectionError(`FCM Unavailable: ${code}`, ERROR.CONNECTION_PROVIDER);
+                    throw new ConnectionError(`Huawei Unavailable: ${code}`, ERROR.CONNECTION_PROVIDER);
                 }
                 else if (code === 401) {
-                    throw new ConnectionError(`FCM Unauthorized: ${code}`, ERROR.INVALID_CREDENTIALS);
+                    throw new ConnectionError(`Huawei Unauthorized: ${code}`, ERROR.INVALID_CREDENTIALS);
                 }
                 else if (code === 400) {
-                    throw new ConnectionError(`FCM Bad message: ${code}`, ERROR.DATA_PROVIDER);
+                    throw new ConnectionError(`Huawei Bad message: ${code}`, ERROR.DATA_PROVIDER);
                 }
                 else {
-                    throw new ConnectionError(`FCM Bad response code: ${code}`, ERROR.EXCEPTION);
+                    throw new ConnectionError(`Huawei Bad response code: ${code}`, ERROR.EXCEPTION);
                 }
             });
         });
@@ -499,6 +563,7 @@ const CREDS = {
 
 module.exports = {
     key,
+    parent: 'a',
     title: 'Android (Huawei Push Kit)',
     extractor,
     guess,

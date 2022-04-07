@@ -13,6 +13,19 @@ const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'
 const key = 'a';
 
 /**
+ * Virtual subplatforms. A virtual platform:
+ *  - has its own token fields, is stored in db separately;
+ *  - has its own compilation part;
+ *  - has its own sending part;
+ *  - has no distinct representation in UI, therefore it's virtual.
+ * 
+ * Huawei push is only available on select Android devices, therefore it doesn't deserve a separate checkbox in UI from users perspective.
+ * Yet notification payload, provider communication and a few other things are different, therefore it's a virtual platform. You can send to huawei directly using
+ * API, but whenever you send to Android you'll also send to huawei if Huawei credentials are set.
+ */
+const virtuals = ['h'];
+
+/**
  * Extract token & field from token_session request
  * 
  * @param {object} qstring request params
@@ -423,6 +436,7 @@ const CREDS = {
 
 module.exports = {
     key: 'a',
+    virtuals,
     title: 'Android',
     extractor,
     guess,
