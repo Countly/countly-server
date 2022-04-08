@@ -218,7 +218,6 @@ plugins.setConfigs("crashes", {
             }
             version = (version + "").replace(/^\$/, "").replace(/\./g, ":");
         }
-
         common.recordCustomMetric(params, "crashdata", params.app_id, metrics, 1, null, ["cr_u"], dbAppUser.ls);
         if (platform && version) {
             common.recordCustomMetric(params, "crashdata", platform + "**" + version + "**" + params.app_id, metrics, 1, null, ["cr_u"], (version === dbAppUser.av && platform === dbAppUser.p) ? dbAppUser.ls : 0);
@@ -893,7 +892,7 @@ plugins.setConfigs("crashes", {
                                     }
                                 }
                             }
-                            var options = {unique: ["cru", "crau", "crauf", "craunf", "cruf", "crunf"]/*, levels:{daily:["cr","crnf","cru","crf", "crru"], monthly:["cr","crnf","cru","crf", "crru"]}*/};
+                            var options = {unique: ["cru", "crau", "crauf", "craunf", "cruf", "crunf", "cr_u"]/*, levels:{daily:["cr","crnf","cru","crf", "crru"], monthly:["cr","crnf","cru","crf", "crru"]}*/};
 
                             if (params.qstring.os || params.qstring.app_version) {
                                 var props = [];

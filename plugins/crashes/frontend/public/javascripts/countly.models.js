@@ -109,10 +109,10 @@
 
             ["total", "prev-total"].forEach(function(prop) {
                 dashboard["cr-session"][prop] = (dashboard.cr_s[prop] === 0) ? 0 : (Math.round(Math.min(dashboard.cr[prop] / dashboard.cr_s[prop], 1) * 100) / 100);
-                dashboard.crau[prop] = Math.max(0, dashboard.crauf[prop] + dashboard.craunf[prop] - dashboard.cr_u[prop]);
-                dashboard.crses[prop] = Math.max(0, dashboard.crfses[prop] + dashboard.crnfses[prop] - dashboard.cr_s[prop]);
-                dashboard.crtf[prop] = Math.round(Math.min(dashboard.crf[prop] / dashboard.cr_s[prop], 1) * 100) / 100;
-                dashboard.crtnf[prop] = Math.round(Math.min(dashboard.crnf[prop] / dashboard.cr_s[prop], 1) * 100) / 100;
+                dashboard.crau[prop] = Math.max(0, dashboard.crauf[prop] + dashboard.craunf[prop]);
+                dashboard.crses[prop] = Math.max(0, dashboard.crfses[prop] + dashboard.crnfses[prop]);
+                dashboard.crtf[prop] = (dashboard.cr_s[prop] === 0) ? 0 : (Math.round(Math.min(dashboard.crf[prop] / dashboard.cr_s[prop], 1) * 100) / 100);
+                dashboard.crtnf[prop] = (dashboard.cr_s[prop] === 0) ? 0 : (Math.round(Math.min(dashboard.crnf[prop] / dashboard.cr_s[prop], 1) * 100) / 100);
 
             });
 
@@ -122,14 +122,14 @@
 
             ["crau", "craunf", "crauf"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0) ? 100 : (dashboard[name][prop] / dashboard.cr_u[prop] * 100));
+                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard[name][prop] - dashboard.cr_u[prop]) / dashboard.cr_u[prop] * 100));
                 });
                 populateMetric(name, true);
             });
 
             ["crses", "crnfses", "crfses"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_s[prop] === 0) ? 100 : (dashboard[name][prop] / dashboard.cr_s[prop] * 100));
+                    dashboard[name][prop] = Math.min(100, (dashboard.cr_s[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard[name][prop] - dashboard.cr_s[prop]) / dashboard.cr_s[prop] * 100));
                 });
                 populateMetric(name, true);
             });
@@ -193,10 +193,10 @@
                         return (obj.cr_s === 0) ? 0 : Math.round(Math.min((obj.crf + obj.crnf) / obj.cr_s, 1) * 100) / 100;
                     },
                     "^crses$": function(obj) {
-                        return (obj.cr_s === 0) ? 100 : Math.round(Math.min(Math.max((obj.crfses + obj.crnfses - obj.cr_s) / obj.cr_s, 0), 1) * 10000) / 100;
+                        return (obj.cr_s === 0 || obj.crfses + obj.crnfses === 0) ? 100 : Math.round(Math.min(Math.max((obj.crfses + obj.crnfses - obj.cr_s) / obj.cr_s, 0), 1) * 10000) / 100;
                     },
                     "^crau$": function(obj) {
-                        return (obj.cr_u === 0) ? 100 : Math.round(Math.min(Math.max((obj.crauf + obj.craunf - obj.cr_u) / obj.cr_u, 0), 1) * 10000) / 100;
+                        return (obj.cr_u === 0 || obj.crauf + obj.craunf === 0) ? 100 : Math.round(Math.min(Math.max((obj.crauf + obj.craunf - obj.cr_u) / obj.cr_u, 0), 1) * 10000) / 100;
                     },
                     "^cr$": function(obj) {
                         return obj.crf + obj.crnf;
@@ -208,10 +208,10 @@
                         return (obj.cr_s === 0) ? 0 : Math.round(Math.min(obj[state.activeFilter.fatality === "fatal" ? "crf" : "crnf"] / obj.cr_s, 1) * 100) / 100;
                     },
                     "^crn?fses$": function(obj) {
-                        return (obj.cr_s === 0) ? 100 : Math.round(Math.min(obj[name] / obj.cr_s, 1) * 10000) / 100;
+                        return (obj.cr_s === 0 || obj[name] === 0) ? 100 : Math.round(Math.min(obj[name] / obj.cr_s, 1) * 10000) / 100;
                     },
                     "^craun?f$": function(obj) {
-                        return (obj.cr_s === 0) ? 100 : Math.round(Math.min(obj[name] / obj.cr_u, 1) * 10000) / 100;
+                        return (obj.cr_s === 0 || obj[name] === 0) ? 100 : Math.round(Math.min(obj[name] / obj.cr_u, 1) * 10000) / 100;
                     }
                 };
 
@@ -264,11 +264,11 @@
                 statistics.users = {
                     affected: {
                         total: state.rawData.users.affected,
-                        totalPercent: parseFloat(((state.rawData.users.affected / state.rawData.users.total) * 100).toFixed(2)),
+                        totalPercent: parseFloat((((state.rawData.users.total === 0) ? 0 : (state.rawData.users.affected / state.rawData.users.total)) * 100).toFixed(2)),
                         fatal: state.rawData.users.fatal,
-                        fatalPercent: parseFloat(((state.rawData.users.fatal / state.rawData.users.total) * 100).toFixed(2)),
+                        fatalPercent: parseFloat((((state.rawData.users.total === 0) ? 0 : (state.rawData.users.fatal / state.rawData.users.total)) * 100).toFixed(2)),
                         nonFatal: (state.rawData.users.affected - state.rawData.users.fatal),
-                        nonFatalPercent: parseFloat((((state.rawData.users.affected - state.rawData.users.fatal) / state.rawData.users.total) * 100).toFixed(2)),
+                        nonFatalPercent: parseFloat((((state.rawData.users.total === 0) ? 0 : ((state.rawData.users.affected - state.rawData.users.fatal) / state.rawData.users.total)) * 100).toFixed(2)),
                     },
                     notAffected: {
                         total: state.rawData.users.affected,
@@ -281,15 +281,15 @@
                 statistics.crashes = {
                     total: state.rawData.crashes.total,
                     fatal: state.rawData.crashes.fatal,
-                    fatalPercent: (state.rawData.crashes.fatal / state.rawData.crashes.total) * 100,
+                    fatalPercent: ((state.rawData.crashes.total === 0) ? 0 : (state.rawData.crashes.fatal / state.rawData.crashes.total)) * 100,
                     nonFatal: state.rawData.crashes.nonfatal,
-                    nonFatalPercent: (state.rawData.crashes.nonfatal / state.rawData.crashes.total) * 100,
+                    nonFatalPercent: ((state.rawData.crashes.total === 0) ? 0 : (state.rawData.crashes.nonfatal / state.rawData.crashes.total)) * 100,
                     new: state.rawData.crashes.news,
-                    newPercent: (state.rawData.crashes.news / state.rawData.crashes.total) * 100,
+                    newPercent: ((state.rawData.crashes.total === 0) ? 0 : (state.rawData.crashes.news / state.rawData.crashes.total)) * 100,
                     resolved: state.rawData.crashes.resolved,
-                    resolvedPercent: parseFloat(((state.rawData.crashes.resolved / state.rawData.crashes.total) * 100).toFixed(2)),
+                    resolvedPercent: parseFloat((((state.rawData.crashes.total === 0) ? 0 : (state.rawData.crashes.resolved / state.rawData.crashes.total)) * 100).toFixed(2)),
                     unresolved: (state.rawData.crashes.total - state.rawData.crashes.resolved),
-                    unresolvedPercent: parseFloat((((state.rawData.crashes.total - state.rawData.crashes.resolved) / state.rawData.crashes.total) * 100).toFixed(2)),
+                    unresolvedPercent: parseFloat((((state.rawData.crashes.total === 0) ? 0 : (state.rawData.crashes.total - state.rawData.crashes.resolved) / state.rawData.crashes.total) * 100).toFixed(2)),
                     reoccured: state.rawData.crashes.renewed
                 };
 
@@ -299,7 +299,7 @@
                 Object.keys(state.rawData.crashes.os).forEach(function(platform) {
                     statistics.topPlatforms[platform] = {
                         count: countlyCommon.getShortNumber(state.rawData.crashes.os[platform]),
-                        percent: (state.rawData.crashes.os[platform] / statistics.crashes.total) * 100
+                        percent: ((statistics.crashes.total === 0) ? 0 : (state.rawData.crashes.os[platform] / statistics.crashes.total)) * 100
                     };
                 });
 
