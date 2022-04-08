@@ -1,4 +1,4 @@
-/*global app,countlySlippingAwayUsers,countlyVue,$,CV,countlyCommon,CountlyHelpers,countlyAuth*/
+/*global app,countlySlippingAwayUsers,countlyVue,CV,countlyCommon,CountlyHelpers,countlyAuth*/
 (function() {
 
     var FEATURE_NAME = "slipping_away_users";
@@ -104,14 +104,12 @@
         }]
     });
 
-    $(document).ready(function() {
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("slipping-away-users", "slipping-away-users.config-title");
-            app.configurationsView.registerLabel("slipping-away-users.p1", "slipping-away-users.config-first-threshold");
-            app.configurationsView.registerLabel("slipping-away-users.p2", "slipping-away-users.config-second-threshold");
-            app.configurationsView.registerLabel("slipping-away-users.p3", "slipping-away-users.config-third-threshold");
-            app.configurationsView.registerLabel("slipping-away-users.p4", "slipping-away-users.config-fourth-threshold");
-            app.configurationsView.registerLabel("slipping-away-users.p5", "slipping-away-users.config-fifth-threshold");
-        }
-    });
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("slipping-away-users", "slipping-away-users.config-title");
+        app.configurationsView.registerLabel("slipping-away-users.p1", "slipping-away-users.config-first-threshold");
+        app.configurationsView.registerLabel("slipping-away-users.p2", "slipping-away-users.config-second-threshold");
+        app.configurationsView.registerLabel("slipping-away-users.p3", "slipping-away-users.config-third-threshold");
+        app.configurationsView.registerLabel("slipping-away-users.p4", "slipping-away-users.config-fourth-threshold");
+        app.configurationsView.registerLabel("slipping-away-users.p5", "slipping-away-users.config-fifth-threshold");
+    }
 })();
