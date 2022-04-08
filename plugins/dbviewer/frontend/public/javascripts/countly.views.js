@@ -1,4 +1,4 @@
-/*global $, countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, moment _*/
+/*global countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, moment _*/
 
 (function() {
     var FEATURE_NAME = 'dbviewer';
@@ -442,8 +442,6 @@
     });
 
 
-    $(document).ready(function() {
-        app.addMenu("management", {code: "db", permission: FEATURE_NAME, url: "#/manage/db", text: "dbviewer.title", priority: 120});
-    });
+    app.addMenu("management", {code: "db", permission: FEATURE_NAME, url: "#/manage/db", text: "dbviewer.title", priority: 120});
 
 })();

@@ -607,8 +607,6 @@
         component: KeywordsDashboardWidget
     });
 
-    $(document).ready(function() {
-        app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
-        app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
-    });
+    app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
+    app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", permission: FEATURE_NAME, url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
 })();
