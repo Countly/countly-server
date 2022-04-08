@@ -159,8 +159,8 @@
 
                 var metricChartConfig = {
                     "cr-session": {labelKey: "crashes.total-per-session", colorIndex: 1},
-                    "crses": {labelKey: "crashes.free-sessions", colorIndex: 0},
-                    "crau": {labelKey: "crashes.free-users", colorIndex: 0},
+                    "crses": {labelKey: "crashes.free-sessions", colorIndex: 1},
+                    "crau": {labelKey: "crashes.free-users", colorIndex: 1},
                     "cr": {labelKey: "crashes.total", colorIndex: 1},
                     "cru": {labelKey: "crashes.unique", colorIndex: 1}
                 }[metric];
