@@ -1,0 +1,109 @@
+/* eslint-disable no-console */
+/* global countlyIndexedDbService */
+(function(countlyLoggerService) {
+
+    var LoggerLevelEnum = Object.freeze({
+        DEBUG: "debug",
+        INFO: "info",
+        ERROR: "error"
+    });
+
+    var LOGGER_STORE = "client_logger";
+
+    var DEBUG_LOG_COLOR = "blue";
+    var INFO_LOG_COLOR = "green";
+    var ERROR_LOG_COLOR = "red";
+
+    // Note: create client logger store when user session starts.
+    countlyIndexedDbService.createStore(LOGGER_STORE);
+    // Note: clear client logger store when user session starts.
+    countlyIndexedDbService.clearStore(LOGGER_STORE);
+
+    var LoggerHelper = {
+        getLogEntry: function(level, label, entry) {
+            var result = {
+                level: level,
+                label: label,
+                log: entry
+            };
+            if (entry instanceof Error) {
+                result.log = entry;
+                return result;
+            }
+            result.log = JSON.stringify(entry);
+            return result;
+        },
+        getLogEntryStringFormat: function(level, timestamp, label, entry) {
+            var stringFormat = new Date(timestamp).toISOString() + " " + (level + "/" + label) + ": ";
+            if (entry instanceof Error) {
+                stringFormat += entry;
+                return stringFormat;
+            }
+            stringFormat += JSON.stringify(entry);
+            return stringFormat;
+        },
+        saveFile: function(blob) {
+            var downloadAnchor = document.createElement("a");
+            downloadAnchor.href = URL.createObjectURL(blob);
+            downloadAnchor.download = "Countly-client-logs-" + Date.now().valueOf() + ".log";
+            setTimeout(function() {
+                downloadAnchor.dispatchEvent(new MouseEvent("click"));
+            }, 0);
+        }
+    };
+
+    var LoggerFactory = function(label) {
+        return {
+            info: function(entry) {
+                var timestamp = Date.now();
+                console.log("%c" + LoggerHelper.getLogEntryStringFormat(LoggerLevelEnum.INFO, timestamp, label, entry), "color:" + INFO_LOG_COLOR);
+                countlyIndexedDbService.setItem(LOGGER_STORE, timestamp.toString(), LoggerHelper.getLogEntry(LoggerLevelEnum.INFO, label, entry));
+            },
+            error: function(entry) {
+                var timestamp = Date.now();
+                console.error("%c" + LoggerHelper.getLogEntryStringFormat(LoggerLevelEnum.ERROR, timestamp, label, entry), "color:" + ERROR_LOG_COLOR);
+                countlyIndexedDbService.setItem(LOGGER_STORE, timestamp.toString(), LoggerHelper.getLogEntry(LoggerLevelEnum.ERROR, label, entry));
+            },
+            debug: function(entry) {
+                var timestamp = Date.now();
+                console.debug("%c" + LoggerHelper.getLogEntryStringFormat(LoggerLevelEnum.DEBUG, timestamp, label, entry), "color:" + DEBUG_LOG_COLOR);
+                countlyIndexedDbService.setItem(LOGGER_STORE, timestamp.toString(), LoggerHelper.getLogEntry(LoggerLevelEnum.DEBUG, label, entry));
+            }
+        };
+    };
+
+    var LoggerService = {
+        loggers: {},
+        export: function() {
+            countlyIndexedDbService.getItems(LOGGER_STORE).then(function(logEntries) {
+                var allLogEntries = logEntries.map(function(item) {
+                    var timestamp = parseInt(item.key);
+                    var level = item.value.level;
+                    var label = item.value.label;
+                    var log = item.value.log;
+                    var logLine = new Date(timestamp).toISOString() + " " + level + "/" + label + ":" + log + "\n";
+                    if (log.stack) {
+                        logLine = logLine.concat(log.stack + "\n");
+                    }
+                    return logLine;
+                });
+                var logsBlob = new Blob(allLogEntries, { type: "text/plain;charset=utf-8" });
+                LoggerHelper.saveFile(logsBlob);
+            });
+        },
+        clear: function() {
+            countlyIndexedDbService.clearStore(LOGGER_STORE);
+        },
+        createCategory: function(name) {
+            if (this.loggers[name]) {
+                return this.loggers[name];
+            }
+            var logger = LoggerFactory(name);
+            this.loggers[name] = logger;
+            return logger;
+        },
+        levelEnum: LoggerLevelEnum,
+    };
+    Object.assign(countlyLoggerService, LoggerService);
+
+}(window.countlyLoggerService = window.countlyLoggerService || {}));
