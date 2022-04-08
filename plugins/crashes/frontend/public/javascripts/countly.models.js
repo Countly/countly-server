@@ -289,7 +289,7 @@
                     resolved: state.rawData.crashes.resolved,
                     resolvedPercent: parseFloat((((state.rawData.crashes.total === 0) ? 0 : (state.rawData.crashes.resolved / state.rawData.crashes.total)) * 100).toFixed(2)),
                     unresolved: (state.rawData.crashes.total - state.rawData.crashes.resolved),
-                    unresolvedPercent: parseFloat(((((state.rawData.crashes.total === 0) ? 0 : (state.rawData.crashes.total - state.rawData.crashes.resolved) / state.rawData.crashes.total)) * 100).toFixed(2)),
+                    unresolvedPercent: parseFloat((((state.rawData.crashes.total === 0) ? 0 : (state.rawData.crashes.total - state.rawData.crashes.resolved) / state.rawData.crashes.total) * 100).toFixed(2)),
                     reoccured: state.rawData.crashes.renewed
                 };
 
