@@ -54,7 +54,8 @@ class HPK extends Splitter {
      * @param {string} options.proxy.pass proxy pass
      */
     constructor(log, type, creds, messages, options) {
-        super(log, type, creds, messages, Object.assign(options, {concurrency: 500}));
+        options.pool.concurrency = 500;
+        super(log, type, creds, messages, options);
 
         this.log = logger(log).sub(`wh-${threadId}`);
         this.opts = {
@@ -86,6 +87,7 @@ class HPK extends Splitter {
             });
 
             let req = https.request({
+                agent: this.agent,
                 hostname: 'oauth-login.cloud.huawei.com',
                 port: 443,
                 path: '/oauth2/v2/token',
@@ -112,20 +114,20 @@ class HPK extends Splitter {
                         resolve({token: json.access_token, expires: Date.now() + json.expires_in * 1000 - 10000});
                     }
                     else if (!json) {
-                        reject('Authorization error: bad response');
+                        reject(new ConnectionError('Authorization error: bad response', ERROR.CONNECTION_PROVIDER));
                     }
                     else if (json.error_description) {
-                        reject('Huawei authorization error: ' + json.error_description);
+                        reject(new ConnectionError('Huawei authorization error: ' + json.error_description, ERROR.INVALID_CREDENTIALS));
                     }
                     else {
-                        reject('Authorization error: unknown (' + text + ')');
+                        reject(new ConnectionError('Authorization error: unknown (' + text + ')', ERROR.CONNECTION_PROVIDER));
                     }
                 });
             });
 
             req.on('error', err => {
                 this.log.e('Error during token acquisition: %j', err);
-                reject('Authorization error' + (err.message && ': ' + err.message || ''));
+                reject(new ConnectionError('Authorization error' + (err.message && ': ' + err.message || ''), ERROR.CONNECTION_PROVIDER));
             });
 
             req.end(data);

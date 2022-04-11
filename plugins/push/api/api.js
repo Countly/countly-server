@@ -78,13 +78,18 @@ plugins.register('/master/runners', runners => {
     let sender;
     runners.push(async() => {
         if (!sender) {
-            sender = new Sender();
-            await sender.prepare();
-            let has = await sender.watch();
-            if (has) {
-                await sender.send();
+            try {
+                sender = new Sender();
+                await sender.prepare();
+                let has = await sender.watch();
+                if (has) {
+                    await sender.send();
+                }
+                sender = undefined;
             }
-            sender = undefined;
+            catch (e) {
+                sender = undefined;
+            }
         }
     });
 });

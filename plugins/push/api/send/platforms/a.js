@@ -65,7 +65,8 @@ class FCM extends Splitter {
      * @param {string} options.proxy.pass proxy pass
      */
     constructor(log, type, creds, messages, options) {
-        super(log, type, creds, messages, Object.assign(options, {concurrency: 500}));
+        options.pool.concurrency = 500;
+        super(log, type, creds, messages, options);
 
         this.log = logger(log).sub(`wa-${threadId}`);
         this.opts = {

@@ -649,7 +649,8 @@ class Pusher extends PusherPopper {
             batch = Push.batchInsert(batchSize),
             start = this.start || this.trigger.start,
             result = new Result(),
-            updates = {};
+            updates = {},
+            virtuals = {};
 
         for await (let user of stream) {
             let push = user[TK][0],
@@ -666,7 +667,7 @@ class Pusher extends PusherPopper {
 
                 let p = pf[0],
                     d = note._id.getTimestamp().getTime(),
-                    rp = result.sub(p);
+                    rp = result.sub(p, undefined, PLATFORM[p].parent);
 
                 result.total++;
                 updates['result.total'] = result.total;
@@ -684,6 +685,16 @@ class Pusher extends PusherPopper {
                 rpl.total++;
                 updates[`result.subs.${p}.subs.${la}.total`] = rpl.total;
 
+                if (PLATFORM[p].parent) {
+                    rp = result.sub(PLATFORM[p].parent),
+                    rpl = rp.sub(la);
+                    rp.total++;
+                    rpl.total++;
+                    virtuals[`result.subs.${p}.virtual`] = PLATFORM[p].parent;
+                    updates[`result.subs.${PLATFORM[p].parent}.total`] = rp.total;
+                    updates[`result.subs.${PLATFORM[p].parent}.subs.${la}.total`] = rpl.total;
+                }
+
                 note.h = util.hash(note.pr);
 
                 if (batch.pushSync(note)) {
@@ -694,7 +705,11 @@ class Pusher extends PusherPopper {
         }
 
         if (result.total) {
-            await this.audience.message.update({$inc: updates}, () => {});
+            let update = {$inc: updates};
+            if (Object.keys(virtuals).length) {
+                update.$set = virtuals;
+            }
+            await this.audience.message.update(update, () => {});
             this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
             await batch.flush([11000]);
         }
