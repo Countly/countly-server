@@ -15,20 +15,20 @@ class Pool extends Duplex {
      * @param {string} type type of connection: ap, at, id, ia, ip, ht, hp
      * @param {Creds} creds credentials instance
      * @param {Object[]} messages array of initial messages
-     * @param {Object} options streaming options
-     * @param {integer} options.bytes how much bytes can be processed simultaniously by a single connection
-     * @param {integer} options.workers how much connections (workers) can be used in parallel
+     * @param {Object} cfg cfg object
+     * @param {integer} cfg.pool.bytes how much bytes can be processed simultaniously by a single connection
+     * @param {integer} cfg.pool.concurrency how much connections (workers) can be used in parallel
      */
-    constructor(id, type, creds, messages, options) {
+    constructor(id, type, creds, messages, cfg) {
         super({
-            // writableHighWaterMark: options.bytes * options.workers,
+            // writableHighWaterMark: cfg.bytes * cfg.workers,
             readableObjectMode: true,
             readableHighWaterMark: 10000,
             writableObjectMode: false,
         });
         this.platform = type.substr(0, 1);
-        this.workers = options.workers;
-        this.bytes = options.bytes;
+        this.workers = cfg.pool.concurrency;
+        this.bytes = cfg.pool.bytes;
         this.messages = messages; // array of messages
         this.connections = []; // array of workers
         this.meta = []; // array of worker meta, index is the same as for connections
@@ -47,8 +47,8 @@ class Pool extends Duplex {
             creds: creds.json,
             messages: this.messages,
             meta: this.meta,
-            options
-        }, options.workers);
+            cfg
+        });
 
         this.log.i('initialized (%s)', creds.id);
         this.booting = true;
