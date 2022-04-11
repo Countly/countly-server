@@ -808,10 +808,17 @@
             }
         },
         methods: {
-            handleXAxisOverflow: function(options, strategy) {
+            handleXAxisOverflow: function(options, strategy, size) {
                 if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
                     return null;
                 }
+
+                var widthOverflowThreshold = (options.clyCustom && options.clyCustom.widthOverflowThreshold) || 500;
+
+                if (size && size.w >= widthOverflowThreshold) {
+                    return null;
+                }
+
                 var xAxis = options.xAxis;
 
                 // Early return, no need to analyze the array
@@ -1857,7 +1864,9 @@
     Vue.component("cly-chart-bar", BaseBarChart.extend({
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right"]
+                forwardedSlots: ["chart-left", "chart-right"],
+                chartWidth: 0,
+                chartHeight: 0
             };
         },
         props: {
@@ -1875,11 +1884,21 @@
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 opt = this.patchChart(opt);
-                var xAxisOverflowPatch = this.handleXAxisOverflow(opt, this.xAxisLabelOverflow);
+                var xAxisOverflowPatch = this.handleXAxisOverflow(opt, this.xAxisLabelOverflow, {
+                    w: this.chartWidth,
+                    h: this.chartHeight
+                });
                 if (xAxisOverflowPatch) {
                     opt = _merge(opt, xAxisOverflowPatch);
                 }
                 return opt;
+            }
+        },
+        methods: {
+            onChartFinished: function() {
+                var ref = this.$refs.echarts;
+                this.chartWidth = ref.getWidth();
+                this.chartHeight = ref.getHeight();
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
@@ -1898,6 +1917,7 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
+                                    @finished="onChartFinished"\
                                     @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
