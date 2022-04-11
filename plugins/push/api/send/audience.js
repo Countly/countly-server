@@ -655,6 +655,9 @@ class Pusher extends PusherPopper {
         for await (let user of stream) {
             let push = user[TK][0],
                 la = user.la || 'default';
+            if (!push) {
+                continue;
+            }
             for (let pf in push[TK]) {
                 if (!(pf in this.mappers)) {
                     continue;
