@@ -1009,6 +1009,15 @@
                 }
                 return null;
             },
+            mapGlobalError: function(dto) {
+                if (dto.result && dto.result.error) {
+                    return {
+                        code: dto.result.error,
+                        affectedUsers: dto.result.total || '',
+                    };
+                }
+                return null;
+            },
             mapErrors: function(dto) {
                 var expiredTokenError = this.getExpiredTokenErrorIfFound(dto);
                 if (expiredTokenError) {
@@ -1310,7 +1319,7 @@
                     message: this.mapMessageLocalizationsList(localizations, dto),
                     settings: this.mapSettings(dto),
                     messageType: dto.info && dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
-                    error: dto.error,
+                    error: this.mapGlobalError(dto),
                     errors: this.mapErrors(dto),
                     locations: dto.filter && dto.filter.geos || [],
                     cohorts: dto.filter && dto.filter.cohorts || [],
