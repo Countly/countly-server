@@ -983,13 +983,12 @@
             return;
         }
 
+        data.demo = true;
+
         $.ajax({
             type: "POST",
-            url: countlyCommon.API_URL + "/i/pushes/create",
-            data: {
-                args: JSON.stringify(data),
-                populator: true
-            },
+            url: countlyCommon.API_URL + "/i/push/message/create",
+            data: JSON.stringify(data),
             success: function(json) {
                 data._id = json._id;
                 if (callback) {
