@@ -189,5 +189,3 @@ rm -f "$DIR/plugins/system-utility/frontend/public/localization/empty.properties
 rm -f "$DIR/plugins/times-of-day/frontend/public/templates/timesofday.html"
 rm -f "$DIR/plugins/times-of-day/frontend/public/templates/widget.html"
 rm -f "$DIR/plugins/times-of-day/frontend/public/stylesheets/old.main.css"
-rm -f "$DIR/plugins/push/frontend/public/images/push/preview.a.png"
-rm -f "$DIR/plugins/push/frontend/public/images/push/preview.i.png"
