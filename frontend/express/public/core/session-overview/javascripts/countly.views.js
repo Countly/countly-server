@@ -51,6 +51,9 @@ var SessionOverviewView = countlyVue.views.create({
         },
         dateChanged: function() {
             this.$store.dispatch('countlySessionOverview/fetchAll', true);
+        },
+        sortDates: function(a, b) {
+            return new Date(a.date) - new Date(b.date);
         }
     },
     mounted: function() {

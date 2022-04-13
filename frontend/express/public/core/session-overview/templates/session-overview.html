@@ -12,9 +12,9 @@
             <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading" :force-loading="isLoading" :legend="legend"></cly-chart-line>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" :force-loading="isLoading">
+            <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" :force-loading="isLoading" >
                 <template v-slot="scope">
-                    <el-table-column sortable="custom" prop="date" :label="i18n('common.date')">
+                    <el-table-column prop="date" :label="i18n('common.date')" :sortable="true" :sort-method="sortDates">
                     </el-table-column>
                     <el-table-column sortable="custom" prop="totalSessions" :label="i18n('common.total-sessions')">
                         <template slot-scope="scope">
