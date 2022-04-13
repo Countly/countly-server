@@ -161,7 +161,7 @@ class State extends EventEmitter {
      * @returns {boolean} true if there're pushes in processing
      */
     isSending(id) {
-        return !!this._sending[id];
+        return this._sending[id] > 0;
     }
 
     // /**

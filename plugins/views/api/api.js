@@ -147,6 +147,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                                 "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
                                             ).remove({"sg.view": viewUrl}));
                                         }
+                                        plugins.dispatch("/view/delete", {appId: appId, view: viewid + ""});
                                         /** */
                                         Promise.all(deleteDocs).then(function() {
                                             resolveView();

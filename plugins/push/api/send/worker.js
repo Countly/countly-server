@@ -12,10 +12,10 @@ const {Worker, isMainThread, parentPort, workerData} = require('worker_threads')
  * @param {string} type type of connection: ap, at, id, ia, ip, ht, hp
  * @param {object} creds credentials
  * @param {Object[]} messages array of initial messages
- * @param {Object} options stream options
+ * @param {Object} cfg cfg object
  * @returns {Object} connection instance for the type given
  */
-function factory(log, type, creds, messages, options) {
+function factory(log, type, creds, messages, cfg) {
     let { PLATFORM } = require('./platforms'),
         Constr = PLATFORM[type.substr(0, 1)].connection;
     if (!Constr) {
@@ -25,7 +25,7 @@ function factory(log, type, creds, messages, options) {
     if (!Constr) {
         throw new Error(`Failed to construct Creds instance`);
     }
-    return new Constr(log, type, creds, messages, options);
+    return new Constr(log, type, creds, messages, cfg);
 }
 
 if (isMainThread) {
@@ -36,12 +36,12 @@ if (isMainThread) {
          * @param {object} opts Options to pass to the worker
          */
         constructor(opts) {
-            super({writableHighWaterMark: opts.options.bytes});
+            super({writableHighWaterMark: opts.cfg.pool.bytes});
             this.id = opts.id;
             this.in = new Measurement();
             this.out = new Measurement();
             this.processing = 0;
-            this.bytes = opts.options.bytes;
+            this.bytes = opts.cfg.pool.bytes;
             this.worker = new Worker(__filename, {workerData: {json: JSON.stringify(opts)}});
             this.worker.unref();
             this.log = logger(opts.log).sub(`wrk-m`);
@@ -250,9 +250,9 @@ if (isMainThread) {
 else {
     let processing = 0;
 
-    const {id: wrkid, log: logid, type, creds, messages, options} = JSON.parse(workerData.json),
+    const {id: wrkid, log: logid, type, creds, messages, cfg} = JSON.parse(workerData.json),
         id = `wrk-${wrkid}-w`,
-        connection = factory(logid, type, creds, messages, options),
+        connection = factory(logid, type, creds, messages, cfg),
         log = logger(logid).sub(id),
         post = function(frame, payload, length = 0) {
             processing -= length;

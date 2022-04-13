@@ -40,13 +40,14 @@ class Base extends Duplex {
         super({
             readableObjectMode: true,
             writableObjectMode: true,
-            writableHighWaterMark: options.concurrency,
+            writableHighWaterMark: options.pool.concurrency,
         });
         this.type = type;
         this.creds = creds;
         // this.id = `wrk-${type}-${hash(key.toString() + (secret || '').toString(16))}-${Date.now()}`;
         // this.log = log.sub(this.id);
         this.messages = {};
+        this._options = options;
         messages.forEach(m => this.message(m));
         // this.log.i('initialized %s', type);
     }
@@ -219,13 +220,14 @@ class Base extends Duplex {
      * @param {function} fun function with single arguments (data, bytes, attempt 1..max)
      * @param {integer} max max number of attempts, 3 by default
      */
-    async with_retries(data, bytes, fun, max = 3) {
+    async with_retries(data, bytes, fun, max = this._options.connection.retries || 3) {
         let error;
         for (let attempt = 1; attempt <= max; attempt++) {
             try {
                 return await fun(data, bytes, attempt);
             }
             catch (e) {
+                this.log.w('Retriable error %d of %d', attempt, max, e);
                 if (!(e instanceof PushError)) {
                     throw e;
                 }

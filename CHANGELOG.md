@@ -1,3 +1,34 @@
+## Version 22.03.1
+
+Enterprise fixes
+- [attribution] remove unfilled placeholders from postback url
+- [crash_symbolication] add testing symbolciation connection back
+- [drill] Query builder datepicker overflow fix
+- [drill] localization fixes
+- [event-timeline] deleting views and crashes from timeline on view or crash delete
+- [funnels] filter button fixed for multiple events
+- [geo] fixed accessing from non-mobile app error
+- [revenue] revenue data inconsistency removed
+
+Fixes:
+- [core] added control for no data case
+- [core] fix: renamed wrong file names in gruntfile for production mode
+- [data-migration] fixed for redirect link
+- [events] changes for date sort in events
+- [hooks] update vuex state
+- [populator] localization fixes
+- [push] Adding missing FCM error codes localisation
+- [push] Broken backwards compatibility with test tokens for FCM
+- [push] Credentials migration fixes
+- [push] Fixing no audience for test users
+- [push] Legacy API fixes
+- [push] New huawei API
+- [push] fetch dashboard information once
+- [push] hide/display number of users on review step based on audience
+- [push] mutable-content for buttons
+- [scripts] fixed Compiler Version for 22.03 upgrade and installation
+- [upgrade] remove old files
+
 ## Version 21.11.3
 
 Eneterprise Fixes:
