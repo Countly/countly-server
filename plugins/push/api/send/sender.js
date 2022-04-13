@@ -26,10 +26,13 @@ class Sender {
 
         // loaded configuration
         this.cfg = {
-            connectionRetries: 3,
-            connectionRetryFactor: 1000,
             sendAhead: 60000,
+            connection: {
+                retries: 3,
+                retryFactor: 1000,
+            },
             pool: {
+                pushes: 100000,
                 bytes: 100000,
                 concurrency: 5
             }
@@ -56,8 +59,8 @@ class Sender {
                 this.cfg.proxy = {
                     host: plugins.push.proxyhost,
                     port: plugins.push.proxyport,
-                    user: plugins.push.proxyuser,
-                    pass: plugins.push.proxypass,
+                    user: plugins.push.proxyuser || undefined,
+                    pass: plugins.push.proxypass || undefined,
                 };
             }
             if (plugins.push.bytes) {
@@ -131,15 +134,15 @@ class Sender {
 
         // data shared across multiple streams
         let state = new State(this.cfg),
-            connector = new Connector(this.log, common.db, state, 100000),
-            batcher = new Batcher(this.log, state, 100000),
-            resultor = new Resultor(this.log, common.db, state, 100000);
+            connector = new Connector(this.log, common.db, state),
+            batcher = new Batcher(this.log, state),
+            resultor = new Resultor(this.log, common.db, state);
 
         try {
             // await db.collection('messages').updateMany({_id: {$in: Object.keys(this.msgs)}}, {$set: {state: State.Streaming, status: Status.Sending}});
 
             // stream the pushes
-            let pushes = common.db.collection('push').find({_id: {$lte: dbext.oidBlankWithDate(new Date(Date.now() + this.cfg.sendAhead))}}).stream(),
+            let pushes = common.db.collection('push').find({_id: {$lte: dbext.oidBlankWithDate(new Date(Date.now() + state.cfg.sendAhead))}}).stream(),
                 flush,
                 resolve, reject,
                 promise = new Promise((res, rej) => {
@@ -174,6 +177,10 @@ class Sender {
                     connector.destroy();
                     pools.exit();
                 }
+            });
+            connector.on('error', err => {
+                this.log.e('Connector error', err);
+                reject(err);
             });
 
             await promise;

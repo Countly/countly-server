@@ -23,6 +23,18 @@ apt-get update
 
 apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck python
 
+#Install GCC > 7 version
+apt-get -y install software-properties-common
+add-apt-repository ppa:ubuntu-toolchain-r/test -y
+apt-get -y install build-essential gcc-8 
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
+update-alternatives --set gcc "/usr/bin/gcc-8"
+
+#Install G++ > 7 version
+apt-get -y install build-essential g++-8
+update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
+update-alternatives --set g++ "/usr/bin/g++-8"
+
 #Install dependancies required by the puppeteer
 apt-get -y install libgbm-dev libgbm1 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
 

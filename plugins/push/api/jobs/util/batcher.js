@@ -12,9 +12,8 @@ class Batcher extends SynFlushTransform {
      * 
      * @param {Log} log logger
      * @param {State} state State instance shared across streams
-     * @param {int} size batch size
      */
-    constructor(log, state, size) {
+    constructor(log, state) {
         super(log.sub('batcher'), {objectMode: true});
         this.log = log.sub('batcher');
         this.state = state;
@@ -38,7 +37,7 @@ class Batcher extends SynFlushTransform {
         this.listeners = {}; // {id: function}
         this.flushes = {}; // {flushid: [pool id, pool id, ...]}
         this.count = 0;
-        this.size = size;
+        this.size = state.cfg.pool.pushes;
     }
 
     /**
@@ -51,8 +50,11 @@ class Batcher extends SynFlushTransform {
     _transform(push, encoding, callback) {
         this.log.d('in batcher _transform', FRAME_NAME[push.frame], push._id);
         if (push.frame & FRAME.CMD) {
+            if (push.frame & FRAME.FLUSH) {
+                this.flushed = push.payload;
+            }
             if (push.frame & (FRAME.FLUSH | FRAME.SYN)) {
-                this.do_flush(() => {
+                let nothing = this.do_flush(() => {
                     this.flushes[push.payload] = [];
                     this.log.d('in batcher _transform', FRAME_NAME[push.frame], push._id, 'sending to', Object.keys(this.listeners));
                     for (let id in this.listeners) {
@@ -61,6 +63,10 @@ class Batcher extends SynFlushTransform {
                     }
                     callback();
                 });
+
+                if (nothing) {
+                    this.push(push);
+                }
             }
             else {
                 for (let id in this.listeners) {
@@ -79,7 +85,6 @@ class Batcher extends SynFlushTransform {
         let id = this.ids[push.a][push.p][push.f];
         this.buffers[id].push(push);
         this.count++;
-        this.state.incSending(push.m);
 
         if (!this.listeners[id]) {
             // this.listeners[id] = true;

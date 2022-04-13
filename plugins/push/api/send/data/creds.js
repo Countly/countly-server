@@ -125,8 +125,8 @@ class Creds extends Mongoable {
 
             data.key = c.key;
             data.keyid = comps[0];
-            data.team = comps[0];
-            data.bundle = comps[0];
+            data.team = comps[1];
+            data.bundle = comps[2];
         }
         else if (c.type === 'apn_universal') {
             data.cert = c.key;

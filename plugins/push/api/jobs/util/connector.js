@@ -15,14 +15,13 @@ class Connector extends SynFlushTransform {
      * @param {Log} log logger
      * @param {MongoClient} db mongo client
      * @param {State} state state shared across the streams
-     * @param {int} limit how much discarded ids to keep before flushing to db
      */
-    constructor(log, db, state, limit) {
+    constructor(log, db, state) {
         super(log.sub('connector'), {objectMode: true});
         this.log = log.sub('connector');
         this.db = db;
         this.state = state;
-        this.limit = limit;
+        this.limit = state.cfg.pool.pushes;
         this.resetErrors();
     }
 
@@ -33,6 +32,7 @@ class Connector extends SynFlushTransform {
         this.noApp = new SendError('NoApp', ERROR.DATA_COUNTLY);
         this.noCreds = new SendError('NoCredentials', ERROR.DATA_COUNTLY);
         this.noMessage = new SendError('NoMessage', ERROR.DATA_COUNTLY);
+        this.noConnection = new SendError('NoConnection', ERROR.CONNECTION_PROVIDER);
     }
 
     /**
@@ -66,7 +66,10 @@ class Connector extends SynFlushTransform {
         let app = this.state.app(push.a),
             message = this.state.message(push.m);
 
-        this.state.pushes[push._id] = push;
+        if (!this.state.pushes[push._id]) {
+            this.state.pushes[push._id] = push;
+            this.state.incSending(push.m);
+        }
 
         if (app === false) { // app or message is already ignored
             this.noApp.addAffected(push._id, 1);
@@ -115,6 +118,10 @@ class Connector extends SynFlushTransform {
             }, callback);
             return;
         }
+        else if (app.creds[push.p] === null) { // no connection
+            this.noConnection.addAffected(push._id, 1);
+            this.do_flush(callback, true);
+        }
         else if (!app.creds[push.p]) { // no credentials
             this.noCreds.addAffected(push._id, 1);
             this.do_flush(callback, true);
@@ -159,13 +166,15 @@ class Connector extends SynFlushTransform {
                 }
                 else { // no connection yet
                     this.log.i('Connecting %s', pid);
-                    pools.connect(push.a, push.p, push.f, creds, this.state.messages(), this.state.cfg.pool).then(() => {
+                    pools.connect(push.a, push.p, push.f, creds, this.state.messages(), this.state.cfg).then(() => {
                         this.log.i('Connected %s', pid);
                         callback(null, push);
                     }, err => {
                         this.log.i('Failed to connect %s', pid, err);
-                        this.discardedByAppOrCreds.push(push._id);
-                        this.do_flush(callback, true);
+                        app.creds[push.p] = null;
+                        this.do_transform(push, encoding, callback);
+                        // this.discardedByAppOrCreds.push(push._id);
+                        // this.do_flush(callback, true);
                     });
                 }
             }
@@ -200,7 +209,7 @@ class Connector extends SynFlushTransform {
         let total = this.noMessage.affectedBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes;
         this.log.d('in connector do_flush, total', total);
 
-        if (ifNeeded && (!total || total < this.limit)) {
+        if (ifNeeded && !this.flushed && (!total || total < this.limit)) {
             if (callback) {
                 callback();
             }
@@ -217,6 +226,10 @@ class Connector extends SynFlushTransform {
 
         if (this.noCreds.hasAffected) {
             this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.noCreds});
+        }
+
+        if (this.noConnection.hasAffected) {
+            this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.noConnection});
         }
 
         this.resetErrors();

@@ -330,12 +330,23 @@
         countlyCommon.dispatchNotificationToast(payload);
     };
 
+    /**
+     * 
+     * @param {object} options includes from, title and url properties. from property 
+     * indicates the origin of view. url indicates the new url to navigate to and 
+     * title is the text that will be dispalyed for the backlink url. 
+     */
     CountlyHelpers.goTo = function(options) {
         app.backlinkUrl = options.from;
         app.backlinkTitle = options.title;
         window.location.hash = options.url;
     };
 
+    /**
+     * 
+     * @returns {object} includes url and title propertes that are set by goTo() method.
+     * url indicate the backlink url and title is the text that will be displayed for the backlink url
+     */
     CountlyHelpers.getBacklink = function() {
         var url = app.backlinkUrl;
         var title = app.backlinkTitle;
@@ -343,6 +354,13 @@
         app.backlinkTitle = null;
         return {url: url, title: title};
     };
+
+    /**
+     * @returns {boolean} true when active app type is mobile. Otherwise, false
+     */
+    CountlyHelpers.isActiveAppMobile = function() {
+        return countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile';
+    },
     /**
     * Create new model
     */

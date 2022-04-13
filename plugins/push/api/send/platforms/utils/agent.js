@@ -1,4 +1,5 @@
 const http = require('http'),
+    https = require('https'),
     tls = require('tls'),
     log = require('../../../../../../api/utils/log')('push:send:worker:agent');
 
@@ -8,7 +9,7 @@ const http = require('http'),
 /**
  * HTTP Agent for proxy support
  */
-class ProxyAgent extends http.Agent {
+class ProxyAgent extends https.Agent {
     /**
      * Constructor
      * 
@@ -37,7 +38,7 @@ class ProxyAgent extends http.Agent {
             path: opts.host + ':' + opts.port,
             headers: {
                 host: opts.host
-            }
+            },
         };
 
         if (this.proxy.user && this.proxy.pass) {
@@ -168,6 +169,17 @@ class ProxyAgent extends http.Agent {
 
             callback(s);
         });
+    }
+
+    /**
+     * Return any socket instance
+     * 
+     * @returns {Socket} socket instance
+     */
+    anySocket() {
+        for (let k in this.sockets) {
+            return this.sockets[k];
+        }
     }
 }
 
