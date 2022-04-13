@@ -12,14 +12,14 @@ const newHookConfig =  {"name":"test","description":"desc","apps":[],"trigger":{
 const newHookIds = [];
 const mockData = {"qstring":{"paramA":"abc","paramB":123,"paramC":[1,2,3]},"paths":["localhost","o","hooks","54754970-ea4e-420d-bb7e-b3210e5d8b33"]};
 
-function geRequestURL (path) {
+function getRequestURL (path) {
     const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
     const APP_ID = testUtils.get("APP_ID");
     return path + `?api_key=${API_KEY_ADMIN}&app_id=${APP_ID}`;
 }
 
 function getHookRecord (hookId, callback) {
-    request.get(geRequestURL('/o/hook/list') + '&id=' + hookId)
+    request.get(getRequestURL('/o/hook/list') + '&id=' + hookId)
     .expect(200)
     .end(function(err, res) {
         callback(err, res);
@@ -35,7 +35,7 @@ describe('Testing Hooks', function() {
                 const APP_ID = testUtils.get("APP_ID");
                 const hookConfig = Object.assign({}, newHookConfig, {apps:[APP_ID]});
 
-                request.post(geRequestURL('/i/hook/save'))
+                request.post(getRequestURL('/i/hook/save'))
                 .send({hook_config: JSON.stringify(hookConfig)})
                 .expect(200)
                 .end(function(err, res) {
@@ -58,7 +58,7 @@ describe('Testing Hooks', function() {
                 ];
                 Promise.each(badRequests, function(hookConfig) {
                     return new Promise(function(resolve, reject) {
-                        request.post(geRequestURL('/i/hook/save'))
+                        request.post(getRequestURL('/i/hook/save'))
                         .send({hook_config: JSON.stringify(hookConfig)})
                         .expect(200)
                         .end(function(err, res) {
@@ -79,7 +79,7 @@ describe('Testing Hooks', function() {
                 const hookConfig = Object.assign({}, newHookConfig, {apps:[APP_ID], _id: hookId});
                 hookConfig.name = "test2";
                 hookConfig.description = "desc2";
-                request.post(geRequestURL('/i/hook/save'))
+                request.post(getRequestURL('/i/hook/save'))
                 .send({hook_config: JSON.stringify(hookConfig)})
                 .expect(200)
                 .end(function(err, res) {
@@ -96,7 +96,7 @@ describe('Testing Hooks', function() {
                 const hookId = newHookIds[0];
                 const options = {};
                 options[hookId] = false;
-                request.post(geRequestURL('/i/hook/status'))
+                request.post(getRequestURL('/i/hook/status'))
                 .send({status: JSON.stringify(options)})
                 .expect(200)
                 .end(function(err, res) {
@@ -117,7 +117,7 @@ describe('Testing Hooks', function() {
         
         describe('Read Hook records', function () {
             it('should able to fetch hook Detail', function(done) {
-                request.get(geRequestURL('/o/hook/list') + '&id=' + newHookIds[0])
+                request.get(getRequestURL('/o/hook/list') + '&id=' + newHookIds[0])
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -127,7 +127,7 @@ describe('Testing Hooks', function() {
                 });
             });
             it('should able to fetch all hooks ', function(done) {
-                request.get(geRequestURL('/o/hook/list') + '&id=' + newHookIds[0])
+                request.get(getRequestURL('/o/hook/list') + '&id=' + newHookIds[0])
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -143,7 +143,7 @@ describe('Testing Hooks', function() {
             it('should can test hook and return data for each steps', function(done) {
                 const APP_ID = testUtils.get("APP_ID");
                 const hookConfig = Object.assign({}, newHookConfig, {apps:[APP_ID]});
-                request.get(geRequestURL('/i/hook/test') + "&hook_config=" + JSON.stringify(hookConfig) + "&mock_data=" + JSON.stringify(mockData))
+                request.get(getRequestURL('/i/hook/test') + "&hook_config=" + JSON.stringify(hookConfig) + "&mock_data=" + JSON.stringify(mockData))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -157,12 +157,11 @@ describe('Testing Hooks', function() {
 
         describe('Delete Hook', function () {
             it('should able to delete hook', function(done) {
-                request.post(geRequestURL('/i/hook/delete'))
+                request.post(getRequestURL('/i/hook/delete'))
                 .send({hookID: newHookIds[0]})
                 .expect(200)
                 .end(function(err, res) {
-                     newHookIds.push(res.body);
-                    if (err) {
+                     if (err) {
                         return done(err);
                     }
                     done();
