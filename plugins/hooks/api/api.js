@@ -201,7 +201,7 @@ plugins.register("/i/hook/save", function(ob) {
                     { _id: common.db.ObjectID(id) },
                     {},
                     {$set: hookConfig},
-                    {new: true},                   
+                    {new: true},
                     function(err, result) {
                         if (!err) {
                             common.returnOutput(params, result && result.value);
