@@ -1115,6 +1115,7 @@
             dto.chartData.forEach(function(chartDataItem, index) {
                 rows[index] = {
                     viewsBuckets: chartDataItem.vc,
+                    weight: index,
                     numberOfSessions: chartDataItem.t,
                     percentage: chartDataItem.percentageNumber
                 };
