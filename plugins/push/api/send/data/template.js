@@ -237,6 +237,8 @@ class Template {
             this.appl(this.platform.fields, push.ov, push.pr);
         }
 
+        this.result = this.platform.finish ? this.platform.finish(this.result) : this.result;
+
         // cache result
         if (this.stringifyPayload) {
             let ret = JSON.stringify(this.result);

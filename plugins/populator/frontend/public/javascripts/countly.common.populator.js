@@ -985,12 +985,15 @@
             addedTag: function(val) {
                 var lastInserted = val[val.length - 1];
                 var lastInsertedIndex = val.length - 1;
-                lastInserted.split(",").forEach(function(tag) {
-                    if (tag.length && val.indexOf(tag) < 0) {
-                        val.push(tag);
-                    }
-                });
-                val.splice(lastInsertedIndex, 1);
+
+                if (lastInserted.split(",").length > 1) {
+                    lastInserted.split(",").forEach(function(tag) {
+                        if (tag.length && val.indexOf(tag) < 0) {
+                            val.push(tag);
+                        }
+                    });
+                    val.splice(lastInsertedIndex, 1);
+                }
             },
             isAddEventDisabled: function(editedObject) {
                 return editedObject.events && editedObject.events.length && editedObject.events.slice(-1)[0].eventName === '';

@@ -46,7 +46,7 @@
             </vue-scroll>
         </div>
 		<h5 class="bu-pb-4"> {{i18n('platforms.version-distribution')}} </h5>
-		<div v-if="platformVersions.length < 4 && !isLoading" class="technology-analytics-wrapper__versions-empty-card">
+		<div v-if="platformVersions.length === 0 && !isLoading" class="technology-analytics-wrapper__versions-empty-card">
 			<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 		</div>
         <div v-else class="technology-analytics-wrapper__versions" v-loading="isLoading">
@@ -60,6 +60,9 @@
 							:scroll-ops="breakdownScrollOps" 
 							v-for="(item, idx) in platformVersions">
 						</cly-metric-breakdown>
+                        <div v-if="platformItems.length < 4 && !isLoading" class="technology-analytics-wrapper__empty-card">
+                            <div class="text-medium">{{i18n('common.table.no-data')}}</div>
+                        </div>
 					</cly-metric-cards>
             </vue-scroll>
         </div>

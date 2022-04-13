@@ -3,7 +3,6 @@ const plugins = require('../../../../plugins/pluginManager'),
     { Creds, Message, util } = require('../../../../plugins/push/api/send'),
     { Note } = require('../../../../plugins/push/api/parts/note');
 
-
 console.log('Migrating push plugin data');
 
 plugins.dbConnection().then(async db => {
@@ -84,13 +83,13 @@ plugins.dbConnection().then(async db => {
                 }
 
                 if (app.plugins.push.i && app.plugins.push.i._id && app.plugins.push.i._id.toString() === c._id.toString()) {
-                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'app.plugins.push.i': creds.view}});
+                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.i': creds.view}});
                 }
                 else if (app.plugins.push.a && app.plugins.push.a._id && app.plugins.push.a._id.toString() === c._id.toString()) {
-                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'app.plugins.push.a': creds.view}});
+                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.a': creds.view}});
                 }
                 else if (app.plugins.push.h && app.plugins.push.h._id && app.plugins.push.h._id.toString() === c._id.toString()) {
-                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'app.plugins.push.h': creds.view}});
+                    await db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.h': creds.view}});
                 }
                 else {
                     return console.error('Illegal state: credentials %s are not found in app %s', cid, app._id);
@@ -225,9 +224,52 @@ plugins.dbConnection().then(async db => {
 
         await add(null, true);
 
-        // unset test token booleans
+        // unset test token booleans & set app_users token bools
         for (const app of apps) {
             db.collection(`app_users${app._id}`).updateMany({}, {$unset: {tkat: 1, tkht: 1}});
+
+            let batch = [],
+                count = 0,
+                add = async (op, flush) => {
+                    if (flush || (batch.length > 0 && batch.length >= 10000)) {
+                        if (op) {
+                            batch.push(op);
+                        }
+                        console.log(`... running ${count++}-th batch of consistency updates in "app_users${app._id}"`);
+                        if (batch.length) {
+                            await db.collection(`app_users${app._id}`).bulkWrite(batch);
+                        }
+                        batch = [];
+                    }
+                    else if (op) {
+                        batch.push(op);
+                    }
+                },
+                stream = db.collection(`push_${app._id}`).find(),
+                fields = ['id', 'ia', 'ip', 'ap', 'hp'],
+                update;
+
+            for await (const doc of stream) {
+                if (doc.tk) {
+                    update = {};
+                    fields.forEach(field => {
+                        if (doc.tk[field]) {
+                            update.$set = update.$set || {};
+                            update.$set[`tk${field}`] = true;
+                        }
+                        else {
+                            update.$unset = update.$unset || {};
+                            update.$unset[`tk${field}`] = 1;
+                        }
+                    });
+                }
+                else {
+                    update = {$unset: {tkid: 1, tkia: 1, tkip: 1, tkap: 1, tkhp: 1}};
+                }
+                await add({updateOne: {filter: {uid: doc._id}, update}});
+            }
+
+            await add(null, true);
         }
         
         // Migrate jobs

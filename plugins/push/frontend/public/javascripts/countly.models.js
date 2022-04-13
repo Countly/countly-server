@@ -762,6 +762,15 @@
                 }
                 return null;
             },
+            mapGlobalError: function(dto) {
+                if (dto.result && dto.result.error) {
+                    return {
+                        code: dto.result.error,
+                        affectedUsers: dto.result.total || '',
+                    };
+                }
+                return null;
+            },
             mapErrors: function(dto) {
                 var expiredTokenError = this.getExpiredTokenErrorIfFound(dto);
                 if (expiredTokenError) {
@@ -1063,7 +1072,7 @@
                     message: this.mapMessageLocalizationsList(localizations, dto),
                     settings: this.mapSettings(dto),
                     messageType: dto.info && dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
-                    error: dto.error,
+                    error: this.mapGlobalError(dto),
                     errors: this.mapErrors(dto),
                     locations: dto.filter && dto.filter.geos || [],
                     cohorts: dto.filter && dto.filter.cohorts || [],
@@ -1233,7 +1242,8 @@
                 if (this.hasAppLevelPlatformConfig(dto, PlatformDtoEnum.HUAWEI)) {
                     return {
                         _id: dto[PlatformDtoEnum.HUAWEI]._id || '',
-                        appId: dto[PlatformDtoEnum.HUAWEI].appId,
+                        type: dto[PlatformDtoEnum.HUAWEI].type,
+                        appId: dto[PlatformDtoEnum.HUAWEI].app,
                         appSecret: dto[PlatformDtoEnum.HUAWEI].secret
                     };
                 }
@@ -1727,11 +1737,17 @@
             },
             mapHuaweiAppLevelConfig: function(model) {
                 if (model[PlatformEnum.HUAWEI]) {
-                    return {
-                        _id: model[PlatformEnum.HUAWEI]._id || "",
-                        key: model[PlatformEnum.HUAWEI].appId,
+                    var result = {
+                        type: model[PlatformEnum.HUAWEI].type,
+                        app: model[PlatformEnum.HUAWEI].appId,
                         secret: model[PlatformEnum.HUAWEI].appSecret
                     };
+
+                    if (model[PlatformEnum.HUAWEI]._id) {
+                        result._id = model[PlatformEnum.HUAWEI]._id;
+                    }
+
+                    return result;
                 }
                 return null;
             },

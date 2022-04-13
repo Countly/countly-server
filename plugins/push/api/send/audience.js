@@ -107,6 +107,15 @@ class Audience {
         return new Popper(this, trigger);
     }
 
+    /**
+     * Add any virtual platforms to the message platforms array
+     * 
+     * @returns {string[]} new array containing all message platforms and their virtual platforms
+     */
+    platformsWithVirtuals() {
+        return this.message.platforms.concat(this.message.platforms.map(p => PLATFORM[p].virtuals || []).flat());
+    }
+
     // /**
     //  * Find users defined by message filter and put corresponding records into queue
     //  * 
@@ -151,7 +160,7 @@ class Audience {
      * @param {Object[]} steps aggregation steps array to add steps to
      */
     async addFields(steps) {
-        let flds = fields(this.message.platforms, true).map(f => ({[f]: true}));
+        let flds = fields(this.platformsWithVirtuals(), true).map(f => ({[f]: true}));
         steps.push({$match: {$or: flds}});
     }
 
@@ -506,7 +515,7 @@ class PusherPopper {
         this.audience = audience;
         this.trigger = trigger;
         this.mappers = {};
-        this.audience.message.platforms.forEach(p => Object.values(PLATFORM[p].FIELDS).forEach(f => {
+        this.audience.platformsWithVirtuals().forEach(p => Object.values(PLATFORM[p].FIELDS).forEach(f => {
             if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
                 this.mappers[p + f] = new PlainApiMapper(audience.app, audience.message, trigger, p, f);
             }
@@ -640,11 +649,15 @@ class Pusher extends PusherPopper {
             batch = Push.batchInsert(batchSize),
             start = this.start || this.trigger.start,
             result = new Result(),
-            updates = {};
+            updates = {},
+            virtuals = {};
 
         for await (let user of stream) {
             let push = user[TK][0],
                 la = user.la || 'default';
+            if (!push) {
+                continue;
+            }
             for (let pf in push[TK]) {
                 if (!(pf in this.mappers)) {
                     continue;
@@ -657,7 +670,7 @@ class Pusher extends PusherPopper {
 
                 let p = pf[0],
                     d = note._id.getTimestamp().getTime(),
-                    rp = result.sub(p);
+                    rp = result.sub(p, undefined, PLATFORM[p].parent);
 
                 result.total++;
                 updates['result.total'] = result.total;
@@ -675,6 +688,16 @@ class Pusher extends PusherPopper {
                 rpl.total++;
                 updates[`result.subs.${p}.subs.${la}.total`] = rpl.total;
 
+                if (PLATFORM[p].parent) {
+                    rp = result.sub(PLATFORM[p].parent),
+                    rpl = rp.sub(la);
+                    rp.total++;
+                    rpl.total++;
+                    virtuals[`result.subs.${p}.virtual`] = PLATFORM[p].parent;
+                    updates[`result.subs.${PLATFORM[p].parent}.total`] = rp.total;
+                    updates[`result.subs.${PLATFORM[p].parent}.subs.${la}.total`] = rpl.total;
+                }
+
                 note.h = util.hash(note.pr);
 
                 if (batch.pushSync(note)) {
@@ -684,10 +707,15 @@ class Pusher extends PusherPopper {
             }
         }
 
-        await this.audience.message.update({$inc: updates}, () => {});
-
-        this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
-        await batch.flush([11000]);
+        if (result.total) {
+            let update = {$inc: updates};
+            if (Object.keys(virtuals).length) {
+                update.$set = virtuals;
+            }
+            await this.audience.message.update(update, () => {});
+            this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
+            await batch.flush([11000]);
+        }
 
         return result;
     }
@@ -710,7 +738,7 @@ class Popper extends PusherPopper {
      * @returns {number} number of records removed
      */
     async clear() {
-        let deleted = await Promise.all(this.audience.message.platforms.map(async p => {
+        let deleted = await Promise.all(this.audience.platformsWithVirtuals().map(async p => {
             let res = await common.db.collection('push').deleteMany({m: this.audience.message._id, p});
             return res.deletedCount;
         }));
