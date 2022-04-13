@@ -186,6 +186,7 @@
                     query: this.queryFilter,
                     //sort: JSON.stringify(this.preparedSortObject),
                     collection: this.collection,
+                    db: this.db,
                     url: "/o/export/db"
                 };
                 return apiQueryData;
