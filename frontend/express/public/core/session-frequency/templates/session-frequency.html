@@ -13,7 +13,7 @@
         <cly-section>
             <cly-datatable-n  :rows="sessionFrequencyRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
-                    <el-table-column sortable="custom" prop="frequency" :label="i18n('session-frequency.table.frequency')">
+                    <el-table-column :sortable="true" prop="frequency" :label="i18n('session-frequency.table.frequency')" :sort-method="sortFrequencyBuckets">
                     </el-table-column>
                     <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.number-of-sessions')">
                         <template slot-scope="scope">
