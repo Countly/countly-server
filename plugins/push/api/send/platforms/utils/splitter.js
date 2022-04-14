@@ -143,19 +143,19 @@ class Splitter extends Base {
                     sent = 0,
                     first = 0,
                     hash = payload[0].h,
-                    mid = payload[0].n;
+                    mid = payload[0].m;
 
                 for (p = first + 1; p < payload.length; p++) {
-                    if (!mid || payload[p].n !== mid || payload[p].h !== hash) {
+                    if (!mid || payload[p].m !== mid || payload[p].h !== hash) {
                         let len = p === payload.length - 1 ? length - sent : (p - first) * one;
-                        await this.send(payload, first, p, len);
+                        await this.send(payload.slice(first, p - first), len);
                         this.log.d('do_writev sent', i, frame, payload);
                         // total += len;
                         sent += len;
 
                         first = p;
                         hash = payload[p].h;
-                        mid = payload[p].n;
+                        mid = payload[p].m;
                     }
                 }
 

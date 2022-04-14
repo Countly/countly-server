@@ -45,9 +45,11 @@ class Connector extends SynFlushTransform {
     _transform(push, encoding, callback) {
         this.log.d('in connector transform', FRAME_NAME[push.frame]);
         if (push.frame & FRAME.CMD) {
-            this.push(push);
             if (push.frame & (FRAME.FLUSH | FRAME.SYN)) {
-                this.do_flush(callback);
+                this.do_flush(err => {
+                    this.push(push);
+                    callback(err);
+                });
             }
             return;
         }
@@ -105,9 +107,7 @@ class Connector extends SynFlushTransform {
                     }
 
                     Promise.all(promises).then(() => {
-                        if (Object.values(a.creds).filter(c => !!c).length) { // only set app if there's one or more credentials found
-                            this.state.setApp(a);
-                        }
+                        this.state.setApp(a);
                         this.do_transform(push, encoding, callback);
                     }, callback);
                 }
@@ -118,6 +118,20 @@ class Connector extends SynFlushTransform {
             }, callback);
             return;
         }
+        else if (!message) {
+            let query = Message.filter(new Date(), this.state.cfg.sendAhead);
+            query._id = push.m;
+            this.db.collection('messages').findOne(query).then(msg => {
+                if (msg) {
+                    this.state.setMessage(msg); // only turns to app if there's one or more credentials found
+                    pools.message(app._id.toString(), [msg]);
+                }
+                else {
+                    this.state.discardMessage(push.m);
+                }
+                this.do_transform(push, encoding, callback);
+            }, callback);
+        }
         else if (app.creds[push.p] === null) { // no connection
             this.noConnection.addAffected(push._id, 1);
             this.do_flush(callback, true);
@@ -127,21 +141,7 @@ class Connector extends SynFlushTransform {
             this.do_flush(callback, true);
         }
         else { // all good with credentials, now let's check messages
-            if (!message) {
-                let query = Message.filter(new Date(), this.state.cfg.sendAhead);
-                query._id = push.m;
-                this.db.collection('messages').findOne(query).then(msg => {
-                    if (msg) {
-                        this.state.setMessage(msg); // only turns to app if there's one or more credentials found
-                        pools.message(app._id.toString(), [msg]);
-                    }
-                    else {
-                        this.state.discardMessage(push.m);
-                    }
-                    this.do_transform(push, encoding, callback);
-                }, callback);
-            }
-            else if (!message.is(State.Streaming)) {
+            if (!message.is(State.Streaming)) {
                 let date = new Date(),
                     update = {$set: {status: Status.Sending, 'info.startedLast': date}, $bit: {state: {or: State.Streaming}}};
                 if (!message.info.started) {

@@ -53,9 +53,20 @@
         segment: ["Android", "iOS", "Windows Phone"]
     };
     var messages = [
-        {"demo": 1, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|1|t": "Stornieren", "default": "HOT offers with 30% discount, only 6 hours left!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Abonnieren Sie jetzt mit 30% Rabatt, nur noch 6 Stunden!", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": []},
-        {"demo": 2, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|1|t": "Stornieren", "default": "Last chance! Only 3 hours left to get 30% discount!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Letzte Möglichkeit! Nur noch 3 Stunden, um 30% Rabatt zu erhalten", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": []},
-        {"demo": 3, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": true, "type": "message", "messagePerLocale": {"default|t": "What your friends don't know", "default|0|t": "Share", "default|1|t": "Button 2", "default|0|l": "theapp://scores/share", "default|tp": {}, "default|p": {}, "default": "... is your personal best score! Share it now!"}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "source": "dash", "buttons": 1, "autoOnEntry": true, "autoCohorts": [], "autoTime": 57600000, "autoCapMessages": 1, "autoCapSleep": 86400000}
+        {"demo": 1, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "HOT offers with 30% discount, only 6 hours left!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Abonnieren Sie jetzt mit 30% Rabatt, nur noch 6 Stunden!", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": []},
+        {"demo": 2, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "Last chance! Only 3 hours left to get 30% discount!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Letzte Möglichkeit! Nur noch 3 Stunden, um 30% Rabatt zu erhalten", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": []},
+        {"demo": 3, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": true, "type": "message", "messagePerLocale": {"default|t": "What your friends don't know", "default|0|t": "Share", "default|1|t": "Button 2", "default|0|l": "theapp://scores/share", "default|tp": {}, "default|p": {}, "default": "... is your personal best score! Share it now!"}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "source": "dash", "buttons": 1, "autoOnEntry": true, "autoCohorts": [], "autoTime": 57600000, "autoCapMessages": 1, "autoCapSleep": 86400000},
+        // {
+        //     demo: 4,
+        //     app: countlyCommon.ACTIVE_APP_ID,
+        //     platforms: ['i', 'a'],
+        //     contents: [{
+        //         message: 'Automated message'
+        //     }],
+        //     triggers: [
+        //         {kind: 'auto', }
+        //     ]
+        // }
     ];
     // usa, uk, japan, germany, italy, france, turkey, uruguay, netherlands, new zealand, mexico, canada, china, finland, hungary, ukraine, argentina, bahamas, latvia, malaysia
     var predefined_ip_addresses = ["2.167.106.72", "4.69.238.178", "3.112.23.176", "13.32.136.0", "4.69.130.86", "4.69.208.18", "17.67.198.23", "5.145.169.96", "2.59.88.2", "17.86.219.128", "23.65.126.2", "4.14.242.30", "14.192.76.3", "4.68.30.78", "5.38.128.2", "31.40.128.2", "5.145.169.100", "62.67.185.16", "14.139.54.208", "62.40.112.206", "14.192.192.1"];
@@ -819,19 +830,22 @@
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
                 req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.5) {
-                    this.hasPush = true;
                     this.stats.p++;
-                    req.token_session = 1;
-                    req.test_mode = 0;
                     req.events = req.events.concat(this.getHeatmapEvents());
                     req.events = req.events.concat(this.getFeedbackEvents());
                     req.events = req.events.concat(this.getScrollmapEvents());
-                    req[this.platform.toLowerCase() + "_token"] = randomString(8);
                 }
             }
             else {
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
                 req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
+            }
+
+            if (Math.random() > 0.10) {
+                this.hasPush = true;
+                req.token_session = 1;
+                req.test_mode = 0;
+                req[this.platform.toLowerCase() + "_token"] = randomString(8);
             }
 
             if (Math.random() > 0.5) {
@@ -983,12 +997,12 @@
             return;
         }
 
-        data.demo = true;
-
         $.ajax({
             type: "POST",
-            url: countlyCommon.API_URL + "/i/push/message/create",
-            data: JSON.stringify(data),
+            url: countlyCommon.API_URL + "/i/pushes/create",
+            data: {
+                args: JSON.stringify(data),
+            },
             success: function(json) {
                 data._id = json._id;
                 if (callback) {

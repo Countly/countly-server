@@ -220,6 +220,7 @@
         getInitialBaseModel: function() {
             return {
                 _id: null,
+                demo: false,
                 name: "",
                 platforms: [],
                 message: {
@@ -971,6 +972,12 @@
                 }
                 return dto.status;
             },
+            mapDemo: function(dto) {
+                if (dto.info && dto.info.demo) {
+                    return true;
+                }
+                return false;
+            },
             mapRows: function(dto) {
                 var self = this;
                 var rowsModel = [];
@@ -1310,6 +1317,7 @@
                 var localizations = this.mapLocalizations(dto.info && dto.info.locales || []);
                 return {
                     _id: dto._id || null,
+                    demo: this.mapDemo(dto),
                     status: this.mapStatus(dto),
                     createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
                     name: dto.info && dto.info.title,

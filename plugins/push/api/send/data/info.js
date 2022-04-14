@@ -33,6 +33,7 @@ class Info extends Validatable {
      * @param {Date}        data.started        date of first sending start
      * @param {Date}        data.startedLast    date of last sending start
      * @param {Date}        data.finished       date of state being set to Done
+     * @param {Date}        data.demo           true if this is a demo message
      */
     constructor(data) {
         super(data);
@@ -67,6 +68,7 @@ class Info extends Validatable {
             started: {type: 'Date', required: false},
             startedLast: {type: 'Date', required: false},
             finished: {type: 'Date', required: false},
+            demo: {type: 'Boolean', required: false},
         };
     }
 
@@ -688,6 +690,29 @@ class Info extends Validatable {
         }
         else {
             delete this._data.finished;
+        }
+    }
+
+    /**
+     * Getter for demo
+     * 
+     * @returns {boolean|undefined} message demo
+     */
+    get demo() {
+        return this._data.demo;
+    }
+
+    /**
+     * Setter for demo
+     * 
+     * @param {boolean|undefined} demo message demo
+     */
+    set demo(demo) {
+        if (demo !== null && demo !== undefined) {
+            this._data.demo = demo;
+        }
+        else {
+            delete this._data.demo;
         }
     }
 

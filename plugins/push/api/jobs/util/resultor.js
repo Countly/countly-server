@@ -335,18 +335,32 @@ class Resultor extends SynFlushTransform {
 
         // expired tokens - unset
         for (let aid in this.removeTokens) {
-            let collection = 'push_' + aid;
-            if (!updates[collection]) {
-                updates[collection] = [];
+            let collectionPush = `push_${aid}`,
+                collectionAppUsers = `app_users${aid}`;
+            if (!updates[collectionPush]) {
+                updates[collectionPush] = [];
+            }
+            if (!updates[collectionAppUsers]) {
+                updates[collectionAppUsers] = [];
             }
             for (let field in this.removeTokens[aid]) {
                 if (this.removeTokens[aid][field].length) {
-                    updates[collection].push({
+                    updates[collectionPush].push({
                         updateMany: {
                             filter: {_id: {$in: this.removeTokens[aid][field]}},
                             update: {
                                 $unset: {
                                     ['tk.' + field]: 1
+                                }
+                            }
+                        }
+                    });
+                    updates[collectionAppUsers].push({
+                        updateMany: {
+                            filter: {uid: {$in: this.removeTokens[aid][field]}},
+                            update: {
+                                $unset: {
+                                    ['tk' + field]: 1
                                 }
                             }
                         }

@@ -1702,13 +1702,13 @@
                 }
             },
             shouldShowGoToSentUrl: function() {
-                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.sent > 0;
+                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.sent > 0 && !this.pushNotification.demo;
             },
             shouldShowGoToErroredUrl: function() {
-                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.errored > 0;
+                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.errored > 0 && !this.pushNotification.demo;
             },
             shouldShowGoToActionedUrl: function() {
-                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.actioned > 0;
+                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.actioned > 0 && !this.pushNotification.demo;
             },
             dashboardTokens: function() {
                 return this.$store.state.countlyPushNotificationDashboard.tokens;

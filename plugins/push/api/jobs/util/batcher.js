@@ -61,12 +61,12 @@ class Batcher extends SynFlushTransform {
                         pools.pools[id].write(encode(push.frame, push.payload));
                         this.flushes[push.payload].push(id);
                     }
-                    callback();
                 });
 
                 if (nothing) {
                     this.push(push);
                 }
+                callback();
             }
             else {
                 for (let id in this.listeners) {
