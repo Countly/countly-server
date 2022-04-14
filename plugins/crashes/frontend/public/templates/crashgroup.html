@@ -71,7 +71,7 @@
                     <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-frequency')"
                         v-loading="commonMetrics.crashFrequency == undefined">
                         <template v-slot:title>Crash Frequency</template>
-                        <template v-slot:value>{{commonMetrics.crashFrequency.toFixed(2)}}</template>
+                        <template v-slot:value>{{commonMetrics.crashFrequency ? commonMetrics.crashFrequency.toFixed(2) : 0}}</template>
                     </cly-crashes-dashboard-tile>
                     <cly-crashes-dashboard-tile columnWidth="is-one-fifth"
                         :tooltip="i18n('crashes.help-latest-version')"
@@ -179,7 +179,7 @@
                             </div>
                             <div>
                                 <div class="bu-is-flex bu-is-align-items-baseline">
-                                    <h2>{{mobileDiagnostics[diagnosticKey].average.toFixed(2) + ("unit" in
+                                    <h2>{{(mobileDiagnostics[diagnosticKey].average ? mobileDiagnostics[diagnosticKey].average.toFixed(2) : 0) + ("unit" in
                                         mobileDiagnostics[diagnosticKey] ? "" : " %")}}</h2>
                                     <h4 class="bu-ml-2" v-if="'unit' in mobileDiagnostics[diagnosticKey]">
                                         {{mobileDiagnostics[diagnosticKey].unit}}</h4>
@@ -189,11 +189,11 @@
                             <div style="padding-top: 16px;"
                                 class="bu-columns bu-m-0 bu-is-justify-content-space-between">
                                 <div>
-                                    {{mobileDiagnostics[diagnosticKey].min.toFixed(2)}}
+                                    {{mobileDiagnostics[diagnosticKey].min ? mobileDiagnostics[diagnosticKey].min.toFixed(2) : 0}}
                                     <div class="text-small color-cool-gray-50">{{i18n('crashes.minimum')}}</div>
                                 </div>
                                 <div>
-                                    {{mobileDiagnostics[diagnosticKey].max.toFixed(2)}}
+                                    {{mobileDiagnostics[diagnosticKey].max ? mobileDiagnostics[diagnosticKey].max.toFixed(2) : 0}}
                                     <div class="text-small color-cool-gray-50">{{i18n('crashes.maximum')}}</div>
                                 </div>
                             </div>
@@ -204,25 +204,25 @@
             <cly-section class="crashgroup-mobile-metrics" v-if="!!mobileMetrics">
                 <div class="crashgroup-mobile-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                     <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-root')" showDonut
-                        :donutPercentage="mobileMetrics.rootedPercent">
+                        :donutPercentage="mobileMetrics.rootedPercent || 0">
                         <template v-slot:title>{{i18n('crashes.root')}}</template>
-                        <template v-slot:value>{{mobileMetrics.rootedPercent.toFixed(2)}} %</template>
+                        <template v-slot:value>{{mobileMetrics.rootedPercent ? mobileMetrics.rootedPercent.toFixed(2) : 0}} %</template>
                     </cly-crashes-dashboard-tile>
                     <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-online')" showDonut
-                        :donutPercentage="mobileMetrics.onlinePercent">
+                        :donutPercentage="mobileMetrics.onlinePercent || 0">
                         <template v-slot:title>{{i18n('crashes.online')}}</template>
-                        <template v-slot:value>{{mobileMetrics.onlinePercent.toFixed(2)}} %</template>
+                        <template v-slot:value>{{mobileMetrics.onlinePercent ? mobileMetrics.onlinePercent.toFixed(2) : 0}} %</template>
                     </cly-crashes-dashboard-tile>
                     <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-muted')" showDonut
-                        :donutPercentage="mobileMetrics.mutedPercent">
+                        :donutPercentage="mobileMetrics.mutedPercent || 0">
                         <template v-slot:title>{{i18n('crashes.muted')}}</template>
-                        <template v-slot:value>{{mobileMetrics.mutedPercent.toFixed(2)}} %</template>
+                        <template v-slot:value>{{mobileMetrics.mutedPercent ? mobileMetrics.mutedPercent.toFixed(2) : 0}} %</template>
                     </cly-crashes-dashboard-tile>
                     <cly-crashes-dashboard-tile class="has-ellipsis" columnWidth="3"
                         :tooltip="i18n('crashes.help-background')" showDonut
-                        :donutPercentage="mobileMetrics.backgroundPercent">
+                        :donutPercentage="mobileMetrics.backgroundPercent || 0">
                         <template v-slot:title>{{i18n('crashes.background')}}</template>
-                        <template v-slot:value>{{mobileMetrics.backgroundPercent.toFixed(2)}} %</template>
+                        <template v-slot:value>{{mobileMetrics.backgroundPercent ? mobileMetrics.backgroundPercent.toFixed(2) : 0}} %</template>
                     </cly-crashes-dashboard-tile>
                 </div>
             </cly-section>
