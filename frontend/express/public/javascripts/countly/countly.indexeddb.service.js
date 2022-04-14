@@ -62,6 +62,7 @@
             });
         },
         dropStore: function(name) {
+            var self = this;
             return new Promise(function(resolve, reject) {
                 localforage.dropInstance({
                     name: DB_NAME,
@@ -85,9 +86,10 @@
             });
         },
         clearStore: function(name) {
+            var self = this;
             return new Promise(function(resolve, reject) {
                 if (!self.stores[name]) {
-                    reject(new Error("Unable to find '" + name + "' store"));
+                    resolve();
                     return;
                 }
                 self.stores[name].clear().then(resolve).catch(function(error) {
