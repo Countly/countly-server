@@ -66,17 +66,17 @@
         return {
             info: function(entry, location, method) {
                 var timestamp = Date.now();
-                // console.log("%c" + LoggerHelper.getLogEntryStringFormat(LoggerLevelEnum.INFO, timestamp, label, entry, location, method), "color:" + INFO_LOG_COLOR);
+                console.log(entry);
                 countlyIndexedDbService.setItem(LOGGER_STORE, timestamp.toString(), LoggerHelper.getLogEntry(LoggerLevelEnum.INFO, label, entry, location, method));
             },
             error: function(entry, location, method) {
                 var timestamp = Date.now();
-                // console.error("%c" + LoggerHelper.getLogEntryStringFormat(LoggerLevelEnum.ERROR, timestamp, label, entry, location, method), "color:" + ERROR_LOG_COLOR);
+                console.error(entry);
                 countlyIndexedDbService.setItem(LOGGER_STORE, timestamp.toString(), LoggerHelper.getLogEntry(LoggerLevelEnum.ERROR, label, entry, location, method));
             },
             debug: function(entry, location, method) {
                 var timestamp = Date.now();
-                // console.debug("%c" + LoggerHelper.getLogEntryStringFormat(LoggerLevelEnum.DEBUG, timestamp, label, entry, location, method), "color:" + DEBUG_LOG_COLOR);
+                console.debug(entry);
                 countlyIndexedDbService.setItem(LOGGER_STORE, timestamp.toString(), LoggerHelper.getLogEntry(LoggerLevelEnum.DEBUG, label, entry, location, method));
             }
         };
