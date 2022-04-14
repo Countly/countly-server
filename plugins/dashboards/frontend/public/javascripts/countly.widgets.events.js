@@ -240,6 +240,9 @@
                     return false;
                 }
             },
+            showPeriod: function() {
+                return true;
+            },
             isMultipleEvents: function() {
                 return this.scope.editedObject.visualization === "time-series";
             }
@@ -275,6 +278,7 @@
                     events: [],
                     metrics: [],
                     breakdowns: [],
+                    custom_period: null
 
                 };
             },
