@@ -48,6 +48,9 @@ var SessionFrequencyView = countlyVue.views.create({
         },
         dateChanged: function() {
             this.$store.dispatch('countlySessionFrequency/fetchAll', true);
+        },
+        sortFrequencyBuckets: function(a, b) {
+            return a.weight - b.weight;
         }
     },
     mounted: function() {

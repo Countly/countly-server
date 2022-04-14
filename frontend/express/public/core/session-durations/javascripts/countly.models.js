@@ -14,6 +14,7 @@
             dto.chartData.forEach(function(chartDataItem, index) {
                 rows[index] = {
                     duration: chartDataItem.ds,
+                    weight: index,
                     numberOfSessions: chartDataItem.t,
                     percentage: chartDataItem.percentageNumber
                 };

@@ -497,14 +497,37 @@
                 };
 
                 Object.keys(diagnostics).forEach(function(diagnosticKey) {
-                    diagnostics[diagnosticKey].average = diagnostics[diagnosticKey].total / diagnostics[diagnosticKey].count;
+                    if (!diagnostics[diagnosticKey]) {
+                        diagnostics[diagnosticKey] = {};
+                    }
+                    if (typeof diagnostics[diagnosticKey].total === "undefined") {
+                        diagnostics[diagnosticKey].total = 0;
+                    }
+                    if (typeof diagnostics[diagnosticKey].count === "undefined") {
+                        diagnostics[diagnosticKey].count = 0;
+                    }
+                    if (diagnostics[diagnosticKey].count > 0) {
+                        diagnostics[diagnosticKey].average = diagnostics[diagnosticKey].total / diagnostics[diagnosticKey].count;
+                    }
+                    else {
+                        diagnostics[diagnosticKey].average = 0;
+                    }
                     diagnostics[diagnosticKey].tooltip = tooltips[diagnosticKey];
                 });
 
                 ["average", "max", "min"].forEach(function(key) {
+                    if (!diagnostics.running) {
+                        diagnostics.running = {};
+                    }
+                    if (typeof diagnostics.running[key] === "undefined") {
+                        diagnostics.running[key] = 0;
+                    }
                     diagnostics.running[key] = diagnostics.running[key] / 60;
                 });
                 diagnostics.running.unit = CV.i18n("crashes.minutes-short");
+                if (!diagnostics.sessions) {
+                    diagnostics.sessions = {};
+                }
                 diagnostics.sessions.unit = "";
 
                 return diagnostics;

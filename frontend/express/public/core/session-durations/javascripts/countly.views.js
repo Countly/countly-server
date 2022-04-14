@@ -48,6 +48,9 @@ var SessionDurationsView = countlyVue.views.create({
         },
         dateChanged: function() {
             this.$store.dispatch('countlySessionDurations/fetchAll', true);
+        },
+        sortDurationBuckets: function(a, b) {
+            return a.weight - b.weight;
         }
     },
     mounted: function() {
