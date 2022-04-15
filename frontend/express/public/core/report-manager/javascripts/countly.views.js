@@ -300,7 +300,7 @@
                                     CountlyHelpers.alert(error, "red");
                                 }
                             });
-                        }, [CV.i18n("common.no-dont-do-that"), CV.i18n("taskmanager.yes-rerun-report")], {title: CV.i18n("taskmanager.confirm-rerun-title"), image: "rerunning-task"});
+                        }, [CV.i18n("common.no-dont-do-that"), CV.i18n("taskmanager.yes-rerun-task")], {title: CV.i18n("taskmanager.confirm-rerun-title"), image: "rerunning-task"});
                     }
                     else if (command === "view-task") {
                         self.$emit("view-task", row);
