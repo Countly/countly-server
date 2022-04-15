@@ -1,3 +1,21 @@
+## Version 22.03.2
+
+Fixes:
+- [crashes] fixed chart color
+- [crashes] fixed crashes stats
+- [populator] added control when input has a comma
+- [push] Revert "delete unsued preview push images" 
+- [push] fixes in upgrade script
+- [push] making sure audience pusher works if there's no token
+- [push] proxy support, better configs & lots of fixes
+
+Enterprise fixes:
+- [ab-testing] fixes for detail page to show variants
+- [revenue] session data included in the countly revenue
+- [surveys] changes to show device id if userName not present
+- [surveys] changes to show logo on edit
+- [surveys] fixed logo deletion
+
 ## Version 22.03.1
 
 Enterprise fixes

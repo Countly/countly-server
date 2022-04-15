@@ -36,22 +36,26 @@
             result.log = JSON.stringify(entry);
             return result;
         },
-        // getLogEntryStringFormat: function(level, timestamp, label, entry, location, method) {
-        //     var stringFormat = new Date(timestamp).toISOString() + " " + (level + "/" + label);
-        //     if (location) {
-        //         stringFormat = stringFormat.concat(", at " + location);
-        //     }
-        //     if (method) {
-        //         stringFormat = stringFormat.concat("." + method + "()");
-        //     }
-        //     stringFormat = stringFormat.concat(": ");
-        //     if (entry instanceof Error) {
-        //         stringFormat = stringFormat.concat(entry);
-        //         return stringFormat;
-        //     }
-        //     stringFormat = stringFormat.concat(JSON.stringify(entry));
-        //     return stringFormat;
-        // },
+        getLogEntryString: function(item) {
+            var timestamp = parseInt(item.key);
+            var level = item.value.level;
+            var label = item.value.label;
+            var log = item.value.log;
+            var location = item.value.location;
+            var method = item.value.method;
+            var logLine = new Date(timestamp).toISOString() + " " + level + "/" + label;
+            if (location) {
+                logLine = logLine.concat(", at " + location);
+            }
+            if (method) {
+                logLine = logLine.concat("." + method);
+            }
+            logLine = logLine.concat(": " + log + "\n");
+            if (log.stack) {
+                logLine = logLine.concat(log.stack + "\n");
+            }
+            return logLine;
+        },
         saveFile: function(blob) {
             var downloadAnchor = document.createElement("a");
             downloadAnchor.href = URL.createObjectURL(blob);
@@ -82,30 +86,14 @@
         };
     };
 
+    // Note: logger service must use global settings configurations to enabled/disable logging for specific plugins or to keep a specific level only
     var LoggerService = {
         loggers: {},
         getLogs: function() {
             return new Promise(function(resolve, reject) {
                 countlyIndexedDbService.getItems(LOGGER_STORE).then(function(logEntries) {
                     var allLogEntries = logEntries.map(function(item) {
-                        var timestamp = parseInt(item.key);
-                        var level = item.value.level;
-                        var label = item.value.label;
-                        var log = item.value.log;
-                        var location = item.value.location;
-                        var method = item.value.method;
-                        var logLine = new Date(timestamp).toISOString() + " " + level + "/" + label;
-                        if (location) {
-                            logLine = logLine.concat(", at " + location);
-                        }
-                        if (method) {
-                            logLine = logLine.concat("." + method);
-                        }
-                        logLine = logLine.concat(": " + log + "\n");
-                        if (log.stack) {
-                            logLine = logLine.concat(log.stack + "\n");
-                        }
-                        return logLine;
+                        return LoggerHelper.getLogEntryString(item);
                     });
                     resolve(allLogEntries.join(""));
                 }).catch(function(error) {
