@@ -14,6 +14,8 @@ var pluginOb = {},
     mail = require("../../../api/parts/mgmt/mail"),
     { validateUser } = require('../../../api/utils/rights.js');
 
+var ejs = require("ejs");
+
 plugins.setConfigs("dashboards", {
     sharing_status: true
 });
@@ -475,6 +477,8 @@ plugins.setConfigs("dashboards", {
                 }
 
                 var dashId = dataWrapper.dashboard_id;
+                sendEmailInvitaion(params.member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit,
+                    sharedUserGroupView, dashboardName, dashId);
 
                 common.returnOutput(params, dashId);
             });
@@ -1431,19 +1435,26 @@ plugins.setConfigs("dashboards", {
             (shareWith === "selected-users" && (sharedEmailEdit.length || sharedEmailView.length || sharedUserGroupEdit.length || sharedUserGroupView.length))) {
             sharing = shartingStatus || (globalAdmin && (restrict.indexOf("#/manage/configurations") < 0));
         }
-        sendEmailInvitaion(member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit, sharedUserGroupView)
         return sharing;
     }
 
-    async function sendEmailInvitaion(member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit, sharedUserGroupView) {
-        console.log("sendEmailInvitaion")
+    /**
+     * Send email base on configuration
+     * @param {object} member - dashboard owner
+     * @param {string} shareWith - share type
+     * @param {array} sharedEmailEdit - email address list shared to edit 
+     * @param {array} sharedEmailView - email address list shared to view
+     * @param {array} sharedUserGroupEdit - group ids from countly user group
+     * @param {array} sharedUserGroupView - group ids from countly user group 
+     * @param {string} dashboardName - dashboard name
+     * @param {string} dashboardID - generated dashboard ID
+     */
+    async function sendEmailInvitaion(member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit, sharedUserGroupView, dashboardName, dashboardID) {
         let viewEamilList = [];
-        let editEmailList =[];
-        
-        console.log(member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit, sharedUserGroupView,"@fffff")
+        let editEmailList = [];
+
         if (shareWith === 'all-users') {
             const allMemberEmail = await common.db.collection("members").find({_id: {$ne: member._id}}, {"email": 1, "_id": -1}).toArray();
-            console.log(allMemberEmail,"allMemberEmail!!!")
             viewEamilList = viewEamilList.concat(allMemberEmail.map(item => item.email));
         }
         if (sharedUserGroupView && sharedUserGroupView.length > 0) {
@@ -1456,29 +1467,71 @@ plugins.setConfigs("dashboards", {
         }
         viewEamilList = viewEamilList.concat(sharedEmailView);
         editEmailList = editEmailList.concat(sharedEmailEdit);
-        console.log(viewEamilList,editEmailList,"#3333");
+        const templateString = await readReportTemplate();
 
-        const msg = {
-            to: viewEamilList,
-            from: versionInfo.title,
-            subject: 'New dashboard view invitation',
-            html: 'view',
-        };
-        const msg2 = {
-            to: editEmailList,
-            from: versionInfo.title,
-            subject: 'New dashboard edit invitation',
-            html: 'edit',
-        };
+        versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
+        versionInfo.title = versionInfo.title || "Countly";
 
+
+        localize.getProperties(member.lang, function(gpErr, props) {
+            ip.getHost(function(e, host) {
+                host = host + common.config.path;
+                const templateVariabies = {
+                    host: host,
+                    version: versionInfo,
+                    dashboardName: dashboardName,
+                    dashboardLink: host + "/dashboard#/custom/" + dashboardID,
+                    subTitle: props["dashboards.dashboard-invite-subtitle"],
+                    contentView: props["dashboards.dashboard-invite-content"],
+                    contentEdit: props["dashboards.dashbhoard-invite-content-edit"],
+                    dashboardLinkButtonText: props["dashboards.dashboard-invite-link-text"],
+                };
+                const viewMsg = {
+                    bcc: viewEamilList,
+                    from: versionInfo.title,
+                    subject: props["dashboards.dashboard-invite-title"],
+                    html: ejs.render(templateString, Object.assign({}, templateVariabies, {editPermission: false})),
+                };
+                const editMsg = {
+                    bcc: editEmailList,
+                    from: versionInfo.title,
+                    subject: props["dashboards.dashboard-invite-title"],
+                    html: ejs.render(templateString, Object.assign({}, templateVariabies, {editPermission: true})),
+                };
+                sendEmail(viewMsg);
+                sendEmail(editMsg);
+            });
+        });
+
+    }
+
+    /**
+    * load ReportTemplate file
+    * @returns {Promise} - template promise object.
+    */
+    const readReportTemplate = () => {
+        return new Promise((resolve, reject) => {
+            const templatePath = path.resolve(__dirname, '../frontend/public/templates/invite-email.html');
+            fs.readFile(templatePath, 'utf8', function(err1, template) {
+                if (err1) {
+                    return reject(err1);
+                }
+                return resolve(template);
+            });
+        }).catch((e) => console.log(e));
+    };
+
+    /**
+     * send email with email libs
+     * @param {object} msg - email sending object
+     */
+    function sendEmail(msg) {
         if (mail.sendPoolMail) {
             mail.sendPoolMail(msg, null);
-            mail.sendPoolMail(msg2, null);
 
         }
         else {
             mail.sendMail(msg, null);
-            mail.sendMail(msg2, null);
         }
     }
 
