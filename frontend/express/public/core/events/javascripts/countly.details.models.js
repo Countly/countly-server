@@ -59,6 +59,9 @@
             var labels = context.state.labels;
             tableRows.forEach(function(row, i) {
                 row.dateVal = i; //because we get them all always sorted by date
+                if (row.curr_segment && typeof row.curr_segment === 'string') {
+                    row.curr_segment = countlyAllEvents.helpers.decode(row.curr_segment);
+                }
             });
             if (eventData.tableColumns.indexOf(labels.sum) !== -1 && eventData.tableColumns.indexOf(labels.dur) !== -1) {
                 tableRows.forEach(function(row) {
