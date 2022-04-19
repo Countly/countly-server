@@ -121,11 +121,48 @@ const FEATURE_NAME = 'server-stats';
             }
         }
     }
+
     /**
-    * Returns last three month session, event and data point count
-    * for all and individual apps
-    * @returns {boolean} Returns boolean, always true
-    **/
+     * @api {get} /o/server-stats/data-points Get data points
+     * @apiName initialize
+     * @apiGroup DataPoints
+     *
+     * @apiDescription Returns last three month session, event and data point count for all and individual apps
+     * @apiQuery {String} period array that contain start and end date as timestamp.
+     * @apiQuery {String} selected_app selected app id of related application
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *  {
+     *      "all-apps": {
+     *      "events": 234567,
+     *      "sessions": 26252,
+     *      "push": 0,
+     *      "dp": 260819,
+     *      "change": -895913
+     *      },
+     *      "61000642455b715cfc3c3d92": {
+     *      "events": 127935,
+     *      "push": 0,
+     *      "sessions": 18087,
+     *      "dp": 146022,
+     *      "change": -888443
+     *      },
+     *      "610146fe455b715cfc3c46c4": {
+     *      "events": 0,
+     *      "push": 0,
+     *      "sessions": 0,
+     *      "dp": 0,
+     *      "change": -20744
+     *      }
+     *  }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+    */
     plugins.register('/o/server-stats/data-points', function(ob) {
         var params = ob.params;
         var periodsToFetch = [];
@@ -196,6 +233,28 @@ const FEATURE_NAME = 'server-stats';
         return true;
     });
 
+    /**
+     * @api {get} /o/server-stats/data-points Get top one data of data points
+     * @apiName calculateTop
+     * @apiGroup DataPoints
+     *
+     * @apiDescription Calculate top one data points and return as an array.
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *  [
+     *      {
+     *          "a": "6006df36fbe7200b7489137e",
+     *          "v": 0
+     *      }
+     *  ]
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+    */
     plugins.register("/o/server-stats/top", function(ob) {
         var params = ob.params;
         validateUser(params, async() => {
@@ -207,9 +266,61 @@ const FEATURE_NAME = 'server-stats';
     });
 
     /**
-    * returns punch card data
-    * @returns {boolean} Returns boolean, always true
-    **/
+     * @api {get} /o/server-stats/punch-card Get punch card data
+     * @apiName getPunchCardData
+     * @apiGroup DataPoints
+     *
+     * @apiDescription Returns punch card data as a boolean, always true
+     * @apiQuery {String} period array that contain start and end date as timestamp.
+     * @apiQuery {String} selected_app selected app id of related application
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *  {
+     *  "data": [
+     *      [
+     *      0,
+     *      0,
+     *      0,
+     *      {
+     *          "min": null,
+     *          "max": 0,
+     *          "sum": 0,
+     *          "avg": 0,
+     *          "cn": 0,
+     *          "p": 0,
+     *          "s": 0,
+     *          "e": 0
+     *      }
+     *      ],
+     *      [
+     *      1,
+     *      0,
+     *      0,
+     *      {
+     *          "min": null,
+     *          "max": 0,
+     *          "sum": 0,
+     *          "avg": 0,
+     *          "cn": 0,
+     *          "p": 0,
+     *          "s": 0,
+     *          "e": 0
+     *      }
+     *      ]
+     *  ],
+     *  "dayCount": 1,
+     *  "labels": [
+     *      "2022.4.19"
+     *  ]
+     *  }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+    */
     plugins.register("/o/server-stats/punch-card", function(ob) {
         var params = ob.params;
         validateUser(params, async() => {
