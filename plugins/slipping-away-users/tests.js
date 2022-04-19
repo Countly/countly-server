@@ -35,19 +35,18 @@ describe('Testing slipping-away data api', function() {
             .end(function(err, res) {
                 res.statusCode.should.equal(200);
                 var data = JSON.parse(res.text);
-                console.log(data);
                 (data.length).should.equal(5);
                 done();
             });
     });
-    
+
     before(function(done) {
         const APP_ID = testUtils.get("APP_ID");
         const APP_KEY = testUtils.get("APP_KEY");
         const lastTime = new Date().getTime() - 1000 * 60 * 60 * 24 * 10;
         const nowTime = new Date().getTime();
-        const urlPrefix = "/i?app_key=" + APP_KEY 
-            + "&begin_session=1&device_id=1&timestamp=" + + parseInt(lastTime/1000);
+        const urlPrefix = "/i?app_key=" + APP_KEY
+            + "&begin_session=1&device_id=1&timestamp=" + +parseInt(lastTime / 1000);
 
         request.get(urlPrefix)
             .expect(200)
@@ -62,7 +61,7 @@ describe('Testing slipping-away data api', function() {
             const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             const APP_ID = testUtils.get("APP_ID");
 
-            request.get('/o/slipping?api_key=' + API_KEY_ADMIN + "&app_id=" +  APP_ID + "&method=slipping&query=%7B%7D")
+            request.get('/o/slipping?api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&method=slipping&query=%7B%7D")
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -80,8 +79,8 @@ describe('Testing slipping-away data api', function() {
             const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             const APP_ID = testUtils.get("APP_ID");
 
-            request.get('/o/slipping?api_key=' + API_KEY_ADMIN + "&app_id=" +  APP_ID
-                + "&method=slipping&query=" + encodeURIComponent(JSON.stringify({"did":{"$nin":["1"]}})))
+            request.get('/o/slipping?api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID
+                + "&method=slipping&query=" + encodeURIComponent(JSON.stringify({"did": {"$nin": ["1"]}})))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
