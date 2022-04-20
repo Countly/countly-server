@@ -128,7 +128,14 @@ const FEATURE_NAME = 'server-stats';
      * @apiGroup DataPoints
      *
      * @apiDescription Returns last three month session, event and data point count for all and individual apps
-     * @apiQuery {String} period array that contain start and end date as timestamp.
+     * @apiQuery {String} period array that contains start and end date as a timestamp. It also can be Countly period values which are:
+     * {String} "yesterday" for yesterday's value,
+     * {String} "hour" for today's value,
+     * {String} "7days" for the last 7 days value,
+     * {String} "30days" for the last 30days value,
+     * {String} "60days" for the last 60days value,
+     * {String} "day" for the all days current month value,
+     * {String} "month" for all days from the first day of the first month to the last day of the last month of the current year
      * @apiQuery {String} selected_app selected app id of related application
      * 
      * @apiSuccessExample {json} Success-Response:
@@ -271,7 +278,14 @@ const FEATURE_NAME = 'server-stats';
      * @apiGroup DataPoints
      *
      * @apiDescription Returns punch card data as a boolean, always true
-     * @apiQuery {String} period array that contain start and end date as timestamp.
+     * @apiQuery {String} period array that contains start and end date as a timestamp. It also can be Countly period values which are:
+     * {String} "yesterday" for yesterday's value,
+     * {String} "hour" for today's value,
+     * {String} "7days" for the last 7 days value,
+     * {String} "30days" for the last 30days value,
+     * {String} "60days" for the last 60days value,
+     * {String} "day" for the all days current month value,
+     * {String} "month" for all days from the first day of the first month to the last day of the last month of the current year
      * @apiQuery {String} selected_app selected app id of related application
      * 
      * @apiSuccessExample {json} Success-Response:
