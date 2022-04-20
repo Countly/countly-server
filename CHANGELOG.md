@@ -1,3 +1,24 @@
+## Version 22.03.3
+
+Fixes:
+- [crashes] defaults for optional fields
+- [dashboards] custom period for events widget
+- [dbviewer] fixed exporting of other databases
+- [frontend] fixed sorting of analytics tables
+- [populator] add push events
+- [push] credential validation fixes
+- [push] logger fixes
+- [push] remove send job
+- [report-manager] fixed localization strings
+
+Enterprise Fixes:
+- [attribution] new ui transition
+- [drill] allow storing objects/arrays in event segments
+- [flows] correct view name mapping if start and end point selected for flow
+- [revenue] average paying customer data fixes and css improvement
+- [surveys] fix to show logo preview
+- [users] fixed decoding properties in user profiles
+
 ## Version 22.03.2
 
 Fixes:
