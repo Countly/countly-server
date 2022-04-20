@@ -10,7 +10,7 @@ const testUtils = require('../../../test/testUtils'),
 //     api_key;
 let aid = '617e6cf3cd001aac73834e18',
     app_key = '78fb16cbaa61399d0f13f9e96961bd9983a0a416',
-    api_key = '4438dfdece5eaa6b796db9baf58ecbc4',
+    api_key = '4e170a5da90fdf5afd94f85eefdb015b',
     users = {
         did0: {device_id: 'did0', tokens: [{ios_token: 'token0', test_mode: 1}], events: [{key: 'cart'}, {key: 'buy'}]},
         did1: {device_id: 'did1', tokens: [{ios_token: 'token0', test_mode: 0}], locale: 'en_US'},
@@ -52,9 +52,12 @@ describe('PUSH AUDIENCE TESTS', () => {
         await supertest.get(`/o/push/dashboard?api_key=${api_key}&app_id=${aid}`)
             .expect('Content-Type', /json/)
             .expect(res => {
-                should.deepEqual(res.body.enabled, {total: 0, i: 0, a: 0, t: 0});
-                should.deepEqual(res.body.platforms, PLATFORMS_TITLES);
-                should.deepEqual(res.body.tokens, FIELDS_TITLES);
+                should.deepEqual(res.body.enabled, {total: 0, i: 0, a: 0, t: 0, h: 0});
+                should.deepEqual(res.body.platforms.a, PLATFORMS_TITLES.a);
+                should.deepEqual(res.body.platforms.i, PLATFORMS_TITLES.i);
+                should.not.exist(res.body.platforms.t);
+                should.not.exist(res.body.platforms.h);
+                should.ok(res.body.tokens);
             });
     });
     it('should estimate 0 audience', async() => {
@@ -103,9 +106,12 @@ describe('PUSH AUDIENCE TESTS', () => {
         await supertest.get(`/o/push/dashboard?api_key=${api_key}&app_id=${aid}`)
             .expect('Content-Type', /json/)
             .expect(res => {
-                should.deepEqual(res.body.enabled, {total: 4, i: 3, a: 2, t: 0});
-                should.deepEqual(res.body.platforms, PLATFORMS_TITLES);
-                should.deepEqual(res.body.tokens, FIELDS_TITLES);
+                should.deepEqual(res.body.enabled, {total: 4, i: 3, a: 2, t: 0, h: 0});
+                should.deepEqual(res.body.platforms.a, PLATFORMS_TITLES.a);
+                should.deepEqual(res.body.platforms.i, PLATFORMS_TITLES.i);
+                should.not.exist(res.body.platforms.t);
+                should.not.exist(res.body.platforms.h);
+                should.ok(res.body.tokens);
             });
     });
 

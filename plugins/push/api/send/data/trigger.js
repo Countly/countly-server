@@ -114,7 +114,7 @@ class Trigger extends Validatable {
             })];
         }
         else if (note.auto) {
-            if (note.autoOnEntry === 'event') {
+            if (note.autoOnEntry === 'events') {
                 return [new EventTrigger({
                     start: note.date,
                     end: note.autoEnd,

@@ -143,7 +143,6 @@ class Sender {
 
             // stream the pushes
             let pushes = common.db.collection('push').find({_id: {$lte: dbext.oidBlankWithDate(new Date(Date.now() + state.cfg.sendAhead))}}).stream(),
-                flush,
                 resolve, reject,
                 promise = new Promise((res, rej) => {
                     resolve = res;
@@ -156,27 +155,35 @@ class Sender {
                 .pipe(resultor, {end: false});
 
             pushes.once('close', () => {
-                flush = connector.flushIt();
+                connector.end();
             });
+            connector.once('close', () => {
+                batcher.end();
+            });
+            // batcher.once('close', () => {
+            //     resultor.end(function() {
+            //         resultor.destroy();
+            //     });
+            // });
             // connector.on('close', () => batcher.closeOnSyn());
 
             // wait for last stream close
-            resultor.on('error', error => {
-                this.log.e('error', error);
-                reject(error);
-            });
-            resultor.on('close', () => {
+            resultor.once('close', () => {
                 this.log.i('close');
+                pools.exit();
                 resolve();
             });
-            resultor.on('data', dt => {
-                this.log.i('data', dt);
-                if (flush === dt.payload) {
-                    resultor.destroy();
-                    batcher.destroy();
-                    connector.destroy();
-                    pools.exit();
-                }
+            pushes.on('error', err => {
+                this.log.e('Streaming error', err);
+                reject(err);
+            });
+            resultor.on('error', error => {
+                this.log.e('Resultor error', error);
+                reject(error);
+            });
+            batcher.on('error', err => {
+                this.log.e('Batching error', err);
+                reject(err);
             });
             connector.on('error', err => {
                 this.log.e('Connector error', err);
@@ -189,6 +196,11 @@ class Sender {
         }
         catch (e) {
             this.log.e('Error during sending:', e);
+            resultor.destroy();
+            batcher.destroy();
+            connector.destroy();
+            pools.exit();
+
             // await common.db.collection('messages').updateMany({_id: {$in: Object.keys(this.msgs)}}, {$set: {state: State.Queued, status: Status.Scheduled}});
             throw e;
         }

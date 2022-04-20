@@ -237,7 +237,7 @@ module.exports.create = async params => {
         }
     }
 
-    if (demo) {
+    if (demo && demo !== 'no-data') {
         await generateDemoData(msg, demo);
     }
 

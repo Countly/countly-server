@@ -438,6 +438,13 @@ function extractor(qstring) {
 const CREDS = {
     'test': class TestCreds extends Creds {
         /**
+         * constructor
+         */
+        constructor() {
+            super({type: 'test'});
+        }
+
+        /**
          * Check credentials for correctness, throw PushError otherwise
          * 
          * @throws PushError in case the check fails
