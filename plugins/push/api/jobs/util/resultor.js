@@ -1,13 +1,13 @@
 const { FRAME, FRAME_NAME } = require('../../send/proto'),
-    { SynFlushTransform } = require('./syn'),
-    { ERROR, TriggerKind, State, Status } = require('../../send/data');
+    { DoFinish } = require('./do_finish'),
+    { ERROR, TriggerKind, State, Status, PushError } = require('../../send/data');
 
 /**
  * Stream responsible for handling sending results:
  * - buffer incoming results
  * - write them to db once in a while
  */
-class Resultor extends SynFlushTransform {
+class Resultor extends DoFinish {
     /**
      * Constructor
      * 
@@ -17,7 +17,7 @@ class Resultor extends SynFlushTransform {
      * @param {function} check function which returns boolean in case no more data is expected and the stream can be closed
      */
     constructor(log, db, data, check) {
-        super(log.sub('resultor'), {objectMode: true});
+        super({objectMode: true});
         this.log = log.sub('resultor');
         this.data = data;
         this.db = db;
@@ -77,19 +77,15 @@ class Resultor extends SynFlushTransform {
             { PLATFORM } = require('../../send/platforms');
         this.log.d('in resultor _transform', FRAME_NAME[frame]);
         if (frame & FRAME.CMD) {
-            if (frame & FRAME.FLUSH) {
-                this.flushed = results;
-            }
-            if (frame & (FRAME.FLUSH | FRAME.SYN)) {
+            if (frame & FRAME.END) {
                 this.do_flush(() => {
-                    this.log.d('flush push');
-                    this.push(chunk);
-                    this.log.d('flush callback');
+                    this.log.d('DONE');
                     callback();
+                    this.destroy();
                 });
             }
             else {
-                callback();
+                callback(new PushError('Wrong CMD in resultor', ERROR.EXCEPTION));
             }
             return;
         }
@@ -335,18 +331,32 @@ class Resultor extends SynFlushTransform {
 
         // expired tokens - unset
         for (let aid in this.removeTokens) {
-            let collection = 'push_' + aid;
-            if (!updates[collection]) {
-                updates[collection] = [];
+            let collectionPush = `push_${aid}`,
+                collectionAppUsers = `app_users${aid}`;
+            if (!updates[collectionPush]) {
+                updates[collectionPush] = [];
+            }
+            if (!updates[collectionAppUsers]) {
+                updates[collectionAppUsers] = [];
             }
             for (let field in this.removeTokens[aid]) {
                 if (this.removeTokens[aid][field].length) {
-                    updates[collection].push({
+                    updates[collectionPush].push({
                         updateMany: {
                             filter: {_id: {$in: this.removeTokens[aid][field]}},
                             update: {
                                 $unset: {
                                     ['tk.' + field]: 1
+                                }
+                            }
+                        }
+                    });
+                    updates[collectionAppUsers].push({
+                        updateMany: {
+                            filter: {uid: {$in: this.removeTokens[aid][field]}},
+                            update: {
+                                $unset: {
+                                    ['tk' + field]: 1
                                 }
                             }
                         }
@@ -434,15 +444,20 @@ class Resultor extends SynFlushTransform {
 
         Promise.all(promises).then(() => {
             this.log.d('do_flush done');
-            if (callback) {
-                callback();
-            }
+            callback();
         }, err => {
             this.log.e('do_flush error', err);
-            if (callback) {
-                callback(err);
-            }
+            callback(err);
         });
+    }
+
+    /**
+     * Flush & release resources
+     * 
+     * @param {function} callback callback function
+     */
+    do_final(callback) {
+        callback();
     }
 
 
@@ -700,26 +715,6 @@ class Resultor extends SynFlushTransform {
     //         });
     //     }
     // }
-
-    /**
-     * Transform's flush impementation
-     * 
-     * @param {function} callback callback
-     */
-    _flush(callback) {
-        this.log.d('in resultor _flush');
-        this.do_flush(err => {
-            if (err) {
-                this.log.d('in resultor _flush err');
-                callback(err);
-            }
-            else {
-                this.log.d('in resultor _flush syn');
-                this.syn(callback);
-            }
-        });
-    }
-
 }
 
 module.exports = { Resultor };

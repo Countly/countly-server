@@ -32,8 +32,10 @@ function db_fixture(ret) {
                     async findOne(q) {
                         return ret.credsSaves.filter(c => c._id.toString() === q._id && q._id.toString() || q.toString())[0] || data.credentials;
                     },
-                    async save(data) {
-                        ret.credsSaves.push(data);
+                    async updateOne(filter, update, opts) {
+                        if (opts.upsert) {
+                            ret.credsSaves.push(update.$set);
+                        }
                     },
                     async deleteOne(query) {
                         ret.credsDeletes.push(query);
@@ -147,13 +149,13 @@ describe('API credentials', () => {
         should.equal(dbdata.credsSaves.length, 2);
         should.equal(dbdata.appUpdates.length, 2);
         should.equal(dbdata.credsDeletes.length, 1);
-        should.equal(dbdata.credsDeletes[0], dbdata.credsSaves[0]._id);
+        should.equal(dbdata.credsDeletes[0]._id.toString(), dbdata.credsSaves[0]._id.toString());
         should.equal(dbdata.credsSaves[1].type, 'fcm');
         should.ok(dbdata.credsSaves[1]._id);
         should.ok(dbdata.credsSaves[1].key);
         should.ok(dbdata.credsSaves[1].key.indexOf(fcm.substr(0, 25)) !== -1);
         should.ok(dbdata.credsSaves[1].key.indexOf(' ... ') === -1);
-        should.deepEqual(dbdata.appUpdates[1].filter, {_id: data.app._id});
+        should.deepEqual(dbdata.appUpdates[1].filter._id.toString(), data.app._id.toString());
         should.deepEqual(Object.keys(dbdata.appUpdates[1].update), ['$set']);
         should.deepEqual(Object.keys(dbdata.appUpdates[1].update.$set), ['plugins.push.a']);
         should.deepEqual(Object.keys(dbdata.appUpdates[1].update.$set['plugins.push.a']), ['_id', 'type', 'key', 'hash']);
@@ -176,9 +178,9 @@ describe('API credentials', () => {
         should.equal(dbdata.credsSaves.length, 2);
         should.equal(dbdata.appUpdates.length, 3);
         should.equal(dbdata.credsDeletes.length, 2);
-        should.equal(dbdata.credsDeletes[0], dbdata.credsSaves[0]._id);
-        should.equal(dbdata.credsDeletes[1], dbdata.credsSaves[1]._id);
-        should.deepEqual(dbdata.appUpdates[2].filter, {_id: data.app._id});
+        should.equal(dbdata.credsDeletes[0]._id.toString(), dbdata.credsSaves[0]._id.toString());
+        should.equal(dbdata.credsDeletes[1]._id.toString(), dbdata.credsSaves[1]._id.toString());
+        should.deepEqual(dbdata.appUpdates[2].filter._id.toString(), data.app._id.toString());
         should.deepEqual(Object.keys(dbdata.appUpdates[2].update), ['$set']);
         should.deepEqual(dbdata.appUpdates[2].update.$set, {'plugins.push.a': {}});
         should.ok(data.app.plugins.push.a);

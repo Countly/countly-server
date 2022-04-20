@@ -1,5 +1,5 @@
 const { PushError, SendError, ERROR } = require('../../send/std');
-const { SynFlushTransform } = require('./syn'),
+const { DoFinish } = require('./do_finish'),
     { Message, State, Status, Creds, pools, FRAME } = require('../../send'),
     { FRAME_NAME } = require('../../send/proto');
 
@@ -8,7 +8,7 @@ const { SynFlushTransform } = require('./syn'),
  * - buffer incoming results
  * - write them to db once in a while
  */
-class Connector extends SynFlushTransform {
+class Connector extends DoFinish {
     /**
      * Constructor
      * 
@@ -17,7 +17,7 @@ class Connector extends SynFlushTransform {
      * @param {State} state state shared across the streams
      */
     constructor(log, db, state) {
-        super(log.sub('connector'), {objectMode: true});
+        super({objectMode: true});
         this.log = log.sub('connector');
         this.db = db;
         this.state = state;
@@ -44,13 +44,6 @@ class Connector extends SynFlushTransform {
      */
     _transform(push, encoding, callback) {
         this.log.d('in connector transform', FRAME_NAME[push.frame]);
-        if (push.frame & FRAME.CMD) {
-            this.push(push);
-            if (push.frame & (FRAME.FLUSH | FRAME.SYN)) {
-                this.do_flush(callback);
-            }
-            return;
-        }
         this.do_transform(push, encoding, callback);
     }
 
@@ -62,7 +55,7 @@ class Connector extends SynFlushTransform {
      * @param {function} callback callback
      */
     do_transform(push, encoding, callback) {
-        this.log.d('in connector do_transform', push, FRAME_NAME[push.frame]);
+        // this.log.d('in connector do_transform', push, FRAME_NAME[push.frame]);
         let app = this.state.app(push.a),
             message = this.state.message(push.m);
 
@@ -105,9 +98,7 @@ class Connector extends SynFlushTransform {
                     }
 
                     Promise.all(promises).then(() => {
-                        if (Object.values(a.creds).filter(c => !!c).length) { // only set app if there's one or more credentials found
-                            this.state.setApp(a);
-                        }
+                        this.state.setApp(a);
                         this.do_transform(push, encoding, callback);
                     }, callback);
                 }
@@ -118,6 +109,20 @@ class Connector extends SynFlushTransform {
             }, callback);
             return;
         }
+        else if (!message) {
+            let query = Message.filter(new Date(), this.state.cfg.sendAhead);
+            query._id = push.m;
+            this.db.collection('messages').findOne(query).then(msg => {
+                if (msg) {
+                    this.state.setMessage(msg); // only turns to app if there's one or more credentials found
+                    pools.message(app._id.toString(), [msg]);
+                }
+                else {
+                    this.state.discardMessage(push.m);
+                }
+                this.do_transform(push, encoding, callback);
+            }, callback);
+        }
         else if (app.creds[push.p] === null) { // no connection
             this.noConnection.addAffected(push._id, 1);
             this.do_flush(callback, true);
@@ -127,21 +132,7 @@ class Connector extends SynFlushTransform {
             this.do_flush(callback, true);
         }
         else { // all good with credentials, now let's check messages
-            if (!message) {
-                let query = Message.filter(new Date(), this.state.cfg.sendAhead);
-                query._id = push.m;
-                this.db.collection('messages').findOne(query).then(msg => {
-                    if (msg) {
-                        this.state.setMessage(msg); // only turns to app if there's one or more credentials found
-                        pools.message(app._id.toString(), [msg]);
-                    }
-                    else {
-                        this.state.discardMessage(push.m);
-                    }
-                    this.do_transform(push, encoding, callback);
-                }, callback);
-            }
-            else if (!message.is(State.Streaming)) {
+            if (!message.is(State.Streaming)) {
                 let date = new Date(),
                     update = {$set: {status: Status.Sending, 'info.startedLast': date}, $bit: {state: {or: State.Streaming}}};
                 if (!message.info.started) {
@@ -182,31 +173,13 @@ class Connector extends SynFlushTransform {
     }
 
     /**
-     * Transform's flush impementation
-     * 
-     * @param {function} callback callback
-     */
-    _flush(callback) {
-        this.log.d('in connector _flush');
-        this.do_flush(callback);
-        // this.do_flush(err => {
-        //     if (err) {
-        //         callback(err);
-        //     }
-        //     else {
-        //         this.syn(callback);
-        //     }
-        // });
-    }
-
-    /**
      * Actual flush logic (it's not allowed to call _flush() directly)
      * 
      * @param {function|undefined} callback callback
      * @param {boolean} ifNeeded true if we only need to flush `discarded` when it's length is over `limit`
      */
     do_flush(callback, ifNeeded) {
-        let total = this.noMessage.affectedBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes;
+        let total = this.noMessage.affectedBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.noConnection.affectedBytes;
         this.log.d('in connector do_flush, total', total);
 
         if (ifNeeded && !this.flushed && (!total || total < this.limit)) {
@@ -234,9 +207,7 @@ class Connector extends SynFlushTransform {
 
         this.resetErrors();
 
-        if (callback) {
-            callback();
-        }
+        callback();
 
         // this.log.d('do_flush proceed');
         // let updates = {};
@@ -332,6 +303,17 @@ class Connector extends SynFlushTransform {
         //     })
         //     .then(() => callback && callback(), err => callback(err));
     }
+
+    /**
+     * Flush & release resources
+     * 
+     * @param {function} callback callback function
+     */
+    do_final(callback) {
+        callback();
+    }
+
+
 }
 
 module.exports = { Connector };

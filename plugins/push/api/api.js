@@ -128,7 +128,6 @@ plugins.register('/cache/init', function() {
 plugins.register('/i', async ob => {
     let params = ob.params,
         la = params.app_user.la;
-    log.d('push query', params.qstring);
     if (params.qstring.events && Array.isArray(params.qstring.events)) {
         let events = params.qstring.events,
             keys = events.map(e => e.key);

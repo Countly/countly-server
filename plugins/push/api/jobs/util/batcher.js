@@ -1,12 +1,80 @@
 const { PushError, ERROR } = require('../../send/data');
 const { FRAME_NAME } = require('../../send/proto');
-const { SynFlushTransform } = require('./syn'),
+const { DoFinish } = require('./do_finish'),
     { encode, FRAME, pools } = require('../../send');
 
 /**
+ * Sends multicast to multiple instances and waits for replies. Once all did reply, invokes callback.
+ * 
+ * @param {object} log logger instance
+ * @param {int} frame frame type to send
+ * @param {any} payload frame payload to send
+ * @param {string[]} recipients array of recipient ids
+ * @param {function} callback callback function
+ * @param {int} time_out timeout in ms
+ * @returns {object} multicast object with some control functions
+ */
+function multicast(log, frame, payload, recipients, callback, time_out = 120000) {
+    let timeout = setTimeout(function() {
+            log.e('multicast timeout %s', FRAME_NAME[frame]);
+            for (let id in listeners) {
+                if (id in pools.pools) {
+                    pools.pools[id].off('data', listeners[id]);
+                }
+            }
+            callback(new PushError('Failed to multicast in time', ERROR.EXCEPTION));
+        }, time_out),
+        listeners = {},
+        anything = false;
+
+    payload = payload || Math.random();
+
+    for (let id of recipients) {
+        pools.pools[id].on('data', listeners[id] = function(data) {
+            if (data.frame === frame && data.payload === payload) {
+                log.d('multicast reply %s from %s', FRAME_NAME[frame], id);
+                let idx = recipients.indexOf(id);
+                if (idx !== -1) {
+                    recipients.splice(idx, 1);
+                    if (id in pools.pools) {
+                        pools.pools[id].off('data', listeners[id]);
+                    }
+                    delete listeners[id];
+                }
+                if (!recipients.length) {
+                    log.d('multicast %s completed', FRAME_NAME[frame]);
+                    clearTimeout(timeout);
+                    callback();
+                }
+            }
+        });
+        pools.pools[id].write(encode(frame, payload));
+        anything = true;
+    }
+
+    if (anything) {
+        return function() {
+            for (let id in listeners) {
+                if (id in pools.pools) {
+                    pools.pools[id].off('data', listeners[id]);
+                }
+            }
+            clearTimeout(timeout);
+        };
+    }
+    else {
+        clearTimeout(timeout);
+        callback();
+        return function() {
+            // do nothing
+        };
+    }
+
+}
+/**
  * Transform which buffers up to size of records into an array of records
  */
-class Batcher extends SynFlushTransform {
+class Batcher extends DoFinish {
     /**
      * Constructor
      * 
@@ -14,7 +82,7 @@ class Batcher extends SynFlushTransform {
      * @param {State} state State instance shared across streams
      */
     constructor(log, state) {
-        super(log.sub('batcher'), {objectMode: true});
+        super({objectMode: true});
         this.log = log.sub('batcher');
         this.state = state;
         this.state.on('app', app => {
@@ -35,7 +103,6 @@ class Batcher extends SynFlushTransform {
         this.ids = {}; // {aid: {p: {f: id}}}
         this.buffers = {}; // {id: [push, push, ...]}
         this.listeners = {}; // {id: function}
-        this.flushes = {}; // {flushid: [pool id, pool id, ...]}
         this.count = 0;
         this.size = state.cfg.pool.pushes;
     }
@@ -50,29 +117,22 @@ class Batcher extends SynFlushTransform {
     _transform(push, encoding, callback) {
         this.log.d('in batcher _transform', FRAME_NAME[push.frame], push._id);
         if (push.frame & FRAME.CMD) {
-            if (push.frame & FRAME.FLUSH) {
-                this.flushed = push.payload;
-            }
-            if (push.frame & (FRAME.FLUSH | FRAME.SYN)) {
-                let nothing = this.do_flush(() => {
-                    this.flushes[push.payload] = [];
-                    this.log.d('in batcher _transform', FRAME_NAME[push.frame], push._id, 'sending to', Object.keys(this.listeners));
-                    for (let id in this.listeners) {
-                        pools.pools[id].write(encode(push.frame, push.payload));
-                        this.flushes[push.payload].push(id);
+            if (push.frame === FRAME.FLUSH) {
+                multicast(this.log, FRAME.FLUSH, push.payload, Object.keys(this.listeners), () => {
+                    let nothing = this.do_flush(() => {
+                        this.push(push);
+                    });
+                    if (nothing) {
+                        this.push(push);
                     }
                     callback();
                 });
-
-                if (nothing) {
-                    this.push(push);
-                }
+            }
+            else if (push.frame & FRAME.END) {
+                callback(new PushError('END frame in batcher'));
             }
             else {
-                for (let id in this.listeners) {
-                    pools.pools[id].write(encode(push.frame, push.payload));
-                }
-                callback();
+                callback(new PushError('Unsupported CMD frame in batcher'));
             }
             return;
         }
@@ -90,18 +150,7 @@ class Batcher extends SynFlushTransform {
             // this.listeners[id] = true;
             // pools.pools[id].pipe(this);
             this.listeners[id] = result => {
-                if (result.frame & FRAME.FLUSH) {
-                    let pls = this.flushes[result.payload];
-                    if (pls && pls.indexOf(id) !== -1) {
-                        pls.splice(pls.indexOf(id), 1);
-                        if (!pls.length) {
-                            this.log.d('flush %d is done', result.payload);
-                            this.push(result);
-                            delete this.flushes[result.payload];
-                        }
-                    }
-                }
-                else {
+                if (!(result.frame & FRAME.CMD)) {
                     this.push(result);
                 }
             };
@@ -140,30 +189,9 @@ class Batcher extends SynFlushTransform {
      * Flush the leftover
      * 
      * @param {function} callback callback
-     */
-    _flush(callback) {
-        this.log.d('in batcher _flush');
-        // this.do_flush(callback);
-        this.do_flush(err => {
-            if (err) {
-                this.log.d('_flush err, callback', err);
-                callback(err);
-            }
-            else {
-                this.log.d('_flush ok, synIt');
-                this.synIt(callback);
-            }
-        });
-    }
-
-    /**
-     * Flush the leftover
-     * 
-     * @param {function} callback callback
      * @returns {boolean|undefined} true in case nothing has been written
      */
     do_flush(callback) {
-        this.log.d('in batcher do_flush');
         let count = 0,
             anything = false,
             /**
@@ -207,29 +235,50 @@ class Batcher extends SynFlushTransform {
      * 
      * @param {function} callback callback
      */
-    _final(callback) {
-        this.log.d('in batcher _final');
-        if (this.count) {
-            callback(new PushError('final with data left', ERROR.EXCEPTION));
-            // this.log.d('final: flushing');
-            // this.do_flush(err => {
-            // for (let id in this.listeners) {
-            //     pools.pools[id].unpipe(this);
-            //     // pools.pools[id].off('data', this.listeners[id]);
-            // }
-            // this.listeners = {};
-            // callback(err);
-            // }, true);
-        }
-        else {
-            this.log.d('final: nothing to flush');
-            for (let id in this.listeners) {
-                // pools.pools[id].unpipe(this);
-                pools.pools[id].off('data', this.listeners[id]);
-            }
-            this.listeners = {};
-            callback();
-        }
+    do_final(callback) {
+        this.do_flush(flushErr => {
+            let payload = Math.random();
+            multicast(this.log, FRAME.END, payload, Object.keys(this.listeners), err => {
+                for (let id in this.listeners) {
+                    pools.pools[id].off('data', this.listeners[id]);
+                }
+                this.listeners = {};
+                this.push({frame: FRAME.END, payload});
+                callback(flushErr || err);
+            });
+        });
+        // this.finalPayload = Math.random();
+        // this.finalLeft = Object.keys(this.listeners);
+        // this.finalTimeout = setTimeout(() => {
+        //     this.finalLeft = [];
+        //     this.finalCallback(null, new PushError('Failed to end in time', ERROR.EXCEPTION));
+        // }, 30000);
+        // this.finalCallback = (id, err) => {
+        //     if (id) {
+        //         let idx = this.finalLeft.indexOf(id);
+        //         if (idx !== -1) {
+        //             this.finalLeft.splice(idx, 1);
+        //         }
+        //         pools.pools[id].off('data', this.listeners[id]);
+        //         delete this.listeners[id];
+        //     }
+        //     if (!this.finalLeft.length) {
+        //         clearTimeout(this.finalTimeout);
+        //         delete this.finalPayload;
+        //         delete this.finalLeft;
+        //         delete this.finalTimeout;
+        //         delete this.finalCallback;
+        //         callback(err);
+        //     }
+        // };
+
+        // for (let id in this.listeners) {
+        //     pools.pools[id].write(encode(FRAME.END, this.finalPayload));
+        // }
+
+        // if (!this.finalLeft.length) {
+        //     setImmediate(this.finalCallback.bind(this, null));
+        // }
     }
 }
 

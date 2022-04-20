@@ -52,7 +52,7 @@ if (isMainThread) {
             this.worker.on('message', m => {
                 let frame = frame_type(m.buffer);
                 this.log.d('IN message %s %d bytes', FRAME_NAME[frame], m.buffer.byteLength);
-                if (frame & FRAME.CLOSE) {
+                if (frame & FRAME.END) {
                     let error = (frame & FRAME.ERROR) ? decode(m.buffer).payload : undefined;
                     if (this.closeCallback) {
                         clearTimeout(this.closeTimeout);
@@ -61,6 +61,7 @@ if (isMainThread) {
                         this.closeCallback = undefined;
                     }
                     if (this.worker) {
+                        this.push(m);
                         this.destroy();
                         // this.worker.terminate().catch(this.log.e.bind(this.log, 'Error when terminating worker')).then(() => {
                         //     this.emit('push_done');
@@ -177,8 +178,9 @@ if (isMainThread) {
             });
             chunks.forEach(chunk => {
                 let c = chunk.chunk,
-                    l = c.buffer.byteLength;
-                if (frame_type(c.buffer) & FRAME.SEND) {
+                    l = c.buffer.byteLength,
+                    f = frame_type(c.buffer);
+                if (f & FRAME.SEND) {
                     this.processing += l;
                     this.in.inc(l);
                 }
@@ -205,7 +207,7 @@ if (isMainThread) {
                     }
                     callback();
                 }, 10000); // close in 10 sec if it didn't close itself
-                this.worker.postMessage(encode(FRAME.CLOSE));
+                this.worker.postMessage(encode(FRAME.END));
             }
             else {
                 callback();
@@ -240,7 +242,7 @@ if (isMainThread) {
     //     let worker = new Worker(__filename, {workerData: opts});
     //     worker.on('message', m => {
     //         let frame = frame_type(m.buffer);
-    //         if (frame & FRAME.CLOSE) {
+    //         if (frame & FRAME.END) {
     //             worker.terminate().catch(logger.e.bind(logger));
     //         }
     //     });
@@ -264,7 +266,7 @@ else {
     connection.on('error', err => {
         log.w('error in worker %s', err);
         if (connection.closingForcefully) {
-            post(FRAME.ERROR | FRAME.CLOSE, PushError.deserialize(err));
+            post(FRAME.ERROR | FRAME.END, PushError.deserialize(err));
         }
         else {
             post(FRAME.ERROR, PushError.deserialize(err));
@@ -295,7 +297,7 @@ else {
         else {
             log.i('closed');
         }
-        post(FRAME.CLOSE | (connection.closingForcefully ? FRAME.ERROR : FRAME.SUCCESS), connection.closingForcefully || {});
+        post(FRAME.END | (connection.closingForcefully ? FRAME.ERROR : FRAME.SUCCESS), connection.closingForcefully || {});
     });
 
     parentPort.on('message', arr => {
@@ -331,7 +333,7 @@ else {
                 }
             });
         }
-        else if (data.frame === FRAME.CLOSE) {
+        else if (data.frame & FRAME.END) {
             if (connection.writable) {
                 if (data.payload.force) {
                     log.w('closing forcefully');
@@ -340,7 +342,10 @@ else {
                 }
                 else {
                     log.i('closing');
-                    connection.end();
+                    connection.drainAndCall(function() {
+                        post(data.frame, data.payload);
+                        connection.end();
+                    });
                 }
             }
             else {

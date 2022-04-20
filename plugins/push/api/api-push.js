@@ -130,14 +130,26 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
                 log.i('Checking %s / %s credentials', p, c.type);
                 // check credentials for validity
                 let creds = new PLATFORM[p].CREDS[c.type](c),
-                    errors = creds.validate();
+                    errors = creds.validate(),
+                    cfg = {
+                        sendAhead: 60000,
+                        connection: {
+                            retries: 3,
+                            retryFactor: 1000,
+                        },
+                        pool: {
+                            pushes: 100000,
+                            bytes: 100000,
+                            concurrency: 5
+                        }
+                    };
                 if (errors) {
                     throw new ValidationError(errors);
                 }
                 log.i('Checking %s / %s credentials: validation passed', p, c.type);
 
                 // verify connectivity with the credentials given
-                let connection = new PLATFORM[p].connection('push:api:push', p + 'p', creds, [], {}),
+                let connection = new PLATFORM[p].connection('push:api:push', p + 'p', creds, [], cfg),
                     valid = await connection.connect();
                 if (valid) {
                     log.i('Checking %s / %s credentials: provider check passed', p, c.type);

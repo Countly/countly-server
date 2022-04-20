@@ -10,8 +10,8 @@ const testUtils = require('../../../test/testUtils'),
 // let aid,
 //     app_key,
 //     api_key,
-let aid = '620d3057e2a7ae842fb53f90',
-    app_key = '7dc8f3f75fa3c4da059e8cb5f36e64879467442d',
+let aid = '617e6cf3cd001aac73834e18',
+    app_key = '78fb16cbaa61399d0f13f9e96961bd9983a0a416',
     api_key = '4e170a5da90fdf5afd94f85eefdb015b',
     users = {
         did0: {device_id: 'did0', tokens: [{ios_token: 'token_id0', test_mode: 1}], events: [{key: 'push_cart'}, {key: 'push_buy', count: 1, sum: 200, segmentation: {product: 'carrot'}}]},
@@ -111,9 +111,12 @@ describe('PUSH INTEGRATION TESTS', () => {
         await supertest.get(`/o/push/dashboard?api_key=${api_key}&app_id=${aid}`)
             .expect('Content-Type', /json/)
             .expect(res => {
-                should.deepEqual(res.body.enabled, {total: 0, i: 0, a: 0, t: 0});
-                should.deepEqual(res.body.platforms, PLATFORMS_TITLES);
-                should.deepEqual(res.body.tokens, FIELDS_TITLES);
+                should.deepEqual(res.body.enabled, {total: 0, i: 0, a: 0, t: 0, h: 0});
+                should.deepEqual(res.body.platforms.a, PLATFORMS_TITLES.a);
+                should.deepEqual(res.body.platforms.i, PLATFORMS_TITLES.i);
+                should.not.exist(res.body.platforms.t);
+                should.not.exist(res.body.platforms.h);
+                should.ok(res.body.tokens);
             });
     });
     it('should estimate 0 audience', async() => {
@@ -176,15 +179,18 @@ describe('PUSH INTEGRATION TESTS', () => {
         await supertest.get(`/o/push/dashboard?api_key=${api_key}&app_id=${aid}`)
             .expect('Content-Type', /json/)
             .expect(res => {
-                should.deepEqual(res.body.enabled, {total: 5, i: 4, a: 2, t: 0});
-                should.deepEqual(res.body.platforms, PLATFORMS_TITLES);
-                should.deepEqual(res.body.tokens, FIELDS_TITLES);
+                should.deepEqual(res.body.enabled, {total: 5, i: 4, a: 2, t: 0, h: 0});
+                should.deepEqual(res.body.platforms.a, PLATFORMS_TITLES.a);
+                should.deepEqual(res.body.platforms.i, PLATFORMS_TITLES.i);
+                should.not.exist(res.body.platforms.t);
+                should.not.exist(res.body.platforms.h);
+                should.ok(res.body.tokens);
             });
     });
     it('should estimate 5-user audience', async() => {
         await supertest.post(`/o/push/message/estimate?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 platforms
             })
@@ -197,7 +203,7 @@ describe('PUSH INTEGRATION TESTS', () => {
     it('should estimate 3-user audience with user query', async() => {
         await supertest.post(`/o/push/message/estimate?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 platforms,
                 filter: {
@@ -213,7 +219,7 @@ describe('PUSH INTEGRATION TESTS', () => {
     it('should validate estimate params', async() => {
         await supertest.post(`/o/push/message/estimate?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid.substr(0, 10),
                 platforms: ['x'],
                 filter: {
@@ -229,7 +235,7 @@ describe('PUSH INTEGRATION TESTS', () => {
     it('should estimate 3-user audience with drill query', async() => {
         await supertest.post(`/o/push/message/estimate?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 platforms,
                 filter: {
@@ -257,7 +263,7 @@ describe('PUSH INTEGRATION TESTS', () => {
         // it shouldn't allow draft creation without app or platforms
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 status: 'draft',
                 filter: {
@@ -276,7 +282,7 @@ describe('PUSH INTEGRATION TESTS', () => {
         // ... or with malformed inner fields
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 platforms,
                 status: 'draft',
@@ -296,7 +302,7 @@ describe('PUSH INTEGRATION TESTS', () => {
         // create a draft without a few fields
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 platforms,
                 status: 'draft',
@@ -328,7 +334,7 @@ describe('PUSH INTEGRATION TESTS', () => {
         // modify it
         await supertest.post(`/i/push/message/update?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 _id: d1._id,
                 status: 'draft',
                 app: aid,
@@ -374,7 +380,7 @@ describe('PUSH INTEGRATION TESTS', () => {
         // create another draft
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 status: 'draft',
                 app: aid,
                 platforms,
@@ -424,7 +430,7 @@ describe('PUSH INTEGRATION TESTS', () => {
     //     // test message
     //     await supertest.post(`/i/push/message/test?api_key=${api_key}&app_id=${aid}`)
     //         .send({
-    //             demo: true,
+    //             demo: 'no-data',
     //             app: aid,
     //             platforms,
     //             filter: {
@@ -453,7 +459,7 @@ describe('PUSH INTEGRATION TESTS', () => {
     //     // // test message
     //     // await supertest.post(`/i/push/message/test?api_key=${api_key}&app_id=${aid}`)
     //     //     .send({
-    //     //         demo: true,
+    //     //         demo: 'no-data',
     //     //         app: aid,
     //     //         platforms,
     //     //         filter: {
@@ -477,7 +483,7 @@ describe('PUSH INTEGRATION TESTS', () => {
 
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 platforms,
                 filter: {
@@ -500,7 +506,7 @@ describe('PUSH INTEGRATION TESTS', () => {
             });
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 platforms,
                 filter: {
@@ -524,7 +530,7 @@ describe('PUSH INTEGRATION TESTS', () => {
             });
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 platforms,
                 filter: {},
@@ -547,7 +553,7 @@ describe('PUSH INTEGRATION TESTS', () => {
 
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 platforms,
                 filter: {
@@ -580,7 +586,7 @@ describe('PUSH INTEGRATION TESTS', () => {
 
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
-                demo: true,
+                demo: 'no-data',
                 app: aid,
                 platforms,
                 filter: {
@@ -754,7 +760,7 @@ describe('PUSH INTEGRATION TESTS', () => {
         await supertest.get(`/o/push/dashboard?api_key=${api_key}&app_id=${aid}`)
             .expect('Content-Type', /json/)
             .expect(res => {
-                should.deepEqual(res.body.enabled, {total: 5, i: 4, a: 2, t: 0});
+                should.deepEqual(res.body.enabled, {total: 5, i: 4, a: 2, t: 0, h: 0});
                 should.deepEqual(res.body.platforms, PLATFORMS_TITLES);
                 should.deepEqual(res.body.tokens, FIELDS_TITLES);
                 should.deepEqual(res.body.actions.total, 1);

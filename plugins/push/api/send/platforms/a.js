@@ -99,6 +99,7 @@ class FCM extends Splitter {
                 one = Math.floor(bytes / pushes.length);
 
             content.registration_ids = pushes.map(p => p.t);
+            this.log.d('sending to %j', content.registration_ids);
 
             return this.sendRequest(JSON.stringify(content)).then(resp => {
                 try {

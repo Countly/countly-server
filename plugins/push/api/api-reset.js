@@ -15,7 +15,7 @@ async function reset(ob) {
         common.db.collection('push').deleteMany({a: aid}).catch(() => {}),
         common.db.collection('jobs').deleteMany({name: 'push:schedule', 'data.aid': aid}).catch(() => {}),
         common.db.collection(`push_${aid}`).drop().catch(() => {}),
-        common.db.collection('apps').findOne({a: aid}).catch(() => {}).then(app => {
+        common.db.collection('apps').findOne({_id: aid}).catch(() => {}).then(app => {
             if (app && app.plugins && app.plugins.push) {
                 return Promise.all(Object.values(app.plugins.push).map(async cfg => {
                     if (cfg && cfg._id) {
@@ -57,11 +57,35 @@ async function removeUsers(appId, uids) {
 
     for await (const doc of stream) {
         updates[doc.m] = updates[doc.m] || (updates[doc.m] = {$inc: {'result.errors': {}}});
-        if (!updates[doc.m].$inc['result.errors'][doc.p]) {
-            updates[doc.m].$inc['result.errors'][doc.p] = {consent: 1};
+        if (!updates[doc.m].$inc['result.errors.processed']) {
+            updates[doc.m].$inc['result.errors.processed'] = 1;
+            updates[doc.m].$inc['result.errors.consent'] = 1;
+            updates[doc.m].$inc['result.errors.errored'] = 1;
         }
         else {
-            updates[doc.m].$inc['result.errors'][doc.p].consent++;
+            updates[doc.m].$inc['result.errors.processed']++;
+            updates[doc.m].$inc['result.errors.consent']++;
+            updates[doc.m].$inc['result.errors.errored']++;
+        }
+        if (!updates[doc.m].$inc[`result.subs.${doc.p}.errors.processed`]) {
+            updates[doc.m].$inc[`result.subs.${doc.p}.errors.processed`] = 1;
+            updates[doc.m].$inc[`result.subs.${doc.p}.errors.consent`] = 1;
+            updates[doc.m].$inc[`result.subs.${doc.p}.errors.errored`] = 1;
+        }
+        else {
+            updates[doc.m].$inc[`result.subs.${doc.p}.errors.processed`]++;
+            updates[doc.m].$inc[`result.subs.${doc.p}.errors.consent`]++;
+            updates[doc.m].$inc[`result.subs.${doc.p}.errors.errored`]++;
+        }
+        if (!updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errors.processed`]) {
+            updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errors.processed`] = 1;
+            updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errors.consent`] = 1;
+            updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errors.errored`] = 1;
+        }
+        else {
+            updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errors.processed`]++;
+            updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errors.consent`]++;
+            updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errors.errored`]++;
         }
     }
 
