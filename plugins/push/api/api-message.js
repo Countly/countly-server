@@ -618,7 +618,7 @@ async function generateDemoData(msg, demo) {
                 es = Math.floor((Math.random() + 0.5) / (19 - i) * sent),
                 ea = Math.floor((Math.random() + 0.5) / (19 - i) * actioned);
 
-            ea = Math.min(a, Math.floor(es * 0.5));
+            ea = Math.min(ea, Math.floor(es * 0.5));
 
             sent -= es;
             actioned -= ea;
