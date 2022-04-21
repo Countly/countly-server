@@ -105,22 +105,30 @@ class Sender {
      * Watch push collection for pushes to send, 
      */
     async watch() {
-        let oid = dbext.oidBlankWithDate(new Date(Date.now()));
-        try {
-            await common.db.collection('push').watch([{$match: {_id: {$lte: oid}}}], {maxAwaitTimeMS: 60000}).next();
-            return true;
-        }
-        catch (e) {
-            if (e.code === 40573) { // not a replica set
-                let count = await common.db.collection('push').count({_id: {$lte: oid}});
-                return count > 0;
-            }
-            else {
-                this.log('error in change stream', e);
-                return false;
-            }
-        }
+        let oid = dbext.oidBlankWithDate(new Date()),
+            count = await common.db.collection('push').count({_id: {$lte: oid}});
+        return count > 0;
     }
+    // /**
+    //  * Watch push collection for pushes to send, 
+    //  */
+    //  async watch() {
+    //     let oid = dbext.oidBlankWithDate(new Date());
+    //     try {
+    //         await common.db.collection('push').watch([{$match: {'fullDocument._id': {$lte: oid}}}], {maxAwaitTimeMS: 10000}).tryNext();
+    //         return true;
+    //     }
+    //     catch (e) {
+    //         if (e.code === 40573) { // not a replica set
+    //             let count = await common.db.collection('push').count({_id: {$lte: oid}});
+    //             return count > 0;
+    //         }
+    //         else {
+    //             this.log('error in change stream', e);
+    //             return false;
+    //         }
+    //     }
+    // }
 
     /**
      * Run the sender:
