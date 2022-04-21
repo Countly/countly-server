@@ -156,6 +156,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
                 }
                 else {
                     log.i('Checking %s / %s credentials: provider check failed', p, c.type);
+                    connection.destroy();
                     throw new ValidationError('Credentials were rejected by push notification provider');
                 }
 
