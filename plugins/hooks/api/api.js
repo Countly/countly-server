@@ -182,6 +182,21 @@ plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
 });
 
+/**
+* @api {post} /i/hook/save create or update hook 
+* @apiName saveHook 
+* @apiGroup hooks 
+*
+* @apiDescription create or update hook data. 
+* @apiQuery {hook_config} JSON string of hook object.
+* @apiQuery {String} app_id target app id of the alert.  
+*
+* @apiSuccessExample {text} Success-Response:
+* HTTP/1.1 200 OK
+*
+* "6262779e46bd55a8c555cfb9"
+*
+*/
 plugins.register("/i/hook/save", function(ob) {
     let paramsInstance = ob.params;
 
@@ -256,6 +271,54 @@ function getVisibilityQuery(query, params) {
     return newQuery;
 }
 
+
+/**
+* @api {post} /i/hook/list list hooks
+* @apiName getHooks 
+* @apiGroup hooks 
+*
+* @apiDescription get hook list. 
+* @apiQuery {String} app_id for permission checking  
+*
+* @apiSuccessExample {json} Success-Response:
+* HTTP/1.1 200 OK
+*
+* {
+      "hooksList": [
+        {
+          "_id": "6262779e46bd55a8c555cfb9",
+          "name": "test",
+          "description": "test",
+          "apps": [
+            "610cea5f6229f9e738d30d0a"
+          ],
+          "trigger": {
+            "type": "APIEndPointTrigger",
+            "configuration": {
+              "path": "ede612bd-f82f-452b-bae0-efde0b7a7caa",
+              "method": "get"
+            }
+          },
+          "createdBy": "60afbaa84723f369db477fee",
+          "createdByUser": "foobar",
+          "effects": [
+            {
+              "type": "EmailEffect",
+              "configuration": {
+                "address": [
+                  "test@test.com"
+                ],
+                "emailTemplate": "test"
+              }
+            }
+          ],
+          "enabled": true,
+          "created_at": 1650620318327
+        }
+      ]
+    }
+*
+*/
 plugins.register("/o/hook/list", function(ob) {
     const paramsInstance = ob.params;
 
@@ -291,6 +354,23 @@ plugins.register("/o/hook/list", function(ob) {
     return true;
 });
 
+
+/**
+ * @api {post} /i/hook/status change hook status
+ * @apiName changeHookStatus 
+ * @apiGroup hooks 
+ *
+ * @apiDescription change hooks status by boolean flag.
+ * @apiQuery {string} JSON string of status object for alerts record want to update.
+ *  for example: {"626270afbf7392a8bfd8c1f3":false, "42dafbf7392a8bfd8c1e1": true}
+ * @apiQuery {String} app_id target app id of the alert.  
+ *
+ * @apiSuccessExample {text} Success-Response:
+ * HTTP/1.1 200 OK
+ *
+ * true
+ *
+*/
 plugins.register("/i/hook/status", function(ob) {
     let paramsInstance = ob.params;
 
@@ -316,6 +396,22 @@ plugins.register("/i/hook/status", function(ob) {
 });
 
 
+
+/**
+ * @api {post} /i/hook/delete delete hook by alert ID 
+ * @apiName deleteHook
+ * @apiGroup hooks 
+ *
+ * @apiDescription delete hook by id.
+ * @apiQuery {string} hookID target hook id from db.
+ * @apiQuery {String} app_id target app id of the alert.  
+ *
+ * @apiSuccessExample {json} Success-Response:
+ * HTTP/1.1 200 OK
+ *
+ * {"result":"Deleted an hook"}
+ *
+*/
 plugins.register("/i/hook/delete", function(ob) {
     let paramsInstance = ob.params;
 
