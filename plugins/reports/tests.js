@@ -23,14 +23,10 @@ describe('Testing Reports', function() {
         before(function(done) {
             const app_key = testUtils.get("APP_KEY");
             const events = [{"key": "orderSubmit", "count": 1, "segmentation": {"a": "a", "b": "b"}}, {"key": "orderFinish", "count": 1}];
-            //console.log("pop data!!", app_key);
             request.get(getRequestURL('/i') + "&app_key=" + app_key + "&begin_session=1&device_id=1&events=" + encodeURIComponent(JSON.stringify(events)))
                 .expect(200)
                 .end(function(err, res) {
-                // console.log(err,res);
-                    setTimeout(function() {
-                        done();
-                    }, 30000);
+                    done();
                 });
 
         });
