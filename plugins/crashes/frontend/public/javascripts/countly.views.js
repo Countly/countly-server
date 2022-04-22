@@ -606,7 +606,10 @@
         template: "#crashes-crashgroup",
         components: {"crash-stacktrace": CrashStacktraceView, "crash-badge": CrashBadgeView},
         mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.container.dataMixin({
+                externalActionDropdownItems: "crashes/external/actionDropdownItems"
+            })
         ],
         data: function() {
             return {

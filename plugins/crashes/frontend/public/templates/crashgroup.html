@@ -42,6 +42,7 @@
                 <cly-more-options @command="handleCrashgroupCommand($event)" class="bu-ml-2">
                     <el-dropdown-item command="view-user-list" v-if="userProfilesEnabled">{{i18n("userdata.list")}}
                     </el-dropdown-item>
+                    <component v-for="item in externalActionDropdownItems" :is="item.component"></component>
                     <el-dropdown-item v-if="canUserDelete" command="delete">{{i18n("crashes.action-delete")}}
                     </el-dropdown-item>
                 </cly-more-options>
