@@ -50,7 +50,6 @@ describe('Testing Reports', function() {
 
         describe('Read Report', function() {
             it('should read report with valid params', function(done) {
-                const ADMIN_ID = testUtils.get("ADMIN_ID");
                 request.get(getRequestURL('/o/reports/all'))
                     .expect(200)
                     .end(function(err, res) {
@@ -58,9 +57,7 @@ describe('Testing Reports', function() {
                             return done(err);
                         }
                         res.body.forEach((r) =>{
-                            if (ADMIN_ID === r.user) {
-                                reports.push(r);
-                            }
+                            reports.push(r);
                         });
                         reports.length.should.be.above(0);
                         done();
