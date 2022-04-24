@@ -19,16 +19,6 @@ plugins.setConfigs("hooks", {
     pipelineInterval: 1000, // milliseconds to batch process pipeline
 });
 
-
-
-
-plugins.setConfigs("hooks", {
-    batchActionSize: 0, // size for processing actions each time
-    refreshRulesPeriod: 3000, // miliseconds to fetch hook records
-    pipelineInterval: 1000, // milliseconds to batch process pipeline
-});
-
-
 /**
 * Hooks Class definition 
 */
