@@ -37,7 +37,6 @@ describe('Testing Alert', function() {
 
         describe('Read alert', function() {
             it('should read alerts with valid params', function(done) {
-                const ADMIN_ID = testUtils.get("ADMIN_ID");
                 request.get(getRequestURL('/o/alert/list'))
                     .expect(200)
                     .end(function(err, res) {
@@ -46,9 +45,7 @@ describe('Testing Alert', function() {
                         }
                         res.body.should.have.property("alertsList");
                         res.body.alertsList.forEach((r) => {
-                            if (ADMIN_ID === r.createdBy) {
-                                alerts.push(r);
-                            }
+                            alerts.push(r);
                         });
                         alerts.length.should.be.above(0);
                         done();

@@ -86,7 +86,7 @@ const FEATURE_NAME = 'alerts';
     }, 10000);
 
 
-    
+
     /**
      * @api {get} /i/alert/save save new create or updated alert data. 
      * @apiName  saveAlert 
