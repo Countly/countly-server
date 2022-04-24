@@ -50,7 +50,9 @@ describe('Testing slipping-away data api', function() {
             request.get(urlPrefix)
                 .expect(200)
                 .end(function(err, res) {
-                    done();
+                    setTimeout(function(){
+                        done();
+                    }, 2000);
                     return;
                 });
         });
