@@ -46,7 +46,7 @@ describe('Testing slipping-away data api', function() {
             const lastTime = new Date().getTime() - 1000 * 60 * 60 * 24 * 10;
             const urlPrefix = "/i?app_key=" + APP_KEY
                 + "&begin_session=1&device_id=1&timestamp=" + +parseInt(lastTime / 1000);
-    
+
             request.get(urlPrefix)
                 .expect(200)
                 .end(function(err, res) {
