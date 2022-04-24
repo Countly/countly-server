@@ -45,7 +45,7 @@ describe('Testing slipping-away data api', function() {
             const APP_KEY = testUtils.get("APP_KEY");
             const lastTime = new Date().getTime() - 1000 * 60 * 60 * 24 * 10;
             const urlPrefix = "/i?app_key=" + APP_KEY
-                + "&begin_session=1&device_id=1&timestamp=" + +parseInt(lastTime / 1000);
+                + "&begin_session=1&device_id=99999999991&timestamp=" + parseInt(lastTime / 1000);
 
             request.get(urlPrefix)
                 .expect(200)
@@ -77,7 +77,7 @@ describe('Testing slipping-away data api', function() {
             const APP_ID = testUtils.get("APP_ID");
 
             request.get('/o/slipping?api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID
-                + "&method=slipping&query=" + encodeURIComponent(JSON.stringify({"did": {"$nin": ["1"]}})))
+                + "&method=slipping&query=" + encodeURIComponent(JSON.stringify({"did": {"$nin": ["99999999991"]}})))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
