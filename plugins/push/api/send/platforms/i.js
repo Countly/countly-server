@@ -811,6 +811,7 @@ class APN extends Base {
             method: 'CONNECT',
             path: host + ':' + port,
             headers: { host },
+            rejectUnauthorized: this._options.proxy.auth,
         };
 
         if (this._options.proxy.user && this._options.proxy.pass) {
@@ -826,6 +827,7 @@ class APN extends Base {
                     host,
                     port,
                     socket: socket,
+                    rejectUnauthorized: this._options.proxy.auth,
                     ALPNProtocols: ['h2']
                 });
             };

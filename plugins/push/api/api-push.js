@@ -1,6 +1,7 @@
 const common = require('../../../api/utils/common'),
     plugins = require('../../pluginManager'),
     log = common.log('push:api:push'),
+    Sender = require('./send/sender'),
     { extract, field, allAppUserFields, platforms, PLATFORM, ValidationError, Creds, DBMAP } = require('./send');
 
 module.exports.onTokenSession = async(dbAppUser, params) => {
@@ -131,18 +132,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
                 // check credentials for validity
                 let creds = new PLATFORM[p].CREDS[c.type](c),
                     errors = creds.validate(),
-                    cfg = {
-                        sendAhead: 60000,
-                        connection: {
-                            retries: 3,
-                            retryFactor: 1000,
-                        },
-                        pool: {
-                            pushes: 100000,
-                            bytes: 100000,
-                            concurrency: 5
-                        }
-                    };
+                    cfg = await Sender.loadConfig();
                 if (errors) {
                     throw new ValidationError(errors);
                 }

@@ -22,10 +22,16 @@ class Sender {
      * @returns {Promise} - resolved or rejected
      */
     async prepare() {
-        // this.log.d('preparing sender');
+        this.cfg = await Sender.loadConfig();
+    }
 
-        // loaded configuration
-        this.cfg = {
+    /**
+     * Load plgin configuration from db
+     * 
+     * @returns {object} config object
+     */
+    static async loadConfig() {
+        let cfg = {
             sendAhead: 60000,
             connection: {
                 retries: 3,
@@ -39,7 +45,7 @@ class Sender {
         };
 
         // last date this job sends notifications for
-        this.last = Date.now() + this.cfg.sendAhead;
+        this.last = Date.now() + cfg.sendAhead;
 
         let plugins = await common.db.collection('plugins').findOne({});
         if (!plugins) {
@@ -49,23 +55,24 @@ class Sender {
         if (plugins.push) {
             if (plugins.push.sendahead) {
                 try {
-                    this.cfg.sendAhead = parseInt(plugins.push.sendahead, 10);
+                    cfg.sendAhead = parseInt(plugins.push.sendahead, 10);
                 }
                 catch (e) {
                     this.log.w('Invalid sendahead plugin configuration: %j', plugins.push.sendahead);
                 }
             }
             if (plugins.push.proxyhost && plugins.push.proxyport) {
-                this.cfg.proxy = {
+                cfg.proxy = {
                     host: plugins.push.proxyhost,
                     port: plugins.push.proxyport,
                     user: plugins.push.proxyuser || undefined,
                     pass: plugins.push.proxypass || undefined,
+                    auth: !(plugins.push.proxyunauthorized || false),
                 };
             }
             if (plugins.push.bytes) {
                 try {
-                    this.cfg.pool.bytes = parseInt(plugins.push.bytes, 10);
+                    cfg.pool.bytes = parseInt(plugins.push.bytes, 10);
                 }
                 catch (e) {
                     this.log.w('Invalid bytes plugin configuration: %j', plugins.push.bytes);
@@ -73,7 +80,7 @@ class Sender {
             }
             if (plugins.push.concurrency) {
                 try {
-                    this.cfg.pool.concurrency = parseInt(plugins.push.concurrency, 10);
+                    cfg.pool.concurrency = parseInt(plugins.push.concurrency, 10);
                 }
                 catch (e) {
                     this.log.w('Invalid concurrency plugin configuration: %j', plugins.push.concurrency);
@@ -81,24 +88,7 @@ class Sender {
             }
         }
 
-        // this.log.d('sender prepared');
-
-        // this.msgs = {}; // {mid: message}
-        // this.msgsPerApp = {}; // {aid: [message, ...]}
-        // await db.collection('messages').find({
-        //     state: State.Queued,
-        //     $or: [
-        //         {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte: this.last}}}},
-        //         {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte: this.last}, end: {$gte: this.last}}}},
-        //         {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte: this.last}, end: {$gte: this.last}}}},
-        //         {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte: this.last}, end: {$gte: this.last}}}},
-        //     ]
-        // }).forEach(m => {
-        //     if (!this.msgsPerApp[m.app]) {
-        //         this.msgsPerApp = [];
-        //     }
-        //     this.msgsPerApp.push(this.msgs[m._id] = new Message(m));
-        // });
+        return cfg;
     }
 
     /**

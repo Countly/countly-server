@@ -47,6 +47,7 @@ plugins.setConfigs(FEATURE_NAME, {
     proxyport: '',
     proxyuser: '',
     proxypass: '',
+    proxyunauthorized: false,
     test: {
         uids: '', // comma separated list of app_users.uid
         cohorts: '', // comma separated list of cohorts._id
