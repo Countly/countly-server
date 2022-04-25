@@ -608,7 +608,8 @@
         mixins: [
             countlyVue.mixins.auth(FEATURE_NAME),
             countlyVue.container.dataMixin({
-                externalActionDropdownItems: "crashes/external/actionDropdownItems"
+                externalActionDropdownItems: "crashes/external/actionDropdownItems",
+                externalDialogs: "crashes/external/dialogs"
             })
         ],
         data: function() {
