@@ -163,9 +163,6 @@
 </head>
 <body>
 	<div id="main-views-container" class="bu-is-flex">
-        <div id="cly-vue-sidebar">
-            <div id="sidebar-x"></div>
-        </div>
         <div class="main-view">
             <div id="content"></div>
             <div id="vue-content">
@@ -1809,6 +1806,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.token.manager.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.version.history.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/sidebar.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/core.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/container.js?<%= countlyVersion %>"></script>
@@ -1873,8 +1871,6 @@
 				<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>
 			<% } %>
 		<% } %>
-
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/sidebar.js?<%= countlyVersion %>"></script>
 	<% } %>
 
     <% if (themeFiles && themeFiles.js) { %>

@@ -731,6 +731,9 @@
             return { currentViewComponent: null };
         },
         template: '<div>\
+                        <div id="cly-vue-sidebar">\
+                            <cly-sidebar></cly-sidebar>\
+                        </div>\
                         <component :is="currentViewComponent"></component>\
                         <GenericPopups></GenericPopups>\
                         <DummyCompAPI></DummyCompAPI>\
