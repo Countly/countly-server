@@ -992,7 +992,10 @@ plugins.setConfigs("dashboards", {
                                             common.returnMessage(params, 500, "Failed to remove widget");
                                         }
                                         else {
-                                            plugins.dispatch("/systemlogs", {params: params, action: "widget_deleted", data: widgetResult.value});
+                                            var logData = widgetResult.value;
+                                            logData.dashboard = dashboard.name;
+
+                                            plugins.dispatch("/systemlogs", {params: params, action: "widget_deleted", data: logData});
                                             plugins.dispatch("/dashboard/widget/deleted", {params: params, widget: widgetResult.value});
                                             common.returnMessage(params, 200, 'Success');
                                         }
