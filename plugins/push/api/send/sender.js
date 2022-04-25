@@ -138,7 +138,7 @@ class Sender {
      * - handle results
      */
     async send() {
-        this.log.d('sending');
+        this.log.i('>>>>>>>>>> sending');
 
         // data shared across multiple streams
         let state = new State(this.cfg),
@@ -200,7 +200,7 @@ class Sender {
 
             await promise;
 
-            this.log.d('done sending');
+            this.log.i('<<<<<<<<<< done sending');
         }
         catch (e) {
             this.log.e('Error during sending:', e);
