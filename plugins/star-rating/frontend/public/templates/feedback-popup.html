@@ -30,21 +30,11 @@
         </br>
     </p>
     <div class="emotions-area">
-        <span title="Very dissatisfied" data-score="1" id="cf-rating-item-0" class="rating-emotion emotion-first">
-            😡
-        </span>
-        <span title="Somewhat dissatisfied" data-score="2" id="cf-rating-item-1" class="rating-emotion emotion">
-            🙁            
-        </span>
-        <span title="Neither satisfied nor dissatisfied" id="cf-rating-item-2" data-score="3" class="rating-emotion emotion">
-            😐
-        </span>
-        <span title="Somewhat satisfied" data-score="4" id="cf-rating-item-3" class="rating-emotion emotion">
-            😊
-        </span>
-        <span title="Very satisfied" data-score="5" id="cf-rating-item-4" class="rating-emotion emotion">
-            🔥
-        </span>
+        <span title="Very dissatisfied" data-score="1" id="cf-rating-item-0" class="rating-emotion emotion-first"></span>
+        <span title="Somewhat dissatisfied" data-score="2" id="cf-rating-item-1" class="rating-emotion emotion"></span>
+        <span title="Neither satisfied nor dissatisfied" id="cf-rating-item-2" data-score="3" class="rating-emotion emotion"></span>
+        <span title="Somewhat satisfied" data-score="4" id="cf-rating-item-3" class="rating-emotion emotion"></span>
+        <span title="Very satisfied" data-score="5" id="cf-rating-item-4" class="rating-emotion emotion"></span>
     </div>
     <div class="comment-area">
         <div id="comment-section" class="input-wrapper">
@@ -199,6 +189,7 @@
         var d = new Date();
         var h = d.getHours();
         var dow = d.getDay();
+        var symbol = 'emoji';
 
         $('.modal-content').hide();
         /*
@@ -220,6 +211,13 @@
                 $('#cf-email-text').html(response.popup_email_callout);
                 $('#cf-submit-button').html(response.popup_button_callout);
                 $('#thanks-area').html(response.popup_thanks_message);
+                
+                if (response.rating_symbol) {
+                  symbol = response.rating_symbol;
+                  for (var i = 0; i < 5; i++) {
+                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
+                  }
+                }
 
                 if (response.logo) {
                     $('#powered-by-countly').attr('src', url + '/star-rating/images/star-rating/' + response.logo);
@@ -295,17 +293,16 @@
         function rate(e) {
             var index = parseInt(e.target.dataset.score) - 1;
             eventObject["segmentation"].rating = parseInt(modalEmotionImages[index].getAttribute('data-score'));
-            for (var i = 0; i < modalEmotionImages.length; i++) {
-                removeClass(modalEmotionImages[i], 'grow');
-                modalEmotionImages[i].src = 'star-rating/images/star-rating/' + i + '_gray.svg';
-                modalEmotionImages[i].style.transform = "scale(1)";
-                modalEmotionImages[i].style.opacity = 0.5;
-                addClass(modalEmotionImages[i], 'grow');
+            for (var i = 0; i < 5; i++) {
+              if (i <= index) {
+                removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
+                addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill');
+              }
+              else {
+                addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
+                removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill');
+              }
             }
-            modalEmotionImages[index].src = 'star-rating/images/star-rating/' + index + '_color.svg';
-            modalEmotionImages[index].style.transform = "scale(1.2)";
-            modalEmotionImages[index].style.opacity = 1;
-            modalEmotionImages[index].classList.remove("grow");
             removeClass(sendButton, 'disabled-send-button');
             addClass(sendButton, 'send-button');
             sendButton.removeAttribute('disabled');
