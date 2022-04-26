@@ -1,3 +1,4 @@
+/* faker */
 var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../test/testUtils");
@@ -30,9 +31,25 @@ describe('Complaince Hub', function() {
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
             var consent = {
-            };
+                "sessions": true,
+                "events": true,
+                "views": true,
+                "scrolls": true,
+                "clicks": true,
+                "forms": true,
+                "crashes": false,
+                "attribution": true,
+                "users": true,
+                "star-rating": true,
+                "location": true,
+                "apm": true,
+                "feedback": true,
+                "remote-config": true 
+            }
+            console.log(API_KEY_ADMIN, APP_ID, APP_KEY);
+            
             request
-                .post('/sdk/user_properties?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&consent' + JSON.stringify(consent))
+                .post('/i?consent=' + consent +  '&api_key=' + APP_KEY + '&app_id=' + APP_ID )
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
