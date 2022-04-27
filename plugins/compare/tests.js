@@ -6,18 +6,18 @@ request = request(testUtils.url);
 var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var APP_ID = "";
-var DEVICE_ID = "1234567890";
-var mytoken = '';
+var compareApps = [];
 
 describe('Testing Compare Plugin', function() {
     describe("Testing Compare Apps", function() {
+        before(function() {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_ID = testUtils.get("APP_ID");
+            APP_KEY = testUtils.get("APP_KEY");
+            compareApps.push(APP_ID);
+        });
         describe('Get compare data', function() {
             it('should return 200 with relevant data', function(done) {
-                API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-                APP_ID = testUtils.get("APP_ID");
-                APP_KEY = testUtils.get("APP_KEY");
-                var compareApps = [];
-                compareApps.push(APP_ID);
                 request.get('/o/compare/apps?period=' + "30days" + '&apps=' + JSON.stringify(compareApps) + '&api_key=' + API_KEY_ADMIN)
                     .expect(200)
                     .end(function(err, res) {
@@ -36,8 +36,6 @@ describe('Testing Compare Plugin', function() {
         });
         describe('Check by sending invalid params', function() {
             it('Try getting with invalid api key', function(done) {
-                var compareApps = [];
-                compareApps.push(APP_ID);
                 request.get('/o/compare/apps?period=' + "30days" + '&apps=' + JSON.stringify(compareApps) + '&api_key=kkkk')
                     .expect(401)
                     .end(function(err, res) {
@@ -50,8 +48,6 @@ describe('Testing Compare Plugin', function() {
                     });
             });
             it('Try getting without api key', function(done) {
-                var compareApps = [];
-                compareApps.push(APP_ID);
                 request.get('/o/compare/apps?period=' + "30days" + '&apps=' + JSON.stringify(compareApps))
                     .expect(400)
                     .end(function(err, res) {
@@ -64,8 +60,6 @@ describe('Testing Compare Plugin', function() {
                     });
             });
             it('Try getting without apps', function(done) {
-                var compareApps = [];
-                compareApps.push(APP_ID);
                 request.get('/o/compare/apps?period=' + "30days" + '&api_key=' + API_KEY_ADMIN)
                     .expect(400)
                     .end(function(err, res) {
