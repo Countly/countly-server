@@ -132,7 +132,7 @@
                             context.dispatch('setChartLoading', false);
                         }
                     }).catch(function() {
-                        context.dispatch('setTableLoading', false);
+                         context.dispatch('setTableLoading', false);
                         context.dispatch('setChartLoading', false);
                     });
             },
