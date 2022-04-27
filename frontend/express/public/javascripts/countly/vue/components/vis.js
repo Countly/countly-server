@@ -362,6 +362,8 @@
 
                 var widthOverflowThreshold = (options.clyCustom && options.clyCustom.widthOverflowThreshold) || 500;
 
+                var xAxis = options.xAxis;
+
                 if (size && size.w >= widthOverflowThreshold) {
                     if (xAxis.data.length >= 3) {
                         return {
@@ -374,8 +376,6 @@
                     }
                     return null;
                 }
-
-                var xAxis = options.xAxis;
 
                 // Early return, no need to analyze the array
                 if (xAxis.data.length > 15) {
