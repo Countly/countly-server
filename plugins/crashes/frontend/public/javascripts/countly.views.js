@@ -951,9 +951,13 @@
     });
 
     var getCrashgroupView = function() {
+        var vuex = [{clyModel: countlyCrashes}];
+        var externalVuex = countlyVue.container.tabsVuex(["crashes/external/vuex"]);
+        vuex = vuex.concat(externalVuex);
+
         return new countlyVue.views.BackboneWrapper({
             component: CrashgroupView,
-            vuex: [{clyModel: countlyCrashes}],
+            vuex: vuex,
             templates: [
                 {
                     namespace: "crashes",
