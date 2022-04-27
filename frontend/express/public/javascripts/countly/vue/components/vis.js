@@ -325,6 +325,138 @@
 
     countlyVue.mixins.zoom = ExternalZoomMixin;
 
+    var xAxisOverflowHandler = {
+        data: function() {
+            return {
+                chartWidth: 0,
+                chartHeight: 0
+            };
+        },
+        props: {
+            xAxisLabelOverflow: {
+                type: String,
+                default: 'auto',
+                required: false
+            }
+        },
+        methods: {
+            patchOptionsForXAxis: function(opt) {
+                var xAxisOverflowPatch = this.handleXAxisOverflow(opt, this.xAxisLabelOverflow, {
+                    w: this.chartWidth,
+                    h: this.chartHeight
+                });
+                if (xAxisOverflowPatch) {
+                    opt = _merge(opt, xAxisOverflowPatch);
+                }
+                return opt;
+            },
+            onChartFinished: function() {
+                var ref = this.$refs.echarts;
+                this.chartWidth = ref.getWidth();
+                this.chartHeight = ref.getHeight();
+            },
+            handleXAxisOverflow: function(options, strategy, size) {
+                if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
+                    return null;
+                }
+
+                var widthOverflowThreshold = (options.clyCustom && options.clyCustom.widthOverflowThreshold) || 500;
+
+                if (size && size.w >= widthOverflowThreshold) {
+                    if (xAxis.data.length >= 3) {
+                        return {
+                            xAxis: {
+                                axisLabel: {
+                                    fontSize: 12
+                                }
+                            }
+                        };
+                    }
+                    return null;
+                }
+
+                var xAxis = options.xAxis;
+
+                // Early return, no need to analyze the array
+                if (xAxis.data.length > 15) {
+                    // no need to force all points to be present
+                    // if there are too many of them
+                    return {
+                        grid: {containLabel: false, bottom: 90, left: 75},
+                        xAxis: {
+                            axisLabel: {
+                                width: 100,
+                                overflow: "truncate",
+                                rotate: 45,
+                                fontSize: 12
+                            }
+                        }
+                    };
+                }
+                else if (xAxis.data.length >= 7) {
+                    return {
+                        grid: {containLabel: false, bottom: 90, left: 75},
+                        xAxis: {
+                            axisLabel: {
+                                width: 100,
+                                overflow: "truncate",
+                                interval: 0,
+                                rotate: 45,
+                                fontSize: 12
+                            }
+                        }
+                    };
+                }
+
+                var maxLen = 0;
+
+                xAxis.data.forEach(function(item) {
+                    var str = "";
+                    if (Array.isArray(item)) {
+                        str = (item[1] || item[0] || "") + "";
+                    }
+                    else {
+                        str = (item || "") + "";
+                    }
+                    maxLen = Math.max(maxLen, str.length);
+                });
+
+                if (maxLen > 25 && xAxis.data.length >= 3) {
+                    return {
+                        grid: {containLabel: false, bottom: 90, left: 75},
+                        xAxis: {
+                            axisLabel: {
+                                width: 150,
+                                overflow: "truncate",
+                                interval: 0,
+                                rotate: 30,
+                                fontSize: 12
+                            }
+                        }
+                    };
+                }
+                else if (xAxis.data.length >= 3) {
+                    return {
+                        grid: {
+                            bottom: 50
+                        },
+                        xAxis: {
+                            axisLabel: {
+                                width: 150,
+                                overflow: "break",
+                                interval: 0,
+                                fontSize: 12
+                            }
+                        }
+                    };
+                }
+                return {
+                    xAxis: {axisLabel: {interval: 0}}
+                };
+            }
+        }
+    };
+
     /*
         Use xAxis.axisLabel.showMinLabel to change visibility of minimum label
         Use xAxis.axisLabel.showMaxLabel to change visibility of maximum label
@@ -805,94 +937,6 @@
                 }
 
                 return opt;
-            }
-        },
-        methods: {
-            handleXAxisOverflow: function(options, strategy, size) {
-                if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
-                    return null;
-                }
-
-                var widthOverflowThreshold = (options.clyCustom && options.clyCustom.widthOverflowThreshold) || 500;
-
-                if (size && size.w >= widthOverflowThreshold) {
-                    return null;
-                }
-
-                var xAxis = options.xAxis;
-
-                // Early return, no need to analyze the array
-                if (xAxis.data.length > 15) {
-                    // no need to force all points to be present
-                    // if there are too many of them
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 100,
-                                overflow: "truncate",
-                                rotate: 45,
-                            }
-                        }
-                    };
-                }
-                else if (xAxis.data.length >= 5) {
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 100,
-                                overflow: "truncate",
-                                interval: 0,
-                                rotate: 45,
-                            }
-                        }
-                    };
-                }
-
-                var maxLen = 0;
-
-                xAxis.data.forEach(function(item) {
-                    var str = "";
-                    if (Array.isArray(item)) {
-                        str = (item[1] || item[0] || "") + "";
-                    }
-                    else {
-                        str = (item || "") + "";
-                    }
-                    maxLen = Math.max(maxLen, str.length);
-                });
-
-                if (maxLen > 25 && xAxis.data.length >= 2) {
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 150,
-                                overflow: "truncate",
-                                interval: 0,
-                                rotate: 30,
-                            }
-                        }
-                    };
-                }
-                else if (xAxis.data.length >= 2) {
-                    return {
-                        grid: {
-                            bottom: 50
-                        },
-                        xAxis: {
-                            axisLabel: {
-                                width: 150,
-                                overflow: "break",
-                                interval: 0
-                            }
-                        }
-                    };
-                }
-                return {
-                    xAxis: {axisLabel: {interval: 0}}
-                };
             }
         }
     });
@@ -1693,6 +1737,9 @@
     }));
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
+        mixins: [
+            xAxisOverflowHandler
+        ],
         data: function() {
             return {
                 forwardedSlots: ["chart-left", "chart-right"]
@@ -1707,6 +1754,7 @@
                 var opt = _merge({}, this.mergedOptions);
 
                 opt = this.patchChart(opt);
+                opt = this.patchOptionsForXAxis(opt);
 
                 return opt;
             }
@@ -1727,6 +1775,7 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
+                                    @finished="onChartFinished"\
                                     @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
@@ -1862,19 +1911,13 @@
     }));
 
     Vue.component("cly-chart-bar", BaseBarChart.extend({
+        mixins: [
+            xAxisOverflowHandler
+        ],
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right"],
-                chartWidth: 0,
-                chartHeight: 0
+                forwardedSlots: ["chart-left", "chart-right"]
             };
-        },
-        props: {
-            xAxisLabelOverflow: {
-                type: String,
-                default: 'auto',
-                required: false
-            }
         },
         components: {
             'chart-header': ChartHeader,
@@ -1884,21 +1927,8 @@
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 opt = this.patchChart(opt);
-                var xAxisOverflowPatch = this.handleXAxisOverflow(opt, this.xAxisLabelOverflow, {
-                    w: this.chartWidth,
-                    h: this.chartHeight
-                });
-                if (xAxisOverflowPatch) {
-                    opt = _merge(opt, xAxisOverflowPatch);
-                }
+                opt = this.patchOptionsForXAxis(opt);
                 return opt;
-            }
-        },
-        methods: {
-            onChartFinished: function() {
-                var ref = this.$refs.echarts;
-                this.chartWidth = ref.getWidth();
-                this.chartHeight = ref.getHeight();
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
