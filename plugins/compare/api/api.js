@@ -16,6 +16,18 @@ const FEATURE_NAME = 'compare';
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
+    /**
+    * @api {get} o/compare/events Compare Events
+    * @apiName CompareEvents
+    * @apiGroup Compare
+    * @apiDescription Compare Events
+    * @apiQuery {String} period Default period format for Countly
+    * @apiQuery {String} events stringified argument with  an array of events to be compared
+    * @apiQuery {String} api_id Application ID
+    * @apiSuccessExample {json} Success-Response:
+    * HTTP/1.1 200 OK
+    * {"Login":{"2022":{"4":{"28":{"0":{"c":2},"1":{"c":3},"2":{"c":2},"3":{"c":3},"4":{"c":1},"5":{"c":2},"6":{"c":2},"7":{"c":4},"8":{"c":3},"9":{"c":408},"c":430}}},"meta":{"Method":["Password","Face ID"],"segments":["Method"]}},"Credit Card Application":{"2022":{"4":{"28":{"0":{"c":5},"1":{"c":5},"2":{"c":4},"3":{"c":2},"4":{"c":3},"5":{"c":4},"6":{"c":2},"7":{"c":2},"8":{"c":6},"9":{"c":383},"c":416}}},"meta":{"Card Type":["Premium","Black","Basic"],"segments":["Card Type"]}}}
+    *  **/
     plugins.register('/o/compare/events', function(ob) {
         var params = ob.params;
 
@@ -77,7 +89,18 @@ const FEATURE_NAME = 'compare';
 
         return true;
     });
-
+    /**
+    * @api {get} o/compare/apps Compare Apps
+    * @apiName CompareApps
+    * @apiGroup Compare
+    * @apiDescription Compare Apps
+    * @apiQuery {String} period Default period format for Countly
+    * @apiQuery {String} apps stringified argument with  an array of apps to be compared
+    * @apiQuery {String} api_key API_KEY of user, with permission to access this app
+    * @apiSuccessExample {json} Success-Response:
+    * HTTP/1.1 200 OK
+    * [{"id":"6263b8cef96e9e029d9802dc","name":"test","sessions":{"total":0,"change":"∞","trend":"d"},"users":{"total":0,"change":"∞","trend":"d","is_estimate":false},"newusers":{"total":0,"change":"∞","trend":"d"},"duration":{"total":"0.0 min","change":"∞","trend":"d"},"avgduration":{"total":"0.0 min","change":"∞","trend":"d"},"charts":{"total-users":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]],"new-users":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]],"total-sessions":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]],"time-spent":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]],"total-time-spent":[[0,"0.0"],[1,"0.0"],[2,"0.0"],[3,"0.0"],[4,"0.0"],[5,"0.0"],[6,"0.0"],[7,"0.0"],[8,"0.0"],[9,"0.0"],[10,"0.0"],[11,"0.0"],[12,"0.0"],[13,"0.0"],[14,"0.0"],[15,"0.0"],[16,"0.0"],[17,"0.0"],[18,"0.0"],[19,"0.0"],[20,"0.0"],[21,"0.0"],[22,"0.0"],[23,"0.0"]],"avg-events-served":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]]}},{"id":"6267cc30b395e185d91faec2","name":"Test App","sessions":{"total":87,"change":"47.5%","trend":"u"},"users":{"total":78,"change":"32.2%","trend":"u","is_estimate":false},"newusers":{"total":22,"change":"120%","trend":"u"},"duration":{"total":"3.3 hours","change":"420.1%","trend":"u"},"avgduration":{"total":"2.2 min","change":"252.7%","trend":"u"},"charts":{"total-users":[[0,1],[1,3],[2,1],[3,0],[4,0],[5,2],[6,4],[7,2],[8,4],[9,70],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]],"new-users":[[0,1],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,1],[9,20],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]],"total-sessions":[[0,1],[1,3],[2,1],[3,0],[4,0],[5,2],[6,4],[7,2],[8,4],[9,70],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]],"time-spent":[[0,"3.0"],[1,"0.2"],[2,"2.0"],[3,0],[4,0],[5,"0.3"],[6,"0.1"],[7,"1.0"],[8,"0.3"],[9,"2.6"],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]],"total-time-spent":[[0,"3.0"],[1,"0.5"],[2,"2.0"],[3,"0.5"],[4,"1.0"],[5,"0.5"],[6,"0.5"],[7,"2.0"],[8,"1.0"],[9,"184.0"],[10,"0.0"],[11,"0.0"],[12,"0.0"],[13,"0.0"],[14,"0.0"],[15,"0.0"],[16,"0.0"],[17,"0.0"],[18,"0.0"],[19,"0.0"],[20,"0.0"],[21,"0.0"],[22,"0.0"],[23,"0.0"]],"avg-events-served":[[0,"9.0"],[1,"2.0"],[2,"8.0"],[3,0],[4,0],[5,"2.0"],[6,"1.3"],[7,"3.5"],[8,"2.3"],[9,"10.8"],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]]}}]
+    **/
     plugins.register('/o/compare/apps', function(ob) {
         var params = ob.params;
 
