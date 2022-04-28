@@ -49,16 +49,33 @@ plugins.dbConnection().then(async db => {
         // Migrate messages to new data structures
         console.log('Migrating messages');
         let messages = db.collection('messages').find().stream(),
-            counter = 0;
+            counter = 0,
+            inserts = [],
+            deletes = [],
+            updates = [];
         for await (const n of messages) {
             if (n.app && !n.apps) {
+                console.log('%s is already migrated', n._id);
                 continue;
             }
-            await db.collection('messages_legacy').insertOne(n);
-            await db.collection('messages').deleteOne({_id: n._id});
-            await db.collection('messages').insertOne(Message.fromNote(new Note(n)).json);
+            deletes.push(n._id);
+            inserts.push(n);
+            updates.push(Message.fromNote(new Note(n)).json);
             counter++;
             if (counter % 100 === 0) {
+                try {
+                    await db.collection('messages_legacy').insertMany(inserts);
+                }
+                catch (e) {
+                    if (e.code !== 11000) {
+                        throw e;
+                    }
+                }
+                await db.collection('messages').deleteMany({_id: {$in: deletes}});
+                await db.collection('messages').insertMany(updates);
+                inserts = [];
+                deletes = [];
+                updates = [];
                 console.log('Migrated %d messages ...', counter);
             }
         }
@@ -78,6 +95,9 @@ plugins.dbConnection().then(async db => {
                         (a.plugins.push.a && a.plugins.push.a._id && a.plugins.push.a._id.toString() === c._id.toString()) || 
                         (a.plugins.push.h && a.plugins.push.h._id && a.plugins.push.h._id.toString() === c._id.toString()))[0];
 
+                if (!creds) {
+                    return console.error('Malformed credentials: ', c);
+                }
                 if (!app) {
                     return console.error('Illegal state: app not found for credentials %s', cid);
                 }
@@ -274,6 +294,7 @@ plugins.dbConnection().then(async db => {
         
         // Migrate jobs
         await db.collection('jobs').deleteMany({name: 'push:send'});
+        await db.collection('jobs').deleteMany({name: 'push:process'});
     }
     finally {
         db.close();
