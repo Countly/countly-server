@@ -13,12 +13,6 @@
         </template>
         <template v-slot:header-right>
             <div class="bu-level-item">
-                <!--
-                <el-button class="crash-header-button text-button" size="small" v-if="jiraIntegrationEnabled">
-                    <i class="fab fa-jira bu-mr-1"></i>
-                    <span>Create JIRA Task</span>
-                </el-button>
-                -->
                 <cly-dropdown class="bu-ml-2 crash-mark-as" ref="markDropdown" v-if="canUserUpdate">
                     <template v-slot:trigger="dropdown">
                         <cly-input-dropdown-trigger class="crash-mark-as__button text-button color-cool-gray-100"

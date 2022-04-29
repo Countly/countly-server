@@ -628,7 +628,6 @@
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
-                jiraIntegrationEnabled: countlyGlobal.plugins.includes("crashes-jira"),
                 hasUserPermission: countlyAuth.validateRead('users')
             };
         },
