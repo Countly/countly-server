@@ -1,3 +1,16 @@
+## Version 22.03.6
+
+Fixes:
+- [compare] loading state fix
+- [ui] X-axis overflow handling changes
+- [upgrade] add drill indexes
+- [upgrade] do not upgrade new users that have permission object
+
+Fixes Enterprise:
+- [attribution] added information toast when clicked show/hide button
+- [surveys] handling appearance null cases for sdk api
+- [users] add engagement score
+
 ## Version 22.03.5
 
 Fixes:
