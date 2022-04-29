@@ -417,7 +417,7 @@ countlyVue.container.registerTab("/analytics/users", {
     route: "#/analytics/users/overview",
     name: "overview",
     permission: "core",
-    title: CV.i18n('user-analytics.overview-title'),
+    title: 'user-analytics.overview-title',
     component: UserAnalyticsOverview,
     vuex: []
 });
