@@ -30,6 +30,10 @@ jobs:
       - name: Installing Countly
         shell: bash
         run: npm install
+        
+      - name: Enabling plugins
+        shell: bash
+        run: cp "./plugins/plugins.default.json" "./plugins/plugins.json"
               
       - name: ShellCheck
         shell: bash
