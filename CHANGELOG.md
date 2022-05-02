@@ -1,3 +1,32 @@
+## Version 22.03.6
+
+Fixes:
+- [compare] loading state fix
+- [ui] X-axis overflow handling changes
+- [upgrade] add drill indexes
+- [upgrade] do not upgrade new users that have permission object
+
+Fixes Enterprise:
+- [attribution] added information toast when clicked show/hide button
+- [surveys] handling appearance null cases for sdk api
+- [users] add engagement score
+
+## Version 22.03.5
+
+Fixes:
+
+- [core] Fixing logging issues
+- [crashes] Fixed app_version filter
+- [dashboards] Add dashboard name to audit logs when widget deleted
+- [dashboards] Show that app is deleted in widgets if app was deleted
+- [docker] Fixed dependency for HTML PDF on centos images
+- [grunt] Fixed production mode
+- [push] Destroy connection on credentials validation failure
+- [push] Fixing change streams in sender until driver update
+- [push] Longer muticasts
+- [push] Self signed proxy certificate support
+- [star-rating] Added custom rating symbol support
+
 ## Version 22.03.4
 
 Fixes:

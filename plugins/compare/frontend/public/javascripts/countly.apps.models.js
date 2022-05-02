@@ -128,6 +128,8 @@
                             context.commit("setLineChartData", countlyCompareApps.helpers.getLineChartData(context, countlyCompareApps.helpers.filterSelectedApps(context.state.tableStateMap, context.state.selectedApps)));
                             context.commit('setLineLegend', countlyCompareApps.helpers.getLegendData(context, countlyCompareApps.helpers.filterSelectedApps(context.state.tableStateMap, context.state.selectedApps)));
                             context.commit("setTableRows", countlyCompareApps.helpers.getTableRows(context));
+                            context.dispatch('setTableLoading', false);
+                            context.dispatch('setChartLoading', false);
                         }
                     }).catch(function() {
                         context.dispatch('setTableLoading', false);

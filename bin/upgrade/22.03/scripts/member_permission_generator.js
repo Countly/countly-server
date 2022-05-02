@@ -62,6 +62,12 @@ pluginManager.dbConnection().then((countlyDb) => {
         }
 
         function upgrade(member, done) {
+            
+            //check if member has permission
+            if (member.permission) {
+                done();
+                return;
+            }
             var memberPermission = {
                 "c": {},
                 "r": {},

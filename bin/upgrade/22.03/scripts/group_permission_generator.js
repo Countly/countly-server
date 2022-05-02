@@ -62,6 +62,13 @@ pluginManager.dbConnection().then((countlyDb) => {
         }
 
         function upgrade(group, done) {
+            
+            //check if group has permission
+            if (group.permission) {
+                done();
+                return;
+            }
+            
             var groupPermission = {
                 "c": {},
                 "r": {},
