@@ -114,10 +114,12 @@ class Connector extends DoFinish {
             query._id = push.m;
             this.db.collection('messages').findOne(query).then(msg => {
                 if (msg) {
+                    this.log.d('sending message', push.m);
                     this.state.setMessage(msg); // only turns to app if there's one or more credentials found
                     pools.message(app._id.toString(), [msg]);
                 }
                 else {
+                    this.log.e('message not found', push.m);
                     this.state.discardMessage(push.m);
                 }
                 this.do_transform(push, encoding, callback);

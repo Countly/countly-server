@@ -811,21 +811,25 @@ class APN extends Base {
             method: 'CONNECT',
             path: host + ':' + port,
             headers: { host },
+            rejectUnauthorized: this._options.proxy.auth,
         };
 
         if (this._options.proxy.user && this._options.proxy.pass) {
             reqopts.headers['Proxy-Authorization'] = 'Basic ' + Buffer.from(this._options.proxy.user + ':' + this._options.proxy.pass).toString('base64');
         }
 
+        this.log.d('Connecting to proxy');
         let req = http.request(reqopts);
 
         req.on('connect', (res, socket) => {
             this.log.d('connected to proxy');
             this.sessionOptions.createConnection = () => {
+                this.log.d('Creating proxied connection to APN');
                 return tls.connect({
                     host,
                     port,
                     socket: socket,
+                    rejectUnauthorized: this._options.proxy.auth,
                     ALPNProtocols: ['h2']
                 });
             };

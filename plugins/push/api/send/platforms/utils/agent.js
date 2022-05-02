@@ -34,6 +34,7 @@ class ProxyAgent extends https.Agent {
         let reqopts = {
             host: this.proxy.host,
             port: this.proxy.port,
+            rejectUnauthorized: this.proxy.auth,
             method: 'CONNECT',
             path: opts.host + ':' + opts.port,
             headers: {
@@ -51,6 +52,7 @@ class ProxyAgent extends https.Agent {
             log.d('connected');
             var cts = tls.connect({
                 host: opts.host,
+                rejectUnauthorized: reqopts.rejectUnauthorized,
                 socket: socket
             }, function() {
                 log.d('TLS callback');
@@ -121,6 +123,9 @@ class ProxyAgent extends https.Agent {
         this.createConnection(options, function(err, s) {
             log.d('socket created');
             if (err) {
+                if (!err.message) {
+                    err = new Error(err);
+                }
                 err.message += ' while connecting to HTTP(S) proxy server ' + self.proxy.host + ':' + self.proxy.port;
 
                 if (req) {

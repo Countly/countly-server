@@ -14,7 +14,7 @@ const { DoFinish } = require('./do_finish'),
  * @param {int} time_out timeout in ms
  * @returns {object} multicast object with some control functions
  */
-function multicast(log, frame, payload, recipients, callback, time_out = 120000) {
+function multicast(log, frame, payload, recipients, callback, time_out = 300000) {
     let timeout = setTimeout(function() {
             log.e('multicast timeout %s', FRAME_NAME[frame]);
             for (let id in listeners) {

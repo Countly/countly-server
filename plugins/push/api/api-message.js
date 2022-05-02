@@ -803,7 +803,8 @@ function mimeInfo(url, method = 'HEAD') {
             let opts = {
                 host: conf.proxyhost,
                 method: 'CONNECT',
-                path: url.hostname + ':' + (url.port ? url.port : (protocol === 'https' ? 443 : 80))
+                path: url.hostname + ':' + (url.port ? url.port : (protocol === 'https' ? 443 : 80)),
+                rejectUnauthorized: !(conf.proxyunauthorized || false),
             };
             if (conf.proxyport) {
                 opts.port = conf.proxyport;
@@ -820,7 +821,8 @@ function mimeInfo(url, method = 'HEAD') {
                         opts = {
                             method,
                             agent: false,
-                            socket
+                            socket,
+                            rejectUnauthorized: !(conf.proxyunauthorized || false),
                         };
 
                         let req = require(protocol).request(url, opts, res2 => {

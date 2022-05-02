@@ -288,6 +288,7 @@ class Resultor extends DoFinish {
                     m.state = state;
                     m.status = status;
                     if (status === Status.Sent || status === Status.Failed) {
+                        this.log.i('done sending message', m.id, state, status);
                         m.info.finished = new Date();
                     }
                     if (error) {

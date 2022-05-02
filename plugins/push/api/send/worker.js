@@ -4,6 +4,7 @@ const {Worker, isMainThread, parentPort, workerData} = require('worker_threads')
     Measurement = require('./measure'),
     { PushError } = require('./data/error'),
     { Creds } = require('./data/creds'),
+    plugins = require('../../../pluginManager'),
     logger = require('../../../../api/utils/log.js');
 
 /**
@@ -42,7 +43,7 @@ if (isMainThread) {
             this.out = new Measurement();
             this.processing = 0;
             this.bytes = opts.cfg.pool.bytes;
-            this.worker = new Worker(__filename, {workerData: {json: JSON.stringify(opts)}});
+            this.worker = new Worker(__filename, {workerData: {json: JSON.stringify(Object.assign(opts, {logs: plugins.getConfig('logs')}))}});
             this.worker.unref();
             this.log = logger(opts.log).sub(`wrk-m`);
             this.init = new Promise((res, rej) => {
@@ -172,9 +173,9 @@ if (isMainThread) {
          * @param {function} callback called when the frame is fully processed
          */
         _writev(chunks, callback) {
-            this.log.d('Writing %d chunks to the worker thread', chunks.length);
+            this.log.d('Writing %d chunks to worker thread', chunks.length);
             this.log.f('i', log => {
-                log('Load %s in %d/%d/%d out %d/%d/%d', this.load.toFixed(2), this.in.avg(5), this.in.avg(30), this.in.avg(60), this.out.avg(5), this.out.avg(30), this.out.avg(60));
+                log('Load %s in %s/%s/%s out %s/%s/%s', this.load.toFixed(2), this.in.avg(5), this.in.avg(30), this.in.avg(60), this.out.avg(5), this.out.avg(30), this.out.avg(60));
             });
             chunks.forEach(chunk => {
                 let c = chunk.chunk,
@@ -252,8 +253,10 @@ if (isMainThread) {
 else {
     let processing = 0;
 
-    const {id: wrkid, log: logid, type, creds, messages, cfg} = JSON.parse(workerData.json),
-        id = `wrk-${wrkid}-w`,
+    const {id: wrkid, log: logid, type, creds, messages, cfg, logs} = JSON.parse(workerData.json);
+    logger.ipcHandler({cmd: 'log', config: logs});
+
+    const id = `wrk-${wrkid}-w`,
         connection = factory(logid, type, creds, messages, cfg),
         log = logger(logid).sub(id),
         post = function(frame, payload, length = 0) {

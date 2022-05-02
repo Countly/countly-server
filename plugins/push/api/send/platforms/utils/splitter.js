@@ -131,7 +131,6 @@ class Splitter extends Base {
                 }
                 continue;
             }
-            console.log(frame, length, payload);
 
             if (payload.length === 1) {
                 await this.send(payload, length);
