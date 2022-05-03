@@ -129,6 +129,14 @@ jobs:
         shell: bash
         run: sleep 100
         
+      - name: Change directory
+        shell: bash
+        run: cd /opt/countly
+        
+      - name: NPM install
+        shell: bash
+        run: npm install
+        
       - name: Tests
         shell: bash
         run: npx grunt mochaTest
