@@ -106,3 +106,21 @@ jobs:
           payload: "{\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+  test-docker:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: countly/countly-server:latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      
+      - name: Wait for process
+        shell: bash
+        run: until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
+        
+      - name: Tests
+        shell: bash
+        run: sudo countly test
