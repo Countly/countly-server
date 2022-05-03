@@ -121,6 +121,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
       - uses: actions/checkout@v2
         
+      - name: Starting process
+        shell: bash
+        run: /sbin/my_init &
+        
+      - name: Wait
+        shell: bash
+        run: sleep 100
+        
       - name: Tests
         shell: bash
-        run: sudo countly test
+        run: npx grunt mochaTest
