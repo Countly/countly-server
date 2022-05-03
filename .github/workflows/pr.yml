@@ -135,7 +135,7 @@ jobs:
         
       - name: NPM install
         shell: bash
-        run: npm install
+        run: npm install grunt
         
       - name: Tests
         shell: bash
