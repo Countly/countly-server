@@ -120,10 +120,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
-      - name: Wait for process
-        shell: bash
-        run: until mongo localhost --eval "db.stats()" | grep "collections"; do echo Waiting for MongoDB; sleep 1; done
         
       - name: Tests
         shell: bash
