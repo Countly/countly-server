@@ -74,7 +74,7 @@ jobs:
         
       - name: Wait for process
         shell: bash
-        run: until nc -z localhost 3001; do echo Waiting for Countly; sleep 1; done
+        run: until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
         
       - name: Tests
         shell: bash
