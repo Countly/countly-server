@@ -135,7 +135,7 @@ jobs:
         
       - name: Check modules
         shell: bash
-        run: ls node_modules/
+        run: ls -l
         
       - name: NPM install
         shell: bash
