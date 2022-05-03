@@ -8,7 +8,5 @@ countly config "drill.record_meta" "true"
 
 countly restart
 
-#install test dependencies
-( cd "$DIR/../../../" ; sudo npm install --unsafe-perm )
 #run tests
 ( cd "$DIR/../../../" ; npm test )
