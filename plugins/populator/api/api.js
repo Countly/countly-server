@@ -189,37 +189,178 @@ const FEATURE_NAME = 'populator';
         return true;
     });
 
-    /*
-     * @apiName: CreatePopulatorTemplate
-     * @type: GET
-     * @apiDescription: Create populator template
-     * @apiParam: 'name', Name of template
-     * @apiParam: 'isDefault', is this template default?
-     * @apiParam: 'up', Optional template properties object
-     * @apiParam: 'events', Optional template events object
-     */
+    /**
+     * @api {get} /i/populator/templates/create
+     * @apiName createTemplate
+     * @apiGroup DataPopulator
+     *
+     * @apiDescription Create populator template.
+     * @apiQuery {String} name, Name of template
+     * @apiQuery {String} isDefault, Is this template default?
+     * @apiQuery {String} up, Optional template properties object
+     * @apiQuery {String} events, Optional template events object
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {
+     *     "_id": "62276669fe2ba9c65d1a3d04",
+     *     "name": "Custom Template",
+     *     "isDefault": false,
+     *     "up": {
+     *         "prop1": [
+     *         "value of prop1"
+     *         ]
+     *     },
+     *     "events": {
+     *         "event1": [
+     *         {
+     *             "segments": {
+     *             "s1": [
+     *                 "value of s1"
+     *             ]
+     *             }
+     *         }
+     *         ]
+     *     }
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+    */
     plugins.register("/i/populator/templates/create", createTemplate);
 
-    /*
-     * @apiName: RemovePopulatorTemplate
-     * @type: GET
-     * @apiDescription: Remove populator templlate
-     * @apiParam: 'template_id', Id of template which will be removed
-     */
+    /**
+     * @api {get} /i/populator/templates/remove
+     * @apiName RemovePopulatorTemplate
+     * @apiGroup DataPopulator
+     *
+     * @apiDescription Remove populator template
+     * @apiQuery {String} template_id, Id of template which will be removed
+     * @apiQuery {String} app_id, App id of related application
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {
+     *    "result": "Success"
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+    */
     plugins.register("/i/populator/templates/remove", removeTemplate);
 
-    /*
-     * @apiName: EditPopulatorTemplate
-     * @type: GET
-     * @apiDescription: Edit populator template
-     * @apiParam: 'name', Name of template
-     * @apiParam: 'isDefault', is this template default?
-     * @apiParam: 'up', Optional template properties object
-     * @apiParam: 'events', Optional template events object
-     */
+    /**
+     * @api {get} /i/populator/templates/edit
+     * @apiName EditPopulatorTemplate
+     * @apiGroup DataPopulator
+     *
+     * @apiDescription Edit populator template
+     * @apiQuery {String} name, Name of template
+     * @apiQuery {String} isDefault, Is this template default?
+     * @apiQuery {String} up, Optional template properties object
+     * @apiQuery {String} events, Optional template events object
+     * @apiQuery {String} template_id, Id of template which will be removed
+     * @apiQuery {String} app_id, App id of related application
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {
+     *    "result": "Success"
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+    */
     plugins.register("/i/populator/templates/edit", editTemplate);
 
-
+    /**
+     * @api {get} /i/populator/templates
+     * @apiName getTemplate
+     * @apiGroup DataPopulator
+     *
+     * @apiDescription Lists custom templates
+     * @apiQuery {String} app_id, App id of related application
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * [
+     *     {
+     *         "_id": "621f79b147ec9834a4d5ec54",
+     *         "name": "Test Template",
+     *         "isDefault": false,
+     *         "events": {
+     *         "event": [
+     *             {
+     *             "segments": {
+     *                 "s1": [
+     *                 "segment value_1"
+     *                 ]
+     *             }
+     *             }
+     *         ],
+     *         "event2": [
+     *             {
+     *             "segments": {
+     *                 "s2": [
+     *                 "segment value_2"
+     *                 ]
+     *             }
+     *             }
+     *         ],
+     *         "event3": [
+     *             {
+     *             "segments": {
+     *                 "s3": [
+     *                 "segment value_3"
+     *                 ]
+     *             }
+     *             }
+     *         ]
+     *         },
+     *         "lastEditedBy": "Pınar Genç"
+     *     },
+     *     {
+     *         "_id": "621f8871f3c2b2349da8ed39",
+     *         "name": "Custom Test Template",
+     *         "isDefault": false,
+     *         "events": {
+     *              "event1": [
+     *                  {
+     *                  "segments": {
+     *                      "s1": [
+     *                      "v1"
+     *                      ]
+     *                  }
+     *                  }
+     *              ],
+     *              "event2": [
+     *                  {
+     *                  "segments": {
+     *                      "s2": [
+     *                      "v2"
+     *                      ]
+     *                  }
+     *                  }
+     *              ]
+     *         }
+     *     },
+     * ]
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter "api_key" or "auth_token""
+     * }
+    */
     plugins.register('/o/populator/templates', function(ob) {
         const obParams = ob.params;
         const query = {};
