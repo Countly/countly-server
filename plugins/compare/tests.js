@@ -73,5 +73,4 @@ describe('Testing Compare Plugin', function() {
             });
         });
     });
-
-}); 
+});
