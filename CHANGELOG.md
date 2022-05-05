@@ -1,3 +1,8 @@
+## Version 21.11.4
+
+Fixes:
+- [members] Secure password reset token generation
+
 ## Version 21.11.3
 
 Eneterprise Fixes:
