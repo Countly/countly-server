@@ -1890,6 +1890,48 @@ const processRequest = (params) => {
             }
             case '/i/token': {
                 switch (paths[3]) {
+                /**
+                 * @api {get} /i/token/delete
+                 * @apiName deleteToken
+                 * @apiGroup TokenManager
+                 *
+                 * @apiDescription Deletes related token that given id
+                 * @apiQuery {String} tokenid, Token id to be deleted
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *    "result": {
+                 *      "result": {
+                 *       "n": 1,
+                 *       "ok": 1
+                 *       },
+                 *       "connection": {
+                 *       "_events": {},
+                 *       "_eventsCount": 4,
+                 *       "id": 4,
+                 *       "address": "127.0.0.1:27017",
+                 *       "bson": {},
+                 *       "socketTimeout": 999999999,
+                 *       "host": "localhost",
+                 *       "port": 27017,
+                 *       "monitorCommands": false,
+                 *       "closed": false,
+                 *       "destroyed": false,
+                 *       "lastIsMasterMS": 15
+                 *       },
+                 *       "deletedCount": 1,
+                 *       "n": 1,
+                 *       "ok": 1
+                 *     }
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *    "result": "Token id not provided"
+                 * }
+                */
                 case 'delete':
                     validateUser(() => {
                         if (params.qstring.tokenid) {
@@ -1910,6 +1952,32 @@ const processRequest = (params) => {
                         }
                     }, params);
                     break;
+                /**
+                 * @api {get} /i/token/create
+                 * @apiName createToken
+                 * @apiGroup TokenManager
+                 *
+                 * @apiDescription Creates spesific token
+                 * @apiQuery {String} purpose, Purpose is description of the created token
+                 * @apiQuery {Array} endpointquery, Includes "params" and  "endpoint" inside
+                 * {"params":{qString Key: qString Val}
+                 * "endpoint": "_endpointAdress"
+                 * @apiQuery {Boolean} multi, Defines availability multiple times
+                 * @apiQuery {Boolean} apps, App Id of selected application
+                 * @apiQuery {Boolean} ttl, expiration time for token
+                 * 
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *    "result": "0e1c012f855e7065e779b57a616792fb5bd03834"
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter "api_key" or "auth_token""
+                 * }
+                */
                 case 'create':
                     validateUser(params, () => {
                         let ttl, multi, endpoint, purpose, apps;
@@ -1998,6 +2066,51 @@ const processRequest = (params) => {
                         });
                     });
                     break;
+                /**
+                 * @api {get} /o/token/list
+                 * @apiName initialize
+                 * @apiGroup TokenManager
+                 *
+                 * @apiDescription Returns active tokens as an array that uses tokens in order to protect the API key
+                 * @apiQuery {String} app_id, App Id of related application or {String} auth_token
+                 * 
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *    "result": [
+                 *        {
+                 *        "_id": "884803f9e9eda51f5dbbb45ba91fa7e2b1dbbf4b",
+                 *        "ttl": 0,
+                 *        "ends": 1650466609,
+                 *        "multi": false,
+                 *        "owner": "60e42efa5c23ee7ec6259af0",
+                 *        "app": "",
+                 *        "endpoint": [
+                 *            
+                 *        ],
+                 *        "purpose": "Test Token",
+                 *        "temporary": false
+                 *        },
+                 *        {
+                 *        "_id": "08976f4a2037d39a9e8a7ada8afe1707769b7878",
+                 *        "ttl": 1,
+                 *        "ends": 1650632001,
+                 *        "multi": true,
+                 *        "owner": "60e42efa5c23ee7ec6259af0",
+                 *        "app": "",
+                 *        "endpoint": "",
+                 *        "purpose": "LoggedInAuth",
+                 *        "temporary": false
+                 *        }
+                 *    ]
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter "api_key" or "auth_token""
+                 * }
+                */
                 case 'list':
                     validateUser(params, function() {
                         common.db.collection("auth_tokens").find({"owner": params.member._id + ""}).toArray(function(err, res) {
