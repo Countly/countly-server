@@ -19,9 +19,6 @@ plugins.dbConnection().then(async db => {
             {name: 'main', key: {_id: 1, m: 1, p: 1, f: 1}},
         ]).catch(() => {});
     });
-    await db.createCollection('messages_legacy').catch(() => {
-        console.log('messages_legacy collection already exists');
-    });
 
     try {
         let colls = (await db.collections()).map(c => c.collectionName),
@@ -47,22 +44,56 @@ plugins.dbConnection().then(async db => {
         await new Promise(res => setTimeout(res, 1000));
 
         // Migrate messages to new data structures
-        console.log('Migrating messages');
-        let messages = db.collection('messages').find().stream(),
-            counter = 0;
-        for await (const n of messages) {
-            if (n.app && !n.apps) {
-                continue;
+        // 1. No legacy => migrate all, filterOut = []
+        // 2. Some legacy => filterOut = messages ids
+        // 3. More messages than legacy => do nothing
+        let messageIds = await db.collection('messages').find({}, {_id: 1}).toArray(),
+            legacyCount = await db.collection('messages_legacy').count(),
+            filterOut = false,
+            migrateMessages = true;
+        
+        if (legacyCount) {
+            if (messageIds.length >= legacyCount) {
+                migrateMessages = false; // already migrated
             }
-            await db.collection('messages_legacy').insertOne(n);
-            await db.collection('messages').deleteOne({_id: n._id});
-            await db.collection('messages').insertOne(Message.fromNote(new Note(n)).json);
-            counter++;
-            if (counter % 100 === 0) {
-                console.log('Migrated %d messages ...', counter);
+            else {
+                filterOut = messageIds.map(m => m._id); // partially migrated
             }
         }
-        console.log('Migrated %d messages ... DONE', counter);
+        else if (!messageIds.length) {
+            migrateMessages = false; // no messages at all
+        }
+        
+        if (migrateMessages) {
+            console.log('Migrating messages...');
+            if (filterOut.length) {
+                console.log('Migrating messages... %d already migrated', filterOut.length);
+            }
+            if (!legacyCount) {
+                try {
+                    await db.collection('messages').rename('messages_legacy');
+                    console.log('Migrating messages... renamed messages collection');
+                }
+                catch (e) {
+                    console.error('Error while renaming messages to messages_legacy', e);
+                }
+            }
+    
+            let messages = db.collection('messages_legacy').find(filterOut ? {_id: {$nin: filterOut}} : {}).batchSize(1000).stream(),
+                insert = Message.batchInsert(1000);
+            for await (const n of messages) {
+                if (n.app && !n.apps) {
+                    console.log('%s is already migrated', n._id);
+                    continue;
+                }
+                if (insert.pushSync(Message.fromNote(new Note(n)).json)) {
+                    await insert.flush();
+                    console.log('Migrating messages... %d / %d', insert.total, legacyCount);
+                }
+            }
+            await insert.flush();
+            console.log('Migrating messages... DONE', insert.total);
+        }
 
         // Migrate credentials
         console.log('Migrating %d out of %d credentials', credentialsInApps.length, credentials.length);
@@ -78,6 +109,9 @@ plugins.dbConnection().then(async db => {
                         (a.plugins.push.a && a.plugins.push.a._id && a.plugins.push.a._id.toString() === c._id.toString()) || 
                         (a.plugins.push.h && a.plugins.push.h._id && a.plugins.push.h._id.toString() === c._id.toString()))[0];
 
+                if (!creds) {
+                    return console.error('Malformed credentials: ', c);
+                }
                 if (!app) {
                     return console.error('Illegal state: app not found for credentials %s', cid);
                 }
@@ -274,6 +308,7 @@ plugins.dbConnection().then(async db => {
         
         // Migrate jobs
         await db.collection('jobs').deleteMany({name: 'push:send'});
+        await db.collection('jobs').deleteMany({name: 'push:process'});
     }
     finally {
         db.close();

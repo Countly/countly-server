@@ -1308,9 +1308,7 @@
                 if (dto.result.subs && dto.result.subs[PlatformDtoEnum.IOS]) {
                     model[PlatformEnum.IOS] = this.mapIosDashboard(dto);
                 }
-                if (model[PlatformEnum.ANDROID] && model[PlatformEnum.IOS]) {
-                    model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
-                }
+                model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
                 return model;
             },
             mapDtoToBaseModel: function(dto) {
@@ -2656,7 +2654,7 @@
                 filterOptions.push({label: CV.i18n("push-notification.platform-filter-android"), value: countlyPushNotification.service.PlatformEnum.ANDROID});
                 state.platformFilter = PlatformEnum.ANDROID;
             }
-            if (value.dashboard[PlatformEnum.IOS] && value.dashboard[PlatformEnum.ALL]) {
+            if (value.dashboard[PlatformEnum.ALL]) {
                 filterOptions.push({label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL});
                 state.platformFilter = PlatformEnum.ALL;
             }

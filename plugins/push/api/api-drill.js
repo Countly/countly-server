@@ -136,7 +136,7 @@ module.exports.drillPreprocessQuery = ({query, params}) => {
                     });
                 }
                 catch (e) {
-                    console.log(e);
+                    log.e(e);
                     rej(e);
                 }
             });
