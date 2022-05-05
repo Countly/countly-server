@@ -782,7 +782,7 @@ membersUtility.forgot = function(req, callback) {
         membersUtility.db.collection('members').findOne({"email": email}, function(err, member) {
             if (member) {
                 var timestamp = Math.round(new Date().getTime() / 1000),
-                    prid = sha512Hash(member.username + member.full_name, timestamp);
+                    prid = crypto.randomBytes(32).toString('hex');
                 member.lang = member.lang || req.body.lang || "en";
                 membersUtility.db.collection('password_reset').insert({"prid": prid, "user_id": member._id, "timestamp": timestamp}, {safe: true}, function() {
                     countlyMail.sendPasswordResetInfo(member, prid);
