@@ -1,3 +1,17 @@
+## Version 22.03.7
+
+Fixes:
+- [compare] Adding tests
+- [members] Secure password reset token generation
+- [push] Allowing no platform results for migrated messages
+- [push] Migrating messages in batches
+- [remote-config] Fix for percentage bars
+- [upgrade] Remove even more files
+- [views] Fix view regeneration
+
+Enterprise fixes:
+- [flows] ui fix
+
 ## Version 22.03.6
 
 Fixes:
