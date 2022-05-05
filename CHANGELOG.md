@@ -116,6 +116,11 @@ Fixes:
 - [scripts] fixed Compiler Version for 22.03 upgrade and installation
 - [upgrade] remove old files
 
+## Version 21.11.4
+
+Fixes:
+- [members] Secure password reset token generation
+
 ## Version 21.11.3
 
 Eneterprise Fixes:
