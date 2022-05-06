@@ -65,7 +65,6 @@
         });
     };
 
-
     countlyTokenManager.deleteToken = function(id, callback) {
         return $.ajax({
             type: "GET",
