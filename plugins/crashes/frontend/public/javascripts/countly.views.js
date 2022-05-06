@@ -3,50 +3,64 @@
 
 (function() {
     var groupId, crashId;
-    var FEATURE_NAME = 'crashes';
+    var FEATURE_NAME = "crashes";
 
     var CrashStatisticsTabLabelView = countlyVue.views.create({
         props: {
-            title: {type: String},
-            tooltip: {type: String},
-            data: {type: Object},
-            negateTrend: {type: Boolean, default: false}
+            title: { type: String },
+            tooltip: { type: String },
+            data: { type: Object },
+            negateTrend: { type: Boolean, default: false },
         },
         computed: {
             colorClass: function() {
-                if (typeof this.$props.data !== "undefined" && this.$props.data.trend === "n") {
+                if (
+                    typeof this.$props.data !== "undefined" &&
+                    this.$props.data.trend === "n"
+                ) {
                     return "neutral";
                 }
                 else {
-                    return (typeof this.$props.data !== "undefined" && (this.$props.negateTrend ^ this.$props.data.trend === "u") ? "up" : "down");
+                    return typeof this.$props.data !== "undefined" &&
+                        this.$props.negateTrend ^
+                            (this.$props.data.trend === "u")
+                        ? "up"
+                        : "down";
                 }
             },
             iconClass: function() {
-                if (typeof this.$props.data !== "undefined" && this.$props.data.trend === "n") {
+                if (
+                    typeof this.$props.data !== "undefined" &&
+                    this.$props.data.trend === "n"
+                ) {
                     return "minus-round";
                 }
                 else {
-                    return ((typeof this.$props.data !== "undefined" && this.$props.data.trend === "u") ? "arrow-up-c" : "arrow-down-c");
+                    return typeof this.$props.data !== "undefined" &&
+                        this.$props.data.trend === "u"
+                        ? "arrow-up-c"
+                        : "arrow-down-c";
                 }
-
-            }
+            },
         },
-        template: countlyVue.T("/crashes/templates/tab-label.html")
+        template: countlyVue.T("/crashes/templates/tab-label.html"),
     });
 
     var CrashBadgeView = countlyVue.views.create({
         props: {
-            type: {type: String, default: "info"},
+            type: { type: String, default: "info" },
         },
-        template: '<span class="bu-tag text-uppercase crash-badge" :class="\'crash-badge--\' + $props.type"><slot></slot></span>'
+        template:
+            '<span class="bu-tag text-uppercase crash-badge" :class="\'crash-badge--\' + $props.type"><slot></slot></span>',
     });
 
     var CrashOverviewView = countlyVue.views.create({
         template: "#crashes-overview",
-        components: {"crash-tab-label": CrashStatisticsTabLabelView, "crash-badge": CrashBadgeView},
-        mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
-        ],
+        components: {
+            "crash-tab-label": CrashStatisticsTabLabelView,
+            "crash-badge": CrashBadgeView,
+        },
+        mixins: [countlyVue.mixins.auth(FEATURE_NAME)],
         data: function() {
             var filterProperties = [];
             if (window.countlyQueryBuilder) {
@@ -58,10 +72,10 @@
                         group: "Main",
                         getValueList: function() {
                             return [
-                                {name: "Fatal", value: false},
-                                {name: "Non-fatal", value: true}
+                                { name: "Fatal", value: false },
+                                { name: "Non-fatal", value: true },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_hidden",
@@ -70,10 +84,10 @@
                         group: "Main",
                         getValueList: function() {
                             return [
-                                {name: "Hidden", value: true},
-                                {name: "Shown", value: false}
+                                { name: "Hidden", value: true },
+                                { name: "Shown", value: false },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_new",
@@ -82,10 +96,20 @@
                         group: "Main",
                         getValueList: function() {
                             return [
-                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: false},
-                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: true}
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-true"
+                                    ),
+                                    value: false,
+                                },
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-false"
+                                    ),
+                                    value: true,
+                                },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_renewed",
@@ -94,10 +118,20 @@
                         group: "Main",
                         getValueList: function() {
                             return [
-                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: true},
-                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: false}
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-true"
+                                    ),
+                                    value: true,
+                                },
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-false"
+                                    ),
+                                    value: false,
+                                },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_resolved",
@@ -106,10 +140,20 @@
                         group: "Main",
                         getValueList: function() {
                             return [
-                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: true},
-                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: false}
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-true"
+                                    ),
+                                    value: true,
+                                },
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-false"
+                                    ),
+                                    value: false,
+                                },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_resolving",
@@ -118,10 +162,20 @@
                         group: "Main",
                         getValueList: function() {
                             return [
-                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: true},
-                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: false}
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-true"
+                                    ),
+                                    value: true,
+                                },
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-false"
+                                    ),
+                                    value: false,
+                                },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "error",
@@ -172,10 +226,20 @@
                         group: "Detail",
                         getValueList: function() {
                             return [
-                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
-                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-true"
+                                    ),
+                                    value: "yes",
+                                },
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-false"
+                                    ),
+                                    value: "no",
+                                },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "online",
@@ -184,10 +248,20 @@
                         group: "Detail",
                         getValueList: function() {
                             return [
-                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
-                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-true"
+                                    ),
+                                    value: "yes",
+                                },
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-false"
+                                    ),
+                                    value: "no",
+                                },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "root",
@@ -196,10 +270,20 @@
                         group: "Detail",
                         getValueList: function() {
                             return [
-                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
-                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-true"
+                                    ),
+                                    value: "yes",
+                                },
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-false"
+                                    ),
+                                    value: "no",
+                                },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "signal",
@@ -208,10 +292,20 @@
                         group: "Detail",
                         getValueList: function() {
                             return [
-                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
-                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-true"
+                                    ),
+                                    value: "yes",
+                                },
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-false"
+                                    ),
+                                    value: "no",
+                                },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "muted",
@@ -220,10 +314,20 @@
                         group: "Detail",
                         getValueList: function() {
                             return [
-                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
-                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-true"
+                                    ),
+                                    value: "yes",
+                                },
+                                {
+                                    name: jQuery.i18n.prop(
+                                        "drill.opr.is-set-false"
+                                    ),
+                                    value: "no",
+                                },
                             ];
-                        }
+                        },
                     }),
                     new countlyQueryBuilder.Property({
                         id: "os_version",
@@ -282,14 +386,27 @@
                 );
             }
 
-            if (countlyAuth.validateRead('drill') && typeof countlyDrillMeta !== "undefined") {
+            if (
+                countlyAuth.validateRead("drill") &&
+                typeof countlyDrillMeta !== "undefined"
+            ) {
                 var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
                 var getFilterValues = function(segmentationKey) {
                     return function() {
-                        return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
-                            var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
-                            return {name: name, value: value};
-                        });
+                        return crashMeta
+                            .getFilterValues("sg." + segmentationKey)
+                            .map(function(value) {
+                                var name =
+                                    segmentationKey === "orientation"
+                                        ? jQuery.i18n.prop(
+                                            "crashes.filter." +
+                                                  segmentationKey +
+                                                  "." +
+                                                  value
+                                        )
+                                        : value;
+                                return { name: name, value: value };
+                            });
                     };
                 };
 
@@ -300,35 +417,35 @@
                             name: "App Version",
                             type: countlyQueryBuilder.PropertyType.LIST,
                             group: "Detail",
-                            getValueList: getFilterValues("app_version")
+                            getValueList: getFilterValues("app_version"),
                         });
                         filterProperties.push({
                             id: "opengl",
                             name: "OpenGL Version",
                             type: countlyQueryBuilder.PropertyType.LIST,
                             group: "Detail",
-                            getValueList: getFilterValues("opengl")
+                            getValueList: getFilterValues("opengl"),
                         });
                         filterProperties.push({
                             id: "orientation",
                             name: "Orientation",
                             type: countlyQueryBuilder.PropertyType.LIST,
                             group: "Detail",
-                            getValueList: getFilterValues("orientation")
+                            getValueList: getFilterValues("orientation"),
                         });
                         filterProperties.push({
                             id: "os",
                             name: "Platform",
                             type: countlyQueryBuilder.PropertyType.LIST,
                             group: "Detail",
-                            getValueList: getFilterValues("os")
+                            getValueList: getFilterValues("os"),
                         });
                         filterProperties.push({
                             id: "cpu",
                             name: "CPU",
                             type: countlyQueryBuilder.PropertyType.LIST,
                             group: "Detail",
-                            getValueList: getFilterValues("cpu")
+                            getValueList: getFilterValues("cpu"),
                         });
                     }
                 });
@@ -336,187 +453,270 @@
 
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
-                currentTab: (this.$route.params && this.$route.params.tab) || "crash-groups",
+                currentTab:
+                    (this.$route.params && this.$route.params.tab) ||
+                    "crash-groups",
                 statisticsGraphTab: "total-occurrences",
                 selectedCrashgroups: [],
-                tablePersistKey: 'crashGroupsTable_' + countlyCommon.ACTIVE_APP_ID,
-                tableDynamicCols: [{
-                    value: "os",
-                    label: CV.i18n('crashes.platform'),
-                    required: true
-                },
-                {
-                    value: "reports",
-                    label: CV.i18n('crashes.reports'),
-                    default: true
-                },
-                {
-                    value: "lastTs",
-                    label: CV.i18n('crashes.last_time'),
-                    default: true
-                },
-                {
-                    value: "users",
-                    label: CV.i18n('crashes.affected-users'),
-                    default: true
-                },
-                {
-                    value: "latest_version",
-                    label: CV.i18n('crashes.latest_app'),
-                    default: true
-                }],
-                remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyCrashes", "crashgroups"),
+                tablePersistKey:
+                    "crashGroupsTable_" + countlyCommon.ACTIVE_APP_ID,
+                tableDynamicCols: [
+                    {
+                        value: "os",
+                        label: CV.i18n("crashes.platform"),
+                        required: true,
+                    },
+                    {
+                        value: "reports",
+                        label: CV.i18n("crashes.reports"),
+                        default: true,
+                    },
+                    {
+                        value: "lastTs",
+                        label: CV.i18n("crashes.last_time"),
+                        default: true,
+                    },
+                    {
+                        value: "users",
+                        label: CV.i18n("crashes.affected-users"),
+                        default: true,
+                    },
+                    {
+                        value: "latest_version",
+                        label: CV.i18n("crashes.latest_app"),
+                        default: true,
+                    },
+                ],
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(
+                    this.$store,
+                    "countlyCrashes",
+                    "crashgroups"
+                ),
                 crashgroupsFilterProperties: filterProperties,
-                crashgroupsFilterRules: (window.countlyQueryBuilder) ? [
-                    new countlyQueryBuilder.RowRule({
-                        name: "cly.crashes.no-math-ineq-for-strings",
-                        selector: function(row) {
-                            return row.property.type === countlyQueryBuilder.PropertyType.STRING;
-                        },
-                        actions: [new countlyQueryBuilder.RowAction({
-                            id: "disallowOperator",
-                            params: {
-                                selector: function(operator) {
-                                    return ["cly.>", "cly.>=", "cly.<", "cly.<="].includes(operator.id);
-                                }
-                            }
-                        })]
-                    }),
-                    new countlyQueryBuilder.RowRule({
-                        name: "cly.crashes.no-isset",
-                        selector: function() {
-                            return true;
-                        },
-                        actions: [new countlyQueryBuilder.RowAction({
-                            id: "disallowOperator",
-                            params: {
-                                selector: function(operator) {
-                                    return operator.id === "cly.isset";
-                                }
-                            }
-                        })]
-                    }),
-                    new countlyQueryBuilder.RowRule({
-                        name: "cly.crashes.no-regex",
-                        selector: function(row) {
-                            return row.property && row.property.id !== "error";
-                        },
-                        actions: [new countlyQueryBuilder.RowAction({
-                            id: "disallowOperator",
-                            params: {
-                                selector: function(operator) {
-                                    return operator.meta.regex;
-                                }
-                            }
-                        })]
-                    }),
-                    new countlyQueryBuilder.RowRule({
-                        name: "cly.crashes.single-val",
-                        selector: function(row) {
-                            return row.property && row.property.type === countlyQueryBuilder.PropertyType.LIST && row.property.getValueList && row.property.getValueList().length <= 2;
-                        },
-                        actions: [new countlyQueryBuilder.RowAction({
-                            id: "overrideValueStrategy",
-                            params: {
-                                strategy: new countlyQueryBuilder.ValueStrategy({
-                                    type: countlyQueryBuilder.ValueType.PREDEF,
-                                    getValueList: function(row) {
-                                        return row.property.getValueList();
-                                    }
+                crashgroupsFilterRules: window.countlyQueryBuilder
+                    ? [
+                        new countlyQueryBuilder.RowRule({
+                            name: "cly.crashes.no-math-ineq-for-strings",
+                            selector: function(row) {
+                                return (
+                                    row.property.type ===
+                                      countlyQueryBuilder.PropertyType.STRING
+                                );
+                            },
+                            actions: [
+                                new countlyQueryBuilder.RowAction({
+                                    id: "disallowOperator",
+                                    params: {
+                                        selector: function(operator) {
+                                            return [
+                                                "cly.>",
+                                                "cly.>=",
+                                                "cly.<",
+                                                "cly.<=",
+                                            ].includes(operator.id);
+                                        },
+                                    },
                                 }),
-                            }
-                        })]
-                    }),
-                ] : [],
+                            ],
+                        }),
+                        new countlyQueryBuilder.RowRule({
+                            name: "cly.crashes.no-isset",
+                            selector: function() {
+                                return true;
+                            },
+                            actions: [
+                                new countlyQueryBuilder.RowAction({
+                                    id: "disallowOperator",
+                                    params: {
+                                        selector: function(operator) {
+                                            return (
+                                                operator.id === "cly.isset"
+                                            );
+                                        },
+                                    },
+                                }),
+                            ],
+                        }),
+                        new countlyQueryBuilder.RowRule({
+                            name: "cly.crashes.no-regex",
+                            selector: function(row) {
+                                return (
+                                    row.property &&
+                                      row.property.id !== "error"
+                                );
+                            },
+                            actions: [
+                                new countlyQueryBuilder.RowAction({
+                                    id: "disallowOperator",
+                                    params: {
+                                        selector: function(operator) {
+                                            return operator.meta.regex;
+                                        },
+                                    },
+                                }),
+                            ],
+                        }),
+                        new countlyQueryBuilder.RowRule({
+                            name: "cly.crashes.single-val",
+                            selector: function(row) {
+                                return (
+                                    row.property &&
+                                      row.property.type ===
+                                          countlyQueryBuilder.PropertyType
+                                              .LIST &&
+                                      row.property.getValueList &&
+                                      row.property.getValueList().length <= 2
+                                );
+                            },
+                            actions: [
+                                new countlyQueryBuilder.RowAction({
+                                    id: "overrideValueStrategy",
+                                    params: {
+                                        strategy:
+                                              new countlyQueryBuilder.ValueStrategy(
+                                                  {
+                                                      type: countlyQueryBuilder
+                                                          .ValueType.PREDEF,
+                                                      getValueList: function(
+                                                          row
+                                                      ) {
+                                                          return row.property.getValueList();
+                                                      },
+                                                  }
+                                              ),
+                                    },
+                                }),
+                            ],
+                        }),
+                    ]
+                    : [],
                 formatDate: function(row, col, cell) {
                     return moment(cell * 1000).format("lll");
                 },
-                hasDrillPermission: countlyAuth.validateRead('drill')
+                hasDrillPermission: countlyAuth.validateRead("drill"),
             };
         },
         computed: {
             crashgroupsFilter: {
                 set: function(newValue) {
                     return Promise.all([
-                        this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue),
-                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(newValue.query)})
+                        this.$store.dispatch(
+                            "countlyCrashes/overview/setCrashgroupsFilter",
+                            newValue
+                        ),
+                        this.$store.dispatch(
+                            "countlyCrashes/pasteAndFetchCrashgroups",
+                            { query: JSON.stringify(newValue.query) }
+                        ),
                     ]);
                 },
                 get: function() {
-                    return this.$store.getters["countlyCrashes/overview/crashgroupsFilter"];
-                }
+                    return this.$store.getters[
+                        "countlyCrashes/overview/crashgroupsFilter"
+                    ];
+                },
             },
             activeFilter: {
                 set: function(newValue) {
-                    return this.$store.dispatch("countlyCrashes/overview/setActiveFilter", newValue);
+                    return this.$store.dispatch(
+                        "countlyCrashes/overview/setActiveFilter",
+                        newValue
+                    );
                 },
                 get: function() {
-                    return this.$store.getters["countlyCrashes/overview/activeFilter"];
-                }
+                    return this.$store.getters[
+                        "countlyCrashes/overview/activeFilter"
+                    ];
+                },
             },
             activeFilterFields: function() {
-                var platforms = [{value: "all", label: "All Platforms"}];
-                this.$store.getters["countlyCrashes/overview/platforms"].forEach(function(platform) {
-                    platforms.push({value: platform, label: platform});
+                var platforms = [{ value: "all", label: "All Platforms" }];
+                this.$store.getters[
+                    "countlyCrashes/overview/platforms"
+                ].forEach(function(platform) {
+                    platforms.push({ value: platform, label: platform });
                 });
 
-                var appVersions = [{value: "all", label: "All Versions"}];
-                this.$store.getters["countlyCrashes/overview/appVersions"].forEach(function(appVersion) {
-                    appVersions.push({value: appVersion, label: appVersion.replace(/:/g, ".")});
+                var appVersions = [{ value: "all", label: "All Versions" }];
+                this.$store.getters[
+                    "countlyCrashes/overview/appVersions"
+                ].forEach(function(appVersion) {
+                    appVersions.push({
+                        value: appVersion,
+                        label: appVersion.replace(/:/g, "."),
+                    });
                 });
 
                 return [
                     {
                         label: "Fatality",
                         key: "fatality",
-                        items: [{value: "both", label: "Both"}, {value: "fatal", label: "Fatal"}, {value: "nonfatal", label: "Nonfatal"}],
-                        default: "both"
+                        items: [
+                            { value: "both", label: "Both" },
+                            { value: "fatal", label: "Fatal" },
+                            { value: "nonfatal", label: "Nonfatal" },
+                        ],
+                        default: "both",
                     },
                     {
                         label: "Platforms",
                         key: "platform",
                         options: platforms,
-                        default: "all"
+                        default: "all",
                     },
                     {
                         label: "Versions",
                         key: "version",
                         items: appVersions,
-                        default: "all"
+                        default: "all",
                     },
                 ];
             },
             dashboardData: function() {
-                return this.$store.getters["countlyCrashes/overview/dashboardData"];
+                return this.$store.getters[
+                    "countlyCrashes/overview/dashboardData"
+                ];
             },
             chartData: function() {
                 return function(metric, name) {
-                    return this.$store.getters["countlyCrashes/overview/chartData"](metric, name);
+                    return this.$store.getters[
+                        "countlyCrashes/overview/chartData"
+                    ](metric, name);
                 };
             },
             statistics: function() {
-                return this.$store.getters["countlyCrashes/overview/statistics"];
+                return this.$store.getters[
+                    "countlyCrashes/overview/statistics"
+                ];
             },
             errorColumnLabel: function() {
-                var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
-                return appType === 'mobile' ? CV.i18n('crashes.crash-group') : CV.i18n('crashes.error');
+                var appType =
+                    countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+                return appType === "mobile"
+                    ? CV.i18n("crashes.crash-group")
+                    : CV.i18n("crashes.error");
             },
             isLoading: function() {
-                return this.$store.getters['countlyCrashes/overview/isLoading'];
+                return this.$store.getters["countlyCrashes/overview/isLoading"];
             },
         },
         methods: {
             refresh: function() {
                 return Promise.all([
-                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(this.crashgroupsFilter.query)}),
-                    this.$store.dispatch("countlyCrashes/overview/refresh")
+                    this.$store.dispatch(
+                        "countlyCrashes/pasteAndFetchCrashgroups",
+                        { query: JSON.stringify(this.crashgroupsFilter.query) }
+                    ),
+                    this.$store.dispatch("countlyCrashes/overview/refresh"),
                 ]);
             },
             handleRowClick: function(row) {
                 window.location.href = window.location.href + "/" + row._id;
             },
             handleSelectionChange: function(selectedRows) {
-                this.$data.selectedCrashgroups = selectedRows.map(function(row) {
+                this.$data.selectedCrashgroups = selectedRows.map(function(
+                    row
+                ) {
                     return row._id;
                 });
             },
@@ -527,155 +727,225 @@
                 var promise;
 
                 if (state === "resolved") {
-                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolved", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch(
+                        "countlyCrashes/overview/setSelectedAsResolved",
+                        this.$data.selectedCrashgroups
+                    );
                 }
                 else if (state === "resolving") {
-                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolving", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch(
+                        "countlyCrashes/overview/setSelectedAsResolving",
+                        this.$data.selectedCrashgroups
+                    );
                 }
                 else if (state === "unresolved") {
-                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsUnresolved", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch(
+                        "countlyCrashes/overview/setSelectedAsUnresolved",
+                        this.$data.selectedCrashgroups
+                    );
                 }
                 else if (state === "hide") {
-                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsHidden", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch(
+                        "countlyCrashes/overview/setSelectedAsHidden",
+                        this.$data.selectedCrashgroups
+                    );
                 }
                 else if (state === "show") {
-                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsShown", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch(
+                        "countlyCrashes/overview/setSelectedAsShown",
+                        this.$data.selectedCrashgroups
+                    );
                 }
                 else if (state === "delete") {
-                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsDeleted", this.$data.selectedCrashgroups);
+                    promise = this.$store.dispatch(
+                        "countlyCrashes/overview/setSelectedAsDeleted",
+                        this.$data.selectedCrashgroups
+                    );
                 }
 
                 if (typeof promise !== "undefined") {
                     promise.finally(function() {
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.changed"],
-                            message: jQuery.i18n.map["configs.saved"]
+                            message: jQuery.i18n.map["configs.saved"],
                         });
                     });
                 }
-            }
+            },
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/overview/refresh");
-        }
+        },
     });
 
     var getOverviewView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: CrashOverviewView,
-            vuex: [{clyModel: countlyCrashes}],
+            vuex: [{ clyModel: countlyCrashes }],
             templates: [
                 {
                     namespace: "crashes",
                     mapping: {
-                        overview: "crashes/templates/overview.html"
-                    }
+                        overview: "crashes/templates/overview.html",
+                    },
                 },
                 "/drill/templates/query.builder.v2.html",
-            ]
+            ],
         });
     };
 
     var CrashStacktraceView = countlyVue.views.create({
         props: {
-            code: {type: String, required: true}
+            code: { type: String, required: true },
         },
-        mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
-        ],
+        mixins: [countlyVue.mixins.auth(FEATURE_NAME)],
         computed: {
             hasHeaderLeft: function() {
-                return !!(this.$scopedSlots["header-left"] || this.$slots["header-left"]);
+                return !!(
+                    this.$scopedSlots["header-left"] ||
+                    this.$slots["header-left"]
+                );
             },
             hasHeaderRight: function() {
-                return !!(this.$scopedSlots["header-right"] || this.$slots["header-right"]);
+                return !!(
+                    this.$scopedSlots["header-right"] ||
+                    this.$slots["header-right"]
+                );
             },
             lineNumbers: function() {
-                return Array.apply(null, Array((this.code.match(/\n/g) || []).length + 1)).map(function(_, i) {
-                    return i + 1;
-                }).join("\n");
+                return Array.apply(
+                    null,
+                    Array((this.code.match(/\n/g) || []).length + 1)
+                )
+                    .map(function(_, i) {
+                        return i + 1;
+                    })
+                    .join("\n");
             },
             highlightedCode: function() {
-                return hljs.highlightAuto(jQuery("<div/>").html(this.code).text()).value;
-            }
+                return hljs.highlightAuto(
+                    jQuery("<div/>").html(this.code).text()
+                ).value;
+            },
         },
-        template: countlyVue.T("/crashes/templates/stacktrace.html")
+        template: countlyVue.T("/crashes/templates/stacktrace.html"),
     });
 
     var CrashgroupView = countlyVue.views.create({
         template: "#crashes-crashgroup",
-        components: {"crash-stacktrace": CrashStacktraceView, "crash-badge": CrashBadgeView},
-        mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
-        ],
+        components: {
+            "crash-stacktrace": CrashStacktraceView,
+            "crash-badge": CrashBadgeView,
+        },
+        mixins: [countlyVue.mixins.auth(FEATURE_NAME)],
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
                 authToken: countlyGlobal.auth_token,
                 chartBy: "os_version",
-                diagnosticsOrder: ["ram", "disk", "battery", "running", "sessions"],
-                eventLogsEnabled: countlyGlobal.plugins.includes("crashes-event-logs"),
+                diagnosticsOrder: [
+                    "ram",
+                    "disk",
+                    "battery",
+                    "running",
+                    "sessions",
+                ],
+                eventLogsEnabled:
+                    countlyGlobal.plugins.includes("crashes-event-logs"),
                 eventLogsBeingGenerated: [],
                 currentTab: "stacktrace",
                 commentInput: "",
                 commentBeingEdited: undefined,
                 commentStatus: undefined,
-                symbolicationEnabled: countlyGlobal.plugins.includes("crash_symbolication"),
+                symbolicationEnabled: countlyGlobal.plugins.includes(
+                    "crash_symbolication"
+                ),
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
-                jiraIntegrationEnabled: countlyGlobal.plugins.includes("crashes-jira"),
-                hasUserPermission: countlyAuth.validateRead('users')
+                jiraIntegrationEnabled:
+                    countlyGlobal.plugins.includes("crashes-jira"),
+                hasUserPermission: countlyAuth.validateRead("users"),
             };
         },
         computed: {
             crashgroup: function() {
-                return this.$store.getters["countlyCrashes/crashgroup/crashgroup"];
+                return this.$store.getters[
+                    "countlyCrashes/crashgroup/crashgroup"
+                ];
             },
             crashgroupName: function() {
-                return this.$store.getters["countlyCrashes/crashgroup/crashgroupName"];
+                return this.$store.getters[
+                    "countlyCrashes/crashgroup/crashgroupName"
+                ];
             },
             comments: function() {
-                return ("comments" in this.crashgroup) ? this.crashgroup.comments : [];
+                return "comments" in this.crashgroup
+                    ? this.crashgroup.comments
+                    : [];
             },
             commonMetrics: function() {
-                return this.$store.getters["countlyCrashes/crashgroup/commonMetrics"];
+                return this.$store.getters[
+                    "countlyCrashes/crashgroup/commonMetrics"
+                ];
             },
             mobileDiagnostics: function() {
-                return this.$store.getters["countlyCrashes/crashgroup/mobileDiagnostics"];
+                return this.$store.getters[
+                    "countlyCrashes/crashgroup/mobileDiagnostics"
+                ];
             },
             mobileMetrics: function() {
-                return this.$store.getters["countlyCrashes/crashgroup/mobileMetrics"];
+                return this.$store.getters[
+                    "countlyCrashes/crashgroup/mobileMetrics"
+                ];
             },
             chartData: function() {
-                return this.$store.getters["countlyCrashes/crashgroup/chartData"](this.$data.chartBy);
+                return this.$store.getters[
+                    "countlyCrashes/crashgroup/chartData"
+                ](this.$data.chartBy);
             },
             chartByOptions: function() {
-                return this.$store.getters["countlyCrashes/crashgroup/chartByOptions"];
+                return this.$store.getters[
+                    "countlyCrashes/crashgroup/chartByOptions"
+                ];
             },
             crashes: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/crashes"];
             },
             badges: function() {
-                return countlyCrashes.generateBadges(this.$store.getters["countlyCrashes/crashgroup/crashgroup"]);
+                return countlyCrashes.generateBadges(
+                    this.$store.getters["countlyCrashes/crashgroup/crashgroup"]
+                );
             },
             userFilter: {
                 set: function(newValue) {
-                    return this.$store.dispatch("countlyCrashes/crashgroup/setUserFilter", newValue);
+                    return this.$store.dispatch(
+                        "countlyCrashes/crashgroup/setUserFilter",
+                        newValue
+                    );
                 },
                 get: function() {
-                    return this.$store.getters["countlyCrashes/crashgroup/userFilter"];
-                }
+                    return this.$store.getters[
+                        "countlyCrashes/crashgroup/userFilter"
+                    ];
+                },
             },
             userFilterFields: function() {
-                var platforms = [{value: "all", label: "All Platforms"}];
-                this.$store.getters["countlyCrashes/crashgroup/platforms"].forEach(function(platform) {
-                    platforms.push({value: platform, label: platform});
+                var platforms = [{ value: "all", label: "All Platforms" }];
+                this.$store.getters[
+                    "countlyCrashes/crashgroup/platforms"
+                ].forEach(function(platform) {
+                    platforms.push({ value: platform, label: platform });
                 });
 
-                var appVersions = [{value: "all", label: "All Versions"}];
-                this.$store.getters["countlyCrashes/crashgroup/appVersions"].forEach(function(appVersion) {
-                    appVersions.push({value: appVersion, label: appVersion.replace(/:/g, ".")});
+                var appVersions = [{ value: "all", label: "All Versions" }];
+                this.$store.getters[
+                    "countlyCrashes/crashgroup/appVersions"
+                ].forEach(function(appVersion) {
+                    appVersions.push({
+                        value: appVersion,
+                        label: appVersion.replace(/:/g, "."),
+                    });
                 });
 
                 return [
@@ -683,23 +953,27 @@
                         label: "Platforms",
                         key: "platform",
                         options: platforms,
-                        default: "all"
+                        default: "all",
                     },
                     {
                         label: "Versions",
                         key: "version",
                         items: appVersions,
-                        default: "all"
+                        default: "all",
                     },
                 ];
             },
             isLoading: function() {
-                return this.$store.getters['countlyCrashes/crashgroup/isLoading'];
+                return this.$store.getters[
+                    "countlyCrashes/crashgroup/isLoading"
+                ];
             },
         },
         methods: {
             refresh: function() {
-                return this.$store.dispatch("countlyCrashes/crashgroup/refresh");
+                return this.$store.dispatch(
+                    "countlyCrashes/crashgroup/refresh"
+                );
             },
             handleCommentCommand: function(command, comment) {
                 if (command === "edit-comment") {
@@ -707,7 +981,10 @@
                     this.$data.commentBeingEdited = comment;
                 }
                 else if (command === "delete-comment") {
-                    this.$store.dispatch("countlyCrashes/crashgroup/deleteComment", comment._id);
+                    this.$store.dispatch(
+                        "countlyCrashes/crashgroup/deleteComment",
+                        comment._id
+                    );
                 }
             },
             stopEditingComment: function() {
@@ -717,14 +994,22 @@
             saveComment: function() {
                 var self = this;
                 if (typeof this.$data.commentBeingEdited !== "undefined") {
-                    this.$store.dispatch("countlyCrashes/crashgroup/editComment", {comment_id: this.$data.commentBeingEdited._id, text: this.$data.commentInput})
+                    this.$store
+                        .dispatch("countlyCrashes/crashgroup/editComment", {
+                            comment_id: this.$data.commentBeingEdited._id,
+                            text: this.$data.commentInput,
+                        })
                         .then(function() {
                             self.$data.commentBeingEdited = undefined;
                             self.$data.commentInput = "";
                         });
                 }
                 else {
-                    this.$store.dispatch("countlyCrashes/crashgroup/addComment", this.$data.commentInput)
+                    this.$store
+                        .dispatch(
+                            "countlyCrashes/crashgroup/addComment",
+                            this.$data.commentInput
+                        )
                         .then(function() {
                             self.$data.commentInput = "";
                         });
@@ -738,14 +1023,21 @@
                 if (this.$data.eventLogsEnabled) {
                     if (!this.$data.eventLogsBeingGenerated.includes(cid)) {
                         this.$data.eventLogsBeingGenerated.push(cid);
-                        this.$store.dispatch("countlyCrashes/crashgroup/generateEventLogs", [cid])
+                        this.$store
+                            .dispatch(
+                                "countlyCrashes/crashgroup/generateEventLogs",
+                                [cid]
+                            )
                             .then(function() {
                                 self.$forceUpdate();
                             })
                             .finally(function() {
-                                self.$data.eventLogsBeingGenerated = self.$data.eventLogsBeingGenerated.filter(function(ecid) {
-                                    return cid !== ecid;
-                                });
+                                self.$data.eventLogsBeingGenerated =
+                                    self.$data.eventLogsBeingGenerated.filter(
+                                        function(ecid) {
+                                            return cid !== ecid;
+                                        }
+                                    );
                             });
                     }
                 }
@@ -765,20 +1057,30 @@
                         _id: this.crashgroup.lrid,
                         os: this.crashgroup.os,
                         native_cpp: this.crashgroup.native_cpp,
-                        app_version: this.crashgroup.latest_version
+                        app_version: this.crashgroup.latest_version,
+                        build_uuid: crash.build_uuid,
                     };
                 }
 
+                crash.report_id = crash._id;
+
                 if (this.crashesBeingSymbolicated.indexOf(crash._id) === -1) {
                     this.crashesBeingSymbolicated.push(crash._id);
-                    this.$store.dispatch("countlyCrashes/crashgroup/symbolicate", crash)
+                    this.$store
+                        .dispatch(
+                            "countlyCrashes/crashgroup/symbolicate",
+                            crash
+                        )
                         .then(function() {
                             self.refresh();
                         })
                         .finally(function() {
-                            self.crashesBeingSymbolicated = self.crashesBeingSymbolicated.filter(function(cid) {
-                                return cid !== crash._id;
-                            });
+                            self.crashesBeingSymbolicated =
+                                self.crashesBeingSymbolicated.filter(function(
+                                    cid
+                                ) {
+                                    return cid !== crash._id;
+                                });
                         });
                 }
             },
@@ -808,7 +1110,8 @@
                     }
 
                     if (crash.device) {
-                        crashMetrics += countlyDeviceList[crash.device] || crash.device;
+                        crashMetrics +=
+                            countlyDeviceList[crash.device] || crash.device;
                     }
 
                     if (crash.cpu) {
@@ -824,18 +1127,30 @@
                     }
 
                     if ("root" in crash) {
-                        crashMetrics += "\nRooted / Jailbroken: " + (crash.root ? "yes" : "no");
+                        crashMetrics +=
+                            "\nRooted / Jailbroken: " +
+                            (crash.root ? "yes" : "no");
                     }
                 }
                 else if (metric === "device_state") {
                     crashMetrics = "";
 
                     if ("ram_current" in crash) {
-                        crashMetrics = "RAM: " + crash.ram_current + "/" + crash.ram_total + " MB\n";
+                        crashMetrics =
+                            "RAM: " +
+                            crash.ram_current +
+                            "/" +
+                            crash.ram_total +
+                            " MB\n";
                     }
 
                     if ("disk_current" in crash) {
-                        crashMetrics += "Disk: " + crash.disk_current + "/" + crash.disk_total + " MB\n";
+                        crashMetrics +=
+                            "Disk: " +
+                            crash.disk_current +
+                            "/" +
+                            crash.disk_total +
+                            " MB\n";
                     }
 
                     if ("bat_current" in crash) {
@@ -843,30 +1158,44 @@
                     }
 
                     if ("run" in crash) {
-                        crashMetrics += "Run time: " + countlyCommon.timeString(crash.run / 60) + "\n";
+                        crashMetrics +=
+                            "Run time: " +
+                            countlyCommon.timeString(crash.run / 60) +
+                            "\n";
                     }
 
                     if ("session" in crash) {
                         crashMetrics += "Sessions: " + crash.session + "\n";
                     }
 
-                    crashMetrics += "Online: " + (crash.online ? "yes" : "no") + "\n";
-                    crashMetrics += "Background: " + (crash.background ? "yes" : "no") + "\n";
+                    crashMetrics +=
+                        "Online: " + (crash.online ? "yes" : "no") + "\n";
+                    crashMetrics +=
+                        "Background: " +
+                        (crash.background ? "yes" : "no") +
+                        "\n";
                     crashMetrics += "Muted: " + (crash.muted ? "yes" : "no");
                 }
                 else if (metric === "custom") {
-                    crashMetrics = Object.keys(crash.custom).map(function(customKey) {
-                        return customKey + ": " + crash.custom[customKey];
-                    }).join("\n");
+                    crashMetrics = Object.keys(crash.custom)
+                        .map(function(customKey) {
+                            return customKey + ": " + crash.custom[customKey];
+                        })
+                        .join("\n");
                 }
 
                 return crashMetrics;
             },
             crashEventLog: function(cid) {
-                return this.$store.getters["countlyCrashes/crashgroup/crashEventLog"](cid);
+                return this.$store.getters[
+                    "countlyCrashes/crashgroup/crashEventLog"
+                ](cid);
             },
             commentIsMine: function(comment) {
-                return comment.author_id === countlyGlobal.member._id || countlyGlobal.member.global_admin;
+                return (
+                    comment.author_id === countlyGlobal.member._id ||
+                    countlyGlobal.member.global_admin
+                );
             },
             markAs: function(state) {
                 var self = this;
@@ -880,23 +1209,33 @@
 
                 if (state === "resolved") {
                     this.beingMarked = true;
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/markResolved");
+                    ajaxPromise = this.$store.dispatch(
+                        "countlyCrashes/crashgroup/markResolved"
+                    );
                 }
                 else if (state === "resolving") {
                     this.beingMarked = true;
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/markResolving");
+                    ajaxPromise = this.$store.dispatch(
+                        "countlyCrashes/crashgroup/markResolving"
+                    );
                 }
                 else if (state === "unresolved") {
                     this.beingMarked = true;
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/markUnresolved");
+                    ajaxPromise = this.$store.dispatch(
+                        "countlyCrashes/crashgroup/markUnresolved"
+                    );
                 }
                 else if (state === "hidden") {
                     this.beingMarked = true;
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/hide");
+                    ajaxPromise = this.$store.dispatch(
+                        "countlyCrashes/crashgroup/hide"
+                    );
                 }
                 else if (state === "shown") {
                     this.beingMarked = true;
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/show");
+                    ajaxPromise = this.$store.dispatch(
+                        "countlyCrashes/crashgroup/show"
+                    );
                 }
 
                 if (typeof ajaxPromise !== "undefined") {
@@ -905,7 +1244,7 @@
 
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.changed"],
-                            message: jQuery.i18n.map["configs.saved"]
+                            message: jQuery.i18n.map["configs.saved"],
                         });
                     });
                 }
@@ -919,45 +1258,61 @@
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         method: "crashes",
                         group: this.crashgroup._id,
-                        userlist: true
+                        userlist: true,
                     };
 
-                    window.location.hash = "/users/request/" + JSON.stringify(params);
+                    window.location.hash =
+                        "/users/request/" + JSON.stringify(params);
                 }
                 else if (command === "delete") {
-                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-delete", 1), "red", function(result) {
-                        if (result) {
-                            self.$store.dispatch("countlyCrashes/crashgroup/delete")
-                                .then(function(data) {
-                                    if (!data) {
-                                        CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                                    }
-                                    else {
-                                        window.history.back();
-                                    }
-                                });
+                    CountlyHelpers.confirm(
+                        jQuery.i18n.prop("crashes.confirm-delete", 1),
+                        "red",
+                        function(result) {
+                            if (result) {
+                                self.$store
+                                    .dispatch(
+                                        "countlyCrashes/crashgroup/delete"
+                                    )
+                                    .then(function(data) {
+                                        if (!data) {
+                                            CountlyHelpers.alert(
+                                                jQuery.i18n.map[
+                                                    "crashes.try-later"
+                                                ],
+                                                "red"
+                                            );
+                                        }
+                                        else {
+                                            window.history.back();
+                                        }
+                                    });
+                            }
                         }
-                    });
+                    );
                 }
-            }
+            },
         },
         beforeCreate: function() {
-            return this.$store.dispatch("countlyCrashes/crashgroup/initialize", groupId);
-        }
+            return this.$store.dispatch(
+                "countlyCrashes/crashgroup/initialize",
+                groupId
+            );
+        },
     });
 
     var getCrashgroupView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: CrashgroupView,
-            vuex: [{clyModel: countlyCrashes}],
+            vuex: [{ clyModel: countlyCrashes }],
             templates: [
                 {
                     namespace: "crashes",
                     mapping: {
-                        crashgroup: "crashes/templates/crashgroup.html"
-                    }
-                }
-            ]
+                        crashgroup: "crashes/templates/crashgroup.html",
+                    },
+                },
+            ],
         });
     };
 
@@ -967,8 +1322,10 @@
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
                 authToken: countlyGlobal.auth_token,
-                symbolicationEnabled: countlyGlobal.plugins.includes("crash_symbolication"),
-                symbols: {}
+                symbolicationEnabled: countlyGlobal.plugins.includes(
+                    "crash_symbolication"
+                ),
+                symbols: {},
             };
         },
         computed: {
@@ -982,15 +1339,17 @@
                 if ("binary_images" in crash) {
                     try {
                         var binaryImagesMap = JSON.parse(crash.binary_images);
-                        binaryImages = Object.keys(binaryImagesMap).map(function(binaryName) {
-                            var binaryProps = binaryImagesMap[binaryName];
+                        binaryImages = Object.keys(binaryImagesMap).map(
+                            function(binaryName) {
+                                var binaryProps = binaryImagesMap[binaryName];
 
-                            return {
-                                name: binaryName,
-                                loadAddress: binaryProps.la,
-                                uuid: binaryProps.id
-                            };
-                        });
+                                return {
+                                    name: binaryName,
+                                    loadAddress: binaryProps.la,
+                                    uuid: binaryProps.id,
+                                };
+                            }
+                        );
                     }
                     catch (err) {
                         binaryImages = [];
@@ -1001,59 +1360,72 @@
                 }
 
                 return binaryImages;
-            }
+            },
         },
         methods: {
             refresh: function() {
                 var promises = [];
                 var self = this;
 
-                promises.push(this.$store.dispatch("countlyCrashes/crash/refresh"));
+                promises.push(
+                    this.$store.dispatch("countlyCrashes/crash/refresh")
+                );
 
                 if (this.symbolicationEnabled) {
-                    promises.push(new Promise(function(resolve, reject) {
-                        countlyCrashSymbols.fetchSymbols(true)
-                            .then(function(symbolIndexing) {
-                                self.symbols = {};
+                    promises.push(
+                        new Promise(function(resolve, reject) {
+                            countlyCrashSymbols
+                                .fetchSymbols(true)
+                                .then(function(symbolIndexing) {
+                                    self.symbols = {};
 
-                                var buildIdMaps = Object.values(symbolIndexing);
-                                buildIdMaps.forEach(function(buildIdMap) {
-                                    Object.keys(buildIdMap).forEach(function(buildId) {
-                                        self.symbols[buildId] = buildIdMap[buildId];
+                                    var buildIdMaps =
+                                        Object.values(symbolIndexing);
+                                    buildIdMaps.forEach(function(buildIdMap) {
+                                        Object.keys(buildIdMap).forEach(
+                                            function(buildId) {
+                                                self.symbols[buildId] =
+                                                    buildIdMap[buildId];
+                                            }
+                                        );
                                     });
-                                });
 
-                                resolve(this.symbols);
-                            }).catch(function(err) {
-                                reject(err);
-                            });
-                    }));
+                                    resolve(this.symbols);
+                                })
+                                .catch(function(err) {
+                                    reject(err);
+                                });
+                        })
+                    );
                 }
 
                 return Promise.all(promises);
             },
             hasSymbol: function(uuid) {
                 return uuid in this.symbols;
-            }
+            },
         },
         beforeCreate: function() {
-            return this.$store.dispatch("countlyCrashes/crash/initialize", crashId);
+            return this.$store.dispatch(
+                "countlyCrashes/crash/initialize",
+                crashId
+            );
         },
-        mixins: [countlyVue.mixins.hasDrawers("crashSymbol")]
+        mixins: [countlyVue.mixins.hasDrawers("crashSymbol")],
     });
 
     var getBinaryImagesView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: BinaryImagesView,
-            vuex: [{clyModel: countlyCrashes}],
+            vuex: [{ clyModel: countlyCrashes }],
             templates: [
                 {
                     namespace: "crashes",
                     mapping: {
-                        "binary-images": "crashes/templates/binary-images.html"
-                    }
-                }
-            ]
+                        "binary-images": "crashes/templates/binary-images.html",
+                    },
+                },
+            ],
         });
     };
 
@@ -1066,16 +1438,21 @@
                 headerData: {
                     label: CV.i18n("crashes.crash-statistics"),
                     description: CV.i18n("crashes.plugin-description"),
-                    linkTo: {"label": CV.i18n('crashes.go-to-crashes'), "href": "#/crashes"},
-                }
+                    linkTo: {
+                        label: CV.i18n("crashes.go-to-crashes"),
+                        href: "#/crashes",
+                    },
+                },
             };
         },
         mounted: function() {
             var self = this;
-            this.$store.dispatch("countlyCrashes/overview/refresh").then(function() {
-                self.calculateAllData();
-                self.isLoading = false;
-            });
+            this.$store
+                .dispatch("countlyCrashes/overview/refresh")
+                .then(function() {
+                    self.calculateAllData();
+                    self.isLoading = false;
+                });
         },
         beforeCreate: function() {
             this.module = countlyCrashes.getVuexModule();
@@ -1091,64 +1468,93 @@
                 if (force) {
                     self.isLoading = true;
                 }
-                this.$store.dispatch("countlyCrashes/overview/refresh").then(function() {
-                    self.calculateAllData();
-                    self.isLoading = false;
-                });
+                this.$store
+                    .dispatch("countlyCrashes/overview/refresh")
+                    .then(function() {
+                        self.calculateAllData();
+                        self.isLoading = false;
+                    });
             },
             calculateAllData: function() {
-
-                var data = this.$store.getters["countlyCrashes/overview/dashboardData"] || {};
+                var data =
+                    this.$store.getters[
+                        "countlyCrashes/overview/dashboardData"
+                    ] || {};
                 var blocks = [];
 
                 var getUs = [
-                    {"name": CV.i18n('crashes.total-crashes'), "info": CV.i18n('crashes.home.total'), "prop": "cr", "r": true},
-                    {"name": CV.i18n('crashes.unique'), "info": CV.i18n('crashes.home.unique'), "prop": "cru", "r": true},
-                    {"name": CV.i18n('crashes.total-per-session'), "info": CV.i18n('crashes.home.per-session'), "prop": "cr-session", "r": true},
-                    {"name": CV.i18n('crashes.free-users'), "info": CV.i18n('crashes.help-free-users'), "prop": "crau", "p": true},
-                    {"name": CV.i18n('crashes.free-sessions'), "info": CV.i18n('crashes.help-free-sessions'), "prop": "crses", "p": true}
+                    {
+                        name: CV.i18n("crashes.total-crashes"),
+                        info: CV.i18n("crashes.home.total"),
+                        prop: "cr",
+                        r: true,
+                    },
+                    {
+                        name: CV.i18n("crashes.unique"),
+                        info: CV.i18n("crashes.home.unique"),
+                        prop: "cru",
+                        r: true,
+                    },
+                    {
+                        name: CV.i18n("crashes.total-per-session"),
+                        info: CV.i18n("crashes.home.per-session"),
+                        prop: "cr-session",
+                        r: true,
+                    },
+                    {
+                        name: CV.i18n("crashes.free-users"),
+                        info: CV.i18n("crashes.help-free-users"),
+                        prop: "crau",
+                        p: true,
+                    },
+                    {
+                        name: CV.i18n("crashes.free-sessions"),
+                        info: CV.i18n("crashes.help-free-sessions"),
+                        prop: "crses",
+                        p: true,
+                    },
                 ];
 
                 for (var k = 0; k < getUs.length; k++) {
                     data[getUs[k].prop] = data[getUs[k].prop] || {};
                     var value = data[getUs[k].prop].total;
                     if (!getUs[k].p) {
-                        value = countlyCommon.getShortNumber(data[getUs[k].prop].total || 0);
+                        value = countlyCommon.getShortNumber(
+                            data[getUs[k].prop].total || 0
+                        );
                     }
 
                     blocks.push({
-                        "name": getUs[k].name,
-                        "reverse": getUs[k].r,
-                        "value": value,
-                        "info": getUs[k].info,
-                        "trend": data[getUs[k].prop].trend,
-                        "change": data[getUs[k].prop].change
+                        name: getUs[k].name,
+                        reverse: getUs[k].r,
+                        value: value,
+                        info: getUs[k].info,
+                        trend: data[getUs[k].prop].trend,
+                        change: data[getUs[k].prop].change,
                     });
                 }
 
                 this.crashesItems = blocks;
-            }
+            },
         },
-        computed: {
-
-        }
+        computed: {},
     });
 
     countlyVue.container.registerData("/home/widgets", {
         _id: "crashes-dashboard-widget",
-        label: CV.i18n('crashes.crash-statistics'),
+        label: CV.i18n("crashes.crash-statistics"),
         permission: FEATURE_NAME,
-        enabled: {"default": true}, //object. For each type set if by default enabled
-        available: {"default": true}, //object. default - for all app types. For other as specified.
+        enabled: { default: true }, //object. For each type set if by default enabled
+        available: { default: true }, //object. default - for all app types. For other as specified.
         placeBeforeDatePicker: false,
         order: 9,
-        component: CrashesDashboardWidget
+        component: CrashesDashboardWidget,
     });
 
     countlyVue.container.registerTab("/users/tabs", {
         priority: 7,
-        title: 'Crashes',
-        name: 'crashes',
+        title: "Crashes",
+        name: "crashes",
         permission: FEATURE_NAME,
         component: countlyVue.components.create({
             mixins: [countlyVue.mixins.i18n],
@@ -1170,38 +1576,62 @@
             },
             data: function() {
                 return {
-                    uid: '',
+                    uid: "",
                     userCrashesData: [],
-                    title: CV.i18n('crashes.unresolved-crashes')
+                    title: CV.i18n("crashes.unresolved-crashes"),
                 };
             },
             beforeCreate: function() {
                 var self = this;
                 this.uid = this.$route.params.uid;
-                countlyCrashes.userCrashes(this.uid)
-                    .then(function(res) {
-                        if (res) {
-                            self.userCrashesData = res.aaData.map(function(data) {
-                                return Object.assign(data, { link: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/crashes/' + data.id});
+                countlyCrashes.userCrashes(this.uid).then(function(res) {
+                    if (res) {
+                        self.userCrashesData = res.aaData.map(function(data) {
+                            return Object.assign(data, {
+                                link:
+                                    "/dashboard#/" +
+                                    countlyCommon.ACTIVE_APP_ID +
+                                    "/crashes/" +
+                                    data.id,
                             });
-                        }
-                    });
-            }
-        })
+                        });
+                    }
+                });
+            },
+        }),
     });
 
     jQuery(document).ready(function() {
-        app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-        app.addSubMenu("crashes", {code: "crash", permission: FEATURE_NAME, url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+        app.addMenu("improve", {
+            code: "crashes",
+            text: "crashes.title",
+            icon: '<div class="logo ion-alert-circled"></div>',
+            priority: 10,
+        });
+        app.addSubMenu("crashes", {
+            code: "crash",
+            permission: FEATURE_NAME,
+            url: "#/crashes",
+            text: "sidebar.dashboard",
+            priority: 10,
+        });
 
         if (app.configurationsView) {
             app.configurationsView.registerInput("crashes.grouping_strategy", {
                 input: "el-select",
                 attrs: {},
                 list: [
-                    {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
-                    {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
-                ]
+                    {
+                        value: "error_and_file",
+                        label: CV.i18n(
+                            "crashes.grouping_strategy.error_and_file"
+                        ),
+                    },
+                    {
+                        value: "stacktrace",
+                        label: CV.i18n("crashes.grouping_strategy.stacktrace"),
+                    },
+                ],
             });
         }
 
@@ -1214,10 +1644,14 @@
             this.renderWhenReady(getCrashgroupView());
         });
 
-        app.route("/crashes/:group/binary-images/:crash", "crashgroup", function(group, crash) {
-            groupId = group;
-            crashId = crash;
-            this.renderWhenReady(getBinaryImagesView());
-        });
+        app.route(
+            "/crashes/:group/binary-images/:crash",
+            "crashgroup",
+            function(group, crash) {
+                groupId = group;
+                crashId = crash;
+                this.renderWhenReady(getBinaryImagesView());
+            }
+        );
     });
 })();

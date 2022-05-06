@@ -82,24 +82,45 @@
                 </div>
             </cly-section>
             <cly-section id="crash-tabs" v-if="!!(crashgroup && crashgroup.error)">
-                <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card" style="border-radius: 4px;">
-                    <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
-                        <crash-stacktrace :code="crashgroup.error">
-                            <template v-slot:header-left v-if="symbolicationEnabled">
-                                <el-button class="crash-link text-medium" type="text" @click="symbolicateCrash('group')"
-                                    :loading="isCrashBeingSymbolicated(crashgroup.lrid)" v-if="!!crashgroup._symbol_id">
-                                    {{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") :
-                                    i18n("crash_symbolication.resymbolicate")}}</el-button>
-                                <a class="crash-link text-medium" href="#/crash/symbols/"
-                                    v-else>{{i18n("crash_symbolication.should-upload")}}</a>
+                <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card"
+                    style="border-radius: 4px; text-decoration: none;">
+                    <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace" :force-loading="isCrashBeingSymbolicated(crashes[0]._id)">
+                        <crash-stacktrace
+                            :code="(crashes[0].showSymbolicated || !crashes[0].symbolicated) ? crashes[0].error : crashes[0].olderror">
+                            <template v-slot:header-left>
+                                <div v-if="!!crashes[0].symbolicated">
+                                    <el-switch v-model="crashes[0].showSymbolicated"></el-switch>
+                                    <span class="text-small bu-ml-3">
+                                        {{crashes[0].showSymbolicated ?
+                                            i18n('crash_symbolication.symbolicate') :
+                                            i18n('crash_symbolication.symbolicated')}}
+                                    </span>
+                                </div>
                             </template>
                             <template v-slot:header-right>
-                                <a class="crash-link text-medium bu-mr-5"
-                                    :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid"
-                                    v-if="!!crashgroup.binary_images">{{i18n("crashes.show-binary-images")}}</a>
-                                <a class="crash-link text-medium"
-                                    :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid"
-                                    download>{{i18n("crashes.download-stacktrace")}}</a>
+                                <cly-more-options :loading="isCrashBeingSymbolicated(crashes[0]._id)"
+                                    @command="symbolicateCrash($event)" class="bu-ml-2">
+                                    <el-dropdown-item v-if="!crashgroup._symbol_id">
+                                        <a href="#/crash/symbols/">
+                                            {{i18n("crash_symbolication.should-upload")}}
+                                        </a>
+                                    </el-dropdown-item>
+                                    <el-dropdown-item :command="crashes[0]" v-if="!!crashgroup._symbol_id">
+                                        {{!crashgroup.symbolicated 
+                                            ? i18n("crash_symbolication.resymbolicate") 
+                                            : i18n("crash_symbolication.symbolicate_error")}}
+                                    </el-dropdown-item>
+                                    <el-dropdown-item v-if="!!crashgroup.binary_images">
+                                        <a
+                                            :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid">
+                                            {{i18n("crashes.show-binary-images")}}
+                                        </a>
+                                    </el-dropdown-item>
+                                    <el-dropdown-item>
+                                        <a :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid"
+                                            download>{{i18n("crashes.download-stacktrace")}}</a>
+                                    </el-dropdown-item>
+                                </cly-more-options>
                             </template>
                         </crash-stacktrace>
                     </el-tab-pane>
@@ -179,8 +200,10 @@
                             </div>
                             <div>
                                 <div class="bu-is-flex bu-is-align-items-baseline">
-                                    <h2>{{(mobileDiagnostics[diagnosticKey].average ? mobileDiagnostics[diagnosticKey].average.toFixed(2) : 0) + ("unit" in
-                                        mobileDiagnostics[diagnosticKey] ? "" : " %")}}</h2>
+                                    <h2>{{(mobileDiagnostics[diagnosticKey].average
+                                        ? mobileDiagnostics[diagnosticKey].average.toFixed(2) : 0)
+                                        + ("unit" in mobileDiagnostics[diagnosticKey] ? "" : " %")}}
+                                    </h2>
                                     <h4 class="bu-ml-2" v-if="'unit' in mobileDiagnostics[diagnosticKey]">
                                         {{mobileDiagnostics[diagnosticKey].unit}}</h4>
                                 </div>
@@ -189,11 +212,15 @@
                             <div style="padding-top: 16px;"
                                 class="bu-columns bu-m-0 bu-is-justify-content-space-between">
                                 <div>
-                                    {{mobileDiagnostics[diagnosticKey].min ? mobileDiagnostics[diagnosticKey].min.toFixed(2) : 0}}
+                                    {{mobileDiagnostics[diagnosticKey].min
+                                        ? mobileDiagnostics[diagnosticKey].min.toFixed(2)
+                                        : 0}}
                                     <div class="text-small color-cool-gray-50">{{i18n('crashes.minimum')}}</div>
                                 </div>
                                 <div>
-                                    {{mobileDiagnostics[diagnosticKey].max ? mobileDiagnostics[diagnosticKey].max.toFixed(2) : 0}}
+                                    {{mobileDiagnostics[diagnosticKey].max
+                                        ? mobileDiagnostics[diagnosticKey].max.toFixed(2)
+                                        : 0}}
                                     <div class="text-small color-cool-gray-50">{{i18n('crashes.maximum')}}</div>
                                 </div>
                             </div>
@@ -277,7 +304,7 @@
                                         </cly-crashes-dashboard-tile>
                                     </div>
                                 </el-card>
-                                <el-card class="bu-mb-5" shadow="never" :body-style="{padding: '0px'}">
+                                <el-card class="bu-mb-5" shadow="never" :body-style="{padding: '0px'}" :loading="isCrashBeingSymbolicated(props.row._id)">
                                     <crash-stacktrace
                                         :code="(props.row.showSymbolicated || !props.row.symbolicated) ? props.row.error : props.row.olderror">
                                         <template v-slot:header-left>
@@ -287,23 +314,34 @@
                                                     i18n('crash_symbolication.symbolicate') :
                                                     i18n('crash_symbolication.symbolicated')}}</span>
                                             </div>
-                                            <div v-else>
-                                                <el-button class="crash-link text-medium" type="text"
-                                                    @click="symbolicateCrash(props.row)"
-                                                    :loading="isCrashBeingSymbolicated(props.row._id)"
-                                                    v-if="!!crashgroup._symbol_id">
-                                                    {{i18n("crash_symbolication.symbolicate_error")}}</el-button>
-                                                <span
-                                                    class="text-medium bu-ml-3 text-uppercase font-weight-bold">{{i18n("crashes.stacktrace")}}</span>
-                                            </div>
                                         </template>
                                         <template v-slot:header-right>
-                                            <a class="crash-link text-medium bu-mr-5"
-                                                :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id"
-                                                v-if="!!props.row.binary_images">{{i18n('crashes.show-binary-images')}}</a>
-                                            <a class="crash-link text-medium"
-                                                :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + props.row._id"
-                                                download>{{i18n('crashes.download-stacktrace')}}</a>
+                                            <cly-more-options @command="symbolicateCrash($event)" :force-loading="isCrashBeingSymbolicated(props.row._id)" class="bu-ml-2">
+                                                <el-dropdown-item :loading="isCrashBeingSymbolicated(props.row._id)"
+                                                    v-if="!crashgroup._symbol_id">
+                                                    <a
+                                                        href="#/crash/symbols/">{{i18n("crash_symbolication.should-upload")}}</a>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item :command="props.row"
+                                                    :loading="isCrashBeingSymbolicated(props.row._id)"
+                                                    v-if="!!crashgroup._symbol_id">
+                                                    {{!crashgroup.symbolicated ?
+                                                    i18n("crash_symbolication.resymbolicate") :
+                                                    i18n("crash_symbolication.symbolicate_error")}}
+                                                </el-dropdown-item>
+                                                <el-dropdown-item v-if="!!props.row.binary_images">
+                                                    <a
+                                                        :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id">
+                                                        {{i18n('crashes.show-binary-images')}}
+                                                    </a>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item>
+                                                    <a :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + props.row._id"
+                                                        download>
+                                                        {{i18n('crashes.download-stacktrace')}}
+                                                    </a>
+                                                </el-dropdown-item>
+                                            </cly-more-options>
                                         </template>
                                     </crash-stacktrace>
                                 </el-card>
