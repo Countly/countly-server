@@ -1,4 +1,4 @@
-/* global Vue, Backbone, app, countlyGlobal, countlyCommon */
+/* global Vue, Backbone, app, countlyGlobal, CV */
 
 (function(countlyVue) {
 
@@ -54,10 +54,10 @@
     Vue.component("cly-dynamic-tabs", countlyBaseComponent.extend({
         data: function() {
             return {
-                apps: countlyGlobal.apps,
-                app_id: countlyCommon.ACTIVE_APP_ID
+                apps: countlyGlobal.apps
             };
         },
+        mixins: [CV.mixins.i18n],
         props: {
             value: String,
             tabs: {
@@ -74,6 +74,10 @@
             }
         },
         computed: {
+            app_id: function() {
+                var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"] && this.$store.getters["countlyCommon/getActiveApp"]._id;
+                return selectedAppId;
+            },
             currentTab: function() {
                 var self = this;
                 var tab = this.tabs.filter(function(t) {
@@ -158,8 +162,8 @@
                                     v-if="(!tab.type) || (tab.type === \'mobile\' && !apps[app_id].type) || (apps[app_id].type === tab.type)"\
                                     >\
                                         <slot :name="tab.name" :tab="tab">\
-                                            <a v-if=\'tab.route\' :href="tab.route"><span>{{ tab.title }}</span></a>\
-                                            <span v-else>{{ tab.title }}</span>\
+                                            <a v-if=\'tab.route\' :href="tab.route"><span>{{ i18n(tab.title) }}</span></a>\
+                                            <span v-else>{{ i18n(tab.title) }}</span>\
                                         </slot>\
                                 </div>\
                             </div>\
