@@ -13,7 +13,8 @@
                     shared_user_groups_view: [],
                     share_with: "all-users",
                     theme: 0,
-                    is_owner: true
+                    is_owner: true,
+                    send_email_invitation: false,
                 };
             }
         },
@@ -84,6 +85,7 @@
                         "shared_user_groups_view": JSON.stringify(settings.shared_user_groups_view) || [],
                         "copy_dash_id": settings.copyDashId,
                         "share_with": settings.share_with,
+                        "send_email_invitation": settings.send_email_invitation,
                         "theme": settings.theme
                     },
                     dataType: "json"
@@ -101,6 +103,7 @@
                         "shared_user_groups_edit": JSON.stringify(settings.shared_user_groups_edit),
                         "shared_user_groups_view": JSON.stringify(settings.shared_user_groups_view),
                         "share_with": settings.share_with,
+                        "send_email_invitation": settings.send_email_invitation,
                         "theme": settings.theme
                     },
                     dataType: "json"
