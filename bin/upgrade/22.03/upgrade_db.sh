@@ -31,7 +31,7 @@ then
         countly plugin upgrade web
         countly plugin upgrade push
         countly plugin upgrade hooks
-    
+        countly plugin upgrade drill
         
         #enable new plugins
         countly plugin enable data-manager
@@ -59,7 +59,6 @@ then
     countly config "api.batch_on_master" null --force
     countly config "api.batch_read_on_master" null --force
     countly config "funnels.funnel_caching" true --force
-    countly config "frontend.production" false --force
     
     #add indexes
     nodejs "$DIR/scripts/add_indexes.js"

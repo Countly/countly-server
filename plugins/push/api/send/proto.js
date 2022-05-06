@@ -19,10 +19,9 @@ const FRAME = {
     CONNECT: 1 << 2, // 4 try connecting and return status
     SEND: 1 << 3, // 8 [{n, d, t}, {n, d, t, o}, ...] array of recipient objects to send to 
     RESULTS: 1 << 4, // 16 [[id, 200], [id, -200], [id, -200, new token], [id, 500, null, error string]] results array
-    CLOSE: 1 << 5, // 32 close connection after processing the queue and return success/error, {force} in payload makes connection ignore the rest of queue
-    CMD: 1 << 6, // 64 marker for service frames (below)
-    FLUSH: 1 << 7 | 1 << 6, // 192 flush following streams
-    SYN: 1 << 8 | 1 << 6, // 320 frame with a 64-bit number used to synchronise sender & receiver side
+    CMD: 1 << 5, // 64 marker for service frames (below)
+    END: 1 << 6 | 1 << 5, // 32 close connection after processing the queue and return success/error, {force} in payload makes connection ignore the rest of queue
+    FLUSH: 1 << 7 | 1 << 5, // 192 flush following streams
 };
 
 const FRAME_NAME = {
@@ -36,12 +35,12 @@ const FRAME_NAME = {
     [FRAME.RESULTS | FRAME.ERROR]: 'RESULTS|ERROR',
     [FRAME.ERROR]: 'ERROR',
 
-    [FRAME.CLOSE]: 'CLOSE',
-    [FRAME.CLOSE | FRAME.SUCCESS]: 'CLOSE|SUCCESS',
-    [FRAME.CLOSE | FRAME.ERROR]: 'CLOSE|SUCCESS',
+    [FRAME.END]: 'END',
+    [FRAME.END | FRAME.SUCCESS]: 'END|SUCCESS',
+    [FRAME.END | FRAME.ERROR]: 'END|SUCCESS',
 
     [FRAME.FLUSH]: 'FLUSH',
-    [FRAME.SYN]: 'SYN',
+    [FRAME.END]: 'END',
 };
 
 const encode = function(frame, payload = {}, length = 0) {

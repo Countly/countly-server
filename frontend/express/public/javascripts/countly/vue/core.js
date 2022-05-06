@@ -163,7 +163,7 @@
                     return this.__allApps[appId].name;
                 }
                 else {
-                    return appId;
+                    return "Deleted";
                 }
             },
             __getAppLogo: function(appId) {

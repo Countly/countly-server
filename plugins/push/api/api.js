@@ -47,6 +47,7 @@ plugins.setConfigs(FEATURE_NAME, {
     proxyport: '',
     proxyuser: '',
     proxypass: '',
+    proxyunauthorized: false,
     test: {
         uids: '', // comma separated list of app_users.uid
         cohorts: '', // comma separated list of cohorts._id
@@ -128,7 +129,6 @@ plugins.register('/cache/init', function() {
 plugins.register('/i', async ob => {
     let params = ob.params,
         la = params.app_user.la;
-    log.d('push query', params.qstring);
     if (params.qstring.events && Array.isArray(params.qstring.events)) {
         let events = params.qstring.events,
             keys = events.map(e => e.key);

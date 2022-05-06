@@ -1,3 +1,72 @@
+## Version 22.03.7
+
+Fixes:
+- [compare] Adding tests
+- [members] Secure password reset token generation
+- [push] Allowing no platform results for migrated messages
+- [push] Migrating messages in batches
+- [remote-config] Fix for percentage bars
+- [upgrade] Remove even more files
+- [views] Fix view regeneration
+
+Enterprise fixes:
+- [flows] ui fix
+
+## Version 22.03.6
+
+Fixes:
+- [compare] loading state fix
+- [ui] X-axis overflow handling changes
+- [upgrade] add drill indexes
+- [upgrade] do not upgrade new users that have permission object
+
+Fixes Enterprise:
+- [attribution] added information toast when clicked show/hide button
+- [surveys] handling appearance null cases for sdk api
+- [users] add engagement score
+
+## Version 22.03.5
+
+Fixes:
+
+- [core] Fixing logging issues
+- [crashes] Fixed app_version filter
+- [dashboards] Add dashboard name to audit logs when widget deleted
+- [dashboards] Show that app is deleted in widgets if app was deleted
+- [docker] Fixed dependency for HTML PDF on centos images
+- [grunt] Fixed production mode
+- [push] Destroy connection on credentials validation failure
+- [push] Fixing change streams in sender until driver update
+- [push] Longer muticasts
+- [push] Self signed proxy certificate support
+- [star-rating] Added custom rating symbol support
+
+## Version 22.03.4
+
+Fixes:
+- [push] added missing files
+
+## Version 22.03.3
+
+Fixes:
+- [crashes] defaults for optional fields
+- [dashboards] custom period for events widget
+- [dbviewer] fixed exporting of other databases
+- [frontend] fixed sorting of analytics tables
+- [populator] add push events
+- [push] credential validation fixes
+- [push] logger fixes
+- [push] remove send job
+- [report-manager] fixed localization strings
+
+Enterprise Fixes:
+- [attribution] new ui transition
+- [drill] allow storing objects/arrays in event segments
+- [flows] correct view name mapping if start and end point selected for flow
+- [revenue] average paying customer data fixes and css improvement
+- [surveys] fix to show logo preview
+- [users] fixed decoding properties in user profiles
+
 ## Version 22.03.2
 
 Fixes:
@@ -46,6 +115,11 @@ Fixes:
 - [push] mutable-content for buttons
 - [scripts] fixed Compiler Version for 22.03 upgrade and installation
 - [upgrade] remove old files
+
+## Version 21.11.4
+
+Fixes:
+- [members] Secure password reset token generation
 
 ## Version 21.11.3
 

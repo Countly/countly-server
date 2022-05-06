@@ -54,6 +54,36 @@
   margin: 20px 0px;
 }
 
+.ratings-popup .rating-emotion {
+  width: 50px;
+  height: 50px;
+  background-repeat: no-repeat;
+}
+
+.rating-emotion-emojis {
+  background-image: url('/star-rating/images/star-rating/emoji.svg');
+}
+
+.rating-emotion-emojis-fill {
+  background-image: url('/star-rating/images/star-rating/emoji_filled.svg');
+}
+
+.rating-emotion-thumbs {
+  background-image: url('/star-rating/images/star-rating/thumbs.svg');
+}
+
+.rating-emotion-thumbs-fill {
+  background-image: url('/star-rating/images/star-rating/thumbs_filled.svg');
+}
+
+.rating-emotion-stars {
+  background-image: url('/star-rating/images/star-rating/stars.svg');
+}
+
+.rating-emotion-stars-fill {
+  background-image: url('/star-rating/images/star-rating/stars_filled.svg');
+}
+
 .ratings-popup .success-emotions-area {
   font-size: 20px;
   text-align: center;

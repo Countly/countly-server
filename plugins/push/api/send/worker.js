@@ -4,6 +4,7 @@ const {Worker, isMainThread, parentPort, workerData} = require('worker_threads')
     Measurement = require('./measure'),
     { PushError } = require('./data/error'),
     { Creds } = require('./data/creds'),
+    plugins = require('../../../pluginManager'),
     logger = require('../../../../api/utils/log.js');
 
 /**
@@ -42,7 +43,7 @@ if (isMainThread) {
             this.out = new Measurement();
             this.processing = 0;
             this.bytes = opts.cfg.pool.bytes;
-            this.worker = new Worker(__filename, {workerData: {json: JSON.stringify(opts)}});
+            this.worker = new Worker(__filename, {workerData: {json: JSON.stringify(Object.assign(opts, {logs: plugins.getConfig('logs')}))}});
             this.worker.unref();
             this.log = logger(opts.log).sub(`wrk-m`);
             this.init = new Promise((res, rej) => {
@@ -52,7 +53,7 @@ if (isMainThread) {
             this.worker.on('message', m => {
                 let frame = frame_type(m.buffer);
                 this.log.d('IN message %s %d bytes', FRAME_NAME[frame], m.buffer.byteLength);
-                if (frame & FRAME.CLOSE) {
+                if (frame & FRAME.END) {
                     let error = (frame & FRAME.ERROR) ? decode(m.buffer).payload : undefined;
                     if (this.closeCallback) {
                         clearTimeout(this.closeTimeout);
@@ -61,6 +62,7 @@ if (isMainThread) {
                         this.closeCallback = undefined;
                     }
                     if (this.worker) {
+                        this.push(m);
                         this.destroy();
                         // this.worker.terminate().catch(this.log.e.bind(this.log, 'Error when terminating worker')).then(() => {
                         //     this.emit('push_done');
@@ -171,14 +173,15 @@ if (isMainThread) {
          * @param {function} callback called when the frame is fully processed
          */
         _writev(chunks, callback) {
-            this.log.d('Writing %d chunks to the worker thread', chunks.length);
+            this.log.d('Writing %d chunks to worker thread', chunks.length);
             this.log.f('i', log => {
-                log('Load %s in %d/%d/%d out %d/%d/%d', this.load.toFixed(2), this.in.avg(5), this.in.avg(30), this.in.avg(60), this.out.avg(5), this.out.avg(30), this.out.avg(60));
+                log('Load %s in %s/%s/%s out %s/%s/%s', this.load.toFixed(2), this.in.avg(5), this.in.avg(30), this.in.avg(60), this.out.avg(5), this.out.avg(30), this.out.avg(60));
             });
             chunks.forEach(chunk => {
                 let c = chunk.chunk,
-                    l = c.buffer.byteLength;
-                if (frame_type(c.buffer) & FRAME.SEND) {
+                    l = c.buffer.byteLength,
+                    f = frame_type(c.buffer);
+                if (f & FRAME.SEND) {
                     this.processing += l;
                     this.in.inc(l);
                 }
@@ -205,7 +208,7 @@ if (isMainThread) {
                     }
                     callback();
                 }, 10000); // close in 10 sec if it didn't close itself
-                this.worker.postMessage(encode(FRAME.CLOSE));
+                this.worker.postMessage(encode(FRAME.END));
             }
             else {
                 callback();
@@ -240,7 +243,7 @@ if (isMainThread) {
     //     let worker = new Worker(__filename, {workerData: opts});
     //     worker.on('message', m => {
     //         let frame = frame_type(m.buffer);
-    //         if (frame & FRAME.CLOSE) {
+    //         if (frame & FRAME.END) {
     //             worker.terminate().catch(logger.e.bind(logger));
     //         }
     //     });
@@ -250,8 +253,10 @@ if (isMainThread) {
 else {
     let processing = 0;
 
-    const {id: wrkid, log: logid, type, creds, messages, cfg} = JSON.parse(workerData.json),
-        id = `wrk-${wrkid}-w`,
+    const {id: wrkid, log: logid, type, creds, messages, cfg, logs} = JSON.parse(workerData.json);
+    logger.ipcHandler({cmd: 'log', config: logs});
+
+    const id = `wrk-${wrkid}-w`,
         connection = factory(logid, type, creds, messages, cfg),
         log = logger(logid).sub(id),
         post = function(frame, payload, length = 0) {
@@ -264,7 +269,7 @@ else {
     connection.on('error', err => {
         log.w('error in worker %s', err);
         if (connection.closingForcefully) {
-            post(FRAME.ERROR | FRAME.CLOSE, PushError.deserialize(err));
+            post(FRAME.ERROR | FRAME.END, PushError.deserialize(err));
         }
         else {
             post(FRAME.ERROR, PushError.deserialize(err));
@@ -295,7 +300,7 @@ else {
         else {
             log.i('closed');
         }
-        post(FRAME.CLOSE | (connection.closingForcefully ? FRAME.ERROR : FRAME.SUCCESS), connection.closingForcefully || {});
+        post(FRAME.END | (connection.closingForcefully ? FRAME.ERROR : FRAME.SUCCESS), connection.closingForcefully || {});
     });
 
     parentPort.on('message', arr => {
@@ -331,7 +336,7 @@ else {
                 }
             });
         }
-        else if (data.frame === FRAME.CLOSE) {
+        else if (data.frame & FRAME.END) {
             if (connection.writable) {
                 if (data.payload.force) {
                     log.w('closing forcefully');
@@ -340,7 +345,10 @@ else {
                 }
                 else {
                     log.i('closing');
-                    connection.end();
+                    connection.drainAndCall(function() {
+                        post(data.frame, data.payload);
+                        connection.end();
+                    });
                 }
             }
             else {

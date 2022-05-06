@@ -364,7 +364,7 @@ class Pool extends Duplex {
             setTimeout(this.do_writev_when_ready.bind(this, chunks, callback), 100);
         }
         else {
-            this.log.i('writing %d chunks, load %f', chunks.length, this.load.toFixed(2));
+            this.log.i('writing %d chunks, load %s', chunks.length, this.load.toFixed(2));
             let chunksDone = 0,
                 chunkCallback = function(err) {
                     if (err) {
@@ -374,7 +374,7 @@ class Pool extends Duplex {
                     else if (chunksDone >= 0) {
                         chunksDone++;
                         if (chunksDone === chunks.length) {
-                            this.log.i('done writing %d chunks, load %f', chunks.length, this.load.toFixed(2));
+                            this.log.d('done writing %d chunks, load %s', chunks.length, this.load.toFixed(2));
                             callback();
                         }
                     }

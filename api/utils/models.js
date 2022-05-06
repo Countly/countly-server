@@ -394,6 +394,7 @@ class Mongoable extends Validatable {
                     try {
                         let res = await collection.insertMany(buffer);
                         total -= (buffer.length - res.insertedCount);
+                        buffer = [];
                         return res.insertedIds;
                     }
                     catch (e) {

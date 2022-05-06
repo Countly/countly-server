@@ -220,6 +220,7 @@
         getInitialBaseModel: function() {
             return {
                 _id: null,
+                demo: false,
                 name: "",
                 platforms: [],
                 message: {
@@ -971,6 +972,12 @@
                 }
                 return dto.status;
             },
+            mapDemo: function(dto) {
+                if (dto.info && dto.info.demo) {
+                    return true;
+                }
+                return false;
+            },
             mapRows: function(dto) {
                 var self = this;
                 var rowsModel = [];
@@ -1301,15 +1308,14 @@
                 if (dto.result.subs && dto.result.subs[PlatformDtoEnum.IOS]) {
                     model[PlatformEnum.IOS] = this.mapIosDashboard(dto);
                 }
-                if (model[PlatformEnum.ANDROID] && model[PlatformEnum.IOS]) {
-                    model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
-                }
+                model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
                 return model;
             },
             mapDtoToBaseModel: function(dto) {
                 var localizations = this.mapLocalizations(dto.info && dto.info.locales || []);
                 return {
                     _id: dto._id || null,
+                    demo: this.mapDemo(dto),
                     status: this.mapStatus(dto),
                     createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
                     name: dto.info && dto.info.title,
@@ -2648,7 +2654,7 @@
                 filterOptions.push({label: CV.i18n("push-notification.platform-filter-android"), value: countlyPushNotification.service.PlatformEnum.ANDROID});
                 state.platformFilter = PlatformEnum.ANDROID;
             }
-            if (value.dashboard[PlatformEnum.IOS] && value.dashboard[PlatformEnum.ALL]) {
+            if (value.dashboard[PlatformEnum.ALL]) {
                 filterOptions.push({label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL});
                 state.platformFilter = PlatformEnum.ALL;
             }

@@ -63,6 +63,7 @@ class FCM extends Splitter {
      * @param {string} options.proxy.port proxy port
      * @param {string} options.proxy.user proxy user
      * @param {string} options.proxy.pass proxy pass
+     * @param {string} options.proxy.auth proxy require https correctness
      */
     constructor(log, type, creds, messages, options) {
         options.pool.concurrency = 500;
@@ -99,6 +100,7 @@ class FCM extends Splitter {
                 one = Math.floor(bytes / pushes.length);
 
             content.registration_ids = pushes.map(p => p.t);
+            this.log.d('sending to %j', content.registration_ids);
 
             return this.sendRequest(JSON.stringify(content)).then(resp => {
                 try {
