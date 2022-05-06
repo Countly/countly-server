@@ -232,12 +232,103 @@ const processRequest = (params) => {
                 }
 
                 switch (paths[3]) {
+                /**
+                 * @api {get} /i/users/create Create new user
+                 * @apiName Create User
+                 * @apiGroup User Management
+                 *
+                 * @apiDescription Access database, get collections, indexes and data
+                 * @apiQuery {Object} args User data object
+                 * @apiQuery {String} args.full_name Full name 
+                 * @apiQuery {String} args.username Username
+                 * @apiQuery {String} args.password Password
+                 * @apiQuery {String} args.email Email
+                 * @apiQuery {Object} args.permission Permission object
+                 * @apiQuery {Boolean} args.global_admin Global admin flag
+                 * 
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *  "full_name":"fn",
+                 *  "username":"un",
+                 *  "email":"e@ms.cd",
+                 *  "permission": {
+                 *    "c":{},
+                 *    "r":{},
+                 *    "u":{},
+                 *    "d":{},
+                 *    "_":{
+                 *      "u":[[]],
+                 *      "a":[]
+                 *    }
+                 *  },
+                 *  "global_admin":true,
+                 *  "password_changed":0,
+                 *  "created_at":1651240780,
+                 *  "locked":false,
+                 *  "api_key":"1c5e93c6657d76ae8903f14c32cb3796",
+                 *  "_id":"626bef4cb00db29a02f8f7a0"
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 * }
+                 */
                 case 'create':
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.users.createUser);
                     break;
+                /**
+                 * @api {get} /i/users/update Update user
+                 * @apiName Update User
+                 * @apiGroup User Management
+                 *
+                 * @apiDescription Access database, get collections, indexes and data
+                 * @apiQuery {Object} args User data object
+                 * @apiQuery {String} args.full_name Full name 
+                 * @apiQuery {String} args.username Username
+                 * @apiQuery {String} args.password Password
+                 * @apiQuery {String} args.email Email
+                 * @apiQuery {Object} args.permission Permission object
+                 * @apiQuery {Boolean} args.global_admin Global admin flag
+                 * 
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *  "result":"Success"
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 * }
+                 */
                 case 'update':
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.users.updateUser);
                     break;
+                /**
+                 * @api {get} /i/users/delete Delete user
+                 * @apiName Delete User
+                 * @apiGroup User Management
+                 *
+                 * @apiDescription Access database, get collections, indexes and data
+                 * @apiQuery {Object} args User data object
+                 * @apiQuery {String} args.user_ids IDs array for users which will be deleted
+                 * 
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *  "result":"Success"
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 * }
+                 */
                 case 'delete':
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.users.deleteUser);
                     break;
