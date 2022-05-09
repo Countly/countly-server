@@ -1709,7 +1709,7 @@
                             </chart-header>\
 							<div class="chart-wrapper" :style="{height: (chartOptions.chartheight) + \'px\'}">\
                                 <vue-scroll :ops="scrollOptions" >\
-                                    <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
+                                    <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{\'min-width\':\'100%\',height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
                                             <echarts\
                                                 v-if="!isChartEmpty"\
                                                 :updateOptions="echartUpdateOptions"\

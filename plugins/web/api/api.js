@@ -81,8 +81,15 @@ var pluginOb = {},
         //check if view events need to have platform segment
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
             params.qstring.events = params.qstring.events.map(function(currEvent) {
-                if ((currEvent.key === "[CLY]_view" || currEvent.key === "[CLY]_action") && currEvent.segmentation && currEvent.segmentation.name && (!currEvent.segmentation.segment && !currEvent.segmentation.platform)) {
-                    currEvent.segmentation.segment = data.os;
+                if ((currEvent.key === "[CLY]_view") && currEvent.segmentation && currEvent.segmentation.name && (!currEvent.segmentation.segment && !currEvent.segmentation.platform)) {
+                    if (data.os) {
+                        currEvent.segmentation.segment = data.os;
+                    }
+                }
+                else if ((currEvent.key === "[CLY]_action") && currEvent.segmentation && currEvent.segmentation.view && (!currEvent.segmentation.segment && !currEvent.segmentation.platform)) {
+                    if (data.os) {
+                        currEvent.segmentation.segment = data.os;
+                    }
                 }
                 else if ((currEvent.key === "[CLY]_star_rating" || currEvent.key === "[CLY]_nps" || currEvent.key === "[CLY]_survey") && currEvent.segmentation && !currEvent.segmentation.platform) {
                     currEvent.segmentation.platform = data.os;
