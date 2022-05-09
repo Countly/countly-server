@@ -1,3 +1,17 @@
+## Version 22.03.8
+
+Fixes:
+- [dependency] update dependencies
+- [ui] fixed scaling issues and x-axis labels on charts
+- [ui] tab title should update when switching app types
+
+Enterprise fixes:
+- [crashes-jira] new UI integration
+- [funnels] save button's label changed for edit case.
+- [retention_segments] fixed retention filter query
+- [users] fixed export query
+- [users] fixed query bookmark
+
 ## Version 22.03.7
 
 Fixes:
