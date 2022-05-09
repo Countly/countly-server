@@ -325,6 +325,25 @@
 
     countlyVue.mixins.zoom = ExternalZoomMixin;
 
+    /**
+     * Calculating width of text
+     * @param {string} txt Text value to calculate width.
+     * @param {string} fontname Font name of text
+     * @param {int} fontsize Font size of text
+     * @returns {int} calculated width
+    */
+    function getWidthOfText(txt, fontname, fontsize) {
+        if (getWidthOfText.c === undefined) {
+            getWidthOfText.c = document.createElement('canvas');
+            getWidthOfText.ctx = getWidthOfText.c.getContext('2d');
+        }
+        var fontspec = fontsize + ' ' + fontname;
+        if (getWidthOfText.ctx.font !== fontspec) {
+            getWidthOfText.ctx.font = fontspec;
+        }
+        return getWidthOfText.ctx.measureText(txt).width;
+    }
+
     var xAxisOverflowHandler = {
         data: function() {
             return {
@@ -355,60 +374,38 @@
                 this.chartWidth = ref.getWidth();
                 this.chartHeight = ref.getHeight();
             },
+            calculateMultiplier: function(windowSize, resolutionMultiplier) {
+                var resolutions = Object.keys(resolutionMultiplier);
+                var multiplier = resolutionMultiplier[resolutions[0]];
+                var matchedRes = resolutions[0];
+
+                for (var i = 0; i < resolutions.length; i++) {
+                    if (windowSize >= resolutions[i] && resolutions[i] > matchedRes) {
+                        multiplier = resolutionMultiplier[resolutions[i]];
+                    }
+                }
+                return multiplier;
+            },
             handleXAxisOverflow: function(options, strategy, size) {
                 if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
                     return null;
                 }
 
-                var widthOverflowThreshold = (options.clyCustom && options.clyCustom.widthOverflowThreshold) || 500;
+                var resolutionMultiplier = {
+                    1920: [0.6, 0.4],
+                    1536: [0.6, 0.4],
+                    1440: [0.9, 0.6],
+                    1366: [0.9, 0.6],
+                    1280: [1, 0.8],
+                    1024: [1, 0.8]
+                };
 
+                var windowWidth = window.screen.width;
                 var xAxis = options.xAxis;
 
-                if (size && size.w >= widthOverflowThreshold) {
-                    if (xAxis.data.length >= 3) {
-                        return {
-                            xAxis: {
-                                axisLabel: {
-                                    fontSize: 12
-                                }
-                            }
-                        };
-                    }
-                    return null;
-                }
-
-                // Early return, no need to analyze the array
-                if (xAxis.data.length > 15) {
-                    // no need to force all points to be present
-                    // if there are too many of them
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 100,
-                                overflow: "truncate",
-                                rotate: 45,
-                                fontSize: 12
-                            }
-                        }
-                    };
-                }
-                else if (xAxis.data.length >= 7) {
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 100,
-                                overflow: "truncate",
-                                interval: 0,
-                                rotate: 45,
-                                fontSize: 12
-                            }
-                        }
-                    };
-                }
-
+                var labelW = Math.floor((size.w - 20) / xAxis.data.length);
                 var maxLen = 0;
+                var maxStr = "";
 
                 xAxis.data.forEach(function(item) {
                     var str = "";
@@ -418,44 +415,49 @@
                     else {
                         str = (item || "") + "";
                     }
+
+                    if (str.length > maxLen) {
+                        maxStr = str;
+                    }
+
                     maxLen = Math.max(maxLen, str.length);
                 });
 
-                if (maxLen > 25 && xAxis.data.length >= 3) {
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 150,
-                                overflow: "truncate",
-                                interval: 0,
-                                rotate: 30,
-                                fontSize: 12
-                            }
+                var longestLabelTextW = getWidthOfText(maxStr, FONT_FAMILY, "12px");
+                var returnObj = {
+                    xAxis: {
+                        axisLabel: {
+                            fontSize: 12,
+                            interval: 0,
+                            width: labelW,
+                            rotate: 0,
+                            overflow: "truncate",
                         }
-                    };
-                }
-                else if (xAxis.data.length >= 3) {
-                    return {
-                        grid: {
-                            bottom: 50
-                        },
-                        xAxis: {
-                            axisLabel: {
-                                width: 150,
-                                overflow: "break",
-                                interval: 0,
-                                fontSize: 12
-                            }
-                        }
-                    };
-                }
-                return {
-                    xAxis: {axisLabel: {interval: 0}}
+                    }
                 };
+
+                if ((longestLabelTextW / labelW) > 2) {
+                    returnObj.grid = {containLabel: false, bottom: 105, left: 80};
+                    returnObj.xAxis.axisLabel.rotate = 45;
+                    returnObj.xAxis.axisLabel.width = Math.floor(labelW * this.calculateMultiplier(windowWidth, resolutionMultiplier)[0]);
+                }
+                else if (longestLabelTextW > labelW) {
+                    returnObj.grid = {containLabel: false, bottom: 105, left: 80};
+                    returnObj.xAxis.axisLabel.rotate = 30;
+                    returnObj.xAxis.axisLabel.width = Math.floor(labelW * this.calculateMultiplier(windowWidth, resolutionMultiplier)[1]);
+                }
+                else {
+                    returnObj.xAxis.axisLabel.rotate = 0;
+                }
+
+                // console.log("longest label text width is " + getWidthOfText(maxStr, FONT_FAMILY, "12px"));
+                // console.log("label width is " + labelW);
+
+                return returnObj;
             }
         }
     };
+
 
     /*
         Use xAxis.axisLabel.showMinLabel to change visibility of minimum label
