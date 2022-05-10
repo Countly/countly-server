@@ -96,7 +96,39 @@ describe('Creating user', function() {
                 });
         });
     });
-    describe('with same username', function() {
+    describe('successfully create', function() {
+      it('should create user', function(done) {
+          var app_id = testUtils.get("APP_ID");
+          var permission = testUtils.permission;
+          permission["c"] = {};
+          permission["r"] = {};
+          permission["u"] = {};
+          permission["d"] = {};
+          permission["c"][app_id] = { all: false, allowed: { test_feature: true }};
+          permission["r"][app_id] = { all: false, allowed: { test_feature: true }};
+          permission["u"][app_id] = { all: false, allowed: { test_feature: true }};
+          permission["d"][app_id] = { all: false, allowed: { test_feature: true }};
+
+          var params = {full_name: testUtils.name, permission: permission, username: testUtils.username + "1", password: testUtils.password, email: testUtils.email + ".test"};
+          request
+              .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
+              .expect(200)
+              .end(function(err, res) {
+                  if (err) {
+                    return done(err);
+                  }
+                  var ob = JSON.parse(res.text);
+                  ob.should.have.property('full_name', testUtils.name);
+                  ob.should.have.property('username', testUtils.username + "1");
+                  ob.should.have.property('email', testUtils.email + ".test");
+                  ob.should.have.property('api_key');
+                  testUtils.set("API_KEY_USER", ob["api_key"]);
+                  testUtils.set("USER_ID", ob["_id"]);
+                  done();
+              });
+      });
+    });
+    describe('with same email', function() {
         it('should bad request', function(done) {
             var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username, password: testUtils.password, email: testUtils.email + ".test"};
             request
@@ -128,27 +160,6 @@ describe('Creating user', function() {
                     ob.should.have.property('result');
                     ob.result.should.be.instanceof(Array).and.have.lengthOf(1);
                     ob.result[0].should.be.exactly('Email or username already exists');
-                    done();
-                });
-        });
-    });
-    describe('successfully create', function() {
-        it('should create user', function(done) {
-            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username + "1", password: testUtils.password, email: testUtils.email + ".test"};
-            request
-                .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property('full_name', testUtils.name);
-                    ob.should.have.property('username', testUtils.username + "1");
-                    ob.should.have.property('email', testUtils.email + ".test");
-                    ob.should.have.property('api_key');
-                    testUtils.set("API_KEY_USER", ob["api_key"]);
-                    testUtils.set("USER_ID", ob["_id"]);
                     done();
                 });
         });
