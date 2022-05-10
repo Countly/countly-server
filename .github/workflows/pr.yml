@@ -105,21 +105,9 @@ jobs:
         shell: bash
         run: sleep 100
         
-      - name: Change directory
-        shell: bash
-        run: cd /opt/countly
-        
-      - name: Check modules
-        shell: bash
-        run: ls -l
-        
-      - name: NPM install
-        shell: bash
-        run: npm install grunt mocha eslint grunt-eslint grunt-mocha-test
-        
       - name: Tests
         shell: bash
-        run: npx grunt mochaTest
+        run: cd /opt/countly; npx grunt mochaTest
 
   notify:
     runs-on: ubuntu-latest
