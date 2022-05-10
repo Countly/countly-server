@@ -1967,6 +1967,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                         secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
+
+                    var lastMoment = new moment(lastViewTimestamp);
+                    lastMoment.tz(params.appTimezone);
+
                     if (lastViewTimestamp < (params.time.timestamp - secInMin)) {
                         tmpTimeObjMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
@@ -1974,10 +1978,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (lastViewTimestamp < (params.time.timestamp - secInHour)) {
                         tmpTimeObjMonth['d.' + params.time.day + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
-
-                    if (lastViewDate.year() === params.time.yearly &&
-                        Math.ceil(lastViewDate.format("DDD") / 7) < params.time.weekly) {
-                        tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + common.dbMap.unique] = 1;
+                    if (lastViewDate.year() === params.time.yearly && lastMoment.isoWeek() < params.time.weeklyISO) {
+                        tmpTimeObjZero["d.w" + params.time.weeklyISO + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
 
                     if (lastViewTimestamp < (params.time.timestamp - secInMonth)) {
@@ -1989,7 +1991,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                 }
                 else {
-                    common.fillTimeObjectZero(params, tmpTimeObjZero, escapedMetricVal + common.dbMap.unique);
+                    common.fillTimeObjectZero({"time": {"weekly": params.time.weeklyISO || params.time.weekly, "yearly": params.time.yearly, "month": params.time.month }}, tmpTimeObjZero, escapedMetricVal + common.dbMap.unique);
                     common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + common.dbMap.unique, 1, true);
                 }
             }
