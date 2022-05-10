@@ -374,35 +374,12 @@
                 this.chartWidth = ref.getWidth();
                 this.chartHeight = ref.getHeight();
             },
-            calculateMultiplier: function(windowSize, resolutionMultiplier) {
-                var resolutions = Object.keys(resolutionMultiplier);
-                var multiplier = resolutionMultiplier[resolutions[0]];
-                var matchedRes = resolutions[0];
-
-                for (var i = 0; i < resolutions.length; i++) {
-                    if (windowSize >= resolutions[i] && resolutions[i] > matchedRes) {
-                        multiplier = resolutionMultiplier[resolutions[i]];
-                    }
-                }
-                return multiplier;
-            },
             handleXAxisOverflow: function(options, strategy, size) {
                 if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
                     return null;
                 }
 
-                var resolutionMultiplier = {
-                    1920: [0.6, 0.4],
-                    1536: [0.6, 0.4],
-                    1440: [0.9, 0.6],
-                    1366: [0.9, 0.6],
-                    1280: [1, 0.8],
-                    1024: [1, 0.8]
-                };
-
-                var windowWidth = window.screen.width;
                 var xAxis = options.xAxis;
-
                 var labelW = Math.floor((size.w - 20) / xAxis.data.length);
                 var maxLen = 0;
                 var maxStr = "";
@@ -435,16 +412,15 @@
                         }
                     }
                 };
-
                 if ((longestLabelTextW / labelW) > 2) {
-                    returnObj.grid = {containLabel: false, bottom: 105, left: 80};
+                    returnObj.grid = {containLabel: false, bottom: 100, left: 80};
                     returnObj.xAxis.axisLabel.rotate = 45;
-                    returnObj.xAxis.axisLabel.width = Math.floor(labelW * this.calculateMultiplier(windowWidth, resolutionMultiplier)[0]);
+                    returnObj.xAxis.axisLabel.width = labelW * 1.15 > 100 ? 90 : labelW * 1.15;
                 }
                 else if (longestLabelTextW > labelW) {
-                    returnObj.grid = {containLabel: false, bottom: 105, left: 80};
+                    returnObj.grid = {containLabel: false, bottom: 100, left: 80};
                     returnObj.xAxis.axisLabel.rotate = 30;
-                    returnObj.xAxis.axisLabel.width = Math.floor(labelW * this.calculateMultiplier(windowWidth, resolutionMultiplier)[1]);
+                    returnObj.xAxis.axisLabel.width = labelW * 1.10 > 100 ? 90 : labelW * 1.10;
                 }
                 else {
                     returnObj.xAxis.axisLabel.rotate = 0;
