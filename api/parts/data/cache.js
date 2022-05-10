@@ -54,7 +54,7 @@ class DataStore {
     constructor(size, age, dispose, Cls) {
         this.size = size;
         this.age = age;
-        this.lru = new LRU({max: size || Number.MAX_SAFE_INTEGER, maxAge: age || Number.MAX_SAFE_INTEGER, dispose: dispose, noDisposeOnSet: true, updateAgeOnGet: true});
+        this.lru = new LRU({max: size || (Math.pow(2, 32) - 1), ttl: age || Number.MAX_SAFE_INTEGER, dispose: dispose, noDisposeOnSet: true, updateAgeOnGet: true});
         if (Cls) {
             this.Cls = Cls;
             this.Clas = require('../../../' + Cls[0])[Cls[1]];
