@@ -5,7 +5,7 @@ var plugin = {},
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
-    { validateUser, validateGlobalAdmin } = require('../../../api/utils/rights.js');
+    { validateUser, validateGlobalAdmin, validateRead, validateCreate, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 (function() {
     plugins.register('/i/plugins', function(ob) {
@@ -313,6 +313,39 @@ var plugin = {},
             });
         });
         return true;
+    });
+
+    plugins.register("/i/require-create", function(ob) {
+      var params = ob.params;
+      validateCreate(params, 'test_feature', function() {
+        common.returnOutput(params, true);
+      });
+      return true;
+    });
+
+    plugins.register("/i/require-update", function(ob) {
+      var params = ob.params;
+      validateUpdate(params, 'test_feature', function() {
+        common.returnOutput(params, true);
+      });
+      return true;
+    });
+
+    plugins.register("/i/require-delete", function(ob) {
+      var params = ob.params;
+      validateDelete(params, 'test_feature', function() {
+        common.returnOutput(params, true);
+      });
+      return true;
+    });
+
+    plugins.register("/o/require-read", function(ob) {
+      console.log("require read called");
+      var params = ob.params;
+      validateRead(params, 'test_feature', function() {
+        common.returnOutput(params, true);
+      });
+      return true;
     });
 
     var updatePluginState = function(state) {

@@ -39,3 +39,101 @@ describe('Testing Plugins', function() {
             });
     });
 });
+
+describe('Testing user permission validations', function() {
+  it('should pass the read validation', function(done) {
+    request
+      .get('/o/require-read?api_key=' + testUtils.get("API_KEY_USER") + '&app_id=' + testUtils.get("APP_ID"))
+      .expect(200)
+      .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          done();
+      });
+  });
+
+  it('should not pass the read validation', function(done) {
+    request
+      .get('/o/require-read?api_key=' + testUtils.get("API_KEY_USER") + '1&app_id=' + testUtils.get("APP_ID"))
+      .expect(401)
+      .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          done();
+      });
+  });
+
+  it('should pass the create validation', function(done) {
+    request
+      .get('/i/require-create?api_key=' + testUtils.get("API_KEY_USER") + '&app_id=' + testUtils.get("APP_ID"))
+      .expect(200)
+      .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          done();
+      });
+  });
+
+  it('should not pass the create validation', function(done) {
+    request
+      .get('/i/require-create?api_key=' + testUtils.get("API_KEY_USER") + '1&app_id=' + testUtils.get("APP_ID"))
+      .expect(401)
+      .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          done();
+      });
+  });
+
+  it('should pass the update validation', function(done) {
+    request
+      .get('/i/require-update?api_key=' + testUtils.get("API_KEY_USER") + '&app_id=' + testUtils.get("APP_ID"))
+      .expect(200)
+      .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          done();
+      });
+  });
+
+  it('should not pass the update validation', function(done) {
+    request
+      .get('/i/require-update?api_key=' + testUtils.get("API_KEY_USER") + '1&app_id=' + testUtils.get("APP_ID"))
+      .expect(401)
+      .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          done();
+      });
+  });
+
+  it('should pass the delete validation', function(done) {
+    request
+      .get('/i/require-delete?api_key=' + testUtils.get("API_KEY_USER") + '&app_id=' + testUtils.get("APP_ID"))
+      .expect(200)
+      .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          done();
+      });
+  });
+
+  it('should not pass the delete validation', function(done) {
+    request
+      .get('/i/require-delete?api_key=' + testUtils.get("API_KEY_USER") + '1&app_id=' + testUtils.get("APP_ID"))
+      .expect(401)
+      .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          done();
+      });
+  });
+})
