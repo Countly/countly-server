@@ -241,6 +241,9 @@ plugins.dbConnection().then(async db => {
                 type = queue.substr(queue.lastIndexOf('_') + 1),
                 p = type[0],
                 f = type[1];
+            if ((p === 'a' || p === 'h') && f === 't') {
+                f = 'p';
+            }
             for await (const doc of stream) {
                 await add({
                     _id: common.dbext.oidWithDate(Math.floor(doc.d / 1000)),
