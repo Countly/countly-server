@@ -8,6 +8,8 @@ var APP_ID = "";
 
 describe("Testing Jobs", function() {
     it("Fetching jobs table data", function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_ID = testUtils.get("APP_ID");
         request
             .get("/o?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&method=jobs")
             .expect(200)
