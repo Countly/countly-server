@@ -51,7 +51,7 @@ class InsertBatcher {
      *  @param {string} collection - name of the collection for which to write data
      */
     async flush(db, collection) {
-        var no_fallback_errors = [10334, 17419];
+        var no_fallback_errors = [10334, 17419, 14, 56];
         if (this.data[db][collection].length) {
             var docs = this.data[db][collection];
             this.data[db][collection] = [];
@@ -188,7 +188,7 @@ class WriteBatcher {
      *  @param {string} collection - name of the collection for which to write data
      */
     async flush(db, collection) {
-        var no_fallback_errors = [10334, 17419];
+        var no_fallback_errors = [10334, 17419, 14, 56];
         if (Object.keys(this.data[db][collection]).length) {
             var queries = [];
             for (let key in this.data[db][collection]) {
