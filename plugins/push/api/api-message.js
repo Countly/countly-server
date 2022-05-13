@@ -480,6 +480,69 @@ module.exports.one = async params => {
     }
 
     common.returnOutput(params, msg.json);
+    return true;
+};
+
+/**
+ * Get notifications sent to a particular user
+ * 
+ * @param {object} params params
+ * @returns {Promise} resolves to true
+ */
+module.exports.user = async params => {
+    let data = common.validateArgs(params.qstring, {
+        id: {type: 'String', required: false},
+        did: {type: 'String', required: false},
+        app_id: {type: 'String', required: true},
+        messages: {type: 'BooleanString', required: true},
+    }, true);
+    if (data.result) {
+        data = data.obj;
+    }
+    else {
+        common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
+    }
+
+    if (!data.did && !data.id) {
+        common.returnMessage(params, 400, {errors: ['One of id & did parameters is required']}, null, true);
+        return true;
+    }
+
+    let uid = data.id;
+    if (!uid && data.did) {
+        let user = await common.db.collection(`app_users${data.app_id}`).findOne({did: data.did});
+        if (!user) {
+            common.returnMessage(params, 404, {errors: ['User with the did specified is not found']}, null, true);
+            return true;
+        }
+        uid = user.uid;
+    }
+
+    let push = await common.db.collection(`push_${data.app_id}`).findOne({_id: uid});
+    if (!push) {
+        common.returnOutput(params, {});
+        return true;
+    }
+
+    let ids = Object.keys(push.msgs || {});
+    if (!ids.length) {
+        common.returnOutput(params, {});
+        return true;
+    }
+
+    if (data.messages) {
+        let messages = await common.db.collection('messages').find({_id: {$in: ids.map(common.dbext.oid)}}).toArray();
+        common.returnOutput(params, {
+            notifications: push.msgs,
+            messages
+        });
+    }
+    else {
+        common.returnOutput(params, {notifications: push.msgs});
+    }
+
+    return true;
 };
 
 module.exports.all = async params => {
