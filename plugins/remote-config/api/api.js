@@ -18,6 +18,36 @@ plugins.setConfigs("remote-config", {
         ob.features.push(FEATURE_NAME);
     });
 
+    /**
+     * @api {get} /o/sdk?method=fetch_remote_config Get remote configs in sdk
+     * @apiName GetRemoteConfigInSdk
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Fetch all remote config in sdk
+     *
+     * @apiQuery {String} app_key APP_KEY of an app for which to fetch remote config
+     * @apiQuery {String} device_id Your generated or device specific unique device ID to identify user
+     * @apiQuery {String} [timestamp] 10 digit UTC timestamp for recording past data
+     * @apiQuery {String} [city] Name of the user's city
+     * @apiQuery {String} [country_code] ISO Country code for the user's country
+     * @apiQuery {String} [location] Users lat, lng
+     * @apiQuery {String} [tz] Users timezone
+     * @apiQuery {String} [ip_address]  IP address of user to determine user location, if not provided, countly will try to establish ip address based on connection data
+     * @apiQuery {String[]} [keys] Only the values mentioned in the array will be fetched
+     * @apiQuery {String[]} [omit_keys] Only the values mentioned in the array will not be fetched
+     * @apiQuery {Object} [metrics] JSON object with key value pairs
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * {
+            "default_colors": {
+                "button": "#f77a22",
+                "buttonColor": "#ffffff",
+                "titleColor": "#2eb52b"
+            },
+            "display_onboarding": true,
+            "image_alt": "The image cannot be loaded"
+        }
+     */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
 
@@ -240,6 +270,51 @@ plugins.setConfigs("remote-config", {
         return true;
     });
 
+    /**
+     * @api {get} /o?method=remote-config Get remote configs
+     * @apiName GetRemoteConfig
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Get all the remote configs and the conditions in the dashboard
+     *
+     * @apiQuery {String} app_id Application ID
+     *
+     * @apiSuccess {Object[]} parameters All the parameter information
+     * @apiSuccess {Object[]} conditions All the condition information
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * {
+            "parameters": [
+                {
+                "_id": "5c3b064763c6920705d94e9b",
+                "parameter_key": "button_color",
+                "default_value": [
+                    "#000"
+                ],
+                "conditions": [
+                    {
+                    "condition_id": "5c3f8d50a9c3f071cecc8b87",
+                    "value": [
+                        "#FFF"
+                    ]
+                    }
+                ],
+                "description": "Button color of the apps"
+                }
+            ],
+            "conditions": [
+                {
+                "_id": "5c3f8d50a9c3f071cecc8b87",
+                "condition_name": "android",
+                "condition_color": 2,
+                "condition": "{\"up.d\":{\"$in\":[\"Asus Nexus 10\"]}}",
+                "condition_definition": "Device = Asus Nexus 10",
+                "seed_value": "",
+                "used_in_parameters": 1
+                }
+            ]
+        }
+     */
     plugins.register("/o", function(ob) {
         var params = ob.params;
 
@@ -329,6 +404,17 @@ plugins.setConfigs("remote-config", {
         common.outDb.collection('remoteconfig_conditions' + appId).drop(function() {});
     });
 
+    /**
+     * @api {get} /i/remote-config/add-parameter Add a parameter
+     * @apiName AddRcParameter
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Add parameter to remote config
+     *
+     * @apiQuery {String} app_id Application id
+     * @apiQuery {Object} parameter Parameter information
+     *
+     */
     /**
      * Function to add a parameter
      * @param  {Object} params - params object
@@ -596,6 +682,18 @@ plugins.setConfigs("remote-config", {
     }
 
     /**
+     * @api {get} /i/remote-config/update-parameter Update a parameter
+     * @apiName UpdateRcParameter
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Update remote config parameter
+     *
+     * @apiQuery {String} app_id Application id
+     * @apiQuery {Object} parameter Parameter information
+     * @apiQuery {String} parameter_id Id of the parameter which is to be updated
+     *
+     */
+    /**
      * Function to update parameter
      * @param  {Object} params - params object
      * @returns {String} response
@@ -743,6 +841,17 @@ plugins.setConfigs("remote-config", {
     }
 
     /**
+     * @api {get} /i/remote-config/remove-parameter Remove a parameter
+     * @apiName RemoveRcParameter
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Remove a remote config parameter
+     *
+     * @apiQuery {String} app_id Application id
+     * @apiQuery {String} parameter_id Id of the parameter which is to be removed
+     *
+     */
+    /**
      * Function to remote parameter
      * @param  {Object} params - params object
      */
@@ -764,6 +873,17 @@ plugins.setConfigs("remote-config", {
         });
     }
 
+    /**
+     * @api {get} /i/remote-config/add-condition Add a condition
+     * @apiName AddRcCondition
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Add remote config condition
+     *
+     * @apiQuery {String} app_id Application id
+     * @apiQuery {Object} condition Condition information
+     *
+     */
     /**
      * Function to add condition
      * @param  {Object} params - params object
@@ -934,6 +1054,18 @@ plugins.setConfigs("remote-config", {
     }
 
     /**
+     * @api {get} /i/remote-config/update-condition Update a condition
+     * @apiName UpdateRcCondition
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Update remote config condition
+     *
+     * @apiQuery {String} app_id Application id
+     * @apiQuery {Object} condition Condition information
+     * @apiQuery {String} condition_id Id of the condition that is to be updated
+     *
+     */
+    /**
      * Function to update condition
      * @param  {Object} params - params object
      * @returns {String} response
@@ -998,6 +1130,16 @@ plugins.setConfigs("remote-config", {
         }
     }
 
+    /**
+     * @api {get} /i/remote-config/remove-condition Remove a condition
+     * @apiName RemoveRcCondition
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Remove remote config condition
+     *
+     * @apiQuery {String} app_id Application id
+     * @apiQuery {String} condition_id Id of the condition that is to be removed
+     *
     /**
      * Function to remove condition
      * @param  {Object} params - params object

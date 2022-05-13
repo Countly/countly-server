@@ -319,11 +319,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                 if (year_array.length === 0 && year_array[year_array.length - 1] !== kk[0]) {
                     year_array.push(kk[0]);
-                    month_array.push({"_id": {$regex: ".*" + kk[0] + ":0"}});
+                    month_array.push({"_id": {$regex: ".*" + kk[0] + ":0$"}});
                 }
                 if (last_pushed === "" || last_pushed !== kk[1]) {
                     last_pushed = kk[1];
-                    month_array.push({"_id": {$regex: ".*" + kk[0] + ":" + kk[1] + "_m"}});
+                    month_array.push({"_id": {$regex: ".*" + kk[0] + ":" + kk[1] + "$"}});
                 }
             }
             var u0 = createUvalues(periodObj.uniquePeriodArr, segment);
@@ -371,7 +371,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         else if (period === "month") { //this year
             curmonth = periodObj.activePeriod;
-            pipeline.push({$match: {'_id': {$regex: ".*_" + curmonth + ":0"}}});
+            pipeline.push({$match: {'_id': {$regex: ".*_" + curmonth + ":0$"}}});
             if (settings && settings.onlyIDs) {
                 pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
             }
@@ -395,7 +395,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             curmonth = now.format('YYYY:M');
             var monthNumber = curmonth.split(':');
             var thisYear = now.format('YYYY');
-            pipeline.push({$match: {'_id': {$regex: ".*_" + thisYear + ":0"}}});
+            pipeline.push({$match: {'_id': {$regex: ".*_" + thisYear + ":0$"}}});
             if (settings && settings.onlyIDs) {
                 pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
             }
@@ -415,7 +415,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var this_date = periodObj.activePeriod.split(".");
             curmonth = this_date[0] + ":" + this_date[1];
             var curday = this_date[2];
-            pipeline.push({$match: {'_id': {$regex: ".*_" + curmonth + "_m"}}});
+            pipeline.push({$match: {'_id': {$regex: ".*_" + curmonth + "$"}}});
             if (settings && settings.onlyIDs) {
                 pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
             }
@@ -460,13 +460,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                 if (year_array.indexOf(kk[0]) === -1) {
                     year_array.push(kk[0]);
-                    month_array.push({"m": {$regex: kk[0] + ":0"}});
+                    month_array.push({"m": {$regex: kk[0] + ":0$"}});
                 }
                 if (monthValue === firstMonth || monthValue === lastMonth) {
                     if (last_pushed === "" || last_pushed !== kk[1]) {
                         last_pushed = kk[1];
 
-                        month_array.push({"_id": {$regex: ".*" + kk[0] + ":" + kk[1] + "_m"}});
+                        month_array.push({"_id": {$regex: ".*" + kk[0] + ":" + kk[1] + "$"}});
                     }
                 }
             }
@@ -540,7 +540,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             pulling_attributes.uvalue = true;
         }
         pipeline.push({$project: pulling_attributes});
-
         return pipeline;
     }
     pluginOb.createAggregatePipeline = createAggregatePipeline;
@@ -1923,8 +1922,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 tmpTimeObjZero = {},
                 tmpTimeObjMonth = {},
                 zeroObjUpdate = [],
-                monthObjUpdate = [],
-                monthSmallerUpdate = {};
+                monthObjUpdate = [];
 
             var tmpZeroId = currEvent.viewAlias + "_" + dateIds.zero; //view_year
             var tmpMonthId = currEvent.viewAlias + "_" + dateIds.month; //view_month_doc
@@ -1969,18 +1967,19 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                         secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
+
+                    var lastMoment = new moment(lastViewTimestamp);
+                    lastMoment.tz(params.appTimezone);
+
                     if (lastViewTimestamp < (params.time.timestamp - secInMin)) {
                         tmpTimeObjMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
 
                     if (lastViewTimestamp < (params.time.timestamp - secInHour)) {
                         tmpTimeObjMonth['d.' + params.time.day + '.' + escapedMetricVal + common.dbMap.unique] = 1;
-                        monthSmallerUpdate['d.' + params.time.day + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
-
-                    if (lastViewDate.year() === params.time.yearly &&
-                        Math.ceil(lastViewDate.format("DDD") / 7) < params.time.weekly) {
-                        tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + common.dbMap.unique] = 1;
+                    if (lastViewDate.year() === params.time.yearly && lastMoment.isoWeek() < params.time.weeklyISO) {
+                        tmpTimeObjZero["d.w" + params.time.weeklyISO + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
 
                     if (lastViewTimestamp < (params.time.timestamp - secInMonth)) {
@@ -1992,9 +1991,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                 }
                 else {
-                    common.fillTimeObjectZero(params, tmpTimeObjZero, escapedMetricVal + common.dbMap.unique);
+                    common.fillTimeObjectZero({"time": {"weekly": params.time.weeklyISO || params.time.weekly, "yearly": params.time.yearly, "month": params.time.month }}, tmpTimeObjZero, escapedMetricVal + common.dbMap.unique);
                     common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + common.dbMap.unique, 1, true);
-                    common.fillTimeObjectMonth(params, monthSmallerUpdate, escapedMetricVal + common.dbMap.unique, 1, false);
                 }
             }
 
@@ -2022,19 +2020,16 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
             common.fillTimeObjectZero(params, tmpTimeObjZero, zeroObjUpdate);
             common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate, 1, true);
-            common.fillTimeObjectMonth(params, monthSmallerUpdate, monthObjUpdate, 1, false);
 
             if (currEvent.dur) {
                 let dur = parseInt(currEvent.dur);
                 common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + common.dbMap.duration, dur, true);
-                common.fillTimeObjectMonth(params, monthSmallerUpdate, escapedMetricVal + common.dbMap.duration, dur, false);
                 tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + common.dbMap.duration] = dur;
             }
 
             if (currEvent.scroll) {
                 let dur = parseInt(currEvent.scroll);
                 common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + 'scr', dur, true);
-                common.fillTimeObjectMonth(params, monthSmallerUpdate, escapedMetricVal + 'scr', dur, false);
                 tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + 'scr'] = dur;
             }
             var update;
@@ -2060,13 +2055,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 if (Object.keys(tmpTimeObjMonth).length) {
                     update.$inc = tmpTimeObjMonth;
                 }
-
-                var update2 = {$set: {m: dateIds.month, a: params.app_id + "", vw: common.db.ObjectID(viewName), s: segment}};
-                if (Object.keys(monthSmallerUpdate).length) {
-                    update2.$inc = monthSmallerUpdate;
-                }
                 common.writeBatcher.add(colName, tmpMonthId, update);
-                common.writeBatcher.add(colName, tmpMonthId + "_m", update2);
+                // common.writeBatcher.add(colName, tmpMonthId + "_m", update2);
             }
         }
     }

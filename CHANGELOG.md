@@ -1,3 +1,31 @@
+## Version 22.03.8
+
+Fixes:
+- [dependency] update dependencies
+- [ui] fixed scaling issues and x-axis labels on charts
+- [ui] tab title should update when switching app types
+
+Enterprise fixes:
+- [crashes-jira] new UI integration
+- [funnels] save button's label changed for edit case.
+- [retention_segments] fixed retention filter query
+- [users] fixed export query
+- [users] fixed query bookmark
+
+## Version 22.03.7
+
+Fixes:
+- [compare] Adding tests
+- [members] Secure password reset token generation
+- [push] Allowing no platform results for migrated messages
+- [push] Migrating messages in batches
+- [remote-config] Fix for percentage bars
+- [upgrade] Remove even more files
+- [views] Fix view regeneration
+
+Enterprise fixes:
+- [flows] ui fix
+
 ## Version 22.03.6
 
 Fixes:
@@ -101,6 +129,11 @@ Fixes:
 - [push] mutable-content for buttons
 - [scripts] fixed Compiler Version for 22.03 upgrade and installation
 - [upgrade] remove old files
+
+## Version 21.11.4
+
+Fixes:
+- [members] Secure password reset token generation
 
 ## Version 21.11.3
 
