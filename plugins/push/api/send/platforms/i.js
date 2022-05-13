@@ -81,6 +81,7 @@ const CREDS = {
                 notAfter: { required: false, type: 'Date' },
                 topics: { required: false, type: 'String[]' },
                 bundle: { required: false, type: 'String' },
+                hash: { required: false, type: 'String' },
             });
         }
 
@@ -262,6 +263,7 @@ const CREDS = {
                 bundle: { required: true, type: 'String' },
                 team: { required: true, type: 'String' },
                 fileType: { required: false, type: 'String' },
+                hash: { required: false, type: 'String' },
             });
         }
 
@@ -523,7 +525,7 @@ class APN extends Base {
      */
     constructor(log, type, creds, messages, options) {
         super(log, type, creds, messages, options);
-        this.log = logger(log).sub(`wi-${threadId}`);
+        this.log = logger(log).sub(`${threadId}-i`);
 
         this.templates = {};
         this.results = [];
@@ -636,6 +638,10 @@ class APN extends Base {
                     nonRecoverableError.addLeft(p._id, one);
                     streamDone();
                     return;
+                }
+
+                if (!this.messages[p.m]) {
+                    this.log.e('No message %s', p.m);
                 }
 
                 let content = this.template(p.m).compile(p),

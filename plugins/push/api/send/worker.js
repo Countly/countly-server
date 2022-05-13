@@ -1,4 +1,4 @@
-const {Worker, isMainThread, parentPort, workerData} = require('worker_threads'),
+const {Worker, isMainThread, parentPort, workerData, threadId} = require('worker_threads'),
     {Duplex} = require('stream'),
     {FRAME, FRAME_NAME, encode, decode, frame_type, frame_length} = require('./proto'),
     Measurement = require('./measure'),
@@ -45,7 +45,7 @@ if (isMainThread) {
             this.bytes = opts.cfg.pool.bytes;
             this.worker = new Worker(__filename, {workerData: {json: JSON.stringify(Object.assign(opts, {logs: plugins.getConfig('logs')}))}});
             this.worker.unref();
-            this.log = logger(opts.log).sub(`wrk-m`);
+            this.log = logger(opts.log).sub(`${this.worker.threadId}-m`);
             this.init = new Promise((res, rej) => {
                 this.initRes = res;
                 this.initRej = rej;
@@ -173,8 +173,8 @@ if (isMainThread) {
          * @param {function} callback called when the frame is fully processed
          */
         _writev(chunks, callback) {
-            this.log.d('Writing %d chunks to worker thread', chunks.length);
-            this.log.f('i', log => {
+            this.log.f('d', log => {
+                log('Writing %d chunks to worker thread, first is %d', chunks.length, frame_type(chunks[0].chunk.buffer));
                 log('Load %s in %s/%s/%s out %s/%s/%s', this.load.toFixed(2), this.in.avg(5), this.in.avg(30), this.in.avg(60), this.out.avg(5), this.out.avg(30), this.out.avg(60));
             });
             chunks.forEach(chunk => {
@@ -253,18 +253,19 @@ if (isMainThread) {
 else {
     let processing = 0;
 
-    const {id: wrkid, log: logid, type, creds, messages, cfg, logs} = JSON.parse(workerData.json);
+    const {log: logid, type, creds, messages, cfg, logs} = JSON.parse(workerData.json);
     logger.ipcHandler({cmd: 'log', config: logs});
 
-    const id = `wrk-${wrkid}-w`,
-        connection = factory(logid, type, creds, messages, cfg),
-        log = logger(logid).sub(id),
+    const connection = factory(logid, type, creds, messages, cfg),
+        log = logger(logid).sub(threadId + ''),
         post = function(frame, payload, length = 0) {
             processing -= length;
             let arr = encode(frame, payload || {}, length);
             log.d('OUT message %s %d bytes (processing %d)', FRAME_NAME[arr[0]], arr.length, processing);
             parentPort.postMessage(arr);
         };
+
+    log.i('Starting with messages %s', (messages || []).map(m => m._id).join(', '));
 
     connection.on('error', err => {
         log.w('error in worker %s', err);
@@ -307,6 +308,9 @@ else {
         log.d('IN message %s %d bytes', FRAME_NAME[arr[0]], arr.length);
         const data = decode(arr.buffer);
         if (data.frame === FRAME.CONNECT) {
+            if (data.payload && Array.isArray(data.payload)) {
+                log.d('IN CONNECT with messages %s', data.payload.map(m => m._id).join(', '));
+            }
             if (connection.connected) {
                 if (data.payload && Array.isArray(data.payload)) {
                     data.payload.forEach(m => connection.message(m));

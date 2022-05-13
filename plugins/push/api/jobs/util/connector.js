@@ -1,6 +1,5 @@
-const { PushError, SendError, ERROR } = require('../../send/std');
 const { DoFinish } = require('./do_finish'),
-    { Message, State, Status, Creds, pools, FRAME } = require('../../send'),
+    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR } = require('../../send'),
     { FRAME_NAME } = require('../../send/proto');
 
 /**
@@ -17,7 +16,7 @@ class Connector extends DoFinish {
      * @param {State} state state shared across the streams
      */
     constructor(log, db, state) {
-        super({objectMode: true});
+        super({objectMode: true, writableHighWaterMark: 3});
         this.log = log.sub('connector');
         this.db = db;
         this.state = state;
@@ -31,8 +30,9 @@ class Connector extends DoFinish {
     resetErrors() {
         this.noApp = new SendError('NoApp', ERROR.DATA_COUNTLY);
         this.noCreds = new SendError('NoCredentials', ERROR.DATA_COUNTLY);
-        this.noMessage = new SendError('NoMessage', ERROR.DATA_COUNTLY);
         this.noConnection = new SendError('NoConnection', ERROR.CONNECTION_PROVIDER);
+        this.noMessage = {}; // {mid: [push, push, push, ...]}
+        this.noMessageBytes = 0;
     }
 
     /**
@@ -70,7 +70,13 @@ class Connector extends DoFinish {
             return;
         }
         else if (message === false) { // app or message is already ignored
-            this.noMessage.addAffected(push._id, 1);
+            if (!this.noMessage[push.m]) {
+                this.noMessage[push.m] = [];
+            }
+            this.noMessage[push.m].push(push);
+            this.noMessageBytes++;
+            this.state.decSending(push.m);
+            delete this.state.pushes[push._id];
             this.do_flush(callback, true);
             return;
         }
@@ -116,7 +122,6 @@ class Connector extends DoFinish {
                 if (msg) {
                     this.log.d('sending message', push.m);
                     this.state.setMessage(msg); // only turns to app if there's one or more credentials found
-                    pools.message(app._id.toString(), [msg]);
                 }
                 else {
                     this.log.e('message not found', push.m);
@@ -151,15 +156,20 @@ class Connector extends DoFinish {
                     }, callback);
             }
             else {
-                let pid = pools.id(push.a, push.p, push.f),
-                    creds = app.creds[push.p];
+                let creds = app.creds[push.p],
+                    pid = pools.id(creds.hash, push.p, push.f);
                 if (pools.has(pid)) { // already connected
                     this.log.d('push goes to connection', push._id);
                     callback(null, push);
                 }
+                else if (pools.isFull) { // no connection yet and we can't create it, just ignore push so it could be sent next time
+                    delete this.state.pushes[push._id];
+                    this.state.decSending(push.m);
+                    callback();
+                }
                 else { // no connection yet
                     this.log.i('Connecting %s', pid);
-                    pools.connect(push.a, push.p, push.f, creds, this.state.messages(), this.state.cfg).then(() => {
+                    pools.connect(push.a, push.p, push.f, creds, this.state, this.state.cfg).then(() => {
                         this.log.i('Connected %s', pid);
                         callback(null, push);
                     }, err => {
@@ -181,7 +191,7 @@ class Connector extends DoFinish {
      * @param {boolean} ifNeeded true if we only need to flush `discarded` when it's length is over `limit`
      */
     do_flush(callback, ifNeeded) {
-        let total = this.noMessage.affectedBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.noConnection.affectedBytes;
+        let total = this.noMessageBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.noConnection.affectedBytes;
         this.log.d('in connector do_flush, total', total);
 
         if (ifNeeded && !this.flushed && (!total || total < this.limit)) {
@@ -191,8 +201,56 @@ class Connector extends DoFinish {
             return;
         }
 
-        if (this.noMessage.hasAffected) {
-            this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.noMessage});
+        if (this.noMessageBytes) {
+            Promise.all(Object.keys(this.noMessage).map(mid => {
+                let pushes = this.noMessage[mid],
+                    inc = {};
+                delete this.noMessage[mid];
+                this.noMessageBytes -= pushes.length;
+                pushes.forEach(push => {
+                    let la = push.pr.la || 'default';
+
+                    if (inc.processed) {
+                        inc.processed++;
+                        inc.errored++;
+                        inc['errors.Rejected']++;
+                    }
+                    else {
+                        inc.processed = 1;
+                        inc.errored = 1;
+                        inc['errors.Rejected'] = 1;
+                    }
+                    if (inc[`subs.${push.p}.processed`]) {
+                        inc[`subs.${push.p}.processed`]++;
+                        inc[`subs.${push.p}.errored`]++;
+                        inc[`subs.${push.p}.errors.Rejected`]++;
+                    }
+                    else {
+                        inc[`subs.${push.p}.processed`] = 1;
+                        inc[`subs.${push.p}.errored`] = 1;
+                        inc[`subs.${push.p}.errors.Rejected`] = 1;
+                    }
+                    if (inc[`subs.${push.p}.subs.${la}.processed`]) {
+                        inc[`subs.${push.p}.subs.${la}.processed`]++;
+                        inc[`subs.${push.p}.subs.${la}.errored`]++;
+                        inc[`subs.${push.p}.subs.${la}.errors.Rejected`]++;
+                    }
+                    else {
+                        inc[`subs.${push.p}.subs.${la}.processed`] = 1;
+                        inc[`subs.${push.p}.subs.${la}.errored`] = 1;
+                        inc[`subs.${push.p}.subs.${la}.errors.Rejected`] = 1;
+                    }
+                });
+                this.log.w('Message %s doesn\'t exist or is in inactive state, ignoring %d pushes', mid, pushes.length);
+                return Promise.all([
+                    this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, {$inc: inc}),
+                    this.db.collection('push').deleteMany({_id: {$in: pushes.map(p => p._id)}}),
+                ]);
+            })).then(() => this.do_flush(callback, ifNeeded), err => {
+                this.log.e('Error while setting NoMessage error', err);
+                this.do_flush(callback, ifNeeded);
+            });
+            return;
         }
 
         if (this.noApp.hasAffected) {
