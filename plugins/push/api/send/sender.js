@@ -40,7 +40,8 @@ class Sender {
             pool: {
                 pushes: 100000,
                 bytes: 100000,
-                concurrency: 5
+                concurrency: 5,
+                pools: 10
             }
         };
 

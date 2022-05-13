@@ -540,8 +540,8 @@ class Message extends Mongoable {
                 status = Status.Scheduled;
             }
             else {
-                state = State.Done;
-                status = Status.Stopped;
+                state = State.Created | State.Streamable;
+                status = Status.Scheduled;
             }
         }
         else if (old & OldStatus.Created) {
@@ -550,8 +550,8 @@ class Message extends Mongoable {
                 status = Status.Inactive;
             }
             else {
-                state = State.Done;
-                status = Status.Stopped;
+                state = State.Created;
+                status = Status.Created;
             }
         }
         else {

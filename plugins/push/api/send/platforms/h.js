@@ -58,7 +58,7 @@ class HPK extends Splitter {
         options.pool.concurrency = 500;
         super(log, type, creds, messages, options);
 
-        this.log = logger(log).sub(`wh-${threadId}`);
+        this.log = logger(log).sub(`${threadId}-h`);
         this.opts = {
             agent: this.agent,
             hostname: 'push-api.cloud.huawei.com',
@@ -529,6 +529,7 @@ const CREDS = {
             return Object.assign(super.scheme, {
                 app: { required: true, type: 'String', 'min-length': 7, 'max-length': 12},
                 secret: { required: true, type: 'String', 'min-length': 64, 'max-length': 64},
+                hash: { required: false, type: 'String' },
             });
         }
 

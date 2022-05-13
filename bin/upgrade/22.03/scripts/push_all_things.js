@@ -212,6 +212,19 @@ plugins.dbConnection().then(async db => {
                         }
                     }
                 }
+                else {
+                    let needsFix = false,
+                        fixed = {};
+                    for (let mid in doc.msgs) {
+                        if (typeof doc.msgs[mid] === 'number') {
+                            needsFix = true;
+                        }
+                        fixed[mid] = typeof doc.msgs[mid] === 'number' ? [doc.msgs[mid]] : doc.msgs[mid];
+                    }
+                    if (needsFix) {
+                        obj = fixed;
+                    }
+                }
 
                 if (Object.keys(obj).length) {
                     await add({updateOne: {filter: {_id: doc._id}, update: {$set: {msgs: obj}}}});

@@ -90,11 +90,17 @@ class Batcher extends DoFinish {
 
             let { PLATFORM } = require('../../send/platforms');
             for (let p in PLATFORM) {
-                this.ids[app._id][p] = {};
+                if (!this.ids[app._id][p]) {
+                    this.ids[app._id][p] = {};
+                }
                 Object.values(PLATFORM[p].FIELDS).forEach(f => {
                     if (app.creds[p]) {
-                        this.ids[app._id][p][f] = pools.id(app._id, p, f);
-                        this.buffers[this.ids[app._id][p][f]] = [];
+                        if (!this.ids[app._id][p][f]) {
+                            this.ids[app._id][p][f] = pools.id(app.creds[p].hash, p, f);
+                        }
+                        if (!this.buffers[this.ids[app._id][p][f]]) {
+                            this.buffers[this.ids[app._id][p][f]] = [];
+                        }
                     }
                 });
             }
@@ -240,7 +246,9 @@ class Batcher extends DoFinish {
             let payload = Math.random();
             multicast(this.log, FRAME.END, payload, Object.keys(this.listeners), err => {
                 for (let id in this.listeners) {
-                    pools.pools[id].off('data', this.listeners[id]);
+                    if (pools.pools[id]) {
+                        pools.pools[id].off('data', this.listeners[id]);
+                    }
                 }
                 this.listeners = {};
                 this.push({frame: FRAME.END, payload});
