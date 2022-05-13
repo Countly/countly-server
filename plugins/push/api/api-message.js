@@ -189,6 +189,7 @@ module.exports.test = async params => {
     }
 
     if (msg) {
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_test', data: {test_uids, test_cohorts}});
         let ok = await msg.updateAtomically(
             {_id: msg._id, state: msg.state},
             {
@@ -227,6 +228,7 @@ module.exports.create = async params => {
         msg.status = Status.Draft;
         msg.state = State.Inactive;
         await msg.save();
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_draft', data: msg.json});
     }
     else {
         msg.state = State.Created;
@@ -235,6 +237,7 @@ module.exports.create = async params => {
         if (!demo) {
             await msg.schedule(log, params);
         }
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
     }
 
     if (demo && demo !== 'no-data') {
@@ -256,6 +259,7 @@ module.exports.update = async params => {
             msg.status = Status.Created;
             await msg.save();
             await msg.schedule(log, params);
+            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
         }
         else if (msg.triggerPlain()) {
             throw new ValidationError('Finished plain messages cannot be changed');
@@ -275,9 +279,11 @@ module.exports.update = async params => {
             msg.state = State.Created;
             await msg.save();
             await msg.schedule(log, params);
+            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated_draft', data: msg.json});
         }
         else {
             await msg.save();
+            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
         }
     }
 
@@ -311,6 +317,7 @@ module.exports.remove = async params => {
             $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
         });
     if (ok) {
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_deleted', data: msg.json});
         common.returnOutput(params, {});
     }
     else {
@@ -351,9 +358,11 @@ module.exports.toggle = async params => {
 
     if (msg.is(State.Streamable)) {
         await msg.stop(log);
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_deactivated', data: msg.json});
     }
     else {
         await msg.schedule(log, params);
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: msg.json});
     }
 
     common.returnOutput(params, msg.json);
