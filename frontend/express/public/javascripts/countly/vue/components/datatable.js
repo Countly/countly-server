@@ -330,6 +330,12 @@
                 if (this.persistKey) {
                     localStorage.setItem(this.persistKey, JSON.stringify(this.controlParams));
                 }
+            },
+            onRowClick: function(row) {
+                // Only expand row if text inside of it are not selected
+                if (window.getSelection().toString().length === 0) {
+                    this.$refs.elTable.toggleRowExpansion(row);
+                }
             }
         }
     };

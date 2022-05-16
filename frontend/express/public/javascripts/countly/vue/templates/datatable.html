@@ -67,8 +67,8 @@
                                     </div>
                                 </div>
                                 <div class="bu-mx-2">
-                                    <cly-checklistbox 
-                                    v-model="exportColumns" 
+                                    <cly-checklistbox
+                                    v-model="exportColumns"
                                     :sortable="false"
                                     :bordered="false"
                                     :options.sync="getMatching(availableDynamicCols)">
@@ -100,6 +100,7 @@
             @sort-change="onSortChange"
             @selection-change="onSelectionChange"
             @cell-mouse-enter="onCellMouseEnter"
+            @row-click="onRowClick"
             ref="elTable">
                 <template slot="empty" v-if="!isLoading">
                     <cly-empty-datatable></cly-empty-datatable>
