@@ -10,7 +10,7 @@
     <cly-main>
 		<cly-date-picker-g class="bu-mb-4"></cly-date-picker-g>
 		<cly-section class="bu-mt-4">
-			<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'ts', order: 'descending'}">
+			<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'ts', order: 'descending'}" @row-click="handleRowClick" ref="table" :row-class-name="tableRowClassName">
                 <template v-slot="scope">
                     <el-table-column type="expand">
                         <template slot-scope="rowScope">
@@ -43,14 +43,14 @@
                 <template v-slot:header-left>
                     <cly-select-x
                         :search-placeholder="i18n('common.search')"
-                        placeholder="" 
+                        placeholder=""
                         v-model="selectAction"
                         v-on:change="changeAction"
                         :options="allActions">
                     </cly-select-x>
                     <cly-select-x
                         :search-placeholder="i18n('common.search')"
-                        placeholder="" 
+                        placeholder=""
                         v-model="selectUser"
                         v-on:change="changeUser"
                         :options="allUsers" class="bu-ml-4">

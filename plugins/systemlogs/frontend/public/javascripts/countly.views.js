@@ -210,6 +210,15 @@
                     return x < y ? -1 : x > y ? 1 : 0;
                 });
                 return arr;
+            },
+            handleRowClick: function(row) {
+                // Only expand row if text inside of it are not highlighted
+                if (window.getSelection().length === 0) {
+                    this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+                }
+            },
+            tableRowClassName: function() {
+                return 'bu-is-clickable';
             }
         }
     });
