@@ -8,6 +8,7 @@ Fixes:
 Enterprise fixes:
 - [auth_plugins] Remove old UI artifacts
 - [drill] View regeneration from drill data
+- [surveys] Fixed tooltip localization
 
 ## Version 22.03.9
 
