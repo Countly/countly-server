@@ -30,7 +30,7 @@ class Connector extends DoFinish {
     resetErrors() {
         this.noApp = new SendError('NoApp', ERROR.DATA_COUNTLY);
         this.noCreds = new SendError('NoCredentials', ERROR.DATA_COUNTLY);
-        this.noConnection = new SendError('NoConnection', ERROR.CONNECTION_PROVIDER);
+        this.expiredCreds = new SendError('ExpiredCreds', ERROR.CONNECTION_PROVIDER);
         this.noMessage = {}; // {mid: [push, push, push, ...]}
         this.noMessageBytes = 0;
     }
@@ -131,7 +131,7 @@ class Connector extends DoFinish {
             }, callback);
         }
         else if (app.creds[push.p] === null) { // no connection
-            this.noConnection.addAffected(push._id, 1);
+            this.expiredCreds.addAffected(push._id, 1);
             this.do_flush(callback, true);
         }
         else if (!app.creds[push.p]) { // no credentials
@@ -169,8 +169,13 @@ class Connector extends DoFinish {
                 }
                 else { // no connection yet
                     this.log.i('Connecting %s', pid);
-                    pools.connect(push.a, push.p, push.f, creds, this.state, this.state.cfg).then(() => {
-                        this.log.i('Connected %s', pid);
+                    pools.connect(push.a, push.p, push.f, creds, this.state, this.state.cfg).then(valid => {
+                        if (valid) {
+                            this.log.i('Connected %s', pid);
+                        }
+                        else {
+                            app.creds[push.p] === null;
+                        }
                         callback(null, push);
                     }, err => {
                         this.log.i('Failed to connect %s', pid, err);
@@ -191,7 +196,7 @@ class Connector extends DoFinish {
      * @param {boolean} ifNeeded true if we only need to flush `discarded` when it's length is over `limit`
      */
     do_flush(callback, ifNeeded) {
-        let total = this.noMessageBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.noConnection.affectedBytes;
+        let total = this.noMessageBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.expiredCreds.affectedBytes;
         this.log.d('in connector do_flush, total', total);
 
         if (ifNeeded && !this.flushed && (!total || total < this.limit)) {
@@ -261,8 +266,8 @@ class Connector extends DoFinish {
             this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.noCreds});
         }
 
-        if (this.noConnection.hasAffected) {
-            this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.noConnection});
+        if (this.expiredCreds.hasAffected) {
+            this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.expiredCreds});
         }
 
         this.resetErrors();

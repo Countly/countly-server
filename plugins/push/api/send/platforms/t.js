@@ -207,12 +207,16 @@ class TestConnection extends Base {
     async connect(messages) {
         if (messages) {
             if (!this.connected) {
-                await this.connect();
+                let ok = await this.connect();
+                if (!ok) {
+                    return ok;
+                }
             }
             if (!this.connected) {
                 throw new Error('Failed to connect');
             }
             messages.forEach(m => this.message(m._id, m));
+            return true;
         }
         else if (this.e_connect) {
             this.log.d('simulating connection error');
