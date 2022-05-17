@@ -174,7 +174,7 @@ class Connector extends DoFinish {
                             this.log.i('Connected %s', pid);
                         }
                         else {
-                            app.creds[push.p] === null;
+                            app.creds[push.p] = null;
                         }
                         callback(null, push);
                     }, err => {
