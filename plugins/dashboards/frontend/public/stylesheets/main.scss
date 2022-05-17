@@ -53,6 +53,8 @@
             background-color: map.get(c.$colors, "white");
             border: 1px solid #E2E4E8;
             border-radius: 4px;
+            overflow-x: initial !important;
+            overflow-y: initial !important;
         }
 
         .el-loading-mask {
