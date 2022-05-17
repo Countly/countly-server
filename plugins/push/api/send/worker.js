@@ -2,7 +2,7 @@ const {Worker, isMainThread, parentPort, workerData, threadId} = require('worker
     {Duplex} = require('stream'),
     {FRAME, FRAME_NAME, encode, decode, frame_type, frame_length} = require('./proto'),
     Measurement = require('./measure'),
-    { PushError } = require('./data/error'),
+    { PushError, ConnectionError } = require('./data/error'),
     { Creds } = require('./data/creds'),
     plugins = require('../../../pluginManager'),
     logger = require('../../../../api/utils/log.js');
@@ -317,12 +317,17 @@ else {
                 }
             }
             else {
-                connection.connect().then(() => {
-                    connection.connected = true;
-                    if (data.payload && Array.isArray(data.payload)) {
-                        data.payload.forEach(m => connection.message(m));
+                connection.connect().then(valid => {
+                    if (valid) {
+                        connection.connected = true;
+                        if (data.payload && Array.isArray(data.payload)) {
+                            data.payload.forEach(m => connection.message(m));
+                        }
+                        post(FRAME.SUCCESS | FRAME.CONNECT, {});
                     }
-                    post(FRAME.SUCCESS | FRAME.CONNECT, {});
+                    else {
+                        post(FRAME.ERROR | FRAME.CONNECT, new ConnectionError('Credentials were rejected'));
+                    }
                 }, err => {
                     post(FRAME.ERROR | FRAME.CONNECT, err);
                 });
