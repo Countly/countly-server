@@ -42,6 +42,28 @@ function db_fixture(ret) {
                     }
                 };
             }
+            else if (name === 'plugins') {
+                return {
+                    async findOne() {
+                        return {
+                            plugins: {
+                                push: {
+                                    sendAhead: 60000,
+                                    connection: {
+                                        retries: 3,
+                                        retryFactor: 1000,
+                                    },
+                                    pool: {
+                                        pushes: 100000,
+                                        bytes: 100000,
+                                        concurrency: 5
+                                    }
+                                }
+                            }
+                        };
+                    }
+                };
+            }
         },
         isoid: id => id && id instanceof ObjectID,
         oid: id => !id ? id : id instanceof ObjectID ? id : ObjectID(id)

@@ -1,5 +1,4 @@
 const common = require('../../../api/utils/common'),
-    plugins = require('../../pluginManager'),
     log = common.log('push:api:push'),
     Sender = require('./send/sender'),
     { extract, field, allAppUserFields, platforms, PLATFORM, ValidationError, Creds, DBMAP } = require('./send');
@@ -245,6 +244,6 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     let neo = JSON.stringify(pushcfg);
 
     if (old !== neo) {
-        plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: JSON.parse(old), after: JSON.parse(neo)}});
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: JSON.parse(old), after: JSON.parse(neo)}});
     }
 };

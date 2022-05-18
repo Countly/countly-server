@@ -14,12 +14,12 @@ class Pool extends Duplex {
      * @param {string} id name of the pool
      * @param {string} type type of connection: ap, at, id, ia, ip, ht, hp
      * @param {Creds} creds credentials instance
-     * @param {Object[]} messages array of initial messages
+     * @param {State} state state instance
      * @param {Object} cfg cfg object
      * @param {integer} cfg.pool.bytes how much bytes can be processed simultaniously by a single connection
      * @param {integer} cfg.pool.concurrency how much connections (workers) can be used in parallel
      */
-    constructor(id, type, creds, messages, cfg) {
+    constructor(id, type, creds, state, cfg) {
         super({
             // writableHighWaterMark: cfg.bytes * cfg.workers,
             readableObjectMode: true,
@@ -29,7 +29,7 @@ class Pool extends Duplex {
         this.platform = type.substr(0, 1);
         this.workers = cfg.pool.concurrency;
         this.bytes = cfg.pool.bytes;
-        this.messages = messages; // array of messages
+        this.state = state;
         this.connections = []; // array of workers
         this.meta = []; // array of worker meta, index is the same as for connections
         this.processing = 0; // amount of push object bytes currently in processing by underlying workers
@@ -45,9 +45,14 @@ class Pool extends Duplex {
             log: this.log.id(),
             type,
             creds: creds.json,
-            messages: this.messages,
+            messages: this.state.messages(),
             meta: this.meta,
             cfg
+        });
+
+        this.state.on('message', message => {
+            this.log.d('Sending new message %s', message.id);
+            this.write(encode(FRAME.CONNECT, [message.json]));
         });
 
         this.log.i('initialized (%s)', creds.id);
@@ -63,7 +68,7 @@ class Pool extends Duplex {
      */
     validate(timeout = 10000) {
         let m = Message.test();
-        this.messages = [m];
+        this.state.setMessage(m);
         return this.grow(timeout).then(() => {
         // return this.processOnce([{_id: 0, n: m._id, d: m.triggers[0].start.getTime(), p: {la: 'en'}}], timeout).then(() => {
             this.destroy();
@@ -226,6 +231,7 @@ class Pool extends Duplex {
      */
     async grow() {
         this.log.i('growing from %d to %d', this.connections.length, this.connections.length + 1);
+        let mids = this.state.messages().map(m => m._id.toString());
         let connection = this.factory();
         await connection.init;
         this.booting = false;
@@ -281,6 +287,11 @@ class Pool extends Duplex {
         });
         this.meta.push({});
         this.connections.push(connection);
+        let unsent = this.state.messages().filter(m => mids.indexOf(m._id.toString()) === -1);
+        if (unsent.length) {
+            this.log.i('Sending unsent messages to %s: %j', connection.worker.threadId, unsent);
+            connection.write(encode(FRAME.CONNECT, unsent.map(id => this.state.messages().filter(m => m._id.toString() === id)[0])));
+        }
         return connection;
     }
 
@@ -315,19 +326,6 @@ class Pool extends Duplex {
      */
     send(data) {
         this.write(encode(FRAME.SEND, data));
-    }
-
-    /**
-     * Convenience method to encode & send messages to the underlying worker threads
-     * 
-     * @param {Object[]} data array of message data objects
-     */
-    send_messages(data) {
-        data = data.filter(m => !this.messages.filter(x => x._id.toString() === m._id.toString()).length);
-        if (data.length) {
-            this.messages = this.messages.concat(data);
-            this.write(encode(FRAME.CONNECT, data));
-        }
     }
 
     /**
@@ -385,7 +383,7 @@ class Pool extends Duplex {
                     type = frame_type(data.buffer);
 
                 if (type === FRAME.CONNECT) {
-                    this.log.d('received messages %j', decode(data.buffer).payload.map(m => m._id));
+                    this.log.d('sending messages %j', decode(data.buffer).payload.map(m => m._id));
                     let times = timesCallback(this.connections.length, chunkCallback);
                     this.connections.forEach(conn => conn.write(data, times));
                 }
@@ -471,7 +469,7 @@ class Pool extends Duplex {
             this.log.e('Error during worker destroy', e);
         }).then(() => {
             delete this.connections;
-            delete this.messages;
+            delete this.state;
             callback();
             if (this.destroyDone) {
                 this.destroyDone();

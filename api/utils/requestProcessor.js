@@ -2447,22 +2447,34 @@ const processRequest = (params) => {
                     //load previos version info if exist
                     loadFsVersionMarks(function(errFs, fsValues) {
                         loadDbVersionMarks(function(errDb, dbValues) {
-                            var response = {};
-                            if (errFs) {
-                                response.fs = errFs;
-                            }
-                            else {
-                                response.fs = fsValues;
-                            }
-                            if (errDb) {
-                                response.db = errDb;
-                            }
-                            else {
-                                response.db = dbValues;
-                            }
-                            response.pkg = packageJson.version || "";
-                            var statusCode = (errFs && errDb) ? 400 : 200;
-                            common.returnMessage(params, statusCode, response);
+                            //load mongodb version
+                            common.db.command({ buildInfo: 1 }, function(errorV, info) {
+                                var response = {};
+                                if (errorV) {
+                                    response.mongo = errorV;
+                                }
+                                else {
+                                    if (info && info.version) {
+                                        response.mongo = info.version;
+                                    }
+                                }
+
+                                if (errFs) {
+                                    response.fs = errFs;
+                                }
+                                else {
+                                    response.fs = fsValues;
+                                }
+                                if (errDb) {
+                                    response.db = errDb;
+                                }
+                                else {
+                                    response.db = dbValues;
+                                }
+                                response.pkg = packageJson.version || "";
+                                var statusCode = (errFs && errDb) ? 400 : 200;
+                                common.returnMessage(params, statusCode, response);
+                            });
                         });
                     });
                 });

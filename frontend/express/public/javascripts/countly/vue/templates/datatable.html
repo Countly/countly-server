@@ -83,7 +83,7 @@
                     </cly-dropdown>
                 </div>
                 <div class="bu-level-item" v-if="displaySearch">
-                    <form>
+                    <form @keydown.enter.prevent="">
                         <el-input autocomplete="off" size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="ion-ios-search-strong" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
                     </form>
                 </div>

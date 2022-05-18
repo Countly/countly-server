@@ -488,6 +488,17 @@ class CohortsEventsMapper extends Mapper {
             }
         }
 
+        if (this.trigger.cap || this.trigger.sleep) {
+            let arr = (user[TK][0].msgs || {})[this.message.id];
+            if (arr && this.trigger.cap && arr.length >= this.trigger.cap) {
+                return null;
+            }
+
+            if (arr && this.trigger.sleep && (d - Math.max(...arr)) < this.trigger.sleep) {
+                return null;
+            }
+        }
+
         // delayed message to spread the load across time
         if (this.trigger.delay) {
             d += this.trigger.delay;

@@ -70,6 +70,9 @@ class Base extends Duplex {
      * @param {object} data Message data / Message instance
      */
     message(data) {
+        if (this.log) {
+            this.log.d('Received message %s', data._id);
+        }
         if (data instanceof Message) {
             this.messages[data.id] = data;
         }
