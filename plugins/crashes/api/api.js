@@ -184,8 +184,8 @@ plugins.setConfigs("crashes", {
                                     }
                                 }
                                 if (shouldRecalculate) {
-                                    common.db.collection('app_crashusers' + params.app_id).find({"group": 0, crashes: { $gt: 0 }}).count(function(crashErr, userCount) {
-                                        common.db.collection('app_crashusers' + params.app_id).find({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}).count(function(crashUsersErr, fatalCount) {
+                                    common.db.collection('app_crashusers' + params.app_id).count({"group": 0, crashes: { $gt: 0 }}, function(crashErr, userCount) {
+                                        common.db.collection('app_crashusers' + params.app_id).count({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}, function(crashUsersErr, fatalCount) {
                                             var set = {};
                                             set.users = userCount;
                                             set.usersfatal = fatalCount;
@@ -1569,8 +1569,8 @@ plugins.setConfigs("crashes", {
                             });
                         }, function() {
                             //recalculate users
-                            common.db.collection('app_crashusers' + params.qstring.app_id).find({"group": 0, crashes: { $gt: 0 }}).count(function(crashUsersErr, userCount) {
-                                common.db.collection('app_crashusers' + params.qstring.app_id).find({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}).count(function(crashGroupsErr, fatalCount) {
+                            common.db.collection('app_crashusers' + params.qstring.app_id).count({"group": 0, crashes: { $gt: 0 }}, function(crashUsersErr, userCount) {
+                                common.db.collection('app_crashusers' + params.qstring.app_id).count({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}, function(crashGroupsErr, fatalCount) {
                                     var update = {};
                                     update.$set = {};
                                     update.$set.users = userCount;
