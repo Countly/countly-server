@@ -1751,6 +1751,10 @@ var pluginManager = function pluginManager() {
                 logDbRead.d("aggregate " + collection + " %j %j" + at, query, options);
                 logDbRead.d("From connection %j", countlyDb._cly_debug);
                 var cursor = this._aggregate(query, options);
+                cursor._count = cursor.count;
+                cursor.count = function() {
+                    return ob.countDocuments.apply(ob, arguments);
+                };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(cb) {
                     return handlePromiseErrors(cursor._toArray(logForReads(cb, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
@@ -1796,6 +1800,10 @@ var pluginManager = function pluginManager() {
                 logDbRead.d("find " + collection + " %j %j" + at, query, options);
                 logDbRead.d("From connection %j", countlyDb._cly_debug);
                 var cursor = this._find(query, options);
+                cursor._count = cursor.count;
+                cursor.count = function() {
+                    return ob.countDocuments.apply(ob, arguments);
+                };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
                     return handlePromiseErrors(cursor._toArray(logForReads(callback, e, copyArguments(args, "find"))), e, copyArguments(arguments, "find"));
