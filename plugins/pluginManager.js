@@ -1752,9 +1752,8 @@ var pluginManager = function pluginManager() {
                 logDbRead.d("From connection %j", countlyDb._cly_debug);
                 var cursor = this._aggregate(query, options);
                 cursor._count = cursor.count;
-                cursor.count = function() {
-                    arguments.unshift(query);
-                    return ob.countDocuments.apply(ob, arguments);
+                cursor.count = function(...countArgs) {
+                    return ob.countDocuments.call(ob, query, ...countArgs);
                 };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(cb) {
@@ -1802,9 +1801,8 @@ var pluginManager = function pluginManager() {
                 logDbRead.d("From connection %j", countlyDb._cly_debug);
                 var cursor = this._find(query, options);
                 cursor._count = cursor.count;
-                cursor.count = function() {
-                    arguments.unshift(query);
-                    return ob.countDocuments.apply(ob, arguments);
+                cursor.count = function(...countArgs) {
+                    return ob.countDocuments.call(ob, query, ...countArgs);
                 };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
