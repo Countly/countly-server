@@ -46,7 +46,7 @@
 		</el-select>
 	</cly-form-field>
 	
-	<clyd-colors  v-model="scope.editedObject.bar_color"></clyd-colors>
+	<clyd-colors  v-model="scope.editedObject.bar_color" :label="i18nM('dashboards.font-color')"></clyd-colors>
 	
 	
 	<el-checkbox v-model="scope.editedObject.add_link">{{i18nM("dashboards.add-hyperlink")}}</el-checkbox>
