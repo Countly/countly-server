@@ -854,7 +854,7 @@
                     return countlyCommon.GRAPH_COLORS;
                 }
             },
-            label: {required: false, default: CV.i18n("dashboards.bar-color")}
+            label: {required: false, default: CV.i18n("dashboards.font-color")}
         },
         methods: {
             commitValue: function(v) {
