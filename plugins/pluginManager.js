@@ -1755,6 +1755,9 @@ var pluginManager = function pluginManager() {
                 cursor.toArray = function(cb) {
                     return handlePromiseErrors(cursor._toArray(logForReads(cb, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
                 };
+                cursor.isClosed = function() {
+                    return cursor.closed || cursor.killed;
+                };
                 if (typeof callback === "function") {
                     return cursor.toArray(callback);
                 }
@@ -1796,6 +1799,9 @@ var pluginManager = function pluginManager() {
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
                     return handlePromiseErrors(cursor._toArray(logForReads(callback, e, copyArguments(args, "find"))), e, copyArguments(arguments, "find"));
+                };
+                cursor.isClosed = function() {
+                    return cursor.closed || cursor.killed;
                 };
                 return cursor;
             };
