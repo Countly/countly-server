@@ -1,3 +1,55 @@
+## Version 22.03.10
+
+Fixes:
+- [dashboards] The graph tooltip should overflow from the widget's bounding box
+- [push] Expired credentials case
+- [ui] Pressing enter refreshes the page
+
+Enterprise fixes:
+- [auth_plugins] Remove old UI artifacts
+- [drill] View regeneration from drill data
+- [surveys] Fixed tooltip localization
+
+## Version 22.03.9
+
+Fixes:
+- [batcher] more no fallback errors
+- [compliance-hub] Table column design fix
+- [push] Arrays for sent messages
+- [push] Method to get notifications sent to a particular user
+- [push] Missing audit logs calls
+- [push] Missing capping / sleeping support
+- [push] Parsing only string args for legacy api
+- [push] Set test pushes as prod in upgrade script
+- [ui] Chart label scaling issue fixed
+- [versions] Showing mongodb version in versions view
+- [views] Using isoWeek for unique views values
+
+Enterprise Fixes:
+- [ab-testing] fix of undefined array
+- [attribution] Added null check for unpopulated data case
+- [attribution] Fixed the issue where metadata was not displayed in segments
+- [users] Always translate surveys
+- [users] Fix for sorting session table
+- [users] Handled formating case for numbers
+- [users] Missing tooltip added
+- [users] Optimize calculating event count for session for single user in aggregation pipeline
+- [white-labeling] Default button color code changed
+
+## Version 22.03.8
+
+Fixes:
+- [dependency] update dependencies
+- [ui] fixed scaling issues and x-axis labels on charts
+- [ui] tab title should update when switching app types
+
+Enterprise fixes:
+- [crashes-jira] new UI integration
+- [funnels] save button's label changed for edit case.
+- [retention_segments] fixed retention filter query
+- [users] fixed export query
+- [users] fixed query bookmark
+
 ## Version 22.03.7
 
 Fixes:

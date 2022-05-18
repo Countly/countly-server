@@ -325,6 +325,25 @@
 
     countlyVue.mixins.zoom = ExternalZoomMixin;
 
+    /**
+     * Calculating width of text
+     * @param {string} txt Text value to calculate width.
+     * @param {string} fontname Font name of text
+     * @param {int} fontsize Font size of text
+     * @returns {int} calculated width
+    */
+    function getWidthOfText(txt, fontname, fontsize) {
+        if (getWidthOfText.c === undefined) {
+            getWidthOfText.c = document.createElement('canvas');
+            getWidthOfText.ctx = getWidthOfText.c.getContext('2d');
+        }
+        var fontspec = fontsize + ' ' + fontname;
+        if (getWidthOfText.ctx.font !== fontspec) {
+            getWidthOfText.ctx.font = fontspec;
+        }
+        return getWidthOfText.ctx.measureText(txt).width;
+    }
+
     var xAxisOverflowHandler = {
         data: function() {
             return {
@@ -360,55 +379,10 @@
                     return null;
                 }
 
-                var widthOverflowThreshold = (options.clyCustom && options.clyCustom.widthOverflowThreshold) || 500;
-
                 var xAxis = options.xAxis;
-
-                if (size && size.w >= widthOverflowThreshold) {
-                    if (xAxis.data.length >= 3) {
-                        return {
-                            xAxis: {
-                                axisLabel: {
-                                    fontSize: 12
-                                }
-                            }
-                        };
-                    }
-                    return null;
-                }
-
-                // Early return, no need to analyze the array
-                if (xAxis.data.length > 15) {
-                    // no need to force all points to be present
-                    // if there are too many of them
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 100,
-                                overflow: "truncate",
-                                rotate: 45,
-                                fontSize: 12
-                            }
-                        }
-                    };
-                }
-                else if (xAxis.data.length >= 7) {
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 100,
-                                overflow: "truncate",
-                                interval: 0,
-                                rotate: 45,
-                                fontSize: 12
-                            }
-                        }
-                    };
-                }
-
+                var labelW = Math.floor((size.w - 20) / xAxis.data.length);
                 var maxLen = 0;
+                var maxStr = "";
 
                 xAxis.data.forEach(function(item) {
                     var str = "";
@@ -418,44 +392,48 @@
                     else {
                         str = (item || "") + "";
                     }
+
+                    if (str.length > maxLen) {
+                        maxStr = str;
+                    }
+
                     maxLen = Math.max(maxLen, str.length);
                 });
 
-                if (maxLen > 25 && xAxis.data.length >= 3) {
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 150,
-                                overflow: "truncate",
-                                interval: 0,
-                                rotate: 30,
-                                fontSize: 12
-                            }
+                var longestLabelTextW = getWidthOfText(maxStr, FONT_FAMILY, "12px");
+                var returnObj = {
+                    xAxis: {
+                        axisLabel: {
+                            fontSize: 12,
+                            interval: 0,
+                            width: labelW,
+                            rotate: 0,
+                            overflow: "truncate",
                         }
-                    };
-                }
-                else if (xAxis.data.length >= 3) {
-                    return {
-                        grid: {
-                            bottom: 50
-                        },
-                        xAxis: {
-                            axisLabel: {
-                                width: 150,
-                                overflow: "break",
-                                interval: 0,
-                                fontSize: 12
-                            }
-                        }
-                    };
-                }
-                return {
-                    xAxis: {axisLabel: {interval: 0}}
+                    }
                 };
+                if ((longestLabelTextW / labelW) > 2) {
+                    returnObj.grid = {containLabel: false, bottom: 100, left: 80};
+                    returnObj.xAxis.axisLabel.rotate = 45;
+                    returnObj.xAxis.axisLabel.width = labelW * 1.15 > 100 ? 90 : labelW * 1.15;
+                }
+                else if (longestLabelTextW > labelW) {
+                    returnObj.grid = {containLabel: false, bottom: 100, left: 80};
+                    returnObj.xAxis.axisLabel.rotate = 30;
+                    returnObj.xAxis.axisLabel.width = labelW * 1.10 > 100 ? 90 : labelW * 1.10;
+                }
+                else {
+                    returnObj.xAxis.axisLabel.rotate = 0;
+                }
+
+                // console.log("longest label text width is " + getWidthOfText(maxStr, FONT_FAMILY, "12px"));
+                // console.log("label width is " + labelW);
+
+                return returnObj;
             }
         }
     };
+
 
     /*
         Use xAxis.axisLabel.showMinLabel to change visibility of minimum label

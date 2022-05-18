@@ -69,7 +69,7 @@ class FCM extends Splitter {
         options.pool.concurrency = 500;
         super(log, type, creds, messages, options);
 
-        this.log = logger(log).sub(`wa-${threadId}`);
+        this.log = logger(log).sub(`${threadId}-a`);
         this.opts = {
             agent: this.agent,
             hostname: 'fcm.googleapis.com',
@@ -403,6 +403,7 @@ const CREDS = {
         static get scheme() {
             return Object.assign(super.scheme, {
                 key: { required: true, type: 'String', 'min-length': 100},
+                hash: { required: false, type: 'String' },
             });
         }
 

@@ -501,13 +501,14 @@ window.VersionHistoryView = countlyView.extend({
     },
     renderCommon: function(isRefresh) {
 
-        var tableData = countlyVersionHistoryManager.getData(true) || {fs: [], db: [], pkg: ""};
+        var tableData = countlyVersionHistoryManager.getData(true) || {fs: [], db: [], pkg: "", "mongo": ""};
 
         //provide template data
         this.templateData = {
             "db-title": jQuery.i18n.map["version_history.page-title"] + " (DB)",
             "fs-title": jQuery.i18n.map["version_history.page-title"] + " (FS)",
-            "package-version": jQuery.i18n.map["version_history.package-version"] + ": " + tableData.pkg
+            "package-version": jQuery.i18n.map["version_history.package-version"] + ": " + tableData.pkg,
+            "mongo-version": "MongDb version:" + tableData.mongo
         };
 
         /**

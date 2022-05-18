@@ -7,10 +7,10 @@ console.log('Migrating push plugin data');
 
 plugins.dbConnection().then(async db => {
     common.db = db;
-    let push = await db.collection('push').findOne();
-    if (push && !process.env.FORCE_REPEAT) {
-        return console.log('Migrating push plugin data: no migration needed as there\'s already data in "push" collection');
-    }
+    // let push = await db.collection('push').findOne();
+    // if (push && !process.env.FORCE_REPEAT) {
+    //     return console.log('Migrating push plugin data: no migration needed as there\'s already data in "push" collection');
+    // }
 
     await db.createCollection('push').catch(() => {
         console.log('push collection already exists');
@@ -170,23 +170,59 @@ plugins.dbConnection().then(async db => {
                 let obj = {};
                 if (Array.isArray(doc.msgs)) {
                     doc.msgs.forEach(msg => {
+                        let id, date;
                         if (Array.isArray(msg)) {
-                            obj[msg[0]] = msg[1];
+                            id = msg[0];
+                            date = msg[1];
                         }
                         else if (common.dbext.isoid(msg)) {
-                            obj[msg] = new Date(2018, 0, 1, 1).getTime();
+                            id = msg;
+                            date = new Date(2018, 0, 1, 1).getTime();
+                        }
+                        if (obj[id]) {
+                            if (obj[id].indexOf(date) === -1) {
+                                obj[id].push(date);
+                            }
+                        }
+                        else {
+                            obj[id] = [date];
                         }
                     });
                 }
                 else if (doc.msgs && doc.msgs['0']) {
                     for (let k in doc.msgs) {
-                        let msg = doc.msgs[k];
+                        let id,
+                            date,
+                            msg = doc.msgs[k];
                         if (Array.isArray(msg)) {
-                            obj[msg[0]] = msg[1];
+                            id = msg[0];
+                            date = msg[1];
                         }
                         else if (common.dbext.isoid(msg)) {
-                            obj[msg] = new Date(2018, 0, 1, 1).getTime();
+                            id = msg;
+                            date = new Date(2018, 0, 1, 1).getTime();
                         }
+                        if (obj[id]) {
+                            if (obj[id].indexOf(date) === -1) {
+                                obj[id].push(date);
+                            }
+                        }
+                        else {
+                            obj[id] = [date];
+                        }
+                    }
+                }
+                else {
+                    let needsFix = false,
+                        fixed = {};
+                    for (let mid in doc.msgs) {
+                        if (typeof doc.msgs[mid] === 'number') {
+                            needsFix = true;
+                        }
+                        fixed[mid] = typeof doc.msgs[mid] === 'number' ? [doc.msgs[mid]] : doc.msgs[mid];
+                    }
+                    if (needsFix) {
+                        obj = fixed;
                     }
                 }
 
@@ -241,6 +277,9 @@ plugins.dbConnection().then(async db => {
                 type = queue.substr(queue.lastIndexOf('_') + 1),
                 p = type[0],
                 f = type[1];
+            if ((p === 'a' || p === 'h') && f === 't') {
+                f = 'p';
+            }
             for await (const doc of stream) {
                 await add({
                     _id: common.dbext.oidWithDate(Math.floor(doc.d / 1000)),
