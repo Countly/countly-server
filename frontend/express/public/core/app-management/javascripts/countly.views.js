@@ -643,6 +643,7 @@
                 this.changeKeys = [];
             },
             unpatch: function() {
+                this.loadDetails();
                 this.resetChanges();
                 var pluginsData = countlyPlugins.getConfigsData();
                 if (!countlyGlobal.apps[this.selectedApp].plugins) {
