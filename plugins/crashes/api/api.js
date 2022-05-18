@@ -1599,7 +1599,7 @@ plugins.setConfigs("crashes", {
 
     plugins.register("/i/apps/create", function(ob) {
         var appId = ob.appId;
-        common.db.collection('app_crashgroups' + appId).insert({_id: "meta"}, function() {});
+        common.db.collection('app_crashgroups' + appId).updateOne({_id: "meta"}, {$set: {_id: "meta"}}, {upsert: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"name": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"os": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"reports": 1}, {background: true}, function() {});
@@ -1651,7 +1651,7 @@ plugins.setConfigs("crashes", {
             common.db.collection('app_crashusers' + appId).ensureIndex({"uid": 1}, {background: true}, function() {});
         });
         common.db.collection('app_crashgroups' + appId).drop(function() {
-            common.db.collection('app_crashgroups' + appId).insert({_id: "meta"}, function() {});
+            common.db.collection('app_crashgroups' + appId).updateOne({_id: "meta"}, {$set: {_id: "meta"}}, {upsert: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"name": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"os": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"reports": 1}, {background: true}, function() {});
@@ -1681,7 +1681,7 @@ plugins.setConfigs("crashes", {
             common.db.collection('app_crashusers' + appId).ensureIndex({"uid": 1}, {background: true}, function() {});
         });
         common.db.collection('app_crashgroups' + appId).drop(function() {
-            common.db.collection('app_crashgroups' + appId).insert({_id: "meta"}, function() {});
+            common.db.collection('app_crashgroups' + appId).updateOne({_id: "meta"}, {$set: {_id: "meta"}}, {upsert: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"name": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"os": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"reports": 1}, {background: true}, function() {});
