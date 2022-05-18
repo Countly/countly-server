@@ -1440,6 +1440,17 @@ var pluginManager = function pluginManager() {
                     return;
                 }
                 return function(err, res) {
+                    if (res) {
+                        if (!res.result) {
+                            res.result = {};
+                        }
+                        if (!res.result.ok) {
+                            res.result.ok = !err;
+                        }
+                        if (!res.result.nModified) {
+                            res.result.nModified = res.modifiedCount || 0;
+                        }
+                    }
                     if (err) {
                         if (retry && err.code === 11000) {
                             if (typeof retry === "function") {
