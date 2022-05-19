@@ -24,11 +24,11 @@
                 {{ drawerScope.editedObject.popup_header_text }}
               </div>
               <div class="ratings-drawer__rp-ratings-area">
-                <div @click="setRatingItemActive(0)" :class="[ratingItem[0].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[0].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
-                <div @click="setRatingItemActive(1)" :class="[ratingItem[1].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[1].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
-                <div @click="setRatingItemActive(2)" :class="[ratingItem[2].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[2].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
-                <div @click="setRatingItemActive(3)" :class="[ratingItem[3].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[3].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
-                <div @click="setRatingItemActive(4)" :class="[ratingItem[4].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[4].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                <div v-tooltip="drawerScope.editedObject.ratings_texts[0]" @click="setRatingItemActive(0)" :class="[ratingItem[0].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[0].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                <div v-tooltip="drawerScope.editedObject.ratings_texts[1]" @click="setRatingItemActive(1)" :class="[ratingItem[1].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[1].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                <div v-tooltip="drawerScope.editedObject.ratings_texts[2]" @click="setRatingItemActive(2)" :class="[ratingItem[2].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[2].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                <div v-tooltip="drawerScope.editedObject.ratings_texts[3]" @click="setRatingItemActive(3)" :class="[ratingItem[3].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[3].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                <div v-tooltip="drawerScope.editedObject.ratings_texts[4]" @click="setRatingItemActive(4)" :class="[ratingItem[4].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[4].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
               </div>
               <div class="ratings-drawer__rp-optional-area">
                 <el-checkbox v-model="drawerScope.editedObject.contact_enable">{{ drawerScope.editedObject.popup_comment_callout }}</el-checkbox>
@@ -76,19 +76,6 @@
           </div>
           <validation-provider name="popup_header_text" rules="required" v-slot="v">
             <el-input v-model="drawerScope.editedObject.popup_header_text" :placeholder="i18n('feedback.type-your-question')"></el-input>
-          </validation-provider>
-        </div>
-        <div class="cly-vue-drawer-step__section">
-          <div class="text-medium text-heading text-heading">
-            <span class="ratings-section-title bu-mb-2">
-              {{ i18n('feedback.rating-symbol') }}
-            </span>
-            <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
-          </div>
-          <validation-provider name="rating_symbol" rules="required" v-slot="v">
-            <el-select placement="bottom-start" v-model="drawerScope.editedObject.rating_symbol" :placeholder="i18n('feedback.rating-symbol')">
-              <el-option v-for="symbol in ratingSymbols" :label="i18n('feedback.' + symbol)" :value="symbol"></el-option>
-            </el-select>
           </validation-provider>
         </div>
         <div class="cly-vue-drawer-step__section-group cly-vue-drawer-step__section-group--filled bu-mb-2">
@@ -157,65 +144,21 @@
           </validation-provider>
         </div>
       </cly-form-step>
-			<cly-form-step id="step2" :name="i18n('feedback.widget-appearance')">
+	<cly-form-step id="step2" :name="i18n('feedback.widget-appearance')">
+
         <div class="cly-vue-drawer-step__section">
-          <div class="bu-mb-2">
-            <span class="text-medium text-heading ratings-section-title">
-              {{ i18n('feedback.trigger-button-size') }}
-            </span>
-            <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
-          </div>
-          <div class="bu-is-flex bu-is-align-items-center">
-            <el-radio 
-							v-model="drawerScope.editedObject.trigger_size"
-              class="is-bordered is-autosized"
-							:label="item.value"
-							:key="idx" 
-							v-for="(item, idx) in constants.trigger_sizes"
-							>
-							{{item.label}}
-						  </el-radio>
-          </div>
-        </div>
-        <div class="cly-vue-drawer-step__section">
-          <div class="text-medium text-heading bu-mb-2">
-            {{ i18n('feedback.position-on-the-page') }}
-          </div>
-          <div class="bu-is-flex text-center ratings-drawer__sticker-size">
-            <el-radio 
-							v-model="drawerScope.editedObject.trigger_position"
-              class="is-bordered is-autosized bu-is-justify-content-center"
-							:label="item.value"
-							:key="idx" 
-							v-for="(item, idx) in constants.trigger_positions"
-							>
-                <div class="bu-is-align-items-center">
-                  <img :src="'star-rating/images/star-rating/' + item.key + '.svg'">
-                </div>
-                <div class="bu-is-align-items-center">
-                  {{item.label}}
-                </div>
-							</el-radio>
-          </div>
           <div class="cly-vue-drawer-step__section">
-            <div class="text-medium text-heading bu-mb-2">
-              {{i18n('feedback.main-color')}}
+            <div class="text-medium text-heading text-heading">
+              <span class="ratings-section-title bu-mb-2">
+                {{ i18n('feedback.rating-symbol') }}
+              </span>
+              <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
             </div>
-            <cly-colorpicker
-              reset-value='#FFFFFF'
-              v-model="drawerScope.editedObject.trigger_bg_color"
-              placement="right">
-            </cly-colorpicker>
-          </div>
-          <div class="cly-vue-drawer-step__section">
-            <div class="text-medium text-heading bu-mb-2">
-              {{i18n('feedback.font-color')}}
-            </div>
-            <cly-colorpicker
-              reset-value='#FFFFFF'
-              v-model="drawerScope.editedObject.trigger_font_color"
-              placement="right">
-            </cly-colorpicker>
+            <validation-provider name="rating_symbol" rules="required" v-slot="v">
+              <el-select placement="bottom-start" v-model="drawerScope.editedObject.rating_symbol" :placeholder="i18n('feedback.rating-symbol')">
+                <el-option v-for="symbol in ratingSymbols" :label="i18n('feedback.' + symbol)" :value="symbol"></el-option>
+              </el-select>
+            </validation-provider>
           </div>
           <div class="bu-pt-3 bu-pb-4">
             <div class="text-medium text-heading">
@@ -242,6 +185,64 @@
                   </div>
                 </div>
             </cly-dropzone>
+          </div>
+          <div class="cly-vue-drawer-step__section">
+            <div class="text-medium text-heading bu-mb-2">
+              {{i18n('feedback.main-color')}}
+            </div>
+            <cly-colorpicker
+              reset-value='#FFFFFF'
+              v-model="drawerScope.editedObject.trigger_bg_color"
+              placement="right">
+            </cly-colorpicker>
+          </div>
+          <div class="cly-vue-drawer-step__section">
+            <div class="text-medium text-heading bu-mb-2">
+              {{i18n('feedback.font-color')}}
+            </div>
+            <cly-colorpicker
+              reset-value='#FFFFFF'
+              v-model="drawerScope.editedObject.trigger_font_color"
+              placement="right">
+            </cly-colorpicker>
+          </div>
+          <div class="cly-vue-drawer-step__section">
+            <div class="bu-mb-2">
+              <span class="text-medium text-heading ratings-section-title">
+                {{ i18n('feedback.trigger-button-size') }}
+              </span>
+              <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+            </div>
+            <div class="bu-is-flex bu-is-align-items-center">
+              <el-radio 
+                              v-model="drawerScope.editedObject.trigger_size"
+                class="is-bordered is-autosized"
+                              :label="item.value"
+                              :key="idx" 
+                              v-for="(item, idx) in constants.trigger_sizes"
+                              >
+                              {{item.label}}
+                            </el-radio>
+            </div>
+          </div>
+          <div class="text-medium text-heading bu-mb-2">
+            {{ i18n('feedback.position-on-the-page') }}
+          </div>
+          <div class="bu-is-flex text-center ratings-drawer__sticker-size">
+            <el-radio 
+							v-model="drawerScope.editedObject.trigger_position"
+              class="is-bordered is-autosized bu-is-justify-content-center"
+							:label="item.value"
+							:key="idx" 
+							v-for="(item, idx) in constants.trigger_positions"
+							>
+                <div class="bu-is-align-items-center">
+                  <img :src="'star-rating/images/star-rating/' + item.key + '.svg'">
+                </div>
+                <div class="bu-is-align-items-center">
+                  {{item.label}}
+                </div>
+							</el-radio>
           </div>
           <div class="cly-vue-drawer-step__section">
             <div class="text-medium text-heading bu-mb-2">
