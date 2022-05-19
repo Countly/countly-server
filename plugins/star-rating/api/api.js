@@ -899,8 +899,8 @@ function uploadFile(myfile, id, callback) {
         var app = params.qstring.app_id;
         var collectionName = 'feedback' + app;
         var query = {};
-        var skip = parseInt(params.qstring.iDisplayStart);
-        var limit = parseInt(params.qstring.iDisplayLength);
+        var skip = parseInt(params.qstring.iDisplayStart || 0);
+        var limit = parseInt(params.qstring.iDisplayLength || 0);
         var colNames = ['rating', 'comment', 'email', 'ts'];
 
         if (params.qstring.widget_id) {
