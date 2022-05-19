@@ -1138,16 +1138,14 @@ app.addPageScript("/drill#", function() {
 });
 */
 
-    $(document).ready(function() {
-        app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
-        app.addSubMenu("feedback", {
-            code: "star-rating",
-            permission: FEATURE_NAME,
-            url: "#/feedback/ratings",
-            text: "star.menu-title",
-            icon: '<div class="logo ion-android-star-half"></div>',
-            priority: 30
-        });
+    app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
+    app.addSubMenu("feedback", {
+        code: "star-rating",
+        permission: FEATURE_NAME,
+        url: "#/feedback/ratings",
+        text: "star.menu-title",
+        icon: '<div class="logo ion-android-star-half"></div>',
+        priority: 30
     });
 
     countlyVue.container.registerMixin("/manage/export/export-features", {
