@@ -692,7 +692,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         else {
             var qq = settings.count_query || {};
-            common.db.collection("app_viewsmeta" + app_id).find(qq).count(function(err, total) {
+            common.db.collection("app_viewsmeta" + app_id).count(qq, function(err, total) {
                 common.db.collection(collectionName).aggregate(pipeline, {allowDiskUse: true}, function(err1, res) {
                     if (err1) {
                         log.e(err1);

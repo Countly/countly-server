@@ -667,7 +667,7 @@ async function generateDemoData(msg, demo) {
     await common.db.collection('apps').updateOne({_id: msg.app, 'plugins.push.h._id': {$exists: false}}, {$set: {'plugins.push.h._id': 'demo'}});
 
     let app = await common.db.collection('apps').findOne({_id: msg.app}),
-        count = await common.db.collection('app_users' + msg.app).find().count(),
+        count = await common.db.collection('app_users' + msg.app).count(),
         events = [],
         result = msg.result || new Result();
 
