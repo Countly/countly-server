@@ -71,7 +71,7 @@
                 else {
                     return this.rows;
                 }
-            }
+            },
         },
         methods: {
             handleCommand: function(command, index) {
@@ -653,6 +653,17 @@
                 loading: true
             };
         },
+        computed: {
+            groupNameMap: function() {
+                var map = {};
+
+                groupsModel.data().forEach(function(group) {
+                    map[group._id] = group.name;
+                });
+
+                return map;
+            }
+        },
         methods: {
             refresh: function() {
                 var self = this;
@@ -660,9 +671,7 @@
                     .then(function() {
                         var usersObj = countlyUserManagement.getUsers();
                         self.users = [];
-                        for (var user in usersObj) {
-                            self.users.push(usersObj[user]);
-                        }
+                        self.fillOutUsers(usersObj);
                     })
                     .catch(function() {});
             },
@@ -681,15 +690,24 @@
                         }
                         self.openDrawer("user", self.user);
                     });
+            },
+            fillOutUsers: function(usersObj) {
+                for (var userId in usersObj) {
+                    var user = usersObj[userId];
+
+                    if (user.group_id) {
+                        user.groupName = this.groupNameMap[user.group_id[0]];
+                    }
+
+                    this.users.push(user);
+                }
             }
         },
         mounted: function() {
             var self = this;
             $.when(countlyUserManagement.fetchUsers(), countlyUserManagement.fetchFeatures()).then(function() {
                 var usersObj = countlyUserManagement.getUsers();
-                for (var user in usersObj) {
-                    self.users.push(usersObj[user]);
-                }
+                self.fillOutUsers(usersObj);
                 self.loading = false;
                 self.features = countlyUserManagement.getFeatures().sort();
             });
