@@ -68,7 +68,7 @@ window.countlyView = Backbone.View.extend({
         for (var url in this._myRequests) {
             for (var data in this._myRequests[url]) {
                 //4 means done, less still in progress
-                if (parseInt(this._myRequests[url][data].readyState) !== 4) {
+                if (parseInt(this._myRequests[url][data].readyState, 10) !== 4) {
                     this._myRequests[url][data].abort_reason = "app_remove_reqs";
                     this._myRequests[url][data].abort();
                 }
