@@ -600,6 +600,9 @@
             },
             dateChanged: function() {
                 this.$store.dispatch('countlyViewsPerSession/fetchAll', true);
+            },
+            sortSessionViewsBuckets: function(a, b) {
+                return a.weight - b.weight;
             }
         },
         mounted: function() {

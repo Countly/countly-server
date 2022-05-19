@@ -7,7 +7,7 @@ const plugins = require('../../pluginManager'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, test, create, update, toggle, remove, all, one, mime } = require('./api-message'),
+    { estimate, test, create, update, toggle, remove, all, one, mime, user } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
     { legacyApis } = require('./legacy'),
@@ -25,7 +25,8 @@ const plugins = require('../../pluginManager'),
                 estimate: [validateRead, estimate],
                 all: [validateRead, all],
                 GET: [validateRead, one, '_id'],
-            }
+            },
+            user: [validateRead, user],
         },
         i: {
             message: {
@@ -47,6 +48,7 @@ plugins.setConfigs(FEATURE_NAME, {
     proxyport: '',
     proxyuser: '',
     proxypass: '',
+    proxyunauthorized: false,
     test: {
         uids: '', // comma separated list of app_users.uid
         cohorts: '', // comma separated list of cohorts._id
@@ -78,13 +80,18 @@ plugins.register('/master/runners', runners => {
     let sender;
     runners.push(async() => {
         if (!sender) {
-            sender = new Sender();
-            await sender.prepare();
-            let has = await sender.watch();
-            if (has) {
-                await sender.send();
+            try {
+                sender = new Sender();
+                await sender.prepare();
+                let has = await sender.watch();
+                if (has) {
+                    await sender.send();
+                }
+                sender = undefined;
             }
-            sender = undefined;
+            catch (e) {
+                sender = undefined;
+            }
         }
     });
 });
@@ -123,7 +130,6 @@ plugins.register('/cache/init', function() {
 plugins.register('/i', async ob => {
     let params = ob.params,
         la = params.app_user.la;
-    log.d('push query', params.qstring);
     if (params.qstring.events && Array.isArray(params.qstring.events)) {
         let events = params.qstring.events,
             keys = events.map(e => e.key);

@@ -947,8 +947,8 @@ var AppRouter = Backbone.Router.extend({
         else if ((countlyGlobal.security.password_expiration > 0) &&
                 (countlyGlobal.member.password_changed + countlyGlobal.security.password_expiration * 24 * 60 * 60 < new Date().getTime() / 1000) &&
                 (!countlyGlobal.ssr)) {
-            if (Backbone.history.fragment !== "/manage/user-settings/reset") {
-                this.navigate("/manage/user-settings/reset", true);
+            if (Backbone.history.fragment !== "/account-settings/reset") {
+                this.navigate("/account-settings/reset", true);
             }
             else {
                 viewName.render();

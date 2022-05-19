@@ -14,6 +14,7 @@ class Result extends Validatable {
      * @param {number}                  data.processed      number of queued notifications processed
      * @param {number}                  data.sent           number of notifications accepted by service provider
      * @param {number}                  data.actioned       number of actions performed on devices for this message
+     * @param {string}                  data.virtual        wether this result is virtual (part of parent result which belongs to a sibling sub and not counted as individual sub)
      * @param {number}                  data.errored        number of errors happened during sending (not necessarily equal to total - processed)
      * @param {object|PushError}        data.error          message-global error object, message must be Stopped if error is set
      * @param {object}                  data.errors         non fatal platform-specific response counts ({i400+InvalidToken: 123, a400+WrongMessage: 501})
@@ -48,6 +49,7 @@ class Result extends Validatable {
             sent: {type: 'Number', required: true},
             actioned: {type: 'Number', required: true},
             errored: {type: 'Number', required: false},
+            virtual: {type: 'String', required: false},
             error: {type: 'String', required: false},
             errors: {type: 'Object', required: false},
             lastErrors: {type: 'Object[]', required: false},
@@ -60,7 +62,7 @@ class Result extends Validatable {
     /**
      * Getter for total
      * 
-     * @returns {number|undefined} total number of queued notifications
+     * @returns {number} total number of queued notifications
      */
     get total() {
         return this._data.total || 0;
@@ -106,7 +108,7 @@ class Result extends Validatable {
     /**
      * Getter for sent
      * 
-     * @returns {number|undefined} number of notifications accepted by service provider
+     * @returns {number} number of notifications accepted by service provider
      */
     get sent() {
         return this._data.sent || 0;
@@ -129,7 +131,7 @@ class Result extends Validatable {
     /**
      * Getter for actioned
      * 
-     * @returns {number|undefined} number of notifications accepted by service provider
+     * @returns {number} number of notifications accepted by service provider
      */
     get actioned() {
         return this._data.actioned || 0;
@@ -152,7 +154,7 @@ class Result extends Validatable {
     /**
      * Getter for errored
      * 
-     * @returns {number|undefined} number of sending errors
+     * @returns {number} number of sending errors
      */
     get errored() {
         return this._data.errored || 0;
@@ -169,6 +171,29 @@ class Result extends Validatable {
         }
         else {
             delete this._data.errored;
+        }
+    }
+
+    /**
+     * Getter for virtual
+     * 
+     * @returns {string|undefined} virtual key of sibling sub which this sub belongs to
+     */
+    get virtual() {
+        return this._data.virtual;
+    }
+
+    /**
+     * Setter for virtual
+     * 
+     * @param {string|undefined} virtual virtual key of sibling parent sub
+     */
+    set virtual(virtual) {
+        if (virtual !== null && virtual !== undefined) {
+            this._data.virtual = virtual;
+        }
+        else {
+            delete this._data.virtual;
         }
     }
 
@@ -330,17 +355,21 @@ class Result extends Validatable {
      * 
      * @param {string} key sub result key
      * @param {Result} result Result instance
+     * @param {string} virtual virtual key of the sub it belongs to
      * @returns {Result} current Result for given sub key, adds result object if it doesn't exist
      */
-    sub(key, result) {
+    sub(key, result, virtual) {
         if (!this._data.subs) {
             this._data.subs = {};
         }
-        if (result) {
+        if (result !== undefined) {
             this._data.subs[key] = result;
         }
         else if (!this._data.subs[key]) {
             this._data.subs[key] = new Result();
+        }
+        if (virtual) {
+            this._data.subs[key].virtual = virtual;
         }
         return this._data.subs[key];
     }

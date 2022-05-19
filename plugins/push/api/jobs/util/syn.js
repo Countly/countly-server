@@ -116,6 +116,7 @@ class SynFlushTransform extends Transform {
         else {
             this.write(encode(FRAME.FLUSH, this.syn));
         }
+        this.flushed = this.syn;
 
         // if (!this.synCallback) {
         //     this.on('data', this.listener);

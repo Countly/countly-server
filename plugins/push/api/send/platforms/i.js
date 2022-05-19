@@ -1,7 +1,7 @@
 const { ConnectionError, PushError, SendError, ERROR, Creds, Template } = require('../data'),
     { Base } = require('../std'),
-    { ProxyAgent } = require('./utils/agent'),
-    { Agent } = require('https'),
+    http = require('http'),
+    tls = require('tls'),
     FORGE = require('node-forge'),
     logger = require('../../../../../api/utils/log'),
     jwt = require('jsonwebtoken'),
@@ -81,6 +81,7 @@ const CREDS = {
                 notAfter: { required: false, type: 'Date' },
                 topics: { required: false, type: 'String[]' },
                 bundle: { required: false, type: 'String' },
+                hash: { required: false, type: 'String' },
             });
         }
 
@@ -262,6 +263,7 @@ const CREDS = {
                 bundle: { required: true, type: 'String' },
                 team: { required: true, type: 'String' },
                 fileType: { required: false, type: 'String' },
+                hash: { required: false, type: 'String' },
             });
         }
 
@@ -523,14 +525,14 @@ class APN extends Base {
      */
     constructor(log, type, creds, messages, options) {
         super(log, type, creds, messages, options);
-        this.log = logger(log).sub(`wi-${threadId}`);
+        this.log = logger(log).sub(`${threadId}-i`);
 
         this.templates = {};
         this.results = [];
 
-        let host = this.type === 'id' ? 'api.development.push.apple.com' : 'api.push.apple.com',
-            port = 2197,
-            authority = `${host}:${port}`;
+        this.host = this.type === 'id' ? 'api.development.push.apple.com' : 'api.push.apple.com';
+        this.port = 2197;
+        let authority = `${this.host}:${this.port}`;
         this.authority = `https://${authority}`;
 
         this.headersFirst = {
@@ -551,11 +553,7 @@ class APN extends Base {
             return this.headersSecond;
         };
 
-        this.agent = options.proxy ? new ProxyAgent(options) : new Agent();
-        this.agent.maxSockets = 1;
-        this.sessionOptions = {
-            agent: this.agent
-        };
+        this.sessionOptions = {};
         if (this.creds instanceof CREDS.apn_universal) {
             Object.assign(this.sessionOptions, this.creds.tls);
         }
@@ -586,7 +584,14 @@ class APN extends Base {
      */
     send(pushesData, length) {
         if (!this.session) {
-            return this.connect().then(this.send.bind(this, pushesData, length));
+            return this.connect().then(ok => {
+                if (ok) {
+                    return this.send(pushesData, length);
+                }
+                else {
+                    return ok;
+                }
+            });
         }
         return this.with_retries(pushesData, length, (pushes, bytes, attempt) => new Promise((resolve, reject) => {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
@@ -640,6 +645,10 @@ class APN extends Base {
                     nonRecoverableError.addLeft(p._id, one);
                     streamDone();
                     return;
+                }
+
+                if (!this.messages[p.m]) {
+                    this.log.e('No message %s', p.m);
                 }
 
                 let content = this.template(p.m).compile(p),
@@ -733,60 +742,123 @@ class APN extends Base {
     async connect(messages) {
         if (messages) {
             if (!this.session) {
-                await this.connect();
+                let ok = await this.connect();
+                if (!ok) {
+                    return ok;
+                }
             }
             if (!this.session) {
                 throw new Error('Failed to connect');
             }
             messages.forEach(m => this.message(m._id, m));
+            return true;
         }
         else {
             return new Promise((resolve, reject) => {
                 this.log.i('connecting to %s', this.authority);
 
-                let session = HTTP2.connect(this.authority, this.sessionOptions);
+                this.ensureProxy(this.host, this.port, error => {
+                    if (error) {
+                        this.log.e('Proxy connection error', error);
+                        return reject(new ConnectionError('NoProxyConnection', ERROR.CONNECTION_PROXY));
+                    }
 
-                session.on('error', err => {
-                    this.log.e('session error', err);
-                    reject(new ConnectionError(err.message, ERROR.CONNECTION_PROVIDER));
-                    session.destroy();
-                });
+                    let session = HTTP2.connect(this.authority, this.sessionOptions);
 
-                session.on('connect', () => {
-                    this.log.d('connected to %s [%s]', this.authority, session.socket.remoteAddress);
-
-                    let stream = session.request(this.headersFirst);
-                    stream.on('error', err => {
-                        this.log.e('first request error', err);
+                    session.on('error', err => {
+                        this.log.e('session error', err);
                         reject(new ConnectionError(err.message, ERROR.CONNECTION_PROVIDER));
                         session.destroy();
                     });
-                    stream.on('response', headers => {
-                        let status = headers[':status'];
-                        this.log.d('provider returned %d', status);
-                        if (status === 403 || status === 400) {
-                            if (status === 400) {
-                                this.session = session;
+
+                    session.on('connect', () => {
+                        this.log.d('connected to %s [%s]', this.authority, session.socket.remoteAddress);
+
+                        let stream = session.request(this.headersFirst);
+                        stream.on('error', err => {
+                            this.log.e('first request error', err);
+                            reject(new ConnectionError(err.message, ERROR.CONNECTION_PROVIDER));
+                            session.destroy();
+                        });
+                        stream.on('response', headers => {
+                            let status = headers[':status'];
+                            this.log.d('provider returned %d', status);
+                            if (status === 403 || status === 400) {
+                                if (status === 400) {
+                                    this.session = session;
+                                }
+                                else {
+                                    session.destroy();
+                                }
+                                resolve(status === 400);
                             }
                             else {
-                                session.destroy();
+                                reject(new ConnectionError(`APN returned status ${status}`, ERROR.CONNECTION_PROVIDER));
                             }
-                            resolve(status === 400);
-                        }
-                        else {
-                            reject(new ConnectionError(`APN returned status ${status}`, ERROR.CONNECTION_PROVIDER));
-                        }
-                        stream.destroy();
+                            stream.destroy();
+                        });
+                        stream.setEncoding('utf8');
+                        stream.end(JSON.stringify({
+                            aps: {
+                                alert: 'xxTESTxx'
+                            }
+                        }));
                     });
-                    stream.setEncoding('utf8');
-                    stream.end(JSON.stringify({
-                        aps: {
-                            alert: 'xxTESTxx'
-                        }
-                    }));
                 });
+
             });
         }
+    }
+
+    /**
+     * Ensure connection to proxy server
+     * 
+     * @param {string} host APN hostname
+     * @param {int} port APN port
+     * @param {function} callback callback to call in the end, first param is error
+     */
+    ensureProxy(host, port, callback) {
+        if (!this._options.proxy || !this._options.proxy.host || !this._options.proxy.port) {
+            callback();
+            return;
+        }
+        let reqopts = {
+            host: this._options.proxy.host,
+            port: this._options.proxy.port,
+            method: 'CONNECT',
+            path: host + ':' + port,
+            headers: { host },
+            rejectUnauthorized: this._options.proxy.auth,
+        };
+
+        if (this._options.proxy.user && this._options.proxy.pass) {
+            reqopts.headers['Proxy-Authorization'] = 'Basic ' + Buffer.from(this._options.proxy.user + ':' + this._options.proxy.pass).toString('base64');
+        }
+
+        this.log.d('Connecting to proxy');
+        let req = http.request(reqopts);
+
+        req.on('connect', (res, socket) => {
+            this.log.d('connected to proxy');
+            this.sessionOptions.createConnection = () => {
+                this.log.d('Creating proxied connection to APN');
+                return tls.connect({
+                    host,
+                    port,
+                    socket: socket,
+                    rejectUnauthorized: this._options.proxy.auth,
+                    ALPNProtocols: ['h2']
+                });
+            };
+            callback();
+        });
+
+        req.on('error', err => {
+            this.log.e('proxy request error', err);
+            callback(err);
+        });
+
+        req.end();
     }
 
     /**

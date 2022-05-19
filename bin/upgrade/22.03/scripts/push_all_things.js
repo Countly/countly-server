@@ -3,15 +3,14 @@ const plugins = require('../../../../plugins/pluginManager'),
     { Creds, Message, util } = require('../../../../plugins/push/api/send'),
     { Note } = require('../../../../plugins/push/api/parts/note');
 
-
 console.log('Migrating push plugin data');
 
 plugins.dbConnection().then(async db => {
     common.db = db;
-    let push = await db.collection('push').findOne();
-    if (push && !process.env.FORCE_REPEAT) {
-        return console.log('Migrating push plugin data: no migration needed as there\'s already data in "push" collection');
-    }
+    // let push = await db.collection('push').findOne();
+    // if (push && !process.env.FORCE_REPEAT) {
+    //     return console.log('Migrating push plugin data: no migration needed as there\'s already data in "push" collection');
+    // }
 
     await db.createCollection('push').catch(() => {
         console.log('push collection already exists');
@@ -19,9 +18,6 @@ plugins.dbConnection().then(async db => {
         return db.collection('push').createIndexes([
             {name: 'main', key: {_id: 1, m: 1, p: 1, f: 1}},
         ]).catch(() => {});
-    });
-    await db.createCollection('messages_legacy').catch(() => {
-        console.log('messages_legacy collection already exists');
     });
 
     try {
@@ -48,22 +44,56 @@ plugins.dbConnection().then(async db => {
         await new Promise(res => setTimeout(res, 1000));
 
         // Migrate messages to new data structures
-        console.log('Migrating messages');
-        let messages = db.collection('messages').find().stream(),
-            counter = 0;
-        for await (const n of messages) {
-            if (n.app && !n.apps) {
-                continue;
+        // 1. No legacy => migrate all, filterOut = []
+        // 2. Some legacy => filterOut = messages ids
+        // 3. More messages than legacy => do nothing
+        let messageIds = await db.collection('messages').find({}, {_id: 1}).toArray(),
+            legacyCount = await db.collection('messages_legacy').count(),
+            filterOut = false,
+            migrateMessages = true;
+        
+        if (legacyCount) {
+            if (messageIds.length >= legacyCount) {
+                migrateMessages = false; // already migrated
             }
-            await db.collection('messages_legacy').insertOne(n);
-            await db.collection('messages').deleteOne({_id: n._id});
-            await db.collection('messages').insertOne(Message.fromNote(new Note(n)).json);
-            counter++;
-            if (counter % 100 === 0) {
-                console.log('Migrated %d messages ...', counter);
+            else {
+                filterOut = messageIds.map(m => m._id); // partially migrated
             }
         }
-        console.log('Migrated %d messages ... DONE', counter);
+        else if (!messageIds.length) {
+            migrateMessages = false; // no messages at all
+        }
+        
+        if (migrateMessages) {
+            console.log('Migrating messages...');
+            if (filterOut.length) {
+                console.log('Migrating messages... %d already migrated', filterOut.length);
+            }
+            if (!legacyCount) {
+                try {
+                    await db.collection('messages').rename('messages_legacy');
+                    console.log('Migrating messages... renamed messages collection');
+                }
+                catch (e) {
+                    console.error('Error while renaming messages to messages_legacy', e);
+                }
+            }
+    
+            let messages = db.collection('messages_legacy').find(filterOut ? {_id: {$nin: filterOut}} : {}).batchSize(1000).stream(),
+                insert = Message.batchInsert(1000);
+            for await (const n of messages) {
+                if (n.app && !n.apps) {
+                    console.log('%s is already migrated', n._id);
+                    continue;
+                }
+                if (insert.pushSync(Message.fromNote(new Note(n)).json)) {
+                    await insert.flush();
+                    console.log('Migrating messages... %d / %d', insert.total, legacyCount);
+                }
+            }
+            await insert.flush();
+            console.log('Migrating messages... DONE', insert.total);
+        }
 
         // Migrate credentials
         console.log('Migrating %d out of %d credentials', credentialsInApps.length, credentials.length);
@@ -79,6 +109,9 @@ plugins.dbConnection().then(async db => {
                         (a.plugins.push.a && a.plugins.push.a._id && a.plugins.push.a._id.toString() === c._id.toString()) || 
                         (a.plugins.push.h && a.plugins.push.h._id && a.plugins.push.h._id.toString() === c._id.toString()))[0];
 
+                if (!creds) {
+                    return console.error('Malformed credentials: ', c);
+                }
                 if (!app) {
                     return console.error('Illegal state: app not found for credentials %s', cid);
                 }
@@ -137,23 +170,59 @@ plugins.dbConnection().then(async db => {
                 let obj = {};
                 if (Array.isArray(doc.msgs)) {
                     doc.msgs.forEach(msg => {
+                        let id, date;
                         if (Array.isArray(msg)) {
-                            obj[msg[0]] = msg[1];
+                            id = msg[0];
+                            date = msg[1];
                         }
                         else if (common.dbext.isoid(msg)) {
-                            obj[msg] = new Date(2018, 0, 1, 1).getTime();
+                            id = msg;
+                            date = new Date(2018, 0, 1, 1).getTime();
+                        }
+                        if (obj[id]) {
+                            if (obj[id].indexOf(date) === -1) {
+                                obj[id].push(date);
+                            }
+                        }
+                        else {
+                            obj[id] = [date];
                         }
                     });
                 }
                 else if (doc.msgs && doc.msgs['0']) {
                     for (let k in doc.msgs) {
-                        let msg = doc.msgs[k];
+                        let id,
+                            date,
+                            msg = doc.msgs[k];
                         if (Array.isArray(msg)) {
-                            obj[msg[0]] = msg[1];
+                            id = msg[0];
+                            date = msg[1];
                         }
                         else if (common.dbext.isoid(msg)) {
-                            obj[msg] = new Date(2018, 0, 1, 1).getTime();
+                            id = msg;
+                            date = new Date(2018, 0, 1, 1).getTime();
                         }
+                        if (obj[id]) {
+                            if (obj[id].indexOf(date) === -1) {
+                                obj[id].push(date);
+                            }
+                        }
+                        else {
+                            obj[id] = [date];
+                        }
+                    }
+                }
+                else {
+                    let needsFix = false,
+                        fixed = {};
+                    for (let mid in doc.msgs) {
+                        if (typeof doc.msgs[mid] === 'number') {
+                            needsFix = true;
+                        }
+                        fixed[mid] = typeof doc.msgs[mid] === 'number' ? [doc.msgs[mid]] : doc.msgs[mid];
+                    }
+                    if (needsFix) {
+                        obj = fixed;
                     }
                 }
 
@@ -208,6 +277,9 @@ plugins.dbConnection().then(async db => {
                 type = queue.substr(queue.lastIndexOf('_') + 1),
                 p = type[0],
                 f = type[1];
+            if ((p === 'a' || p === 'h') && f === 't') {
+                f = 'p';
+            }
             for await (const doc of stream) {
                 await add({
                     _id: common.dbext.oidWithDate(Math.floor(doc.d / 1000)),
@@ -225,13 +297,57 @@ plugins.dbConnection().then(async db => {
 
         await add(null, true);
 
-        // unset test token booleans
+        // unset test token booleans & set app_users token bools
         for (const app of apps) {
             db.collection(`app_users${app._id}`).updateMany({}, {$unset: {tkat: 1, tkht: 1}});
+
+            let batch = [],
+                count = 0,
+                add = async (op, flush) => {
+                    if (flush || (batch.length > 0 && batch.length >= 10000)) {
+                        if (op) {
+                            batch.push(op);
+                        }
+                        console.log(`... running ${count++}-th batch of consistency updates in "app_users${app._id}"`);
+                        if (batch.length) {
+                            await db.collection(`app_users${app._id}`).bulkWrite(batch);
+                        }
+                        batch = [];
+                    }
+                    else if (op) {
+                        batch.push(op);
+                    }
+                },
+                stream = db.collection(`push_${app._id}`).find(),
+                fields = ['id', 'ia', 'ip', 'ap', 'hp'],
+                update;
+
+            for await (const doc of stream) {
+                if (doc.tk) {
+                    update = {};
+                    fields.forEach(field => {
+                        if (doc.tk[field]) {
+                            update.$set = update.$set || {};
+                            update.$set[`tk${field}`] = true;
+                        }
+                        else {
+                            update.$unset = update.$unset || {};
+                            update.$unset[`tk${field}`] = 1;
+                        }
+                    });
+                }
+                else {
+                    update = {$unset: {tkid: 1, tkia: 1, tkip: 1, tkap: 1, tkhp: 1}};
+                }
+                await add({updateOne: {filter: {uid: doc._id}, update}});
+            }
+
+            await add(null, true);
         }
         
         // Migrate jobs
         await db.collection('jobs').deleteMany({name: 'push:send'});
+        await db.collection('jobs').deleteMany({name: 'push:process'});
     }
     finally {
         db.close();

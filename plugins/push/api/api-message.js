@@ -1,7 +1,8 @@
-const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES } = require('./send'),
+const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES } = require('./send'),
     { DEFAULTS } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
-    log = common.log('push:api:message');
+    log = common.log('push:api:message'),
+    moment = require('moment-timezone');
 
 
 /**
@@ -62,7 +63,7 @@ async function validate(args, draft = false) {
     if (app) {
         msg.info.appName = app.name;
 
-        if (!args.demo) {
+        if (!args.demo && !(args.args && args.args.demo)) {
             for (let p of msg.platforms) {
                 let id = common.dot(app, `plugins.push.${p}._id`);
                 if (!id || id === 'demo') {
@@ -188,6 +189,7 @@ module.exports.test = async params => {
     }
 
     if (msg) {
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_test', data: {test_uids, test_cohorts}});
         let ok = await msg.updateAtomically(
             {_id: msg._id, state: msg.state},
             {
@@ -211,22 +213,35 @@ module.exports.test = async params => {
 };
 
 module.exports.create = async params => {
-    let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
+    let msg = await validate(params.qstring, params.qstring.status === Status.Draft),
+        demo = params.qstring.demo === undefined ? params.qstring.args ? params.qstring.args.demo : false : params.qstring.demo;
     msg._id = common.db.ObjectID();
     msg.info.created = msg.info.updated = new Date();
     msg.info.createdBy = msg.info.updatedBy = params.member._id;
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
 
+    if (demo) {
+        msg.info.demo = true;
+    }
+
     if (params.qstring.status === Status.Draft) {
         msg.status = Status.Draft;
         msg.state = State.Inactive;
         await msg.save();
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_draft', data: msg.json});
     }
     else {
         msg.state = State.Created;
         msg.status = Status.Created;
         await msg.save();
-        await msg.schedule(log, params);
+        if (!demo) {
+            await msg.schedule(log, params);
+        }
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
+    }
+
+    if (demo && demo !== 'no-data') {
+        await generateDemoData(msg, demo);
     }
 
     common.returnOutput(params, msg.json);
@@ -244,6 +259,7 @@ module.exports.update = async params => {
             msg.status = Status.Created;
             await msg.save();
             await msg.schedule(log, params);
+            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
         }
         else if (msg.triggerPlain()) {
             throw new ValidationError('Finished plain messages cannot be changed');
@@ -263,9 +279,11 @@ module.exports.update = async params => {
             msg.state = State.Created;
             await msg.save();
             await msg.schedule(log, params);
+            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated_draft', data: msg.json});
         }
         else {
             await msg.save();
+            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
         }
     }
 
@@ -299,6 +317,7 @@ module.exports.remove = async params => {
             $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
         });
     if (ok) {
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_deleted', data: msg.json});
         common.returnOutput(params, {});
     }
     else {
@@ -339,9 +358,11 @@ module.exports.toggle = async params => {
 
     if (msg.is(State.Streamable)) {
         await msg.stop(log);
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_deactivated', data: msg.json});
     }
     else {
         await msg.schedule(log, params);
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: msg.json});
     }
 
     common.returnOutput(params, msg.json);
@@ -468,6 +489,69 @@ module.exports.one = async params => {
     }
 
     common.returnOutput(params, msg.json);
+    return true;
+};
+
+/**
+ * Get notifications sent to a particular user
+ * 
+ * @param {object} params params
+ * @returns {Promise} resolves to true
+ */
+module.exports.user = async params => {
+    let data = common.validateArgs(params.qstring, {
+        id: {type: 'String', required: false},
+        did: {type: 'String', required: false},
+        app_id: {type: 'String', required: true},
+        messages: {type: 'BooleanString', required: true},
+    }, true);
+    if (data.result) {
+        data = data.obj;
+    }
+    else {
+        common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
+    }
+
+    if (!data.did && !data.id) {
+        common.returnMessage(params, 400, {errors: ['One of id & did parameters is required']}, null, true);
+        return true;
+    }
+
+    let uid = data.id;
+    if (!uid && data.did) {
+        let user = await common.db.collection(`app_users${data.app_id}`).findOne({did: data.did});
+        if (!user) {
+            common.returnMessage(params, 404, {errors: ['User with the did specified is not found']}, null, true);
+            return true;
+        }
+        uid = user.uid;
+    }
+
+    let push = await common.db.collection(`push_${data.app_id}`).findOne({_id: uid});
+    if (!push) {
+        common.returnOutput(params, {});
+        return true;
+    }
+
+    let ids = Object.keys(push.msgs || {});
+    if (!ids.length) {
+        common.returnOutput(params, {});
+        return true;
+    }
+
+    if (data.messages) {
+        let messages = await common.db.collection('messages').find({_id: {$in: ids.map(common.dbext.oid)}}).toArray();
+        common.returnOutput(params, {
+            notifications: push.msgs,
+            messages
+        });
+    }
+    else {
+        common.returnOutput(params, {notifications: push.msgs});
+    }
+
+    return true;
 };
 
 module.exports.all = async params => {
@@ -571,6 +655,197 @@ module.exports.all = async params => {
     }
 };
 
+/**
+ * Generate demo data for populator
+ * 
+ * @param {Message} msg message instance
+ * @param {int} demo demo type
+ */
+async function generateDemoData(msg, demo) {
+    await common.db.collection('apps').updateOne({_id: msg.app, 'plugins.push.i._id': {$exists: false}}, {$set: {'plugins.push.i._id': 'demo'}});
+    await common.db.collection('apps').updateOne({_id: msg.app, 'plugins.push.a._id': {$exists: false}}, {$set: {'plugins.push.a._id': 'demo'}});
+    await common.db.collection('apps').updateOne({_id: msg.app, 'plugins.push.h._id': {$exists: false}}, {$set: {'plugins.push.h._id': 'demo'}});
+
+    let app = await common.db.collection('apps').findOne({_id: msg.app}),
+        count = await common.db.collection('app_users' + msg.app).count(),
+        events = [],
+        result = msg.result || new Result();
+
+    if (msg.triggerAutoOrApi()) {
+        msg.state = State.Created | State.Streamable;
+        msg.status = Status.Scheduled;
+
+        let total = Math.floor(count * 0.72),
+            sent = Math.floor(total * 0.92),
+            actioned = Math.floor(sent * 0.17),
+            offset = moment.tz(app.timezone).utcOffset(),
+            now = Date.now() - 3600000,
+            a = !!msg.triggerAuto(),
+            t = !a,
+            p = msg.platforms[0],
+            p1 = msg.platforms[1];
+
+        for (let i = 0; i < 19; i++) {
+            let date = now - (i + 1) * (24 * 3600000) - offset,
+                es = Math.floor((Math.random() + 0.5) / (19 - i) * sent),
+                ea = Math.floor((Math.random() + 0.5) / (19 - i) * actioned);
+
+            ea = Math.min(ea, Math.floor(es * 0.5));
+
+            sent -= es;
+            actioned -= ea;
+
+            if (es) {
+                result.processed += es;
+                result.total += es;
+                result.sent += es;
+
+                let es_p0 = Math.floor(es * 2 / 3),
+                    es_p1 = es - es_p0;
+                if (es_p0 && es_p1 && p1) {
+                    result.sub(p).processed += es_p0;
+                    result.sub(p).total += es_p0;
+                    result.sub(p).sent += es_p0;
+                    result.sub(p1).processed += es_p1;
+                    result.sub(p1).total += es_p1;
+                    result.sub(p1).sent += es_p1;
+                    events.push({timestamp: date, key: '[CLY]_push_sent', count: es_p0, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+                    events.push({timestamp: date, key: '[CLY]_push_sent', count: es_p1, segmentation: {i: msg.id, a, t, p: p1, ap: a + p1, tp: t + p1}});
+                }
+                else {
+                    result.sub(p).processed += es;
+                    result.sub(p).total += es;
+                    result.sub(p).sent += es;
+                    events.push({timestamp: date, key: '[CLY]_push_sent', count: es, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+                }
+            }
+            if (ea) {
+                let ea_p0 = Math.floor(ea * 2 / 3),
+                    ea_p1 = ea - ea_p0;
+                if (ea_p0 && ea_p1 && p1) {
+                    result.sub(p).actioned += ea_p0;
+                    result.sub(p1).actioned += ea_p1;
+                    events.push({timestamp: date, key: '[CLY]_push_action', count: ea_p0, segmentation: {i: msg.id, b: 1, a, t, p, ap: a + p, tp: t + p}});
+                    events.push({timestamp: date, key: '[CLY]_push_action', count: ea_p1, segmentation: {i: msg.id, b: 1, a, t, p: p1, ap: a + p1, tp: t + p1}});
+                }
+                else {
+                    result.sub(p).actioned += ea;
+                    events.push({timestamp: date, key: '[CLY]_push_action', count: ea, segmentation: {i: msg.id, b: 1, a, t, p, ap: a + p, tp: t + p}});
+                }
+            }
+        }
+
+        let st = Math.floor(sent / 3),
+            at = Math.floor(actioned / 3);
+
+        if (st) {
+            result.processed += st;
+            result.total += st;
+            result.sent += st;
+            result.sub(p).processed += st;
+            result.sub(p).total += st;
+            events.push({timestamp: now - 24 * 3600000 - offset, key: '[CLY]_push_sent', count: st, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+        }
+        if (at) {
+            result.actioned += at;
+            result.sub(p).actioned += at;
+            events.push({timestamp: now - 24 * 3600000 - offset, key: '[CLY]_push_action', count: at, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+        }
+
+        sent = sent - st;
+        actioned = actioned - at;
+
+        result.processed += sent;
+        result.total += sent;
+        result.sent += sent;
+        result.actioned += actioned;
+        result.sub(p).processed += sent;
+        result.sub(p).total += sent;
+        result.sub(p).sent += sent;
+        result.sub(p).actioned += actioned;
+        events.push({timestamp: now - offset, key: '[CLY]_push_sent', count: sent, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+        events.push({timestamp: now - offset, key: '[CLY]_push_action', count: actioned, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+    }
+    else {
+        msg.state = State.Created | State.Done;
+        msg.status = Status.Sent;
+
+        let total = demo === 1 ? Math.floor(count * 0.92) : Math.floor(Math.floor(count * 0.92) * 0.87),
+            sent = demo === 1 ? Math.floor(total * 0.87) : total,
+            actioned = Math.floor(sent * (demo === 1 ? 0.38 : 0.21)),
+            // actioned1 = Math.floor(actioned * (demo === 1 ? 0.76 : 0.64)),
+            // actioned2 = Math.floor(actioned * (demo === 1 ? 0.21 : 0.37)),
+            // actioned0 = actioned - actioned1 - actioned2,
+            a = false,
+            t = false,
+            p = msg.platforms[0],
+            p1 = msg.platforms[1];
+
+
+        let s_p0 = Math.floor(sent / 3),
+            a_p0 = Math.floor(actioned / 3),
+            a0_p0 = Math.floor(a_p0 * 2 / 3),
+            a1_p0 = Math.floor((a_p0 - a0_p0) * 2 / 3),
+            a2_p0 = a_p0 - a0_p0 - a1_p0,
+            s_p1 = sent - s_p0,
+            a_p1 = actioned - a_p0,
+            a0_p1 = Math.floor(a_p1 * 2 / 3),
+            a1_p1 = Math.floor((a_p1 - a0_p1) * 2 / 3),
+            a2_p1 = a_p1 - a0_p1 - a1_p1;
+
+        log.d('msggggggg %s: sent %d, actioned %d (%d %d-%d-%d / %d %d-%d-%d)', msg.id, sent, actioned, a_p0, a0_p0, a1_p0, a2_p0, a_p1, a0_p1, a1_p1, a2_p1);
+
+        result.processed += sent;
+        result.total += sent;
+        result.sent += sent;
+        result.actioned += a0_p0 + a1_p0 + a2_p0 + a0_p1 + a1_p1 + a2_p1;
+        result.sub(p).processed += s_p0;
+        result.sub(p).total += s_p0;
+        result.sub(p).sent += s_p0;
+        result.sub(p).actioned += a0_p0 + a1_p0 + a2_p0;
+        result.sub(msg.platforms[1]).processed += s_p1;
+        result.sub(msg.platforms[1]).total += s_p1;
+        result.sub(msg.platforms[1]).sent += s_p1;
+        result.sub(msg.platforms[1]).actioned += a0_p1 + a1_p1 + a2_p1;
+
+        if (s_p0) {
+            events.push({key: '[CLY]_push_sent', count: s_p0, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+        }
+        if (a0_p0) {
+            events.push({key: '[CLY]_push_action', count: a0_p0, segmentation: {i: msg.id, b: 0, a, t, p, ap: a + p, tp: t + p}});
+        }
+        if (a1_p0) {
+            events.push({key: '[CLY]_push_action', count: a1_p0, segmentation: {i: msg.id, b: 1, a, t, p, ap: a + p, tp: t + p}});
+        }
+        if (a2_p0) {
+            events.push({key: '[CLY]_push_action', count: a2_p0, segmentation: {i: msg.id, b: 2, a, t, p, ap: a + p, tp: t + p}});
+        }
+        if (s_p1) {
+            events.push({key: '[CLY]_push_sent', count: s_p1, segmentation: {i: msg.id, a, t, p: p1, ap: a + p1, tp: t + p1}});
+        }
+        if (a0_p1) {
+            events.push({key: '[CLY]_push_action', count: a0_p1, segmentation: {i: msg.id, b: 0, a, t, p: p1, ap: a + p1, tp: t + p1}});
+        }
+        if (a1_p1) {
+            events.push({key: '[CLY]_push_action', count: a1_p1, segmentation: {i: msg.id, b: 1, a, t, p: p1, ap: a + p1, tp: t + p1}});
+        }
+        if (a2_p1) {
+            events.push({key: '[CLY]_push_action', count: a2_p1, segmentation: {i: msg.id, b: 2, a, t, p: p1, ap: a + p1, tp: t + p1}});
+        }
+    }
+
+    require('../../../api/parts/data/events').processEvents({
+        qstring: {events},
+        app_id: app._id.toString(),
+        appTimezone: app.timezone,
+        time: common.initTimeObj(app.timezone)
+    });
+
+    await msg.update({$set: {result: result.json, state: msg.state, status: msg.status}}, () => {
+        msg.result = result;
+    });
+}
+
 /** 
  * Get MIME of the file behind url by sending a HEAD request
  * 
@@ -600,7 +875,8 @@ function mimeInfo(url, method = 'HEAD') {
             let opts = {
                 host: conf.proxyhost,
                 method: 'CONNECT',
-                path: url.hostname + ':' + (url.port ? url.port : (protocol === 'https' ? 443 : 80))
+                path: url.hostname + ':' + (url.port ? url.port : (protocol === 'https' ? 443 : 80)),
+                rejectUnauthorized: !(conf.proxyunauthorized || false),
             };
             if (conf.proxyport) {
                 opts.port = conf.proxyport;
@@ -617,7 +893,8 @@ function mimeInfo(url, method = 'HEAD') {
                         opts = {
                             method,
                             agent: false,
-                            socket
+                            socket,
+                            rejectUnauthorized: !(conf.proxyunauthorized || false),
                         };
 
                         let req = require(protocol).request(url, opts, res2 => {

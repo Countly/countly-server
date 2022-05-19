@@ -63,11 +63,13 @@ class FCM extends Splitter {
      * @param {string} options.proxy.port proxy port
      * @param {string} options.proxy.user proxy user
      * @param {string} options.proxy.pass proxy pass
+     * @param {string} options.proxy.auth proxy require https correctness
      */
     constructor(log, type, creds, messages, options) {
-        super(log, type, creds, messages, Object.assign(options, {concurrency: 500}));
+        options.pool.concurrency = 500;
+        super(log, type, creds, messages, options);
 
-        this.log = logger(log).sub(`wa-${threadId}`);
+        this.log = logger(log).sub(`${threadId}-a`);
         this.opts = {
             agent: this.agent,
             hostname: 'fcm.googleapis.com',
@@ -98,6 +100,7 @@ class FCM extends Splitter {
                 one = Math.floor(bytes / pushes.length);
 
             content.registration_ids = pushes.map(p => p.t);
+            this.log.d('sending to %j', content.registration_ids);
 
             return this.sendRequest(JSON.stringify(content)).then(resp => {
                 try {
@@ -400,6 +403,7 @@ const CREDS = {
         static get scheme() {
             return Object.assign(super.scheme, {
                 key: { required: true, type: 'String', 'min-length': 100},
+                hash: { required: false, type: 'String' },
             });
         }
 

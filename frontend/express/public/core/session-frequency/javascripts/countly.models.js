@@ -13,6 +13,7 @@
             dto.chartData.forEach(function(chartDataItem, index) {
                 rows[index] = {
                     frequency: chartDataItem.f,
+                    weight: index,
                     numberOfSessions: chartDataItem.t,
                     percentage: chartDataItem.percentageNumber
                 };

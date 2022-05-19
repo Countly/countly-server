@@ -556,7 +556,7 @@
                     password: ""
                 },
                 changePassword: {
-                    showDialog: false,
+                    showDialog: this.$route.params && this.$route.params.reset || false,
                     title: CV.i18n("configs.change-password"),
                     saveButtonLabel: CV.i18n("configs.change-password"),
                     cancelButtonLabel: CV.i18n("configs.cancel"),
@@ -1099,6 +1099,12 @@
 
     app.route('/account-settings', 'account-settings', function() {
         this.renderWhenReady(getAccountView());
+    });
+
+    app.route('/account-settings/reset', 'account-settings', function() {
+        var view = getAccountView();
+        view.params = {reset: true};
+        this.renderWhenReady(view);
     });
 
     if (countlyAuth.validateGlobalAdmin()) {

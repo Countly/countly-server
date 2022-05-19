@@ -40,13 +40,15 @@ class Base extends Duplex {
         super({
             readableObjectMode: true,
             writableObjectMode: true,
-            writableHighWaterMark: options.concurrency,
+            writableHighWaterMark: options.pool.concurrency,
         });
         this.type = type;
         this.creds = creds;
         // this.id = `wrk-${type}-${hash(key.toString() + (secret || '').toString(16))}-${Date.now()}`;
         // this.log = log.sub(this.id);
         this.messages = {};
+        this.sending = 0;
+        this._options = options;
         messages.forEach(m => this.message(m));
         // this.log.i('initialized %s', type);
     }
@@ -68,6 +70,9 @@ class Base extends Duplex {
      * @param {object} data Message data / Message instance
      */
     message(data) {
+        if (this.log) {
+            this.log.d('Received message %s', data._id);
+        }
         if (data instanceof Message) {
             this.messages[data.id] = data;
         }
@@ -219,13 +224,17 @@ class Base extends Duplex {
      * @param {function} fun function with single arguments (data, bytes, attempt 1..max)
      * @param {integer} max max number of attempts, 3 by default
      */
-    async with_retries(data, bytes, fun, max = 3) {
+    async with_retries(data, bytes, fun, max = this._options.connection.retries || 3) {
+        this.sending += bytes;
         let error;
         for (let attempt = 1; attempt <= max; attempt++) {
             try {
-                return await fun(data, bytes, attempt);
+                let ret = await fun(data, bytes, attempt);
+                this.sending -= bytes;
+                return ret;
             }
             catch (e) {
+                this.log.w('Retriable error %d of %d', attempt, max, e);
                 if (!(e instanceof PushError)) {
                     throw e;
                 }
@@ -251,6 +260,7 @@ class Base extends Duplex {
             }
         }
         if (error) {
+            this.sending -= bytes;
             error.left = error.left ? error.left.map(l => l._id) : error.left;
             throw error;
         }
@@ -264,16 +274,44 @@ class Base extends Duplex {
             // do something
         }
     }
+
+    /**
+     * Wait for requests to finish and invoke the callback
+     * 
+     * @param {function} callback callback to call
+     */
+    drainAndCall(callback) {
+        if (this.sending || this.readableLength) {
+            this.log.d('.');
+            setTimeout(this.drainAndCall.bind(this, callback), 1000);
+        }
+        else {
+            callback();
+        }
+    }
+
+    /**
+     * Tear down the stream
+     * 
+     * @param {function} callback callback to call when done
+     */
+    _final(callback) {
+        this.drainAndCall(callback);
+    }
 }
 
 /**
  * Hash 
  * 
  * @param {any} data data to hash
+ * @param {String} seed seed to start from
  * @returns {String} 64-bit hash hex string
  */
-function hash(data) {
+function hash(data, seed) {
     xx64.reset();
+    if (seed) {
+        xx64.update(Buffer.from(seed, 'hex'));
+    }
     xx64.update(Buffer.from(JSON.stringify(data), 'utf-8'));
     return xx64.digest().toString('hex');
     // if (seed) {

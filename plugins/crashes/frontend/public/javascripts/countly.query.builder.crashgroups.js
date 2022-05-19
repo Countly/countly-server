@@ -29,6 +29,9 @@
                             ? row.value.data
                             : [row.value.data]
                         ).forEach(function(v) {
+                            if (row.property.id === "app_version") {
+                                v = (v + "").replace(/\./g, ":");
+                            }
                             subquery[row.property.id + "." + v] = {
                                 $exists: !negateValue,
                             };
@@ -157,11 +160,16 @@
                             $nin: "cly.!=",
                             $exists: function(data) {
                                 var dotIndex = key.indexOf(".");
+                                var propertyId = key.slice(0, dotIndex);
+                                var value = key.slice(dotIndex + 1, key.length);
+                                if (propertyId === "app_version") {
+                                    value = (value + "").replace(/:/g, ".");
+                                }
                                 return {
-                                    propertyId: key.slice(0, dotIndex),
+                                    propertyId: propertyId,
                                     operatorId: data ? "cly.=" : "cly.!=",
                                     valueData: [
-                                        key.slice(dotIndex + 1, key.length),
+                                        value,
                                     ],
                                 };
                             },

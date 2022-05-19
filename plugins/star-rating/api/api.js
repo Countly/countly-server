@@ -262,11 +262,43 @@ function uploadFile(myfile, id, callback) {
         ob.features.push(FEATURE_NAME);
     });
 
-    /*
-    * we have two different /o/sdk handler endpoint in surveys and ratings
-    * this one is non-dominant
-    * if surveys enabled, this will ignore requests, if not, this will handle
-    */
+    /**
+     * @api {get} /o/sdk Get ratings widgets
+     * @apiName GetWidgets
+     * @apiGroup Ratings
+     *
+     * @apiDescription Return feedback widgets as array, only works when surveys plugin disabled
+     * @apiQuery {String} method which kind feedback widgets requested, it should be 'feedback'
+     * @apiQuery {String} app_key app key value for related app that can be obtain from countly dashboard
+     * @apiQuery {String} device_id unique identifier for related device
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {
+     *  "result": [{
+     *    "_id": "62543b95a3a03e229a389a54",
+     *    "type": "rating",
+     *    "showPolicy": "afterPageLoad",
+     *    "appearance": {
+     *      "position": "mleft",
+     *      "bg_color": "#123456",
+     *      "text_color": "#fff",
+     *      "text": "Feedback",
+     *      "size": "m"
+     *    },
+     *    "tg": [
+     *      "/"
+     *    ],
+     *    "name": "What's your opinion about this page?"
+     *  }]
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+     * }
+     */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
         // do not respond if this isn't feedback fetch request 
@@ -642,6 +674,28 @@ function uploadFile(myfile, id, callback) {
         }
     };
 
+    /**
+    * @api {post} /i/feedback/logo Upload logo for ratings widget
+    * @apiName UploadWidgetLogo
+    * @apiGroup Ratings
+    * 
+    * @apiDescription Upload custom logo for feedback widget (Requires CREATE permission for Ratings)
+    * @apiBody {String} logo Logo file
+    * @apiQuery {String} identifier Identifier for file that will be uploaded
+    * @apiQuery {String} api_key' API Key that can be obtained from Countly dashboard
+    * 
+    * @apiSuccessExample {json} Success-Response
+    * HTTP/1.1 200 OK
+    * {
+    *  "result": "identifier.png"
+    * }
+    *
+    * @apiErrorExample {json} Error-Response
+    * HTTP/1.1 400 Bad Request
+    * {
+    *  "result": "Missing parameter \"api_key\" or \"auth_token\""" 
+    * }
+    */
     plugins.register("/i/feedback/logo", function(ob) {
         var params = ob.params;
         validateCreate(params, FEATURE_NAME, function() {
@@ -709,77 +763,136 @@ function uploadFile(myfile, id, callback) {
             });
         }
     });
-    /*
-     * @apiName: CreateFeedbackWidget
-     * @type: GET
-     * @apiDescription: Create web feedback widget from Countly web application
-     * @apiParam: 'popup_header_text', Header text of feedback popup
-     * @apiParam: 'popup_email_callout', "Contact me by e-mail" text of
-     * feedback popup
-     * @apiParam: 'popup_comment_callout', "Add comment" text of feedback popup
-     * @apiParam: 'popup_thanks_message', Message of thanks popup
-     * @apiParam: 'trigger_position', position of feedback trigger sticky,
-     * should be one of these ['mleft','mright','bleft','bright']
-     * @apiParam: 'trigger_bg_color', #hex code of background color of feedback
-     * trigger sticky button
-     * @apiParam: 'trigger_font_color', #hex code of font color of feedback
-     * trigger sticky button
-     * @apiParam: 'trigger_button_text', text of feedback sticky button
-     * @apiParam: 'target_devices', target device array of feedback
-     * fe: ['mobile','tablet']
-     * @apiParam: 'target_page', target page of feedback, should be one of
-     * these values ['all','selected']
-     * @apiParam: 'target_pages', if 'target_page' property set as 'selected',
-     * this param should be provided as array of selected pages
-     * fe: ['/home','/login']
-     * @apiParam: 'is_active', is that feedback should set active as default?
-     * @apiParam: 'hide_sticker', is that feedback should set hidden as default?
-     * @apiParam: 'app_id', app_id of related application
+    /**
+     * @api {post} /i/feedback/widgets/create Create new widget
+     * @apiName CreateRatingsWidget
+     * @apiGroup Ratings
+     * 
+     * @apiDescription Create web feedback widget from Countly web application
+     * @apiBody {String} popup_header_text Header text of feedback popup
+     * @apiBody {String} popup_email_callout "Contact me by e-mail" text of feedback popup
+     * @apiBody {String} popup_comment_callout "Add comment" text of feedback popup
+     * @apiBody {String} popup_thanks_message Message of thanks popup
+     * @apiBody {String} trigger_position position of feedback trigger sticky should be one of these ['mleft','mright','bleft','bright']
+     * @apiBody {String} trigger_bg_color #hex code of background color of feedback trigger sticky button
+     * @apiBody {String} trigger_font_color #hex code of font color of feedback trigger sticky button
+     * @apiBody {String} trigger_button_text text of feedback sticky button
+     * @apiBody {String} target_page target page of feedback, should be one of these values ['all','selected']
+     * @apiBody {String} target_pages if 'target_page' property set as 'selected' this param should be provided as array of selected pages fe: ['/home','/login']
+     * @apiBody {Boolean} status is that feedback widget will be active or not
+     * @apiBody {String} logo filename of logo which uploaded before
+     * @apiBody {String} hide_sticker is that feedback should set hidden as default?
+     * @apiBody {String} app_id app_id of related application
+     * @apiBody {String} targeting Targeting object for feedback widget that contain conditions for appear
+     * @apiBody {String} ratings_symbol symbol kind of ratings popup, 'emojis' as default
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 201 Created
+     * {
+     *  "result": "Successfully created 6256d161e8faa7b449e2dd6b"
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Invalid params: \"popup_header_text\""
+     * }
      */
     plugins.register("/i/feedback/widgets/create", createFeedbackWidget);
-    /*
-     * @apiName: RemoveFeedbackWidget
-     * @type: GET
-     * @apiDescription: Remove web feedback widget from Countly web application
-     * @apiParam: 'widget_id', Id of widget which will be removed
-     * @apiParam: 'with_data', Boolean property for remove data belong to widget which will be removed with it
-     * @apiParam: 'app_id', app_id of related application
+    /**
+     * @api {post} /i/feedback/widgets/remove Remove widget
+     * @apiName RemoveWidget
+     * @apiGroup Ratings
+     * 
+     * @apiDescription Remove feedback widget
+     * @apiBody {String} widget_id Id of widget which will be removed
+     * @apiBody {Boolean} with_data Property for remove data belong to widget which will be removed with it
+     * @apiBody {String} app_id app_id of related application
+     * 
+     * @apiSuccessExample {json} Success-Response
+     * HTTP/1.1 200 OK
+     * {
+     *  "result": "Success"
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response
+     * HTTP/1.1 404 Not Found
+     * {
+     *  "result": "Widget not found"
+     * }
      */
     plugins.register("/i/feedback/widgets/remove", removeFeedbackWidget);
-    /*
-     * @apiName: EditFeedbackWidget
-     * @type: GET
-     * @apiDescription: Edit web feedback widget settings from Countly web application
-     * @apiParam: 'popup_header_text', Header text of feedback popup
-     * @apiParam: 'popup_email_callout', "Contact me by e-mail" text of
-     * feedback popup
-     * @apiParam: 'popup_comment_callout', "Add comment" text of feedback popup
-     * @apiParam: 'popup_thanks_message', Message of thanks popup
-     * @apiParam: 'trigger_position', position of feedback trigger sticky,
-     * should be one of these ['mleft','mright','bleft','bright']
-     * @apiParam: 'trigger_bg_color', #hex code of background color of feedback
-     * trigger sticky button
-     * @apiParam: 'trigger_font_color', #hex code of font color of feedback
-     * trigger sticky button
-     * @apiParam: 'trigger_button_text', text of feedback sticky button
-     * @apiParam: 'target_devices', target device array of feedback
-     * fe: ['mobile','tablet']
-     * @apiParam: 'target_page', target page of feedback, should be one of
-     * these values ['all','selected']
-     * @apiParam: 'target_pages', if 'target_page' property set as 'selected',
-     * this param should be provided as array of selected pages
-     * fe: ['/home','/login']
-     * @apiParam: 'is_active', is that feedback should set active as default?
-     * @apiParam: 'app_id', app_id of related application
+    /**
+     * @api {post} /i/feedback/widgets/update Update widget
+     * @apiName UpdateWidget
+     * @apiGroup Ratings
+     * 
+     * @apiDescription Edit web feedback widget settings from Countly web application
+     * @apiBody {String} popup_header_text Header text of feedback popup
+     * @apiBody {String} popup_email_callout "Contact me by e-mail" text of feedback popup
+     * @apiBody {String} popup_comment_callout "Add comment" text of feedback popup
+     * @apiBody {String} popup_thanks_message Message of thanks popup
+     * @apiBody {String} trigger_position position of feedback trigger sticky should be one of these ['mleft','mright','bleft','bright']
+     * @apiBody {String} trigger_bg_color #hex code of background color of feedback trigger sticky button
+     * @apiBody {String} trigger_font_color #hex code of font color of feedback trigger sticky button
+     * @apiBody {String} trigger_button_text text of feedback sticky button
+     * @apiBody {String} target_page Target page of feedback, should be one of these values ['all','selected']
+     * @apiBody {String} target_pages if 'target_page' property set as 'selected', this param should be provided as array of selected pages fe: ['/home','/login']
+     * @apiBody {Boolean} status is that feedback widget will be active or not
+     * @apiBody {String} logo filename of logo which uploaded before
+     * @apiBody {String} hide_sticker is that feedback should set hidden as default?
+     * @apiBody {String} app_id app_id of related application
+     * @apiBody {String} targeting Targeting object for feedback widget that contain conditions for appear
+     * @apiBody {String} ratings_symbol Symbol type of ratings popup, 'emojis' as default
+     * 
+     * @apiSuccessExample {json} Success-Response
+     * HTTP/1.1 200 OK
+     * {
+     *  "result": "Successfully updated 6256d161e8faa7b449e2dd6b"
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response
+     * HTTP/1.1 500 Bad Request
+     * {
+     *  "result": "Invalid widget id."
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Invalid params: \"popup_header_text\""
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response
+     * HTTP/1.1 404 Not Found
+     * {
+     *  "result": "Widget not found"
+     * }
      */
     plugins.register("/i/feedback/widgets/edit", editFeedbackWidget);
-    /*
-     * @apiName: GetFeedbackData
-     * @apiDescription: Get feedback data with or without filters
-     * @apiParam: 'widget_id', Id of related widget
-     * @apiParam: 'rating', filter by rating
-     * @apiParam: 'device_id', filter by device_id
-     * @apiParam: 'app_id', app_id of related application
+    /**
+     * @api {get} /o/feedback/data Get feedback data
+     * @apiName GetFeedbackData
+     * @apiGroup Ratings
+     * 
+     * @apiDescription Get feedback data with or without filters
+     * @apiQuery {String} app_id app_id of related application
+     * @apiQuery {String} period array that contain start and end date as timestamp
+     * @apiQuery {String} widget_id Id of related widget
+     * @apiQuery {String} rating Rating filter between 1 and 5
+     * @apiQuery {String} comment Comment filter
+     * @apiQuery {String} version App version filter like 1.0.1
+     * @apiQuery {String} platform Platform filter like 'iOS'
+     * @apiQuery {String} device_id Device id value for cases that you need to fetch data for specific device
+     * @apiQuery {String} uid User id value
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {
+     *  "iTotalRecords": 0,
+     *  "iTotalDisplayRecords": 0,
+     *  "aaData": []
+     * }
      */
     plugins.register('/o/feedback/data', function(ob) {
         var params = ob.params;
@@ -817,7 +930,7 @@ function uploadFile(myfile, id, callback) {
                 sort[colName] = sortType;
             }
             catch (e) {
-                common.returnMessage(params, 500, 'Invalid column index for sorting');
+                common.returnMessage(params, 400, 'Invalid column index for sorting');
                 return true;
             }
         }
@@ -852,8 +965,8 @@ function uploadFile(myfile, id, callback) {
         return true;
     });
     /*
-     * @apiName: GetMultipleWidgetsById
-     * @apiDescription: Get feedback widgets with or without filters
+     * @apiName: GetMultipleWidgetsById (deprecated)
+     * @apiDescription: Get feedback widgets with or without filters 
      * @apiParam: 'app_key', app_key of related application provided by sdk request
      */
     plugins.register('/o/feedback/multiple-widgets-by-id', function(ob) {
@@ -891,11 +1004,46 @@ function uploadFile(myfile, id, callback) {
         }
         return true;
     });
-    /*
-     * @apiName: GetWidgetsData
-     * @apiDescription: Get feedback widgets with or without filters
-     * @apiParam: 'app_id', app_id of related application
-     * @apiParam: 'is_active', is_active option for widgets
+    /**
+     * @api {get} /o/feedback/widgets Get feedback widgets
+     * @apiName GetWidgets
+     * @apiGroup Ratings
+     * 
+     * @apiDescription Get feedback widgets with or without filters
+     * @apiQuery {String} app_id app_id of related application
+     * @apiQuery {Boolean} is_active is_active option for widgets
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * [ 
+     *  {
+     *   "_id": "60f12b92c1c9d0116e01d976",
+     *   "popup_header_text": "What&#39;s your opinion about this page?",
+     *   "popup_comment_callout": "Add comment",
+     *   "popup_email_callout": "Contact me by e-mail",
+     *   "popup_button_callout": "Send feedback",
+     *   "popup_thanks_message": "Thanks for feedback!",
+     *   "trigger_position": "mleft",
+     *   "trigger_bg_color": "#fff",
+     *   "trigger_font_color": "#ddd",
+     *   "trigger_button_text": "Feedback",
+     *   "target_devices": {
+     *     "phone": true,
+     *     "tablet": false,
+     *     "desktop": true
+     *   },
+     *   "target_page": "selected",
+     *   "target_pages": [
+     *     "/"
+     *   ],
+     *   "is_active": "true",
+     *   "hide_sticker": false,
+     *   "app_id": "5e217f4e29ae905af43c2e40",
+     *   "type": "rating",
+     *   "ratingsCount": 5,
+     *   "ratingsSum": 14
+     *   }
+     * ]
      */
     plugins.register('/o/feedback/widgets', function(ob) {
         var params = ob.params;
@@ -922,8 +1070,57 @@ function uploadFile(myfile, id, callback) {
         });
         return true;
     });
-    /*
-     * @apiName: GetOneWidget
+    /**
+     * @api {get} /o/feedback/widgets Get single widget
+     * @apiName GetOneWidget
+     * @apiGroup Ratings
+     * 
+     * @apiDescription Get feedback widget by id
+     * @apiQuery {String} api_key api_key that will be used for authentication, can be obtained from Countly server
+     * @apiQuery {String} app_id app_id of related application
+     * @apiQuery {String} widget_id id of the widget
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {
+     *  "_id": "60f12b92c1c9d0116e01d976",
+     *  "popup_header_text": "What&#39;s your opinion about this page?",
+     *  "popup_comment_callout": "Add comment",
+     *  "popup_email_callout": "Contact me by e-mail",
+     *  "popup_button_callout": "Send feedback",
+     *  "popup_thanks_message": "Thanks for feedback!",
+     *  "trigger_position": "mleft",
+     *  "trigger_bg_color": "#fff",
+     *  "trigger_font_color": "#ddd",
+     *  "trigger_button_text": "Feedback",
+     *  "target_devices": {
+     *   "phone": true,
+     *   "tablet": false,
+     *  "desktop": true
+     *  },
+     *  "target_page": "selected",
+     *  "target_pages": [
+     *  "/"
+     *  ],
+     *  "is_active": "true",
+     *  "hide_sticker": false,
+     *  "app_id": "5e217f4e29ae905af43c2e40",
+     *  "type": "rating",
+     *  "ratingsCount": 5,
+     *  "ratingsSum": 14
+     *  }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 404 Not Found
+     * {
+     *  "error": "Feedback widget not found"
+     * }
+     * 
+     * * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "error": "Missing parameter \"widget_id\""
+     * }
      */
     plugins.register('/o/feedback/widget', function(ob) {
         var params = ob.params;
@@ -962,7 +1159,51 @@ function uploadFile(myfile, id, callback) {
         return true;
     });
     /**
-     * register for fetching platform and version metadata.
+     * @api {get} /o Get meta data for ratings
+     * @apiName RatingsMetaData
+     * @apiGroup Ratings
+     * 
+     * @apiDescription Get feedback widget meta data
+     * @apiQuery method should be "star"
+     * @apiQuery app_id app_id of related application
+     * @apiQuery period period of the data, as timestamp array or string like "30days"
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {
+     *   "MacOS": [
+     *     "1:3",
+     *     "3:2"
+     *   ],
+     *   "Android": [
+     *     "3:2",
+     *     "1:7"
+     *   ],
+     *   "iOS": [
+     *     "1:1",
+     *     "2:5"
+     *   ],
+     *   "Windows Phone": [
+     *     "2:0",
+     *     "2:3"
+     *   ],
+     *   "Windows": [
+     *     "1:9",
+     *     "2:1"
+     *   ]
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "error": "Missing parameter \"app_id\""
+     * }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "error": "Missing parameter \"period\""
+     * }
      */
     plugins.register('/o', function(ob) {
         var params = ob.params;

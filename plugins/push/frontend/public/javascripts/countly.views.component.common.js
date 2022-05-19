@@ -1044,7 +1044,16 @@
     countlyPushNotificationComponent.DetailsErrorsTab = countlyVue.views.create({
         template: '#details-errors-tab',
         computed: {
+            globalError: function() {
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.error;
+            },
             errors: function() {
+                if (this.globalError) {
+                    var allErrors = this.$store.state.countlyPushNotificationDetails.pushNotification.errors;
+                    var copyErrors = allErrors.concat([]);
+                    copyErrors.unshift(this.globalError);
+                    return copyErrors;
+                }
                 return this.$store.state.countlyPushNotificationDetails.pushNotification.errors;
             },
         }

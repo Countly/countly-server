@@ -1,6 +1,6 @@
 const common = require('../../../api/utils/common'),
-    plugins = require('../../pluginManager'),
     log = common.log('push:api:push'),
+    Sender = require('./send/sender'),
     { extract, field, allAppUserFields, platforms, PLATFORM, ValidationError, Creds, DBMAP } = require('./send');
 
 module.exports.onTokenSession = async(dbAppUser, params) => {
@@ -130,20 +130,22 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
                 log.i('Checking %s / %s credentials', p, c.type);
                 // check credentials for validity
                 let creds = new PLATFORM[p].CREDS[c.type](c),
-                    errors = creds.validate();
+                    errors = creds.validate(),
+                    cfg = await Sender.loadConfig();
                 if (errors) {
                     throw new ValidationError(errors);
                 }
                 log.i('Checking %s / %s credentials: validation passed', p, c.type);
 
                 // verify connectivity with the credentials given
-                let connection = new PLATFORM[p].connection('push:api:push', p + 'p', creds, [], {}),
+                let connection = new PLATFORM[p].connection('push:api:push', p + 'p', creds, [], cfg),
                     valid = await connection.connect();
                 if (valid) {
                     log.i('Checking %s / %s credentials: provider check passed', p, c.type);
                 }
                 else {
                     log.i('Checking %s / %s credentials: provider check failed', p, c.type);
+                    connection.destroy();
                     throw new ValidationError('Credentials were rejected by push notification provider');
                 }
 
@@ -242,6 +244,6 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     let neo = JSON.stringify(pushcfg);
 
     if (old !== neo) {
-        plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: JSON.parse(old), after: JSON.parse(neo)}});
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: JSON.parse(old), after: JSON.parse(neo)}});
     }
 };

@@ -666,7 +666,7 @@ usersApi.deleteOwnAccount = function(params) {
         verifyMemberArgon2Hash(params.member.email, params.qstring.password, (err, member) => {
             if (member) {
                 if (member.global_admin) {
-                    common.db.collection('members').find({'global_admin': true}).count(function(err2, count) {
+                    common.db.collection('members').count({'global_admin': true}, function(err2, count) {
                         if (err2) {
                             console.log(err2);
                             common.returnMessage(params, 400, 'Mongo error');
@@ -972,7 +972,7 @@ usersApi.fetchNotes = async function(params) {
         log.e(' got error while paring query notes request', e);
     }
     let count = 0;
-    common.db.collection('notes').find(query).count(function(error, noteCount) {
+    common.db.collection('notes').count(query, function(error, noteCount) {
         if (!error && noteCount) {
             count = noteCount;
             common.db.collection('notes').find(query)

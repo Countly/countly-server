@@ -1,3 +1,142 @@
+## Version 22.03.10
+
+Fixes:
+- [dashboards] The graph tooltip should overflow from the widget's bounding box
+- [push] Expired credentials case
+- [ui] Pressing enter refreshes the page
+
+Enterprise fixes:
+- [auth_plugins] Remove old UI artifacts
+- [drill] View regeneration from drill data
+- [surveys] Fixed tooltip localization
+
+## Version 22.03.9
+
+Fixes:
+- [batcher] more no fallback errors
+- [compliance-hub] Table column design fix
+- [push] Arrays for sent messages
+- [push] Method to get notifications sent to a particular user
+- [push] Missing audit logs calls
+- [push] Missing capping / sleeping support
+- [push] Parsing only string args for legacy api
+- [push] Set test pushes as prod in upgrade script
+- [ui] Chart label scaling issue fixed
+- [versions] Showing mongodb version in versions view
+- [views] Using isoWeek for unique views values
+
+Enterprise Fixes:
+- [ab-testing] fix of undefined array
+- [attribution] Added null check for unpopulated data case
+- [attribution] Fixed the issue where metadata was not displayed in segments
+- [users] Always translate surveys
+- [users] Fix for sorting session table
+- [users] Handled formating case for numbers
+- [users] Missing tooltip added
+- [users] Optimize calculating event count for session for single user in aggregation pipeline
+- [white-labeling] Default button color code changed
+
+## Version 22.03.8
+
+Fixes:
+- [dependency] update dependencies
+- [ui] fixed scaling issues and x-axis labels on charts
+- [ui] tab title should update when switching app types
+
+Enterprise fixes:
+- [crashes-jira] new UI integration
+- [funnels] save button's label changed for edit case.
+- [retention_segments] fixed retention filter query
+- [users] fixed export query
+- [users] fixed query bookmark
+
+## Version 22.03.7
+
+Fixes:
+- [compare] Adding tests
+- [members] Secure password reset token generation
+- [push] Allowing no platform results for migrated messages
+- [push] Migrating messages in batches
+- [remote-config] Fix for percentage bars
+- [upgrade] Remove even more files
+- [views] Fix view regeneration
+
+Enterprise fixes:
+- [flows] ui fix
+
+## Version 22.03.6
+
+Fixes:
+- [compare] loading state fix
+- [ui] X-axis overflow handling changes
+- [upgrade] add drill indexes
+- [upgrade] do not upgrade new users that have permission object
+
+Fixes Enterprise:
+- [attribution] added information toast when clicked show/hide button
+- [surveys] handling appearance null cases for sdk api
+- [users] add engagement score
+
+## Version 22.03.5
+
+Fixes:
+
+- [core] Fixing logging issues
+- [crashes] Fixed app_version filter
+- [dashboards] Add dashboard name to audit logs when widget deleted
+- [dashboards] Show that app is deleted in widgets if app was deleted
+- [docker] Fixed dependency for HTML PDF on centos images
+- [grunt] Fixed production mode
+- [push] Destroy connection on credentials validation failure
+- [push] Fixing change streams in sender until driver update
+- [push] Longer muticasts
+- [push] Self signed proxy certificate support
+- [star-rating] Added custom rating symbol support
+
+## Version 22.03.4
+
+Fixes:
+- [push] added missing files
+
+## Version 22.03.3
+
+Fixes:
+- [crashes] defaults for optional fields
+- [dashboards] custom period for events widget
+- [dbviewer] fixed exporting of other databases
+- [frontend] fixed sorting of analytics tables
+- [populator] add push events
+- [push] credential validation fixes
+- [push] logger fixes
+- [push] remove send job
+- [report-manager] fixed localization strings
+
+Enterprise Fixes:
+- [attribution] new ui transition
+- [drill] allow storing objects/arrays in event segments
+- [flows] correct view name mapping if start and end point selected for flow
+- [revenue] average paying customer data fixes and css improvement
+- [surveys] fix to show logo preview
+- [users] fixed decoding properties in user profiles
+
+## Version 22.03.2
+
+Fixes:
+- [crashes] fixed chart color
+- [crashes] fixed crashes stats
+- [populator] added control when input has a comma
+- [push] Revert "delete unsued preview push images" 
+- [push] fixes in upgrade script
+- [push] making sure audience pusher works if there's no token
+- [push] proxy support, better configs & lots of fixes
+
+Enterprise fixes:
+- [ab-testing] fixes for detail page to show variants
+- [revenue] session data included in the countly revenue
+- [surveys] changes to show device id if userName not present
+- [surveys] changes to show logo on edit
+- [surveys] fixed logo deletion
+
 ## Version 22.03.1
 
 Enterprise fixes
@@ -28,6 +167,11 @@ Fixes:
 - [push] mutable-content for buttons
 - [scripts] fixed Compiler Version for 22.03 upgrade and installation
 - [upgrade] remove old files
+
+## Version 21.11.4
+
+Fixes:
+- [members] Secure password reset token generation
 
 ## Version 21.11.3
 

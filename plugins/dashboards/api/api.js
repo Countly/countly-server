@@ -11,7 +11,10 @@ var pluginOb = {},
     ip = require("../../../api/parts/mgmt/ip"),
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
+    mail = require("../../../api/parts/mgmt/mail"),
     { validateUser } = require('../../../api/utils/rights.js');
+
+var ejs = require("ejs");
 
 plugins.setConfigs("dashboards", {
     sharing_status: true
@@ -19,6 +22,82 @@ plugins.setConfigs("dashboards", {
 
 (function() {
 
+    /**
+     * @api {get} /o/dashboards Get dashboard
+     * @apiName GetDashboard
+     * @apiGroup Dashboards
+     * @apiPermission user
+     * @apiDescription Get all the widgets and app related information for the dashbaord
+     *
+     * @apiQuery {String} dashboard_id Id of the dashbaord for which data is to be fetched
+     * @apiQuery {String} period Period for which time period to provide data, possible values (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
+     * @apiQuery {String} [action] Set to refresh if page is being refreshed
+     *
+     * @apiSuccess {Object[]} widgets List of all widgets
+     * @apiSuccess {Object[]} apps List of apps
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * {
+            "widgets": [
+                {
+                "_id": "5b7590767c266d66f301054f",
+                "widget_type": "retention_segments",
+                "apps": [
+                    "5b3a716fc07e2036b53f1d51"
+                ],
+                "interval": "adaily",
+                "bar_color": 1,
+                "retention_type": "full",
+                "isPluginWidget": true,
+                "position": [
+                    0,
+                    0
+                ],
+                "size": [
+                    4,
+                    4
+                ],
+                "title": "",
+                "dashData": {}
+                },
+                {
+                "_id": "5b75909b7c266d66f3010551",
+                "widget_type": "funnels",
+                "apps": [
+                    "5b2ba948b9d3cc64ee7a770b"
+                ],
+                "funnel_type": [
+                    "5b2ba948b9d3cc64ee7a770b***133b9e9abc407f855534007f28d047cf"
+                ],
+                "bar_color": 1,
+                "isPluginWidget": true,
+                "position": [
+                    4,
+                    4
+                ],
+                "size": [
+                    4,
+                    3
+                ],
+                "dashData": {}
+                }
+            ],
+            "apps": [
+                {
+                "_id": "5b2ba948b9d3cc64ee7a771b",
+                "name": "Trinity"
+                },
+                {
+                "_id": "5b3a716fc07e2036b53f1d52",
+                "name": "appcodingeasy"
+                },
+                {
+                "_id": "5b63132ddf1b7a194a91838f",
+                "name": "App with data"
+                }
+            ]
+        }
+     */
     plugins.register("/o/dashboards", function(ob) {
         var paths = ob.paths;
 
@@ -192,6 +271,33 @@ plugins.setConfigs("dashboards", {
         }
     });
 
+    /**
+     * @api {get} /o/dashboards/widget Get widget info
+     * @apiName GetWidgetInfo
+     * @apiGroup Dashboards
+     * @apiPermission user
+     * @apiDescription Fetch the data corresponding to a particular widget
+     *
+     * @apiQuery {String} dashboard_id Id of the dashbaord for which data is to be fetched
+     * @apiQuery {String} widget_id Id of the widget for which the data is to be fetched
+     * @apiQuery {period} widget_id Time period for which the data is to be fetched
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * [
+            {
+                "_id": "5b7aca9539d00a70e69b6762",
+                "widget_type": "number",
+                "data_type": "session",
+                "apps": [
+                "5b2ba948b9d3cc64ee7a770b"
+                ],
+                "metrics": [
+                "t"
+                ],
+                "data": {}
+            }
+        ]
+     */
     plugins.register("/o/dashboards/widget", function(ob) {
         var params = ob.params,
             dashboardId = params.qstring.dashboard_id,
@@ -250,6 +356,75 @@ plugins.setConfigs("dashboards", {
         return true;
     });
 
+    /**
+     * @api {get} /o/dashboards/all Get all dashboards
+     * @apiName GetAllDashboards
+     * @apiGroup Dashboards
+     * @apiPermission user
+     * @apiDescription Fetch all the custom dashboards with widget info
+     *
+     * @apiQuery {String} app_id ID of the app for which to query
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * [
+            {
+                "_id": "5b2bacee8ad47667f394cb33",
+                "name": "Inital-dash",
+                "owner_id": "5b2ba91a04e23d64d2f55de0",
+                "shared_with_edit": [
+                "5b2ba91a04e23d64d2f55de0"
+                ],
+                "shared_with_view": [
+                "5b2ba91a04e23d64d2f55de0",
+                "5b71574113f0137abd7427a3"
+                ],
+                "theme": "1",
+                "widgets": [
+                "5b2bb596a5817c4168624664",
+                "5b3d05bacdc9ea0f434ea28d",
+                "5b3f90eb6eecfc3eefaaca07",
+                "5b44a025510fc63c9d11f3e9"
+                ],
+                "is_owner": true,
+                "is_editable": true
+            },
+            {
+                "_id": "5b71899c13f0137abd7427d1",
+                "name": "drill",
+                "owner_id": "5b2ba91a04e23d64d2f55de0",
+                "shared_with_edit": [
+                "5b2ba91a04e23d64d2f55de0"
+                ],
+                "shared_with_view": [
+                "5b2ba91a04e23d64d2f55de0"
+                ],
+                "theme": "7",
+                "widgets": [
+                "5b7189a913f0137abd7427d2",
+                "5b718a0e13f0137abd7427d3"
+                ],
+                "is_owner": true,
+                "is_editable": true
+            },
+            {
+                "_id": "5b7590697c266d66f301054e",
+                "name": "fixes",
+                "owner_id": "5b2ba91a04e23d64d2f55de0",
+                "shared_with_edit": [
+                "5b2ba91a04e23d64d2f55de0"
+                ],
+                "shared_with_view": [
+                "5b2ba91a04e23d64d2f55de0"
+                ],
+                "theme": "1",
+                "widgets": [
+                "5b7590767c266d66f301054f"
+                ],
+                "is_owner": true,
+                "is_editable": true
+            }
+        ]
+     */
     plugins.register("/o/dashboards/all", function(ob) {
         var params = ob.params;
 
@@ -371,6 +546,22 @@ plugins.setConfigs("dashboards", {
         return true;
     });
 
+    /**
+     * @api {get} /i/dashboards/create Create a dashboard
+     * @apiName CreateDashboard
+     * @apiGroup Dashboards
+     * @apiPermission user
+     * @apiDescription Create your own custom dashboard
+     *
+     * @apiQuery {String} name Name of the dashboard
+     * @apiQuery {Array} shared_email_edit Emails of user who can edit the dashboard
+     * @apiQuery {Array} shared_email_view Emails of the users who can view the dashboard
+     * @apiQuery {Array} shared_user_groups_edit Group ids of users who can edit the dashboard
+     * @apiQuery {Array} shared_user_groups_view Group ids of users who can view the dashboard
+     * @apiQuery {String} share_with "all-users", "selected-users" or "none"
+     * @apiQuery {String} [copy_dash_id] Id of the dashboard to copy. To be used when duplicating dashboards
+     *
+     */
     plugins.register("/i/dashboards/create", function(ob) {
         var params = ob.params;
 
@@ -380,6 +571,7 @@ plugins.setConfigs("dashboards", {
                 sharedEmailView = params.qstring.shared_email_view || [],
                 sharedUserGroupEdit = params.qstring.shared_user_groups_edit || [],
                 sharedUserGroupView = params.qstring.shared_user_groups_view || [],
+                send_email_invitation = params.qstring.send_email_invitation,
                 theme = params.qstring.theme || 1,
                 memberId = params.member._id + "",
                 shareWith = params.qstring.share_with || "",
@@ -468,13 +660,17 @@ plugins.setConfigs("dashboards", {
 
             seriesTasks.push(insertDashboards.bind(null, dataWrapper));
 
-            async.series(seriesTasks, function(err) {
+            async.series(seriesTasks, async function(err) {
                 if (err) {
                     return common.returnMessage(params, 500, "Failed to create dashboard");
                 }
 
                 var dashId = dataWrapper.dashboard_id;
-
+                if (send_email_invitation === 'true') {
+                    let {viewEmailList, editEmailList} = await getEmailList(params.member, shareWith, sharedEmailEdit, sharedEmailView,
+                        sharedUserGroupEdit, sharedUserGroupView);
+                    sendEmailInvitaion(params.member, viewEmailList, editEmailList, dashboardName, dashId);
+                }
                 common.returnOutput(params, dashId);
             });
 
@@ -598,6 +794,23 @@ plugins.setConfigs("dashboards", {
         return true;
     });
 
+    /**
+     * @api {get} /i/dashboards/update Update a dashboard
+     * @apiName UpdateDashboard
+     * @apiGroup Dashboards
+     * @apiPermission user
+     * @apiDescription Update your custom dashboard
+     *
+     * @apiQuery {String} name Name of the dashboard
+     * @apiQuery {Array} shared_email_edit Emails of user who can edit the dashboard
+     * @apiQuery {Array} shared_email_view Emails of the users who can view the dashboard
+     * @apiQuery {Array} shared_user_groups_edit Group ids of users who can edit the dashboard
+     * @apiQuery {Array} shared_user_groups_view Group ids of users who can view the dashboard
+     * @apiQuery {String} share_with "all-users", "selected-users" or "none"
+     * @apiQuery {String} [copy_dash_id] Id of the dashboard to copy. To be used when duplicating dashboards
+     * @apiQuery {String} dashboard_id Id of the dashboard which has to be updated
+     *
+     */
     plugins.register("/i/dashboards/update", function(ob) {
         var params = ob.params;
 
@@ -610,6 +823,7 @@ plugins.setConfigs("dashboards", {
                 sharedUserGroupView = params.qstring.shared_user_groups_view,
                 theme = params.qstring.theme || 1,
                 shareWith = params.qstring.share_with || "",
+                send_email_invitation = params.qstring.send_email_invitation,
                 memberId = params.member._id + "";
 
             if (!dashboardId || dashboardId.length !== 24) {
@@ -745,8 +959,27 @@ plugins.setConfigs("dashboards", {
                                 $set: changedFields,
                                 $unset: {shared_with_view: "", shared_with_edit: ""}
                             },
-                            function(e, res) {
+                            async function(e, res) {
                                 if (!e && res) {
+                                    if (send_email_invitation === 'true') {
+                                        const previousList = await getEmailList(params.member, dashboard.shareWith, dashboard.shared_email_edit, dashboard.shared_email_view, dashboard.shared_user_groups_edit, dashboard.shared_user_groups_view);
+
+                                        let {viewEmailList, editEmailList} = await getEmailList(params.member, shareWith, sharedEmailEdit, sharedEmailView,
+                                            sharedUserGroupEdit, sharedUserGroupView);
+
+                                        viewEmailList = viewEmailList.filter((i) => {
+                                            if (previousList.viewEmailList.indexOf(i) === -1) {
+                                                return true;
+                                            } return false;
+                                        });
+                                        editEmailList = editEmailList.filter((i) => {
+                                            if (previousList.editEmailList.indexOf(i) === -1) {
+                                                return true;
+                                            } return false;
+                                        });
+
+                                        sendEmailInvitaion(params.member, viewEmailList, editEmailList, dashboardName, dashboardId);
+                                    }
                                     plugins.dispatch("/systemlogs", {params: params, action: "dashboard_edited", data: {before: dashboard, update: changedFields}});
                                     common.returnOutput(params, res);
                                 }
@@ -763,6 +996,16 @@ plugins.setConfigs("dashboards", {
         return true;
     });
 
+    /**
+     * @api {get} /i/dashboards/delete Delete a dashboard
+     * @apiName DeleteDashboard
+     * @apiGroup Dashboards
+     * @apiPermission user
+     * @apiDescription Delete your custom dashboard
+     *
+     * @apiQuery {String} dashboard_id Id of the dashboard which has to be deleted
+     *
+     */
     plugins.register("/i/dashboards/delete", function(ob) {
         var params = ob.params;
 
@@ -815,6 +1058,17 @@ plugins.setConfigs("dashboards", {
         return true;
     });
 
+    /**
+     * @api {get} /i/dashboards/add-widget Add a widget
+     * @apiName AddWidget
+     * @apiGroup Dashboards
+     * @apiPermission user
+     * @apiDescription Create a new widget
+     *
+     * @apiQuery {String} dashboard_id Id of the dashboard to which the widget has to be added
+     * @apiQuery {String} widget Object with widget info
+     *
+     */
     plugins.register("/i/dashboards/add-widget", function(ob) {
         var params = ob.params;
 
@@ -881,6 +1135,18 @@ plugins.setConfigs("dashboards", {
         return true;
     });
 
+    /**
+     * @api {get} /i/dashboards/update-widget Update a widget
+     * @apiName UpdateWidget
+     * @apiGroup Dashboards
+     * @apiPermission user
+     * @apiDescription Update the widget
+     *
+     * @apiQuery {String} dashboard_id Id of the dashboard that contains the widget
+     * @apiQuery {String} widget_id Id of the widget to be updated
+     * @apiQuery {String} widget Object with widget info
+     *
+     */
     plugins.register("/i/dashboards/update-widget", function(ob) {
         var params = ob.params;
 
@@ -946,6 +1212,17 @@ plugins.setConfigs("dashboards", {
         return true;
     });
 
+    /**
+     * @api {get} /i/dashboards/remove-widget Remove a widget
+     * @apiName RemoveWidget
+     * @apiGroup Dashboards
+     * @apiPermission user
+     * @apiDescription Remove the widget
+     *
+     * @apiQuery {String} dashboard_id Id of the dashboard that contains the widget
+     * @apiQuery {String} widget_id Id of the widget to be updated
+     *
+     */
     plugins.register("/i/dashboards/remove-widget", function(ob) {
         var params = ob.params;
 
@@ -992,7 +1269,10 @@ plugins.setConfigs("dashboards", {
                                             common.returnMessage(params, 500, "Failed to remove widget");
                                         }
                                         else {
-                                            plugins.dispatch("/systemlogs", {params: params, action: "widget_deleted", data: widgetResult.value});
+                                            var logData = widgetResult.value;
+                                            logData.dashboard = dashboard.name;
+
+                                            plugins.dispatch("/systemlogs", {params: params, action: "widget_deleted", data: logData});
                                             plugins.dispatch("/dashboard/widget/deleted", {params: params, widget: widgetResult.value});
                                             common.returnMessage(params, 200, 'Success');
                                         }
@@ -1430,8 +1710,130 @@ plugins.setConfigs("dashboards", {
             (shareWith === "selected-users" && (sharedEmailEdit.length || sharedEmailView.length || sharedUserGroupEdit.length || sharedUserGroupView.length))) {
             sharing = shartingStatus || (globalAdmin && (restrict.indexOf("#/manage/configurations") < 0));
         }
-
         return sharing;
+    }
+
+    /**
+     * Get emaillist for view & edit permission
+     * @param {Object} member - countly member object
+     * @param {String} shareWith - share type
+     * @param {Array} sharedEmailEdit - email address list shared to edit 
+     * @param {Array} sharedEmailView - email address list shared to view
+     * @param {Array} sharedUserGroupEdit - group ids from countly user group
+     * @param {Array} sharedUserGroupView - group ids from countly user group 
+     * @returns {Object} {viewEmailList, editEmailList} - email list for view & edit permission
+     */
+    async function getEmailList(member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit, sharedUserGroupView) {
+        let viewEmailList = [];
+        let editEmailList = [];
+        if (shareWith === 'all-users') {
+            const allMemberEmail = await common.db.collection("members").find({_id: {$ne: member._id}}, {"email": 1, "_id": -1}).toArray();
+            viewEmailList = viewEmailList.concat(allMemberEmail.map(item => item.email));
+        }
+        if (sharedUserGroupView && sharedUserGroupView.length > 0) {
+            const viewGroupEmail = await common.db.collection("members").find({_id: {$ne: member._id}, group_id: {$in: sharedUserGroupView }}, {"email": 1, "_id": -1}).toArray();
+            viewEmailList = viewEmailList.concat(viewGroupEmail.map(item => item.email));
+        }
+        if (sharedUserGroupEdit && sharedUserGroupEdit.length > 0) {
+            const editGroupEmail = await common.db.collection("members").find({_id: {$ne: member._id}, group_id: {$in: sharedUserGroupEdit }}, {"email": 1, "_id": -1}).toArray();
+            editEmailList = editEmailList.concat(editGroupEmail.map(item => item.email));
+        }
+
+        viewEmailList = viewEmailList.concat(sharedEmailView);
+        editEmailList = editEmailList.concat(sharedEmailEdit);
+
+        viewEmailList = viewEmailList.filter((item, idx) => {
+            if (viewEmailList.indexOf(item) !== idx) {
+                return false;
+            }
+            return true;
+        });
+
+
+        editEmailList = editEmailList.filter((item, idx) => {
+            if (editEmailList.indexOf(item) !== idx) {
+                return false;
+            }
+            return true;
+        });
+        return {viewEmailList, editEmailList};
+    }
+
+    /**
+     * Send email base on configuration
+     * @param {object} member - dashboard owner
+     * @param {array} viewEmailList - email address list shared to edit 
+     * @param {array} editEmailList - email address list shared to view
+     * @param {string} dashboardName - dashboard name
+     * @param {string} dashboardID - generated dashboard ID
+     */
+    async function sendEmailInvitaion(member, viewEmailList, editEmailList, dashboardName, dashboardID) {
+        const templateString = await readReportTemplate();
+
+        versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
+        versionInfo.title = versionInfo.title || "Countly";
+
+
+        localize.getProperties(member.lang, function(gpErr, props) {
+            ip.getHost(function(e, host) {
+                host = host + common.config.path;
+                const templateVariabies = {
+                    host: host,
+                    version: versionInfo,
+                    dashboardName: dashboardName,
+                    dashboardLink: host + "/dashboard#/custom/" + dashboardID,
+                    subTitle: props["dashboards.dashboard-invite-subtitle"],
+                    contentView: props["dashboards.dashboard-invite-content"],
+                    contentEdit: props["dashboards.dashbhoard-invite-content-edit"],
+                    dashboardLinkButtonText: props["dashboards.dashboard-invite-link-text"],
+                };
+                const viewMsg = {
+                    bcc: viewEmailList,
+                    from: versionInfo.title,
+                    subject: props["dashboards.dashboard-invite-title"],
+                    html: ejs.render(templateString, Object.assign({}, templateVariabies, {editPermission: false})),
+                };
+                const editMsg = {
+                    bcc: editEmailList,
+                    from: versionInfo.title,
+                    subject: props["dashboards.dashboard-invite-title"],
+                    html: ejs.render(templateString, Object.assign({}, templateVariabies, {editPermission: true})),
+                };
+                sendEmail(viewMsg);
+                sendEmail(editMsg);
+            });
+        });
+
+    }
+
+    /**
+    * load ReportTemplate file
+    * @returns {Promise} - template promise object.
+    */
+    const readReportTemplate = () => {
+        return new Promise((resolve, reject) => {
+            const templatePath = path.resolve(__dirname, '../frontend/public/templates/invite-email.html');
+            fs.readFile(templatePath, 'utf8', function(err1, template) {
+                if (err1) {
+                    return reject(err1);
+                }
+                return resolve(template);
+            });
+        }).catch((e) => console.log(e));
+    };
+
+    /**
+     * send email with email libs
+     * @param {object} msg - email sending object
+     */
+    function sendEmail(msg) {
+        if (mail.sendPoolMail) {
+            mail.sendPoolMail(msg, null);
+
+        }
+        else {
+            mail.sendMail(msg, null);
+        }
     }
 
     /**

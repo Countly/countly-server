@@ -482,7 +482,7 @@ class ConnectionError extends ProcessingError {
     //  * @returns {string} error description
     //  */
     // toString() {
-    //     return `${this.name}: ${this.connectionErrorMessage}`;
+    //     return `${this.name}: ${this.connectionErrorMessage}, affected ${this.affected.length} / ${this.affectedBytes}, left ${this.left.length} / ${this.leftBytes}`;
     // }
 }
 

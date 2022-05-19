@@ -942,6 +942,7 @@
                     this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                     this.$store.dispatch('countlyDataManager/loadValidations');
                     this.$store.dispatch('countlyDataManager/loadInternalEvents');
+                    this.$store.dispatch('countlyDataManager/loadViews');
                 }
             },
             handleCreateCommand: function(event, tab) {

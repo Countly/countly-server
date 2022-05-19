@@ -170,7 +170,7 @@
         priority: 1,
         name: "user-activity",
         permission: "core",
-        title: CV.i18n('user-activity.title'),
+        title: 'user-activity.title',
         route: "#/analytics/loyalty/user-activity",
         component: UserActivityView,
         vuex: [{

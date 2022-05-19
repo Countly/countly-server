@@ -1,6 +1,5 @@
-const { PushError, SendError, ERROR } = require('../../send/std');
-const { SynFlushTransform } = require('./syn'),
-    { Message, State, Status, Creds, pools, FRAME } = require('../../send'),
+const { DoFinish } = require('./do_finish'),
+    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR } = require('../../send'),
     { FRAME_NAME } = require('../../send/proto');
 
 /**
@@ -8,21 +7,20 @@ const { SynFlushTransform } = require('./syn'),
  * - buffer incoming results
  * - write them to db once in a while
  */
-class Connector extends SynFlushTransform {
+class Connector extends DoFinish {
     /**
      * Constructor
      * 
      * @param {Log} log logger
      * @param {MongoClient} db mongo client
      * @param {State} state state shared across the streams
-     * @param {int} limit how much discarded ids to keep before flushing to db
      */
-    constructor(log, db, state, limit) {
-        super(log.sub('connector'), {objectMode: true});
+    constructor(log, db, state) {
+        super({objectMode: true, writableHighWaterMark: 3});
         this.log = log.sub('connector');
         this.db = db;
         this.state = state;
-        this.limit = limit;
+        this.limit = state.cfg.pool.pushes;
         this.resetErrors();
     }
 
@@ -32,7 +30,9 @@ class Connector extends SynFlushTransform {
     resetErrors() {
         this.noApp = new SendError('NoApp', ERROR.DATA_COUNTLY);
         this.noCreds = new SendError('NoCredentials', ERROR.DATA_COUNTLY);
-        this.noMessage = new SendError('NoMessage', ERROR.DATA_COUNTLY);
+        this.expiredCreds = new SendError('ExpiredCreds', ERROR.CONNECTION_PROVIDER);
+        this.noMessage = {}; // {mid: [push, push, push, ...]}
+        this.noMessageBytes = 0;
     }
 
     /**
@@ -44,13 +44,6 @@ class Connector extends SynFlushTransform {
      */
     _transform(push, encoding, callback) {
         this.log.d('in connector transform', FRAME_NAME[push.frame]);
-        if (push.frame & FRAME.CMD) {
-            this.push(push);
-            if (push.frame & (FRAME.FLUSH | FRAME.SYN)) {
-                this.do_flush(callback);
-            }
-            return;
-        }
         this.do_transform(push, encoding, callback);
     }
 
@@ -62,11 +55,14 @@ class Connector extends SynFlushTransform {
      * @param {function} callback callback
      */
     do_transform(push, encoding, callback) {
-        this.log.d('in connector do_transform', push, FRAME_NAME[push.frame]);
+        // this.log.d('in connector do_transform', push, FRAME_NAME[push.frame]);
         let app = this.state.app(push.a),
             message = this.state.message(push.m);
 
-        this.state.pushes[push._id] = push;
+        if (!this.state.pushes[push._id]) {
+            this.state.pushes[push._id] = push;
+            this.state.incSending(push.m);
+        }
 
         if (app === false) { // app or message is already ignored
             this.noApp.addAffected(push._id, 1);
@@ -74,7 +70,13 @@ class Connector extends SynFlushTransform {
             return;
         }
         else if (message === false) { // app or message is already ignored
-            this.noMessage.addAffected(push._id, 1);
+            if (!this.noMessage[push.m]) {
+                this.noMessage[push.m] = [];
+            }
+            this.noMessage[push.m].push(push);
+            this.noMessageBytes++;
+            this.state.decSending(push.m);
+            delete this.state.pushes[push._id];
             this.do_flush(callback, true);
             return;
         }
@@ -102,9 +104,7 @@ class Connector extends SynFlushTransform {
                     }
 
                     Promise.all(promises).then(() => {
-                        if (Object.values(a.creds).filter(c => !!c).length) { // only set app if there's one or more credentials found
-                            this.state.setApp(a);
-                        }
+                        this.state.setApp(a);
                         this.do_transform(push, encoding, callback);
                     }, callback);
                 }
@@ -115,26 +115,31 @@ class Connector extends SynFlushTransform {
             }, callback);
             return;
         }
+        else if (!message) {
+            let query = Message.filter(new Date(), this.state.cfg.sendAhead);
+            query._id = push.m;
+            this.db.collection('messages').findOne(query).then(msg => {
+                if (msg) {
+                    this.log.d('sending message', push.m);
+                    this.state.setMessage(msg); // only turns to app if there's one or more credentials found
+                }
+                else {
+                    this.log.e('message not found', push.m);
+                    this.state.discardMessage(push.m);
+                }
+                this.do_transform(push, encoding, callback);
+            }, callback);
+        }
+        else if (app.creds[push.p] === null) { // no connection
+            this.expiredCreds.addAffected(push._id, 1);
+            this.do_flush(callback, true);
+        }
         else if (!app.creds[push.p]) { // no credentials
             this.noCreds.addAffected(push._id, 1);
             this.do_flush(callback, true);
         }
         else { // all good with credentials, now let's check messages
-            if (!message) {
-                let query = Message.filter(new Date(), this.state.cfg.sendAhead);
-                query._id = push.m;
-                this.db.collection('messages').findOne(query).then(msg => {
-                    if (msg) {
-                        this.state.setMessage(msg); // only turns to app if there's one or more credentials found
-                        pools.message(app._id.toString(), [msg]);
-                    }
-                    else {
-                        this.state.discardMessage(push.m);
-                    }
-                    this.do_transform(push, encoding, callback);
-                }, callback);
-            }
-            else if (!message.is(State.Streaming)) {
+            if (!message.is(State.Streaming)) {
                 let date = new Date(),
                     update = {$set: {status: Status.Sending, 'info.startedLast': date}, $bit: {state: {or: State.Streaming}}};
                 if (!message.info.started) {
@@ -151,43 +156,37 @@ class Connector extends SynFlushTransform {
                     }, callback);
             }
             else {
-                let pid = pools.id(push.a, push.p, push.f),
-                    creds = app.creds[push.p];
+                let creds = app.creds[push.p],
+                    pid = pools.id(creds.hash, push.p, push.f);
                 if (pools.has(pid)) { // already connected
                     this.log.d('push goes to connection', push._id);
                     callback(null, push);
                 }
+                else if (pools.isFull) { // no connection yet and we can't create it, just ignore push so it could be sent next time
+                    delete this.state.pushes[push._id];
+                    this.state.decSending(push.m);
+                    callback();
+                }
                 else { // no connection yet
                     this.log.i('Connecting %s', pid);
-                    pools.connect(push.a, push.p, push.f, creds, this.state.messages(), this.state.cfg.pool).then(() => {
-                        this.log.i('Connected %s', pid);
+                    pools.connect(push.a, push.p, push.f, creds, this.state, this.state.cfg).then(valid => {
+                        if (valid) {
+                            this.log.i('Connected %s', pid);
+                        }
+                        else {
+                            app.creds[push.p] = null;
+                        }
                         callback(null, push);
                     }, err => {
                         this.log.i('Failed to connect %s', pid, err);
-                        this.discardedByAppOrCreds.push(push._id);
-                        this.do_flush(callback, true);
+                        app.creds[push.p] = null;
+                        this.do_transform(push, encoding, callback);
+                        // this.discardedByAppOrCreds.push(push._id);
+                        // this.do_flush(callback, true);
                     });
                 }
             }
         }
-    }
-
-    /**
-     * Transform's flush impementation
-     * 
-     * @param {function} callback callback
-     */
-    _flush(callback) {
-        this.log.d('in connector _flush');
-        this.do_flush(callback);
-        // this.do_flush(err => {
-        //     if (err) {
-        //         callback(err);
-        //     }
-        //     else {
-        //         this.syn(callback);
-        //     }
-        // });
     }
 
     /**
@@ -197,18 +196,66 @@ class Connector extends SynFlushTransform {
      * @param {boolean} ifNeeded true if we only need to flush `discarded` when it's length is over `limit`
      */
     do_flush(callback, ifNeeded) {
-        let total = this.noMessage.affectedBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes;
+        let total = this.noMessageBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.expiredCreds.affectedBytes;
         this.log.d('in connector do_flush, total', total);
 
-        if (ifNeeded && (!total || total < this.limit)) {
+        if (ifNeeded && !this.flushed && (!total || total < this.limit)) {
             if (callback) {
                 callback();
             }
             return;
         }
 
-        if (this.noMessage.hasAffected) {
-            this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.noMessage});
+        if (this.noMessageBytes) {
+            Promise.all(Object.keys(this.noMessage).map(mid => {
+                let pushes = this.noMessage[mid],
+                    inc = {};
+                delete this.noMessage[mid];
+                this.noMessageBytes -= pushes.length;
+                pushes.forEach(push => {
+                    let la = push.pr.la || 'default';
+
+                    if (inc.processed) {
+                        inc.processed++;
+                        inc.errored++;
+                        inc['errors.Rejected']++;
+                    }
+                    else {
+                        inc.processed = 1;
+                        inc.errored = 1;
+                        inc['errors.Rejected'] = 1;
+                    }
+                    if (inc[`subs.${push.p}.processed`]) {
+                        inc[`subs.${push.p}.processed`]++;
+                        inc[`subs.${push.p}.errored`]++;
+                        inc[`subs.${push.p}.errors.Rejected`]++;
+                    }
+                    else {
+                        inc[`subs.${push.p}.processed`] = 1;
+                        inc[`subs.${push.p}.errored`] = 1;
+                        inc[`subs.${push.p}.errors.Rejected`] = 1;
+                    }
+                    if (inc[`subs.${push.p}.subs.${la}.processed`]) {
+                        inc[`subs.${push.p}.subs.${la}.processed`]++;
+                        inc[`subs.${push.p}.subs.${la}.errored`]++;
+                        inc[`subs.${push.p}.subs.${la}.errors.Rejected`]++;
+                    }
+                    else {
+                        inc[`subs.${push.p}.subs.${la}.processed`] = 1;
+                        inc[`subs.${push.p}.subs.${la}.errored`] = 1;
+                        inc[`subs.${push.p}.subs.${la}.errors.Rejected`] = 1;
+                    }
+                });
+                this.log.w('Message %s doesn\'t exist or is in inactive state, ignoring %d pushes', mid, pushes.length);
+                return Promise.all([
+                    this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, {$inc: inc}),
+                    this.db.collection('push').deleteMany({_id: {$in: pushes.map(p => p._id)}}),
+                ]);
+            })).then(() => this.do_flush(callback, ifNeeded), err => {
+                this.log.e('Error while setting NoMessage error', err);
+                this.do_flush(callback, ifNeeded);
+            });
+            return;
         }
 
         if (this.noApp.hasAffected) {
@@ -219,11 +266,13 @@ class Connector extends SynFlushTransform {
             this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.noCreds});
         }
 
+        if (this.expiredCreds.hasAffected) {
+            this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.expiredCreds});
+        }
+
         this.resetErrors();
 
-        if (callback) {
-            callback();
-        }
+        callback();
 
         // this.log.d('do_flush proceed');
         // let updates = {};
@@ -319,6 +368,17 @@ class Connector extends SynFlushTransform {
         //     })
         //     .then(() => callback && callback(), err => callback(err));
     }
+
+    /**
+     * Flush & release resources
+     * 
+     * @param {function} callback callback function
+     */
+    do_final(callback) {
+        callback();
+    }
+
+
 }
 
 module.exports = { Connector };
