@@ -21,6 +21,11 @@
                     {
                         value: "username",
                         label: CV.i18n('management-users.username'),
+                        default: false
+                    },
+                    {
+                        value: "role",
+                        label: CV.i18n('management-users.role'),
                         default: true
                     },
                     {
@@ -29,14 +34,14 @@
                         default: true
                     },
                     {
-                        value: "role",
-                        label: CV.i18n('management-users.role'),
+                        value: "group",
+                        label: CV.i18n('management-users.group'),
                         default: true
                     },
                     {
                         value: "created_at",
                         label: CV.i18n('management-users.created'),
-                        default: true
+                        default: false
                     },
                     {
                         value: "last_login",

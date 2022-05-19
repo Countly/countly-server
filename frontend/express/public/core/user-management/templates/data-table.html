@@ -14,17 +14,13 @@
       </template>
       <template v-slot="scope">
         <template v-for="(col, idx) in scope.dynamicCols">
-          <el-table-column 
-            v-if="col.value === 'username'"  
-            sortable="true" prop="username" :label="i18n('management-users.username')">
-          </el-table-column>
           <el-table-column
-            v-if="col.value === 'full_name'"  
+            v-if="col.value === 'full_name'"
             sortable="true" prop="full_name" :label="i18n('management-users.user')">
           </el-table-column>
           <el-table-column
-            v-if="col.value === 'email'"  
-            sortable="true" prop="email" :label="i18n('management-users.email')">
+            v-if="col.value === 'username'"
+            sortable="true" prop="username" :label="i18n('management-users.username')">
           </el-table-column>
           <el-table-column
             v-if="col.value === 'role'"
@@ -35,6 +31,14 @@
                 {{ rowScope.row.global_admin ? i18n('management-users.global-admin') : ((rowScope.row.permission && rowScope.row.permission._ && rowScope.row.permission._.a.length > 0) ? i18n('management-users.admin') : i18n('management-users.user')) }}
               </span>
             </template>
+          </el-table-column>
+          <el-table-column
+            v-if="col.value === 'email'"
+            sortable="true" prop="email" :label="i18n('management-users.email')">
+          </el-table-column>
+          <el-table-column
+            v-if="col.value === 'group'"
+            sortable="true" prop="group_id" :label="i18n('management-users.group')">
           </el-table-column>
           <el-table-column
             v-if="col.value === 'created_at'"
@@ -65,6 +69,6 @@
             </cly-more-options>
           </template>
         </el-table-column>
-      </template> 
+      </template>
   </cly-datatable-n>
 </div>
