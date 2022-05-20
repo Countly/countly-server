@@ -588,6 +588,11 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            customExportFileName: {
+                type: Boolean,
+                default: true,
+                required: false
             }
         },
         data: function() {
@@ -599,7 +604,8 @@
                     {'name': '.JSON', value: 'json'},
                     {'name': '.XLSX', value: 'xlsx'}
                 ],
-                searchQuery: ''
+                searchQuery: '',
+                exportFileName: "",
             };
         },
         methods: {
@@ -609,6 +615,9 @@
                 });
             },
             getDefaultFileName: function(params) {
+                if (this.exportFileName.trim().length > 0) {
+                    return this.exportFileName;
+                }
                 var name = "countly";
                 if (params.title) {
                     name = params.title.replace(/[\r\n]+/g, "");
@@ -630,7 +639,6 @@
                 return this.rows;
             },
             initiateExport: function(params) {
-
                 var formData = null,
                     url = null;
 
@@ -679,6 +687,9 @@
                         api_key: countlyGlobal.member.api_key
                     };
                 }
+                if (!formData.filename) {
+                    formData.filename = this.getDefaultFileName(params);
+                }
 
                 if (formData.url === "/o/export/requestQuery") {
                     if (Array.isArray(formData.prop)) {
@@ -714,7 +725,6 @@
                 }
                 else {
                     var form = $('<form method="POST" action="' + url + '">');
-
                     $.each(formData, function(k, v) {
                         if (CountlyHelpers.isJSON(v)) {
                             form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
