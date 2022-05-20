@@ -380,7 +380,7 @@
                 }
 
                 var xAxis = options.xAxis;
-                var labelW = Math.floor((size.w - 20) / xAxis.data.length);
+                var labelW = Math.floor((size.w - 100) / (xAxis.data.length + 1));
                 var maxLen = 0;
                 var maxStr = "";
 
@@ -412,22 +412,23 @@
                         }
                     }
                 };
-                if ((longestLabelTextW / labelW) > 2) {
-                    returnObj.grid = {containLabel: false, bottom: 100, left: 80};
-                    returnObj.xAxis.axisLabel.rotate = 45;
-                    returnObj.xAxis.axisLabel.width = labelW * 1.15 > 100 ? 90 : labelW * 1.15;
-                }
-                else if (longestLabelTextW > labelW) {
-                    returnObj.grid = {containLabel: false, bottom: 100, left: 80};
-                    returnObj.xAxis.axisLabel.rotate = 30;
-                    returnObj.xAxis.axisLabel.width = labelW * 1.10 > 100 ? 90 : labelW * 1.10;
-                }
-                else {
-                    returnObj.xAxis.axisLabel.rotate = 0;
-                }
+                
+                if (longestLabelTextW > labelW) {
+                    returnObj.xAxis.axisLabel.margin = -5;
+                    returnObj.xAxis.axisLabel.overflow = "break";
+                    returnObj.grid = {bottom: 40};
 
-                // console.log("longest label text width is " + getWidthOfText(maxStr, FONT_FAMILY, "12px"));
-                // console.log("label width is " + labelW);
+                    returnObj.xAxis.axisLabel.formatter = function (value, index) {
+                        var ellipsis = "...";
+                        var lengthToTruncate = (Math.floor(maxLen / Math.ceil(longestLabelTextW / labelW)) * 2);
+
+                        if (value.length > lengthToTruncate) {
+                            return value.substr(0, lengthToTruncate - ellipsis.length) + ellipsis;
+                        } else {
+                            return value;
+                        }
+                    }
+                }
 
                 return returnObj;
             }
@@ -465,7 +466,7 @@
         props: {
             height: {
                 type: [Number, String],
-                default: 472
+                default: 440
             },
             autoresize: {
                 type: Boolean,
@@ -523,9 +524,9 @@
                     },
                     grid: {
                         top: 30,
-                        bottom: 15,
-                        left: 36,
-                        right: 24,
+                        bottom: 30,
+                        left: 43,
+                        right: 30,
                         containLabel: true
                     },
                     legend: {
@@ -965,7 +966,7 @@
                 },
                 seriesOptions: {
                     type: 'pie',
-                    radius: ['60%', '95%'],
+                    radius: ['50%', '80%'],
                     center: ['50%', '50%'],
                     itemStyle: {
                         borderRadius: 0,
