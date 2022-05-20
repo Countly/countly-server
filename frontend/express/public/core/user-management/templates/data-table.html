@@ -5,12 +5,61 @@
     :available-dynamic-cols="tableDynamicCols"
     :persist-key="userManagementPersistKey">
       <template v-slot:header-left="selectScope">
-        <el-select placement="bottom-start" v-model="tableFilter" :placeholder="i18n('management-users.all-roles')">
-          <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
-          <el-option key="1" :label="i18n('management-users.global-admin')" value="global_admin"></el-option>
-          <el-option key="2" :label="i18n('management-users.admin')" value="admin"></el-option>
-          <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
-        </el-select>
+        <cly-dropdown ref="filterDropdown" @hide="resetFilterValues">
+            <template v-slot:trigger="dropdown">
+                <cly-input-dropdown-trigger
+                    v-tooltip="filterSummary"
+                    :selected-options="filterSummary"
+                    :focused="dropdown.focused"
+                    :opened="dropdown.visible"
+                    :adaptive-length="true">
+                </cly-input-dropdown-trigger>
+            </template>
+            <template>
+                <cly-form
+                    :initial-edited-object="currentFilter"
+                    ref="filterForm"
+                    @submit="handleSubmitFilter">
+                    <template v-slot="formScope">
+                        <cly-form-step id="filter-form-step">
+                            <div class="bu-m-4">
+                                <div class="bu-level">
+                                    <div class="bu-level-left">
+                                        <div class="bu-level-item">
+                                            <h4>{{i18n('management-users.view-title')}}</h4>
+                                        </div>
+                                    </div>
+                                    <div class="bu-level-right">
+                                        <div class="bu-level-item">
+                                            <el-button type="text" class="bu-has-text-danger">{{i18n('management-users.reset-filters')}}</el-button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <cly-form-field :label="i18n('management-users.role')">
+                                    <el-select placement="bottom-start" v-model="formScope.editedObject.role" :placeholder="i18n('management-users.all-roles')">
+                                        <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
+                                        <el-option key="1" :label="i18n('management-users.global-admin')" value="global_admin"></el-option>
+                                        <el-option key="2" :label="i18n('management-users.admin')" value="admin"></el-option>
+                                        <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <cly-form-field :label="i18n('management-users.group')">
+                                    <el-select placement="bottom-start" v-model="formScope.editedObject.group" :placeholder="i18n('management-users.all-groups')">
+                                        <el-option key="0" label="All Groups" :value="null"></el-option>
+                                        <el-option key="1" label="Group 1 name" value="group1id"></el-option>
+                                        <el-option key="2" label="Group 2 name" value="group2id"></el-option>
+                                    </el-select>
+                                </cly-form-field>
+                                <div class="bu-has-text-right bu-pt-3">
+                                    <el-button type="secondary" @click="handleCancelFilterClick">{{i18n('common.cancel')}}</el-button>
+                                    <el-button type="success" @click="formScope.submit()">{{i18n('common.apply')}}</el-button>
+                                </div>
+                            </div>
+                        </cly-form-step>
+                    </template>
+                </cly-form>
+            </template>
+        </cly-dropdown>
       </template>
       <template v-slot="scope">
         <template v-for="(col, idx) in scope.dynamicCols">

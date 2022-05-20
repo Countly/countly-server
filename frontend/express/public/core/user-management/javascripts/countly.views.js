@@ -10,6 +10,10 @@
         },
         data: function() {
             return {
+                currentFilter: {
+                    role: null,
+                    group: null
+                },
                 tableFilter: null,
                 showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1,
                 tableDynamicCols: [
@@ -72,6 +76,14 @@
                     return this.rows;
                 }
             },
+            filterSummary: function() {
+                var summary = [
+                    this.currentFilter.role || 'All Roles',
+                    this.currentFilter.group || 'All Groups'
+                ];
+
+                return summary.join(", ");
+            }
         },
         methods: {
             handleCommand: function(command, index) {
@@ -101,6 +113,17 @@
                     window.location.hash = "#/manage/logs/systemlogs/query/" + JSON.stringify({"user_id": index});
                     break;
                 }
+            },
+            handleSubmitFilter: function(newFilter) {
+                this.currentFilter = newFilter;
+                this.$refs.filterDropdown.doClose();
+            },
+            handleCancelFilterClick: function() {
+                this.$refs.filterDropdown.doClose();
+                this.resetFilterValues();
+            },
+            resetFilterValues: function() {
+                this.$refs.filterForm.reload();
             }
         }
     });
