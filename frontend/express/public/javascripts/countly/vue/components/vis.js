@@ -418,16 +418,17 @@
                     returnObj.xAxis.axisLabel.overflow = "break";
                     returnObj.grid = {bottom: 40};
 
-                    returnObj.xAxis.axisLabel.formatter = function (value, index) {
+                    returnObj.xAxis.axisLabel.formatter = function(value) {
                         var ellipsis = "...";
                         var lengthToTruncate = (Math.floor(maxLen / Math.ceil(longestLabelTextW / labelW)) * 2);
 
                         if (value.length > lengthToTruncate) {
                             return value.substr(0, lengthToTruncate - ellipsis.length) + ellipsis;
-                        } else {
+                        }
+                        else {
                             return value;
                         }
-                    }
+                    };
                 }
 
                 return returnObj;
