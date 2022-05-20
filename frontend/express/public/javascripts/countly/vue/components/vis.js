@@ -412,7 +412,6 @@
                         }
                     }
                 };
-                
                 if (longestLabelTextW > labelW) {
                     returnObj.xAxis.axisLabel.margin = -5;
                     returnObj.xAxis.axisLabel.overflow = "break";
