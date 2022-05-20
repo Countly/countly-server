@@ -15,7 +15,7 @@
     <template v-slot:sidecars="drawerScope">
 			<cly-content id="mainSidecar" role="sidecar" :always-active="true">
 				<div class="ratings-drawer__sidecar widget-preview">
-					<div class="preview-stage" v-if="drawerScope.currentStepId === 'step1'" >
+					<div class="preview-stage" v-if="drawerScope.currentStepId === 'step1' || drawerScope.currentStepId === 'step2' || drawerScope.currentStepId === 'step3'" >
 						<div class="bu-is-size-7 ratings-drawer__stage-label">
 							{{ i18n('feedback.ratings-popup') }}
 						</div>
@@ -43,10 +43,10 @@
                 <img src="/star-rating/images/star-rating/powered-by-countly.svg">
               </div>
             </div>
-            <div class="bu-is-size-7 ratings-drawer__stage-label">
+            <div class="bu-is-size-7 ratings-drawer__stage-label" v-if="drawerScope.currentStepId !== 'step3'">
 							{{ i18n('feedback.thank-you-message') }}
 						</div>
-						<div class="ratings-drawer__thanks-popup">
+						<div class="ratings-drawer__thanks-popup" v-if="drawerScope.currentStepId !== 'step3'">
               <div class="ratings-drawer__tp-icon bu-mt-4">
                 <span class="el-icon-success"></span>
               </div>
@@ -56,7 +56,7 @@
               </div>
             </div>
 					</div>
-          <div class="preview-stage" v-if="drawerScope.currentStepId !== 'step1'" >
+          <div class="preview-stage" v-if="drawerScope.currentStepId !== 'step1' && drawerScope.currentStepId !== 'step3'" >
 						<div class="bu-is-size-7 ratings-drawer__stage-label">
 							{{ i18n('feedback.trigger-button-preview') }}
 						</div>
@@ -144,7 +144,7 @@
           </validation-provider>
         </div>
       </cly-form-step>
-	<cly-form-step id="step2" :name="i18n('feedback.widget-appearance')">
+			<cly-form-step id="step2" :name="i18n('feedback.widget-appearance')">
 
         <div class="cly-vue-drawer-step__section">
           <div class="cly-vue-drawer-step__section">
