@@ -6,14 +6,22 @@
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
             rows: Array,
-            loading: Boolean
+            loading: Boolean,
+            groupMap: Object
         },
         data: function() {
+            var roleMap = {};
+            // 'value' is used as map key here to make it easier to convert currentFilter into filterSummary
+            roleMap.global_admin = CV.i18n("management-users.global-admin");
+            roleMap.admin = CV.i18n("management-users.admin");
+            roleMap.user = CV.i18n("management-users.user");
+
             return {
                 currentFilter: {
                     role: null,
                     group: null
                 },
+                roleMap: roleMap,
                 tableFilter: null,
                 showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1,
                 tableDynamicCols: [
@@ -78,8 +86,8 @@
             },
             filterSummary: function() {
                 var summary = [
-                    this.currentFilter.role || 'All Roles',
-                    this.currentFilter.group || 'All Groups'
+                    this.roleMap[this.currentFilter.role] || CV.i18n("management-users.all-roles"),
+                    this.groupMap[this.currentFilter.group] || CV.i18n("management-users.all-groups")
                 ];
 
                 return summary.join(", ");
@@ -683,7 +691,7 @@
             };
         },
         computed: {
-            groupNameMap: function() {
+            groupMap: function() {
                 var map = {};
 
                 groupsModel.data().forEach(function(group) {
@@ -725,7 +733,7 @@
                     var user = usersObj[userId];
 
                     if (user.group_id) {
-                        user.groupName = this.groupNameMap[user.group_id[0]];
+                        user.groupName = this.groupMap[user.group_id[0]];
                     }
 
                     this.users.push(user);

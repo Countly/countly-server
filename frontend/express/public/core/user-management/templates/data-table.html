@@ -38,16 +38,13 @@
                                 <cly-form-field :label="i18n('management-users.role')">
                                     <el-select placement="bottom-start" v-model="formScope.editedObject.role" :placeholder="i18n('management-users.all-roles')">
                                         <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
-                                        <el-option key="1" :label="i18n('management-users.global-admin')" value="global_admin"></el-option>
-                                        <el-option key="2" :label="i18n('management-users.admin')" value="admin"></el-option>
-                                        <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
+                                        <el-option v-for="(value, key, idx) in roleMap" :key="idx + 1" :label="value" :value="key"></el-option>
                                     </el-select>
                                 </cly-form-field>
                                 <cly-form-field :label="i18n('management-users.group')">
                                     <el-select placement="bottom-start" v-model="formScope.editedObject.group" :placeholder="i18n('management-users.all-groups')">
-                                        <el-option key="0" label="All Groups" :value="null"></el-option>
-                                        <el-option key="1" label="Group 1 name" value="group1id"></el-option>
-                                        <el-option key="2" label="Group 2 name" value="group2id"></el-option>
+                                        <el-option key="0" :label="i18n('management-users.all-groups')" :value="null"></el-option>
+                                        <el-option v-for="(value, key, idx) in groupMap" :key="idx + 1" :label="value" :value="key"></el-option>
                                     </el-select>
                                 </cly-form-field>
                                 <div class="bu-has-text-right bu-pt-3">
