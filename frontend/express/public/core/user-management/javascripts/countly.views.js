@@ -120,9 +120,15 @@
             },
             handleCancelFilterClick: function() {
                 this.$refs.filterDropdown.doClose();
-                this.resetFilterValues();
+                this.reloadFilterValues();
             },
-            resetFilterValues: function() {
+            handleResetFilterClick: function() {
+                this.currentFilter = {
+                    group: null,
+                    role: null,
+                };
+            },
+            reloadFilterValues: function() {
                 this.$refs.filterForm.reload();
             }
         }

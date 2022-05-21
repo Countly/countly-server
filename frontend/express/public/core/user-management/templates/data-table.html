@@ -5,7 +5,7 @@
     :available-dynamic-cols="tableDynamicCols"
     :persist-key="userManagementPersistKey">
       <template v-slot:header-left="selectScope">
-        <cly-dropdown ref="filterDropdown" @hide="resetFilterValues">
+        <cly-dropdown ref="filterDropdown" @hide="reloadFilterValues">
             <template v-slot:trigger="dropdown">
                 <cly-input-dropdown-trigger
                     v-tooltip="filterSummary"
@@ -31,7 +31,7 @@
                                     </div>
                                     <div class="bu-level-right">
                                         <div class="bu-level-item">
-                                            <el-button type="text" class="bu-has-text-danger">{{i18n('management-users.reset-filters')}}</el-button>
+                                            <el-button type="text" class="bu-has-text-danger" @click="handleResetFilterClick">{{i18n('management-users.reset-filters')}}</el-button>
                                         </div>
                                     </div>
                                 </div>
