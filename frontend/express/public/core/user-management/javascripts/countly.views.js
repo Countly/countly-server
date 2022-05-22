@@ -22,7 +22,6 @@
                     group: null
                 },
                 roleMap: roleMap,
-                tableFilter: null,
                 showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1,
                 tableDynamicCols: [
                     {
@@ -66,18 +65,29 @@
         },
         computed: {
             filteredRows: function() {
-                var self = this;
-                if (this.tableFilter) {
+                if (this.currentFilter.group || this.currentFilter.role) {
+                    var currentGroup = this.currentFilter.group;
+                    var currentRole = this.currentFilter.role;
+
                     return this.rows.filter(function(row) {
-                        if (self.tableFilter === 'global_admin') {
-                            return row.global_admin;
+                        var filterGroup = true;
+                        var filterRole = true;
+
+                        if (currentGroup) {
+                            filterGroup = row.group_id && (row.group_id[0] === currentGroup);
                         }
-                        else if (self.tableFilter === 'admin') {
-                            return !row.global_admin && (row.permission && row.permission._.a.length > 0);
+
+                        if (currentRole === "global_admin") {
+                            filterRole = row.global_admin;
                         }
-                        else {
-                            return !row.global_admin && (row.permission && row.permission._.a.length === 0);
+                        else if (currentRole === "admin") {
+                            filterRole = !row.global_admin && (row.permission && row.permission._.a.length > 0);
                         }
+                        else if (currentRole === "user") {
+                            filterRole = !row.global_admin && (row.permission && row.permission._.a.length === 0);
+                        }
+
+                        return filterGroup && filterRole;
                     });
                 }
                 else {
