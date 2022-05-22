@@ -41,7 +41,7 @@
                                         <el-option v-for="(value, key, idx) in roleMap" :key="idx + 1" :label="value" :value="key"></el-option>
                                     </el-select>
                                 </cly-form-field>
-                                <cly-form-field :label="i18n('management-users.group')">
+                                <cly-form-field v-if="isGroupPluginEnabled" :label="i18n('management-users.group')">
                                     <el-select placement="bottom-start" v-model="formScope.editedObject.group" :placeholder="i18n('management-users.all-groups')">
                                         <el-option key="0" :label="i18n('management-users.all-groups')" :value="null"></el-option>
                                         <el-option v-for="(value, key, idx) in groupMap" :key="idx + 1" :label="value" :value="key"></el-option>

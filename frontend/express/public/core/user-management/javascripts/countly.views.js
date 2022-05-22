@@ -1,5 +1,6 @@
 /*global countlyAuth, app, countlyGlobal, $, groupsModel, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
+    var isGroupPluginEnabled = countlyGlobal.plugins.includes("groups");
 
     var DataTable = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/data-table.html"),
@@ -15,6 +16,47 @@
             roleMap.global_admin = CV.i18n("management-users.global-admin");
             roleMap.admin = CV.i18n("management-users.admin");
             roleMap.user = CV.i18n("management-users.user");
+            var tableDynamicCols = [
+                {
+                    value: "full_name",
+                    label: CV.i18n('management-users.user'),
+                    default: true
+                },
+                {
+                    value: "username",
+                    label: CV.i18n('management-users.username'),
+                    default: false
+                },
+                {
+                    value: "role",
+                    label: CV.i18n('management-users.role'),
+                    default: true
+                },
+                {
+                    value: "email",
+                    label: CV.i18n('management-users.email'),
+                    default: true
+                },
+                {
+                    value: "group",
+                    label: CV.i18n('management-users.group'),
+                    default: true
+                },
+                {
+                    value: "created_at",
+                    label: CV.i18n('management-users.created'),
+                    default: false
+                },
+                {
+                    value: "last_login",
+                    label: CV.i18n('management-users.last_login'),
+                    default: true
+                }
+            ];
+
+            if (!isGroupPluginEnabled) {
+                tableDynamicCols.splice(4, 1);
+            }
 
             return {
                 currentFilter: {
@@ -23,44 +65,9 @@
                 },
                 roleMap: roleMap,
                 showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1,
-                tableDynamicCols: [
-                    {
-                        value: "full_name",
-                        label: CV.i18n('management-users.user'),
-                        default: true
-                    },
-                    {
-                        value: "username",
-                        label: CV.i18n('management-users.username'),
-                        default: false
-                    },
-                    {
-                        value: "role",
-                        label: CV.i18n('management-users.role'),
-                        default: true
-                    },
-                    {
-                        value: "email",
-                        label: CV.i18n('management-users.email'),
-                        default: true
-                    },
-                    {
-                        value: "group",
-                        label: CV.i18n('management-users.group'),
-                        default: true
-                    },
-                    {
-                        value: "created_at",
-                        label: CV.i18n('management-users.created'),
-                        default: false
-                    },
-                    {
-                        value: "last_login",
-                        label: CV.i18n('management-users.last_login'),
-                        default: true
-                    }
-                ],
-                userManagementPersistKey: 'userManagement_table_' + countlyCommon.ACTIVE_APP_ID
+                tableDynamicCols: tableDynamicCols,
+                userManagementPersistKey: 'userManagement_table_' + countlyCommon.ACTIVE_APP_ID,
+                isGroupPluginEnabled: isGroupPluginEnabled
             };
         },
         computed: {
