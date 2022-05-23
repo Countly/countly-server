@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment, countlyTaskManager, _merge */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge */
 
 (function(countlyVue, $) {
 
@@ -614,7 +614,7 @@
                     type: this.selectedExportType
                 });
             },
-            getDefaultFileName: function(params) {
+            getDefaultFileName: function() {
                 if (this.exportFileName.trim().length > 0) {
                     return this.exportFileName;
                 }
@@ -675,7 +675,7 @@
                         type: params.type,
                         path: path,
                         prop: "aaData",
-                        filename: this.getDefaultFileName(params),
+                        filename: this.getDefaultFileName(),
                         api_key: countlyGlobal.member.api_key
                     };
                 }
@@ -684,12 +684,12 @@
                     formData = {
                         type: params.type,
                         data: JSON.stringify(this.getLocalExportContent()),
-                        filename: this.getDefaultFileName(params),
+                        filename: this.getDefaultFileName(),
                         api_key: countlyGlobal.member.api_key
                     };
                 }
                 if (!formData.filename) {
-                    formData.filename = this.getDefaultFileName(params);
+                    formData.filename = this.getDefaultFileName();
                 }
 
                 if (formData.url === "/o/export/requestQuery") {
