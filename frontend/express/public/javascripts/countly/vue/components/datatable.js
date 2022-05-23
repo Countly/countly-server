@@ -618,19 +618,20 @@
                 if (this.exportFileName.trim().length > 0) {
                     return this.exportFileName;
                 }
-                var name = "countly";
-                if (params.title) {
-                    name = params.title.replace(/[\r\n]+/g, "");
+                var siteName = countlyGlobal.countlyTitle;
+                var sectionName = "";
+                var selectedMenuItem = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                if (selectedMenuItem && selectedMenuItem.item && selectedMenuItem.item.title) {
+                    sectionName = this.i18n(selectedMenuItem.item.title);
                 }
-                if (params.timeDependent) {
-                    //include export range
-                    name += "_for_" + countlyCommon.getDateRange();
+                var appName = "";
+                if (this.$store.getters["countlyCommon/getActiveApp"]) {
+                    appName = this.$store.getters["countlyCommon/getActiveApp"].name;
                 }
-                else {
-                    //include export date
-                    name += "_on_" + moment().format("DD-MMM-YYYY");
-                }
-                return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+                var date = countlyCommon.getDateRange();
+
+                this.exportFileName = siteName + " " + appName + " " + sectionName + " " + date;
+                return this.exportFileName;
             },
             getLocalExportContent: function() {
                 if (this.exportFormat) {
@@ -751,6 +752,10 @@
                     return compareTo.toLowerCase().indexOf(query) > -1;
                 });
             }
+        },
+        mounted: function() {
+            this.getDefaultFileName();
+
         },
         computed: {
             exportColumns: {
