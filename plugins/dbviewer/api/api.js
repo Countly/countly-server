@@ -63,6 +63,9 @@ var spawn = require('child_process').spawn,
      */
     plugins.register("/o/db", function(ob) {
         var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
+		if(common.dataviewsDb){
+			dbs['countly_dataviews'] = common.dataviewsDb;
+		}
         var params = ob.params;
         var paths = ob.paths;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
