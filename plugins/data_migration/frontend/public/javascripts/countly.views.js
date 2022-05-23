@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, CountlyHelpers, countlyGlobal, countlyDataMigration, app */
+/*global countlyVue, CV, countlyCommon, CountlyHelpers, countlyGlobal, countlyDataMigration, app,jQuery */
 (function() {
     var FEATURE_NAME = 'data_migration';
 
@@ -10,7 +10,8 @@
         ],
         data: function() {
             return {
-                list: []
+                list: [],
+                importsTablePersistKey: 'imports_table_' + countlyCommon.ACTIVE_APP_ID
             };
         },
         methods: {
@@ -21,7 +22,12 @@
                 var self = this;
                 countlyDataMigration.loadImportList()
                     .then(function(res) {
-                        self.list = Object.values(res.result);
+                        if (typeof res.result === "object") {
+                            self.list = res.result;
+                        }
+                        else if (typeof res.result === "string") {
+                            self.list = [];
+                        }
                     });
             },
             handleCommand: function(command, scope, row) {
@@ -68,7 +74,8 @@
         ],
         data: function() {
             return {
-                list: []
+                list: [],
+                exportsTablePersistKey: 'exports_table_' + countlyCommon.ACTIVE_APP_ID
             };
         },
         methods: {
@@ -389,6 +396,26 @@
     //register route
     app.route('/manage/data-migration', 'datamigration', function() {
         this.renderWhenReady(DataMigrationMainView);
+    });
+
+
+    //switching apps. show message if redirect url is set
+    app.addAppSwitchCallback(function(appId) {
+        if (appId && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].redirect_url && countlyGlobal.apps[appId].redirect_url !== "") {
+            var mm = "<h4 class='bu-pt-3 bu-pb-1' style='overflow-wrap: break-word;'>" + jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal.apps[appId].name) + "</h4><p bu-pt-1>" + jQuery.i18n.map["data-migration.app-redirected-explanation"] + " <b><span style='overflow-wrap: break-word;'>" + countlyGlobal.apps[appId].redirect_url + "<span></b><p><a href='#/manage/apps' style='color:rgb(1, 102, 214); cursor:pointer;'>" + jQuery.i18n.map["data-migration.app-redirected-remove"] + "</a>";
+            var msg = {
+                title: jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal.apps[appId].name),
+                message: mm,
+                info: jQuery.i18n.map["data-migration.app-redirected-remove"],
+                sticky: true,
+                clearAll: true,
+                type: "warning",
+                onClick: function() {
+                    app.navigate("#/manage/apps", true);
+                }
+            };
+            CountlyHelpers.notify(msg);
+        }
     });
 
     app.addMenu("management", {code: "data-migration", permission: FEATURE_NAME, url: "#/manage/data-migration", text: "data-migration.page-title", icon: '<div class="logo-icon fa fa-arrows-alt-h"></div>', priority: 70});

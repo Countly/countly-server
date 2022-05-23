@@ -19,6 +19,19 @@
                 dataType: "json"
             }, {"disableAutoCatch": true});
         },
+        fetchLimits: function(period) {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "get_events",
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
+                    "preventRequestAbort": true
+                },
+                dataType: "json",
+            }, {"disableAutoCatch": true});
+        },
         loadEventGroups: function() {
             return CV.$.ajax({
                 type: "GET",
@@ -189,13 +202,17 @@
                 categories: [],
                 categoriesMap: [],
                 isEventCountAvailable: false,
-                eventCount: {}
+                eventCount: {},
+                limits: {}
             }, EXTENDED_STATE);
         };
 
         var getters = {
             events: function(state) {
                 return state.events;
+            },
+            limits: function(state) {
+                return state.limits;
             },
             eventsMap: function(state) {
                 return state.eventsMap;
@@ -224,6 +241,9 @@
             setEvents: function(state, val) {
                 state.events = val;
             },
+            setLimits: function(state, val) {
+                state.limits = val;
+            },
             setEventsMap: function(state, val) {
                 state.eventsMap = val;
             },
@@ -248,6 +268,15 @@
         };
 
         var actions = {
+            fetchLimits: function(context) {
+                var period = context.rootGetters["countlyCommon/period"];
+                return countlyDataManager.service.fetchLimits(period)
+                    .then(function(res) {
+                        if (res) {
+                            context.commit("setLimits", res.limits);
+                        }
+                    });
+            },
             loadEventsData: function(context) {
                 var evenLoaderService = countlyDataManager.service.loadEvents;
                 if (isDrill && countlyDataManager.service.loadEventsExtended) {

@@ -27,20 +27,6 @@
     };
 
     /**
-     * helper function for beautifiy feature name in table
-     * @param {string} featureName - feature name will be beautified
-     * @returns {string} - it returns beautified feature name
-     */
-    function featureBeautifier(featureName) {
-        var fa = featureName.split('_');
-        var ret = '';
-        for (var i = 0; i < fa.length; i++) {
-            ret += fa[i].substr(0, 1).toUpperCase() + fa[i].substr(1, fa[i].length - 1) + ' ';
-        }
-        return ret;
-    }
-
-    /**
      * validate write requests for specific feature on specific app
      * @param {string} accessType - write process type [c, u, d]
      * @param {string} feature - feature name that required access right
@@ -169,6 +155,23 @@
     };
 
     /**
+     * validate all types of requests for specific feature on specific app
+     * @param {string} accessType - write process type [c, r, u, d]
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validate = function(accessType, feature, member, app_id) {
+        if (accessType === "r") {
+            return countlyAuth.validateRead(feature, member, app_id);
+        }
+        else {
+            return validateWrite(accessType, feature, member, app_id);
+        }
+    };
+
+    /**
      * Validate is this user global admin or not
      * @returns {boolean} is this user global admin or not?
      */
@@ -176,36 +179,30 @@
         return countlyGlobal.member.global_admin;
     };
 
-    countlyAuth.renderFeatureTemplate = function(featureName, index) {
-        var odd = countlyAuth.odd;
-        countlyAuth.odd = !countlyAuth.odd;
-        var beautifiedFeatureName = featureBeautifier(featureName);
+    /**
+     * Validate is this user admin of specific app or not
+     * @param {string} app - countly application id, optional
+     * @returns {boolean} user admin of specific app or not?
+     */
+    countlyAuth.validateAppAdmin = function(app) {
+        var _app = app || countlyCommon.ACTIVE_APP_ID;
 
-        var featureTemplate = '<div class="permission-item ' + (odd ? 'gray' : '') + '">';
-        featureTemplate += '    <div class="permission-column first-column">' + beautifiedFeatureName + '</div>';
-        featureTemplate += '    <div class="permission-column">';
-        featureTemplate += '        <div class="permission-checkbox" id="c-' + featureName + '-' + index + '"></div>';
-        featureTemplate += '    </div>';
-        featureTemplate += '    <div class="permission-column">';
-        featureTemplate += '        <div class="permission-checkbox" id="r-' + featureName + '-' + index + '"></div>';
-        featureTemplate += '    </div>';
-        featureTemplate += '    <div class="permission-column">';
-        featureTemplate += '        <div class="permission-checkbox" id="u-' + featureName + '-' + index + '"></div>';
-        featureTemplate += '    </div>';
-        featureTemplate += '    <div class="permission-column">';
-        featureTemplate += '        <div class="permission-checkbox" id="d-' + featureName + '-' + index + '"></div>';
-        featureTemplate += '    </div>';
-        featureTemplate += '    <div style="clear:both"></div>';
-        featureTemplate += '</div>';
-        return featureTemplate;
+        if (countlyGlobal.member.global_admin) {
+            return true;
+        }
+        else {
+            return countlyGlobal.member.permission && countlyGlobal.member.permission._ && countlyGlobal.member.permission._.a && countlyGlobal.member.permission._.a.indexOf(_app) > -1;
+        }
     };
 
-    countlyAuth.clearDrawer = function(parent_el, sets) {
-        var selector = parent_el.indexOf('group') !== -1 ? 'groups' : 'users';
-        $('#manage-' + selector + '-admin-app-selector')[0].selectize.setValue([]);
-        for (var i = 0; i < sets.length; i++) {
-            $(parent_el + ' #user-app-selector-' + i)[0].selectize.setValue([]);
-        }
+    /**
+     * Validate is this user admin of any app or not
+     * If this user has admin access for at least one app, 
+     * we can show applications view to this user
+     * @returns {boolean} is this user admin of any app or not?
+     */
+    countlyAuth.validateAnyAppAdmin = function() {
+        return countlyGlobal.member.global_admin || (countlyGlobal.member.permission && countlyGlobal.member.permission._ && countlyGlobal.member.permission._.a && countlyGlobal.member.permission._.a.length > 0);
     };
 
     countlyAuth.permissionSetGenerator = function(count) {
@@ -392,12 +389,12 @@
     };
 
     countlyAuth.featureBeautifier = function(featureName) {
-        var fa = featureName.split('_');
-        var ret = '';
-        for (var i = 0; i < fa.length; i++) {
-            ret += fa[i].substr(0, 1).toUpperCase() + fa[i].substr(1, fa[i].length - 1) + ' ';
-        }
-        return $.i18n.map[featureName + ".plugin-title"] || $.i18n.map[featureName + ".title"] || ret;
+        var withDash = featureName.replaceAll("_", "-");
+        var withUnderscore = featureName.replaceAll("-", "_");
+        var localizedName = $.i18n.map[withDash + ".plugin-title"] || $.i18n.map[withDash + ".title"] || $.i18n.map[withUnderscore + ".plugin-title"] || $.i18n.map[withUnderscore + ".title"] || featureName;
+        return localizedName.split(" ").map(function(word) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(" ");
     };
 
 })(window.countlyAuth = window.countlyAuth || {});

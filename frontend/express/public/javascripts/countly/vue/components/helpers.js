@@ -1,4 +1,4 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal*/
+/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth*/
 
 (function(countlyVue) {
 
@@ -447,6 +447,13 @@
                 type: Number,
                 default: 0,
                 required: false
+            },
+            auth: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
             }
         },
         computed: {
@@ -461,6 +468,24 @@
             },
             apps: function() {
                 var apps = countlyGlobal.apps || {};
+
+                if (this.auth && this.auth.feature && this.auth.permission) {
+                    var expectedPermission = this.auth.permission,
+                        targetFeature = this.auth.feature;
+
+                    return Object.keys(apps).reduce(function(acc, key) {
+                        var currentApp = apps[key];
+
+                        if (countlyAuth.validate(expectedPermission, targetFeature, null, currentApp._id)) {
+                            acc.push({
+                                label: currentApp.name,
+                                value: currentApp._id
+                            });
+                        }
+                        return acc;
+                    }, []);
+                }
+
                 return Object.keys(apps).map(function(key) {
                     return {
                         label: apps[key].name,
@@ -507,67 +532,80 @@
             width: { type: [Number, Object], default: 400},
             adaptiveLength: {type: Boolean, default: true},
             arrow: {type: Boolean, default: false},
-            title: { type: String, require: false}
+            title: { type: String, require: false},
+            selectedApp: {type: String, required: false, default: ''}
         },
         data: function() {
-            var self = this;
-
-            var availableEvents = [
-                {
-                    "label": this.i18n('sidebar.analytics.sessions'),
-                    "name": "[CLY]_session",
-                    "options": [ { label: this.i18n('sidebar.analytics.sessions'), value: '[CLY]_session' } ]
-                },
-                {
-                    "label": this.i18n('sidebar.events'),
-                    "name": "event",
-                    "options": countlyEvent.getEvents().map(function(event) {
-                        return {label: event.name, value: event.key};
-                    })
-                },
-                {
-                    "label": this.i18n('internal-events.[CLY]_view'),
-                    "name": "[CLY]_view",
-                    "options": [ { label: this.i18n('internal-events.[CLY]_view'), value: '[CLY]_view' } ]
-                },
-                {
-                    "label": this.i18n("sidebar.feedback"),
-                    "name": "feedback",
-                    "options": [
-                        { label: this.i18n('internal-events.[CLY]_star_rating'), value: '[CLY]_star_rating' },
-                        { label: this.i18n('internal-events.[CLY]_nps'), value: '[CLY]_nps' },
-                        { label: this.i18n('internal-events.[CLY]_survey'), value: '[CLY]_survey' }
-                    ]
-                },
-                {
-                    "label": this.i18n('internal-events.[CLY]_crash'),
-                    "name": "[CLY]_crash",
-                    "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
-                }
-                // {
-                //     "label": this.i18n('internal-events.[CLY]_push_action'),
-                //     "name": "[CLY]_push_action",
-                //     "noChild": true
-                // }
-            ];
-
-            availableEvents = availableEvents.filter(function(evt) {
-                return !(self.blacklistedEvents.includes(evt.name));
-            });
-
             return {
                 singleOptionSettings: {
                     autoPick: true,
                     hideList: true
-                },
-                availableEvents: availableEvents
+                }
             };
         },
         computed: {
             hasTitle: function() {
                 return !!this.title;
+            },
+            availableEvents: function() {
+                var self = this;
+                var availableEvents = [
+                    {
+                        "label": this.i18n('sidebar.analytics.sessions'),
+                        "name": "[CLY]_session",
+                        "options": [ { label: this.i18n('sidebar.analytics.sessions'), value: '[CLY]_session' } ]
+                    },
+                    {
+                        "label": this.i18n('sidebar.events'),
+                        "name": "event",
+                        "options": []
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_view'),
+                        "name": "[CLY]_view",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_view'), value: '[CLY]_view' } ]
+                    },
+                    {
+                        "label": this.i18n("sidebar.feedback"),
+                        "name": "feedback",
+                        "options": [
+                            { label: this.i18n('internal-events.[CLY]_star_rating'), value: '[CLY]_star_rating' },
+                            { label: this.i18n('internal-events.[CLY]_nps'), value: '[CLY]_nps' },
+                            { label: this.i18n('internal-events.[CLY]_survey'), value: '[CLY]_survey' }
+                        ]
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_crash'),
+                        "name": "[CLY]_crash",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
+                    }
+                    // {
+                    //     "label": this.i18n('internal-events.[CLY]_push_action'),
+                    //     "name": "[CLY]_push_action",
+                    //     "noChild": true
+                    // }
+                ];
+
+                if (this.selectedApp) {
+                    countlyEvent.getEventsForApps([this.selectedApp], function(eData) {
+                        availableEvents[1].options = eData.map(function(e) {
+                            return {label: e.name, value: e.value};
+                        });
+                    });
+                }
+                else {
+                    availableEvents[1].options = countlyEvent.getEvents().map(function(event) {
+                        return {label: event.name, value: event.key};
+                    });
+                }
+
+                availableEvents = availableEvents.filter(function(evt) {
+                    return !(self.blacklistedEvents.includes(evt.name));
+                });
+
+                return availableEvents;
             }
-        }
+        },
     }));
 
     Vue.component("cly-paginate", countlyBaseComponent.extend({
@@ -821,8 +859,8 @@
                                 '<img :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
                                 '<slot><span class="alert-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
-                            '<div v-if="closable" style="margin-block:auto">\n' +
-                                '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-5" >\n' +
+                            '<div v-if="closable"  class="bu-mt-2" >\n' +
+                                '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-2" >\n' +
                                     '<slot name="close"><i class="el-icon-close"></i></slot>\n' +
                                 '</div>\n' +
                                 '<div v-else @click="closeModal" class="bu-mr-2 bu-ml-6">\n' +

@@ -60,10 +60,10 @@
             <h3>{{i18n('push-notification.huawei-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.HUAWEI)" :disabled="isKeyEmpty(PlatformEnum.HUAWEI)">{{i18n('push-notification.delete')}}</el-button>
         </div>
-        <cly-inline-form-field :label="i18n('push-notification.huawei-app-id')" :rules="{required:isHuaweiConfigRequired}">
+        <cly-inline-form-field :label="i18n('push-notification.huawei-app-id')" :rules="{required:isHuaweiConfigRequired, numeric: true}">
             <el-input :value="viewModel[PlatformEnum.HUAWEI].appId" @input="onInput('appId',$event,PlatformEnum.HUAWEI)" autocomplete="off"></el-input>
         </cly-inline-form-field>
-        <cly-inline-form-field :label="i18n('push-notification.huawei-app-secret')" :rules="{required:isHuaweiConfigRequired, numeric: true}">
+        <cly-inline-form-field :label="i18n('push-notification.huawei-app-secret')" :rules="{required:isHuaweiConfigRequired}">
             <el-input :value="viewModel[PlatformEnum.HUAWEI].appSecret" @input="onInput('appSecret',$event,PlatformEnum.HUAWEI)" autocomplete="off"></el-input>
         </cly-inline-form-field>
 

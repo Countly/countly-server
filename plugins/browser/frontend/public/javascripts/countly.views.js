@@ -197,12 +197,20 @@
                         "color": this.graphColors[k]
                     });
                 }
+
+                display.sort(function(a, b) {
+                    return parseFloat(b.percent) - parseFloat(a.percent);
+                });
+
+                display = display.slice(0, 12);
+
                 return display;
             },
             browserVersions: function() {
                 var property = this.$store.state.countlyDevicesAndTypes.selectedProperty;
                 var returnData = [];
                 var browsers = this.appBrowser.versions || [];
+
                 for (var z = 0; z < browsers.length; z++) {
                     var display = [];
                     var data = browsers[z].data;
@@ -215,20 +223,23 @@
                             "bar": [{
                                 percentage: percent,
                                 color: this.graphColors[z]
-                            }
-                            ]
+                            }]
                         });
                     }
                     returnData.push({"values": display, "label": browsers[z].label, itemCn: display.length});
                 }
-                for (var i = 0; i < returnData.length; i++) {
-                    returnData[i].values.sort(function(a, b) {
-                        return parseFloat(b.percent) - parseFloat(a.percent);
-                    });
-                    returnData[i].values = returnData[i].values.slice(0, 12);
+
+                var orderedDataArray = [];
+
+                for (var i = 0; i < this.browserItems.length; i++) {
+                    for (var j = 0; j < returnData.length; j++) {
+                        if (this.browserItems[i].name === returnData[j].label) {
+                            orderedDataArray.push(returnData[j]);
+                        }
+                    }
                 }
 
-                return returnData;
+                return orderedDataArray;
             },
             appBrowserRows: function() {
                 return this.appBrowser.chartData;

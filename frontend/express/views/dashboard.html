@@ -108,7 +108,8 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-color.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/v-tooltip.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vee-validate.full.min.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-clipboard.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2Dropzone.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/element-ui.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2-leaflet.min.js?<%= countlyVersion %>"></script>
@@ -640,8 +641,8 @@
                         </div>
                         <div class="" id="events-custom-settings-table">
                             <div class="cly-button-menu event-settings-menu" tabindex="1">
-                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
-                                <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="ion-eye-disabled"></i><span data-localize="events.general.action.hide"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="show"><i class="ion-eye" ></i><span data-localize="events.general.action.show"></span></a>
                                 <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
                             </div>
                             <table class="d-table help-zone-vb no-fix events-table" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
@@ -688,8 +689,8 @@
                         </div>
                         <div class="" id="event-groups-settings-table">
                             <div class="cly-button-menu event-groups-settings-menu" tabindex="1">
-                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
-                                <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="ion-eye-disabled"></i><span data-localize="events.general.action.hide"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="show"><i class="ion-eye" ></i><span data-localize="events.general.action.show"></span></a>
                                 <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
                             </div>
                             <table class="d-table help-zone-vb no-fix event-groups-table" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
@@ -1600,6 +1601,7 @@
     <script id="version-history-template" type="text/x-handlebars-template">
 		<div class="widget">
             <div>{{ package-version }}</div>
+			<div>{{mongo-version}}</div>
             <br>
 			<div class="widget-header">
 				<div class="title" style="margin-top:10px; margin-left:5px;">{{toUpperCase fs-title}}</div>

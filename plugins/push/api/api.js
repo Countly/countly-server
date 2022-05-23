@@ -7,9 +7,10 @@ const plugins = require('../../pluginManager'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, test, create, update, toggle, remove, all, one, mime } = require('./api-message'),
+    { estimate, test, create, update, toggle, remove, all, one, mime, user } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
+    { legacyApis } = require('./legacy'),
     Sender = require('./send/sender'),
     FEATURE_NAME = 'push',
     PUSH_CACHE_GROUP = 'P',
@@ -24,7 +25,8 @@ const plugins = require('../../pluginManager'),
                 estimate: [validateRead, estimate],
                 all: [validateRead, all],
                 GET: [validateRead, one, '_id'],
-            }
+            },
+            user: [validateRead, user],
         },
         i: {
             message: {
@@ -33,7 +35,7 @@ const plugins = require('../../pluginManager'),
                 update: [validateUpdate, update],
                 toggle: [validateUpdate, toggle],
                 remove: [validateDelete, remove],
-                push: [validateDelete, apiPush],
+                push: [validateUpdate, apiPush],
                 pop: [validateDelete, apiPop],
                 // PUT: [validateCreate, create],
                 // POST: [validateUpdate, update, '_id'],
@@ -46,6 +48,7 @@ plugins.setConfigs(FEATURE_NAME, {
     proxyport: '',
     proxyuser: '',
     proxypass: '',
+    proxyunauthorized: false,
     test: {
         uids: '', // comma separated list of app_users.uid
         cohorts: '', // comma separated list of cohorts._id
@@ -77,13 +80,18 @@ plugins.register('/master/runners', runners => {
     let sender;
     runners.push(async() => {
         if (!sender) {
-            sender = new Sender();
-            await sender.prepare();
-            let has = await sender.watch();
-            if (has) {
-                await sender.send();
+            try {
+                sender = new Sender();
+                await sender.prepare();
+                let has = await sender.watch();
+                if (has) {
+                    await sender.send();
+                }
+                sender = undefined;
             }
-            sender = undefined;
+            catch (e) {
+                sender = undefined;
+            }
         }
     });
 });
@@ -122,7 +130,6 @@ plugins.register('/cache/init', function() {
 plugins.register('/i', async ob => {
     let params = ob.params,
         la = params.app_user.la;
-    log.d('push query', params.qstring);
     if (params.qstring.events && Array.isArray(params.qstring.events)) {
         let events = params.qstring.events,
             keys = events.map(e => e.key);
@@ -139,13 +146,15 @@ plugins.register('/i', async ob => {
                 for (let i = 0; i < push.length; i++) {
                     let event = push[i],
                         msg = msgs.filter(m => m.id === event.segmentation.i)[0],
-                        count = parseInt(event.count);
+                        count = parseInt(event.count, 10);
                     if (!msg || count !== 1) {
                         log.i('Invalid segmentation for [CLY]_push_action from %s: %j (msg %s, count %j)', params.qstring.device_id, event.segmentation, msg ? 'found' : 'not found', event.segmentation.count);
                         continue;
                     }
 
                     let p = event.segmentation.p,
+                        a = msg.triggers.filter(tr => tr.kind === TriggerKind.Cohort || tr.kind === TriggerKind.Event).length > 0,
+                        t = msg.triggers.filter(tr => tr.kind === TriggerKind.API).length > 0,
                         upd = updates[msg.id];
                     if (upd) {
                         upd.$inc['result.actioned'] += count;
@@ -158,11 +167,13 @@ plugins.register('/i', async ob => {
                         p = guess(params.req.headers['user-agent']);
                     }
 
-                    event.segmentation.a = msg.triggers.filter(t => t.kind === TriggerKind.Cohort || t.kind === TriggerKind.Event).length > 0;
-                    event.segmentation.t = msg.triggers.filter(t => t.kind === TriggerKind.API).length > 0;
+                    event.segmentation.a = a;
+                    event.segmentation.t = t;
 
                     if (p && platforms.indexOf(p) !== -1) {
                         event.segmentation.p = p;
+                        event.segmentation.ap = a + p;
+                        event.segmentation.tp = t + p;
                         if (upd.$inc[`result.subs.${p}.actioned`]) {
                             upd.$inc[`result.subs.${p}.actioned`] += count;
                         }
@@ -272,6 +283,9 @@ plugins.register('/session/user', onSessionUser);
 plugins.register('/i/push', ob => apiCall(apis.i, ob));
 plugins.register('/o/push', ob => apiCall(apis.o, ob));
 plugins.register('/i/apps/update/plugins/push', onAppPluginsUpdate);
+
+// Legacy API
+plugins.register('/i/pushes', ob => apiCall(legacyApis.i, ob));
 
 // Cohort hooks for cohorted auto push
 plugins.register('/cohort/enter', ({cohort, uids}) => autoOnCohort(true, cohort, uids));

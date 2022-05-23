@@ -637,6 +637,7 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
         daily: tmpMoment.format("YYYY.M.D"),
         hourly: tmpMoment.format("YYYY.M.D.H"),
         weekly: Math.ceil(tmpMoment.format("DDD") / 7),
+        weeklyISO: tmpMoment.isoWeek(),
         month: tmpMoment.format("M"),
         day: tmpMoment.format("D"),
         hour: tmpMoment.format("H")
@@ -1628,6 +1629,7 @@ function stripPort(ip) {
 * @param {object} object - object to fill
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
+* @param {boolean=} isUnique - if property is unique
 * @returns {void} void
 * @example
 * var obj = {};
@@ -1636,7 +1638,7 @@ function stripPort(ip) {
 * //outputs
 * { 'd.u': 1, 'd.2.u': 1, 'd.w8.u': 1 }
 */
-common.fillTimeObjectZero = function(params, object, property, increment) {
+common.fillTimeObjectZero = function(params, object, property, increment, isUnique) {
     var tmpIncrement = (increment) ? increment : 1,
         timeObj = params.time;
 
@@ -1650,7 +1652,8 @@ common.fillTimeObjectZero = function(params, object, property, increment) {
             object['d.' + timeObj.month + '.' + property[i]] = tmpIncrement;
 
             // For properties that hold the unique visitor count we store weekly data as well.
-            if (property[i].substr(-2) === ("." + common.dbMap.unique) ||
+            if (isUnique ||
+                    property[i].substr(-2) === ("." + common.dbMap.unique) ||
                     property[i] === common.dbMap.unique ||
                     property[i].substr(0, 2) === (common.dbMap.frequency + ".") ||
                     property[i].substr(0, 2) === (common.dbMap.loyalty + ".") ||
@@ -1664,7 +1667,7 @@ common.fillTimeObjectZero = function(params, object, property, increment) {
         object['d.' + property] = tmpIncrement;
         object['d.' + timeObj.month + '.' + property] = tmpIncrement;
 
-        if (property.substr(-2) === ("." + common.dbMap.unique) ||
+        if (isUnique || property.substr(-2) === ("." + common.dbMap.unique) ||
                 property === common.dbMap.unique ||
                 property.substr(0, 2) === (common.dbMap.frequency + ".") ||
                 property.substr(0, 2) === (common.dbMap.loyalty + ".") ||
@@ -1858,7 +1861,6 @@ common.recordMetric = function(params, props) {
 function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUsersMonth) {
     var zeroObjUpdate = [],
         monthObjUpdate = [];
-
     if (props.unique) {
         if (props.lastTimestamp) {
             var currDate = common.getDate(params.time.timestamp, params.appTimezone),
@@ -1890,7 +1892,7 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
             }
         }
         else {
-            common.fillTimeObjectZero(params, updateUsersZero, metric, props.value);
+            common.fillTimeObjectZero(params, updateUsersZero, metric, props.value, true);
             common.fillTimeObjectMonth(params, updateUsersMonth, metric, props.value);
         }
     }
@@ -1967,7 +1969,7 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
             }
         }
         else {
-            common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric, props.value);
+            common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric, props.value, true);
             common.fillTimeObjectMonth(params, updateUsersMonth, escapedMetricVal + '.' + metric, props.value, recordHourly);
         }
     }

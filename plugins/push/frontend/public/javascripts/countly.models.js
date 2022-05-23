@@ -8,6 +8,7 @@
     var MB_TO_BYTES_RATIO = 1000000;
     var DAY_TO_MS_RATIO = 86400 * 1000;
     var HOUR_TO_MS_RATIO = 3600000;
+    var MINUTES_TO_MS_RATIO = 60000;
     var ERROR_MESSAGE_REGEX = /^([ia])([0-9]+)(\+(.+))?$/;
 
     var DEFAULT_LOCALIZATION_VALUE = 'default';
@@ -219,9 +220,9 @@
         getInitialBaseModel: function() {
             return {
                 _id: null,
+                demo: false,
                 name: "",
-                platforms: [PlatformEnum.ANDROID],
-                audienceSelection: AudienceSelectionEnum.BEFORE,
+                platforms: [],
                 message: {
                     default: {
                         title: "",
@@ -284,6 +285,7 @@
             baseModel.oneTime = {
                 targeting: TargetingEnum.ALL,
                 pastSchedule: PastScheduleEnum.SKIP,
+                audienceSelection: AudienceSelectionEnum.NOW,
             };
             return baseModel;
         },
@@ -337,6 +339,14 @@
                 return htmlString.replace(/(<([^>]+)>)/gi, "");
             }
             return htmlString;
+        },
+        decodeMessage: function(message) {
+            if (!message) {
+                return message;
+            }
+            var textArea = document.createElement('textarea');
+            textArea.innerHTML = message;
+            return textArea.value;
         },
         getPreviewMessageComponentsList: function(content) {
             var self = this;
@@ -451,23 +461,25 @@
             if (!dateTimeInMs) {
                 return {
                     days: 0,
-                    hours: 0
+                    hours: 0,
+                    minutes: 0
                 };
             }
             var days = parseInt(dateTimeInMs / DAY_TO_MS_RATIO, 10);
-            var remainingTime = (dateTimeInMs % DAY_TO_MS_RATIO);
-            var hours = parseInt(remainingTime / HOUR_TO_MS_RATIO, 10);
+            var hours = parseInt((dateTimeInMs / HOUR_TO_MS_RATIO) % 24, 10);
+            var minutes = parseInt((dateTimeInMs / MINUTES_TO_MS_RATIO) % 60, 10);
             return {
                 days: days,
-                hours: hours
+                hours: hours,
+                minutes: minutes
             };
         },
         formatDateTime: function(dateTime, format) {
-            if (dateTime === 'Never') {
+            if (!dateTime) {
                 return dateTime;
             }
             if (!format) {
-                format = "DD.MM.YYYY hh:mm";
+                format = "DD.MM.YYYY hh:mm a";
             }
             return moment(dateTime).format(format);
         },
@@ -476,7 +488,7 @@
                 return true;
             }
             if (model.type === TypeEnum.ONE_TIME) {
-                return model.oneTime.targeting === TargetingEnum.SEGMENTED;
+                return model.oneTime.targeting === TargetingEnum.SEGMENTED || model.user || model.drill;
             }
             if (model.type === TypeEnum.AUTOMATIC) {
                 return true;
@@ -815,13 +827,8 @@
                 newElement.setAttribute("data-user-property-label", userProperty.l);
                 newElement.setAttribute("data-user-property-value", userProperty.k);
                 newElement.setAttribute("data-user-property-fallback", userProperty.f);
-                newElement.innerText = userProperty.k + "|" + userProperty.f;
+                newElement.innerText = userProperty.l + "|" + userProperty.f;
                 return newElement.outerHTML;
-            },
-            decodeMessage: function(message) {
-                var textArea = document.createElement('textarea');
-                textArea.innerHTML = message;
-                return textArea.value;
             },
             insertUserPropertyAtIndex: function(message, index, userProperty) {
                 return [message.slice(0, index), userProperty, message.slice(index)].join('');
@@ -836,11 +843,11 @@
             },
             buildMessageText: function(message, userPropertiesDto) {
                 var self = this;
-                if (!userPropertiesDto) {
-                    return message;
-                }
                 if (!message) {
                     message = "";
+                }
+                if (!userPropertiesDto) {
+                    return message;
                 }
                 var messageInHTMLString = message;
                 var buildMessageLength = 0;
@@ -924,32 +931,26 @@
                     daily: [{data: dailySendData || [], label: messagesSentLabel}, {data: dailyActionsData || [], label: actionsPerformedLabel}]
                 };
             },
-            mapSeries: function(dto, type) {
-                if (type === TypeEnum.ONE_TIME) {
-                    return this.mapOneTimeSeriesData(dto);
-                }
-                if (type === TypeEnum.AUTOMATIC) {
-                    return this.mapAutomaticSeriesData(dto);
-                }
-                if (type === TypeEnum.TRANSACTIONAL) {
-                    return this.mapTransactionalSeriesData(dto);
-                }
-                throw new Error('Unknown push notification type:' + type);
+            mapSeries: function(dto) {
+                var result = {};
+                result[TypeEnum.ONE_TIME] = this.mapOneTimeSeriesData(dto);
+                result[TypeEnum.AUTOMATIC] = this.mapAutomaticSeriesData(dto);
+                result[TypeEnum.TRANSACTIONAL] = this.mapTransactionalSeriesData(dto);
+                return result;
             },
-            mapPeriods: function(dto, type) {
-                if (type === TypeEnum.ONE_TIME) {
-                    return {
-                        weekly: dto.actions.weekly.keys,
-                        monthly: dto.actions.monthly.keys
-                    };
-                }
-                if (type === TypeEnum.AUTOMATIC) {
-                    return { daily: dto.actions_automated.daily.keys};
-                }
-                if (type === TypeEnum.TRANSACTIONAL) {
-                    return {daily: dto.actions_tx.daily.keys};
-                }
-                throw new Error('Unknown push notification type:' + type);
+            mapPeriods: function(dto) {
+                var result = {};
+                result[TypeEnum.ONE_TIME] = {
+                    weekly: dto.actions.weekly.keys,
+                    monthly: dto.actions.monthly.keys
+                };
+                result[TypeEnum.AUTOMATIC] = {
+                    daily: dto.actions_automated.daily.keys
+                };
+                result[TypeEnum.TRANSACTIONAL] = {
+                    daily: dto.actions_tx.daily.keys
+                };
+                return result;
             },
             mapPlatforms: function(dto) {
                 return dto.reduce(function(allPlatformItems, currentPlatformItem) {
@@ -971,6 +972,12 @@
                 }
                 return dto.status;
             },
+            mapDemo: function(dto) {
+                if (dto.info && dto.info.demo) {
+                    return true;
+                }
+                return false;
+            },
             mapRows: function(dto) {
                 var self = this;
                 var rowsModel = [];
@@ -984,8 +991,8 @@
                             time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("h:mm:ss a")
                         },
                         sentDateTime: {
-                            date: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.started).format("MMMM Do YYYY"),
-                            time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.started).format("h:mm:ss a")
+                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("MMMM Do YYYY") : null,
+                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("h:mm:ss a") : null,
                         },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
@@ -997,7 +1004,7 @@
                 return rowsModel;
             },
             mapTargeting: function(dto) {
-                if (dto.filter && dto.filter.cohorts && dto.filter.cohorts.length || dto.filter.geos && dto.filter.geos.length) {
+                if (dto.filter && (dto.filter.cohorts && dto.filter.cohorts.length || dto.filter.geos && dto.filter.geos.length)) {
                     return TargetingEnum.SEGMENTED;
                 }
                 return TargetingEnum.ALL;
@@ -1006,6 +1013,15 @@
                 if (dto.result && (dto.result.processed > (dto.result.sent + dto.result.errored))) {
                     var affectedUsers = dto.result.processed - (dto.result.sent + dto.result.errored);
                     return {'ExpiredToken': affectedUsers};
+                }
+                return null;
+            },
+            mapGlobalError: function(dto) {
+                if (dto.result && dto.result.error) {
+                    return {
+                        code: dto.result.error,
+                        affectedUsers: dto.result.total || '',
+                    };
                 }
                 return null;
             },
@@ -1043,8 +1059,10 @@
             },
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
+                    // NOte: icon will reside at index zero for now. There are no other platform specifics
+                    icon: androidSettingsDto && androidSettingsDto.specific && androidSettingsDto.specific[0] && androidSettingsDto.specific[0].large_icon || "",
                     soundFilename: androidSettingsDto && androidSettingsDto.sound || "",
-                    badgeNumber: androidSettingsDto && androidSettingsDto.badge,
+                    badgeNumber: androidSettingsDto && androidSettingsDto.badge && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
                     onClickURL: androidSettingsDto && androidSettingsDto.url || '',
@@ -1054,9 +1072,10 @@
             },
             mapIOSSettings: function(iosSettingsDto) {
                 return {
-                    subtitle: "",
+                    // NOte: subtitle will reside at index zero for now. There are no other platform specifics
+                    subtitle: iosSettingsDto && iosSettingsDto.specific && iosSettingsDto.specific[0] && countlyPushNotification.helper.decodeMessage(iosSettingsDto.specific[0].subtitle || ""),
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
-                    badgeNumber: iosSettingsDto && iosSettingsDto.badge,
+                    badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
                     onClickURL: iosSettingsDto && iosSettingsDto.url || '',
@@ -1194,28 +1213,37 @@
                 result[PlatformEnum.IOS] = parseInt(dto.enabled.i);
                 return result;
             },
+            mapDashboardTotal: function(dto, type, property) {
+                var result = {};
+                result[type] = {};
+                result[type][PlatformEnum.ALL] = dto[property].total;
+                result[type][PlatformEnum.IOS] = dto[property].platforms[PlatformDtoEnum.IOS].total;
+                result[type][PlatformEnum.ANDROID] = dto[property].platforms[PlatformDtoEnum.ANDROID].total;
+                return result;
+            },
             mapTotalActions: function(dto) {
                 var result = {};
-                result[TypeEnum.ONE_TIME] = dto.actions.total;
-                result[TypeEnum.AUTOMATIC] = dto.actions_automated.total;
-                result[TypeEnum.TRANSACTIONAL] = dto.actions_tx.total;
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.ONE_TIME, 'actions'));
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.AUTOMATIC, 'actions_automated'));
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.TRANSACTIONAL, 'actions_tx'));
                 return result;
             },
             mapTotalSent: function(dto) {
                 var result = {};
-                result[TypeEnum.ONE_TIME] = dto.sent.total;
-                result[TypeEnum.AUTOMATIC] = dto.sent_automated.total;
-                result[TypeEnum.TRANSACTIONAL] = dto.sent_tx.total;
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.ONE_TIME, 'sent'));
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.AUTOMATIC, 'sent_automated'));
+                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.TRANSACTIONAL, 'sent_tx'));
                 return result;
             },
-            mapMainDashboard: function(dashboardDto, type) {
+            mapMainDashboard: function(dashboardDto) {
                 return {
-                    series: this.mapSeries(dashboardDto, type),
-                    periods: this.mapPeriods(dashboardDto, type),
+                    series: this.mapSeries(dashboardDto),
+                    periods: this.mapPeriods(dashboardDto),
                     totalAppUsers: parseInt(dashboardDto.users),
                     enabledUsers: this.mapEnabledUsers(dashboardDto),
                     totalActions: this.mapTotalActions(dashboardDto),
-                    totalSent: this.mapTotalSent(dashboardDto)
+                    totalSent: this.mapTotalSent(dashboardDto),
+                    tokens: dashboardDto.tokens,
                 };
             },
             mapAndroidDashboard: function(dto) {
@@ -1280,28 +1308,24 @@
                 if (dto.result.subs && dto.result.subs[PlatformDtoEnum.IOS]) {
                     model[PlatformEnum.IOS] = this.mapIosDashboard(dto);
                 }
-                if (model[PlatformEnum.ANDROID] && model[PlatformEnum.IOS]) {
-                    model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
-                }
+                model[PlatformEnum.ALL] = this.mapAllDashboard(dto);
                 return model;
             },
             mapDtoToBaseModel: function(dto) {
                 var localizations = this.mapLocalizations(dto.info && dto.info.locales || []);
                 return {
                     _id: dto._id || null,
+                    demo: this.mapDemo(dto),
                     status: this.mapStatus(dto),
-                    createdDateTime: {
-                        date: moment(dto.created).valueOf(),
-                        time: moment(dto.created).format("H:mm")
-                    },
-                    name: dto.info && dto.info.title || "-",
+                    createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
+                    name: dto.info && dto.info.title,
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
                     localizations: localizations,
                     message: this.mapMessageLocalizationsList(localizations, dto),
                     settings: this.mapSettings(dto),
                     messageType: dto.info && dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
-                    error: dto.error,
+                    error: this.mapGlobalError(dto),
                     errors: this.mapErrors(dto),
                     locations: dto.filter && dto.filter.geos || [],
                     cohorts: dto.filter && dto.filter.cohorts || [],
@@ -1319,12 +1343,12 @@
                 model.type = TypeEnum.ONE_TIME;
                 var triggerDto = dto.triggers[0];
                 model.delivery = {
-                    startDate: moment(triggerDto.start).valueOf(),
-                    endDate: "Never",
+                    startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
+                    endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
-                model.audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
-                model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
+                model[TypeEnum.ONE_TIME].audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
+                model.timezone = triggerDto.tz ? TimezoneEnum.DEVICE : TimezoneEnum.SAME;
                 return model;
             },
             mapDtoToAutomaticModel: function(dto) {
@@ -1332,10 +1356,9 @@
                 model.type = TypeEnum.AUTOMATIC;
                 var triggerDto = dto.triggers[0];
                 model.cohorts = triggerDto.cohorts || [];
-                model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
                 model.delivery = {
                     startDate: moment(triggerDto.start).valueOf(),
-                    endDate: moment(triggerDto.end).valueOf() || "Never",
+                    endDate: triggerDto.end ? moment(triggerDto.end).valueOf() : null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 model.automatic = {
@@ -1346,7 +1369,13 @@
                     cohorts: triggerDto.cohorts || [],
                     events: triggerDto.events || [],
                     capping: Boolean(triggerDto.cap) && Boolean(triggerDto.sleep),
+                    usersTimezone: null,
                 };
+                if (triggerDto.time) {
+                    var result = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.time);
+                    model.automatic.usersTimezone = new Date();
+                    model.automatic.usersTimezone.setHours(result.hours, result.minutes);
+                }
                 model.automatic.delayed = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.delay);
                 model.automatic.maximumMessagesPerUser = triggerDto.cap || 1,
                 model.automatic.minimumTimeBetweenMessages = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.sleep);
@@ -1357,8 +1386,8 @@
                 model.type = TypeEnum.TRANSACTIONAL;
                 var triggerDto = dto.triggers[0];
                 model.delivery = {
-                    startDate: moment(triggerDto.start).valueOf(),
-                    endDate: "Never",
+                    startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
+                    endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 return model;
@@ -1466,7 +1495,8 @@
                 if (this.hasAppLevelPlatformConfig(dto, PlatformDtoEnum.HUAWEI)) {
                     return {
                         _id: dto[PlatformDtoEnum.HUAWEI]._id || '',
-                        appId: dto[PlatformDtoEnum.HUAWEI].appId,
+                        type: dto[PlatformDtoEnum.HUAWEI].type,
+                        appId: dto[PlatformDtoEnum.HUAWEI].app,
                         appSecret: dto[PlatformDtoEnum.HUAWEI].secret
                     };
                 }
@@ -1498,9 +1528,13 @@
                 var htmlElement = document.createElement('div');
                 htmlElement.innerHTML = localizedMessage[container];
                 for (var index = 0; index < htmlElement.children.length; index++) {
-                    var idAtribute = htmlElement.children[index].getAttributeNode('id').value;
-                    var idNumber = idAtribute.split('-')[1];
-                    userPropertyIds.push(idNumber);
+                    var idAttribute = htmlElement.children[index].getAttributeNode('id');
+                    if (idAttribute && idAttribute.value) {
+                        var idAtributeValue = idAttribute.value;
+                        var idNumber = idAtributeValue.split('-')[1];
+                        userPropertyIds.push(idNumber);
+                    }
+
                 }
                 return userPropertyIds;
             },
@@ -1629,6 +1663,9 @@
                 if (iosSettings.onClickURL && options.settings[PlatformEnum.IOS].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.url = iosSettings.onClickURL;
                 }
+                if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
+                    result.specific = [{subtitle: iosSettings.subtitle}];
+                }
                 if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = model.settings[PlatformEnum.IOS].mediaURL;
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
@@ -1657,6 +1694,9 @@
                 if (androidSettings.onClickURL && options.settings[PlatformEnum.ANDROID].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.url = androidSettings.onClickURL;
                 }
+                if (androidSettings.icon && options.settings[PlatformEnum.ANDROID].isIconEnabled) {
+                    result.specific = [{large_icon: androidSettings.icon}];
+                }
                 if (model.settings[PlatformEnum.ANDROID].mediaURL && options.settings[PlatformEnum.ANDROID].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = model.settings[PlatformEnum.ANDROID].mediaURL;
                     result.mediaMime = model.settings[PlatformEnum.ANDROID].mediaMime;
@@ -1671,16 +1711,27 @@
                 var content = [];
                 Object.keys(pushNotificationModel.message).forEach(function(localizationKey) {
                     var localeDto = {};
+                    if (!pushNotificationModel.localizations.some(function(item) {
+                        return item.value === localizationKey;
+                    })) {
+                        return;
+                    }
                     if (localizationKey !== DEFAULT_LOCALIZATION_VALUE) {
                         localeDto.la = localizationKey;
                     }
                     localeDto.message = self.getMessageText(pushNotificationModel.message[localizationKey], 'content');
-                    localeDto.title = self.getMessageText(pushNotificationModel.message[localizationKey], 'title');
+                    var title = self.getMessageText(pushNotificationModel.message[localizationKey], 'title');
+                    if (title) {
+                        localeDto.title = title;
+                    }
                     if (self.hasUserProperties(pushNotificationModel.message[localizationKey], 'content')) {
                         localeDto.messagePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'content');
                     }
                     if (self.hasUserProperties(pushNotificationModel.message[localizationKey], 'title')) {
                         localeDto.titlePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'title');
+                        if (!title) {
+                            localeDto.title = title;
+                        }
                     }
                     if (pushNotificationModel.message[localizationKey].buttons.length) {
                         localeDto.buttons = self.mapButtons(pushNotificationModel.message[localizationKey]);
@@ -1700,12 +1751,12 @@
                     start: model.delivery.startDate,
                 };
                 if (model.delivery.type === SendEnum.LATER) {
-                    result.tz = model.timezone === TimezoneEnum.SAME;
-                    result.delayed = model.audienceSelection === AudienceSelectionEnum.BEFORE;
+                    if (model.timezone === TimezoneEnum.DEVICE) {
+                        result.tz = true;
+                        result.sctz = new Date().getTimezoneOffset();
+                    }
                 }
-                if (model.timezone === TimezoneEnum.SAME && model.delivery.type === SendEnum.LATER) {
-                    result.sctz = new Date().getTimezoneOffset();
-                }
+                result.delayed = model[TypeEnum.ONE_TIME].audienceSelection === AudienceSelectionEnum.BEFORE;
                 return [result];
             },
             mapAutomaticTrigger: function(model, options) {
@@ -1754,8 +1805,14 @@
             },
             mapFilters: function(model, options) {
                 var result = {};
-                if (options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length) {
+                if (model.user) {
+                    result.user = model.user;
+                }
+                if ((options.queryFilter && options.from === 'user' && Object.keys(options.queryFilter.queryObject).length)) {
                     result.user = JSON.stringify(options.queryFilter.queryObject);
+                }
+                if (model.drill) {
+                    result.drill = model.drill;
                 }
                 if (options.queryFilter && options.from === 'drill') {
                     var drillFilter = Object.assign({}, options.queryFilter);
@@ -1933,11 +1990,17 @@
             },
             mapHuaweiAppLevelConfig: function(model) {
                 if (model[PlatformEnum.HUAWEI]) {
-                    return {
-                        _id: model[PlatformEnum.HUAWEI]._id || "",
-                        key: model[PlatformEnum.HUAWEI].appId,
+                    var result = {
+                        type: model[PlatformEnum.HUAWEI].type,
+                        app: model[PlatformEnum.HUAWEI].appId,
                         secret: model[PlatformEnum.HUAWEI].appSecret
                     };
+
+                    if (model[PlatformEnum.HUAWEI]._id) {
+                        result._id = model[PlatformEnum.HUAWEI]._id;
+                    }
+
+                    return result;
                 }
                 return null;
             },
@@ -2094,7 +2157,7 @@
                             if (locationIdsList && locationIdsList.length) {
                                 targetLocations = targetLocations.filter(function(targetLocationItem) {
                                     return locationIdsList.some(function(locationId) {
-                                        return targetLocationItem.id === locationId;
+                                        return targetLocationItem._id === locationId;
                                     });
                                 });
                             }
@@ -2170,12 +2233,12 @@
                 });
             });
         },
-        fetchDashboard: function(type, echo) {
+        fetchDashboard: function(echo) {
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.getDashboard(echo)
                     .then(function(response) {
                         try {
-                            resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response, type));
+                            resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response));
                         }
                         catch (error) {
                             console.error(error);
@@ -2470,6 +2533,7 @@
                 pushNotificationId: null
             },
             isDrawerOpen: false,
+            mobileMessagePlatform: null,
         };
     };
 
@@ -2555,6 +2619,9 @@
         },
         onSetPlatformFilterOptions: function(context, value) {
             context.commit('setPlatformFilterOptions', value);
+        },
+        onSetMobileMessagePlatform: function(context, value) {
+            context.commit('setMobileMessagePlatform', value);
         }
     };
 
@@ -2587,55 +2654,36 @@
                 filterOptions.push({label: CV.i18n("push-notification.platform-filter-android"), value: countlyPushNotification.service.PlatformEnum.ANDROID});
                 state.platformFilter = PlatformEnum.ANDROID;
             }
-            if (value.dashboard[PlatformEnum.IOS] && value.dashboard[PlatformEnum.ALL]) {
+            if (value.dashboard[PlatformEnum.ALL]) {
                 filterOptions.push({label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL});
                 state.platformFilter = PlatformEnum.ALL;
             }
             state.platformFilterOptions = filterOptions;
         },
+        setDashboardTokens: function(state, value) {
+            state.dashboardTokens = value;
+        },
+        setMobileMessagePlatform: function(state, value) {
+            state.mobileMessagePlatform = value;
+        }
     };
 
-    var pushNotificationDetailsModule = countlyVue.vuex.Module("details", {
-        state: getDetailsInitialState,
-        actions: detailsActions,
-        mutations: detailsMutations,
-        submodules: [countlyVue.vuex.FetchMixin()]
-    });
+    countlyPushNotification.details = {};
+    countlyPushNotification.details.getVuexModule = function() {
+        return countlyVue.vuex.Module("countlyPushNotificationDetails", {
+            state: getDetailsInitialState,
+            actions: detailsActions,
+            mutations: detailsMutations,
+            submodules: [countlyVue.vuex.FetchMixin()]
+        });
+    };
 
     var getMainInitialState = function() {
-        var enabledUsers = {};
-        enabledUsers[PlatformEnum.ALL] = 0;
-        enabledUsers[PlatformEnum.IOS] = 0;
-        enabledUsers[PlatformEnum.ANDROID] = 0;
-
-        var totalActions = {};
-        totalActions[TypeEnum.ONE_TIME] = 0;
-        totalActions[TypeEnum.AUTOMATIC] = 0;
-        totalActions[TypeEnum.TRANSACTIONAL] = 0;
-
-        var totalSent = {};
-        totalSent[TypeEnum.ONE_TIME] = 0;
-        totalSent[TypeEnum.AUTOMATIC] = 0;
-        totalSent[TypeEnum.TRANSACTIONAL] = 0;
-
         return {
             rows: [],
-            dashboard: {
-                series: {
-                    monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
-                    weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
-                    daily: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
-                },
-                periods: {monthly: [], weekly: []},
-                totalAppUsers: 0,
-                enabledUsers: enabledUsers,
-                totalActions: totalActions,
-                totalSent: totalSent,
-            },
             selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
             statusFilter: ALL_FILTER_OPTION_VALUE,
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
-            isDashboardLoading: false,
             areRowsLoading: false,
             userCommand: {
                 type: null,
@@ -2657,17 +2705,6 @@
                     console.error(error);
                 }).finally(function() {
                     context.dispatch('onSetAreRowsLoading', false);
-                });
-        },
-        fetchDashboard: function(context) {
-            context.dispatch('onSetIsDashboardLoading', true);
-            countlyPushNotification.service.fetchDashboard(context.state.selectedPushNotificationType)
-                .then(function(response) {
-                    context.commit('setDashboard', response);
-                }).catch(function(error) {
-                    console.error(error);
-                }).finally(function() {
-                    context.dispatch('onSetIsDashboardLoading', false);
                 });
         },
         onDelete: function(context, id) {
@@ -2728,9 +2765,6 @@
         onSetAreRowsLoading: function(context, value) {
             context.commit('setAreRowsLoading', value);
         },
-        onSetIsDashboardLoading: function(context, value) {
-            context.commit('setIsDashboardLoading', value);
-        },
         onSetPushNotificationType: function(context, value) {
             context.commit('resetPushNotifications');
             context.commit('setPushNotificationType', value);
@@ -2749,12 +2783,6 @@
         },
         resetPushNotifications: function(state) {
             Object.assign(state, getMainInitialState());
-        },
-        setDashboard: function(state, value) {
-            state.dashboard = value;
-        },
-        setIsDashboardLoading: function(state, value) {
-            state.isDashboardLoading = value;
         },
         setAreRowsLoading: function(state, value) {
             state.areRowsLoading = value;
@@ -2776,17 +2804,123 @@
         },
     };
 
-    var pushNotificationMainModule = countlyVue.vuex.Module("main", {
-        state: getMainInitialState,
-        actions: mainActions,
-        mutations: mainMutations,
-        submodules: [countlyVue.vuex.FetchMixin()]
-    });
-
-    countlyPushNotification.getVuexModule = function() {
-        return countlyVue.vuex.Module("countlyPushNotification", {
-            submodules: [pushNotificationMainModule, pushNotificationDetailsModule]
+    countlyPushNotification.main = {};
+    countlyPushNotification.main.getVuexModule = function() {
+        return countlyVue.vuex.Module("countlyPushNotificationMain", {
+            state: getMainInitialState,
+            actions: mainActions,
+            mutations: mainMutations,
+            submodules: [countlyVue.vuex.FetchMixin()]
         });
     };
 
+    var getDashboardInitialState = function() {
+        var enabledUsers = {};
+        enabledUsers[PlatformEnum.ALL] = 0;
+        enabledUsers[PlatformEnum.IOS] = 0;
+        enabledUsers[PlatformEnum.ANDROID] = 0;
+
+        var totalActions = {};
+        totalActions[TypeEnum.ONE_TIME] = {};
+        totalActions[TypeEnum.ONE_TIME][PlatformEnum.IOS] = 0;
+        totalActions[TypeEnum.ONE_TIME][PlatformEnum.ANDROID] = 0;
+        totalActions[TypeEnum.ONE_TIME][PlatformEnum.ALL] = 0;
+        totalActions[TypeEnum.AUTOMATIC] = {};
+        totalActions[TypeEnum.AUTOMATIC][PlatformEnum.IOS] = 0;
+        totalActions[TypeEnum.AUTOMATIC][PlatformEnum.ANDROID] = 0;
+        totalActions[TypeEnum.AUTOMATIC][PlatformEnum.ALL] = 0;
+        totalActions[TypeEnum.TRANSACTIONAL] = {};
+        totalActions[TypeEnum.TRANSACTIONAL][PlatformEnum.IOS] = 0;
+        totalActions[TypeEnum.TRANSACTIONAL][PlatformEnum.ANDROID] = 0;
+        totalActions[TypeEnum.TRANSACTIONAL][PlatformEnum.ALL] = 0;
+
+        var totalSent = {};
+        totalSent[TypeEnum.ONE_TIME] = {};
+        totalSent[TypeEnum.ONE_TIME][PlatformEnum.IOS] = 0;
+        totalSent[TypeEnum.ONE_TIME][PlatformEnum.ANDROID] = 0;
+        totalSent[TypeEnum.ONE_TIME][PlatformEnum.ALL] = 0;
+        totalSent[TypeEnum.AUTOMATIC] = {};
+        totalSent[TypeEnum.AUTOMATIC][PlatformEnum.IOS] = 0;
+        totalSent[TypeEnum.AUTOMATIC][PlatformEnum.ANDROID] = 0;
+        totalSent[TypeEnum.AUTOMATIC][PlatformEnum.ALL] = 0;
+        totalSent[TypeEnum.TRANSACTIONAL] = {};
+        totalSent[TypeEnum.TRANSACTIONAL][PlatformEnum.IOS] = 0;
+        totalSent[TypeEnum.TRANSACTIONAL][PlatformEnum.ANDROID] = 0;
+        totalSent[TypeEnum.TRANSACTIONAL][PlatformEnum.ALL] = 0;
+
+        var series = {};
+        series[TypeEnum.ONE_TIME] = {
+            monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
+            weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
+        };
+        series[TypeEnum.AUTOMATIC] = {
+            daily: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
+        };
+        series[TypeEnum.TRANSACTIONAL] = {
+            daily: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
+        };
+        var periods = {};
+        periods[TypeEnum.ONE_TIME] = {
+            weekly: [],
+            monthy: [],
+        };
+        periods[TypeEnum.AUTOMATIC] = {
+            daily: [],
+        };
+        periods[TypeEnum.TRANSACTIONAL] = {
+            daily: []
+        };
+
+        return {
+            series: series,
+            periods: periods,
+            totalAppUsers: 0,
+            enabledUsers: enabledUsers,
+            totalActions: totalActions,
+            totalSent: totalSent,
+            isFetched: false
+        };
+    };
+
+    var dashboardActions = {
+        fetchDashboard: function(context, shouldRefresh) {
+            if (context.state.isFetched && !shouldRefresh) {
+                return;
+            }
+            if (context.state.countlyFetch.isLoading) {
+                return;
+            }
+            context.dispatch('onFetchInit', {useLoader: true});
+            countlyPushNotification.service.fetchDashboard()
+                .then(function(response) {
+                    context.commit('setDashboard', response);
+                    context.dispatch('onFetchSuccess', {useLoader: true});
+                    context.commit('setIsFetched', true);
+                }).catch(function(error) {
+                    context.dispatch('onFetchError', {error: error, useLoader: true});
+                    console.error(error);
+                });
+        },
+    };
+
+    var dashboardMutations = {
+        setDashboard: function(state, value) {
+            value.isFetched = state.isFetched;
+            Object.assign(state, value);
+        },
+        setIsFetched: function(state, value) {
+            state.isFetched = value;
+        }
+    };
+
+    countlyPushNotification.dashboard = {};
+    countlyPushNotification.dashboard.getVuexModule = function() {
+        return countlyVue.vuex.Module("countlyPushNotificationDashboard", {
+            state: getDashboardInitialState,
+            actions: dashboardActions,
+            mutations: dashboardMutations,
+            submodules: [countlyVue.vuex.FetchMixin()],
+            destroy: false,
+        });
+    };
 }(window.countlyPushNotification = window.countlyPushNotification || {}));

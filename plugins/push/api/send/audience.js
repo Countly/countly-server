@@ -107,6 +107,15 @@ class Audience {
         return new Popper(this, trigger);
     }
 
+    /**
+     * Add any virtual platforms to the message platforms array
+     * 
+     * @returns {string[]} new array containing all message platforms and their virtual platforms
+     */
+    platformsWithVirtuals() {
+        return this.message.platforms.concat(this.message.platforms.map(p => PLATFORM[p].virtuals || []).flat());
+    }
+
     // /**
     //  * Find users defined by message filter and put corresponding records into queue
     //  * 
@@ -151,7 +160,7 @@ class Audience {
      * @param {Object[]} steps aggregation steps array to add steps to
      */
     async addFields(steps) {
-        let flds = fields(this.message.platforms, true).map(f => ({[f]: true}));
+        let flds = fields(this.platformsWithVirtuals(), true).map(f => ({[f]: true}));
         steps.push({$match: {$or: flds}});
     }
 
@@ -212,26 +221,36 @@ class Audience {
         // User query
         let query = filter.user;
         if (query) {
-            if (query.message) {
-                let filtered = await this.filterMessage(query.message);
-                delete query.message;
+            let params = {
+                time: common.initTimeObj(this.app.timezone, Date.now()),
+                qstring: Object.assign({app_id: this.app._id.toString()}, query),
+                app_id: this.app._id.toString()
+            };
+            await common.plugins.dispatchAsPromise("/drill/preprocess_query", {
+                query,
+                params
+            });
 
-                steps.push({$match: {uid: {$in: filtered}}});
-            }
+            // if (query.message) {
+            //     let filtered = await this.filterMessage(query.message);
+            //     delete query.message;
 
-            if (query.geo) {
-                if (drill() && geo()) {
-                    drill().preprocessQuery(query);
-                    let geos = await geo().query(this.app._id, query.geo);
-                    if (geos && geos.length) {
-                        steps.push({$match: {$or: geos.map(g => geo().conds(g))}});
-                    }
-                    else {
-                        query.invalidgeo = true;
-                    }
-                }
-                delete query.geo;
-            }
+            //     steps.push({$match: {uid: {$in: filtered}}});
+            // }
+
+            // if (query.geo) {
+            //     if (drill() && geo()) {
+            //         drill().preprocessQuery(query);
+            //         let geos = await geo().query(this.app._id, query.geo);
+            //         if (geos && geos.length) {
+            //             steps.push({$match: {$or: geos.map(g => geo().conds(g))}});
+            //         }
+            //         else {
+            //             query.invalidgeo = true;
+            //         }
+            //     }
+            //     delete query.geo;
+            // }
 
             if (Object.keys(query).length) {
                 steps.push({$match: query});
@@ -241,6 +260,10 @@ class Audience {
         // Drill query
         query = filter.drill;
         if (query && drill()) {
+            // await common.plugins.dispatchAsPromise("/drill/preprocess_query", {
+            //     query,
+            //     params
+            // });
             if (query.queryObject && query.queryObject.chr && Object.keys(query.queryObject).length === 1) {
                 let cohorts = {}, chr = query.queryObject.chr, i;
 
@@ -260,9 +283,10 @@ class Audience {
             else {
                 // drill().drill.openDrillDb();
 
-                var params = {
+                let params = {
                     time: common.initTimeObj(this.app.timezone, Date.now()),
-                    qstring: Object.assign({app_id: this.app._id.toString()}, query)
+                    qstring: Object.assign({app_id: this.app._id.toString()}, query),
+                    app_id: this.app._id.toString()
                 };
                 delete params.qstring.queryObject.chr;
 
@@ -347,7 +371,7 @@ class Mapper {
         this.f = f;
         this.pf = p + f;
         this.topUserFields = [];
-        message.userFields.forEach(k => this.topUserFields.push(k.indexOf('.') === -1 ? k : k.substr(0, k.indexOf('.')))); // make sure we have 'custom', not 'custom.x'
+        Message.userFieldsFor(message.contents, true).forEach(k => this.topUserFields.push(k.indexOf('.') === -1 ? k : k.substr(0, k.indexOf('.')))); // make sure we have 'custom', not 'custom.x'
     }
 
     /**
@@ -410,6 +434,15 @@ class PlainApiMapper extends Mapper {
         if (this.trigger.tz) {
             let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
             d = date.getTime() - this.trigger.sctz * 60000 - utz;
+
+            if (d < Date.now()) {
+                if (this.trigger.reschedule) {
+                    d = d + 24 * 60 * 60000;
+                }
+                else {
+                    return null;
+                }
+            }
         }
         return super.map(user, d, c);
     }
@@ -455,6 +488,17 @@ class CohortsEventsMapper extends Mapper {
             }
         }
 
+        if (this.trigger.cap || this.trigger.sleep) {
+            let arr = (user[TK][0].msgs || {})[this.message.id];
+            if (arr && this.trigger.cap && arr.length >= this.trigger.cap) {
+                return null;
+            }
+
+            if (arr && this.trigger.sleep && (d - Math.max(...arr)) < this.trigger.sleep) {
+                return null;
+            }
+        }
+
         // delayed message to spread the load across time
         if (this.trigger.delay) {
             d += this.trigger.delay;
@@ -482,7 +526,7 @@ class PusherPopper {
         this.audience = audience;
         this.trigger = trigger;
         this.mappers = {};
-        this.audience.message.platforms.forEach(p => Object.values(PLATFORM[p].FIELDS).forEach(f => {
+        this.audience.platformsWithVirtuals().forEach(p => Object.values(PLATFORM[p].FIELDS).forEach(f => {
             if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
                 this.mappers[p + f] = new PlainApiMapper(audience.app, audience.message, trigger, p, f);
             }
@@ -514,7 +558,7 @@ class PusherPopper {
             await this.audience.addFilter(steps, this.audience.message.filter);
         }
 
-        let userFields = Message.userFieldsFor(this.audience.message.contents.concat(this.contents || []));
+        let userFields = Message.userFieldsFor(this.audience.message.contents.concat(this.contents || []), true);
 
         // Decrease amount of data we process here
         await this.audience.addProjection(steps, userFields);
@@ -616,11 +660,15 @@ class Pusher extends PusherPopper {
             batch = Push.batchInsert(batchSize),
             start = this.start || this.trigger.start,
             result = new Result(),
-            updates = {};
+            updates = {},
+            virtuals = {};
 
         for await (let user of stream) {
             let push = user[TK][0],
                 la = user.la || 'default';
+            if (!push) {
+                continue;
+            }
             for (let pf in push[TK]) {
                 if (!(pf in this.mappers)) {
                     continue;
@@ -633,7 +681,7 @@ class Pusher extends PusherPopper {
 
                 let p = pf[0],
                     d = note._id.getTimestamp().getTime(),
-                    rp = result.sub(p);
+                    rp = result.sub(p, undefined, PLATFORM[p].parent);
 
                 result.total++;
                 updates['result.total'] = result.total;
@@ -651,6 +699,16 @@ class Pusher extends PusherPopper {
                 rpl.total++;
                 updates[`result.subs.${p}.subs.${la}.total`] = rpl.total;
 
+                if (PLATFORM[p].parent) {
+                    rp = result.sub(PLATFORM[p].parent),
+                    rpl = rp.sub(la);
+                    rp.total++;
+                    rpl.total++;
+                    virtuals[`result.subs.${p}.virtual`] = PLATFORM[p].parent;
+                    updates[`result.subs.${PLATFORM[p].parent}.total`] = rp.total;
+                    updates[`result.subs.${PLATFORM[p].parent}.subs.${la}.total`] = rpl.total;
+                }
+
                 note.h = util.hash(note.pr);
 
                 if (batch.pushSync(note)) {
@@ -660,10 +718,15 @@ class Pusher extends PusherPopper {
             }
         }
 
-        await this.audience.message.update({$inc: updates}, () => {});
-
-        this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
-        await batch.flush([11000]);
+        if (result.total) {
+            let update = {$inc: updates};
+            if (Object.keys(virtuals).length) {
+                update.$set = virtuals;
+            }
+            await this.audience.message.update(update, () => {});
+            this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
+            await batch.flush([11000]);
+        }
 
         return result;
     }
@@ -686,7 +749,7 @@ class Popper extends PusherPopper {
      * @returns {number} number of records removed
      */
     async clear() {
-        let deleted = await Promise.all(this.audience.message.platforms.map(async p => {
+        let deleted = await Promise.all(this.audience.platformsWithVirtuals().map(async p => {
             let res = await common.db.collection('push').deleteMany({m: this.audience.message._id, p});
             return res.deletedCount;
         }));

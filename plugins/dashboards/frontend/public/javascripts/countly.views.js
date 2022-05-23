@@ -695,6 +695,10 @@
             autoPosition: {
                 type: Boolean,
                 default: false
+            },
+            loading: {
+                type: Boolean,
+                default: true
             }
         },
         components: {

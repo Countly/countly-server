@@ -105,6 +105,12 @@
     .cell > .el-radio {
         overflow: unset;
     }
+
+    table {
+        //Adding this rule to solve the table overflow issue in Safari.
+        //https://github.com/ElemeFE/element/issues/10308#issuecomment-946428051
+        width: 0px;
+    }
 }
 
 .el-radio {

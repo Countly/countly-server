@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise, Map*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
@@ -328,6 +329,10 @@
                 type: String,
                 default: CV.i18n('push-notification.mobile-preview-default-title')
             },
+            subtitle: {
+                type: String,
+                default: ""
+            },
             content: {
                 type: String,
                 default: CV.i18n('push-notification.mobile-preview-default-content'),
@@ -373,6 +378,7 @@
                 if (!this.selectedPlatform) {
                     this.selectedPlatform = this.findInitialSelectedPlatform();
                 }
+                this.$emit('select', this.selectedPlatform);
             }
         },
         methods: {
@@ -398,6 +404,9 @@
             },
             setSelectedPlatform: function(value) {
                 this.selectedPlatform = value;
+            },
+            onPlatformChange: function() {
+                this.$emit('select', this.selectedPlatform);
             }
         },
         components: {
@@ -864,21 +873,21 @@
         },
         computed: {
             pushNotification: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification;
             },
             selectedMessageLocale: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.details.messageLocaleFilter;
+                    return this.$store.state.countlyPushNotificationDetails.messageLocaleFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/details/onSetMessageLocaleFilter", value);
+                    this.$store.dispatch("countlyPushNotificationDetails/onSetMessageLocaleFilter", value);
                 }
             },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedMessageLocale];
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.message[this.selectedMessageLocale];
             },
             localizations: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.localizations;
             },
             previewMessageTitle: function() {
                 if (this.message.title) {
@@ -893,7 +902,7 @@
                 return "";
             },
             previewAndroidMedia: function() {
-                var result = "";
+                var result = "-";
                 if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
                     result = this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL;
                 }
@@ -903,7 +912,7 @@
                 return result;
             },
             previewIOSMedia: function() {
-                var result = "";
+                var result = "-";
                 if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
                     result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
                 }
@@ -914,6 +923,12 @@
             },
             hasAllPlatformMediaOnly: function() {
                 return !this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL && !this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
+            },
+            subtitle: function() {
+                return this.pushNotification.settings[this.PlatformEnum.IOS].subtitle;
+            },
+            selectedMobileMessagePlatform: function() {
+                return this.$store.state.countlyPushNotificationDetails.mobileMessagePlatform;
             }
         },
         methods: {
@@ -951,13 +966,18 @@
         },
         computed: {
             pushNotification: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification;
+                return this.$store.state.countlyPushNotificationDetails.pushNotification;
             },
             previewCohorts: function() {
                 return this.cohorts.map(function(cohortItem) {
                     return cohortItem.name;
                 });
             },
+            previewLocations: function() {
+                return this.locations.map(function(locationItem) {
+                    return locationItem.name;
+                });
+            }
         },
         methods: {
             convertDaysInMsToDays: function(daysInMs) {
@@ -988,7 +1008,8 @@
                 countlyPushNotification.service.fetchCohorts(cohortsList, false)
                     .then(function(cohorts) {
                         self.setCohorts(cohorts);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setCohorts([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
@@ -1003,7 +1024,8 @@
                 countlyPushNotification.service.fetchLocations(this.pushNotification.locations, false)
                     .then(function(locations) {
                         self.setLocations(locations);
-                    }).catch(function() {
+                    }).catch(function(error) {
+                        console.error(error);
                         self.setLocations([]);
                     }).finally(function() {
                         self.isFetchLocationsLoading = false;
@@ -1022,8 +1044,17 @@
     countlyPushNotificationComponent.DetailsErrorsTab = countlyVue.views.create({
         template: '#details-errors-tab',
         computed: {
+            globalError: function() {
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.error;
+            },
             errors: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.errors;
+                if (this.globalError) {
+                    var allErrors = this.$store.state.countlyPushNotificationDetails.pushNotification.errors;
+                    var copyErrors = allErrors.concat([]);
+                    copyErrors.unshift(this.globalError);
+                    return copyErrors;
+                }
+                return this.$store.state.countlyPushNotificationDetails.pushNotification.errors;
             },
         }
     });

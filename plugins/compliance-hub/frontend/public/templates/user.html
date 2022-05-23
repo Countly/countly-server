@@ -2,7 +2,7 @@
     <cly-section class="bu-pt-4 cly-vue-complaince__hub_style_none cly-vue-complaince__hub_style_widthzero">
         <cly-datatable-n :data-source="userTableDataSource" :default-sort="{prop: 'lac', order: 'descending'}">
             <template v-slot="scope">
-                <el-table-column fixed="left" width="365" sortable="custom" prop="_id" label="ID">
+                <el-table-column fixed="left" width="365" sortable="custom" prop="did" label="ID">
                 </el-table-column>
                 <el-table-column width="180" sortable="custom" prop="d" label="DEVICE">
                     <template v-slot="rowScope">
@@ -32,7 +32,7 @@
 
                 </el-table-column>
 
-                <el-table-column width="250" sortable="custom" prop="lac" label="TIME">
+                <el-table-column sortable="custom" prop="lac" label="TIME">
                     <template v-slot="rowScope">
                         {{rowScope.row.time}}
 
@@ -42,7 +42,7 @@
                     <template v-slot="rowScope">
                         <cly-more-options v-if="rowScope.row.hover" size="small">
                             <el-dropdown-item>
-                                <el-link class="bu-ml-1" plain @click="switchToConsentHistory(rowScope.row.uid)"> {{i18n("consent.go-history")}} </el-link>
+                                <el-link v-if="canUserRead" class="bu-ml-1" plain @click="switchToConsentHistory(rowScope.row.uid)"> {{i18n("consent.go-history")}} </el-link>
                             </el-dropdown-item>
                             <el-dropdown-item v-if="!rowScope.row.appUserExport && canUserRead">
                                 <el-link class="bu-ml-1" plain @click="exportUserData(rowScope.row.uid)">

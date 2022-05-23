@@ -1,5 +1,5 @@
 /*global
-   CV, _,  countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent
+   CV, _,  countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
  */
 (function() {
     var FEATURE_NAME = "hooks";
@@ -62,7 +62,9 @@
                     value: "lastTriggerTimestampString",
                     label: CV.i18n('hooks.trigger-last-time'),
                     default: true
-                }]
+                }],
+                tablePersistKey: "hooks_table_" + countlyCommon.ACTIVE_APP_ID,
+
             };
         },
         methods: {
@@ -76,6 +78,7 @@
                     delete data.triggerEffectColumn;
                     delete data.triggerEffectDom;
                     delete data.error_logs;
+                    this.$store.dispatch("countlyHooks/resetTestResult");
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
@@ -437,7 +440,7 @@
                 $.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + '/hook/list',
-                    data: {},
+                    data: {app_id: this.$props.app},
                     dataType: "json",
                     success: function(data) {
                         var hookList = [];
@@ -628,14 +631,22 @@
 
         data: function() {
             var appsSelectorOption = [];
+            var appsSelectorOption2 = [];
             for (var id in countlyGlobal.apps) {
-                appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id, image: "background-image:url(" + countlyGlobal.apps[id].image + ")"});
+                var item = {label: countlyGlobal.apps[id].name, value: id, image: "background-image:url(" + countlyGlobal.apps[id].image + ")"};
+                if (countlyAuth.validateCreate(FEATURE_NAME, countlyGlobal.member, id)) {
+                    appsSelectorOption.push(item);
+                }
+                if (countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, id)) {
+                    appsSelectorOption2.push(item);
+                }
             }
 
             return {
                 title: "",
                 saveButtonLabel: "",
                 appsSelectorOption: appsSelectorOption,
+                appsSelectorOption2: appsSelectorOption2,
                 testClaps: [],
                 newTest: false,
                 description: "",
@@ -712,6 +723,7 @@
         },
         methods: {
             createHook: function() {
+                this.$store.dispatch("countlyHooks/resetTestResult");
                 this.openDrawer("home", hooksPlugin.defaultDrawerConfigValue());
             },
         },
@@ -792,6 +804,7 @@
                     delete data.triggerEffectColumn;
                     delete data.triggerEffectDom;
                     delete data.error_logs;
+                    this.$store.dispatch("countlyHooks/resetTestResult");
                     this.openDrawer("detail", data);
                 }
                 else if (command === "delete-comment") {

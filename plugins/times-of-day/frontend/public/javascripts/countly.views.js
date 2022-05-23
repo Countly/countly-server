@@ -68,18 +68,7 @@
 
     var TimesOfDayWidgetComponent = countlyVue.views.create({
         template: CV.T('/times-of-day/templates/times-of-day-widget.html'),
-        mixins: [countlyVue.mixins.commonFormatters],
-        props: {
-            data: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            }
-        },
-        data: function() {
-            return {};
-        },
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.commonFormatters],
         computed: {
             title: function() {
                 var self = this;

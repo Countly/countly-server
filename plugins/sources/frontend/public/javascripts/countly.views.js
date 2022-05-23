@@ -273,6 +273,13 @@
                 ]
             };
         },
+        watch: {
+            tab: function(newVal) {
+                if (newVal === 'sources') {
+                    window.location.hash = "#/analytics/acquisition";
+                }
+            }
+        },
         created: function() {
             if (this.isWeb) {
                 this.tabs.push({
@@ -281,32 +288,29 @@
                     component: KeywordsTabContainer
                 });
             }
+            if (app.redirectFromHome) {
+                this.tab = 'keywords';
+            }
         }
     });
-
     var SourcesView = new countlyVue.views.BackboneWrapper({
         component: SourcesContainer
     });
 
+
     app.route("/analytics/acquisition", 'acqusition', function() {
+        app.redirectFromHome = false;
+        this.renderWhenReady(SourcesView);
+    });
+
+    app.route("/analytics/acquisition/*search-terms", 'acqusition', function() {
+        app.redirectFromHome = true;
         this.renderWhenReady(SourcesView);
     });
 
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
-        props: {
-            data: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            },
-            isAllowed: {
-                type: Boolean,
-                default: true
-            }
-        },
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
         data: function() {
             return {
                 map: {
@@ -325,10 +329,8 @@
                 if (this.data.title) {
                     return this.data.title;
                 }
-                if (this.data.dashData) {
-                    return CV.i18n("sources.title");
-                }
-                return "";
+
+                return this.i18n("sources.title");
             },
             showBuckets: function() {
                 return false;

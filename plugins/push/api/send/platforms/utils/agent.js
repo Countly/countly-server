@@ -1,4 +1,5 @@
 const http = require('http'),
+    https = require('https'),
     tls = require('tls'),
     log = require('../../../../../../api/utils/log')('push:send:worker:agent');
 
@@ -8,7 +9,7 @@ const http = require('http'),
 /**
  * HTTP Agent for proxy support
  */
-class ProxyAgent extends http.Agent {
+class ProxyAgent extends https.Agent {
     /**
      * Constructor
      * 
@@ -33,11 +34,12 @@ class ProxyAgent extends http.Agent {
         let reqopts = {
             host: this.proxy.host,
             port: this.proxy.port,
+            rejectUnauthorized: this.proxy.auth,
             method: 'CONNECT',
             path: opts.host + ':' + opts.port,
             headers: {
                 host: opts.host
-            }
+            },
         };
 
         if (this.proxy.user && this.proxy.pass) {
@@ -50,6 +52,7 @@ class ProxyAgent extends http.Agent {
             log.d('connected');
             var cts = tls.connect({
                 host: opts.host,
+                rejectUnauthorized: reqopts.rejectUnauthorized,
                 socket: socket
             }, function() {
                 log.d('TLS callback');
@@ -120,6 +123,9 @@ class ProxyAgent extends http.Agent {
         this.createConnection(options, function(err, s) {
             log.d('socket created');
             if (err) {
+                if (!err.message) {
+                    err = new Error(err);
+                }
                 err.message += ' while connecting to HTTP(S) proxy server ' + self.proxy.host + ':' + self.proxy.port;
 
                 if (req) {
@@ -168,6 +174,17 @@ class ProxyAgent extends http.Agent {
 
             callback(s);
         });
+    }
+
+    /**
+     * Return any socket instance
+     * 
+     * @returns {Socket} socket instance
+     */
+    anySocket() {
+        for (let k in this.sockets) {
+            return this.sockets[k];
+        }
     }
 }
 

@@ -556,7 +556,7 @@
                     password: ""
                 },
                 changePassword: {
-                    showDialog: false,
+                    showDialog: this.$route.params && this.$route.params.reset || false,
                     title: CV.i18n("configs.change-password"),
                     saveButtonLabel: CV.i18n("configs.change-password"),
                     cancelButtonLabel: CV.i18n("configs.cancel"),
@@ -1101,10 +1101,16 @@
         this.renderWhenReady(getAccountView());
     });
 
+    app.route('/account-settings/reset', 'account-settings', function() {
+        var view = getAccountView();
+        view.params = {reset: true};
+        this.renderWhenReady(view);
+    });
+
     $(document).ready(function() {
         if (countlyAuth.validateGlobalAdmin()) {
             if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
-                app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80, bottom: 40});
+                app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
             }
         }
         if (countlyAuth.validateGlobalAdmin()) {

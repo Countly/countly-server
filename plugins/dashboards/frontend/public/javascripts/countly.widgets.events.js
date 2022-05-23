@@ -3,19 +3,7 @@
 (function() {
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
-        props: {
-            data: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            },
-            isAllowed: {
-                type: Boolean,
-                default: true
-            }
-        },
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
         data: function() {
             return {
                 selectedBucket: "daily",
@@ -29,16 +17,20 @@
         },
         computed: {
             title: function() {
+                var title = this.i18nM("dashboards.widget-type.events");
+
                 if (this.data.events && this.data.events.length === 1) {
                     var parts = this.data.events[0].split("***");
-                    if (parts.length === 2) {
+                    if (parts.length === 2 && this.data.dashData) {
                         if (this.data.dashData.naming && this.data.dashData.naming[parts[0]] && this.data.dashData.naming[parts[0]][parts[1]]) {
                             parts[1] = this.data.dashData.naming[parts[0]][parts[1]];
                         }
-                        return this.data.title || parts[1];
+
+                        title = parts[1];
                     }
                 }
-                return this.data.title || CV.i18nM("dashboards.widget-type.events");
+
+                return this.data.title || title;
             },
             showBuckets: function() {
                 return false;
@@ -100,10 +92,10 @@
                         for (var k = 0; k < this.data.metrics.length; k++) {
                             if (multiApps) {
                                 if (this.data.metrics.length > 1) {
-                                    name = eventName + " " + (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (this.__allApps[app] && this.__allApps[app].name || "");
+                                    name = eventName + " " + (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (this.__allApps[app] && this.__allApps[app].name || "Unknown");
                                 }
                                 else {
-                                    name = (eventName + " " + this.__allApps[app] && this.__allApps[app].name || "");
+                                    name = (eventName + " " + (this.__allApps[app] && this.__allApps[app].name || "Unknown"));
                                 }
                             }
                             else {
@@ -248,6 +240,9 @@
                     return false;
                 }
             },
+            showPeriod: function() {
+                return true;
+            },
             isMultipleEvents: function() {
                 return this.scope.editedObject.visualization === "time-series";
             }
@@ -283,6 +278,7 @@
                     events: [],
                     metrics: [],
                     breakdowns: [],
+                    custom_period: null
 
                 };
             },

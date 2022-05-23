@@ -21,6 +21,9 @@
             },
             isCode: function() {
                 return countlyGlobal.config && countlyGlobal.config.code;
+            },
+            hasGlobalAdminRights: function() {
+                return countlyAuth.validateGlobalAdmin();
             }
         },
         data: function() {
@@ -41,7 +44,7 @@
             timezones.sort(function(a, b) {
                 return a.label > b.label && 1 || -1;
             });
-            var appList = Object.keys(countlyGlobal.apps).map(function(id) {
+            var appList = Object.keys(countlyGlobal.admin_apps).map(function(id) {
                 countlyGlobal.apps[id].image = "appimages/" + id + ".png";
                 return {
                     label: countlyGlobal.apps[id].name,
@@ -95,7 +98,9 @@
                 loadingDetails: false,
                 appSettings: {},
                 appManagementViews: app.appManagementViews,
-                edited: true
+                edited: true,
+                isAppAdmin: countlyAuth.validateAppAdmin(app_id),
+                isGlobalAdmin: countlyAuth.validateGlobalAdmin()
             };
         },
         watch: {
@@ -385,6 +390,10 @@
             },
             saveApp: function(doc) {
                 doc.app_id = this.selectedApp;
+                if (doc.redirect_url) {
+                    doc.redirect_url = doc.redirect_url.replace(" ", "");
+                }
+
                 delete doc._id;
                 var self = this;
                 $.ajax({
@@ -570,7 +579,7 @@
                     return differences;
                 }
                 else {
-                    ["name", "category", "type", "key", "country", "timezone", "salt", "_id"].forEach(function(currentKey) {
+                    ["name", "category", "type", "key", "country", "timezone", "salt", "_id", "redirect_url"].forEach(function(currentKey) {
                         if (editedObject[currentKey] !== selectedApp[currentKey]) {
                             differences.push(currentKey);
                         }
@@ -634,6 +643,7 @@
                 this.changeKeys = [];
             },
             unpatch: function() {
+                this.loadDetails();
                 this.resetChanges();
                 var pluginsData = countlyPlugins.getConfigsData();
                 if (!countlyGlobal.apps[this.selectedApp].plugins) {
@@ -737,7 +747,7 @@
         });
     };
 
-    if (countlyAuth.validateGlobalAdmin()) {
+    if (countlyAuth.validateAnyAppAdmin()) {
         app.route("/manage/apps", "manage-apps", function() {
             var view = getMainView();
             view.params = {app_id: countlyCommon.ACTIVE_APP_ID};

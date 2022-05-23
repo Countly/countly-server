@@ -11,7 +11,7 @@
 */
 
 (function(countlyAlerts, $) {
-
+    var FEATURE_NAME = "alerts";
     countlyAlerts.RatingOptions = [
         {value: 1, label: jQuery.i18n.map["star.one-star"]},
         {value: 2, label: jQuery.i18n.map["star.two-star"]},
@@ -158,12 +158,14 @@
                 context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
             },
             saveAlert: function(context, alertConfig) {
+                delete alertConfig._canUpdate;
+                delete alertConfig._canDelete;
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/alert/save",
                     data: {
                         "alert_config": JSON.stringify(alertConfig),
-                        "app_id": alertConfig.selectedApps[0],
+                        "app_id": alertConfig.selectedApps[0] === "all" ? countlyCommon.ACTIVE_APP_ID : alertConfig.selectedApps[0],
                     },
                     dataType: "json",
                     success: function() {
@@ -179,7 +181,7 @@
                     url: countlyCommon.API_PARTS.data.w + "/alert/delete",
                     data: {
                         "alertID": options.alertID,
-                        "app_id": options.appid,
+                        "app_id": options.appid === "all" ? countlyCommon.ACTIVE_APP_ID : options.appid,
                     },
                     dataType: "json",
                     success: function() {
@@ -205,6 +207,9 @@
                 });
             },
             saveOnlineUsersAlert: function(context, alertConfig) {
+                delete alertConfig._canUpdate;
+                delete alertConfig._canDelete;
+
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/save",
@@ -327,7 +332,9 @@
                                 type: alertsList[i].alertDataSubType || '',
                                 condtionText: alertsList[i].compareDescribe || '',
                                 enabled: alertsList[i].enabled || false,
-                                createdByUser: alertsList[i].createdByUser || ''
+                                createdByUser: alertsList[i].createdByUser || '',
+                                _canUpdate: countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, alertsList[i].selectedApps[0]),
+                                _canDelete: countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, alertsList[i].selectedApps[0]),
                             });
                             tableData.push(raowData0);
                             /*eslint-enable */
@@ -369,6 +376,8 @@
                                     compareValue2: list[j].minutes,
                                     alertValues: list[j].email,
                                     createdByUser: "-",
+                                    _canUpdate: countlyAuth.validateUpdate(FEATURE_NAME, countlyGlobal.member, list[j].app),
+                                    _canDelete: countlyAuth.validateDelete(FEATURE_NAME, countlyGlobal.member, list[j].app),
                                 });
                                 tableData.push(rowData);
                             }

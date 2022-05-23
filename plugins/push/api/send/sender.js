@@ -22,21 +22,31 @@ class Sender {
      * @returns {Promise} - resolved or rejected
      */
     async prepare() {
-        // this.log.d('preparing sender');
+        this.cfg = await Sender.loadConfig();
+    }
 
-        // loaded configuration
-        this.cfg = {
-            connectionRetries: 3,
-            connectionRetryFactor: 1000,
+    /**
+     * Load plgin configuration from db
+     * 
+     * @returns {object} config object
+     */
+    static async loadConfig() {
+        let cfg = {
             sendAhead: 60000,
+            connection: {
+                retries: 3,
+                retryFactor: 1000,
+            },
             pool: {
+                pushes: 100000,
                 bytes: 100000,
-                concurrency: 5
+                concurrency: 5,
+                pools: 10
             }
         };
 
         // last date this job sends notifications for
-        this.last = Date.now() + this.cfg.sendAhead;
+        this.last = Date.now() + cfg.sendAhead;
 
         let plugins = await common.db.collection('plugins').findOne({});
         if (!plugins) {
@@ -46,23 +56,24 @@ class Sender {
         if (plugins.push) {
             if (plugins.push.sendahead) {
                 try {
-                    this.cfg.sendAhead = parseInt(plugins.push.sendahead);
+                    cfg.sendAhead = parseInt(plugins.push.sendahead, 10);
                 }
                 catch (e) {
                     this.log.w('Invalid sendahead plugin configuration: %j', plugins.push.sendahead);
                 }
             }
             if (plugins.push.proxyhost && plugins.push.proxyport) {
-                this.cfg.proxy = {
+                cfg.proxy = {
                     host: plugins.push.proxyhost,
                     port: plugins.push.proxyport,
-                    user: plugins.push.proxyuser,
-                    pass: plugins.push.proxypass,
+                    user: plugins.push.proxyuser || undefined,
+                    pass: plugins.push.proxypass || undefined,
+                    auth: !(plugins.push.proxyunauthorized || false),
                 };
             }
             if (plugins.push.bytes) {
                 try {
-                    this.cfg.pool.bytes = parseInt(plugins.push.bytes);
+                    cfg.pool.bytes = parseInt(plugins.push.bytes, 10);
                 }
                 catch (e) {
                     this.log.w('Invalid bytes plugin configuration: %j', plugins.push.bytes);
@@ -70,7 +81,7 @@ class Sender {
             }
             if (plugins.push.concurrency) {
                 try {
-                    this.cfg.pool.concurrency = parseInt(plugins.push.concurrency);
+                    cfg.pool.concurrency = parseInt(plugins.push.concurrency, 10);
                 }
                 catch (e) {
                     this.log.w('Invalid concurrency plugin configuration: %j', plugins.push.concurrency);
@@ -78,46 +89,37 @@ class Sender {
             }
         }
 
-        // this.log.d('sender prepared');
-
-        // this.msgs = {}; // {mid: message}
-        // this.msgsPerApp = {}; // {aid: [message, ...]}
-        // await db.collection('messages').find({
-        //     state: State.Queued,
-        //     $or: [
-        //         {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte: this.last}}}},
-        //         {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte: this.last}, end: {$gte: this.last}}}},
-        //         {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte: this.last}, end: {$gte: this.last}}}},
-        //         {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte: this.last}, end: {$gte: this.last}}}},
-        //     ]
-        // }).forEach(m => {
-        //     if (!this.msgsPerApp[m.app]) {
-        //         this.msgsPerApp = [];
-        //     }
-        //     this.msgsPerApp.push(this.msgs[m._id] = new Message(m));
-        // });
+        return cfg;
     }
 
     /**
      * Watch push collection for pushes to send, 
      */
     async watch() {
-        let oid = dbext.oidBlankWithDate(new Date(Date.now() + this.cfg.sendAhead));
-        try {
-            await common.db.collection('push').watch([{$match: {_id: {$lte: oid}}}], {maxAwaitTimeMS: 60000}).next();
-            return true;
-        }
-        catch (e) {
-            if (e.code === 40573) { // not a replica set
-                let count = await common.db.collection('push').count({_id: {$lte: oid}});
-                return count > 0;
-            }
-            else {
-                this.log('error in change stream', e);
-                return false;
-            }
-        }
+        let oid = dbext.oidBlankWithDate(new Date()),
+            count = await common.db.collection('push').count({_id: {$lte: oid}});
+        return count > 0;
     }
+    // /**
+    //  * Watch push collection for pushes to send, 
+    //  */
+    //  async watch() {
+    //     let oid = dbext.oidBlankWithDate(new Date());
+    //     try {
+    //         await common.db.collection('push').watch([{$match: {'fullDocument._id': {$lte: oid}}}], {maxAwaitTimeMS: 10000}).tryNext();
+    //         return true;
+    //     }
+    //     catch (e) {
+    //         if (e.code === 40573) { // not a replica set
+    //             let count = await common.db.collection('push').count({_id: {$lte: oid}});
+    //             return count > 0;
+    //         }
+    //         else {
+    //             this.log('error in change stream', e);
+    //             return false;
+    //         }
+    //     }
+    // }
 
     /**
      * Run the sender:
@@ -127,20 +129,19 @@ class Sender {
      * - handle results
      */
     async send() {
-        this.log.d('sending');
+        this.log.i('>>>>>>>>>> sending');
 
         // data shared across multiple streams
-        let state = new State(),
-            connector = new Connector(this.log, common.db, state, 100000),
-            batcher = new Batcher(this.log, state, 100000),
-            resultor = new Resultor(this.log, common.db, state, 100000);
+        let state = new State(this.cfg),
+            connector = new Connector(this.log, common.db, state),
+            batcher = new Batcher(this.log, state),
+            resultor = new Resultor(this.log, common.db, state);
 
         try {
             // await db.collection('messages').updateMany({_id: {$in: Object.keys(this.msgs)}}, {$set: {state: State.Streaming, status: Status.Sending}});
 
             // stream the pushes
-            let pushes = common.db.collection('push').find({_id: {$lte: dbext.oidBlankWithDate(new Date(Date.now() + this.cfg.sendAhead))}}).stream(),
-                flush,
+            let pushes = common.db.collection('push').find({_id: {$lte: dbext.oidBlankWithDate(new Date(Date.now() + state.cfg.sendAhead))}}).stream(),
                 resolve, reject,
                 promise = new Promise((res, rej) => {
                     resolve = res;
@@ -153,35 +154,52 @@ class Sender {
                 .pipe(resultor, {end: false});
 
             pushes.once('close', () => {
-                flush = connector.flushIt();
+                connector.end();
             });
+            connector.once('close', () => {
+                batcher.end();
+            });
+            // batcher.once('close', () => {
+            //     resultor.end(function() {
+            //         resultor.destroy();
+            //     });
+            // });
             // connector.on('close', () => batcher.closeOnSyn());
 
             // wait for last stream close
-            resultor.on('error', error => {
-                this.log.e('error', error);
-                reject(error);
-            });
-            resultor.on('close', () => {
+            resultor.once('close', () => {
                 this.log.i('close');
+                pools.exit();
                 resolve();
             });
-            resultor.on('data', dt => {
-                this.log.i('data', dt);
-                if (flush === dt.payload) {
-                    resultor.destroy();
-                    batcher.destroy();
-                    connector.destroy();
-                    pools.exit();
-                }
+            pushes.on('error', err => {
+                this.log.e('Streaming error', err);
+                reject(err);
+            });
+            resultor.on('error', error => {
+                this.log.e('Resultor error', error);
+                reject(error);
+            });
+            batcher.on('error', err => {
+                this.log.e('Batching error', err);
+                reject(err);
+            });
+            connector.on('error', err => {
+                this.log.e('Connector error', err);
+                reject(err);
             });
 
             await promise;
 
-            this.log.d('done sending');
+            this.log.i('<<<<<<<<<< done sending');
         }
         catch (e) {
             this.log.e('Error during sending:', e);
+            resultor.destroy();
+            batcher.destroy();
+            connector.destroy();
+            pools.exit();
+
             // await common.db.collection('messages').updateMany({_id: {$in: Object.keys(this.msgs)}}, {$set: {state: State.Queued, status: Status.Scheduled}});
             throw e;
         }

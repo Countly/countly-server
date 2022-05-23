@@ -303,6 +303,82 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
 };
 
 /**
+* Validate user for admin access for specific app by api_key (required parameter for the request). 
+* User must exist, must not be locked, must pass plugin validation (if any).
+* If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
+* Additionally populates params with member information.
+* @param {params} params - {@link params} object
+* @param {function} callback - function to call only if validation passes
+* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @returns {Promise} promise
+*/
+exports.validateAppAdmin = function(params, callback, callbackParam) {
+    return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
+        validate_token_if_exists(params).then(function(result) {
+            var query = "";
+            // then result is owner id
+            if (result !== 'token-not-given' && result !== 'token-invalid') {
+                query = {'_id': common.db.ObjectID(result)};
+            }
+            else {
+                if (!params.qstring.api_key) {
+                    if (result === 'token-invalid') {
+                        common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        return false;
+                    }
+                }
+                params.qstring.api_key = params.qstring.api_key + "";
+                query = {'api_key': params.qstring.api_key};
+            }
+            common.db.collection('members').findOne(query, function(err, member) {
+                if (!member || err) {
+                    common.returnMessage(params, 401, 'User does not exist');
+                    reject('User does not exist');
+                    return false;
+                }
+
+                if (!params.qstring.app_id) {
+                    common.returnMessage(params, 400, 'No app id provided');
+                    return false;
+                }
+
+                if (!member.global_admin && member.permission._.a.indexOf(params.qstring.app_id) === -1) {
+                    common.returnMessage(params, 401, 'User does not have right');
+                    reject('User does not have right');
+                    return false;
+                }
+
+                if (member && member.locked) {
+                    common.returnMessage(params, 401, 'User is locked');
+                    reject('User is locked');
+                    return false;
+                }
+                params.member = member;
+                params.member.auth_token = params.qstring.auth_token || params.req.headers["countly-token"] || "";
+
+                if (plugins.dispatch("/validation/user", {params: params})) {
+                    if (!params.res.finished) {
+                        common.returnMessage(params, 401, 'User does not have right');
+                        reject('User does not have right');
+                    }
+                    return false;
+                }
+                resolve(callbackParam);
+            });
+        },
+        function() {
+            common.returnMessage(params, 401, 'Token is invalid');
+            reject('Token is invalid');
+            return false;
+        });
+    });
+};
+
+/**
 * Basic user validation by api_key (required parameter for the request), mostly used for custom validation afterwards (like multi app access).
 * User must exist, must not be locked and must pass plugin validation (if any).
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.

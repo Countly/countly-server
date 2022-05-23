@@ -57,11 +57,12 @@
             },
             publicDynamicCols: function() {
                 var self = this;
-                return this.controlParams.selectedDynamicCols.map(function(val) {
+                var cols = this.controlParams.selectedDynamicCols.map(function(val) {
                     return self.availableDynamicColsLookup[val];
                 }).filter(function(val) {
                     return !!val;
                 });
+                return cols;
             },
             localSearchedRows: function() {
                 var currentArray = this.rows.slice();
@@ -799,6 +800,10 @@
                 default: false
             },
             hideTop: {
+                type: Boolean,
+                default: false
+            },
+            hideBottom: {
                 type: Boolean,
                 default: false
             },

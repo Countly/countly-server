@@ -18,10 +18,11 @@ module.exports.drillAddPushEvents = ({uid, params, events, event}) => {
                             return rej(er);
                         }
 
-                        pu.msgs.forEach(([_id, ts]) => {
-                            let m = msgs.filter(msg => msg._id.toString() === _id.toString())[0];
+                        for (let id in pu.msgs) {
+                            let ts = parseInt(pu.msgs[id], 10),
+                                m = msgs.filter(msg => msg._id.toString() === id)[0];
                             events.push({
-                                _id: _id,
+                                _id: id,
                                 key: '[CLY]_push_sent',
                                 ts: ts,
                                 cd: ts,
@@ -34,7 +35,7 @@ module.exports.drillAddPushEvents = ({uid, params, events, event}) => {
                                     t: m ? m.tx : undefined,
                                 },
                             });
-                        });
+                        }
 
                         res();
                     });
@@ -70,6 +71,29 @@ module.exports.drillAddPushEvents = ({uid, params, events, event}) => {
     });
 };
 
+/**
+ * Transform drill query to mongo query:
+ * {$in: [mid1, mid2]},
+ * {$nin: [mid1, mid2]},
+ * {mid1: 1, mid2: 1},
+ * 
+ * @param {object|String[]} message query
+ * @returns {object|undefined} mongo query
+ */
+function messageQuery(message) {
+    if (message) {
+        if (message.$in) {
+            return {$or: message.$in.map(m => ({[`msgs.${m}`]: {$exists: true}}))};
+        }
+        else if (message.$nin) {
+            return {$and: message.$nin.map(m => ({[`msgs.${m}`]: {$exists: false}}))};
+        }
+        else if (Object.keys(message).length) {
+            return {$or: message.map(m => ({[`msgs.${m}`]: {$exists: true}}))};
+        }
+    }
+}
+
 module.exports.drillPreprocessQuery = ({query, params}) => {
     if (query) {
         if (query.push) {
@@ -88,43 +112,34 @@ module.exports.drillPreprocessQuery = ({query, params}) => {
         }
 
         if (query.message) {
-            let mid = query.message.$in || query.message.$nin,
-                not = !!query.message.$nin;
+            let q = messageQuery(query.message);
 
-            if (!mid) {
+            if (!q) {
                 return;
             }
 
             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
 
-            if (params && params.qstring.method === 'user_details') {
-                return new Promise((res, rej) => {
-                    try {
-                        mid = mid.map(common.db.ObjectID);
-
-                        let q = {msgs: {$elemMatch: {'0': {$in: mid}}}};
-                        if (not) {
-                            q = {msgs: {$not: q.msgs}};
+            return new Promise((res, rej) => {
+                try {
+                    common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
+                        if (err) {
+                            rej(err);
                         }
-                        common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
-                            if (err) {
-                                rej(err);
-                            }
-                            else {
-                                ids = (ids || []).map(id => id._id);
-                                query.uid = {$in: ids};
-                                log.d(`filtered by message: uids out of ${ids.length}`);
-                                res();
-                            }
-                        });
-                    }
-                    catch (e) {
-                        console.log(e);
-                        rej(e);
-                    }
-                });
-            }
+                        else {
+                            ids = (ids || []).map(id => id._id);
+                            query.uid = {$in: ids};
+                            log.d(`filtered by message: uids out of ${ids.length}`);
+                            res();
+                        }
+                    });
+                }
+                catch (e) {
+                    log.e(e);
+                    rej(e);
+                }
+            });
         }
     }
 };
@@ -134,28 +149,21 @@ module.exports.drillPostprocessUids = ({uids, params}) => new Promise((res, rej)
     if (uids.length && message) {
         log.d(`filtering ${uids.length} uids by message`);
 
-        let q;
-        if (message.$in) {
-            q = {_id: {$in: uids}, msgs: {$elemMatch: {'0': {$in: message.$in.map(common.db.ObjectID)}}}};
+        let q = messageQuery(message);
+        if (q) {
+            q._id = {$in: uids};
+            return common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
+                if (err) {
+                    rej(err);
+                }
+                else {
+                    ids = (ids || []).map(id => id._id);
+                    log.d(`filtered by message: now ${ids.length} uids out of ${uids.length}`);
+                    uids.splice(0, uids.length, ...ids);
+                    res();
+                }
+            });
         }
-        else if (message.$nin) {
-            q = {$and: [{_id: {$in: uids}}, {msgs: {$not: {$elemMatch: {'0': {$in: message.$nin.map(common.db.ObjectID)}}}}}]};
-        }
-        else {
-            q = {_id: {$in: uids}, msgs: {$elemMatch: {'0': {$in: message.map(common.db.ObjectID)}}}};
-        }
-
-        return common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
-            if (err) {
-                rej(err);
-            }
-            else {
-                ids = (ids || []).map(id => id._id);
-                log.d(`filtered by message: now ${ids.length} uids out of ${uids.length}`);
-                uids.splice(0, uids.length, ...ids);
-                res();
-            }
-        });
     }
 
     res();

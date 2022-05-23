@@ -124,18 +124,17 @@ class Splitter extends Base {
         for (let i = 0; i < chunks.length; i++) {
             let {payload, length, frame} = chunks[i];
 
-            this.log.d('do_writev', i, frame, payload);
+            this.log.d('do_writev', i, frame);
             if (!(frame & FRAME.SEND)) {
                 if (frame & FRAME.CMD) {
                     this.push(chunks[i]);
                 }
                 continue;
             }
-            console.log(frame, length, payload);
 
             if (payload.length === 1) {
                 await this.send(payload, length);
-                this.log.d('do_writev sent one', i, frame, payload);
+                this.log.d('do_writev sent one', i, frame);
             }
             else {
                 let p,
@@ -143,24 +142,24 @@ class Splitter extends Base {
                     sent = 0,
                     first = 0,
                     hash = payload[0].h,
-                    mid = payload[0].n;
+                    mid = payload[0].m;
 
                 for (p = first + 1; p < payload.length; p++) {
-                    if (!mid || payload[p].n !== mid || payload[p].h !== hash) {
+                    if (!mid || payload[p].m !== mid || payload[p].h !== hash) {
                         let len = p === payload.length - 1 ? length - sent : (p - first) * one;
-                        await this.send(payload, first, p, len);
-                        this.log.d('do_writev sent', i, frame, payload);
+                        await this.send(payload.slice(first, p), len);
+                        this.log.d('do_writev sent', i, frame);
                         // total += len;
                         sent += len;
 
                         first = p;
                         hash = payload[p].h;
-                        mid = payload[p].n;
+                        mid = payload[p].m;
                     }
                 }
 
                 if (first < payload.length - 1) {
-                    await this.send(payload, first, payload.length, length - sent);
+                    await this.send(payload.slice(first, payload.length), length - sent);
                     // total += length - sent;
                 }
             }

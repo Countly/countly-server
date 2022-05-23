@@ -87,6 +87,40 @@ const FEATURE_NAME = 'alerts';
 
 
 
+    /**
+     * @api {get} /i/alert/save save new create or updated alert data. 
+     * @apiName  saveAlert 
+     * @apiGroup alerts 
+     *
+     * @apiDescription  create or update alert. 
+     * @apiQuery {string} alert_config alert Configuration JSON object string. 
+     *  if contains "_id" will update related alert in DB.
+     * @apiQuery {String} app_id target app id of the alert.  
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *
+     * {
+          "_id": "626270afbf7392a8bfd8c1f3",
+          "alertName": "test",
+          "alertDataType": "metric",
+          "alertDataSubType": "Total users",
+          "alertDataSubType2": null,
+          "compareType": "increased by at least",
+          "compareValue": "2",
+          "selectedApps": [
+            "60a94dce686d3eea363ac325"
+          ],
+          "period": "every 1 hour on the 59th min",
+          "alertBy": "email",
+          "enabled": true,
+          "compareDescribe": "Total users increased by at least 2%",
+          "alertValues": [
+            "a@abc.com"
+          ],
+          "createdBy": "60afbaa84723f369db477fee"
+        }
+     */
     plugins.register("/i/alert/save", function(ob) {
         let params = ob.params;
 
@@ -149,6 +183,24 @@ const FEATURE_NAME = 'alerts';
         return true;
     });
 
+
+
+
+    /**
+     * @api {get} /i/alert/delete delete alert by alert ID 
+     * @apiName deleteAlert 
+     * @apiGroup alerts 
+     *
+     * @apiDescription delete alert by id.
+     * @apiQuery {string} alertID  target alert id from db.
+     * @apiQuery {String} app_id target app id of the alert.  
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *
+     * {"result":"Deleted an alert"}
+     *
+    */
     plugins.register("/i/alert/delete", function(ob) {
         let params = ob.params;
 
@@ -174,6 +226,22 @@ const FEATURE_NAME = 'alerts';
         return true;
     });
 
+    /**
+     * @api {post} /i/alert/status change alert status
+     * @apiName changeAlertStatus 
+     * @apiGroup alerts 
+     *
+     * @apiDescription change alerts status by boolean flag.
+     * @apiQuery {string} JSON string of status object for alerts record want to update.
+     *  for example: {"626270afbf7392a8bfd8c1f3":false, "42dafbf7392a8bfd8c1e1": true}
+     * @apiQuery {String} app_id target app id of the alert.  
+     *
+     * @apiSuccessExample {text} Success-Response:
+     * HTTP/1.1 200 OK
+     *
+     * true
+     *
+    */
     plugins.register("/i/alert/status", function(ob) {
         let params = ob.params;
 
@@ -200,7 +268,53 @@ const FEATURE_NAME = 'alerts';
         return true;
     });
 
-
+    /**
+     * @api {post} /i/alert/list get alert list 
+     * @apiName getAlertList 
+     * @apiGroup alerts 
+     *
+     * @apiDescription get Alert List user can view. 
+     *
+     * @apiQuery {String} app_id target app id of the alert.  
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *
+     * {
+          "alertsList": [
+            {
+              "_id": "626270afbf7392a8bfd8c1f3",
+              "alertName": "test",
+              "alertDataType": "metric",
+              "alertDataSubType": "Total users",
+              "alertDataSubType2": null,
+              "compareType": "increased by at least",
+              "compareValue": "2",
+              "selectedApps": [
+                "60a94dce686d3eea363ac325"
+              ],
+              "period": "every 1 hour on the 59th min",
+              "alertBy": "email",
+              "enabled": false,
+              "compareDescribe": "Total users increased by at least 2%",
+              "alertValues": [
+                "a@abc.com"
+              ],
+              "createdBy": "60afbaa84723f369db477fee",
+              "appNameList": "Mobile Test",
+              "app_id": "60a94dce686d3eea363ac325",
+              "condtionText": "Total users increased by at least 2%",
+              "createdByUser": "abc",
+              "type": "Total users"
+            }
+          ],
+          "count": {
+            "r": 0
+          }
+        }
+     *
+     *
+    */
     plugins.register("/o/alert/list", function(ob) {
         const params = ob.params;
         validateRead(params, FEATURE_NAME, function() {

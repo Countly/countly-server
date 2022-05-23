@@ -73,14 +73,22 @@
                     $.when(countlyReporting.send(scope.row._id)).always(function(sendResult) {
                         overlay.hide();
                         if (sendResult && sendResult.result === "Success") {
-                            CountlyHelpers.alert(jQuery.i18n.map["reports.sent"], "green");
+                            CountlyHelpers.notify({
+                                message: jQuery.i18n.map["reports.sent"],
+                            });
                         }
                         else {
                             if (sendResult && sendResult.result) {
-                                CountlyHelpers.alert(sendResult.result, "red");
+                                CountlyHelpers.notify({
+                                    message: sendResult.result,
+                                    type: "error",
+                                });
                             }
                             else {
-                                CountlyHelpers.alert(jQuery.i18n.map["reports.too-long"], "red");
+                                CountlyHelpers.notify({
+                                    message: sendResult.result,
+                                    type: "warning",
+                                });
                             }
                         }
                     });
@@ -282,8 +290,8 @@
             onCopy: function(newState) {
                 var self = this;
                 this.metricsArray = [];
+                this.reportTypeChange(newState.report_type);
                 if (newState._id !== null) {
-                    this.reportTypeChange(newState.report_type);
                     this.reportFrequencyChange(newState.frequency);
 
                     this.title = jQuery.i18n.map["reports.edit_report_title"];

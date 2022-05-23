@@ -7,13 +7,11 @@ module.exports = {
         log.d('Ensuring messages index');
 
         db.collection('messages').createIndexes([
-            {name: 'main', key: {app: 1, 'trigger.kind': 1, 'trigger.start': 1}},
+            {name: 'main', key: {app: 1, state: 1, 'trigger.kind': 1, 'trigger.start': 1}},
         ]).catch(() => {});
 
         db.collection('push').createIndexes([
-            {name: 'main', key: {_id: 1, a: 1, p: 1, f: 1}},
-            {name: 'message', key: {m: 1}},
-            {name: 'main_unique', key: {m: 1, u: 1, p: 1, f: 1}, unique: true},
+            {name: 'main', key: {_id: 1, m: 1, p: 1, f: 1}},
         ]).catch(() => {});
     }
 };

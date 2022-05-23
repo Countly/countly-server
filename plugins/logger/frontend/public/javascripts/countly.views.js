@@ -88,21 +88,6 @@
                 appId: countlyCommon.ACTIVE_APP_ID,
                 collectionInfo: '',
                 tablePersistKey: 'requestLogsTable_' + countlyCommon.ACTIVE_APP_ID,
-                tableDynamicCols: [{
-                    value: "requests",
-                    label: CV.i18n('logger.requests'),
-                    required: true
-                },
-                {
-                    value: "details",
-                    label: CV.i18n('logger.details'),
-                    default: true
-                },
-                {
-                    value: "info",
-                    label: CV.i18n('logger.info'),
-                    default: true
-                }],
                 defaultFilters: [{
                     value: 'all',
                     label: this.i18n('logger.all')
@@ -189,6 +174,15 @@
             },
             filterChange: function() {
                 this.fetchRequestLogs();
+            },
+            handleTableRowClick: function(row) {
+                // Only expand row if text inside of it are not highlighted
+                if (window.getSelection().toString().length === 0) {
+                    this.$refs.requestLogTable.$refs.elTable.toggleRowExpansion(row);
+                }
+            },
+            tableRowClassName: function() {
+                return 'bu-is-clickable';
             }
         },
         filters: {

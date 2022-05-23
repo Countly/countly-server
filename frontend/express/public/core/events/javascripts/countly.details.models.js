@@ -57,6 +57,12 @@
             var eventData = context.state.allEventsProcessed;
             var tableRows = eventData.chartData.slice();
             var labels = context.state.labels;
+            tableRows.forEach(function(row, i) {
+                row.dateVal = i; //because we get them all always sorted by date
+                if (row.curr_segment && typeof row.curr_segment === 'string') {
+                    row.curr_segment = countlyAllEvents.helpers.decode(row.curr_segment);
+                }
+            });
             if (eventData.tableColumns.indexOf(labels.sum) !== -1 && eventData.tableColumns.indexOf(labels.dur) !== -1) {
                 tableRows.forEach(function(row) {
                     row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : (row.s / row.c);
@@ -101,7 +107,7 @@
                 arrSum.push(eventData.chartData[i].s);
 
                 arrDuration.push(eventData.chartData[i].dur);
-                xAxisData.push(eventData.chartData[i].curr_segment);
+                xAxisData.push(typeof eventData.chartData[i].curr_segment === 'string' ? countlyAllEvents.helpers.decode(eventData.chartData[i].curr_segment) : eventData.chartData[i].curr_segment);
                 if (eventData.chartData[i].c) {
                     count += eventData.chartData[i].c;
                 }
@@ -154,6 +160,9 @@
             }
 
             return obj;
+        },
+        decode: function(str) {
+            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
         },
         getEventLongName: function(eventKey, eventMap) {
             var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");

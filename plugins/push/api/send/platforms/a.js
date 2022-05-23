@@ -1,6 +1,7 @@
 const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'),
     logger = require('../../../../../api/utils/log'),
     { Splitter } = require('./utils/splitter'),
+    { util } = require('../std'),
     { Creds } = require('../data/creds'),
     { threadId } = require('worker_threads'),
     FORGE = require('node-forge');
@@ -12,13 +13,26 @@ const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'
 const key = 'a';
 
 /**
+ * Virtual subplatforms. A virtual platform:
+ *  - has its own token fields, is stored in db separately;
+ *  - has its own compilation part;
+ *  - has its own sending part;
+ *  - has no distinct representation in UI, therefore it's virtual.
+ * 
+ * Huawei push is only available on select Android devices, therefore it doesn't deserve a separate checkbox in UI from users perspective.
+ * Yet notification payload, provider communication and a few other things are different, therefore it's a virtual platform. You can send to huawei directly using
+ * API, but whenever you send to Android you'll also send to huawei if Huawei credentials are set.
+ */
+const virtuals = ['h'];
+
+/**
  * Extract token & field from token_session request
  * 
  * @param {object} qstring request params
  * @returns {string[]|undefined} array of [platform, field, token] if qstring has platform-specific token data, undefined otherwise
  */
 function extractor(qstring) {
-    if (qstring.android_token !== undefined && qstring.test_mode in FIELDS && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
+    if (qstring.android_token !== undefined && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
         return [key, FIELDS['0'], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
     }
 }
@@ -49,11 +63,13 @@ class FCM extends Splitter {
      * @param {string} options.proxy.port proxy port
      * @param {string} options.proxy.user proxy user
      * @param {string} options.proxy.pass proxy pass
+     * @param {string} options.proxy.auth proxy require https correctness
      */
     constructor(log, type, creds, messages, options) {
-        super(log, type, creds, messages, Object.assign(options, {concurrency: 500}));
+        options.pool.concurrency = 500;
+        super(log, type, creds, messages, options);
 
-        this.log = logger(log).sub(`wa-${threadId}`);
+        this.log = logger(log).sub(`${threadId}-a`);
         this.opts = {
             agent: this.agent,
             hostname: 'fcm.googleapis.com',
@@ -84,6 +100,7 @@ class FCM extends Splitter {
                 one = Math.floor(bytes / pushes.length);
 
             content.registration_ids = pushes.map(p => p.t);
+            this.log.d('sending to %j', content.registration_ids);
 
             return this.sendRequest(JSON.stringify(content)).then(resp => {
                 try {
@@ -178,37 +195,6 @@ class FCM extends Splitter {
 
 }
 
-/** 
- * Flatten object using dot notation ({a: {b: 1}} becomes {'a.b': 1})
- * 
- * @param {object} ob - object to flatten
- * @returns {object} flattened object
- */
-function flattenObject(ob) {
-    var toReturn = {};
-
-    for (var i in ob) {
-        if (!Object.prototype.hasOwnProperty.call(ob, i)) {
-            continue;
-        }
-
-        if ((typeof ob[i]) === 'object' && ob[i] !== null) {
-            var flatObject = flattenObject(ob[i]);
-            for (var x in flatObject) {
-                if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
-                    continue;
-                }
-
-                toReturn[i + '.' + x] = flatObject[x];
-            }
-        }
-        else {
-            toReturn[i] = ob[i];
-        }
-    }
-    return toReturn;
-}
-
 /**
  * Create new empty payload for the note object given
  * 
@@ -223,11 +209,13 @@ function empty(msg) {
  * Finish data object after setting all the properties
  * 
  * @param {object} data platform-specific data to finalize
+ * @return {object} resulting object
  */
 function finish(data) {
     if (!data.data.message && !data.data.sound) {
         data.data.data['c.s'] = 'true';
     }
+    return data;
 }
 
 /**
@@ -352,7 +340,7 @@ const map = {
      * @param {Object} data data to be sent
      */
     data: function(template, data) {
-        Object.assign(template.result.data, flattenObject(data));
+        Object.assign(template.result.data, util.flattenObject(data));
     },
 
     /**
@@ -367,6 +355,20 @@ const map = {
             let k = extras[i];
             if (data[k] !== null && data[k] !== undefined) {
                 template.result.data['c.e.' + k] = data[k];
+            }
+        }
+    },
+
+    /**
+     * Sends platform specific fields
+     * 
+     * @param {Template} template template
+     * @param {object} specific platform specific props to be sent
+     */
+    specific: function(template, specific) {
+        if (specific) {
+            if (specific.large_icon) {
+                template.result.data['c.li'] = specific.large_icon;
             }
         }
     },
@@ -401,6 +403,7 @@ const CREDS = {
         static get scheme() {
             return Object.assign(super.scheme, {
                 key: { required: true, type: 'String', 'min-length': 100},
+                hash: { required: false, type: 'String' },
             });
         }
 
@@ -437,6 +440,7 @@ const CREDS = {
 
 module.exports = {
     key: 'a',
+    virtuals,
     title: 'Android',
     extractor,
     guess,

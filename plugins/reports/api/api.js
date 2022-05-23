@@ -3,6 +3,7 @@ var common = require('../../../api/utils/common.js'),
     async = require('async'),
     moment = require('moment-timezone'),
     log = require('../../../api/utils/log')('reports:api'),
+    ejs = require("ejs"),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps, } = require('../../../api/utils/rights.js');
 
@@ -20,6 +21,68 @@ const FEATURE_NAME = 'reports';
         }, 10000);
     });
 
+    /**
+     * @api {get} /o/reports/all Get reports data 
+     * @apiName  getData
+     * @apiGroup reports 
+     *
+     * @apiDescription get user created reports data
+     * @apiQuery {string} app_id app_id is for read permission check. 
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *
+     * [
+          {
+            "_id": "6262742dbf7392a8bfd8c1f6",
+            "title": "test",
+            "report_type": "core",
+            "apps": [
+              "615f0c4120543a8ed03a89b8",
+              "610cea5f6229f9e738d30d0a",
+              "61f3e6ba92aa2af464d9d7c1"
+            ],
+            "emails": [
+              "test@test.com"
+            ],
+            "metrics": {
+              "analytics": true,
+              "crash": true
+            },
+            "metricsArray": [],
+            "frequency": "monthly",
+            "timezone": "Asia/Yerevan",
+            "day": 0,
+            "hour": 2,
+            "minute": 0,
+            "dashboards": null,
+            "date_range": null,
+            "selectedEvents": [],
+            "sendPdf": true,
+            "user": "60afbaa84723f369db477fee",
+            "r_day": 6,
+            "r_hour": 22,
+            "r_minute": 0,
+            "isValid": true
+          }
+        ]
+     */
+
+    /**
+     * @api {get} /o/reports/send trigger sending reports by email now 
+     * @apiName  sendReportNow 
+     * @apiGroup reports 
+     *
+     * @apiDescription trigger email sending for the report. 
+     * @apiQuery {string} args JSON string of an object contains target report "_id"
+     * @apiQuery {string} app_id app_id is for read permission check. 
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *
+     * {"result":"No data to report"}
+     *
+     **/
     plugins.register("/o/reports", function(ob) {
         let paramsInstance = ob.params;
         var paths = ob.paths;
@@ -82,6 +145,68 @@ const FEATURE_NAME = 'reports';
     });
 
 
+    /**
+     * @api {get} /i/reports/create  
+     * @apiName  createReport 
+     * @apiGroup reports 
+     *
+     * @apiDescription create report 
+     * @apiQuery {string} args JSON string of new report object. 
+     * @apiQuery {String} app_id target app id. 
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *
+     * {"result":"Success"}
+     *
+     */
+
+    /**
+     * @api {get} /i/reports/update
+     * @apiName updateReport 
+     * @apiGroup reports 
+     *
+     * @apiDescription update report 
+     * @apiQuery {string} args JSON string of new report object, contains "_id" value. 
+     * @apiQuery {String} app_id target app id. 
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *
+     * {"result":"Success"}
+     */
+
+    /**
+     * @api {post} /i/reports/status change hook status
+     * @apiName changeReportsStatus 
+     * @apiGroup reports 
+     *
+     * @apiDescription change reports status by boolean flag.
+     * @apiQuery {string} JSON string of status object for reports record want to update.
+     *  for example: {"626270afbf7392a8bfd8c1f3":false, "42dafbf7392a8bfd8c1e1": true}
+     * @apiQuery {String} app_id target app id of the alert.  
+     *
+     * @apiSuccessExample {text} Success-Response:
+     * HTTP/1.1 200 OK
+     *
+     * true
+     *
+    */
+
+    /**
+     * @api {get} /i/reports/delete delete report 
+     * @apiName deleteReport 
+     * @apiGroup reports 
+     *
+     * @apiDescription delet report by id 
+     * @apiQuery {string} args JSON string of an object contains the report "_id". 
+     * @apiQuery {String} app_id target app id. 
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     *
+     * {"result":"Success"}
+     */
     plugins.register("/i/reports", function(ob) {
         var paramsInstance = ob.params;
         var paths = ob.paths;
@@ -291,7 +416,12 @@ const FEATURE_NAME = 'reports';
                         }
                         else {
                             if (params && params.res) {
-                                common.returnRaw(params, 200, res.message, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
+                                var html = res.message;
+                                if (result.report_type !== "core") {
+                                    html = ejs.render(res.message.template, res.message.data);
+                                }
+
+                                common.returnRaw(params, 200, html, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
                             }
                         }
                     });

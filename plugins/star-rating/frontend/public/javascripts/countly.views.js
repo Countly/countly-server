@@ -3,10 +3,10 @@
     var FEATURE_NAME = 'star_rating';
 
     /**
- * Replace escaped characters
- * @param {string} val - string to replace
- * @returns {string} - replaced escaped characters
- */
+    * Replace escaped characters
+    * @param {string} val - string to replace
+    * @returns {string} - replaced escaped characters
+    */
     function replaceEscapes(val) {
         return val.replace("&#39;", "'");
     }
@@ -26,6 +26,7 @@
                     trigger_sizes: [{label: 'Small', value: 's'}, {label: 'Medium', value: 'm'}, {label: 'Large', value: 'l'}],
                     trigger_positions: [{value: 'mleft', label: 'Center left', key: 'middle-left'}, { value: 'mright', label: 'Center right', key: 'middle-right' }, { value: 'bleft', label: 'Bottom left', key: 'bottom-left'}, { value: 'bright', label: 'Bottom right', key: 'bottom-right' }]
                 },
+                ratingSymbols: ['emojis', 'thumbs', 'stars'],
                 logoDropzoneOptions: {
                     createImageThumbnails: false,
                     maxFilesize: 2, // MB
@@ -49,7 +50,7 @@
             setRatingItemActive: function(index) {
                 var self = this;
                 this.ratingItem.forEach(function(item) {
-                    if (self.ratingItem.indexOf(item) !== index) {
+                    if (self.ratingItem.indexOf(item) > index) {
                         item.inactive = true;
                         item.active = false;
                     }
@@ -128,6 +129,11 @@
                     return comment;
                 });
             }
+        },
+        data: function() {
+            return {
+                commentsTablePersistKey: 'comments_table_' + countlyCommon.ACTIVE_APP_ID
+            };
         }
     });
 
@@ -135,6 +141,11 @@
         template: CV.T("/star-rating/templates/ratings-table.html"),
         props: {
             ratings: Array
+        },
+        data: function() {
+            return {
+                ratingsTablePersistKey: 'ratings_table_' + countlyCommon.ACTIVE_APP_ID
+            };
         }
     });
 
@@ -155,7 +166,16 @@
         },
         data: function() {
             return {
-                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
+                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
+                persistKey: 'ratingsWidgetsTable_' + countlyCommon.ACTIVE_APP_ID,
+                tableDynamicCols: [
+                    {
+                        value: "target_pages",
+                        label: CV.i18n("feedback.pages"),
+                        default: true,
+                        required: true
+                    }
+                ],
             };
         },
         computed: {
@@ -432,6 +452,11 @@
         ],
         data: function() {
             return {
+                empty: {
+                    title: CV.i18n("ratings.empty.title"),
+                    body: CV.i18n("ratings.empty.body"),
+                    image: "/star-rating/images/star-rating/ratings-empty.svg"
+                },
                 widgets: [],
                 drawerSettings: {
                     createTitle: CV.i18n('feedback.add-widget'),
@@ -647,19 +672,24 @@
                 // reset cumulative data
                 self.cumulativeData = [{
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 0
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 1
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 2
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 3
                 }, {
                     count: 0,
-                    percent: 0
+                    percent: 0,
+                    rating: 4
                 }];
 
                 var ratingArray = [];

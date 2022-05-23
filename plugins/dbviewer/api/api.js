@@ -15,8 +15,57 @@ var spawn = require('child_process').spawn,
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
+
+    /**
+     * @api {get} /o/db Access database
+     * @apiName AccessDB
+     * @apiGroup DBViewer
+     *
+     * @apiDescription Access database, get collections, indexes and data
+     * @apiQuery {String} db Database name
+     * @apiQuery {String} collection Collection name
+     * @apiQuery {String} action Action to perform, "get_indexes" for getting indexes of a collection
+     * @apiQuery {String} document unique identifier for a document, provide this if want to get detail
+     * @apiQuery {Object} aggregation Pipeline object for aggregation
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {
+     *  "limit":4,
+     *  "start":1,
+     *  "end":4,
+     *  "total":4,
+     *  "pages":1,
+     *  "curPage":1,
+     *  "collections":[
+     *    {
+     *      "v":2,
+     *      "key":{"_id":1},
+     *      "name":"_id_",
+     *      "ns":"countly.app_crashes625ef06c0aff525c2e9dc10a"
+     *    },
+     *    {
+     *      "v":2,
+     *      "key":{"group":1},
+     *      "name":"group_1",
+     *      "ns":"countly.app_crashes625ef06c0aff525c2e9dc10a",
+     *      "background":true
+     *    }
+     *  ]
+     * }
+     * 
+     * 
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+     * }
+     */
     plugins.register("/o/db", function(ob) {
         var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
+		if(common.dataviewsDb){
+			dbs['countly_dataviews'] = common.dataviewsDb;
+		}
         var params = ob.params;
         var paths = ob.paths;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;

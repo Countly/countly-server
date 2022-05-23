@@ -125,8 +125,8 @@ class Creds extends Mongoable {
 
             data.key = c.key;
             data.keyid = comps[0];
-            data.team = comps[0];
-            data.bundle = comps[0];
+            data.team = comps[1];
+            data.bundle = comps[2];
         }
         else if (c.type === 'apn_universal') {
             data.cert = c.key;
@@ -134,7 +134,8 @@ class Creds extends Mongoable {
                 data.secret = c.secret;
             }
         }
-        else if (c.type === 'fcm') {
+        else if (c.type === 'fcm' || (c.type === 'gcm' && c.key && c.key.length > 100)) {
+            data.type = 'fcm';
             data.key = c.key;
         }
         else if (c.type === 'hms') {
@@ -146,9 +147,9 @@ class Creds extends Mongoable {
             return null;
         }
 
-        let Cred = require('../platforms').CREDS[c.type];
+        let Cred = require('../platforms').CREDS[data.type];
         if (!Cred) {
-            console.error('Cred type %s is not supported in %s', c.type, c._id);
+            console.error('Cred type %s is not supported in %s', data.type, c._id);
             return null;
         }
         let cred = new Cred(data);

@@ -144,12 +144,6 @@ $(document).ready(function() {
 
     $("#reset-password-form").submit(function() {
         if ($("input[name=password]").val() != $("input[name=again]").val()) {
-            if ($("#message").length > 0) {
-                $("#message").text(jQuery.i18n.map["reset.dont-match"]);
-            }
-            else {
-                $("body").prepend($("<div>").attr("id", "message").text(jQuery.i18n.map["reset.dont-match"]));
-            }
             return false;
         }
     });

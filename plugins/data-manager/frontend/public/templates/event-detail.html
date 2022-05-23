@@ -14,8 +14,8 @@
                                 <span>{{event.status || i18n('data-manager.unplanned') }}</span>
                             </span>
                         </span>
-                        <span v-if="event.is_visible === false" class="cly-vue-data-manager__hidden-icon bu-mx-1"><i class="fa fa-eye-slash"></i></span>
-                        <span v-else class="cly-vue-data-manager__hidden-icon bu-mx-1"><i class="fa fa-eye"></i></ion-icon></span>
+                        <span v-if="event.is_visible === false" class="cly-vue-data-manager__hidden-icon bu-mx-1"><i class="ion-eye-disabled"></i></span>
+                        <span v-else class="cly-vue-data-manager__hidden-icon bu-mx-1"><i class="ion-eye"></i></ion-icon></span>
                         <span v-if="eventTransformationMap && eventTransformationMap[event.name || event.key]" class="cly-vue-data-manager__transform-icon bu-mx-1">
                             <svg width="12px" height="10px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                 <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -38,7 +38,7 @@
         </template>
         <template v-slot:header-right>
             <div class="bu-mt-6">
-                <el-button v-if="canUserUpdate" @click="handleEdit" size="small" icon="el-icon-edit">{{i18n('data-manager.edit-event')}}</el-button>
+                <el-button v-if="canUserUpdate" @click="handleEdit" size="small" icon="ion-edit">{{i18n('data-manager.edit-event')}}</el-button>
                 <cly-more-options v-if="canUserDelete" class="bu-ml-2" size="small" @command="handleCommand($event, event.key)">
                     <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
                 </cly-more-options>
@@ -72,7 +72,7 @@
                             <tr>
                                 <td><span>{{i18n('data-manager.description')}}</span>
                                 </td>
-                                <td>{{event.description}}</td>
+                                <td v-html="event.description || '-' "></td>
                             </tr>
                             <tr>
                                 <td><span>{{i18n('data-manager.category')}}</span>

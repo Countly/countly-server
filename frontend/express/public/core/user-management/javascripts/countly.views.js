@@ -43,7 +43,8 @@
                         label: CV.i18n('management-users.last_login'),
                         default: true
                     }
-                ]
+                ],
+                userManagementPersistKey: 'userManagement_table_' + countlyCommon.ACTIVE_APP_ID
             };
         },
         computed: {
@@ -375,12 +376,6 @@
                         type: 'info'
                     });
                 }
-                if (this.permissionSets[index][type].all) {
-                    CountlyHelpers.notify({
-                        message: CV.i18n('management-users.future-plugins'),
-                        type: 'info'
-                    });
-                }
             },
             handleCommand: function(command, index) {
                 switch (command) {
@@ -435,8 +430,7 @@
                         if (res.result && typeof res.result === "string") {
                             if (self.groupsInput.length) {
                                 var group_id = self.group._id ? [self.group._id] : [];
-                                groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id })
-                                    .then(function() {});
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id }, function() {});
                             }
                             self.$emit('refresh-table');
                             self.group = {};
@@ -491,8 +485,7 @@
                     countlyUserManagement.createUser(submitted, function(res) {
                         if (res.full_name) {
                             if (typeof self.group._id !== "undefined") {
-                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
-                                    .then(function() {});
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] }, function() {});
                             }
                             self.group = {};
                             self.$emit('refresh-table');
@@ -552,7 +545,7 @@
                 // if it's in edit mode
                 if (this.settings.editMode) {
                     // is user member of a group?
-                    if (this.user.group_id) {
+                    if (this.user.group_id && countlyGlobal.plugins.indexOf('groups') > -1) {
                         // set group state
                         this.group = { _id: this.user.group_id[0] };
                         // add initial permission state for cases who unselected group
@@ -678,7 +671,10 @@
                     .then(function() {
                         self.drawerSettings.editMode = true;
                         self.user = countlyUserManagement.getUser();
-                        self.openDrawer("user", countlyUserManagement.getUser());
+                        if (typeof self.user.permission === "undefined") {
+                            self.user.permission = { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] }};
+                        }
+                        self.openDrawer("user", self.user);
                     });
             }
         },

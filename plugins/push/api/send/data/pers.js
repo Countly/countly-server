@@ -1,3 +1,5 @@
+const { dot } = require('../../../../../api/utils/common');
+
 /**
  * Personalize function. A factory to create a function which would apply personalization to a given string.
  * 
@@ -8,7 +10,7 @@
  */
 module.exports = function personalize(string, personaliztion) {
     let parts = [],
-        indicies = personaliztion ? Object.keys(personaliztion).map(parseInt) : [],
+        indicies = personaliztion ? Object.keys(personaliztion).map(n => parseInt(n, 10)) : [],
         i = 0,
         def;
 
@@ -18,7 +20,7 @@ module.exports = function personalize(string, personaliztion) {
         }
         parts.push(function(data) {
             let pers = personaliztion[idx];
-            data = data[pers.k];
+            data = dot(data, pers.k);
             if (pers.c && data) {
                 if (typeof data !== 'string') {
                     data = data + '';

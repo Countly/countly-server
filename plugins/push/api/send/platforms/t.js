@@ -13,7 +13,7 @@ const key = 't';
  * @returns {string} platform key if it looks like request made by this platform
  */
 function guess(userAgent) {
-    return userAgent.includes('Test') && key;
+    return userAgent.includes('TestUserAgent') && key;
 }
 
 /**
@@ -207,12 +207,16 @@ class TestConnection extends Base {
     async connect(messages) {
         if (messages) {
             if (!this.connected) {
-                await this.connect();
+                let ok = await this.connect();
+                if (!ok) {
+                    return ok;
+                }
             }
             if (!this.connected) {
                 throw new Error('Failed to connect');
             }
             messages.forEach(m => this.message(m._id, m));
+            return true;
         }
         else if (this.e_connect) {
             this.log.d('simulating connection error');
@@ -230,37 +234,6 @@ class TestConnection extends Base {
             this.connected = true;
         }
     }
-}
-
-/** 
- * Flatten object using dot notation ({a: {b: 1}} becomes {'a.b': 1})
- * 
- * @param {object} ob - object to flatten
- * @returns {object} flattened object
- */
-function flattenObject(ob) {
-    var toReturn = {};
-
-    for (var i in ob) {
-        if (!Object.prototype.hasOwnProperty.call(ob, i)) {
-            continue;
-        }
-
-        if ((typeof ob[i]) === 'object' && ob[i] !== null) {
-            var flatObject = flattenObject(ob[i]);
-            for (var x in flatObject) {
-                if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
-                    continue;
-                }
-
-                toReturn[i + '.' + x] = flatObject[x];
-            }
-        }
-        else {
-            toReturn[i] = ob[i];
-        }
-    }
-    return toReturn;
 }
 
 /**
@@ -406,7 +379,7 @@ const map = {
      * @param {Object} data data to be sent
      */
     data: function(template, data) {
-        Object.assign(template.result.data, flattenObject(data));
+        Object.assign(template.result.data, util.flattenObject(data));
     },
 
     /**
@@ -468,6 +441,13 @@ function extractor(qstring) {
  */
 const CREDS = {
     'test': class TestCreds extends Creds {
+        /**
+         * constructor
+         */
+        constructor() {
+            super({type: 'test'});
+        }
+
         /**
          * Check credentials for correctness, throw PushError otherwise
          * 

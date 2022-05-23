@@ -176,6 +176,16 @@ class PushError extends Error {
     }
 
     /**
+     * Check that error type is bitwise same as typ
+     * 
+     * @param {int} typ error flag
+     * @returns {boolean} true if the error corresponds to the typ
+     */
+    is(typ) {
+        return (this.type & typ) === typ;
+    }
+
+    /**
      * Convert this error to plain JSON
      * @returns {object} JSON contents of the error
      */
@@ -472,7 +482,7 @@ class ConnectionError extends ProcessingError {
     //  * @returns {string} error description
     //  */
     // toString() {
-    //     return `${this.name}: ${this.connectionErrorMessage}`;
+    //     return `${this.name}: ${this.connectionErrorMessage}, affected ${this.affected.length} / ${this.affectedBytes}, left ${this.left.length} / ${this.leftBytes}`;
     // }
 }
 

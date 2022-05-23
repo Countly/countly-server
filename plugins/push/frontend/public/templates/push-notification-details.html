@@ -2,7 +2,7 @@
     <div v-bind:class="[componentId]">
         <cly-header class="cly-vue-push-notification-details-header">
             <template v-slot:header-left>
-                <h2> {{pushNotification.name }} </h2>
+                <h2> {{pushNotification.name || '-' }} </h2>
             </template>
             <template v-slot:header-top>
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>
@@ -13,14 +13,14 @@
                     <el-button v-if="shouldShowApproveUserCommand(pushNotification.status)" @click="onApprove(pushNotification._id)" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> {{i18n('push-notification.approve')}} </el-button>
                 </template>
                 <cly-more-options size="small" @command="handleUserCommands($event, pushNotification._id)">
+                    <el-dropdown-item v-if="shouldShowStartUserCommand(pushNotification.status)" :command="UserCommandEnum.START">{{i18n('push-notification.start')}} </el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowStopUserCommand(pushNotification.status)" :command="UserCommandEnum.STOP">{{i18n('push-notification.stop')}} </el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowEditUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowEditDraftUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowEditRejectUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_REJECT">{{i18n('push-notification.edit')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowDuplicateUserCommand(pushNotification.status)" :command="UserCommandEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowDeleteUserCommand(pushNotification.status)"  :command="UserCommandEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowResendUserCommand(pushNotification.status)" :command="UserCommandEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowEditDraftUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowEditUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowEditRejectUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_REJECT">{{i18n('push-notification.edit')}}</el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowStartUserCommand(pushNotification.status)" :command="UserCommandEnum.START">{{i18n('push-notification.start')}} </el-dropdown-item>
-                    <el-dropdown-item v-if="shouldShowStopUserCommand(pushNotification.status)" :command="UserCommandEnum.STOP">{{i18n('push-notification.stop')}} </el-dropdown-item>
                 </cly-more-options>
             </template>
             <template v-slot:header-bottom>
@@ -29,10 +29,10 @@
                 </div>
                 <div class="bu-level-item cly-vue-push-notification-details-sub-header">
                     <div class="text-medium color-cool-gray-50"><i class="far fa-clock bu-pr-1"></i></div>
-                    <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.created-by',pushNotification.createdDateTime && formatTimeAgoText(pushNotification.createdDateTime.date),pushNotification.createdBy)}}</span>
+                    <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.created-by',pushNotification.createdAt,pushNotification.createdBy)}}</span>
                 </div>
                 <div class="bu-level-item cly-vue-push-notification-details-sub-header">
-                    <div class="text-medium color-cool-gray-50" style="padding-right: 5.33px;"><i class="ion ion-pricetags"></i></div>
+                    <div class="text-medium color-cool-gray-50" style="padding-right: 5.33px;"><i class="ion-pricetag"></i></div>
                     <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.message-id')}} {{pushNotification._id}} </span>
                 </div>
             </template>
@@ -46,7 +46,7 @@
                         </div>
                     </div>
                     <div class="bu-level-item bu-mr-1">
-                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedPlatformFilter">
+                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedPlatformFilter" :disabled="!platformFilterOptions.length">
                             <el-option v-for="item in platformFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
@@ -56,7 +56,7 @@
                         </div>
                     </div>
                     <div class="bu-level-item bu-mr-1">
-                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedLocaleFilter">
+                        <el-select :arrow="false" :adaptiveLength="true" v-model="selectedLocaleFilter" :disabled="!localeFilterOptions.length">
                             <el-option v-for="item in localeFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
@@ -70,7 +70,7 @@
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> {{i18n('push-notification.users-targeted')}}  <cly-tooltip-icon :tooltip="i18n('push-notification.users-targeted-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{targetedUsers}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.processed || 0}} {{i18n('push-notification.users')}}  </div>
+                                <div class="text-medium"> {{selectedDashboard.processed || 0}} {{i18n('push-notification.users')}}</div>
                             </div>
                         </div>
                     </div>
@@ -80,7 +80,7 @@
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> {{i18n('push-notification.sent-notifications')}}  <cly-tooltip-icon :tooltip="i18n('push-notification.sent-notifications-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{sentPushNotifications}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.sent || 0}} {{i18n('push-notification.users')}}  </div>
+                                <div class="text-medium">{{selectedDashboard.sent || 0}} {{i18n('push-notification.users')}}<span v-if="shouldShowGoToSentUrl" @click="onGoToSent"><i class="cly-icon-btn cly-icon-arrow_forward-circled"></i></span>  </div>
                             </div>
                         </div>
                     </div>
@@ -90,7 +90,7 @@
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> {{i18n('push-notification.clicked-notifications')}} <cly-tooltip-icon :tooltip="i18n('push-notification.clicked-notifications-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{clickedPushNotifications}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.actioned || 0}} {{i18n('push-notification.users')}} </div>
+                                <div class="text-medium"> {{selectedDashboard.actioned || 0}} {{i18n('push-notification.users')}}<span v-if="shouldShowGoToActionedUrl" @click="onGoToActioned"><i class="cly-icon-btn cly-icon-arrow_forward-circled"></i></span> </div>
                             </div>
                         </div>
                     </div>
@@ -100,7 +100,7 @@
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> {{i18n('push-notification.failed')}} <cly-tooltip-icon :tooltip="i18n('push-notification.failed-description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
                                 <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{failedPushNotifications}} % </div>
-                                <div class="text-medium"> {{selectedDashboard.errored || 0}} {{i18n('push-notification.users')}} </div>
+                                <div class="text-medium"> {{selectedDashboard.errored || 0}} {{i18n('push-notification.users')}}<span v-if="shouldShowGoToErroredUrl" @click="onGoToErrored"><i class="cly-icon-btn cly-icon-arrow_forward-circled"></i></span> </div>
                             </div>
                         </div>
                     </div>
@@ -118,7 +118,16 @@
                         </div>
                     </div>
                     <div style="width: 16.166667%; padding-right: 24px">
-                        <mobile-message-preview :title="message.title" :content="message.content" :platforms="pushNotification.platforms" :media="previewMessageMedia" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
+                        <mobile-message-preview 
+                            :title="message.title"
+                            :subtitle="pushNotification.settings[this.PlatformEnum.IOS].subtitle"
+                            :content="message.content" 
+                            :platforms="pushNotification.platforms" 
+                            :media="previewMessageMedia" 
+                            :buttons="message.buttons.map(function(item){return item.label})" 
+                            @select="onMobileMessagePlatformChange"
+                            class="cly-vue-push-notification-details-summary__message-preview"> 
+                        </mobile-message-preview>
                     </div>
                 </div>
             </div>

@@ -282,19 +282,16 @@
                 );
             }
 
-            if (countlyAuth.validateRead('drill')) {
-                if (typeof countlyDrillMeta !== "undefined") {
-                    var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
-                    var getFilterValues = function(segmentationKey) {
-                        return function() {
-                            return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
-                                var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
-                                return {name: name, value: value};
-                            });
-                        };
+            if (countlyAuth.validateRead('drill') && typeof countlyDrillMeta !== "undefined") {
+                var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
+                var getFilterValues = function(segmentationKey) {
+                    return function() {
+                        return crashMeta.getFilterValues("sg." + segmentationKey).map(function(value) {
+                            var name = (segmentationKey === "orientation") ? jQuery.i18n.prop("crashes.filter." + segmentationKey + "." + value) : value;
+                            return {name: name, value: value};
+                        });
                     };
-                }
-
+                };
 
                 crashMeta.initialize().then(function() {
                     if (window.countlyQueryBuilder) {
@@ -609,7 +606,11 @@
         template: "#crashes-crashgroup",
         components: {"crash-stacktrace": CrashStacktraceView, "crash-badge": CrashBadgeView},
         mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.container.dataMixin({
+                externalActionDropdownItems: "crashes/external/actionDropdownItems",
+                externalDialogs: "crashes/external/dialogs"
+            })
         ],
         data: function() {
             return {
@@ -627,7 +628,6 @@
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
-                jiraIntegrationEnabled: countlyGlobal.plugins.includes("crashes-jira"),
                 hasUserPermission: countlyAuth.validateRead('users')
             };
         },
@@ -950,9 +950,13 @@
     });
 
     var getCrashgroupView = function() {
+        var vuex = [{clyModel: countlyCrashes}];
+        var externalVuex = countlyVue.container.tabsVuex(["crashes/external/vuex"]);
+        vuex = vuex.concat(externalVuex);
+
         return new countlyVue.views.BackboneWrapper({
             component: CrashgroupView,
-            vuex: [{clyModel: countlyCrashes}],
+            vuex: vuex,
             templates: [
                 {
                     namespace: "crashes",
