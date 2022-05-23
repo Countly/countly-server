@@ -67,7 +67,8 @@
                 showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1,
                 tableDynamicCols: tableDynamicCols,
                 userManagementPersistKey: 'userManagement_table_' + countlyCommon.ACTIVE_APP_ID,
-                isGroupPluginEnabled: isGroupPluginEnabled
+                isGroupPluginEnabled: isGroupPluginEnabled,
+                isResetting: false
             };
         },
         computed: {
@@ -148,10 +149,19 @@
                 this.reloadFilterValues();
             },
             handleResetFilterClick: function() {
-                this.currentFilter = {
-                    group: null,
-                    role: null,
-                };
+                this.isResetting = true;
+                this.reloadFilterValues();
+                this.isResetting = false;
+            },
+            handleBeforeCopy: function(copied) {
+                if (this.isResetting) {
+                    return {
+                        group: null,
+                        role: null
+                    };
+                }
+
+                return copied;
             },
             reloadFilterValues: function() {
                 this.$refs.filterForm.reload();
