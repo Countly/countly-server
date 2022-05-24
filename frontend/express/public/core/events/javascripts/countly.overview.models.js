@@ -48,24 +48,18 @@
         },
         getBarData: function(sparklines, eventProperty) {
             var obj = {};
-            var grid = {};
-            var yAxis = {};
-            var legend = {};
-            var tooltip = {};
+            var yAxis = {
+                show: true,
+                splitNumber: 1,
+                minInterval: 1,
+                position: "right"
+            };
             var series = [];
             var ob = {};
             ob.name = eventProperty;
             ob.data = sparklines;
             series.push(ob);
-            grid.height = "100px";
-            grid.top = "-25px";
-            yAxis.show = false;
-            legend.show = false;
-            tooltip.show = false;
-            obj.grid = grid;
             obj.yAxis = yAxis;
-            obj.legend = legend;
-            obj.tooltip = tooltip;
             obj.series = series;
             return obj;
         },
