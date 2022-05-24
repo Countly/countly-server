@@ -420,7 +420,6 @@
                     returnObj.xAxis.axisLabel.formatter = function(value) {
                         var ellipsis = "...";
                         var lengthToTruncate = (Math.floor(maxLen / Math.ceil(longestLabelTextW / labelW)) * 2);
-
                         if (value.length > lengthToTruncate) {
                             return value.substr(0, lengthToTruncate - ellipsis.length) + ellipsis;
                         }

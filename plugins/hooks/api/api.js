@@ -320,12 +320,14 @@ plugins.register("/o/hook/list", function(ob) {
             if (paramsInstance.qstring && paramsInstance.qstring.id) {
                 query.$query._id = common.db.ObjectID(paramsInstance.qstring.id);
             }
-            common.db.collection("hooks").find(query).sort({created_at: -1}).toArray(function(err, hooksList) {
+            common.db.collection("hooks").find(query.$query).sort(query.$orderby).toArray(function(err, hooksList) {
                 if (err) {
+                    common.returnOutput(params, []);
                     return log.e('got error in listing hooks: %j', err);
                 }
                 common.db.collection('members').find({}).toArray(function(err2, members) {
                     if (err2) {
+                        common.returnOutput(params, []);
                         return log.e('got error in finding members: %j', err2);
                     }
                     hooksList.forEach((a) => {

@@ -1444,7 +1444,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
             }
 
             if (groupBy === "users") {
-                options.db.collection("app_users" + params.app_id).find(match).count(function(error, appUsersDbResult) {
+                options.db.collection("app_users" + params.app_id).count(match, function(error, appUsersDbResult) {
                     if (!error && appUsersDbResult) {
                         callback([{ "_id": "users", "u": appUsersDbResult }]);
                     }
@@ -2045,8 +2045,8 @@ fetch.alljobs = async function(metric, params) {
 fetch.jobDetails = async function(metric, params) {
     const columns = ["schedule", "next", "finished", "status", "data", "duration"];
     let sort = {};
+    const total = await common.db.collection('jobs').count({ name: params.qstring.name });
     const cursor = common.db.collection('jobs').find({ name: params.qstring.name });
-    const total = await cursor.count();
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
     cursor.sort(sort);
     cursor.skip(Number(params.qstring.iDisplayStart || 0));

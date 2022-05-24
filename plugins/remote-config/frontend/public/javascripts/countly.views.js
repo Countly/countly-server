@@ -1,4 +1,4 @@
-/*global $, _,countlyQueryBuilder, app, moment, countlyGlobal, countlyVue, countlyCommon, countlyAuth, CV, CountlyHelpers, countlyRemoteConfig */
+/*global _,countlyQueryBuilder, app, moment, countlyGlobal, countlyVue, countlyCommon, countlyAuth, CV, CountlyHelpers, countlyRemoteConfig */
 
 (function() {
     var FEATURE_NAME = "remote_config";
@@ -919,8 +919,5 @@
         mainView.params = params;
         this.renderWhenReady(mainView);
     });
-    $(document).ready(function() {
-        //We shouldn't be using $ (jquery)
-        app.addMenu("improve", {code: "remote-config", permission: FEATURE_NAME, url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
-    });
+    app.addMenu("improve", {code: "remote-config", permission: FEATURE_NAME, url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
 })();
