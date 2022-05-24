@@ -594,7 +594,7 @@
                             var template = "";
                             if (params.seriesType === 'pie') {
                                 template += '<div class="bu-is-flex">\
-                                                        <div class="chart-tooltip__bar bu-mr-2" style="background-color: ' + params.color + ';"></div>\
+                                                        <div class="chart-tooltip__bar bu-mr-2 bu-mt-1" style="background-color: ' + params.color + ';"></div>\
                                                         <div>\
                                                             <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
                                                             <div class="text-small"> ' + params.data.name + '</div>\
@@ -605,19 +605,28 @@
                                 return template;
                             }
                             else {
-                                template = "<div class='chart-tooltip'>";
+                                template = "<div class='chart-tooltip" + ((params.length > 10) ? " chart-tooltip__has-scroll" : "") + "'>";
                                 if (params.length > 0) {
                                     template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + params[0].axisValueLabel + "</span></br>";
                                 }
 
+                                params.sort(function(a, b) {
+                                    if (typeof a.value === 'object') {
+                                        return b.value[1] - a.value[1];
+                                    }
+                                    else {
+                                        return b.value - a.value;
+                                    }
+                                });
+
                                 for (var i = 0; i < params.length; i++) {
-                                    template += '<div class="chart-tooltip__body">\
-                                                        <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
+                                    template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
+                                                    <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
-                                                            <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
-                                                        <div class="chart-tooltip__value">\
-                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
-                                                        </div>\
+                                                            <span class="text-small">' + params[i].seriesName + '</span>\
+                                                    </div>\
+                                                    <div class="chart-tooltip__value">\
+                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
