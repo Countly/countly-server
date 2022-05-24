@@ -24,21 +24,21 @@
             label: countlyVue.i18n("taskmanager.last-7days"),
             value: "7days",
             getRange: function() {
-                return [moment().startOf("day").subtract(7, "d"), moment().endOf("day")];
+                return [moment().startOf("day").subtract(6, "d"), moment().endOf("day")];
             }
         },
         "30days": {
             label: countlyVue.i18n("taskmanager.last-30days"),
             value: "30days",
             getRange: function() {
-                return [moment().startOf("day").subtract(30, "d"), moment().endOf("day")];
+                return [moment().startOf("day").subtract(29, "d"), moment().endOf("day")];
             }
         },
         "60days": {
             label: countlyVue.i18n("taskmanager.last-60days"),
             value: "60days",
             getRange: function() {
-                return [moment().startOf("day").subtract(60, "d"), moment().endOf("day")];
+                return [moment().startOf("day").subtract(59, "d"), moment().endOf("day")];
             }
         },
         "day": {
