@@ -1,3 +1,15 @@
+## Version 22.03.10
+
+Fixes:
+- [dashboards] The graph tooltip should overflow from the widget's bounding box
+- [push] Expired credentials case
+- [ui] Pressing enter refreshes the page
+
+Enterprise fixes:
+- [auth_plugins] Remove old UI artifacts
+- [drill] View regeneration from drill data
+- [surveys] Fixed tooltip localization
+
 ## Version 22.03.9
 
 Fixes:
