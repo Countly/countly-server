@@ -193,6 +193,12 @@
 
                 });
             },
+            tableRowClickHandler: function(row) {
+                // Only expand row if text inside of it are not highlighted
+                if (window.getSelection().toString().length === 0) {
+                    this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+                }
+            }
         }
 
     });
