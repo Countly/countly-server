@@ -197,6 +197,19 @@
             },
             highlight: function(content) {
                 return hljs.highlightAuto(content).value;
+            },
+            handleTableRowClick: function(row, _col, event) {
+                // Only expand row if text inside of it are not highlighted
+                var noTextSelected = window.getSelection().toString().length === 0;
+                // Elements like button or input field should not expand row when clicked
+                var targetIsOK = !event.target.closest('button');
+
+                if (noTextSelected && targetIsOK) {
+                    this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+                }
+            },
+            tableRowClassName: function() {
+                return 'bu-is-clickable';
             }
         },
         computed: {
