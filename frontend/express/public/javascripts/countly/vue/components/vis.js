@@ -660,8 +660,6 @@
                         axisLabel: {
                             show: true,
                             color: "#81868D",
-                            showMinLabel: true,
-                            showMaxLabel: true,
                             fontSize: 14
                         },
                         splitLine: {

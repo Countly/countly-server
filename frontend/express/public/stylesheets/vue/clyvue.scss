@@ -4007,3 +4007,9 @@
         max-width: 500px;
     }
 }
+
+.__vuescroll {
+    .__panel {
+        overscroll-behavior: contain;
+    }
+}
