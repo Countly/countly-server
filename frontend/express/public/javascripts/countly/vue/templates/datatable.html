@@ -75,11 +75,11 @@
                                     </cly-checklistbox>
                                 </div>
                             </div>
-                            <div v-if="customExportFileName" class="cly-vue-eldatatable__export--fileExport">
-                            <div  class="bu-my-4 bu-mx-4">
-                                <span class="text-medium"> {{i18n('export.file-name')}} </span>
-                                <el-input v-model="exportFileName"></el-input>
-                            </div>
+                            <div v-if="customExportFileName" :class="{'cly-vue-eldatatable__export--fileExport': exportColumnSelection}">
+                                <div class="bu-my-4 bu-mx-4">
+                                    <p class="bu-mb-1 text-medium"> {{i18n('export.file-name')}} </p>
+                                    <el-input v-model="exportFileName"></el-input>
+                                </div>
                             </div>
                             <slot name="export-config"></slot>
                             <div class="bu-mx-4 bu-mb-4">
