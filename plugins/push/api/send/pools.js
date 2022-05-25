@@ -122,7 +122,6 @@ class Pools {
                 this.pools[id].destroy();
             }
         }
-        this.pools = {};
     }
 }
 

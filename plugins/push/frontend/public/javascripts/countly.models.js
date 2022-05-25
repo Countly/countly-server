@@ -2090,14 +2090,18 @@
         hasApproverPermission: function() {
             return this.isPushNotificationApproverPluginEnabled && countlyGlobal.member.approver;
         },
-        getTypeUrlParameter: function(type) {
+        getFetchAllParameters: function(type, status) {
+            var ret = {};
             if (type === this.TypeEnum.AUTOMATIC) {
-                return {auto: true};
+                ret.auto = true;
             }
             if (type === this.TypeEnum.TRANSACTIONAL) {
-                return {api: true};
+                ret.api = true;
             }
-            return {};
+            if (status !== ALL_FILTER_OPTION_VALUE) {
+                ret.status = status;
+            }
+            return ret;
         },
         fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty) {
             if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
@@ -2192,10 +2196,10 @@
                     });
             });
         },
-        fetchAll: function(type) {
+        fetchAll: function(type, status) {
             var self = this;
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.findAll(self.getTypeUrlParameter(type))
+                countlyPushNotification.api.findAll(self.getFetchAllParameters(type, status))
                     .then(function(response) {
                         try {
                             resolve(countlyPushNotification.mapper.incoming.mapRows(response));
@@ -2698,7 +2702,7 @@
             if (useLoader) {
                 context.dispatch('onSetAreRowsLoading', true);
             }
-            countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType)
+            countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType, context.state.statusFilter)
                 .then(function(response) {
                     context.commit('setRows', response);
                 }).catch(function(error) {
@@ -2774,6 +2778,7 @@
         },
         onSetStatusFilter: function(context, value) {
             context.commit('setStatusFilter', value);
+            context.dispatch('fetchAll', true);
         },
     };
 
