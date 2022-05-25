@@ -34,10 +34,9 @@
                         <template>
                             <div class="bu-mx-4 bu-mt-4">
                                 <p class="bu-mb-4 color-cool-gray-100">{{i18n('export.export-as')}}</p>
-                                <div class="bu-mb-5">
+                                <div  class="cly-vue-eldatatable__export--radio-button bu-mb-5">
                                     <el-radio-group v-model="selectedExportType">
-                                        <el-radio-button v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value"
-                                            style="width: 99px; display: inline-grid;">{{exportType.name}}</el-radio-button>
+                                        <el-radio-button v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value">{{exportType.name}}</el-radio-button>
                                     </el-radio-group>
                                 </div>
                             </div>
@@ -76,9 +75,9 @@
                                     </cly-checklistbox>
                                 </div>
                             </div>
-                            <div v-if="customExportFileName" style="border-top: 1px solid #E2E4E8;">
+                            <div v-if="customExportFileName" class="cly-vue-eldatatable__export--fileExport">
                             <div  class="bu-my-4 bu-mx-4">
-                                <span class="bu-mb-4 text-medium"> {{i18n('export.file-name')}} </span>
+                                <span class="text-medium"> {{i18n('export.file-name')}} </span>
                                 <el-input v-model="exportFileName"></el-input>
                             </div>
                             </div>
