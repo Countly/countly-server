@@ -1,3 +1,33 @@
+## Version 22.03.11
+
+Fixes:
+- [applications] update application details values when dropdown is open
+- [compliance-hub] Full row click to open row
+- [data-manager] Add view regeneration to data manager regenerate drawer
+- [date] Correct period for ndays
+- [dbviewer] Full row click to open row
+- [device_list] updated device list from model to name
+- [geo] Correct user estimation for totals
+- [logger] Full row click to open row
+- [remote-config] Full row click to open row
+- [sessions] Display total users as unique sessions
+- [sources] Full row click to open row
+- [star-rating] Fix displaying chart data
+- [systemlogs] Full row click to open row
+- [ui] Added warning type to the dialog box
+- [ui] Localization fixes
+- [user-management] Added role/group filter
+- [user-management] Display group name in table
+- [user-management] Display group name in table
+
+Enterprise Fixes:
+- [cognito] Add attribution plugin to docker build
+- [drill] Passing period correctly if BYVAL + custom period
+- [drill] Regenerating views from granular data
+- [formulas] Bucket array check
+- [users] Fixed for general cohort based query in export users
+- [users] Fixed user table export only exports filtered users
+
 ## Version 22.03.10
 
 Fixes:
