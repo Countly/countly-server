@@ -20,10 +20,10 @@ function add(from, to) {
  * 
  * @param {object} params params object
  * 
- * @api {get} o/push/dashboard dashboard
+ * @api {get} o/push/dashboard Get dashboard data
  * @apiName dashboard
  * @apiDescription Get push notification dashboard data
- * @apiGroup push
+ * @apiGroup Push Notifications
  *
  * @apiQuery {ObjectID} app_id application id
  *

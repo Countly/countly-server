@@ -69,10 +69,10 @@ async function check(params, push) {
  * 
  * @param {object} params params object
  * 
- * @api {POST} i/push/message/push message/push
+ * @api {POST} i/push/message/push Message / API / add users
  * @apiName message/push
  * @apiDescription Add notifications to previously created message with API trigger
- * @apiGroup push
+ * @apiGroup Push Notifications
  *
  * @apiBody {ObjectID} _id Message ID
  * @apiBody {Date} start Date to send notifications on
@@ -107,14 +107,14 @@ module.exports.apiPush = async params => {
 };
 
 /**
- * Add notification to API message
+ * Remove notifications from API message
  * 
  * @param {object} params params object
  * 
- * @api {POST} i/push/message/pop message/pop
+ * @api {POST} i/push/message/pop Message / API / remove users
  * @apiName message/pop
  * @apiDescription Remove notifications from previously created message with API trigger
- * @apiGroup push
+ * @apiGroup Push Notifications
  *
  * @apiBody {ObjectID} _id Message ID
  * @apiBody {Object} filter User profile filter to limit recipients of this message, must not be empty
