@@ -1,5 +1,5 @@
 const { DoFinish } = require('./do_finish'),
-    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR } = require('../../send'),
+    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR, MAX_RUNS } = require('../../send'),
     { FRAME_NAME } = require('../../send/proto');
 
 /**
@@ -141,9 +141,16 @@ class Connector extends DoFinish {
         else { // all good with credentials, now let's check messages
             if (!message.is(State.Streaming)) {
                 let date = new Date(),
-                    update = {$set: {status: Status.Sending, 'info.startedLast': date}, $bit: {state: {or: State.Streaming}}};
+                    update = {$set: {status: Status.Sending, 'info.startedLast': date}, $bit: {state: {or: State.Streaming}}},
+                    run = message.result.startRun(new Date());
                 if (!message.info.started) {
                     update.$set['info.started'] = date;
+                }
+                if (message.result.lastRuns.length === MAX_RUNS) {
+                    update.$set['result.lastRuns'] = message.result.lastRuns;
+                }
+                else {
+                    update.$push = {'result.lastRuns': run};
                 }
                 message.updateAtomically({_id: message._id, state: message.state}, update)
                     .then(ok => {

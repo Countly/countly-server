@@ -113,6 +113,8 @@ class Resultor extends DoFinish {
 
                         if (msg) {
                             result = msg.result;
+                            result.lastRun.processed++;
+                            result.lastRun.errored++;
                         }
                         else {
                             result = this.noMessage[m] || (this.noMessage[m] = new Result());
@@ -166,6 +168,7 @@ class Resultor extends DoFinish {
 
                     if (m) {
                         result = m.result;
+                        result.lastRun.processed++;
                     }
                     else {
                         result = this.noMessage[m] || (this.noMessage[m] = new Result());
@@ -262,6 +265,13 @@ class Resultor extends DoFinish {
                     result = this.noMessage[m] || (this.noMessage[m] = new Result());
                 }
                 result.processed[m] += mids[mid];
+
+                let run = result.lastRun;
+                if (run) {
+                    run.processed += mids[mid];
+                    run.errored += mids[mid];
+                }
+
                 result.pushError(error);
                 this.data.decSending(mid);
             }
@@ -286,6 +296,8 @@ class Resultor extends DoFinish {
 
         let updates = {},
             promises = this.data.messages().map(m => {
+                m.result.lastRun.ended = new Date();
+
                 if (this.data.isSending(m.id)) {
                     this.log.d('message %s is still in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
                     return m.save();
