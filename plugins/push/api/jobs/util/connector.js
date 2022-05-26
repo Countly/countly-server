@@ -31,6 +31,7 @@ class Connector extends DoFinish {
         this.noApp = new SendError('NoApp', ERROR.DATA_COUNTLY);
         this.noCreds = new SendError('NoCredentials', ERROR.DATA_COUNTLY);
         this.expiredCreds = new SendError('ExpiredCreds', ERROR.CONNECTION_PROVIDER);
+        this.tooLateToSend = new SendError('TooLateToSend', ERROR.DATA_COUNTLY);
         this.noMessage = {}; // {mid: [push, push, push, ...]}
         this.noMessageBytes = 0;
     }
@@ -162,6 +163,11 @@ class Connector extends DoFinish {
                         }
                     }, callback);
             }
+            else if (push._id.getTimestamp().getTime() < Date.now() - 3600000) {
+                this.tooLateToSend.addAffected(push._id, 1);
+                this.do_flush(callback, true);
+                return;
+            }
             else {
                 let creds = app.creds[push.p],
                     pid = pools.id(creds.hash, push.p, push.f);
@@ -203,7 +209,7 @@ class Connector extends DoFinish {
      * @param {boolean} ifNeeded true if we only need to flush `discarded` when it's length is over `limit`
      */
     do_flush(callback, ifNeeded) {
-        let total = this.noMessageBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.expiredCreds.affectedBytes;
+        let total = this.noMessageBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.expiredCreds.affectedBytes + this.tooLateToSend.affectedBytes;
         this.log.d('in connector do_flush, total', total);
 
         if (ifNeeded && !this.flushed && (!total || total < this.limit)) {
@@ -275,6 +281,10 @@ class Connector extends DoFinish {
 
         if (this.expiredCreds.hasAffected) {
             this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.expiredCreds});
+        }
+
+        if (this.tooLateToSend.hasAffected) {
+            this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.tooLateToSend});
         }
 
         this.resetErrors();
