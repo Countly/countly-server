@@ -850,6 +850,34 @@
                     return message;
                 }
                 var messageInHTMLString = message;
+                // var html = '',
+                //     keys = this.sortUserProperties(userPropertiesDto),
+                //     ranges = [-1]
+                //         .concat(keys.map(function(k) {
+                //             return parseInt(k);
+                //         }))
+                //         .concat([-1]);
+
+                // ranges.forEach(function(start, idx) {
+                //     if (idx === ranges.length - 1) {
+                //         return;
+                //     }
+
+                //     var end = ranges[idx + 1];
+                //     if (end === 0) { // prop at index 0
+                //         return;
+                //     }
+                //     else if (start === -1) { // first range
+                //         html += message.substr(0, end) + self.getUserPropertyElement(end, userPropertiesDto[end]);
+                //     }
+                //     else if (end === -1) { // last range
+                //         html += message.substr(start);
+                //     }
+                //     else {
+                //         html += message.substr(start, end - start) + self.getUserPropertyElement(end, userPropertiesDto[end]);
+                //     }
+                // });
+                // return html;
                 var buildMessageLength = 0;
                 var previousIndex = undefined;
                 this.sortUserProperties(userPropertiesDto).forEach(function(currentUserPropertyIndex, index) {
