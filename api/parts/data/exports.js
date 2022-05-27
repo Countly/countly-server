@@ -123,7 +123,7 @@ function preventCSVInjection(val) {
 */
 function fixForXls(data) {
     data = data || {};
-    data.fieds = data.fields || [];
+    data.fields = data.fields || [];
     data.data = data.data || [];
     for (var z = 0; z < data.fields.length; z++) {
         if (data.fields[z].indexOf(".") > -1) {
