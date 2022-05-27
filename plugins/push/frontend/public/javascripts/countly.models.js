@@ -816,7 +816,12 @@
                     return;
                 }
                 Object.keys(userPropertiesDto).forEach(function(key) {
-                    userPropertiesDto[key].l = countlyPushNotification.helper.findUserPropertyLabelByValue(userPropertiesDto[key].k, userProperties);
+                    if (userPropertiesDto[key].t === UserPropertyTypeEnum.API) {
+                        userPropertiesDto[key].l = userPropertiesDto[key].k;
+                    }
+                    else {
+                        userPropertiesDto[key].l = countlyPushNotification.helper.findUserPropertyLabelByValue(userPropertiesDto[key].k, userProperties);
+                    }
                 });
             },
             getUserPropertyElement: function(index, userProperty) {
@@ -841,6 +846,20 @@
             isAdjacentIndex: function(previousIndex, currentIndex) {
                 return (parseInt(currentIndex) - 1) === parseInt(previousIndex);
             },
+            decodeHtml: function(str) {
+                var map =
+                {
+                    '&amp;': '&',
+                    '&lt;': '<',
+                    '&gt;': '>',
+                    '&quot;': '"',
+                    '&#039;': "'",
+                    '&#39;': "'"
+                };
+                return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;|&#39;/g, function(m) {
+                    return map[m];
+                });
+            },
             buildMessageText: function(message, userPropertiesDto) {
                 var self = this;
                 if (!message) {
@@ -849,7 +868,6 @@
                 if (!userPropertiesDto) {
                     return message;
                 }
-                var messageInHTMLString = message;
                 // var html = '',
                 //     keys = this.sortUserProperties(userPropertiesDto),
                 //     ranges = [-1]
@@ -878,6 +896,7 @@
                 //     }
                 // });
                 // return html;
+                var messageInHTMLString = this.decodeHtml(message);
                 var buildMessageLength = 0;
                 var previousIndex = undefined;
                 this.sortUserProperties(userPropertiesDto).forEach(function(currentUserPropertyIndex, index) {
