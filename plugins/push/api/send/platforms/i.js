@@ -559,8 +559,8 @@ class APN extends Base {
         }
         if (this.creds instanceof CREDS.apn_token) {
             this.headersFirst.authorization = this.headersSecond.authorization = this.creds.bearer;
-            this.headersFirst['apns-topic'] = this.headersSecond['apns-topic'] = this.creds._data.bundle;
         }
+        this.headersFirst['apns-topic'] = this.headersSecond['apns-topic'] = this.creds._data.bundle;
     }
 
     /**
