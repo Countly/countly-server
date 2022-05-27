@@ -504,8 +504,10 @@ appsApi.updateAppPlugins = function(params) {
                             common.dbPromise('apps', 'updateOne', {_id: app._id}, {$set: {[`plugins.${k}`]: params.qstring.args[k]}}).then(() => {
                                 plugins.dispatch('/systemlogs', {
                                     params: params,
-                                    action: `plugin_${k}_config_updated`,
+                                    action: `app_config_updated`,
                                     data: {
+                                        config: k,
+                                        app_id: app._id + "",
                                         before: common.dot(app, `plugins.${k}` || {}),
                                         after: params.qstring.args[k]
                                     }
@@ -523,8 +525,10 @@ appsApi.updateAppPlugins = function(params) {
                     common.dbPromise('apps', 'updateOne', {_id: app._id}, {$set: {[`plugins.${k}`]: params.qstring.args[k]}}).then(() => {
                         plugins.dispatch('/systemlogs', {
                             params: params,
-                            action: `plugin_${k}_config_updated`,
+                            action: `app_config_updated`,
                             data: {
+                                config: k,
+                                app_id: app._id + "",
                                 before: common.dot(app, `plugins.${k}` || {}),
                                 after: params.qstring.args[k]
                             }
