@@ -124,7 +124,7 @@ class Splitter extends Base {
         for (let i = 0; i < chunks.length; i++) {
             let {payload, length, frame} = chunks[i];
 
-            this.log.d('do_writev', i, frame, payload);
+            this.log.d('do_writev', i, frame);
             if (!(frame & FRAME.SEND)) {
                 if (frame & FRAME.CMD) {
                     this.push(chunks[i]);
@@ -134,7 +134,7 @@ class Splitter extends Base {
 
             if (payload.length === 1) {
                 await this.send(payload, length);
-                this.log.d('do_writev sent one', i, frame, payload);
+                this.log.d('do_writev sent one', i, frame);
             }
             else {
                 let p,
@@ -148,7 +148,7 @@ class Splitter extends Base {
                     if (!mid || payload[p].m !== mid || payload[p].h !== hash) {
                         let len = p === payload.length - 1 ? length - sent : (p - first) * one;
                         await this.send(payload.slice(first, p), len);
-                        this.log.d('do_writev sent', i, frame, payload);
+                        this.log.d('do_writev sent', i, frame);
                         // total += len;
                         sent += len;
 

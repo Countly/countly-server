@@ -1,4 +1,6 @@
 {
+    "KFTRWI (3GB)":"Fire HD 10 (2021, 3GB)",
+    "KFTRPWI (4GB)":"Fire HD 10 (2021, 4GB)",
     "KFONWI":"Fire HD 8 (2020)",
     "KFMAWI":"Fire HD 10 (2019)",
     "KFMUWI":"Fire 7 (2019)",
@@ -34,7 +36,14 @@
     "AFTMM":"Fire TV Stick 4K",
     "AFTSSS":"Fire TV Stick (Gen 3)",
     "AFTSS":"Fire TV Stick Lite (Gen 1)",
-    "AFTDCT31":"Fire TV (Toshiba 4K UHD 2020)",
+    "AFTKA":"Fire TV Stick 4K Max",
+    "AFTMON001":"Funai 4K - Fire TV (2022)",
+    "AFTJULI1":"JVC 4K - Fire TV (2021)",
+    "AFTANNA0":"ok 4K - Fire TV (2021)",
+    "AFTHA003":"Toshiba 4K Far-field UHD",
+    "AFTHA002":"Toshiba V35 Series LED FHD",
+    "AFTTIFF43":"Fire TV Omni Series (2021)",
+    "AFTTI43":"Fire TV 4-Series (2021)",
     "AFTDCT31":"Fire TV (Insignia 4K UHD 2020)",
     "AFTLE":"Fire TV (Onida HD 2019)",
     "AFTRS":"Fire TV (Element 4K 2017)",
@@ -45,5 +54,6 @@
     "AFTSO001":"Fire TV (JVC 4K 2019)",
     "AFTEU011":"Fire TV (Grundig Vision 6 HD 2019)",
     "AFTEU014":"Fire TV (Grundig Vision 7 4K 2019)",
-    "AFTEUFF014":"Fire TV (Grundig OLED 4K 2019)"
+    "AFTEUFF014":"Fire TV (Grundig OLED 4K 2019)",
+    "AFTLFT962X3":"Stellantis"
 }

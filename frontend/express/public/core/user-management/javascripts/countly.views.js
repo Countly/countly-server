@@ -1,71 +1,114 @@
 /*global countlyAuth, app, countlyGlobal, $, groupsModel, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
+    var isGroupPluginEnabled = countlyGlobal.plugins.includes("groups");
 
     var DataTable = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/data-table.html"),
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
             rows: Array,
-            loading: Boolean
+            loading: Boolean,
+            groupMap: Object
         },
         data: function() {
+            var roleMap = {};
+            // 'value' is used as map key here to make it easier to convert currentFilter into filterSummary
+            roleMap.global_admin = CV.i18n("management-users.global-admin");
+            roleMap.admin = CV.i18n("management-users.admin");
+            roleMap.user = CV.i18n("management-users.user");
+            var tableDynamicCols = [
+                {
+                    value: "full_name",
+                    label: CV.i18n('management-users.user'),
+                    default: true
+                },
+                {
+                    value: "username",
+                    label: CV.i18n('management-users.username'),
+                    default: false
+                },
+                {
+                    value: "role",
+                    label: CV.i18n('management-users.role'),
+                    default: true
+                },
+                {
+                    value: "email",
+                    label: CV.i18n('management-users.email'),
+                    default: true
+                },
+                {
+                    value: "group",
+                    label: CV.i18n('management-users.group'),
+                    default: true
+                },
+                {
+                    value: "created_at",
+                    label: CV.i18n('management-users.created'),
+                    default: false
+                },
+                {
+                    value: "last_login",
+                    label: CV.i18n('management-users.last_login'),
+                    default: true
+                }
+            ];
+
+            if (!isGroupPluginEnabled) {
+                tableDynamicCols.splice(4, 1);
+            }
+
             return {
-                tableFilter: null,
+                currentFilter: {
+                    role: null,
+                    group: null
+                },
+                roleMap: roleMap,
                 showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1,
-                tableDynamicCols: [
-                    {
-                        value: "full_name",
-                        label: CV.i18n('management-users.user'),
-                        default: true
-                    },
-                    {
-                        value: "username",
-                        label: CV.i18n('management-users.username'),
-                        default: true
-                    },
-                    {
-                        value: "email",
-                        label: CV.i18n('management-users.email'),
-                        default: true
-                    },
-                    {
-                        value: "role",
-                        label: CV.i18n('management-users.role'),
-                        default: true
-                    },
-                    {
-                        value: "created_at",
-                        label: CV.i18n('management-users.created'),
-                        default: true
-                    },
-                    {
-                        value: "last_login",
-                        label: CV.i18n('management-users.last_login'),
-                        default: true
-                    }
-                ],
-                userManagementPersistKey: 'userManagement_table_' + countlyCommon.ACTIVE_APP_ID
+                tableDynamicCols: tableDynamicCols,
+                userManagementPersistKey: 'userManagement_table_' + countlyCommon.ACTIVE_APP_ID,
+                isGroupPluginEnabled: isGroupPluginEnabled,
+                isResetting: false
             };
         },
         computed: {
             filteredRows: function() {
-                var self = this;
-                if (this.tableFilter) {
+                if (this.currentFilter.group || this.currentFilter.role) {
+                    var currentGroup = this.currentFilter.group;
+                    var currentRole = this.currentFilter.role;
+
                     return this.rows.filter(function(row) {
-                        if (self.tableFilter === 'global_admin') {
-                            return row.global_admin;
+                        var filterGroup = true;
+                        var filterRole = true;
+
+                        if (currentGroup) {
+                            filterGroup = row.group_id && (row.group_id[0] === currentGroup);
                         }
-                        else if (self.tableFilter === 'admin') {
-                            return !row.global_admin && (row.permission && row.permission._.a.length > 0);
+
+                        if (currentRole === "global_admin") {
+                            filterRole = row.global_admin;
                         }
-                        else {
-                            return !row.global_admin && (row.permission && row.permission._.a.length === 0);
+                        else if (currentRole === "admin") {
+                            filterRole = !row.global_admin && (row.permission && row.permission._.a.length > 0);
                         }
+                        else if (currentRole === "user") {
+                            filterRole = !row.global_admin && (row.permission && row.permission._.a.length === 0);
+                        }
+
+                        return filterGroup && filterRole;
                     });
                 }
                 else {
                     return this.rows;
                 }
+            },
+            filterSummary: function() {
+                var summary = [
+                    this.roleMap[this.currentFilter.role] || CV.i18n("management-users.all-roles"),
+                    this.groupMap[this.currentFilter.group] || CV.i18n("management-users.all-groups")
+                ];
+
+                return summary.join(", ");
             }
         },
         methods: {
@@ -96,6 +139,32 @@
                     window.location.hash = "#/manage/logs/systemlogs/query/" + JSON.stringify({"user_id": index});
                     break;
                 }
+            },
+            handleSubmitFilter: function(newFilter) {
+                this.currentFilter = newFilter;
+                this.$refs.filterDropdown.doClose();
+            },
+            handleCancelFilterClick: function() {
+                this.$refs.filterDropdown.doClose();
+                this.reloadFilterValues();
+            },
+            handleResetFilterClick: function() {
+                this.isResetting = true;
+                this.reloadFilterValues();
+                this.isResetting = false;
+            },
+            handleBeforeCopy: function(copied) {
+                if (this.isResetting) {
+                    return {
+                        group: null,
+                        role: null
+                    };
+                }
+
+                return copied;
+            },
+            reloadFilterValues: function() {
+                this.$refs.filterForm.reload();
             }
         }
     });
@@ -648,6 +717,17 @@
                 loading: true
             };
         },
+        computed: {
+            groupMap: function() {
+                var map = {};
+
+                groupsModel.data().forEach(function(group) {
+                    map[group._id] = group.name;
+                });
+
+                return map;
+            }
+        },
         methods: {
             refresh: function() {
                 var self = this;
@@ -655,9 +735,7 @@
                     .then(function() {
                         var usersObj = countlyUserManagement.getUsers();
                         self.users = [];
-                        for (var user in usersObj) {
-                            self.users.push(usersObj[user]);
-                        }
+                        self.fillOutUsers(usersObj);
                     })
                     .catch(function() {});
             },
@@ -676,15 +754,24 @@
                         }
                         self.openDrawer("user", self.user);
                     });
+            },
+            fillOutUsers: function(usersObj) {
+                for (var userId in usersObj) {
+                    var user = usersObj[userId];
+
+                    if (user.group_id) {
+                        user.groupName = this.groupMap[user.group_id[0]];
+                    }
+
+                    this.users.push(user);
+                }
             }
         },
         mounted: function() {
             var self = this;
             $.when(countlyUserManagement.fetchUsers(), countlyUserManagement.fetchFeatures()).then(function() {
                 var usersObj = countlyUserManagement.getUsers();
-                for (var user in usersObj) {
-                    self.users.push(usersObj[user]);
-                }
+                self.fillOutUsers(usersObj);
                 self.loading = false;
                 self.features = countlyUserManagement.getFeatures().sort();
             });

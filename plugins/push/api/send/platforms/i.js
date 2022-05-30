@@ -81,6 +81,7 @@ const CREDS = {
                 notAfter: { required: false, type: 'Date' },
                 topics: { required: false, type: 'String[]' },
                 bundle: { required: false, type: 'String' },
+                hash: { required: false, type: 'String' },
             });
         }
 
@@ -262,6 +263,7 @@ const CREDS = {
                 bundle: { required: true, type: 'String' },
                 team: { required: true, type: 'String' },
                 fileType: { required: false, type: 'String' },
+                hash: { required: false, type: 'String' },
             });
         }
 
@@ -523,7 +525,7 @@ class APN extends Base {
      */
     constructor(log, type, creds, messages, options) {
         super(log, type, creds, messages, options);
-        this.log = logger(log).sub(`wi-${threadId}`);
+        this.log = logger(log).sub(`${threadId}-i`);
 
         this.templates = {};
         this.results = [];
@@ -582,7 +584,14 @@ class APN extends Base {
      */
     send(pushesData, length) {
         if (!this.session) {
-            return this.connect().then(this.send.bind(this, pushesData, length));
+            return this.connect().then(ok => {
+                if (ok) {
+                    return this.send(pushesData, length);
+                }
+                else {
+                    return ok;
+                }
+            });
         }
         return this.with_retries(pushesData, length, (pushes, bytes, attempt) => new Promise((resolve, reject) => {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
@@ -636,6 +645,10 @@ class APN extends Base {
                     nonRecoverableError.addLeft(p._id, one);
                     streamDone();
                     return;
+                }
+
+                if (!this.messages[p.m]) {
+                    this.log.e('No message %s', p.m);
                 }
 
                 let content = this.template(p.m).compile(p),
@@ -729,12 +742,16 @@ class APN extends Base {
     async connect(messages) {
         if (messages) {
             if (!this.session) {
-                await this.connect();
+                let ok = await this.connect();
+                if (!ok) {
+                    return ok;
+                }
             }
             if (!this.session) {
                 throw new Error('Failed to connect');
             }
             messages.forEach(m => this.message(m._id, m));
+            return true;
         }
         else {
             return new Promise((resolve, reject) => {

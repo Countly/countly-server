@@ -367,7 +367,7 @@ async function validate(params, skipMpl, skipAppsPlatforms) {
  * @returns {Promise} response promise
  */
 async function legacyPrepare(params) {
-    if (params.qstring.args) {
+    if (typeof params.qstring.args === 'string') {
         try {
             params.qstring.args = JSON.parse(params.qstring.args);
         }
@@ -400,7 +400,7 @@ async function legacyPrepare(params) {
  * @returns {Promise} response promise
  */
 async function legacyCreate(params) {
-    if (params.qstring.args) {
+    if (typeof params.qstring.args === 'string') {
         try {
             params.qstring.args = JSON.parse(params.qstring.args);
         }

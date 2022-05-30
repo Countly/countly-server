@@ -54,7 +54,7 @@
     "formidable": "1.2.2",
     "fs-extra": "^10.0.0",
     "geoip-lite": "1.4.4",
-    "grunt": "1.5.2",
+    "grunt": "1.5.3",
     "grunt-cli": "1.4.3",
     "grunt-contrib-concat": "2.0.0",
     "grunt-contrib-copy": "1.0.0",
@@ -67,7 +67,7 @@
     "json2csv": "5.0.7",
     "json2xls": "^0.1.2",
     "later": "^1.2.0",
-    "lodash": "^4.17.15",
+    "lodash": "4.17.21",
     "lru-cache": "^5.1.1",
     "mcc-mnc-list": "1.1.8",
     "method-override": "3.0.0",
@@ -87,7 +87,7 @@
     "request": "2.88.2",
     "sass": "1.34.0",
     "uglify-js": "3.15.3",
-    "underscore": "1.13.2",
+    "underscore": "1.12.1",
     "yamljs": "0.3.0"
   },
   "jshintConfig": {

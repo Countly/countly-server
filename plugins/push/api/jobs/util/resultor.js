@@ -1,6 +1,6 @@
 const { FRAME, FRAME_NAME } = require('../../send/proto'),
     { DoFinish } = require('./do_finish'),
-    { ERROR, TriggerKind, State, Status, PushError } = require('../../send/data');
+    { ERROR, TriggerKind, State, Status, PushError, Result } = require('../../send/data');
 
 /**
  * Stream responsible for handling sending results:
@@ -30,6 +30,7 @@ class Resultor extends DoFinish {
         this.sentUsers = {}; // {aid: {mid: {users: [uid, uid, uid], 'a': 0, 'i': 2132}}}
         this.removeTokens = {}; // {aid: {field: [uid, uid, uid]}}
         this.errors = {}; // {mid: {platform: {InvalidToken: 0}}}
+        this.noMessage = {}; // {mid: Result}
         this.fatalErrors = {}; // {mid: []}
         this.toDelete = []; // [push id, push id, ...]
         this.count = 0; // number of results cached
@@ -107,17 +108,27 @@ class Resultor extends DoFinish {
                         }
                         let {p, m, pr} = this.data.pushes[id],
                             msg = this.data.message(m),
-                            rp = msg.result.sub(p, undefined, PLATFORM[p].parent),
-                            rl = rp.sub(pr.la || 'default');
-                        msg.result.processed++;
-                        msg.result.recordError(results.message, 1);
+                            result,
+                            rp, rl;
+
+                        if (msg) {
+                            result = msg.result;
+                        }
+                        else {
+                            result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                        }
+                        rp = result.sub(p, undefined, PLATFORM[p].parent);
+                        rl = rp.sub(pr.la || 'default');
+
+                        result.processed++;
+                        result.recordError(results.message, 1);
                         rp.recordError(results.message, 1);
                         rp.processed++;
                         rl.recordError(results.message, 1);
                         rl.processed++;
 
                         if (PLATFORM[p].parent) {
-                            rp = msg.result.sub(PLATFORM[p].parent),
+                            rp = result.sub(PLATFORM[p].parent),
                             rl = rp.sub(pr.la || 'default');
                             rp.recordError(results.message, 1);
                             rp.processed++;
@@ -150,19 +161,28 @@ class Resultor extends DoFinish {
 
                     this.data.decSending(p.m);
 
-                    let m = this.data.message(p.m);
-                    m.result.sent++;
-                    m.result.processed++;
+                    let m = this.data.message(p.m),
+                        result, rp, rl;
 
-                    let rp = m.result.sub(p.p, undefined, PLATFORM[p.p].parent),
-                        rl = rp.sub(p.pr.la || 'default');
+                    if (m) {
+                        result = m.result;
+                    }
+                    else {
+                        result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                    }
+                    rp = result.sub(p.p, undefined, PLATFORM[p.p].parent);
+                    rl = rp.sub(p.pr.la || 'default');
+
+                    result.sent++;
+                    result.processed++;
+
                     rp.sent++;
                     rp.processed++;
                     rl.sent++;
                     rl.processed++;
 
                     if (PLATFORM[p.p].parent) {
-                        rp = m.result.sub(PLATFORM[p.p].parent),
+                        rp = result.sub(PLATFORM[p.p].parent),
                         rl = rp.sub(p.pr.la || 'default');
                         rp.sent++;
                         rp.processed++;
@@ -201,19 +221,28 @@ class Resultor extends DoFinish {
                     if (id < 0) {
                         return;
                     }
-                    let {m, p, pr} = this.data.pushes[id];
+                    let {m, p, pr} = this.data.pushes[id],
+                        result, rp, rl;
                     mids[m] = (mids[m] || 0) + 1;
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
 
                     m = this.data.message(m);
-                    let rp = m.result.sub(p, undefined, PLATFORM[p].parent),
-                        rl = rp.sub(pr.la || 'default');
+                    if (m) {
+                        result = m.result;
+                    }
+                    else {
+                        result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                    }
+
+                    rp = result.sub(p, undefined, PLATFORM[p].parent);
+                    rl = rp.sub(pr.la || 'default');
+
                     rp.processed++;
                     rl.processed++;
 
                     if (PLATFORM[p].parent) {
-                        rp = m.result.sub(PLATFORM[p].parent),
+                        rp = result.sub(PLATFORM[p].parent),
                         rl = rp.sub(pr.la || 'default');
                         rp.processed++;
                         rl.processed++;
@@ -224,9 +253,16 @@ class Resultor extends DoFinish {
             });
 
             for (let mid in mids) {
-                let m = this.data.message(mid);
-                m.result.processed[m] += mids[mid];
-                m.result.pushError(error);
+                let m = this.data.message(mid),
+                    result;
+                if (m) {
+                    result = m.result;
+                }
+                else {
+                    result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                }
+                result.processed[m] += mids[mid];
+                result.pushError(error);
                 this.data.decSending(mid);
             }
         }
@@ -300,7 +336,13 @@ class Resultor extends DoFinish {
                     this.log.d('message %s is in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
                     return m.save();
                 }
-            });
+            }).concat(Object.keys(this.noMessage).map(mid => {
+                this.log.e('Message %s doesn\'t exist, ignoring result %j', mid, this.noMessage[mid]);
+
+                let count = this.noMessage[mid].processed;
+                delete this.noMessage[mid];
+                return this.db.updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
+            }));
 
         if (this.toDelete.length) {
             promises.push(this.db.collection('push').deleteMany({_id: {$in: this.toDelete.map(this.db.ObjectID)}}));
@@ -379,7 +421,7 @@ class Resultor extends DoFinish {
                         updateMany: {
                             filter: {_id: {$in: this.sentUsers[aid][mid].users}},
                             update: {
-                                $set: {
+                                $addToSet: {
                                     ['msgs.' + mid]: now
                                 }
                             }

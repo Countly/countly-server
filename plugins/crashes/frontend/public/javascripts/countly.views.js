@@ -1,7 +1,7 @@
 /* eslint-disable no-unreachable */
 /* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV, Promise, countlyAuth */
 
-(function() {
+(function () {
     var groupId, crashId;
     var FEATURE_NAME = "crashes";
 
@@ -13,14 +13,13 @@
             negateTrend: { type: Boolean, default: false },
         },
         computed: {
-            colorClass: function() {
+            colorClass: function () {
                 if (
                     typeof this.$props.data !== "undefined" &&
                     this.$props.data.trend === "n"
                 ) {
                     return "neutral";
-                }
-                else {
+                } else {
                     return typeof this.$props.data !== "undefined" &&
                         this.$props.negateTrend ^
                             (this.$props.data.trend === "u")
@@ -28,14 +27,13 @@
                         : "down";
                 }
             },
-            iconClass: function() {
+            iconClass: function () {
                 if (
                     typeof this.$props.data !== "undefined" &&
                     this.$props.data.trend === "n"
                 ) {
                     return "minus-round";
-                }
-                else {
+                } else {
                     return typeof this.$props.data !== "undefined" &&
                         this.$props.data.trend === "u"
                         ? "arrow-up-c"
@@ -61,7 +59,7 @@
             "crash-badge": CrashBadgeView,
         },
         mixins: [countlyVue.mixins.auth(FEATURE_NAME)],
-        data: function() {
+        data: function () {
             var filterProperties = [];
             if (window.countlyQueryBuilder) {
                 filterProperties.push(
@@ -70,7 +68,7 @@
                         name: "Fatality",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 { name: "Fatal", value: false },
                                 { name: "Non-fatal", value: true },
@@ -82,7 +80,7 @@
                         name: "Visibility",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 { name: "Hidden", value: true },
                                 { name: "Shown", value: false },
@@ -94,7 +92,7 @@
                         name: "Viewed",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 {
                                     name: jQuery.i18n.prop(
@@ -116,7 +114,7 @@
                         name: "Reoccured",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 {
                                     name: jQuery.i18n.prop(
@@ -138,7 +136,7 @@
                         name: "Resolved",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 {
                                     name: jQuery.i18n.prop(
@@ -160,7 +158,7 @@
                         name: "Resolving",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 {
                                     name: jQuery.i18n.prop(
@@ -224,7 +222,7 @@
                         name: "Background",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 {
                                     name: jQuery.i18n.prop(
@@ -246,7 +244,7 @@
                         name: "Online",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 {
                                     name: jQuery.i18n.prop(
@@ -268,7 +266,7 @@
                         name: "Rooted",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 {
                                     name: jQuery.i18n.prop(
@@ -290,7 +288,7 @@
                         name: "Signal",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 {
                                     name: jQuery.i18n.prop(
@@ -312,7 +310,7 @@
                         name: "Muted",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Detail",
-                        getValueList: function() {
+                        getValueList: function () {
                             return [
                                 {
                                     name: jQuery.i18n.prop(
@@ -391,26 +389,26 @@
                 typeof countlyDrillMeta !== "undefined"
             ) {
                 var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
-                var getFilterValues = function(segmentationKey) {
-                    return function() {
+                var getFilterValues = function (segmentationKey) {
+                    return function () {
                         return crashMeta
                             .getFilterValues("sg." + segmentationKey)
-                            .map(function(value) {
+                            .map(function (value) {
                                 var name =
                                     segmentationKey === "orientation"
                                         ? jQuery.i18n.prop(
-                                            "crashes.filter." +
+                                              "crashes.filter." +
                                                   segmentationKey +
                                                   "." +
                                                   value
-                                        )
+                                          )
                                         : value;
                                 return { name: name, value: value };
                             });
                     };
                 };
 
-                crashMeta.initialize().then(function() {
+                crashMeta.initialize().then(function () {
                     if (window.countlyQueryBuilder) {
                         filterProperties.push({
                             id: "app_version",
@@ -495,102 +493,102 @@
                 crashgroupsFilterProperties: filterProperties,
                 crashgroupsFilterRules: window.countlyQueryBuilder
                     ? [
-                        new countlyQueryBuilder.RowRule({
-                            name: "cly.crashes.no-math-ineq-for-strings",
-                            selector: function(row) {
-                                return (
-                                    row.property.type ===
+                          new countlyQueryBuilder.RowRule({
+                              name: "cly.crashes.no-math-ineq-for-strings",
+                              selector: function (row) {
+                                  return (
+                                      row.property.type ===
                                       countlyQueryBuilder.PropertyType.STRING
-                                );
-                            },
-                            actions: [
-                                new countlyQueryBuilder.RowAction({
-                                    id: "disallowOperator",
-                                    params: {
-                                        selector: function(operator) {
-                                            return [
-                                                "cly.>",
-                                                "cly.>=",
-                                                "cly.<",
-                                                "cly.<=",
-                                            ].includes(operator.id);
-                                        },
-                                    },
-                                }),
-                            ],
-                        }),
-                        new countlyQueryBuilder.RowRule({
-                            name: "cly.crashes.no-isset",
-                            selector: function() {
-                                return true;
-                            },
-                            actions: [
-                                new countlyQueryBuilder.RowAction({
-                                    id: "disallowOperator",
-                                    params: {
-                                        selector: function(operator) {
-                                            return (
-                                                operator.id === "cly.isset"
-                                            );
-                                        },
-                                    },
-                                }),
-                            ],
-                        }),
-                        new countlyQueryBuilder.RowRule({
-                            name: "cly.crashes.no-regex",
-                            selector: function(row) {
-                                return (
-                                    row.property &&
+                                  );
+                              },
+                              actions: [
+                                  new countlyQueryBuilder.RowAction({
+                                      id: "disallowOperator",
+                                      params: {
+                                          selector: function (operator) {
+                                              return [
+                                                  "cly.>",
+                                                  "cly.>=",
+                                                  "cly.<",
+                                                  "cly.<=",
+                                              ].includes(operator.id);
+                                          },
+                                      },
+                                  }),
+                              ],
+                          }),
+                          new countlyQueryBuilder.RowRule({
+                              name: "cly.crashes.no-isset",
+                              selector: function () {
+                                  return true;
+                              },
+                              actions: [
+                                  new countlyQueryBuilder.RowAction({
+                                      id: "disallowOperator",
+                                      params: {
+                                          selector: function (operator) {
+                                              return (
+                                                  operator.id === "cly.isset"
+                                              );
+                                          },
+                                      },
+                                  }),
+                              ],
+                          }),
+                          new countlyQueryBuilder.RowRule({
+                              name: "cly.crashes.no-regex",
+                              selector: function (row) {
+                                  return (
+                                      row.property &&
                                       row.property.id !== "error"
-                                );
-                            },
-                            actions: [
-                                new countlyQueryBuilder.RowAction({
-                                    id: "disallowOperator",
-                                    params: {
-                                        selector: function(operator) {
-                                            return operator.meta.regex;
-                                        },
-                                    },
-                                }),
-                            ],
-                        }),
-                        new countlyQueryBuilder.RowRule({
-                            name: "cly.crashes.single-val",
-                            selector: function(row) {
-                                return (
-                                    row.property &&
+                                  );
+                              },
+                              actions: [
+                                  new countlyQueryBuilder.RowAction({
+                                      id: "disallowOperator",
+                                      params: {
+                                          selector: function (operator) {
+                                              return operator.meta.regex;
+                                          },
+                                      },
+                                  }),
+                              ],
+                          }),
+                          new countlyQueryBuilder.RowRule({
+                              name: "cly.crashes.single-val",
+                              selector: function (row) {
+                                  return (
+                                      row.property &&
                                       row.property.type ===
                                           countlyQueryBuilder.PropertyType
                                               .LIST &&
                                       row.property.getValueList &&
                                       row.property.getValueList().length <= 2
-                                );
-                            },
-                            actions: [
-                                new countlyQueryBuilder.RowAction({
-                                    id: "overrideValueStrategy",
-                                    params: {
-                                        strategy:
+                                  );
+                              },
+                              actions: [
+                                  new countlyQueryBuilder.RowAction({
+                                      id: "overrideValueStrategy",
+                                      params: {
+                                          strategy:
                                               new countlyQueryBuilder.ValueStrategy(
                                                   {
                                                       type: countlyQueryBuilder
                                                           .ValueType.PREDEF,
-                                                      getValueList: function(
+                                                      getValueList: function (
                                                           row
                                                       ) {
                                                           return row.property.getValueList();
                                                       },
                                                   }
                                               ),
-                                    },
-                                }),
-                            ],
-                        }),
-                    ]
+                                      },
+                                  }),
+                              ],
+                          }),
+                      ]
                     : [],
-                formatDate: function(row, col, cell) {
+                formatDate: function (row, col, cell) {
                     return moment(cell * 1000).format("lll");
                 },
                 hasDrillPermission: countlyAuth.validateRead("drill"),
@@ -598,7 +596,7 @@
         },
         computed: {
             crashgroupsFilter: {
-                set: function(newValue) {
+                set: function (newValue) {
                     return Promise.all([
                         this.$store.dispatch(
                             "countlyCrashes/overview/setCrashgroupsFilter",
@@ -610,37 +608,37 @@
                         ),
                     ]);
                 },
-                get: function() {
+                get: function () {
                     return this.$store.getters[
                         "countlyCrashes/overview/crashgroupsFilter"
                     ];
                 },
             },
             activeFilter: {
-                set: function(newValue) {
+                set: function (newValue) {
                     return this.$store.dispatch(
                         "countlyCrashes/overview/setActiveFilter",
                         newValue
                     );
                 },
-                get: function() {
+                get: function () {
                     return this.$store.getters[
                         "countlyCrashes/overview/activeFilter"
                     ];
                 },
             },
-            activeFilterFields: function() {
+            activeFilterFields: function () {
                 var platforms = [{ value: "all", label: "All Platforms" }];
                 this.$store.getters[
                     "countlyCrashes/overview/platforms"
-                ].forEach(function(platform) {
+                ].forEach(function (platform) {
                     platforms.push({ value: platform, label: platform });
                 });
 
                 var appVersions = [{ value: "all", label: "All Versions" }];
                 this.$store.getters[
                     "countlyCrashes/overview/appVersions"
-                ].forEach(function(appVersion) {
+                ].forEach(function (appVersion) {
                     appVersions.push({
                         value: appVersion,
                         label: appVersion.replace(/:/g, "."),
@@ -672,36 +670,36 @@
                     },
                 ];
             },
-            dashboardData: function() {
+            dashboardData: function () {
                 return this.$store.getters[
                     "countlyCrashes/overview/dashboardData"
                 ];
             },
-            chartData: function() {
-                return function(metric, name) {
+            chartData: function () {
+                return function (metric, name) {
                     return this.$store.getters[
                         "countlyCrashes/overview/chartData"
                     ](metric, name);
                 };
             },
-            statistics: function() {
+            statistics: function () {
                 return this.$store.getters[
                     "countlyCrashes/overview/statistics"
                 ];
             },
-            errorColumnLabel: function() {
+            errorColumnLabel: function () {
                 var appType =
                     countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
                 return appType === "mobile"
                     ? CV.i18n("crashes.crash-group")
                     : CV.i18n("crashes.error");
             },
-            isLoading: function() {
+            isLoading: function () {
                 return this.$store.getters["countlyCrashes/overview/isLoading"];
             },
         },
         methods: {
-            refresh: function() {
+            refresh: function () {
                 return Promise.all([
                     this.$store.dispatch(
                         "countlyCrashes/pasteAndFetchCrashgroups",
@@ -710,20 +708,20 @@
                     this.$store.dispatch("countlyCrashes/overview/refresh"),
                 ]);
             },
-            handleRowClick: function(row) {
+            handleRowClick: function (row) {
                 window.location.href = window.location.href + "/" + row._id;
             },
-            handleSelectionChange: function(selectedRows) {
-                this.$data.selectedCrashgroups = selectedRows.map(function(
+            handleSelectionChange: function (selectedRows) {
+                this.$data.selectedCrashgroups = selectedRows.map(function (
                     row
                 ) {
                     return row._id;
                 });
             },
-            badgesFor: function(crash) {
+            badgesFor: function (crash) {
                 return countlyCrashes.generateBadges(crash);
             },
-            setSelectedAs: function(state) {
+            setSelectedAs: function (state) {
                 var promise;
 
                 if (state === "resolved") {
@@ -731,32 +729,27 @@
                         "countlyCrashes/overview/setSelectedAsResolved",
                         this.$data.selectedCrashgroups
                     );
-                }
-                else if (state === "resolving") {
+                } else if (state === "resolving") {
                     promise = this.$store.dispatch(
                         "countlyCrashes/overview/setSelectedAsResolving",
                         this.$data.selectedCrashgroups
                     );
-                }
-                else if (state === "unresolved") {
+                } else if (state === "unresolved") {
                     promise = this.$store.dispatch(
                         "countlyCrashes/overview/setSelectedAsUnresolved",
                         this.$data.selectedCrashgroups
                     );
-                }
-                else if (state === "hide") {
+                } else if (state === "hide") {
                     promise = this.$store.dispatch(
                         "countlyCrashes/overview/setSelectedAsHidden",
                         this.$data.selectedCrashgroups
                     );
-                }
-                else if (state === "show") {
+                } else if (state === "show") {
                     promise = this.$store.dispatch(
                         "countlyCrashes/overview/setSelectedAsShown",
                         this.$data.selectedCrashgroups
                     );
-                }
-                else if (state === "delete") {
+                } else if (state === "delete") {
                     promise = this.$store.dispatch(
                         "countlyCrashes/overview/setSelectedAsDeleted",
                         this.$data.selectedCrashgroups
@@ -764,7 +757,7 @@
                 }
 
                 if (typeof promise !== "undefined") {
-                    promise.finally(function() {
+                    promise.finally(function () {
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.changed"],
                             message: jQuery.i18n.map["configs.saved"],
@@ -773,12 +766,12 @@
                 }
             },
         },
-        beforeCreate: function() {
+        beforeCreate: function () {
             return this.$store.dispatch("countlyCrashes/overview/refresh");
         },
     });
 
-    var getOverviewView = function() {
+    var getOverviewView = function () {
         return new countlyVue.views.BackboneWrapper({
             component: CrashOverviewView,
             vuex: [{ clyModel: countlyCrashes }],
@@ -800,29 +793,29 @@
         },
         mixins: [countlyVue.mixins.auth(FEATURE_NAME)],
         computed: {
-            hasHeaderLeft: function() {
+            hasHeaderLeft: function () {
                 return !!(
                     this.$scopedSlots["header-left"] ||
                     this.$slots["header-left"]
                 );
             },
-            hasHeaderRight: function() {
+            hasHeaderRight: function () {
                 return !!(
                     this.$scopedSlots["header-right"] ||
                     this.$slots["header-right"]
                 );
             },
-            lineNumbers: function() {
+            lineNumbers: function () {
                 return Array.apply(
                     null,
                     Array((this.code.match(/\n/g) || []).length + 1)
                 )
-                    .map(function(_, i) {
+                    .map(function (_, i) {
                         return i + 1;
                     })
                     .join("\n");
             },
-            highlightedCode: function() {
+            highlightedCode: function () {
                 return hljs.highlightAuto(
                     jQuery("<div/>").html(this.code).text()
                 ).value;
@@ -837,8 +830,15 @@
             "crash-stacktrace": CrashStacktraceView,
             "crash-badge": CrashBadgeView,
         },
-        mixins: [countlyVue.mixins.auth(FEATURE_NAME)],
-        data: function() {
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.container.dataMixin({
+                externalActionDropdownItems:
+                    "crashes/external/actionDropdownItems",
+                externalDialogs: "crashes/external/dialogs",
+            }),
+        ],
+        data: function () {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
                 authToken: countlyGlobal.auth_token,
@@ -863,85 +863,83 @@
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
-                jiraIntegrationEnabled:
-                    countlyGlobal.plugins.includes("crashes-jira"),
                 hasUserPermission: countlyAuth.validateRead("users"),
             };
         },
         computed: {
-            crashgroup: function() {
+            crashgroup: function () {
                 return this.$store.getters[
                     "countlyCrashes/crashgroup/crashgroup"
                 ];
             },
-            crashgroupName: function() {
+            crashgroupName: function () {
                 return this.$store.getters[
                     "countlyCrashes/crashgroup/crashgroupName"
                 ];
             },
-            comments: function() {
+            comments: function () {
                 return "comments" in this.crashgroup
                     ? this.crashgroup.comments
                     : [];
             },
-            commonMetrics: function() {
+            commonMetrics: function () {
                 return this.$store.getters[
                     "countlyCrashes/crashgroup/commonMetrics"
                 ];
             },
-            mobileDiagnostics: function() {
+            mobileDiagnostics: function () {
                 return this.$store.getters[
                     "countlyCrashes/crashgroup/mobileDiagnostics"
                 ];
             },
-            mobileMetrics: function() {
+            mobileMetrics: function () {
                 return this.$store.getters[
                     "countlyCrashes/crashgroup/mobileMetrics"
                 ];
             },
-            chartData: function() {
+            chartData: function () {
                 return this.$store.getters[
                     "countlyCrashes/crashgroup/chartData"
                 ](this.$data.chartBy);
             },
-            chartByOptions: function() {
+            chartByOptions: function () {
                 return this.$store.getters[
                     "countlyCrashes/crashgroup/chartByOptions"
                 ];
             },
-            crashes: function() {
+            crashes: function () {
                 return this.$store.getters["countlyCrashes/crashgroup/crashes"];
             },
-            badges: function() {
+            badges: function () {
                 return countlyCrashes.generateBadges(
                     this.$store.getters["countlyCrashes/crashgroup/crashgroup"]
                 );
             },
             userFilter: {
-                set: function(newValue) {
+                set: function (newValue) {
                     return this.$store.dispatch(
                         "countlyCrashes/crashgroup/setUserFilter",
                         newValue
                     );
                 },
-                get: function() {
+                get: function () {
                     return this.$store.getters[
                         "countlyCrashes/crashgroup/userFilter"
                     ];
                 },
             },
-            userFilterFields: function() {
+            userFilterFields: function () {
                 var platforms = [{ value: "all", label: "All Platforms" }];
                 this.$store.getters[
                     "countlyCrashes/crashgroup/platforms"
-                ].forEach(function(platform) {
+                ].forEach(function (platform) {
                     platforms.push({ value: platform, label: platform });
                 });
 
                 var appVersions = [{ value: "all", label: "All Versions" }];
                 this.$store.getters[
                     "countlyCrashes/crashgroup/appVersions"
-                ].forEach(function(appVersion) {
+                ].forEach(function (appVersion) {
                     appVersions.push({
                         value: appVersion,
                         label: appVersion.replace(/:/g, "."),
@@ -963,35 +961,34 @@
                     },
                 ];
             },
-            isLoading: function() {
+            isLoading: function () {
                 return this.$store.getters[
                     "countlyCrashes/crashgroup/isLoading"
                 ];
             },
         },
         methods: {
-            refresh: function() {
+            refresh: function () {
                 return this.$store.dispatch(
                     "countlyCrashes/crashgroup/refresh"
                 );
             },
-            handleCommentCommand: function(command, comment) {
+            handleCommentCommand: function (command, comment) {
                 if (command === "edit-comment") {
                     this.$data.commentInput = comment.text;
                     this.$data.commentBeingEdited = comment;
-                }
-                else if (command === "delete-comment") {
+                } else if (command === "delete-comment") {
                     this.$store.dispatch(
                         "countlyCrashes/crashgroup/deleteComment",
                         comment._id
                     );
                 }
             },
-            stopEditingComment: function() {
+            stopEditingComment: function () {
                 this.$data.commentInput = "";
                 this.$data.commentBeingEdited = undefined;
             },
-            saveComment: function() {
+            saveComment: function () {
                 var self = this;
                 if (typeof this.$data.commentBeingEdited !== "undefined") {
                     this.$store
@@ -999,26 +996,25 @@
                             comment_id: this.$data.commentBeingEdited._id,
                             text: this.$data.commentInput,
                         })
-                        .then(function() {
+                        .then(function () {
                             self.$data.commentBeingEdited = undefined;
                             self.$data.commentInput = "";
                         });
-                }
-                else {
+                } else {
                     this.$store
                         .dispatch(
                             "countlyCrashes/crashgroup/addComment",
                             this.$data.commentInput
                         )
-                        .then(function() {
+                        .then(function () {
                             self.$data.commentInput = "";
                         });
                 }
             },
-            handleRowClick: function(row) {
+            handleRowClick: function (row) {
                 this.$refs.tableData.$refs.elTable.toggleRowExpansion(row);
             },
-            generateEventLogs: function(cid) {
+            generateEventLogs: function (cid) {
                 var self = this;
                 if (this.$data.eventLogsEnabled) {
                     if (!this.$data.eventLogsBeingGenerated.includes(cid)) {
@@ -1028,13 +1024,13 @@
                                 "countlyCrashes/crashgroup/generateEventLogs",
                                 [cid]
                             )
-                            .then(function() {
+                            .then(function () {
                                 self.$forceUpdate();
                             })
-                            .finally(function() {
+                            .finally(function () {
                                 self.$data.eventLogsBeingGenerated =
                                     self.$data.eventLogsBeingGenerated.filter(
-                                        function(ecid) {
+                                        function (ecid) {
                                             return cid !== ecid;
                                         }
                                     );
@@ -1042,10 +1038,10 @@
                     }
                 }
             },
-            isEventLogBeingGeneratedFor: function(cid) {
+            isEventLogBeingGeneratedFor: function (cid) {
                 return this.$data.eventLogsBeingGenerated.includes(cid);
             },
-            symbolicateCrash: function(crash) {
+            symbolicateCrash: function (crash) {
                 var self = this;
 
                 if (!this.symbolicationEnabled) {
@@ -1071,12 +1067,12 @@
                             "countlyCrashes/crashgroup/symbolicate",
                             crash
                         )
-                        .then(function() {
+                        .then(function () {
                             self.refresh();
                         })
-                        .finally(function() {
+                        .finally(function () {
                             self.crashesBeingSymbolicated =
-                                self.crashesBeingSymbolicated.filter(function(
+                                self.crashesBeingSymbolicated.filter(function (
                                     cid
                                 ) {
                                     return cid !== crash._id;
@@ -1084,10 +1080,10 @@
                         });
                 }
             },
-            isCrashBeingSymbolicated: function(cid) {
+            isCrashBeingSymbolicated: function (cid) {
                 return this.crashesBeingSymbolicated.indexOf(cid) !== -1;
             },
-            crashMetric: function(crash, metric) {
+            crashMetric: function (crash, metric) {
                 var crashMetrics;
 
                 if (metric === "build_info") {
@@ -1095,8 +1091,7 @@
                     if (crash.os === "iOS") {
                         crashMetrics += "\nApp Build ID: " + crash.app_build;
                     }
-                }
-                else if (metric === "device") {
+                } else if (metric === "device") {
                     crashMetrics = crash.os;
                     if (crash.os_version) {
                         crashMetrics += " " + crash.os_version;
@@ -1104,8 +1099,7 @@
 
                     if (crash.manufacture) {
                         crashMetrics += "\n" + crash.manufacture + " ";
-                    }
-                    else {
+                    } else {
                         crashMetrics += "\n";
                     }
 
@@ -1131,8 +1125,7 @@
                             "\nRooted / Jailbroken: " +
                             (crash.root ? "yes" : "no");
                     }
-                }
-                else if (metric === "device_state") {
+                } else if (metric === "device_state") {
                     crashMetrics = "";
 
                     if ("ram_current" in crash) {
@@ -1175,10 +1168,9 @@
                         (crash.background ? "yes" : "no") +
                         "\n";
                     crashMetrics += "Muted: " + (crash.muted ? "yes" : "no");
-                }
-                else if (metric === "custom") {
+                } else if (metric === "custom") {
                     crashMetrics = Object.keys(crash.custom)
-                        .map(function(customKey) {
+                        .map(function (customKey) {
                             return customKey + ": " + crash.custom[customKey];
                         })
                         .join("\n");
@@ -1186,18 +1178,18 @@
 
                 return crashMetrics;
             },
-            crashEventLog: function(cid) {
+            crashEventLog: function (cid) {
                 return this.$store.getters[
                     "countlyCrashes/crashgroup/crashEventLog"
                 ](cid);
             },
-            commentIsMine: function(comment) {
+            commentIsMine: function (comment) {
                 return (
                     comment.author_id === countlyGlobal.member._id ||
                     countlyGlobal.member.global_admin
                 );
             },
-            markAs: function(state) {
+            markAs: function (state) {
                 var self = this;
                 var ajaxPromise;
 
@@ -1212,26 +1204,22 @@
                     ajaxPromise = this.$store.dispatch(
                         "countlyCrashes/crashgroup/markResolved"
                     );
-                }
-                else if (state === "resolving") {
+                } else if (state === "resolving") {
                     this.beingMarked = true;
                     ajaxPromise = this.$store.dispatch(
                         "countlyCrashes/crashgroup/markResolving"
                     );
-                }
-                else if (state === "unresolved") {
+                } else if (state === "unresolved") {
                     this.beingMarked = true;
                     ajaxPromise = this.$store.dispatch(
                         "countlyCrashes/crashgroup/markUnresolved"
                     );
-                }
-                else if (state === "hidden") {
+                } else if (state === "hidden") {
                     this.beingMarked = true;
                     ajaxPromise = this.$store.dispatch(
                         "countlyCrashes/crashgroup/hide"
                     );
-                }
-                else if (state === "shown") {
+                } else if (state === "shown") {
                     this.beingMarked = true;
                     ajaxPromise = this.$store.dispatch(
                         "countlyCrashes/crashgroup/show"
@@ -1239,7 +1227,7 @@
                 }
 
                 if (typeof ajaxPromise !== "undefined") {
-                    ajaxPromise.finally(function() {
+                    ajaxPromise.finally(function () {
                         self.beingMarked = false;
 
                         CountlyHelpers.notify({
@@ -1249,7 +1237,7 @@
                     });
                 }
             },
-            handleCrashgroupCommand: function(command) {
+            handleCrashgroupCommand: function (command) {
                 var self = this;
 
                 if (command === "view-user-list") {
@@ -1263,18 +1251,17 @@
 
                     window.location.hash =
                         "/users/request/" + JSON.stringify(params);
-                }
-                else if (command === "delete") {
+                } else if (command === "delete") {
                     CountlyHelpers.confirm(
                         jQuery.i18n.prop("crashes.confirm-delete", 1),
                         "red",
-                        function(result) {
+                        function (result) {
                             if (result) {
                                 self.$store
                                     .dispatch(
                                         "countlyCrashes/crashgroup/delete"
                                     )
-                                    .then(function(data) {
+                                    .then(function (data) {
                                         if (!data) {
                                             CountlyHelpers.alert(
                                                 jQuery.i18n.map[
@@ -1282,8 +1269,7 @@
                                                 ],
                                                 "red"
                                             );
-                                        }
-                                        else {
+                                        } else {
                                             window.history.back();
                                         }
                                     });
@@ -1293,7 +1279,7 @@
                 }
             },
         },
-        beforeCreate: function() {
+        beforeCreate: function () {
             return this.$store.dispatch(
                 "countlyCrashes/crashgroup/initialize",
                 groupId
@@ -1301,10 +1287,16 @@
         },
     });
 
-    var getCrashgroupView = function() {
+    var getCrashgroupView = function () {
+        var vuex = [{ clyModel: countlyCrashes }];
+        var externalVuex = countlyVue.container.tabsVuex([
+            "crashes/external/vuex",
+        ]);
+        vuex = vuex.concat(externalVuex);
+
         return new countlyVue.views.BackboneWrapper({
             component: CrashgroupView,
-            vuex: [{ clyModel: countlyCrashes }],
+            vuex: vuex,
             templates: [
                 {
                     namespace: "crashes",
@@ -1318,7 +1310,7 @@
 
     var BinaryImagesView = countlyVue.views.create({
         template: "#crashes-binary-images",
-        data: function() {
+        data: function () {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
                 authToken: countlyGlobal.auth_token,
@@ -1329,10 +1321,10 @@
             };
         },
         computed: {
-            crash: function() {
+            crash: function () {
                 return this.$store.getters["countlyCrashes/crash/crash"];
             },
-            binaryImages: function() {
+            binaryImages: function () {
                 var crash = this.$store.getters["countlyCrashes/crash/crash"];
                 var binaryImages;
 
@@ -1340,7 +1332,7 @@
                     try {
                         var binaryImagesMap = JSON.parse(crash.binary_images);
                         binaryImages = Object.keys(binaryImagesMap).map(
-                            function(binaryName) {
+                            function (binaryName) {
                                 var binaryProps = binaryImagesMap[binaryName];
 
                                 return {
@@ -1350,12 +1342,10 @@
                                 };
                             }
                         );
-                    }
-                    catch (err) {
+                    } catch (err) {
                         binaryImages = [];
                     }
-                }
-                else {
+                } else {
                     binaryImages = [];
                 }
 
@@ -1363,7 +1353,7 @@
             },
         },
         methods: {
-            refresh: function() {
+            refresh: function () {
                 var promises = [];
                 var self = this;
 
@@ -1373,17 +1363,17 @@
 
                 if (this.symbolicationEnabled) {
                     promises.push(
-                        new Promise(function(resolve, reject) {
+                        new Promise(function (resolve, reject) {
                             countlyCrashSymbols
                                 .fetchSymbols(true)
-                                .then(function(symbolIndexing) {
+                                .then(function (symbolIndexing) {
                                     self.symbols = {};
 
                                     var buildIdMaps =
                                         Object.values(symbolIndexing);
-                                    buildIdMaps.forEach(function(buildIdMap) {
+                                    buildIdMaps.forEach(function (buildIdMap) {
                                         Object.keys(buildIdMap).forEach(
-                                            function(buildId) {
+                                            function (buildId) {
                                                 self.symbols[buildId] =
                                                     buildIdMap[buildId];
                                             }
@@ -1392,7 +1382,7 @@
 
                                     resolve(this.symbols);
                                 })
-                                .catch(function(err) {
+                                .catch(function (err) {
                                     reject(err);
                                 });
                         })
@@ -1401,11 +1391,11 @@
 
                 return Promise.all(promises);
             },
-            hasSymbol: function(uuid) {
+            hasSymbol: function (uuid) {
                 return uuid in this.symbols;
             },
         },
-        beforeCreate: function() {
+        beforeCreate: function () {
             return this.$store.dispatch(
                 "countlyCrashes/crash/initialize",
                 crashId
@@ -1414,7 +1404,7 @@
         mixins: [countlyVue.mixins.hasDrawers("crashSymbol")],
     });
 
-    var getBinaryImagesView = function() {
+    var getBinaryImagesView = function () {
         return new countlyVue.views.BackboneWrapper({
             component: BinaryImagesView,
             vuex: [{ clyModel: countlyCrashes }],
@@ -1431,7 +1421,7 @@
 
     var CrashesDashboardWidget = countlyVue.views.create({
         template: CV.T("/crashes/templates/crashesHomeWidget.html"),
-        data: function() {
+        data: function () {
             return {
                 crashesItems: [],
                 isLoading: true,
@@ -1445,37 +1435,37 @@
                 },
             };
         },
-        mounted: function() {
+        mounted: function () {
             var self = this;
             this.$store
                 .dispatch("countlyCrashes/overview/refresh")
-                .then(function() {
+                .then(function () {
                     self.calculateAllData();
                     self.isLoading = false;
                 });
         },
-        beforeCreate: function() {
+        beforeCreate: function () {
             this.module = countlyCrashes.getVuexModule();
             CV.vuex.registerGlobally(this.module);
         },
-        beforeDestroy: function() {
+        beforeDestroy: function () {
             CV.vuex.unregister(this.module.name);
             this.module = null;
         },
         methods: {
-            refresh: function(force) {
+            refresh: function (force) {
                 var self = this;
                 if (force) {
                     self.isLoading = true;
                 }
                 this.$store
                     .dispatch("countlyCrashes/overview/refresh")
-                    .then(function() {
+                    .then(function () {
                         self.calculateAllData();
                         self.isLoading = false;
                     });
             },
-            calculateAllData: function() {
+            calculateAllData: function () {
                 var data =
                     this.$store.getters[
                         "countlyCrashes/overview/dashboardData"
@@ -1560,7 +1550,7 @@
             mixins: [countlyVue.mixins.i18n],
             template: CV.T("/crashes/templates/user-crashes.html"),
             methods: {
-                getDateAndTime: function(ts) {
+                getDateAndTime: function (ts) {
                     if (!ts) {
                         return "-";
                     }
@@ -1574,19 +1564,19 @@
                     return date + " " + time;
                 },
             },
-            data: function() {
+            data: function () {
                 return {
                     uid: "",
                     userCrashesData: [],
                     title: CV.i18n("crashes.unresolved-crashes"),
                 };
             },
-            beforeCreate: function() {
+            beforeCreate: function () {
                 var self = this;
                 this.uid = this.$route.params.uid;
-                countlyCrashes.userCrashes(this.uid).then(function(res) {
+                countlyCrashes.userCrashes(this.uid).then(function (res) {
                     if (res) {
-                        self.userCrashesData = res.aaData.map(function(data) {
+                        self.userCrashesData = res.aaData.map(function (data) {
                             return Object.assign(data, {
                                 link:
                                     "/dashboard#/" +
@@ -1601,7 +1591,7 @@
         }),
     });
 
-    jQuery(document).ready(function() {
+    jQuery(document).ready(function () {
         app.addMenu("improve", {
             code: "crashes",
             text: "crashes.title",
@@ -1635,11 +1625,11 @@
             });
         }
 
-        app.route("/crashes", "crashes", function() {
+        app.route("/crashes", "crashes", function () {
             this.renderWhenReady(getOverviewView());
         });
 
-        app.route("/crashes/:group", "crashgroup", function(group) {
+        app.route("/crashes/:group", "crashgroup", function (group) {
             groupId = group;
             this.renderWhenReady(getCrashgroupView());
         });
@@ -1647,7 +1637,7 @@
         app.route(
             "/crashes/:group/binary-images/:crash",
             "crashgroup",
-            function(group, crash) {
+            function (group, crash) {
                 groupId = group;
                 crashId = crash;
                 this.renderWhenReady(getBinaryImagesView());
