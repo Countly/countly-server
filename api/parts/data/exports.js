@@ -118,6 +118,29 @@ function preventCSVInjection(val) {
 }
 
 /**
+* When exporting to excel library fails if column name contains ".". Replacing those to ":"
+* @param {object} data - data object to fix
+*/
+function fixForXls(data) {
+    data = data || {};
+    data.fields = data.fields || [];
+    data.data = data.data || [];
+    for (var z = 0; z < data.fields.length; z++) {
+        if (data.fields[z].indexOf(".") > -1) {
+            //fix this key;
+            var oldKey = data.fields[z];
+            var newKey = data.fields[z].replace(/\./g, ":");
+
+            for (var k = 0;k < data.data.length; k++) {
+                data.data[k][newKey] = data.data[k][oldKey];
+                delete data.data[k][oldKey];
+            }
+            data.fields[z] = newKey;
+        }
+    }
+}
+
+/**
 * Function to make all values CSV friendly
 * @param {string} value - value to convert
 * @returns {string}   - converted string
@@ -167,6 +190,7 @@ exports.convertData = function(data, type) {
     case "xls":
     case "xlsx":
         obj = flattenArray(data);
+        fixForXls(obj);//changing '.' in keys to ':'
         return json2xls(obj.data, {fields: obj.fields});
     default:
         return data;
