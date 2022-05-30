@@ -1275,7 +1275,13 @@ var pluginManager = function pluginManager() {
         }
 
         if (config.mongodb.username && config.mongodb.password) {
+            dbName = dbName.replace('mongodb://', '').replace('mongodb+srv://', '');
             dbName = encodeURIComponent(config.mongodb.username) + ":" + encodeURIComponent(utils.decrypt(config.mongodb.password)) + "@" + dbName;
+        }
+        
+        if (config.mongodb.username) {
+            dbName = dbName.replace('mongodb://', '').replace('mongodb+srv://', '');
+            dbName = encodeURIComponent(config.mongodb.username) + "@" + dbName;
         }
 
         if (dbName.indexOf('mongodb://') !== 0 && dbName.indexOf('mongodb+srv://') !== 0) {
