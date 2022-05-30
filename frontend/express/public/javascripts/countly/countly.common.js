@@ -2691,8 +2691,10 @@
                 }
                 else {
                     if (_period === "day") {
+                        var now = new Date();
+                        var currentMonthCount = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
                         start.add(1, 'days');
-                        for (i = 0; i < new Date(start.year(), start.month(), 0).getDate(); i++) {
+                        for (i = 0; i < currentMonthCount; i++) {
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
                             start.add(1, 'days');
