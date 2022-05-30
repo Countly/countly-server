@@ -913,17 +913,11 @@
         props: {
             customPeriod: {
                 type: [Array, String],
-            },
-            notShowThePeriod: {
-                type: String,
             }
         },
         computed: {
             period: function() {
                 var globalPeriod = this.$store.getters["countlyCommon/period"];
-                if (this.notShowThePeriod === globalPeriod) {
-                    return;
-                }
                 if (this.customPeriod) {
                     return this.formatPeriodString(this.customPeriod);
                 }
@@ -978,15 +972,11 @@
             showApps: {
                 type: Boolean,
                 default: true
-            },
-            notShowThePeriod: {
-                type: String
             }
         },
         computed: {
             app: function() {
                 var appId = this.apps[0];
-
                 if (!appId) {
                     return null;
                 }
