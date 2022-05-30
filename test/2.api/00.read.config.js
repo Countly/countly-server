@@ -64,15 +64,6 @@ describe('Reading config with ENV extensions', function() {
         config.mongodb.should.equal(VALUE);
     });
 
-    it('should support camel case with JSON object', () => {
-        let VALUE = '{"ssl": false}',
-            config = configExtender('API', JSON.parse(JSON.stringify(testConfig)), {COUNTLY_CONFIG_API_MONGODB_SERVEROPTIONS: VALUE});
-        should.exist(config.mongodb);
-        should.exist(config.mongodb.serverOptions);
-        should.exist(config.mongodb.serverOptions.ssl);
-        config.mongodb.serverOptions.ssl.should.equal(false);
-    });
-
     it('should support create intermediary object in camelCase', () => {
         let VALUE = 'something',
             config = configExtender('API', JSON.parse(JSON.stringify(testConfig)), {COUNTLY_CONFIG_API_MONGODB_DBOPTIONS_DEEP_KEY: VALUE});
