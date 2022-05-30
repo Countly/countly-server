@@ -26,8 +26,10 @@ const OVERRIDES = {
         REPLSETSERVERS: 'replSetServers',
         REPLICANAME: 'replicaName',
         MAX_POOL_SIZE: 'max_pool_size',
-        DBOPTIONS: 'dbOptions',
-        SERVEROPTIONS: 'serverOptions'
+        DBOPTIONS: {
+            __name: "dbOptions",
+            TLSCERTIFICATEKEYFILE: 'tlsCertificateKeyFile'
+        },
     },
 
     API: {
@@ -65,6 +67,9 @@ function dig(config, over, name, value) {
             if (typeof over[n] === 'string') {
                 sub = over[n];
                 over[n] = {};
+            }
+            else if (over[n] && over[n].__name) {
+                sub = over[n].__name;
             }
             else {
                 sub = Object.keys(config).filter(k => k.toUpperCase() === n)[0];

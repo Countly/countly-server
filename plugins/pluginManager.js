@@ -1077,7 +1077,7 @@ var pluginManager = function pluginManager() {
         else {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
         }
-        
+
         if (config && typeof config.mongodb === "string") {
             config.mongodb = {uri: config.mongodb};
         }
@@ -1220,7 +1220,7 @@ var pluginManager = function pluginManager() {
         else {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
         }
-        
+
         if (config && typeof config.mongodb === "string") {
             config.mongodb = {uri: config.mongodb};
         }
@@ -1278,7 +1278,7 @@ var pluginManager = function pluginManager() {
             dbName = dbName.replace('mongodb://', '').replace('mongodb+srv://', '');
             dbName = encodeURIComponent(config.mongodb.username) + ":" + encodeURIComponent(utils.decrypt(config.mongodb.password)) + "@" + dbName;
         }
-        
+
         if (config.mongodb.username) {
             dbName = dbName.replace('mongodb://', '').replace('mongodb+srv://', '');
             dbName = encodeURIComponent(config.mongodb.username) + "@" + dbName;
