@@ -1077,9 +1077,13 @@ var pluginManager = function pluginManager() {
         else {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
         }
+        
+        if (config && typeof config.mongodb === "string") {
+            config.mongodb = {uri: config.mongodb};
+        }
 
-        if (typeof config.mongodb === 'string') {
-            var dbName = this.replaceDatabaseString(config.mongodb, db);
+        if (config.mongodb.uri) {
+            var dbName = this.replaceDatabaseString(config.mongodb.uri, db);
             //remove protocol
             dbName = dbName.split("://").pop();
             if (dbName.indexOf("@") !== -1) {
@@ -1216,9 +1220,13 @@ var pluginManager = function pluginManager() {
         else {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
         }
-
+        
         if (config && typeof config.mongodb === "string") {
-            var urlParts = url.parse(config.mongodb, true);
+            config.mongodb = {uri: config.mongodb};
+        }
+
+        if (config.mongodb.uri) {
+            var urlParts = url.parse(config.mongodb.uri, true);
             if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
                 maxPoolSize = urlParts.query.maxPoolSize;
             }
@@ -1241,8 +1249,8 @@ var pluginManager = function pluginManager() {
             useNewUrlParser: true,
             useUnifiedTopology: true
         };
-        if (typeof config.mongodb === 'string') {
-            dbName = this.replaceDatabaseString(config.mongodb, db);
+        if (config.mongodb.uri) {
+            dbName = this.replaceDatabaseString(config.mongodb.uri, db);
         }
         else {
             config.mongodb.db = db || config.mongodb.db || 'countly';
