@@ -5,7 +5,7 @@
     :available-dynamic-cols="tableDynamicCols"
     :persist-key="userManagementPersistKey">
       <template v-slot:header-left="selectScope">
-        <cly-dropdown ref="filterDropdown" @hide="reloadFilterValues">
+        <cly-dropdown :width="360" ref="filterDropdown" @hide="reloadFilterValues">
             <template v-slot:trigger="dropdown">
                 <cly-input-dropdown-trigger
                     v-tooltip="filterSummary"
@@ -18,7 +18,6 @@
             <template>
                 <cly-form
                     :initial-edited-object="currentFilter"
-                    :before-copy-fn="handleBeforeCopy"
                     class="user-management-filter-form"
                     ref="filterForm"
                     @submit="handleSubmitFilter">
@@ -33,18 +32,18 @@
                                     </div>
                                     <div class="bu-level-right">
                                         <div class="bu-level-item">
-                                            <el-button type="text" class="bu-has-text-danger no-bg-hover" @click="handleResetFilterClick">{{i18n('management-users.reset-filters')}}</el-button>
+                                            <el-button type="text" class="bu-has-text-danger" @click="handleResetFilterClick">{{i18n('management-users.reset-filters')}}</el-button>
                                         </div>
                                     </div>
                                 </div>
                                 <cly-form-field :label="i18n('management-users.role')">
-                                    <el-select placement="bottom-start" v-model="formScope.editedObject.role" :placeholder="i18n('management-users.all-roles')">
+                                    <el-select placement="bottom-start" class="select-full-width" v-model="formScope.editedObject.role" :placeholder="i18n('management-users.all-roles')">
                                         <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
                                         <el-option v-for="(value, key, idx) in roleMap" :key="idx + 1" :label="value" :value="key"></el-option>
                                     </el-select>
                                 </cly-form-field>
                                 <cly-form-field v-if="isGroupPluginEnabled" :label="i18n('management-users.group')">
-                                    <el-select placement="bottom-start" v-model="formScope.editedObject.group" :placeholder="i18n('management-users.all-groups')">
+                                    <el-select placement="bottom-start" class="select-full-width" v-model="formScope.editedObject.group" :placeholder="i18n('management-users.all-groups')">
                                         <el-option key="0" :label="i18n('management-users.all-groups')" :value="null"></el-option>
                                         <el-option v-for="(value, key, idx) in groupMap" :key="idx + 1" :label="value" :value="key"></el-option>
                                     </el-select>
