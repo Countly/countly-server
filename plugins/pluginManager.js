@@ -1152,12 +1152,13 @@ var pluginManager = function pluginManager() {
     * @returns {string} modified connection string
     **/
     this.replaceDatabaseString = function(str, db) {
-        var i = str.lastIndexOf('/countly');
-        var k = str.lastIndexOf('/' + db);
+        var parts = str.split("?");
+        var i = parts[0].lastIndexOf('/countly');
+        var k = parts[0].lastIndexOf('/' + db);
         if (i !== k && i !== -1 && db) {
-            return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+            return parts[0].substr(0, i) + "/" + db + parts[0].substr(i + ('/countly').length);
         }
-        return str;
+        return parts.join("?");
     };
 
     this.connectToAllDatabases = async() => {
