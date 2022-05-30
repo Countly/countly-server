@@ -991,12 +991,12 @@
             return context.dispatch("refresh");
         };
 
-        _crashgroupSubmodule.actions.refresh = function(context) {
+        _crashgroupSubmodule.actions.refresh = function (context) {
             if (typeof context.state.crashgroup._id === "undefined") {
                 return;
             }
 
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 countlyVue.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
@@ -1008,7 +1008,7 @@
                         display_loader: true,
                     },
                     dataType: "json",
-                    success: function(crashgroupJson) {
+                    success: function (crashgroupJson) {
                         if (
                             crashgroupJson.data &&
                             crashgroupJson.data.length > 0
@@ -1018,7 +1018,7 @@
 
                             if (context.state.userFilter.platform !== "all") {
                                 crashgroupJson.data =
-                                    crashgroupJson.data.filter(function(data) {
+                                    crashgroupJson.data.filter(function (data) {
                                         return (
                                             data.os + " " + data.os_version ===
                                             context.state.userFilter.platform
@@ -1027,7 +1027,7 @@
                             }
                             if (context.state.userFilter.version !== "all") {
                                 crashgroupJson.data =
-                                    crashgroupJson.data.filter(function(data) {
+                                    crashgroupJson.data.filter(function (data) {
                                         return (
                                             data.app_version ===
                                             context.state.userFilter.version
@@ -1042,20 +1042,19 @@
                                     crashgroupJson.data[0].binary_images;
                             }
 
-                            crashgroupJson.data.forEach(function(
+                            crashgroupJson.data.forEach(function (
                                 crash,
                                 crashIndex
                             ) {
                                 if (crash.uid in userIds) {
                                     userIds[crash.uid].push(crashIndex);
-                                }
-                                else {
+                                } else {
                                     userIds[crash.uid] = [crashIndex];
                                 }
                             });
 
                             if (countlyAuth.validateRead("users")) {
-                                Object.keys(userIds).forEach(function(uid) {
+                                Object.keys(userIds).forEach(function (uid) {
                                     //
                                     ajaxPromises.push(
                                         countlyVue.$.ajax({
@@ -1068,8 +1067,8 @@
                                                 period: countlyCommon.getPeriodForAjax(),
                                                 return_groups: "basic",
                                             },
-                                            success: function(userJson) {
-                                                userIds[uid].forEach(function(
+                                            success: function (userJson) {
+                                                userIds[uid].forEach(function (
                                                     crashIndex
                                                 ) {
                                                     crashgroupJson.data[
@@ -1102,8 +1101,8 @@
                                 var ajaxPromise =
                                     countlyCrashSymbols.fetchSymbols(false);
                                 ajaxPromises.push(ajaxPromise);
-                                ajaxPromise.then(function(symbolIndexing) {
-                                    crashes.forEach(function(
+                                ajaxPromise.then(function (symbolIndexing) {
+                                    crashes.forEach(function (
                                         crash,
                                         crashIndex
                                     ) {
@@ -1117,8 +1116,10 @@
                                             if (crashIndex === 0) {
                                                 crashgroupJson._symbol_id =
                                                     symbol_id;
-                                            }
-                                            else {
+
+                                                crashgroupJson.data[0]._symbol_id =
+                                                    symbol_id;
+                                            } else {
                                                 crashgroupJson.data[
                                                     crashIndex - 1
                                                 ]._symbol_id = symbol_id;
@@ -1129,16 +1130,15 @@
                             }
 
                             Promise.all(ajaxPromises)
-                                .finally(function() {
+                                .finally(function () {
                                     context.state.isLoading = false;
                                     context.state.crashgroup = crashgroupJson;
                                     resolve(context.state.crashgroup);
                                 })
-                                .catch(function(err) {
+                                .catch(function (err) {
                                     reject(err);
                                 });
-                        }
-                        else {
+                        } else {
                             context.state.isLoading = false;
                             context.state.crashgroup = crashgroupJson;
                             resolve(context.state.crashgroup);
@@ -1149,11 +1149,11 @@
             });
         };
 
-        _crashgroupSubmodule.actions.generateEventLogs = function(
+        _crashgroupSubmodule.actions.generateEventLogs = function (
             context,
             crashIds
         ) {
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 countlyVue.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/crashes-event-logs",
@@ -1164,11 +1164,11 @@
                         }),
                     },
                     dataType: "json",
-                    success: function(json) {
-                        Object.keys(json).forEach(function(crashId) {
+                    success: function (json) {
+                        Object.keys(json).forEach(function (crashId) {
                             var crashIndex =
                                 context.state.crashgroup.data.findIndex(
-                                    function(crash) {
+                                    function (crash) {
                                         return crash._id === crashId;
                                     }
                                 );
@@ -1187,25 +1187,24 @@
             });
         };
 
-        _crashgroupSubmodule.actions.symbolicate = function(context, crash) {
-            return new Promise(function(resolve, reject) {
+        _crashgroupSubmodule.actions.symbolicate = function (context, crash) {
+            return new Promise(function (resolve, reject) {
                 if (typeof countlyCrashSymbols === "undefined") {
                     reject(null);
-                }
-                else {
+                } else {
                     countlyCrashSymbols
                         .fetchSymbols(false)
-                        .then(function(symbolIndexing) {
+                        .then(function (symbolIndexing) {
                             var symbol_id = countlyCrashSymbols.canSymbolicate(
                                 crash,
                                 symbolIndexing.symbolIndexing || symbolIndexing
                             );
                             countlyCrashSymbols
                                 .symbolicate(crash._id, symbol_id)
-                                .then(function(json) {
+                                .then(function (json) {
                                     resolve(json);
                                 })
-                                .catch(function(xhr) {
+                                .catch(function (xhr) {
                                     reject(xhr);
                                 });
                         });
