@@ -1078,8 +1078,12 @@ var pluginManager = function pluginManager() {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
         }
 
-        if (typeof config.mongodb === 'string') {
-            var dbName = this.replaceDatabaseString(config.mongodb, db);
+        if (config && typeof config.mongodb === "string") {
+            config.mongodb = {uri: config.mongodb};
+        }
+
+        if (config.mongodb.uri) {
+            var dbName = this.replaceDatabaseString(config.mongodb.uri, db);
             //remove protocol
             dbName = dbName.split("://").pop();
             if (dbName.indexOf("@") !== -1) {
@@ -1152,12 +1156,13 @@ var pluginManager = function pluginManager() {
     * @returns {string} modified connection string
     **/
     this.replaceDatabaseString = function(str, db) {
-        var i = str.lastIndexOf('/countly');
-        var k = str.lastIndexOf('/' + db);
+        var parts = str.split("?");
+        var i = parts[0].lastIndexOf('/countly');
+        var k = parts[0].lastIndexOf('/' + db);
         if (i !== k && i !== -1 && db) {
-            return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+            return parts[0].substr(0, i) + "/" + db + parts[0].substr(i + ('/countly').length);
         }
-        return str;
+        return parts.join("?");
     };
 
     this.connectToAllDatabases = async() => {
@@ -1217,7 +1222,11 @@ var pluginManager = function pluginManager() {
         }
 
         if (config && typeof config.mongodb === "string") {
-            var urlParts = url.parse(config.mongodb, true);
+            config.mongodb = {uri: config.mongodb};
+        }
+
+        if (config.mongodb.uri) {
+            var urlParts = url.parse(config.mongodb.uri, true);
             if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
                 maxPoolSize = urlParts.query.maxPoolSize;
             }
@@ -1240,8 +1249,8 @@ var pluginManager = function pluginManager() {
             useNewUrlParser: true,
             useUnifiedTopology: true
         };
-        if (typeof config.mongodb === 'string') {
-            dbName = this.replaceDatabaseString(config.mongodb, db);
+        if (config.mongodb.uri) {
+            dbName = this.replaceDatabaseString(config.mongodb.uri, db);
         }
         else {
             config.mongodb.db = db || config.mongodb.db || 'countly';
@@ -1266,7 +1275,13 @@ var pluginManager = function pluginManager() {
         }
 
         if (config.mongodb.username && config.mongodb.password) {
+            dbName = dbName.replace('mongodb://', '').replace('mongodb+srv://', '');
             dbName = encodeURIComponent(config.mongodb.username) + ":" + encodeURIComponent(utils.decrypt(config.mongodb.password)) + "@" + dbName;
+        }
+
+        if (config.mongodb.username) {
+            dbName = dbName.replace('mongodb://', '').replace('mongodb+srv://', '');
+            dbName = encodeURIComponent(config.mongodb.username) + "@" + dbName;
         }
 
         if (dbName.indexOf('mongodb://') !== 0 && dbName.indexOf('mongodb+srv://') !== 0) {
