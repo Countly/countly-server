@@ -6,7 +6,6 @@
             :key="widget._id"
             :widget="widget"
             :settings="widgetSettingsGetter(widget, true)"
-            :autoPosition="autoPosition(allWidgets)"
             :loading="loading"
             @ready="onReady"
             @command="onWidgetAction">

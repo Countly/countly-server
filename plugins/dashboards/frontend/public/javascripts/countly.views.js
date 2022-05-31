@@ -187,9 +187,8 @@
         data: function() {
             return {
                 GRID_COLUMNS: 4,
-                DEFAULT_MIN_WIDTH: 2,
-                DEFAULT_MIN_HEIGHT: 4,
-                MAX_ROW_X_SUM: 6
+                DEFAULT_MIN_WIDTH: 1,
+                DEFAULT_MIN_HEIGHT: 1
             };
         },
         methods: {
@@ -235,11 +234,6 @@
 
                 var w = width;
 
-                if (minWidth > this.GRID_COLUMNS) {
-                    minWidth = this.DEFAULT_MIN_WIDTH;
-                    countlyDashboards.factory.log("With the new dashboards, we have " + this.GRID_COLUMNS + " column grid system. So min width cannot be greater than " + this.GRID_COLUMNS + "! Old min width = " + dimensions.minWidth + ", New min width (set to default) = " + minWidth);
-                }
-
                 if (!w || w < minWidth) {
                     /**
                      * Minimum width of the widget should be equal to whats mentioned
@@ -248,37 +242,6 @@
                     w = minWidth;
                     countlyDashboards.factory.log("Width should be atleast equal to " + minWidth + "! Old width = " + width + ", New width = " + w);
                 }
-
-                if (w > this.GRID_COLUMNS) {
-                    /**
-                     * If the width is greater than the allowed GRID Columns, lets
-                     * reset it to the minimum width of the widget.
-                     */
-                    w = minWidth;
-                    countlyDashboards.factory.log("Width cannot be greater than " + this.GRID_COLUMNS + "! Old width = " + width + ", New width = " + w);
-                }
-
-                /**
-                    Following code is nomore required.
-                    It would have been required if grid stack didn't allow setting
-                    custom columns.
-
-                    var widthMultiplier = 4;
-                    var rem = w % widthMultiplier;
-                    if (rem !== 0) {
-                        var quo = parseInt(w / widthMultiplier);
-                        var prevNum = quo * widthMultiplier;
-                        var nextNum = (quo + 1) * widthMultiplier;
-                        if (((w - prevNum) - (nextNum - w)) > 0) {
-                            w = nextNum;
-                        }
-                        else {
-                            w = prevNum;
-                        }
-
-                        countlyDashboards.factory.log("Width should be a multiple of " + widthMultiplier + "! New width = " + w);
-                    }
-                */
 
                 return w;
             },
@@ -692,10 +655,6 @@
                     };
                 }
             },
-            autoPosition: {
-                type: Boolean,
-                default: false
-            },
             loading: {
                 type: Boolean,
                 default: true
@@ -1014,17 +973,6 @@
 
                 return w;
             },
-            maxMinRowHeight: function(widgets) {
-                var maxMinRowH = widgets.reduce(function(acc, item) {
-                    if (acc < item.minH) {
-                        acc = item.minH;
-                    }
-
-                    return acc;
-                }, 0);
-
-                return maxMinRowH;
-            },
             getRowWidgets: function(y) {
                 var allGridElements = this.savedGrid();
 
@@ -1037,101 +985,6 @@
 
                 return rowWidgets;
             },
-            updateRowHeight: function(widgets, h) {
-                var maxMinRowH = this.maxMinRowHeight(widgets);
-
-                if (h < maxMinRowH) {
-                    /**
-                     * Row height should be atleast equal to the maximum minimum row height.
-                     * max(minH)
-                     */
-                    h = maxMinRowH;
-                }
-
-                for (var i = 0; i < widgets.length; i++) {
-                    var widgetId = widgets[i].id;
-                    var nodeEl = document.getElementById(widgetId);
-
-                    this.updateGridWidget(nodeEl, {h: h});
-                }
-
-                return h;
-            },
-            syncWidgetHeights: function() {
-                var allGridElements = this.savedGrid();
-
-                allGridElements = this.sortWidgetByGeography(allGridElements);
-
-                var Y;
-                var rowMaxH; // Maximum height of the row
-                var updateIndex = 0;
-                var rowWidgets = [];
-
-                /**
-                 * Starting batch update.
-                 */
-                this.grid.batchUpdate();
-
-                for (var i = 0; i < allGridElements.length; i++) {
-                    var node = allGridElements[i];
-
-                    if (!Number.isInteger(Y)) {
-                        Y = node.y;
-                    }
-
-                    if (!Number.isInteger(rowMaxH)) {
-                        rowMaxH = node.h;
-                    }
-
-                    if (node.y !== Y) {
-                        /**
-                         * Since the allGridElements is sorted by x and y,
-                         * we can assume that all the widgets are in the same row
-                         * as long as node.y === Y.
-                         *
-                         * If they are different, we need to check if we need to update
-                         * heights for the widgets in the row.
-                         */
-
-                        rowWidgets = allGridElements.slice(updateIndex, i);
-                        this.updateRowHeight(rowWidgets, rowMaxH);
-
-                        /**
-                         * At last we will update the variables for this new row.
-                         */
-
-                        Y = node.y;
-                        rowMaxH = node.h;
-                        updateIndex = i;
-                        rowWidgets = [];
-                    }
-
-                    if (rowMaxH !== node.h) {
-                        if (rowMaxH < node.h) {
-                            rowMaxH = node.h;
-                        }
-                    }
-
-                    if (i === (allGridElements.length - 1)) {
-                        /**
-                         * For the last item, we need to run update explicitly.
-                         * Since the above update block will never be executed.
-                         */
-                        rowWidgets = allGridElements.slice(updateIndex, (i + 1));
-                        this.updateRowHeight(rowWidgets, rowMaxH);
-
-                        Y = node.y;
-                        rowMaxH = node.h;
-                        updateIndex = i;
-                        rowWidgets = [];
-                    }
-                }
-
-                /**
-                 * Committing batch update.
-                 */
-                this.grid.commit();
-            },
             initGrid: function() {
                 var self = this;
 
@@ -1139,11 +992,9 @@
                     cellHeight: 80,
                     margin: 8,
                     animate: true,
-                    float: false,
-                    column: 4
+                    float: false
                 });
 
-                self.syncWidgetHeights();
                 this.updateAllWidgetsGeography();
 
                 if (!this.canUpdate) {
@@ -1157,23 +1008,7 @@
                     });
                 });
 
-                this.grid.on("resizestop", function(event, element) {
-                    var node = element.gridstackNode;
-
-                    var rowWidgets = self.getRowWidgets(node.y);
-
-                    /**
-                     * Starting batch update.
-                     */
-                    self.grid.batchUpdate();
-
-                    self.updateRowHeight(rowWidgets, node.h);
-
-                    /**
-                     * Committing batch update.
-                     */
-                    self.grid.commit();
-
+                this.grid.on("resizestop", function() {
                     /**
                      * After the resizestop event, change event is fired by the grid if there are
                      * changes in the positioning and size of OTHER widgets in the grid.
@@ -1186,7 +1021,6 @@
                      * the change event.
                      */
 
-                    self.syncWidgetHeights();
                     self.updateAllWidgetsGeography();
                     setTimeout(function() {
                         /**
@@ -1203,42 +1037,7 @@
                     });
                 });
 
-                this.grid.on("dragstop", function(event, element) {
-                    var node = element.gridstackNode;
-
-                    var rowWidgets = self.getRowWidgets(node.y);
-
-                    var setHeight = node.h;
-
-                    if (rowWidgets.length) {
-                        /**
-                         * Since all widgets in the row should have same heights,
-                         * row height equals to the height of any widget in the row.
-                         *
-                         * Rather than changing the heights of the other widgets immediately,
-                         * lets check if we can change added widgets height to match
-                         * the heights of the other widgets in this row.
-                         */
-                        var currentRowHeight = rowWidgets[0].h;
-
-                        if (setHeight !== currentRowHeight) {
-                            setHeight = currentRowHeight;
-                        }
-                    }
-
-                    /**
-                     * Starting batch update.
-                     */
-                    self.grid.batchUpdate();
-
-                    self.updateRowHeight(rowWidgets, setHeight);
-
-                    /**
-                     * Committing batch update.
-                     */
-                    self.grid.commit();
-
-                    self.syncWidgetHeights();
+                this.grid.on("dragstop", function() {
                     self.updateAllWidgetsGeography();
                     setTimeout(function() {
                         /**
@@ -1270,32 +1069,11 @@
                     if (node && node.new) {
                         var widgetId = node.id;
 
-                        var rowWidgets = self.getRowWidgets(node.y);
-
-                        var setHeight = node.h;
-
-                        if (rowWidgets.length) {
-                        /**
-                         * Since all widgets in the row should have same heights,
-                         * row height equals to the height of any widget in the row.
-                         *
-                         * Rather than changing the heights of the other widgets immediately,
-                         * lets check if we can change added widgets height to match
-                         * the heights of the other widgets in this row.
-                         */
-                            var currentRowHeight = rowWidgets[0].h;
-
-                            if (setHeight !== currentRowHeight) {
-                                setHeight = currentRowHeight;
-                            }
-                        }
-
                         /**
                          * Starting batch update.
                          */
                         self.grid.batchUpdate();
 
-                        var finalRowH = self.updateRowHeight(rowWidgets, setHeight);
                         /**
                          * Since its nomore a new widget, we can set new to false.
                          */
@@ -1306,7 +1084,7 @@
                          */
                         self.grid.commit();
 
-                        var s = [node.w, finalRowH];
+                        var s = [node.w, node.h];
                         var p = [node.x, node.y];
 
                         self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: p, size: s}}).then(function(res) {
@@ -1339,91 +1117,6 @@
 
                     this.updateWidgetGeography(wId, {size: size, position: position});
                 }
-            },
-            autoPosition: function(allWidgets) {
-                /**
-                 * This function is created for backward compatibility of
-                 * the grid system.
-                 * In the older dashborads, we used 12 column grid system, but in
-                 * new dashboard we are using 4 column grid system.
-                 * In the 4 column grid system, total sum of x coordinates of all
-                 * widgets can be maximum 6. If the sum is greater than that, it means
-                 * the widget is still following the old grid structure.
-                 *
-                 * Widget can be positioned at x = 0, 1, 2, 3. Total sum = 6
-                 *
-                 * We should remove this computed property after all customers are
-                 * moved to the new dashboards and are following the new grid system.
-                 */
-                var allGeography = allWidgets.map(function(w) {
-                    return {
-                        _id: w._id,
-                        size: w.size,
-                        position: w.position
-                    };
-                });
-
-                var autoPosition = false;
-
-                var positions = allGeography.map(function(w) {
-                    var position = w.position;
-
-                    if (!Array.isArray(position) || (position.length !== 2)) {
-                        autoPosition = true;
-                        return;
-                    }
-
-                    if (!Number.isInteger(position[0]) || !Number.isInteger(position[1])) {
-                        autoPosition = true;
-                        return;
-                    }
-
-                    return {
-                        x: position[0],
-                        y: position[1],
-                    };
-                });
-
-                if (autoPosition) {
-                    return autoPosition;
-                }
-
-                var sortedGeography = this.sortWidgetByGeography(positions);
-
-                var rowXSum = 0;
-                var Y;
-
-                for (var i = 0; i < sortedGeography.length; i++) {
-                    var node = sortedGeography[i];
-                    var y = node.y;
-                    var x = node.x;
-
-                    if (x > this.GRID_COLUMNS) {
-                        autoPosition = true;
-                        break;
-                    }
-
-                    if (!Number.isInteger(Y)) {
-                        Y = y;
-                    }
-
-                    if (Y !== y) {
-                        /**
-                         * Means its a new row now.
-                         */
-                        Y = y;
-                        rowXSum = 0;
-                    }
-
-                    rowXSum += x;
-
-                    if (rowXSum > this.MAX_ROW_X_SUM) {
-                        autoPosition = true;
-                        break;
-                    }
-                }
-
-                return autoPosition;
             },
             savedGrid: function() {
                 return this.grid.save(false);

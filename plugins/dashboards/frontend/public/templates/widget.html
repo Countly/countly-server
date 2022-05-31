@@ -6,7 +6,6 @@
     :gs-y="widget.position && widget.position[1]"
     :gs-w="validateWidgetSize(settings, widget, 'w')"
     :gs-h="validateWidgetSize(settings, widget, 'h')"
-    :gs-auto-position="autoPosition"
     :gs-min-w="validateWidgetDimension(settings, 'w')"
     :gs-min-h="validateWidgetDimension(settings, 'h')"
     @click="settings.grid.onClick && settings.grid.onClick(widget)">
