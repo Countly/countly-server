@@ -40,7 +40,8 @@
                 <el-button :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color}" class="ratings-drawer__rp-callout-button">{{ drawerScope.editedObject.popup_button_callout }} </el-button>
               </div>
               <div class="ratings-drawer__rp-footer">
-                <img src="/star-rating/images/star-rating/powered-by-countly.svg">
+                <img v-if="imageSrc" class="ratings-drawer__image" :src="imageSrc">
+                <img v-else src="/star-rating/images/star-rating/powered-by-countly.svg">
               </div>
             </div>
             <div class="bu-is-size-7 ratings-drawer__stage-label" v-if="drawerScope.currentStepId !== 'step3'">
@@ -52,11 +53,12 @@
               </div>
               <div class="bu-has-text-weight-medium ratings-drawer__tp-thanks-message bu-is-size-4">{{ drawerScope.editedObject.popup_thanks_message }}</div>
               <div class="ratings-drawer__tp-footer">
-                <img src="/star-rating/images/star-rating/powered-by-countly.svg">
-              </div>
+                <img v-if="imageSrc" class="ratings-drawer__image" :src="imageSrc">
+                <img v-else src="/star-rating/images/star-rating/powered-by-countly.svg">
+            </div>
             </div>
 					</div>
-          <div class="preview-stage" v-if="drawerScope.currentStepId !== 'step1' && drawerScope.currentStepId !== 'step3'" >
+          <div class="preview-stage bu-pt-4 bu-mt-4" v-if="drawerScope.currentStepId !== 'step1' && drawerScope.currentStepId !== 'step3'" >
 						<div class="bu-is-size-7 ratings-drawer__stage-label">
 							{{ i18n('feedback.trigger-button-preview') }}
 						</div>
@@ -172,14 +174,19 @@
               ref="logoDropzone"
               id="logo-dropzone"
               @vdropzone-file-added="onFileAdded"
+              @vdropzone-removed-file="onFileRemoved"
               @vdropzone-complete="onComplete"
               :options="logoDropzoneOptions"
               :useCustomSlot="true">
                 <div class="dropzone-custom-content">
                   <h3 class="dropzone-custom-title">
-                    <img src="star-rating/images/star-rating/folder-icon.svg" alt="">
+                    <img class="ratings-drawer__logo__width" v-if="imageSrc" :src="imageSrc" alt="">
+                    <img v-else src="star-rating/images/star-rating/folder-icon.svg" alt="">
                   </h3>
-                  <div class="subtitle text-medium bu-mt-2">
+                  <div v-if="imageSrc">
+                    <el-button @click.native.stop @click="remove()" size="small" type="text" class="bu-has-text-weight-light color-red-50">{{ i18n('feedback.remove-file') }}</el-button>
+                  </div>
+                  <div v-else class="subtitle text-medium bu-mt-2">
                     <span class="bu-has-text-weight-light bu-has-text-grey">{{ i18n('feedback.drop-message') }}</span>
                     <span class="bu-has-text-link bu-has-text-weight-medium">{{ i18n('feedback.click-to-upload') }}</span>
                   </div>

@@ -20,6 +20,9 @@
         mixins: [],
         data: function() {
             return {
+                imageSource: '',
+                deleteLogo: false,
+                imageSrc: '',
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
                 // TODO: will be localized
@@ -35,7 +38,7 @@
                     acceptedFiles: 'image/jpeg,image/png,image/gif',
                     dictDefaultMessage: this.i18n('feedback.drop-message'),
                     dictRemoveFile: this.i18n('feedback.remove-file'),
-                    url: "/i/feedback/logo",
+                    url: "/i/feedback/logo" + "?api_key=" + countlyGlobal.member.api_key,
                     paramName: "logo",
                     params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
                 },
@@ -43,6 +46,14 @@
                 stamp: 0,
                 cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
             };
+        },
+        watch: {
+            imageSource: {
+                immediate: true,
+                handler: function(newValue) {
+                    this.imageSrc = newValue;
+                }
+            },
         },
         methods: {
         // drawer event handlers
@@ -65,6 +76,10 @@
 
                 if (this.logoFile !== "") {
                     submitted.logo = this.logoFile;
+                }
+
+                if (this.deleteLogo) {
+                    submitted.logo = '';
                 }
 
                 if (this.cohortsEnabled) {
@@ -101,9 +116,25 @@
                     });
                 }
             },
-            onOpen: function() {},
-            onFileAdded: function() {
+            onOpen: function() {
                 var self = this;
+                var loadImage = new Image();
+                loadImage.src = window.location.origin + "/star-rating/images/star-rating/" + this.controls.initialEditedObject.logo;
+                loadImage.onload = function() {
+                    self.imageSource = loadImage.src;
+                };
+            },
+            onFileRemoved: function() {
+                this.imageSource = '';
+                this.deleteLogo = true;
+            },
+            onFileAdded: function(file) {
+                var img = new FileReader();
+                var self = this;
+                img.onload = function() {
+                    self.imageSource = img.result;
+                };
+                img.readAsDataURL(file);
                 this.stamp = Date.now();
                 this.logoDropzoneOptions.params.identifier = this.stamp;
                 setTimeout(function() {
@@ -112,6 +143,10 @@
             },
             onComplete: function(res) {
                 this.logoFile = this.stamp + "." + res.upload.filename.split(".")[1];
+            },
+            remove: function() {
+                this.imageSource = '';
+                this.deleteLogo = true;
             }
         }
     });
