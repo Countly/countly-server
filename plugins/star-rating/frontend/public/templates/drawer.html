@@ -40,7 +40,7 @@
                 <el-button :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color}" class="ratings-drawer__rp-callout-button">{{ drawerScope.editedObject.popup_button_callout }} </el-button>
               </div>
               <div class="ratings-drawer__rp-footer">
-                <img v-if="imageSrc" :src="imageSrc">
+                <img v-if="imageSrc" class="ratings-drawer__image" :src="imageSrc">
                 <img v-else src="/star-rating/images/star-rating/powered-by-countly.svg">
               </div>
             </div>
@@ -53,7 +53,7 @@
               </div>
               <div class="bu-has-text-weight-medium ratings-drawer__tp-thanks-message bu-is-size-4">{{ drawerScope.editedObject.popup_thanks_message }}</div>
               <div class="ratings-drawer__tp-footer">
-                <img v-if="imageSrc" :src="imageSrc">
+                <img v-if="imageSrc" class="ratings-drawer__image" :src="imageSrc">
                 <img v-else src="/star-rating/images/star-rating/powered-by-countly.svg">
             </div>
             </div>
