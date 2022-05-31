@@ -131,10 +131,10 @@ async function validate(args, draft = false) {
  * 
  * @param {object} params params object
  * 
- * @api {POST} i/push/message/test message/test
+ * @api {POST} i/push/message/test Message / test
  * @apiName message/test
  * @apiDescription Send push notification to test users specified in application plugin configuration
- * @apiGroup push
+ * @apiGroup Push Notifications
  *
  * @apiQuery {ObjectID} app_id application id
  * @apiUse PushMessageBody
@@ -238,11 +238,11 @@ module.exports.test = async params => {
  * 
  * @param {object} params params object
  * 
- * @api {POST} i/push/message/create message/create
+ * @api {POST} i/push/message/create Message / create
  * @apiName message/create
  * @apiDescription Create push notification.
  * Set status to "draft" to create a draft, leave it unspecified otherwise.
- * @apiGroup push
+ * @apiGroup Push Notifications
  *
  * @apiQuery {ObjectID} app_id application id
  * @apiUse PushMessageBody
@@ -290,10 +290,10 @@ module.exports.create = async params => {
  * 
  * @param {object} params params object
  * 
- * @api {POST} i/push/message/update message/update
+ * @api {POST} i/push/message/update Message / update
  * @apiName message/update
  * @apiDescription Update push notification
- * @apiGroup push
+ * @apiGroup Push Notifications
  *
  * @apiQuery {ObjectID} app_id application id
  * @apiUse PushMessageBody
@@ -350,10 +350,10 @@ module.exports.update = async params => {
  * 
  * @param {object} params params object
  * 
- * @api {POST} i/push/message/remove message/remove
+ * @api {POST} i/push/message/remove Message / remove
  * @apiName message/remove
- * @apiDescription Remove push notification
- * @apiGroup push
+ * @apiDescription Remove message by marking it as deleted (it stays in the database for consistency)
+ * @apiGroup Push Notifications
  *
  * @apiQuery {ObjectID} _id message id
  * @apiSuccessExample {json} Success
@@ -408,12 +408,12 @@ module.exports.remove = async params => {
  * 
  * @param {object} params params object
  * 
- * @api {POST} i/push/message/toggle message/toggle
+ * @api {POST} i/push/message/toggle Message / API or Automated / toggle
  * @apiName message/toggle
- * @apiDescription Stop or start automated message
- * @apiGroup push
+ * @apiDescription Stop active or start inactive API or automated message
+ * @apiGroup Push Notifications
  *
- * @apiQuery {ObjectID} _id message id
+ * @apiQuery {ObjectID} _id message ID
  * @apiQuery {Boolean} active true to start the message, false to stop it
  * @apiUse PushMessage
  * @apiUse PushValidationError
@@ -490,10 +490,10 @@ module.exports.toggle = async params => {
  * 
  * @param {object} params params object
  * 
- * @api {POST} o/push/message/estimate message/estimate
+ * @api {POST} o/push/message/estimate Message / estimate audience
  * @apiName message/estimate
  * @apiDescription Estimate message audience
- * @apiGroup push
+ * @apiGroup Push Notifications
  *
  * @apiBody {ObjectID} app Application ID
  * @apiBody {String[]} platforms Array of platforms to send to
@@ -585,10 +585,10 @@ module.exports.estimate = async params => {
  * 
  * @param {object} params params object
  * 
- * @api {GET} o/push/message/mime message/mime
+ * @api {GET} o/push/message/mime Message / attachment MIME
  * @apiName message/mime
  * @apiDescription Get MIME information of the URL specified by sending HEAD request and then GET if HEAD doesn't work. Respects proxy setting, follows redirects and returns end URL along with content type & length.
- * @apiGroup push
+ * @apiGroup Push Notifications
  *
  * @apiQuery {String} url URL to check
  * 
@@ -644,10 +644,10 @@ module.exports.mime = async params => {
  * 
  * @param {object} params params object
  * 
- * @api {GET} o/push/message/GET message/GET
+ * @api {GET} o/push/message/GET Message / GET
  * @apiName message/GET
- * @apiDescription Get message by id
- * @apiGroup push
+ * @apiDescription Get message by ID
+ * @apiGroup Push Notifications
  *
  * @apiQuery {ObjectID} _id Message ID
  * 
@@ -689,11 +689,11 @@ module.exports.one = async params => {
  * @param {object} params params
  * @returns {Promise} resolves to true
  * 
- * @api {GET} o/push/user user
+ * @api {GET} o/push/user User notifications
  * @apiName user
  * @apiDescription Get notifications sent to a particular user.
  * Makes a look up either by user id (uid) or did (device id). Returns ids of messages & dates, optionally returns corresponding message objects.
- * @apiGroup push
+ * @apiGroup Push Notifications
  *
  * @apiQuery {String} app_id Application ID
  * @apiQuery {Boolean} messages Whether to return Message objects as well
@@ -773,11 +773,11 @@ module.exports.user = async params => {
  * @param {object} params params
  * @returns {Promise} resolves to true
  * 
- * @api {GET} o/push/message/all message/all
+ * @api {GET} o/push/message/all Message / find
  * @apiName message/all
  * @apiDescription Get messages
  * Returns one of three groups: one time messages (neither auto, nor api params set or set to false), automated messages (auto = "true"), API messages (api = "true")
- * @apiGroup push
+ * @apiGroup Push Notifications
  *
  * @apiQuery {String} app_id Application ID
  * @apiQuery {Boolean} auto Whether to return only automated messages

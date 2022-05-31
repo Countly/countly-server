@@ -1,3 +1,30 @@
+## Version 22.03.12
+
+Fixes:
+- [UI] Custom file name for export functionality in the datatable
+- [dashboards] Subheading and label prop in the select app component
+- [jobs] More rescheduling attempts
+- [push] Adding lastRuns
+- [push] Adding too late to send error
+- [push] Filtering messages by status
+- [push] Variables for API messages
+- [push] Waiting for connect promise to resolve
+- [systemlogs] Make sure we store correct MongoDB documents
+- [user-management] Apply filter when reset filter button is clicked
+- [user-management] Set filter dropdown width
+
+Enterprise fixes:
+- [cohorts] Cohort name is not editable after creation
+- [cohorts] Cohorts aren't sortable in "Current Users" column
+- [concurrent_users] Don't show period in online users widget
+- [concurrent_users] Max online user values should be resettable from an app level configuration
+- [concurrent_users] x-Axis labels of this online users graph on dashboards horizontally
+- [config-transfer] Config transfer supports Fitlering rules
+- [drill] Make default visualization 'Bar Chart' if query contains BY in Drill
+- [drill] When exporting BY query table result in drill to excel file, key column is empty
+- [formulas] Expression value checks for copy formulas
+- [users] Decode event name in userprofile event timeline section
+
 ## Version 22.03.11
 
 Fixes:
