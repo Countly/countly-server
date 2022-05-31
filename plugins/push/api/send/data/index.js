@@ -5,7 +5,7 @@ const { S, State, Status, STATUSES, TriggerKind, MEDIA_MIME_ALL, MEDIA_MIME_IOS,
     { Creds } = require('./creds'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
-    { Result } = require('./result'),
+    { Result, MAX_ERRORS, MAX_RUNS } = require('./result'),
     { Message } = require('./message'),
     { Template } = require('./template'),
     dbext = require('./db');
@@ -28,8 +28,11 @@ module.exports = {
 
     Filter,
     Content,
-    Result,
     Info,
+
+    Result,
+    MAX_ERRORS,
+    MAX_RUNS,
 
     Message,
 

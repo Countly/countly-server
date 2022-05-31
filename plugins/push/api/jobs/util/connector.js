@@ -1,5 +1,5 @@
 const { DoFinish } = require('./do_finish'),
-    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR } = require('../../send'),
+    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR, MAX_RUNS } = require('../../send'),
     { FRAME_NAME } = require('../../send/proto');
 
 /**
@@ -21,6 +21,7 @@ class Connector extends DoFinish {
         this.db = db;
         this.state = state;
         this.limit = state.cfg.pool.pushes;
+        this.connects = [];
         this.resetErrors();
     }
 
@@ -31,6 +32,7 @@ class Connector extends DoFinish {
         this.noApp = new SendError('NoApp', ERROR.DATA_COUNTLY);
         this.noCreds = new SendError('NoCredentials', ERROR.DATA_COUNTLY);
         this.expiredCreds = new SendError('ExpiredCreds', ERROR.CONNECTION_PROVIDER);
+        this.tooLateToSend = new SendError('TooLateToSend', ERROR.DATA_COUNTLY);
         this.noMessage = {}; // {mid: [push, push, push, ...]}
         this.noMessageBytes = 0;
     }
@@ -141,9 +143,16 @@ class Connector extends DoFinish {
         else { // all good with credentials, now let's check messages
             if (!message.is(State.Streaming)) {
                 let date = new Date(),
-                    update = {$set: {status: Status.Sending, 'info.startedLast': date}, $bit: {state: {or: State.Streaming}}};
+                    update = {$set: {status: Status.Sending, 'info.startedLast': date}, $bit: {state: {or: State.Streaming}}},
+                    run = message.result.startRun(new Date());
                 if (!message.info.started) {
                     update.$set['info.started'] = date;
+                }
+                if (message.result.lastRuns.length === MAX_RUNS) {
+                    update.$set['result.lastRuns'] = message.result.lastRuns;
+                }
+                else {
+                    update.$push = {'result.lastRuns': run};
                 }
                 message.updateAtomically({_id: message._id, state: message.state}, update)
                     .then(ok => {
@@ -154,6 +163,11 @@ class Connector extends DoFinish {
                             callback(new PushError('Failed to mark message as streaming'));
                         }
                     }, callback);
+            }
+            else if (push._id.getTimestamp().getTime() < Date.now() - 3600000) {
+                this.tooLateToSend.addAffected(push._id, 1);
+                this.do_flush(callback, true);
+                return;
             }
             else {
                 let creds = app.creds[push.p],
@@ -169,21 +183,24 @@ class Connector extends DoFinish {
                 }
                 else { // no connection yet
                     this.log.i('Connecting %s', pid);
-                    pools.connect(push.a, push.p, push.f, creds, this.state, this.state.cfg).then(valid => {
+                    let connect = pools.connect(push.a, push.p, push.f, creds, this.state, this.state.cfg).then(valid => {
                         if (valid) {
                             this.log.i('Connected %s', pid);
                         }
                         else {
                             app.creds[push.p] = null;
                         }
+                        this.connects = this.connects.filter(c => c !== connect);
                         callback(null, push);
                     }, err => {
                         this.log.i('Failed to connect %s', pid, err);
                         app.creds[push.p] = null;
+                        this.connects = this.connects.filter(c => c !== connect);
                         this.do_transform(push, encoding, callback);
                         // this.discardedByAppOrCreds.push(push._id);
                         // this.do_flush(callback, true);
                     });
+                    this.connects.push(connect);
                 }
             }
         }
@@ -196,7 +213,7 @@ class Connector extends DoFinish {
      * @param {boolean} ifNeeded true if we only need to flush `discarded` when it's length is over `limit`
      */
     do_flush(callback, ifNeeded) {
-        let total = this.noMessageBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.expiredCreds.affectedBytes;
+        let total = this.noMessageBytes + this.noApp.affectedBytes + this.noCreds.affectedBytes + this.expiredCreds.affectedBytes + this.tooLateToSend.affectedBytes;
         this.log.d('in connector do_flush, total', total);
 
         if (ifNeeded && !this.flushed && (!total || total < this.limit)) {
@@ -268,6 +285,10 @@ class Connector extends DoFinish {
 
         if (this.expiredCreds.hasAffected) {
             this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.expiredCreds});
+        }
+
+        if (this.tooLateToSend.hasAffected) {
+            this.push({frame: FRAME.RESULTS | FRAME.ERROR, payload: this.tooLateToSend});
         }
 
         this.resetErrors();
@@ -375,7 +396,7 @@ class Connector extends DoFinish {
      * @param {function} callback callback function
      */
     do_final(callback) {
-        callback();
+        Promise.all(this.connects).then(() => callback(), () => callback());
     }
 
 
