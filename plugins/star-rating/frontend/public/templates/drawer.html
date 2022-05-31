@@ -40,7 +40,8 @@
                 <el-button :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color}" class="ratings-drawer__rp-callout-button">{{ drawerScope.editedObject.popup_button_callout }} </el-button>
               </div>
               <div class="ratings-drawer__rp-footer">
-                <img src="/star-rating/images/star-rating/powered-by-countly.svg">
+                <img v-if="imageSrc" :src="imageSrc">
+                <img v-else src="/star-rating/images/star-rating/powered-by-countly.svg">
               </div>
             </div>
             <div class="bu-is-size-7 ratings-drawer__stage-label" v-if="drawerScope.currentStepId !== 'step3'">
@@ -52,8 +53,9 @@
               </div>
               <div class="bu-has-text-weight-medium ratings-drawer__tp-thanks-message bu-is-size-4">{{ drawerScope.editedObject.popup_thanks_message }}</div>
               <div class="ratings-drawer__tp-footer">
-                <img src="/star-rating/images/star-rating/powered-by-countly.svg">
-              </div>
+                <img v-if="imageSrc" :src="imageSrc">
+                <img v-else src="/star-rating/images/star-rating/powered-by-countly.svg">
+            </div>
             </div>
 					</div>
           <div class="preview-stage" v-if="drawerScope.currentStepId !== 'step1' && drawerScope.currentStepId !== 'step3'" >
@@ -172,6 +174,7 @@
               ref="logoDropzone"
               id="logo-dropzone"
               @vdropzone-file-added="onFileAdded"
+              @vdropzone-removed-file="onFileRemoved"
               @vdropzone-complete="onComplete"
               :options="logoDropzoneOptions"
               :useCustomSlot="true">

@@ -20,6 +20,8 @@
         mixins: [],
         data: function() {
             return {
+                imageSource: '',
+                imageSrc: '',
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
                 // TODO: will be localized
@@ -43,6 +45,14 @@
                 stamp: 0,
                 cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
             };
+        },
+        watch: {
+            imageSource: {
+                immediate: true,
+                handler: function(newValue) {
+                    this.imageSrc = newValue;
+                }
+            },
         },
         methods: {
         // drawer event handlers
@@ -102,8 +112,16 @@
                 }
             },
             onOpen: function() {},
-            onFileAdded: function() {
+            onFileRemoved: function() {
+                this.imageSource = '';
+            },
+            onFileAdded: function(file) {
+                var img = new FileReader();
                 var self = this;
+                img.onload = function() {
+                    self.imageSource = img.result;
+                };
+                img.readAsDataURL(file);
                 this.stamp = Date.now();
                 this.logoDropzoneOptions.params.identifier = this.stamp;
                 setTimeout(function() {
