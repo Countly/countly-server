@@ -21,6 +21,7 @@
         data: function() {
             return {
                 imageSource: '',
+                deleteLogo: false,
                 imageSrc: '',
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
@@ -37,7 +38,7 @@
                     acceptedFiles: 'image/jpeg,image/png,image/gif',
                     dictDefaultMessage: this.i18n('feedback.drop-message'),
                     dictRemoveFile: this.i18n('feedback.remove-file'),
-                    url: "/i/feedback/logo",
+                    url: "/i/feedback/logo" + "?api_key=" + countlyGlobal.member.api_key,
                     paramName: "logo",
                     params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
                 },
@@ -77,6 +78,10 @@
                     submitted.logo = this.logoFile;
                 }
 
+                if (this.deleteLogo) {
+                    submitted.logo = '';
+                }
+
                 if (this.cohortsEnabled) {
                     var finalizedTargeting = null;
                     var exported = this.$refs.ratingsSegmentation.export();
@@ -111,9 +116,17 @@
                     });
                 }
             },
-            onOpen: function() {},
+            onOpen: function() {
+                var self = this;
+                var loadImage = new Image();
+                loadImage.src = window.location.origin + "/star-rating/images/star-rating/" + this.controls.initialEditedObject.logo;
+                loadImage.onload = function() {
+                    self.imageSource = loadImage.src;
+                };
+            },
             onFileRemoved: function() {
                 this.imageSource = '';
+                this.deleteLogo = true;
             },
             onFileAdded: function(file) {
                 var img = new FileReader();
@@ -130,6 +143,10 @@
             },
             onComplete: function(res) {
                 this.logoFile = this.stamp + "." + res.upload.filename.split(".")[1];
+            },
+            remove: function() {
+                this.imageSource = '';
+                this.deleteLogo = true;
             }
         }
     });

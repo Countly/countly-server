@@ -45,6 +45,12 @@
       width:132px;
   }
 
+  &__logo {
+    &__width {
+        width: 100px;
+    }
+  }
+
   &__thanks-popup {
     width: 450px;
     height: 211px;

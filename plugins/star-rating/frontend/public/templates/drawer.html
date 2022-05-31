@@ -180,9 +180,13 @@
               :useCustomSlot="true">
                 <div class="dropzone-custom-content">
                   <h3 class="dropzone-custom-title">
-                    <img src="star-rating/images/star-rating/folder-icon.svg" alt="">
+                    <img class="ratings-drawer__logo__width" v-if="imageSrc" :src="imageSrc" alt="">
+                    <img v-else src="star-rating/images/star-rating/folder-icon.svg" alt="">
                   </h3>
-                  <div class="subtitle text-medium bu-mt-2">
+                  <div v-if="imageSrc">
+                    <el-button @click.native.stop @click="remove()" size="small" type="text" class="bu-has-text-weight-light color-red-50">{{ i18n('feedback.remove-file') }}</el-button>
+                  </div>
+                  <div v-else class="subtitle text-medium bu-mt-2">
                     <span class="bu-has-text-weight-light bu-has-text-grey">{{ i18n('feedback.drop-message') }}</span>
                     <span class="bu-has-text-link bu-has-text-weight-medium">{{ i18n('feedback.click-to-upload') }}</span>
                   </div>
