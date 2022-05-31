@@ -21,6 +21,7 @@ class Connector extends DoFinish {
         this.db = db;
         this.state = state;
         this.limit = state.cfg.pool.pushes;
+        this.connects = [];
         this.resetErrors();
     }
 
@@ -182,21 +183,24 @@ class Connector extends DoFinish {
                 }
                 else { // no connection yet
                     this.log.i('Connecting %s', pid);
-                    pools.connect(push.a, push.p, push.f, creds, this.state, this.state.cfg).then(valid => {
+                    let connect = pools.connect(push.a, push.p, push.f, creds, this.state, this.state.cfg).then(valid => {
                         if (valid) {
                             this.log.i('Connected %s', pid);
                         }
                         else {
                             app.creds[push.p] = null;
                         }
+                        this.connects = this.connects.filter(c => c !== connect);
                         callback(null, push);
                     }, err => {
                         this.log.i('Failed to connect %s', pid, err);
                         app.creds[push.p] = null;
+                        this.connects = this.connects.filter(c => c !== connect);
                         this.do_transform(push, encoding, callback);
                         // this.discardedByAppOrCreds.push(push._id);
                         // this.do_flush(callback, true);
                     });
+                    this.connects.push(connect);
                 }
             }
         }
@@ -392,7 +396,7 @@ class Connector extends DoFinish {
      * @param {function} callback callback function
      */
     do_final(callback) {
-        callback();
+        Promise.all(this.connects).then(() => callback(), () => callback());
     }
 
 
