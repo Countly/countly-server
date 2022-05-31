@@ -605,7 +605,7 @@
                     {'name': '.XLSX', value: 'xlsx'}
                 ],
                 searchQuery: '',
-                exportFileName: "",
+                exportFileName: this.getDefaultFileName(),
             };
         },
         methods: {
@@ -615,9 +615,6 @@
                 });
             },
             getDefaultFileName: function() {
-                if (this.exportFileName.trim().length > 0) {
-                    return this.exportFileName;
-                }
                 var siteName = countlyGlobal.countlyTitle;
                 var sectionName = "";
                 var selectedMenuItem = this.$store.getters["countlySidebar/getSelectedMenuItem"];
@@ -630,8 +627,7 @@
                 }
                 var date = countlyCommon.getDateRange();
 
-                this.exportFileName = siteName + " " + appName + " " + sectionName + " " + date;
-                return this.exportFileName;
+                return siteName + " " + appName + " " + sectionName + " " + date;
             },
             getLocalExportContent: function() {
                 if (this.exportFormat) {
@@ -675,7 +671,7 @@
                         type: params.type,
                         path: path,
                         prop: "aaData",
-                        filename: this.getDefaultFileName(),
+                        filename: this.exportFileName,
                         api_key: countlyGlobal.member.api_key
                     };
                 }
@@ -684,12 +680,12 @@
                     formData = {
                         type: params.type,
                         data: JSON.stringify(this.getLocalExportContent()),
-                        filename: this.getDefaultFileName(),
+                        filename: this.exportFileName,
                         api_key: countlyGlobal.member.api_key
                     };
                 }
                 if (!formData.filename) {
-                    formData.filename = this.getDefaultFileName();
+                    formData.filename = this.exportFileName;
                 }
 
                 if (formData.url === "/o/export/requestQuery") {
@@ -752,10 +748,6 @@
                     return compareTo.toLowerCase().indexOf(query) > -1;
                 });
             }
-        },
-        mounted: function() {
-            this.getDefaultFileName();
-
         },
         computed: {
             exportColumns: {
