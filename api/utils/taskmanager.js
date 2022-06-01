@@ -232,7 +232,7 @@ taskmanager.createTask = function(options, callback) {
     else {
         options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, {'upsert': true}, callback);
         if (options.manually_create) {
-            plugins.dispatch("/systemlogs", {params: options.params, action: "task_manager_task_created", data: update});
+            plugins.dispatch("/systemlogs", {params: options.params, action: "task_manager_task_created", data: JSON.stringify(update)});
         }
     }
 };
