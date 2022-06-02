@@ -595,6 +595,13 @@
                 required: false
             }
         },
+        mounted: function() {
+            var self = this;
+            this.$root.$on("cly-date-change", function() {
+                self.exportFileName = self.getDefaultFileName();
+            });
+
+        },
         data: function() {
             return {
                 selectedExportColumns: null,
@@ -625,9 +632,10 @@
                 if (this.$store.getters["countlyCommon/getActiveApp"]) {
                     appName = this.$store.getters["countlyCommon/getActiveApp"].name;
                 }
-                var date = countlyCommon.getDateRange();
+                var date = countlyCommon.getDateRangeForCalendar();
 
-                return siteName + " " + appName + " " + sectionName + " " + date;
+                var filename =  siteName + " - " + appName + " - " + sectionName + " " + "( " + date + " )";
+                return filename;
             },
             getLocalExportContent: function() {
                 if (this.exportFormat) {
@@ -828,7 +836,7 @@
                     'footer-left': 'footer-left',
                     'footer-right': 'footer-right',
                     'bottomline': 'bottomline'
-                }
+                },
             };
         },
         computed: {
