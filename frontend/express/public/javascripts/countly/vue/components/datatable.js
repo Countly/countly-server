@@ -634,7 +634,7 @@
                 }
                 var date = countlyCommon.getDateRangeForCalendar();
 
-                var filename =  siteName + " - " + appName + " - " + sectionName + " " + "( " + date + " )";
+                var filename = siteName + " - " + appName + " - " + sectionName + " " + "(" + date + ")";
                 return filename;
             },
             getLocalExportContent: function() {
