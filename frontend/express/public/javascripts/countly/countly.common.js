@@ -1643,7 +1643,7 @@
                     var date = new Date();
                     var lastDay = new Date(date.getFullYear(), date.getMonth(), 1);
 
-                    // get maximum number of current month
+                    // count of days of the current month
                     var currentMonthCount = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 
                     // get date of currenthMonthCount days ago
@@ -2735,7 +2735,7 @@
                     if (_period === "day") {
                         start.add(1, 'days');
                         var now = new Date();
-                        // it will add the number of days of the current month to the x-axis label
+                        // it will add the count of days of the current month to the x-axis label
                         var currentMonthCount = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
                         for (i = 0; i < currentMonthCount; i++) {
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
