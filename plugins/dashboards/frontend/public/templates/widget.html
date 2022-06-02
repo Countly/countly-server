@@ -6,8 +6,8 @@
     :gs-y="widget.position && widget.position[1]"
     :gs-w="validateWidgetSize(settings, widget, 'w')"
     :gs-h="validateWidgetSize(settings, widget, 'h')"
-    :gs-min-w="validateWidgetDimension(settings, 'w')"
-    :gs-min-h="validateWidgetDimension(settings, 'h')"
+    :gs-min-w="validateWidgetDimension(settings, widget, 'w')"
+    :gs-min-h="validateWidgetDimension(settings, widget, 'h')"
     @click="settings.grid.onClick && settings.grid.onClick(widget)">
 
     <!--

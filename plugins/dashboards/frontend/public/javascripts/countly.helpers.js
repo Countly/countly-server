@@ -559,14 +559,6 @@
     var SourceAppsComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/drawer/source-apps.html'),
         props: {
-            subheading: {
-                type: String,
-                required: false
-            },
-            label: {
-                type: String,
-                required: false
-            },
             multipleLimit: {
                 type: Number,
                 default: 4

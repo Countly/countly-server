@@ -158,15 +158,7 @@
             }
         },
         grid: {
-            component: TimesOfDayWidgetComponent,
-            dimensions: function() {
-                return {
-                    minWidth: 2,
-                    minHeight: 4,
-                    width: 3,
-                    height: 4
-                };
-            },
+            component: TimesOfDayWidgetComponent
         }
     });
 })();

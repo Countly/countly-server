@@ -1,8 +1,7 @@
 <cly-form-field
     name="apps"
     rules="required"
-    :subheading="subheading ? subheading: undefined"
-    :label="label ? label: i18nM('dashboards.source-apps')">
+    :label="i18nM('dashboards.source-apps')">
     <cly-app-select
         :key="rerender"
         style="width: 100%;"
