@@ -183,7 +183,82 @@
         }
     };
 
+    var DimensionsMixin = {
+        methods: {
+            getDefaultDimensions: function(visualization) {
+                var dimensions;
+
+                switch (visualization) {
+                case 'number':
+                    dimensions = {
+                        minWidth: 2,
+                        minHeight: 3,
+                        width: 2,
+                        height: 3
+                    };
+                    break;
+                case 'time-series':
+                    dimensions = {
+                        minWidth: 4,
+                        minHeight: 4,
+                        width: 6,
+                        height: 4
+                    };
+                    break;
+                case 'bar-chart':
+                    dimensions = {
+                        minWidth: 4,
+                        minHeight: 4,
+                        width: 6,
+                        height: 4
+                    };
+                    break;
+                case 'pie-chart':
+                    dimensions = {
+                        minWidth: 2,
+                        minHeight: 2,
+                        width: 4,
+                        height: 4
+                    };
+                    break;
+                case 'table':
+                    dimensions = {
+                        minWidth: 4,
+                        minHeight: 4,
+                        width: 6,
+                        height: 4
+                    };
+                    break;
+                }
+
+                return dimensions;
+            },
+            returnDimensions: function(settings, widget) {
+                var dimensions;
+                /**
+                 * Make sure that all widgets have the same key name saving visualization type.
+                 * The name of the key is visualization.
+                 */
+                var defaultDimensions = this.getDefaultDimensions(widget.visualization);
+                var newDimensions = settings.grid.dimensions && settings.grid.dimensions();
+
+                if (newDimensions) {
+                    dimensions = newDimensions;
+                }
+                else if (defaultDimensions) {
+                    dimensions = defaultDimensions;
+                }
+                else {
+                    countlyDashboards.factory.log("No dimensions were found for the widget!");
+                }
+
+                return dimensions;
+            }
+        }
+    };
+
     var WidgetValidationMixin = {
+        mixins: [DimensionsMixin],
         data: function() {
             return {
                 GRID_COLUMNS: 4,
@@ -198,38 +273,37 @@
                 switch (dimension) {
                 case "w":
                     size = widget.size && widget.size[0];
-                    size = this.calculateWidth(settings, size);
-
+                    size = this.calculateWidth(settings, widget, size);
                     break;
                 case "h":
                     size = widget.size && widget.size[1];
-                    size = this.calculateHeight(settings, size);
+                    size = this.calculateHeight(settings, widget, size);
                     break;
                 }
 
                 return size;
             },
-            validateWidgetDimension: function(settings, dimension) {
-                var dimensions = settings.grid.dimensions();
+            validateWidgetDimension: function(settings, widget, dimension) {
+                var dimensions = this.returnDimensions(settings, widget);
                 var dim;
 
                 switch (dimension) {
                 case "w":
                     dim = dimensions.minWidth;
-                    dim = this.calculateWidth(settings, dim);
+                    dim = this.calculateWidth(settings, widget, dim);
 
                     break;
                 case "h":
                     dim = dimensions.minHeight;
-                    dim = this.calculateHeight(settings, dim);
+                    dim = this.calculateHeight(settings, widget, dim);
 
                     break;
                 }
 
                 return dim;
             },
-            calculateWidth: function(settings, width) {
-                var dimensions = settings.grid.dimensions();
+            calculateWidth: function(settings, widget, width) {
+                var dimensions = this.returnDimensions(settings, widget);
                 var minWidth = dimensions.minWidth;
 
                 var w = width;
@@ -245,8 +319,8 @@
 
                 return w;
             },
-            calculateHeight: function(settings, height) {
-                var dimensions = settings.grid.dimensions();
+            calculateHeight: function(settings, widget, height) {
+                var dimensions = this.returnDimensions(settings, widget);
                 var minHeight = dimensions.minHeight;
 
                 var h = height;
@@ -837,7 +911,7 @@
 
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
-        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, WidgetValidationMixin],
+        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin, WidgetValidationMixin, DimensionsMixin],
         props: {
             loading: {
                 type: Boolean,
@@ -938,11 +1012,12 @@
                     return;
                 }
 
-                var dimensions = setting.grid.dimensions();
-                var validatedWidth = this.calculateWidth(setting, dimensions.width);
-                var validatedHeight = this.calculateHeight(setting, dimensions.height);
-                var validatedMinWidth = this.calculateWidth(setting, dimensions.minWidth);
-                var validatedMinHeight = this.calculateHeight(setting, dimensions.minHeight);
+                var dimensions = this.returnDimensions(setting, widget);
+
+                var validatedWidth = this.calculateWidth(setting, widget, dimensions.width);
+                var validatedHeight = this.calculateHeight(setting, widget, dimensions.height);
+                var validatedMinWidth = this.calculateWidth(setting, widget, dimensions.minWidth);
+                var validatedMinHeight = this.calculateHeight(setting, widget, dimensions.minHeight);
 
                 if (id) {
                     var node = {
