@@ -1197,34 +1197,32 @@
         })
     });
 
-    jQuery(document).ready(function() {
-        app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-        app.addSubMenu("crashes", {code: "crash", permission: FEATURE_NAME, url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+    app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+    app.addSubMenu("crashes", {code: "crash", permission: FEATURE_NAME, url: "#/crashes", text: "sidebar.dashboard", priority: 10});
 
-        if (app.configurationsView) {
-            app.configurationsView.registerInput("crashes.grouping_strategy", {
-                input: "el-select",
-                attrs: {},
-                list: [
-                    {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
-                    {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
-                ]
-            });
-        }
-
-        app.route("/crashes", "crashes", function() {
-            this.renderWhenReady(getOverviewView());
+    if (app.configurationsView) {
+        app.configurationsView.registerInput("crashes.grouping_strategy", {
+            input: "el-select",
+            attrs: {},
+            list: [
+                {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
+                {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
+            ]
         });
+    }
 
-        app.route("/crashes/:group", "crashgroup", function(group) {
-            groupId = group;
-            this.renderWhenReady(getCrashgroupView());
-        });
+    app.route("/crashes", "crashes", function() {
+        this.renderWhenReady(getOverviewView());
+    });
 
-        app.route("/crashes/:group/binary-images/:crash", "crashgroup", function(group, crash) {
-            groupId = group;
-            crashId = crash;
-            this.renderWhenReady(getBinaryImagesView());
-        });
+    app.route("/crashes/:group", "crashgroup", function(group) {
+        groupId = group;
+        this.renderWhenReady(getCrashgroupView());
+    });
+
+    app.route("/crashes/:group/binary-images/:crash", "crashgroup", function(group, crash) {
+        groupId = group;
+        crashId = crash;
+        this.renderWhenReady(getBinaryImagesView());
     });
 })();
