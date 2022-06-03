@@ -780,7 +780,8 @@
                         this.$nextTick(function() {
                             setTimeout(function() {
                                 if (selectedOption && selectedOption.menu === "dashboards") {
-                                    if (!self.onMainMenu) {
+                                    if (!self.onMainMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
+                                        0;
                                         /**
                                          * If not on the main menu, hide the main menu.
                                          */
@@ -812,7 +813,7 @@
                         this.$nextTick(function() {
                             setTimeout(function() {
                                 if (selectedOption && selectedOption.menu === "dashboards") {
-                                    if (!self.onOptionsMenu) {
+                                    if (!self.onOptionsMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
                                         /**
                                          * If not on the options menu, hide the main menu.
                                          */
