@@ -72,6 +72,7 @@
           <el-table-column
             v-if="col.value === 'role'"
             prop="role"
+            sortable="true"
             :label="i18n('management-users.role')">
             <template v-slot="rowScope">
               <span class="text-medium">
