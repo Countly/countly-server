@@ -735,6 +735,7 @@
             var data = getInitialState(this);
             data.isVisible = false;
             data.commitTooltip = {};
+            data.exceptionOffset = false;
             return data;
         },
         watch: {
@@ -905,6 +906,15 @@
 
                 var newValue = value;
 
+                if (this.exceptionOffset) {
+                    if (mode === "output") {
+                        newValue = newValue - countlyCommon.getOffsetCorrectionForTimestamp(newValue);
+                    }
+                    else {
+                        return newValue;
+                    }
+                }
+
                 if (this.timestampFormat === "s") {
                     if (mode === "output") {
                         newValue = Math.floor(value / 1000);
@@ -935,11 +945,24 @@
                 );
             },
             handleConfirmClick: function() {
+                if (this.rangeMode === 'inBetween') {
+                    var _minDate = new Date(this.minDate).getTime();
+                    var _maxDate = new Date(this.maxDate);
+                    // case of custom range is selected by same day
+                    if (_maxDate - _minDate <= 86400000) {
+                        this.exceptionOffset = false;
+                    }
+                    else {
+                        this.exceptionOffset = true;
+                        var currentDate = new Date(_maxDate.getTime());
+                        currentDate.setDate(_maxDate.getDate() - 1);
+                    }
+                }
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
                     var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     this.doCommit([
                         this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
-                        this.fixTimestamp(this.maxDate.valueOf(), "output")
+                        this.fixTimestamp(currentDate ? currentDate.valueOf() : this.maxDate, "output")
                     ], false);
                 }
                 else if (this.rangeMode === 'since') {
