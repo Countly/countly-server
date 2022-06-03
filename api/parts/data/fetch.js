@@ -176,6 +176,14 @@ fetch.getMergedEventGroups = function(params, event, options, callback) {
 * Get merged data from multiple events in standard data model and output to browser
 * @param {params} params - params object
 **/
+
+fetch.fetchRevenueMergedEventData = function(params, callback) {
+    params.app_id = params.qstring.app_id;
+    return fetch.getMergedEventData(params, params.qstring.events, {}, function(result) {
+        callback(null, result);
+    });
+};
+
 fetch.fetchMergedEventData = function(params) {
     fetch.getMergedEventData(params, params.qstring.events, {}, function(result) {
         common.returnOutput(params, result);
