@@ -1625,6 +1625,7 @@
                 currOrPrevious = _.pluck(dataProperties, "period"),
                 activeDate,
                 activeDateArr;
+            var previousDateArr = [];
 
             for (var j = 0; j < propertyNames.length; j++) {
                 if (currOrPrevious[j] === "previous") {
@@ -1637,6 +1638,24 @@
                         activeDate = countlyCommon.periodObj.previousPeriod;
                     }
                 }
+                else if (currOrPrevious[j] === "previousThisMonth") {
+                    //get first date of current month
+                    var date = new Date();
+                    var lastDay = new Date(date.getFullYear(), date.getMonth(), 1);
+
+                    // count of days of the current month
+                    var currentMonthCount = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+
+                    // get date of currenthMonthCount days ago
+                    var firstDay = new Date(lastDay.getTime());
+                    firstDay.setDate(lastDay.getDate() - currentMonthCount);
+
+                    // get an array between two date
+                    for (var arr = [], dt = new Date(firstDay); dt <= new Date(lastDay); dt.setDate(dt.getDate() + 1)) {
+                        arr.push(dt.getFullYear() + '.' + (dt.getMonth() + 1) + '.' + dt.getDate());
+                    }
+                    previousDateArr = arr;
+                }
                 else {
                     if (countlyCommon.periodObj.isSpecialPeriod) {
                         periodMin = 0;
@@ -1647,44 +1666,67 @@
                         activeDate = countlyCommon.periodObj.activePeriod;
                     }
                 }
-                for (var i = periodMin, counter = 0; i < periodMax; i++, counter++) {
+                if (currOrPrevious[j] === "previousThisMonth") {
+                    for (var p = 0, counter_ = 0; p < previousDateArr.length - 1; p++, counter_++) {
+                        formattedDate = moment((previousDateArr[p]).replace(/\./g, "/"), "YYYY/MM/DD");
+                        dataObj = countlyCommon.getDescendantProp(db, previousDateArr[p] + metric);
+                        dataObj = clearFunction(dataObj);
 
-                    if (!countlyCommon.periodObj.isSpecialPeriod) {
-
-                        if (countlyCommon.periodObj.periodMin === 0) {
-                            formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
+                        if (!tableData[counter_]) {
+                            tableData[counter_] = {};
                         }
-                        else if (("" + activeDate).indexOf(".") === -1) {
-                            formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
+
+                        tableData[counter_].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                        var propertyValue_ = "";
+                        if (propertyFunctions[j]) {
+                            propertyValue_ = propertyFunctions[j](dataObj);
                         }
                         else {
-                            formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
+                            propertyValue_ = dataObj[propertyNames[j]];
                         }
 
-                        dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
+                        chartData[j].data[chartData[j].data.length] = [counter_, propertyValue_];
+                        tableData[counter_][propertyNames[j]] = propertyValue_;
                     }
-                    else {
-                        formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
-                        dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i] + metric);
-                    }
+                }
+                else {
+                    for (var i = periodMin, counter = 0; i < periodMax; i++, counter++) {
+                        if (!countlyCommon.periodObj.isSpecialPeriod) {
+                            if (countlyCommon.periodObj.periodMin === 0) {
+                                formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
+                            }
+                            else if (("" + activeDate).indexOf(".") === -1) {
+                                formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
+                            }
+                            else {
+                                formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
+                            }
 
-                    dataObj = clearFunction(dataObj);
+                            dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
+                        }
+                        else {
+                            formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
+                            dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i] + metric);
+                        }
 
-                    if (!tableData[counter]) {
-                        tableData[counter] = {};
-                    }
+                        dataObj = clearFunction(dataObj);
 
-                    tableData[counter].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
-                    var propertyValue = "";
-                    if (propertyFunctions[j]) {
-                        propertyValue = propertyFunctions[j](dataObj);
-                    }
-                    else {
-                        propertyValue = dataObj[propertyNames[j]];
-                    }
+                        if (!tableData[counter]) {
+                            tableData[counter] = {};
+                        }
 
-                    chartData[j].data[chartData[j].data.length] = [counter, propertyValue];
-                    tableData[counter][propertyNames[j]] = propertyValue;
+                        tableData[counter].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                        var propertyValue = "";
+                        if (propertyFunctions[j]) {
+                            propertyValue = propertyFunctions[j](dataObj);
+                        }
+                        else {
+                            propertyValue = dataObj[propertyNames[j]];
+                        }
+
+                        chartData[j].data[chartData[j].data.length] = [counter, propertyValue];
+                        tableData[counter][propertyNames[j]] = propertyValue;
+                    }
                 }
             }
 
@@ -2692,7 +2734,10 @@
                 else {
                     if (_period === "day") {
                         start.add(1, 'days');
-                        for (i = 0; i < new Date(start.year(), start.month(), 0).getDate(); i++) {
+                        var now = new Date();
+                        // it will add the count of days of the current month to the x-axis label
+                        var currentMonthCount = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                        for (i = 0; i < currentMonthCount; i++) {
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
                             start.add(1, 'days');

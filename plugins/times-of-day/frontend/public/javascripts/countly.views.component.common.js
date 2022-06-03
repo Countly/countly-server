@@ -35,10 +35,11 @@
                     tooltip: {
                         position: 'top',
                         trigger: 'item',
+                        borderColor: 'rgb(57, 192, 200)',
                         formatter: function(params) {
                             return '<div class="bu-is-flex times-of-day__scatter-chart-tooltip"> \n' +
                                         '<div> \n' +
-                                            '<div class="times-of-day__scatter-chart-bar bu-mr-2" style="background-color: ' + params.color + ';"></div> \n' +
+                                            '<div class="times-of-day__scatter-chart-bar bu-mr-2" style="background-color: rgb(57, 192, 200);"></div> \n' +
                                         '</div> \n' +
                                         '<div> \n' +
                                             '<div class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.total-users') + '</div>\n' +
@@ -75,6 +76,23 @@
                         }
                     },
                     series: [{
+                        name: CV.i18n('times-of-day.title'),
+                        type: "scatter",
+                        symbol: "square",
+                        symbolSize: function() {
+                            return 50;
+                        },
+                        data: this.series,
+                        itemStyle: {
+                            "color": "#ffffff",
+                            opacity: 0.0
+                        },
+                        emphasis: {
+                            "disabled": true,
+                            "focus": 'none'
+                        }
+                    },
+                    {
                         name: CV.i18n('times-of-day.title'),
                         type: "scatter",
                         symbolSize: function(val) {
