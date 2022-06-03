@@ -138,6 +138,7 @@
                     data_type: "",
                     events: [],
                     period: "",
+                    visualization: "punchcard"
                 };
             },
             beforeLoadFn: function(doc, isEdited) {

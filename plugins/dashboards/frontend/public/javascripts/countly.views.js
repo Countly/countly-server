@@ -194,14 +194,17 @@
                         minWidth: 2,
                         minHeight: 3,
                         width: 2,
-                        height: 3
+                        height: 4
                     };
                     break;
+                case 'line':
+                case 'series':
+                case 'punchcard':
                 case 'time-series':
                     dimensions = {
                         minWidth: 4,
                         minHeight: 4,
-                        width: 6,
+                        width: 4,
                         height: 4
                     };
                     break;
@@ -209,14 +212,14 @@
                     dimensions = {
                         minWidth: 4,
                         minHeight: 4,
-                        width: 6,
+                        width: 4,
                         height: 4
                     };
                     break;
                 case 'pie-chart':
                     dimensions = {
-                        minWidth: 2,
-                        minHeight: 2,
+                        minWidth: 4,
+                        minHeight: 4,
                         width: 4,
                         height: 4
                     };
@@ -225,12 +228,11 @@
                     dimensions = {
                         minWidth: 4,
                         minHeight: 4,
-                        width: 6,
-                        height: 4
+                        width: 4,
+                        height: 6
                     };
                     break;
                 }
-
                 return dimensions;
             },
             returnDimensions: function(settings, widget) {

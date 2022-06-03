@@ -185,7 +185,7 @@
             },
         },
         grid: {
-            component: WidgetComponent,
+            component: WidgetComponent
         }
     });
 })();
