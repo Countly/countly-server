@@ -946,10 +946,11 @@
             },
             handleConfirmClick: function() {
                 if (this.rangeMode === 'inBetween') {
-                    var _minDate = new Date(this.minDate).getTime();
+                    var _minDate = new Date(this.minDate);
                     var _maxDate = new Date(this.maxDate);
+
                     // case of custom range is selected by same day
-                    if (_maxDate - _minDate <= 86400000) {
+                    if (_maxDate.getTime() - _minDate.getTime() <= 86400000) {
                         this.exceptionOffset = false;
                     }
                     else {
