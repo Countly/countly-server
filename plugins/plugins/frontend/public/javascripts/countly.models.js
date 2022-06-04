@@ -254,7 +254,13 @@
     };
 
     countlyPlugins.getThemeList = function() {
-        return _themeList;
+        var themeList = [];
+        for(var theme in _themeList){
+            if(_themeList[theme]){
+                themeList.push({value: theme, label: _themeList[theme]});
+            }
+        }
+        return themeList;
     };
 
     countlyPlugins.deleteAccount = function(configs, callback) {
