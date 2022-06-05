@@ -867,7 +867,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings);
         configs.export_limit = plugins.getConfig("api").export_limit;
-        log.e(JSON.stringify(configs));
         app.loadThemeFiles(configs.theme, function(theme) {
             if (configs._user.theme) {
                 res.cookie("theme", configs.theme);
@@ -964,7 +963,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 stylesheets: [],
                 offline_mode: configs.offline_mode || false
             };
-            log.e(JSON.stringify(theme));
             // google services cannot work when offline mode enable
             if (toDashboard.offline_mode) {
                 toDashboard.use_google = false;

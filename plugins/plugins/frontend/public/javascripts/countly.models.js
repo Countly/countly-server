@@ -1,4 +1,4 @@
-/*global countlyCommon,jQuery,countlyGlobal */
+/*global countlyCommon,jQuery,countlyGlobal,CV */
 (function(countlyPlugins, $) {
 
     //Private Properties
@@ -255,9 +255,10 @@
 
     countlyPlugins.getThemeList = function() {
         var themeList = [];
-        for(var theme in _themeList){
-            if(_themeList[theme]){
-                themeList.push({value: theme, label: _themeList[theme]});
+        themeList.push({value: "", label: CV.i18n("configs.no-theme")});
+        for (var theme in _themeList) {
+            if (_themeList[theme]) {
+                themeList.push({value: _themeList[theme], label: _themeList[theme]});
             }
         }
         return themeList;
