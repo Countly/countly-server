@@ -678,6 +678,9 @@ class Pusher extends PusherPopper {
                 if (!note) {
                     continue;
                 }
+                for (let k in (this.variables || {})) {
+                    note.pr[k] = this.variables[k];
+                }
 
                 let p = pf[0],
                     d = note._id.getTimestamp().getTime(),
