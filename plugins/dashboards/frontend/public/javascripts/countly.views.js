@@ -94,7 +94,6 @@
                  * We want to set it to true then so that we can show a widget in the grid.
                  * This covers the case when the widget data is invalid or widget is disabled.
                  */
-                var self = this;
                 var widgets = this.__widgets;
 
                 if (!widget.widget_type) {
@@ -944,9 +943,6 @@
                 this.validateWidgets(allWidgets);
 
                 return allWidgets;
-            },
-            isCompatible: function() {
-                return this.$store.getters["countlyDashboards/isCompatible"];
             }
         },
         methods: {
@@ -1195,20 +1191,6 @@
 
                     this.updateWidgetGeography(wId, {size: size, position: position});
                 }
-            },
-            autoPosition: function() {
-                if (this.isCompatible) {
-                    return false;
-                }
-                // else {
-                //     console.log('autopositioning done');
-                //     allWidgets.forEach(function(widget) {
-                //         // console.log('widget');
-                //         console.log(widget);
-                //     });
-                //     return true;
-                // }
-                return false;
             },
             savedGrid: function() {
                 return this.grid.save(false);
@@ -1551,13 +1533,9 @@
         beforeMount: function() {
             var self = this;
 
-            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false})
-                .then(function() {
-                    self.$store.dispatch("countlyDashboards/setCompatibility")
-                        .then(function() {
-                            self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
-                        });
-                });
+            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function() {
+                self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
+            });
         },
         beforeDestroy: function() {
             this.$store.dispatch("countlyDashboards/requests/reset");
