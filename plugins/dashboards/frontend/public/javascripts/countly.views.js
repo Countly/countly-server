@@ -958,10 +958,9 @@
                     return;
                 }
 
-                var empty = setting.drawer.getEmpty();
-
                 switch (command) {
                 case "edit":
+                    var empty = setting.drawer.getEmpty();
                     d.__action = "edit";
                     this.$store.dispatch("countlyDashboards/requests/drawerOpenStatus", true);
                     var settings = Object.assign({}, empty, d);

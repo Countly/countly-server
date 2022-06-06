@@ -21,7 +21,7 @@
 
     <div class="grid-stack-item-content bu-p-4">
         <widget-disabled v-if="isWidgetDisabled(widget)" :widget="widget">
-            <template v-slot:action v-if="canUpdateGrid && settings.isAllowed">
+            <template v-slot:action v-if="canUpdateGrid">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">
                         <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
