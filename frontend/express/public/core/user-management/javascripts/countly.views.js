@@ -826,4 +826,8 @@
             this.renderWhenReady(this.ManageUsersView);
         });
     }
+
+    countlyVue.container.registerData("user-management/edit-user-drawer", {
+        component: Drawer
+    });
 })();
