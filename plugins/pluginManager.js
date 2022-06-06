@@ -1078,8 +1078,12 @@ var pluginManager = function pluginManager() {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
         }
 
-        if (typeof config.mongodb === 'string') {
-            var dbName = this.replaceDatabaseString(config.mongodb, db);
+        if (config && typeof config.mongodb === "string") {
+            config.mongodb = {uri: config.mongodb};
+        }
+
+        if (config.mongodb.uri) {
+            var dbName = this.replaceDatabaseString(config.mongodb.uri, db);
             //remove protocol
             dbName = dbName.split("://").pop();
             if (dbName.indexOf("@") !== -1) {
@@ -1152,12 +1156,13 @@ var pluginManager = function pluginManager() {
     * @returns {string} modified connection string
     **/
     this.replaceDatabaseString = function(str, db) {
-        var i = str.lastIndexOf('/countly');
-        var k = str.lastIndexOf('/' + db);
+        var parts = str.split("?");
+        var i = parts[0].lastIndexOf('/countly');
+        var k = parts[0].lastIndexOf('/' + db);
         if (i !== k && i !== -1 && db) {
-            return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+            return parts[0].substr(0, i) + "/" + db + parts[0].substr(i + ('/countly').length);
         }
-        return str;
+        return parts.join("?");
     };
 
     this.connectToAllDatabases = async() => {
@@ -1217,7 +1222,11 @@ var pluginManager = function pluginManager() {
         }
 
         if (config && typeof config.mongodb === "string") {
-            var urlParts = url.parse(config.mongodb, true);
+            config.mongodb = {uri: config.mongodb};
+        }
+
+        if (config.mongodb.uri) {
+            var urlParts = url.parse(config.mongodb.uri, true);
             if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
                 maxPoolSize = urlParts.query.maxPoolSize;
             }
@@ -1240,8 +1249,8 @@ var pluginManager = function pluginManager() {
             useNewUrlParser: true,
             useUnifiedTopology: true
         };
-        if (typeof config.mongodb === 'string') {
-            dbName = this.replaceDatabaseString(config.mongodb, db);
+        if (config.mongodb.uri) {
+            dbName = this.replaceDatabaseString(config.mongodb.uri, db);
         }
         else {
             config.mongodb.db = db || config.mongodb.db || 'countly';
@@ -1266,7 +1275,13 @@ var pluginManager = function pluginManager() {
         }
 
         if (config.mongodb.username && config.mongodb.password) {
+            dbName = dbName.replace('mongodb://', '').replace('mongodb+srv://', '');
             dbName = encodeURIComponent(config.mongodb.username) + ":" + encodeURIComponent(utils.decrypt(config.mongodb.password)) + "@" + dbName;
+        }
+
+        if (config.mongodb.username) {
+            dbName = dbName.replace('mongodb://', '').replace('mongodb+srv://', '');
+            dbName = encodeURIComponent(config.mongodb.username) + "@" + dbName;
         }
 
         if (dbName.indexOf('mongodb://') !== 0 && dbName.indexOf('mongodb+srv://') !== 0) {
@@ -1440,6 +1455,17 @@ var pluginManager = function pluginManager() {
                     return;
                 }
                 return function(err, res) {
+                    if (res) {
+                        if (!res.result) {
+                            res.result = {};
+                        }
+                        if (!res.result.ok) {
+                            res.result.ok = !err;
+                        }
+                        if (!res.result.nModified) {
+                            res.result.nModified = res.modifiedCount || 0;
+                        }
+                    }
                     if (err) {
                         if (retry && err.code === 11000) {
                             if (typeof retry === "function") {
@@ -1740,9 +1766,16 @@ var pluginManager = function pluginManager() {
                 logDbRead.d("aggregate " + collection + " %j %j" + at, query, options);
                 logDbRead.d("From connection %j", countlyDb._cly_debug);
                 var cursor = this._aggregate(query, options);
+                cursor._count = cursor.count;
+                cursor.count = function(...countArgs) {
+                    return ob.countDocuments.call(ob, query, ...countArgs);
+                };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(cb) {
                     return handlePromiseErrors(cursor._toArray(logForReads(cb, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
+                };
+                cursor.isClosed = function() {
+                    return cursor.closed || cursor.killed;
                 };
                 if (typeof callback === "function") {
                     return cursor.toArray(callback);
@@ -1782,9 +1815,16 @@ var pluginManager = function pluginManager() {
                 logDbRead.d("find " + collection + " %j %j" + at, query, options);
                 logDbRead.d("From connection %j", countlyDb._cly_debug);
                 var cursor = this._find(query, options);
+                cursor._count = cursor.count;
+                cursor.count = function(...countArgs) {
+                    return ob.countDocuments.call(ob, query, ...countArgs);
+                };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
                     return handlePromiseErrors(cursor._toArray(logForReads(callback, e, copyArguments(args, "find"))), e, copyArguments(arguments, "find"));
+                };
+                cursor.isClosed = function() {
+                    return cursor.closed || cursor.killed;
                 };
                 return cursor;
             };
@@ -1839,6 +1879,20 @@ var pluginManager = function pluginManager() {
 
             ob.findAndRemove = function(query, sort, options, callback) {
                 return ob.findOneAndDelete(query, options, callback);
+            };
+
+            ob._drop = ob.drop;
+            ob.drop = function() {
+                if (!arguments.length) {
+                    return ob._drop().catch(function(ex) {
+                        if (ex.code !== 26) {
+                            throw ex;
+                        }
+                    });
+                }
+                else {
+                    return ob._drop.apply(ob, arguments);
+                }
             };
 
 

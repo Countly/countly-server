@@ -1,4 +1,4 @@
-/*global countlyCommon,jQuery,countlyGlobal */
+/*global countlyCommon,jQuery,countlyGlobal,CV */
 (function(countlyPlugins, $) {
 
     //Private Properties
@@ -254,7 +254,14 @@
     };
 
     countlyPlugins.getThemeList = function() {
-        return _themeList;
+        var themeList = [];
+        themeList.push({value: "", label: CV.i18n("configs.no-theme")});
+        for (var theme in _themeList) {
+            if (_themeList[theme]) {
+                themeList.push({value: _themeList[theme], label: _themeList[theme]});
+            }
+        }
+        return themeList;
     };
 
     countlyPlugins.deleteAccount = function(configs, callback) {

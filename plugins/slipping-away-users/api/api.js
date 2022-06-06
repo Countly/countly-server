@@ -115,13 +115,12 @@ catch (ex) {
 
             conditions.forEach((condition) => {
                 tasks.push(new BPromise(function(resolve, reject) {
-                    countlyDb.collection('app_users' + app_id).find(condition)
-                        .count(function(err, count) {
-                            if (err) {
-                                return reject(err);
-                            }
-                            return resolve(count);
-                        });
+                    countlyDb.collection('app_users' + app_id).count(condition, function(err, count) {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve(count);
+                    });
                 }));
             });
 

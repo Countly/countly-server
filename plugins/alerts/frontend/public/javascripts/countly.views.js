@@ -4,7 +4,6 @@
     countlyAlerts,
     jQuery,
     countlyVue,
-    $,
     app,
     countlyCommon,
     countlyEvent,
@@ -531,26 +530,24 @@
     app.route('/manage/alerts', 'alerts', function() {
         this.renderWhenReady(alertsView);
     });
-    $(document).ready(function() {
-        app.addMenu("management", {code: "alerts", permission: ALERTS_FEATURE_NAME, url: "#/manage/alerts", text: "alert.plugin-title", priority: 100});
+    app.addMenu("management", {code: "alerts", permission: ALERTS_FEATURE_NAME, url: "#/manage/alerts", text: "alert.plugin-title", priority: 100});
 
-        var conUpdateConcurrentUser = countlyAuth.validateUpdate("concurrent_users");
-        var canCreateConcurrentUser = countlyAuth.validateCreate("concurrent_users");
-        if (countlyGlobal.plugins.indexOf("concurrent_users") > -1 && (canCreateConcurrentUser || conUpdateConcurrentUser)) {
-            countlyVue.container.registerData("/alerts/data-type", {label: jQuery.i18n.map["concurrent-users.title"], value: 'online-users'});
-            countlyVue.container.registerData("/alerts/data-define", {
-                "online-users": {
-                    target: [
-                        { value: 't', label: jQuery.i18n.map["concurrent-users.alert-type.t"]},
-                        { value: 'o', label: jQuery.i18n.map["concurrent-users.alert-type.o"]},
-                        { value: 'm', label: jQuery.i18n.map["concurrent-users.alert-type.m"]},
-                    ],
-                    condition: [
-                        { value: 'gt', label: jQuery.i18n.map["concurrent-users.gt"]},
-                        { value: 'lt', label: jQuery.i18n.map["concurrent-users.lt"]},
-                    ],
-                }
-            });
-        }
-    });
+    var conUpdateConcurrentUser = countlyAuth.validateUpdate("concurrent_users");
+    var canCreateConcurrentUser = countlyAuth.validateCreate("concurrent_users");
+    if (countlyGlobal.plugins.indexOf("concurrent_users") > -1 && (canCreateConcurrentUser || conUpdateConcurrentUser)) {
+        countlyVue.container.registerData("/alerts/data-type", {label: jQuery.i18n.map["concurrent-users.title"], value: 'online-users'});
+        countlyVue.container.registerData("/alerts/data-define", {
+            "online-users": {
+                target: [
+                    { value: 't', label: jQuery.i18n.map["concurrent-users.alert-type.t"]},
+                    { value: 'o', label: jQuery.i18n.map["concurrent-users.alert-type.o"]},
+                    { value: 'm', label: jQuery.i18n.map["concurrent-users.alert-type.m"]},
+                ],
+                condition: [
+                    { value: 'gt', label: jQuery.i18n.map["concurrent-users.gt"]},
+                    { value: 'lt', label: jQuery.i18n.map["concurrent-users.lt"]},
+                ],
+            }
+        });
+    }
 })();

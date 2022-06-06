@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth,Promise*/
 
 (function() {
 
@@ -2827,16 +2827,14 @@
 
 
     //countly.view global management settings
-    $(document).ready(function() {
-        app.addMenuForType("mobile", "reach", {code: "push", permission: featureName, url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
-        addWidgetToCustomDashboard();
+    app.addMenuForType("mobile", "reach", {code: "push", permission: featureName, url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+    addWidgetToCustomDashboard();
 
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("push", "push-notification.title");
-            app.configurationsView.registerLabel("push.proxyhost", "push-notification.proxy-host");
-            app.configurationsView.registerLabel("push.proxypass", "push-notification.proxy-password");
-            app.configurationsView.registerLabel("push.proxyport", "push-notification.proxy-port");
-            app.configurationsView.registerLabel("push.proxyuser", "push-notification.proxy-user");
-        }
-    });
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("push", "push-notification.title");
+        app.configurationsView.registerLabel("push.proxyhost", "push-notification.proxy-host");
+        app.configurationsView.registerLabel("push.proxypass", "push-notification.proxy-password");
+        app.configurationsView.registerLabel("push.proxyport", "push-notification.proxy-port");
+        app.configurationsView.registerLabel("push.proxyuser", "push-notification.proxy-user");
+    }
 }());

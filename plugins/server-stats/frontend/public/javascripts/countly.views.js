@@ -292,6 +292,4 @@ app.route("/manage/data-points/*id", 'data-points', function(id) {
     this.renderWhenReady(this.dataPointsView);
 });
 
-$(document).ready(function() {
-    app.addMenu("management", {code: "data-point", permission: "server-stats", url: "#/manage/data-points", text: "server-stats.data-points", priority: 40});
-});
+app.addMenu("management", {code: "data-point", permission: "server-stats", url: "#/manage/data-points", text: "server-stats.data-points", priority: 40});

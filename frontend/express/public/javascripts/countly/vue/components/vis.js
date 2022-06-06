@@ -380,7 +380,7 @@
                 }
 
                 var xAxis = options.xAxis;
-                var labelW = Math.floor((size.w - 20) / xAxis.data.length);
+                var labelW = Math.floor((size.w - 100) / (xAxis.data.length + 1));
                 var maxLen = 0;
                 var maxStr = "";
 
@@ -412,22 +412,22 @@
                         }
                     }
                 };
-                if ((longestLabelTextW / labelW) > 2) {
-                    returnObj.grid = {containLabel: false, bottom: 100, left: 80};
-                    returnObj.xAxis.axisLabel.rotate = 45;
-                    returnObj.xAxis.axisLabel.width = labelW * 1.15 > 100 ? 90 : labelW * 1.15;
-                }
-                else if (longestLabelTextW > labelW) {
-                    returnObj.grid = {containLabel: false, bottom: 100, left: 80};
-                    returnObj.xAxis.axisLabel.rotate = 30;
-                    returnObj.xAxis.axisLabel.width = labelW * 1.10 > 100 ? 90 : labelW * 1.10;
-                }
-                else {
-                    returnObj.xAxis.axisLabel.rotate = 0;
-                }
+                if (longestLabelTextW > labelW) {
+                    returnObj.xAxis.axisLabel.margin = -5;
+                    returnObj.xAxis.axisLabel.overflow = "break";
+                    returnObj.grid = {bottom: 40};
 
-                // console.log("longest label text width is " + getWidthOfText(maxStr, FONT_FAMILY, "12px"));
-                // console.log("label width is " + labelW);
+                    returnObj.xAxis.axisLabel.formatter = function(value) {
+                        var ellipsis = "...";
+                        var lengthToTruncate = (Math.floor(maxLen / Math.ceil(longestLabelTextW / labelW)) * 2);
+                        if (value.length > lengthToTruncate) {
+                            return value.substr(0, lengthToTruncate - ellipsis.length) + ellipsis;
+                        }
+                        else {
+                            return value;
+                        }
+                    };
+                }
 
                 return returnObj;
             }
@@ -465,7 +465,7 @@
         props: {
             height: {
                 type: [Number, String],
-                default: 472
+                default: 440
             },
             autoresize: {
                 type: Boolean,
@@ -523,9 +523,9 @@
                     },
                     grid: {
                         top: 30,
-                        bottom: 15,
-                        left: 36,
-                        right: 24,
+                        bottom: 30,
+                        left: 43,
+                        right: 30,
                         containLabel: true
                     },
                     legend: {
@@ -593,7 +593,7 @@
                             var template = "";
                             if (params.seriesType === 'pie') {
                                 template += '<div class="bu-is-flex">\
-                                                        <div class="chart-tooltip__bar bu-mr-2" style="background-color: ' + params.color + ';"></div>\
+                                                        <div class="chart-tooltip__bar bu-mr-2 bu-mt-1" style="background-color: ' + params.color + ';"></div>\
                                                         <div>\
                                                             <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
                                                             <div class="text-small"> ' + params.data.name + '</div>\
@@ -604,19 +604,28 @@
                                 return template;
                             }
                             else {
-                                template = "<div class='chart-tooltip'>";
+                                template = "<div class='chart-tooltip" + ((params.length > 10) ? " chart-tooltip__has-scroll" : "") + "'>";
                                 if (params.length > 0) {
                                     template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + params[0].axisValueLabel + "</span></br>";
                                 }
 
+                                params.sort(function(a, b) {
+                                    if (typeof a.value === 'object') {
+                                        return b.value[1] - a.value[1];
+                                    }
+                                    else {
+                                        return b.value - a.value;
+                                    }
+                                });
+
                                 for (var i = 0; i < params.length; i++) {
-                                    template += '<div class="chart-tooltip__body">\
-                                                        <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
+                                    template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
+                                                    <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
-                                                            <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
-                                                        <div class="chart-tooltip__value">\
-                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
-                                                        </div>\
+                                                            <span class="text-small">' + params[i].seriesName + '</span>\
+                                                    </div>\
+                                                    <div class="chart-tooltip__value">\
+                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
@@ -650,8 +659,6 @@
                         axisLabel: {
                             show: true,
                             color: "#81868D",
-                            showMinLabel: true,
-                            showMaxLabel: true,
                             fontSize: 14
                         },
                         splitLine: {
@@ -965,7 +972,7 @@
                 },
                 seriesOptions: {
                     type: 'pie',
-                    radius: ['60%', '95%'],
+                    radius: ['50%', '80%'],
                     center: ['50%', '50%'],
                     itemStyle: {
                         borderRadius: 0,

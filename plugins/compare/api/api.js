@@ -50,11 +50,13 @@ const FEATURE_NAME = 'compare';
         }
 
         if (!params.qstring.events || params.qstring.events.length === 0) {
-            return common.returnMessage(params, 400, 'Missing parameter: events');
+            common.returnMessage(params, 400, 'Missing parameter: events');
+            return true;
         }
 
         if (params.qstring.events.length > 20) {
-            return common.returnMessage(params, 400, 'Maximum length for parameter events is 20');
+            common.returnMessage(params, 400, 'Maximum length for parameter events is 20');
+            return true;
         }
 
         validateRead(params, FEATURE_NAME, function() {
@@ -132,17 +134,20 @@ const FEATURE_NAME = 'compare';
         }
 
         if (!params.qstring.apps || params.qstring.apps.length === 0) {
-            return common.returnMessage(params, 400, 'Missing parameter: apps');
+            common.returnMessage(params, 400, 'Missing parameter: apps');
+            return true;
         }
 
         if (params.qstring.apps.length > 20) {
-            return common.returnMessage(params, 400, 'Maximum length for parameter apps is 20');
+            common.returnMessage(params, 400, 'Maximum length for parameter apps is 20');
+            return true;
         }
 
         var appsToFetch = params.qstring.apps;
         for (var appsFetchIndex = 0; appsFetchIndex < appsToFetch.length; appsFetchIndex++) {
             if (appsToFetch[appsFetchIndex].length !== 24) {
-                return common.returnMessage(params, 400, 'Invalid app id length in apps parameter, each app id should be 24 characters long');
+                common.returnMessage(params, 400, 'Invalid app id length in apps parameter, each app id should be 24 characters long');
+                return true;
             }
         }
         params.qstring.app_id = appsToFetch[0];
@@ -153,11 +158,13 @@ const FEATURE_NAME = 'compare';
                 for (var i = 0; i < appsToFetch.length; i++) {
                     if (params.member && userApps) {
                         if (userApps.indexOf(appsToFetch[i]) === -1) {
-                            return common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
+                            common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
+                            return true;
                         }
                     }
                     else {
-                        return common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
+                        common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
+                        return true;
                     }
                 }
             }

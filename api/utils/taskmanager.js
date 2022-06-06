@@ -641,7 +641,7 @@ taskmanager.getTableQueryResult = async function(options, callback) {
     catch (e) {
         log.e(' got error while process task request parse', e);
     }
-    const count = await options.db.collection("long_tasks").find(options.query, options.projection).count();
+    const count = await options.db.collection("long_tasks").count(options.query);
     return options.db.collection("long_tasks").find(options.query, options.projection).sort(sortBy).skip(skip).limit(limit).toArray((err, list) => {
         if (!err) {
             callback(null, {list, count});

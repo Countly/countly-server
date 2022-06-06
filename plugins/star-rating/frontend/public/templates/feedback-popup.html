@@ -90,7 +90,7 @@
 </div>
 <div class="success-modal-content">
     <div class="success-icon-area">
-        <i class="fa fa-check-circle fa-2x">
+        <i class="fa fa-check-circle fa-2x" id="thanks-area-logo">
         </i>
     </div>
     <div class="success-emotions-area">
@@ -217,6 +217,15 @@
                   for (var i = 0; i < 5; i++) {
                     addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
                   }
+                }
+
+                if(response.trigger_bg_color){
+                    $('#cf-submit-button').css({'background-color':response.trigger_bg_color});
+                    $('#thanks-area-logo').css({'color':response.trigger_bg_color});
+                }
+
+                if(response.trigger_font_color){
+                    $('#cf-submit-button').css({'color':response.trigger_font_color});
                 }
 
                 if (response.logo) {

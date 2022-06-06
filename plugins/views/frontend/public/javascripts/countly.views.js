@@ -961,32 +961,30 @@
 
     });
 
-    $(document).ready(function() {
-        jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
-            x = countlyViews.getFrequencyIndex(x);
-            y = countlyViews.getFrequencyIndex(y);
+    jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
+        x = countlyViews.getFrequencyIndex(x);
+        y = countlyViews.getFrequencyIndex(y);
 
-            return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-        };
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    };
 
-        jQuery.fn.dataTableExt.oSort['view-frequency-desc'] = function(x, y) {
-            x = countlyViews.getFrequencyIndex(x);
-            y = countlyViews.getFrequencyIndex(y);
+    jQuery.fn.dataTableExt.oSort['view-frequency-desc'] = function(x, y) {
+        x = countlyViews.getFrequencyIndex(x);
+        y = countlyViews.getFrequencyIndex(y);
 
-            return ((x < y) ? 1 : ((x > y) ? -1 : 0));
-        };
+        return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+    };
 
-        app.addAppSwitchCallback(function(appId) {
-            if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME)) {
-                countlyViews.loadList(appId);
-            }
-        });
-        app.addSubMenu("analytics", {code: "analytics-views", permission: FEATURE_NAME, url: "#/analytics/views", text: "views.title", priority: 25});
-
-        //check if configuration view exists
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("views", "views.title");
-            app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
+    app.addAppSwitchCallback(function(appId) {
+        if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME)) {
+            countlyViews.loadList(appId);
         }
     });
+    app.addSubMenu("analytics", {code: "analytics-views", permission: FEATURE_NAME, url: "#/analytics/views", text: "views.title", priority: 25});
+
+    //check if configuration view exists
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("views", "views.title");
+        app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
+    }
 })();
