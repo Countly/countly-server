@@ -160,7 +160,7 @@
         },
         grid: {
             component: TimesOfDayWidgetComponent,
-            dimensions: function () {
+            dimensions: function() {
                 return {
                     minWidth: 4,
                     minHeight: 3,
