@@ -963,7 +963,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 stylesheets: [],
                 offline_mode: configs.offline_mode || false
             };
-
             // google services cannot work when offline mode enable
             if (toDashboard.offline_mode) {
                 toDashboard.use_google = false;

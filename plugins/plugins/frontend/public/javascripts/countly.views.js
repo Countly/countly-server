@@ -954,8 +954,6 @@
     }
     app.configurationsView.registerInput("apps.country", {input: "el-select", attrs: {}, list: countryList});
 
-    app.configurationsView.registerInput("frontend.theme", {input: "el-select", attrs: {}, list: countlyPlugins.getThemeList()});
-
     app.configurationsView.registerInput("logs.default", {
         input: "el-select",
         attrs: {},
@@ -1094,6 +1092,7 @@
                 }
                 app.addAppManagementInput(key, jQuery.i18n.map['configs.' + key], inputs);
             }
+            app.configurationsView.registerInput("frontend.theme", {input: "el-select", attrs: {}, list: countlyPlugins.getThemeList()});
         });
     }
 
