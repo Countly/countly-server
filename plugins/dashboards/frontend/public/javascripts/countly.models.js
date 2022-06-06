@@ -1,4 +1,4 @@
-/*global jQuery, countlyCommon, CV, countlyVue, _, CountlyHelpers, countlyGlobal */
+/*global jQuery, countlyCommon, CV, countlyVue, _, CountlyHelpers, countlyGlobal, countlyVersionHistoryManager */
 
 (function(countlyDashboards) {
 
@@ -46,6 +46,22 @@
             if (DEBUG) {
                 // eslint-disable-next-line no-console
                 console.log(e);
+            }
+        },
+        compatibility: {
+            checkIsCompatible: function(versionHistory) {
+                var isCompatible = true;
+                var currentVersion = countlyGlobal.countlyVersion;
+                if (currentVersion) {
+                    isCompatible = false;
+                    for (var i = 0; i < versionHistory.length; i++) {
+                        console.log('vvvvv');
+                        console.log(versionHistory[i]);
+                        console.log('vvvvv');
+                    }
+                }
+                return true;
+                return isCompatible;
             }
         }
     };
@@ -373,7 +389,8 @@
                     data: null
                 },
                 events: {},
-                apps: {}
+                apps: {},
+                isCompatible: true
             };
         };
 
@@ -457,6 +474,9 @@
 
                     return segments;
                 };
+            },
+            isCompatible: function(state) {
+                return state.isCompatible;
             }
         };
 
@@ -527,6 +547,9 @@
                 }
 
                 state.apps = Object.assign({}, appsObj, globalApps);
+            },
+            setIsCompatible: function(state, isCompatible) {
+                state.isCompatible = isCompatible;
             }
         };
 
@@ -762,6 +785,24 @@
 
                         return false;
                     });
+            },
+            setCompatibility: function(context) {
+                var versionData = countlyVersionHistoryManager.getData();
+                var isCompatible = true;
+                if (Object.keys(versionData).length > 0) {
+                    return new Promise(function(resolve) {
+                        isCompatible = countlyDashboards.factory.compatibility.checkIsCompatible(versionData);
+                        context.commit("setIsCompatible", isCompatible);
+                        resolve();
+                    });
+                }
+                else {
+                    return countlyVersionHistoryManager.initialize(function() {
+                        versionData = countlyVersionHistoryManager.getData();
+                        isCompatible = countlyDashboards.factory.compatibility.checkIsCompatible(versionData);
+                        context.commit("setIsCompatible", isCompatible);
+                    });
+                }
             }
         };
 

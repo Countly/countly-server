@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull */
+/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull*/
 
 (function() {
     var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
@@ -106,13 +106,13 @@
                     type: widget.widget_type,
                     grid: {
                         dimensions: function() {
-                            var width = widget.size && widget.size[0] || self.DEFAULT_MIN_WIDTH;
-                            var height = widget.size && widget.size[1] || self.DEFAULT_MIN_HEIGHT;
+                            var width = widget.size && widget.size[0];
+                            var height = widget.size && widget.size[1];
                             return {
                                 width: width,
                                 height: height,
-                                minWidth: self.DEFAULT_MIN_WIDTH,
-                                minHeight: self.DEFAULT_MIN_HEIGHT
+                                minWidth: width,
+                                minHeight: height
                             };
                         }
                     },
@@ -199,11 +199,10 @@
                     break;
                 case 'line':
                 case 'series':
-                case 'punchcard':
                 case 'time-series':
                     dimensions = {
                         minWidth: 4,
-                        minHeight: 4,
+                        minHeight: 3,
                         width: 4,
                         height: 4
                     };
@@ -211,7 +210,7 @@
                 case 'bar-chart':
                     dimensions = {
                         minWidth: 4,
-                        minHeight: 4,
+                        minHeight: 3,
                         width: 4,
                         height: 4
                     };
@@ -219,7 +218,7 @@
                 case 'pie-chart':
                     dimensions = {
                         minWidth: 4,
-                        minHeight: 4,
+                        minHeight: 3,
                         width: 4,
                         height: 4
                     };
@@ -227,7 +226,7 @@
                 case 'table':
                     dimensions = {
                         minWidth: 4,
-                        minHeight: 4,
+                        minHeight: 3,
                         width: 4,
                         height: 6
                     };
@@ -241,7 +240,7 @@
                  * Make sure that all widgets have the same key name saving visualization type.
                  * The name of the key is visualization.
                  */
-                var defaultDimensions = this.getDefaultDimensions(widget.visualization);
+                var defaultDimensions = this.getDefaultDimensions(widget.visualization || widget.visualization_type);
                 var newDimensions = settings.grid.dimensions && settings.grid.dimensions();
 
                 if (newDimensions) {
@@ -253,7 +252,10 @@
                 else {
                     countlyDashboards.factory.log("No dimensions were found for the widget!");
                 }
-
+                // if (widget.size && widget.size.length === 2) {
+                //     dimensions.width = widget.size[0];
+                //     dimensions.height = widget.size[1];
+                // }
                 return dimensions;
             }
         }
@@ -261,13 +263,6 @@
 
     var WidgetValidationMixin = {
         mixins: [DimensionsMixin],
-        data: function() {
-            return {
-                GRID_COLUMNS: 4,
-                DEFAULT_MIN_WIDTH: 1,
-                DEFAULT_MIN_HEIGHT: 1
-            };
-        },
         methods: {
             validateWidgetSize: function(settings, widget, dimension) {
                 var size;
@@ -292,13 +287,12 @@
                 switch (dimension) {
                 case "w":
                     dim = dimensions.minWidth;
-                    dim = this.calculateWidth(settings, widget, dim);
+                    dim = this.calculateWidth(settings, widget, dim); //?? dont need this
 
                     break;
                 case "h":
                     dim = dimensions.minHeight;
                     dim = this.calculateHeight(settings, widget, dim);
-
                     break;
                 }
 
@@ -731,6 +725,10 @@
                     };
                 }
             },
+            autoPosition: {
+                type: Boolean,
+                default: false
+            },
             loading: {
                 type: Boolean,
                 default: true
@@ -946,6 +944,9 @@
                 this.validateWidgets(allWidgets);
 
                 return allWidgets;
+            },
+            isCompatible: function() {
+                return this.$store.getters["countlyDashboards/isCompatible"];
             }
         },
         methods: {
@@ -1194,6 +1195,20 @@
 
                     this.updateWidgetGeography(wId, {size: size, position: position});
                 }
+            },
+            autoPosition: function() {
+                if (this.isCompatible) {
+                    return false;
+                }
+                // else {
+                //     console.log('autopositioning done');
+                //     allWidgets.forEach(function(widget) {
+                //         // console.log('widget');
+                //         console.log(widget);
+                //     });
+                //     return true;
+                // }
+                return false;
             },
             savedGrid: function() {
                 return this.grid.save(false);
@@ -1536,9 +1551,13 @@
         beforeMount: function() {
             var self = this;
 
-            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false}).then(function() {
-                self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
-            });
+            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: false})
+                .then(function() {
+                    self.$store.dispatch("countlyDashboards/setCompatibility")
+                        .then(function() {
+                            self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
+                        });
+                });
         },
         beforeDestroy: function() {
             this.$store.dispatch("countlyDashboards/requests/reset");
