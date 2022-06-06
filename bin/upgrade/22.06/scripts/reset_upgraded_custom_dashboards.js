@@ -9,6 +9,7 @@ pluginManager.dbConnection().then(async (countlyDb) => {
         var olderVersions = [];
         if (err) {
             console.log(err);
+            countlyDb.close();
             return;
         }
         try {
@@ -16,20 +17,26 @@ pluginManager.dbConnection().then(async (countlyDb) => {
         }
         catch (parseErr) {
             console.log(parseErr);
+            countlyDb.close();
             return;
         }
-        console.log(olderVersions);
         var doReset = false;
         if (Array.isArray(olderVersions)) {
             olderVersions.forEach(function (v) {
-                console.log(v.version);
                 if (v?.version?.split('.')?.[0] + '' === '22') {
                     doReset = true;
                 }
             });
         }
         if (doReset) {
-            await countlyDb.collection('widgets').updateMany({}, { $mul: { 'size.0': 3 }, $unset: { position: 1 } });
+            await countlyDb.collection('widgets').updateMany(
+                { gridsize: { $exists : false }},
+                {
+                    $mul: { 'size.0': 3 },
+                    $unset: { position: 1 },
+                    $set: { gridsize: 12 }
+                }
+            );
         }
         countlyDb.close();
     });
