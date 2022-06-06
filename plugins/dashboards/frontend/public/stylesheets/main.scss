@@ -148,6 +148,10 @@
         flex-direction: column;
         height: 100%;
 
+        .cly-vue-more-options {
+            visibility: hidden;
+        }
+
         &__content {
             flex-shrink: 1;
             flex-grow: 1;
@@ -180,6 +184,11 @@
             .cly-vue-eldatatable__footer {
                 display:none;
             }
+        }
+    }
+    .clyd-widget:hover {
+        .cly-vue-more-options {
+            visibility: visible;
         }
     }
 }

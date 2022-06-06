@@ -198,6 +198,7 @@
                     break;
                 case 'line':
                 case 'series':
+                case 'over-time':
                 case 'time-series':
                     dimensions = {
                         minWidth: 4,
@@ -239,7 +240,7 @@
                  * Make sure that all widgets have the same key name saving visualization type.
                  * The name of the key is visualization.
                  */
-                var defaultDimensions = this.getDefaultDimensions(widget.visualization || widget.visualization_type);
+                var defaultDimensions = this.getDefaultDimensions(widget.visualization || widget.visualization_type || widget.visualitionType);
                 var newDimensions = settings.grid.dimensions && settings.grid.dimensions();
 
                 if (newDimensions) {
@@ -300,7 +301,6 @@
             calculateWidth: function(settings, widget, width) {
                 var dimensions = this.returnDimensions(settings, widget);
                 var minWidth = dimensions.minWidth;
-
                 var w = width;
 
                 if (!w || w < minWidth) {
@@ -951,7 +951,7 @@
                 var d = JSON.parse(JSON.stringify(data));
                 var setting = this.widgetSettingsGetter(d);
 
-                if (!setting) {
+                if (!setting && command !== "delete") {
                     countlyDashboards.factory.log("Well this is very strange.");
                     countlyDashboards.factory.log("On widget action, atleast one of the widget registrations should be returned.");
                     countlyDashboards.factory.log("Kindly check your widget getter, maybe something is wrong there.");
