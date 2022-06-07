@@ -602,6 +602,13 @@ module.exports.estimate = async params => {
 module.exports.mime = async params => {
     try {
         let info = await mimeInfo(params.qstring.url);
+        if ((info.status === 301 || info.status === 302) && info.headers.location) {
+            info = await mimeInfo(info.headers.location);
+
+            if (info.status !== 200) {
+                return common.returnMessage(params, 400, {errors: [`Invalid status ${info.status} after a redirect`]}, null, true);
+            }
+        }
         if (info.status !== 200) {
             return common.returnMessage(params, 400, {errors: [`Invalid status ${info.status}`]}, null, true);
         }
