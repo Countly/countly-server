@@ -2,7 +2,8 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
     { DEFAULTS } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
-    moment = require('moment-timezone');
+    moment = require('moment-timezone'),
+    { requestEither } = require('./proxy');
 
 
 /**
@@ -602,10 +603,10 @@ module.exports.mime = async params => {
     try {
         let info = await mimeInfo(params.qstring.url);
         if (info.status !== 200) {
-            common.returnMessage(params, 400, {errors: [`Invalid status ${info.status}`]}, null, true);
+            return common.returnMessage(params, 400, {errors: [`Invalid status ${info.status}`]}, null, true);
         }
         else if (info.headers['content-type'] === undefined) {
-            common.returnMessage(params, 400, {errors: ['No content-type while HEADing the url']}, null, true);
+            return common.returnMessage(params, 400, {errors: ['No content-type while HEADing the url']}, null, true);
         }
         else if (info.headers['content-length'] === undefined) {
             info = await mimeInfo(params.qstring.url, 'GET');
@@ -1105,124 +1106,48 @@ function mimeInfo(url, method = 'HEAD') {
     let conf = common.plugins.getConfig('push'),
         ok = common.validateArgs({url}, {
             url: {type: 'URLString', required: true},
-        }, true),
-        protocol = 'http';
+        }, true);
 
     if (ok.result) {
-        url = ok.obj.url;
-        protocol = url.protocol.substr(0, url.protocol.length - 1);
+        url = ok.obj.url.toString();
     }
     else {
         throw new ValidationError(ok.errors);
     }
 
-    log.d('Retrieving URL', url);
-
     return new Promise((resolve, reject) => {
-        if (conf && conf.proxyhost) {
-            let opts = {
-                host: conf.proxyhost,
-                method: 'CONNECT',
-                path: url.hostname + ':' + (url.port ? url.port : (protocol === 'https' ? 443 : 80)),
-                rejectUnauthorized: !(conf.proxyunauthorized || false),
-            };
-            if (conf.proxyport) {
-                opts.port = conf.proxyport;
+        let req = requestEither(url.toString(), method, conf, res => {
+            let status = res.statusCode,
+                headers = res.headers,
+                data = 0;
+            if (method === 'HEAD') {
+                resolve({url: url.toString(), status, headers});
             }
-            if (conf.proxyuser) {
-                opts.headers = {'Proxy-Authorization': 'Basic ' + Buffer.from(conf.proxyuser + ':' + conf.proxypass).toString('base64')};
+            else {
+                res.on('data', dt => {
+                    if (typeof dt === 'string') {
+                        data += dt.length;
+                    }
+                    else if (Buffer.isBuffer(dt)) {
+                        data += dt.byteLength;
+                    }
+                });
+                res.on('end', () => {
+                    if (!headers['content-length']) {
+                        headers['content-length'] = data || 0;
+                    }
+                    resolve({url: url.toString(), status, headers});
+                });
             }
-            log.d('Connecting to proxy', opts);
+        });
 
-            require('http')
-                .request(url, opts)
-                .on('connect', (res, socket) => {
-                    if (res.statusCode === 200) {
-                        opts = {
-                            method,
-                            agent: false,
-                            socket,
-                            rejectUnauthorized: !(conf.proxyunauthorized || false),
-                        };
+        req.on('error', err => {
+            log.e('error when HEADing ' + url, err);
+            reject(new ValidationError('Cannot access proxied URL'));
+        });
 
-                        let req = require(protocol).request(url, opts, res2 => {
-                            let status = res2.statusCode,
-                                headers = res2.headers,
-                                data = 0;
-                            if (method === 'HEAD') {
-                                resolve({url: url.toString(), status, headers});
-                            }
-                            else {
-                                res2.on('data', dt => {
-                                    if (typeof dt === 'string') {
-                                        data += dt.length;
-                                    }
-                                    else if (Buffer.isBuffer(dt)) {
-                                        data += dt.byteLength;
-                                    }
-                                });
-                                res2.on('end', () => {
-                                    if (!headers['content-length']) {
-                                        headers['content-length'] = data || 0;
-                                    }
-                                    resolve({url: url.toString(), status, headers});
-                                });
-                            }
-                        });
-                        req.on('error', err => {
-                            log.e('error when HEADing ' + url, err);
-                            reject(new ValidationError('Cannot access proxied URL'));
-                        });
-                        req.end();
-                    }
-                    else {
-                        log.e('Cannot connect to proxy %j: %j / %j', opts, res.statusCode, res.statusMessage);
-                        reject(new ValidationError('Cannot access proxy server'));
-                    }
-                })
-                .on('error', err => {
-                    reject(new ValidationError('Cannot CONNECT to proxy server'));
-                    log.e('error when CONNECTing %j', opts, err);
-                })
-                .end();
-        }
-        else {
-            require(protocol)
-                .request(url, {method}, res => {
-                    if ((res.statusCode === 301 || res.statusCode === 302) && res.headers.location) {
-                        mimeInfo(res.headers.location).then(resolve, reject);
-                    }
-                    else {
-                        let status = res.statusCode,
-                            headers = res.headers,
-                            data = 0;
-                        if (method === 'HEAD') {
-                            resolve({url: url.toString(), status, headers});
-                        }
-                        else {
-                            res.on('data', dt => {
-                                if (typeof dt === 'string') {
-                                    data += dt.length;
-                                }
-                                else if (Buffer.isBuffer(dt)) {
-                                    data += dt.byteLength;
-                                }
-                            });
-                            res.on('end', () => {
-                                if (!headers['content-length']) {
-                                    headers['content-length'] = data || 0;
-                                }
-                                resolve({url: url.toString(), status, headers});
-                            });
-                        }
-                    }
-                })
-                .on('error', err => {
-                    log.e('error when HEADing ' + url, err);
-                    reject(new ValidationError('Cannot access URL'));
-                })
-                .end();
-        }
+        req.end();
+
     });
 }
 
