@@ -242,8 +242,10 @@
             },
             preparedProjectionFields: function() {
                 var ob = {};
-                for (var i = 0; i < this.projection.length; i++) {
-                    ob[this.projection[i]] = 1;
+                if (this.projection && Array.isArray(this.projection)) {
+                    for (var i = 0; i < this.projection.length; i++) {
+                        ob[this.projection[i]] = 1;
+                    }
                 }
                 return ob;
             },
