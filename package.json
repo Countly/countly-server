@@ -31,7 +31,7 @@
     "apidoc": "0.51.1",
     "apidoc-template": "github:kanwarujjaval/dash-apidoc-template",
     "argon2": "0.28.5",
-    "async": "3.2.3",
+    "async": "3.2.4",
     "basic-auth": "2.0.1",
     "bluebird": "3.7.2",
     "body-parser": "1.20.0",
