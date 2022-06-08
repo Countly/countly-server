@@ -2849,7 +2849,9 @@ function validateRedirect(ob) {
         }
         return false;
     }
-    return false;
+    else {
+        return true;
+    }
 }
 
 
