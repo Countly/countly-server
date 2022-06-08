@@ -22,6 +22,7 @@ const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
+const request = require('request');
 
 var loaded_configs_time = 0;
 
@@ -2778,6 +2779,82 @@ const checksumSaltVerification = (params) => {
 };
 
 
+//Function check if there is app redirect set
+//In that case redirect data and sets up params to know that request is getting redirected
+/**
+ * @param  {object} ob - params object
+ * @returns {Boolean} - false if redirected
+ */
+function validateRedirect(ob) {
+    var params = ob.params,
+        app = ob.app;
+    if (!params.cancelRequest && app.redirect_url && app.redirect_url !== '') {
+        var newPath = params.urlParts.path;
+
+        //check if we have query part
+        if (newPath.indexOf('?') === -1) {
+            newPath += "?";
+        }
+
+        var opts = {
+            uri: app.redirect_url + newPath + '&ip_address=' + params.ip_address,
+            method: 'GET'
+        };
+
+        //should we send post request
+        if (params.req.method.toLowerCase() === 'post') {
+            opts.method = "POST";
+            //check if we have body from post method
+            if (params.req.body) {
+                opts.json = true;
+                opts.body = params.req.body;
+            }
+        }
+
+        request(opts, function(error, response, body) {
+            var code = 400;
+            var message = "Redirect error. Tried to redirect to:" + app.redirect_url;
+
+            if (response && response.statusCode) {
+                code = response.statusCode;
+            }
+
+
+            if (response && response.body) {
+                try {
+                    var resp = JSON.parse(response.body);
+                    message = resp.result || resp;
+                }
+                catch (e) {
+                    if (response.result) {
+                        message = response.result;
+                    }
+                    else {
+                        message = response.body;
+                    }
+                }
+            }
+            if (error) { //error
+                log.e("Redirect error", error, body, opts, app, params);
+            }
+
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+                common.returnMessage(params, code, message);
+            }
+        });
+        params.cancelRequest = "Redirected: " + app.redirect_url;
+        params.waitForResponse = false;
+        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+            params.waitForResponse = true;
+        }
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+
 /**
  * Validate App for Write API
  * Checks app_key from the http request against "apps" collection.
@@ -2870,37 +2947,53 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
                 }
             }
-
             plugins.dispatch("/sdk/pre", {
                 params: params,
                 app: app
             }, () => {
-                plugins.dispatch("/sdk", {
-                    params: params,
-                    app: app
-                }, () => {
+                var processMe = validateRedirect({params: params, app: app});
+                /*
+					Keeping option open to add some request cancelation on /sdk for different cases than redirect.
+					(That is why duplicate code)
+				*/
+                if (!processMe) {
                     plugins.dispatch("/sdk/log", {params: params});
-                    if (!params.cancelRequest) {
-                        processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
-                            if (userErr) {
-                                if (!params.res.finished) {
-                                    common.returnMessage(params, 400, userErr);
+                    //params.cancelRequest is true
+                    if (!params.res.finished && !params.waitForResponse) {
+                        common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
+                        //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                    }
+                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                    return done ? done() : false;
+                }
+                else {
+                    plugins.dispatch("/sdk", {
+                        params: params,
+                        app: app
+                    }, () => {
+                        plugins.dispatch("/sdk/log", {params: params});
+                        if (!params.cancelRequest) {
+                            processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
+                                if (userErr) {
+                                    if (!params.res.finished) {
+                                        common.returnMessage(params, 400, userErr);
+                                    }
                                 }
-                            }
-                            else {
-                                processRequestData(params, app, done);
-                            }
-                        });
-                    }
-                    else {
-                        if (!params.res.finished && !params.waitForResponse) {
-                            common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
-                            //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                                else {
+                                    processRequestData(params, app, done);
+                                }
+                            });
                         }
-                        common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
-                        return done ? done() : false;
-                    }
-                });
+                        else {
+                            if (!params.res.finished && !params.waitForResponse) {
+                                common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
+                                //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                            }
+                            common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                            return done ? done() : false;
+                        }
+                    });
+                }
             });
         });
     });
