@@ -85,7 +85,7 @@
     "properties-parser": "0.3.1",
     "puppeteer": "14.3.0",
     "request": "2.88.2",
-    "sass": "1.52.2",
+    "sass": "1.52.3",
     "uglify-js": "3.16.0",
     "underscore": "1.13.4",
     "yamljs": "0.3.0"
