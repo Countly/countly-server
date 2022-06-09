@@ -1,4 +1,4 @@
-/*global countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, moment _*/
+/*global countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers,_*/
 
 (function() {
     var FEATURE_NAME = 'dbviewer';
