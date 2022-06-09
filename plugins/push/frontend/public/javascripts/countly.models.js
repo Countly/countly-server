@@ -1415,7 +1415,7 @@
                     triggerNotMet: triggerDto.cancels ? TriggerNotMetEnum.CANCEL_ON_EXIT : TriggerNotMetEnum.SEND_ANYWAY,
                     cohorts: triggerDto.cohorts || [],
                     events: triggerDto.events || [],
-                    capping: Boolean(triggerDto.cap) && Boolean(triggerDto.sleep),
+                    capping: Boolean(triggerDto.cap),
                     usersTimezone: null,
                 };
                 if (triggerDto.time) {
