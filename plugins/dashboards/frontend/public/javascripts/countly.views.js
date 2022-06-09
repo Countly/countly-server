@@ -231,6 +231,13 @@
                         height: 6
                     };
                     break;
+                default:
+                    dimensions = {
+                        minWidth: 4,
+                        minHeight: 3,
+                        width: 4,
+                        height: 4
+                    };
                 }
                 return dimensions;
             },
