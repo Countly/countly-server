@@ -23,6 +23,12 @@
                 countlyDataMigration.loadImportList()
                     .then(function(res) {
                         if (typeof res.result === "object") {
+                            var aa = Object.entries(res.result);
+                            aa[0].forEach(function(element) {
+                                if (typeof element === "object") {
+                                    res.result = [element];
+                                }
+                            });
                             self.list = res.result;
                         }
                         else if (typeof res.result === "string") {
