@@ -1098,10 +1098,16 @@ var pluginManager = function pluginManager() {
                 var qstring = parts[1];
                 if (qstring && qstring.length) {
                     qstring = querystring.parse(qstring);
-                    if (qstring.ssl) {
+                    if (qstring.ssl && (qstring.ssl === true || qstring.ssl === "true")) {
                         ob.ssl = "";
                         ob.sslAllowInvalidCertificates = "";
                         ob.sslAllowInvalidHostnames = "";
+                    }
+                    if (qstring.tls && (qstring.tls === true || qstring.tls === "true")) {
+                        ob.tls = "";
+                        ob.tlsAllowInvalidCertificates = "";
+                        ob.tlsAllowInvalidHostnames = "";
+                        ob.tlsInsecure = "";
                     }
                     if (qstring.replicaSet) {
                         ob.host = qstring.replicaSet + "/" + ob.host;
@@ -1125,10 +1131,16 @@ var pluginManager = function pluginManager() {
             else {
                 ob.host = (config.mongodb.host + ':' + config.mongodb.port);
             }
-            if (config.mongodb.serverOptions && config.mongodb.serverOptions.ssl) {
+            if (config.mongodb.serverOptions && config.mongodb.serverOptions.ssl && (config.mongodb.serverOptions.ssl === true || config.mongodb.serverOptions.ssl === "true")) {
                 ob.ssl = "";
                 ob.sslAllowInvalidCertificates = "";
                 ob.sslAllowInvalidHostnames = "";
+            }
+            if (config.mongodb.serverOptions && config.mongodb.serverOptions.tls && (config.mongodb.serverOptions.tls === true || config.mongodb.serverOptions.tls === "true")) {
+                ob.tls = "";
+                ob.tlsAllowInvalidCertificates = "";
+                ob.tlsAllowInvalidHostnames = "";
+                ob.tlsInsecure = "";
             }
             if (config.mongodb.username && config.mongodb.password) {
                 ob.username = config.mongodb.username;
@@ -1307,6 +1319,11 @@ var pluginManager = function pluginManager() {
         }
         catch (ex) {
             logDbRead.e("Error connecting to database", ex);
+            logDbRead.e("With params %j", {
+                db: db_name,
+                connection: dbName,
+                options: dbOptions
+            });
             //exit to retry to reconnect on restart
             process.exit(1);
             return;
