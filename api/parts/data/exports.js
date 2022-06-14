@@ -8,8 +8,7 @@ var exports = {},
     common = require('./../../utils/common.js'),
     moment = require('moment-timezone'),
     plugin = require('./../../../plugins/pluginManager.js'),
-    json2csv = require('json2csv'),
-    json2xls = require('json2xls');
+    json2csv = require('json2csv');
 
 //const log = require('./../../utils/log.js')('core:export');
 
@@ -120,29 +119,6 @@ function preventCSVInjection(val) {
 }
 
 /**
-* When exporting to excel library fails if column name contains ".". Replacing those to ":"
-* @param {object} data - data object to fix
-*/
-function fixForXls(data) {
-    data = data || {};
-    data.fields = data.fields || [];
-    data.data = data.data || [];
-    for (var z = 0; z < data.fields.length; z++) {
-        if (data.fields[z].indexOf(".") > -1) {
-            //fix this key;
-            var oldKey = data.fields[z];
-            var newKey = data.fields[z].replace(/\./g, ":");
-
-            for (var k = 0;k < data.data.length; k++) {
-                data.data[k][newKey] = data.data[k][oldKey];
-                delete data.data[k][oldKey];
-            }
-            data.fields[z] = newKey;
-        }
-    }
-}
-
-/**
 * Function to make all values CSV friendly
 * @param {string} value - value to convert
 * @returns {string}   - converted string
@@ -192,8 +168,20 @@ exports.convertData = function(data, type) {
     case "xls":
     case "xlsx":
         obj = flattenArray(data);
-        fixForXls(obj);//changing '.' in keys to ':'
-        return json2xls(obj.data, {fields: obj.fields});
+        var xc = xlsx();
+        var sheet = xc.sheet("Countly export");
+        sheet.write(obj.fields);
+        for (var k = 0; k < obj.data.length; k++) {
+            var arr1 = [];
+            for (var z = 0; z < obj.fields.length; z++) {
+                arr1.push(obj.data[k][obj.fields[z]] || "");
+            }
+            sheet.write(arr1);
+        }
+        sheet.end();
+        xc.finalize();
+
+        return xc.toArray();
     default:
         return data;
     }
@@ -221,8 +209,10 @@ exports.output = function(params, data, filename, type) {
     }
     headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename) + "." + type;
 
-    if (type === "xlsx" || type === "xls") {
-        common.returnRaw(params, 200, new Buffer(data, 'binary'), headers);
+    if (type === "xlsx" || type === "xls") { //we have stream
+        params.res.writeHead(200, headers);
+        data.pipe(params.res);
+        //common.returnRaw(params, 200, new Buffer(data, 'binary'), headers);
     }
     else {
         common.returnRaw(params, 200, data, headers);
