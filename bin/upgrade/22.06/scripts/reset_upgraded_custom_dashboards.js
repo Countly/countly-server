@@ -30,7 +30,7 @@ pluginManager.dbConnection().then(async (countlyDb) => {
         }
         if (doReset) {
             await countlyDb.collection('widgets').updateMany(
-                { gridsize: { $exists : false }},
+                { gridsize: 4 },
                 {
                     $mul: { 'size.0': 3 },
                     $unset: { position: 1 },
