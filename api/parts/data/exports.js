@@ -181,7 +181,7 @@ exports.convertData = function(data, type) {
         sheet.end();
         xc.finalize();
 
-        return xc.toArray();
+        return xc;
     default:
         return data;
     }
