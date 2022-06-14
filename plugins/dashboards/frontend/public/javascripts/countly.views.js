@@ -1307,6 +1307,15 @@
                 if (this.grid) {
                     this.grid.destroy();
                 }
+            },
+            autoPosition: function(allWidgets) {
+                var autoposition = false;
+                allWidgets.forEach(function(widget) {
+                    if (!widget.position) {
+                        autoposition = true;
+                    }
+                });
+                return autoposition;
             }
         },
         mounted: function() {
