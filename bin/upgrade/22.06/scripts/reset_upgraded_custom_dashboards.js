@@ -29,11 +29,23 @@ pluginManager.dbConnection().then(async (countlyDb) => {
             });
         }
         if (doReset) {
+            /**
+             * Script ran on 22.03, which means upgrade is from 20.x
+             * the 22.03 sets gridsize at 4
+             * So we do not unset position for gridsize 4, since they are coming from 20.x
+             * The new script in 22.03 would not have run for users who are already on 22.03, 
+             * so they would have gridsize 4 and need to unset the position
+             */
+            await countlyDb.collection('widgets').updateMany(
+                { gridsize: { $ne: 4 } },
+                {
+                    $mul: { 'size.0': 3 },
+                    $unset: { position: 1 }
+                }
+            );
             await countlyDb.collection('widgets').updateMany(
                 { gridsize: 4 },
                 {
-                    $mul: { 'size.0': 3 },
-                    $unset: { position: 1 },
                     $set: { gridsize: 12 }
                 }
             );
