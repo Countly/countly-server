@@ -90,6 +90,12 @@
         }
     }
 
+    &__pop--hidden-header {
+        .cly-vue-select-x__header {
+            padding: 0;
+        }
+    }
+
     .el-select-head {
         width: 100%;
     }
