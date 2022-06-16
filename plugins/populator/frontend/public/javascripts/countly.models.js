@@ -1653,7 +1653,7 @@
                 countlyPopulator.sync(true);
             }
         }
-        generateRetention(template.up && template, function() {
+        generateRetention(template && template, function() {
 
             generateCampaigns(function() {
                 for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
