@@ -9,13 +9,13 @@
         _os: ["Android", "iOS"],
         _os_web: ["Android", "iOS", "Windows", "MacOS"],
         _os_desktop: ["Windows", "MacOS", "Linux"],
-        _os_version_android: ["11","12","12L"],
-        _os_version_ios: ["10.3.4","12.5.5","15.5"],
+        _os_version_android: ["11", "12", "12L"],
+        _os_version_ios: ["10.3.4", "12.5.5", "15.5"],
         _os_version_windows: ["7", "8", "10"],
         _os_version_macos: ["10.15", "11.0", "12.0"],
         _os_version: function() {
             return getRandomInt(1, 9) + "." + getRandomInt(0, 5);
-        },        
+        },
         _resolution: ["320x480", "768x1024", "640x960", "1536x2048", "320x568", "640x1136", "480x800", "240x320", "540x960", "480x854", "240x400", "360x640", "800x1280", "600x1024", "600x800", "768x1366", "720x1280", "1080x1920"],
         _device_android: ["Note10 Lite", "Galaxy A52S", "Redmi 9c", "Note 10S", "Oppo A74", "Nova 9SE", "K41S"],
         _device_ios: ["iPhone13", "iPhone12", "iPhone11", "iPod7,1", "iPad3,6"],
@@ -1434,18 +1434,18 @@
                         }
                     }
                 }
-	
+
                 var userdetails = new getUser(templateUp);
-                userdetails["begin_session"] = 1;
-                userdetails["device_id"] = userIndex + "" + ids[j];
-                userdetails["dow"] = getRandomInt(0, 6);
-                userdetails["hour"] = getRandomInt(0, 23)
-                userdetails["ip_address"] = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
+                userdetails.begin_session = 1;
+                userdetails.device_id = userIndex + "" + ids[j];
+                userdetails.dow = getRandomInt(0, 6);
+                userdetails.hour = getRandomInt(0, 23);
+                userdetails.ip_address = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
                 delete userdetails.ip;
-                userdetails["request_id"] = userIndex + "" + ids[j] + "_" + ts;
-                userdetails["timestamp"] = ts;
+                userdetails.request_id = userIndex + "" + ids[j] + "_" + ts;
+                userdetails.timestamp = ts;
                 delete userdetails.metrics;
-                userdetails["metrics"] = metrics;
+                userdetails.metrics = metrics;
 
                 bulker.push(userdetails);
                 totalStats.s++;
@@ -1454,8 +1454,8 @@
         }
 
         totalStats.r++;
-        for (var user of bulker) {
-            user.startSession(templateUp);
+        for (var index = 0; index < bulker.length; index++) {
+            bulker[index].startSession(templateUp);
         }
 
         callback("");
