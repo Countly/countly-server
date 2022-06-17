@@ -1270,6 +1270,8 @@ var pluginManager = function pluginManager() {
         }
 
         if (config.mongodb.dbOptions) {
+            //delete old config option
+            delete config.mongodb.dbOptions.native_parser;
             _.extend(dbOptions, config.mongodb.dbOptions);
         }
 
