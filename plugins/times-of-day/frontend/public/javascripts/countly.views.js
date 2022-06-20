@@ -136,7 +136,7 @@
                     isPluginWidget: true,
                     apps: [],
                     data_type: "",
-                    events: [],
+                    events: "",
                     period: "",
                     visualization: "punchcard"
                 };
