@@ -712,9 +712,11 @@
             groupMap: function() {
                 var map = {};
 
-                groupsModel.data().forEach(function(group) {
-                    map[group._id] = group.name;
-                });
+                if (isGroupPluginEnabled) {
+                    groupsModel.data().forEach(function(group) {
+                        map[group._id] = group.name;
+                    });
+                }
 
                 return map;
             }
