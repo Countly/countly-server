@@ -1653,19 +1653,24 @@
                 countlyPopulator.sync(true);
             }
         }
-        generateRetention(template, function() {
 
-            generateCampaigns(function() {
-                for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
-                    createUser();
-                }
-                // Generate campaigns conversion for web
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                    setTimeout(reportConversions, timeout);
-                }
-                setTimeout(processUsers, timeout);
+        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
+            generateWidgets(function () {
+                generateRetention(template, function () {
+                    generateCampaigns(function () {
+                        for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
+                            createUser();
+                        }
+                        // Generate campaigns conversion for web
+                        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                            setTimeout(reportConversions, timeout);
+                        }
+                        setTimeout(processUsers, timeout);
+                    });
+                });
             });
-        });
+        }
+
 
         if (countlyGlobal.plugins.indexOf("systemlogs") !== -1) {
             $.ajax({
@@ -1680,9 +1685,9 @@
             });
         }
 
-        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
-            generateWidgets(function() {});
-        }
+        //if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
+        //    generateWidgets(function() {});
+        //}
     };
 
     countlyPopulator.stopGenerating = function(callback) {
