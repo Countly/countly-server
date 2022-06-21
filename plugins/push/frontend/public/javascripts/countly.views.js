@@ -1173,6 +1173,7 @@
         mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyPushNotificationMain", "pushTable"),
                 platformFilters: platformFilterOptions,
                 platformFilterLabels: {
                     oneTime: CV.i18n('push-notification.platform-filter-label-one-time'),

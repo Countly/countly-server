@@ -549,7 +549,56 @@
             return key !== CV.i18n(key);
         }
     };
-
+    var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
+        onRequest: function(context) {
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                method: 'messaging',
+                action: 'getTable',
+                visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
+            };
+            return {
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + "/push/message/all",
+                data: data
+            };
+        },
+        onReady: function(context, rows) {
+            for (var index = 0; index < rows.length; index++) {
+                var editedPlatforms = rows[index].platforms.map(function(element) {
+                    if (element === "i") {
+                        element = "ios";
+                    }
+                    else if (element === "a") {
+                        element = "android";
+                    }
+                    return element;
+                });
+                rows[index].platforms = editedPlatforms;
+                rows[index].sent = rows[index].result.sent || 0;
+                rows[index].actioned = rows[index].result.actioned || 0;
+                rows[index].name = rows[index].info && rows[index].info.title || '-';
+                rows[index].createdBy = rows[index].info && rows[index].info.createdByName || '';
+                rows[index].content = rows[index].contents[0].message;
+                rows[index].createdDateTime = {
+                    date: moment(rows[index].info && rows[index].info.created).format("MMMM Do YYYY"),
+                    time: moment(rows[index].info && rows[index].info.created).format("h:mm:ss a")
+                },
+                rows[index].sentDateTime = {
+                    date: rows[index].info && rows[index].info.started ? moment(rows[index].info.started).format("MMMM Do YYYY") : null,
+                    time: rows[index].info && rows[index].info.started ? moment(rows[index].info.started).format("h:mm:ss a") : null,
+                };
+            }
+            return rows;
+        },
+        onError: function(context, error) {
+            if (error) {
+                if (error.status !== 0) {
+                    console.log(error);
+                }
+            }
+        }
+    });
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
     countlyPushNotification.api = {
         findById: function(id) {
@@ -2862,7 +2911,7 @@
             state: getMainInitialState,
             actions: mainActions,
             mutations: mainMutations,
-            submodules: [countlyVue.vuex.FetchMixin()]
+            submodules: [countlyVue.vuex.FetchMixin(), pushTableResource]
         });
     };
 
