@@ -10,3 +10,4 @@
 .cly-vue-nps-preview .rating-labels .right { float: left !important; }
 .cly-vue-nps-preview .submit-wrapper .submit-button { float: left !important; }
 .cly-vue-nps-preview .submit-wrapper img { float: right !important; }
+.cly-vue-ratings-preview { direction: rtl; }

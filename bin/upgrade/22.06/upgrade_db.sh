@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="22.03"
+VER="22.06"
 
 CONTINUE="$(countly check before upgrade db "$VER")"
 
@@ -25,13 +25,7 @@ then
 
     if [ "$1" != "combined" ]; then
         #upgrade plugins
-        countly plugin upgrade white-labeling
-        countly plugin upgrade sources
-        countly plugin upgrade two-factor-auth
-        countly plugin upgrade web
-        countly plugin upgrade push
-        countly plugin upgrade hooks
-        countly plugin upgrade drill
+        nodejs "$DIR/scripts/install_plugins.js"
         
         #enable new plugins
         countly plugin enable data-manager
@@ -45,16 +39,9 @@ then
 
     #run upgrade scripts
     nodejs "$DIR/scripts/loadCitiesInDb.js"
-    nodejs "$CUR/scripts/fix_bookmarks.js"
-    nodejs "$CUR/scripts/fix_cohorts_appID.js"
-    nodejs "$CUR/scripts/group_permission_generator.js"
-    nodejs "$CUR/scripts/member_permission_generator.js"
     nodejs "$CUR/scripts/push_all_things.js"
-    nodejs "$CUR/scripts/update_app_users.js"
     nodejs "$CUR/scripts/remove_old_flows_collections.js"
-    nodejs "$CUR/scripts/update_widgets_reports.js"
-    nodejs "$CUR/scripts/clear_old_report_data.js"
-    nodejs "$CUR/scripts/mark_upgraded_custom_dashboards.js"
+    nodejs "$CUR/scripts/reset_upgraded_custom_dashboards.js"
     
     #change config settings
     countly config "api.batch_on_master" null --force

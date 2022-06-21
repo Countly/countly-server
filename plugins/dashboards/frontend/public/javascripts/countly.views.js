@@ -231,6 +231,13 @@
                         height: 6
                     };
                     break;
+                default:
+                    dimensions = {
+                        minWidth: 4,
+                        minHeight: 3,
+                        width: 4,
+                        height: 4
+                    };
                 }
                 return dimensions;
             },
@@ -1300,6 +1307,15 @@
                 if (this.grid) {
                     this.grid.destroy();
                 }
+            },
+            autoPosition: function(allWidgets) {
+                var autoposition = false;
+                allWidgets.forEach(function(widget) {
+                    if (!widget.position) {
+                        autoposition = true;
+                    }
+                });
+                return autoposition;
             }
         },
         mounted: function() {

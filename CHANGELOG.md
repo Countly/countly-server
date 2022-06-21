@@ -1,3 +1,33 @@
+## Version 22.06
+
+Fixes:
+- [compare] correctly respond to core events
+- [dashboards] add more rows and columns
+- [dashboards] do not close dashboard sidebar if drawer is open
+- [dashboards] send emails on dashboard invites
+- [data-migration] make export path non mandatory field in data migration
+- [dbviewer] fixed for export with query
+- [jobs] back button doesn't work
+- [menu] stay on same view after page refresh
+- [mongodb] driver update
+- [push] fixing capping display
+- [push] following redirects for mime
+- [push] new proxy logic
+- [star-rating] fixed preview screen for ratings
+- [ui] 31 day month period is cut off in graphs
+- [ui] chart label orientation fixes
+- [user-management] fix reset filter button style
+
+Enterprise fixes:
+- [cognito] create config file on plugin install, if it does not exist
+- [concurrent_users] Max online user values should be resettable from an app level configuration
+- [config-transfer] fix for blank names
+- [drill] drill widget should skip x-axis labels like other time series graphs
+- [funnels] Ability to duplicate funnels
+- [groups] manage user group assignment directly from group management
+- [retention_segments] add column sizes for 13 months and 30 days retention tables for dashboards
+- [retention_segments] fix retention table tooltips
+
 ## Version 22.03.12
 
 Fixes:

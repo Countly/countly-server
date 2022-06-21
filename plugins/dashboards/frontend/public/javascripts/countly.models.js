@@ -317,7 +317,16 @@
                 create: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var settings = widget.settings || {};
-
+                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object") {
+                        if (Array.isArray(widget.settings.custom_period)) {
+                            if (widget.settings.custom_period[0] && widget.settings.custom_period[0].toString().length === 13) {
+                                widget.settings.custom_period[0] = Math.floor(widget.settings.custom_period[0] / 1000);
+                            }
+                            if (widget.settings.custom_period[1] && widget.settings.custom_period[1].toString().length === 13) {
+                                widget.settings.custom_period[1] = Math.floor(widget.settings.custom_period[1] / 1000);
+                            }
+                        }
+                    }
                     return countlyDashboards.service.widgets.create(dashboardId, settings).then(function(id) {
                         return id;
                     }).catch(function(e) {
@@ -334,6 +343,16 @@
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var widgetId = widget.id;
                     var settings = widget.settings;
+                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object") {
+                        if (Array.isArray(widget.settings.custom_period)) {
+                            if (widget.settings.custom_period[0] && widget.settings.custom_period[0].toString().length === 13) {
+                                widget.settings.custom_period[0] = Math.floor(widget.settings.custom_period[0] / 1000);
+                            }
+                            if (widget.settings.custom_period[1] && widget.settings.custom_period[1].toString().length === 13) {
+                                widget.settings.custom_period[1] = Math.floor(widget.settings.custom_period[1] / 1000);
+                            }
+                        }
+                    }
 
                     return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings).then(function() {
                         return widgetId;
