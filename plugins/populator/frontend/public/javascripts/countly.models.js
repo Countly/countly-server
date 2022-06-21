@@ -1655,9 +1655,9 @@
         }
 
         if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
-            generateWidgets(function () {
-                generateRetention(template, function () {
-                    generateCampaigns(function () {
+            generateWidgets(function() {
+                generateRetention(template, function() {
+                    generateCampaigns(function() {
                         for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
                             createUser();
                         }
