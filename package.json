@@ -86,7 +86,7 @@
     "puppeteer": "14.4.1",
     "request": "2.88.2",
     "sass": "1.52.3",
-    "uglify-js": "3.16.0",
+    "uglify-js": "3.16.1",
     "underscore": "1.13.4",
     "yamljs": "0.3.0"
   },
