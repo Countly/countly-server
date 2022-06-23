@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCommon, countlyEventsOverview,CV, app, CountlyHelpers*/
+/* global countlyVue, countlyCommon, countlyEventsOverview,CV, app, CountlyHelpers, moment*/
 (function() {
     var EventsTable = countlyVue.views.BaseView.extend({
         mixins: [countlyVue.mixins.i18n],
@@ -233,7 +233,67 @@
                 return this.$store.getters["countlyEventsOverview/eventsOverview"];
             },
             monitorEventsData: function() {
-                return this.$store.getters["countlyEventsOverview/monitorEventsData"];
+                var period = countlyCommon.getPeriodForAjax();
+                this.xAxisLabels = [];
+                var editedMonitorEventsData = [];
+                var dateMonthValArr = [];
+                var currentData = this.$store.getters["countlyEventsOverview/monitorEventsData"];
+
+                var dateVal = countlyCommon.periodObj.currentPeriodArr.map(function(x) {
+                    var thisDay = moment(x, "YYYY.M.D");
+                    return countlyCommon.formatDate(thisDay, "DD MMM");
+                });
+                var dateMonthVal = countlyCommon.periodObj.currentPeriodArr.map(function(x) {
+                    var thisDay = moment(x, "YYYY.M.D");
+                    return countlyCommon.formatDate(thisDay, "MMM YYYY");
+
+                });
+                for (var i = 0; i < dateMonthVal.length; i++) {
+                    if (dateMonthVal[i] !== dateMonthVal[i - 1]) {
+                        dateMonthValArr.push(dateMonthVal[i]);
+                    }
+                }
+
+                if (typeof this.$store.getters["countlyEventsOverview/monitorEventsData"][0] === "object") {
+                    for (var j = 0; j < currentData.length; j++) {
+                        this.xAxisLabels = [];
+                        for (var index = 0; index < currentData[j].barData.series[0].data.length; index++) {
+                            if (period === "hour" || period === "yesterday") {
+                                this.xAxisLabels.push(index + ":00");
+                            }
+                            else if (period === "month") {
+                                if (typeof dateMonthValArr[index] !== "undefined") {
+                                    this.xAxisLabels.push(dateMonthValArr[index]);
+                                }
+                            }
+                            else {
+                                if (typeof dateVal[index] !== "undefined") {
+                                    this.xAxisLabels.push(dateVal[index]);
+                                }
+                            }
+                        }
+                        editedMonitorEventsData.push({
+                            "barData": {
+                                "series": [{
+                                    "data": currentData[j].barData.series[0].data,
+                                    "color": "rgb(82, 163, 239)",
+                                    "name": currentData[j].name
+                                }],
+                                "legend": this.monitorEventsOptions.legend,
+                                "xAxis": this.monitorEventsOptions.xAxis,
+                                "yAxis": this.monitorEventsOptions.yAxis
+                            },
+                            "change": currentData[j].change,
+                            "eventProperty": currentData[j].eventProperty,
+                            "total": currentData[j].total,
+
+                        });
+                    }
+                    return editedMonitorEventsData;
+                }
+                else {
+                    return [];
+                }
             },
             updatedAt: function() {
                 var deatilEvents = this.$store.getters["countlyEventsOverview/detailEvents"];
@@ -241,13 +301,36 @@
             },
             isMonitorEventsLoading: function() {
                 return this.$store.getters["countlyEventsOverview/isMonitorEventsLoading"];
+            },
+            monitorEventsOptions: function() {
+                return {
+                    xAxis: {
+                        type: 'category',
+                        data: this.xAxisLabels,
+                        axisTick: {
+                            alignWithLable: false
+                        },
+                        axisLabel: {
+                            show: false
+                        }
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    legend: {
+                        bottom: "0%",
+                        itemHeight: 10,
+                        itemWidth: 10,
+                    },
+                };
             }
         },
         data: function() {
             return {
                 description: CV.i18n('events.overview.title.new'),
                 disabledDatePicker: '1months',
-                monitorEventsLegend: {"show": false}
+                monitorEventsLegend: {"show": false},
+                xAxisLabels: []
             };
         },
         beforeCreate: function() {
