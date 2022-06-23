@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#load city data into database
+node "/opt/countly/bin/scripts/loadCitiesInDb.js"
+
 if [ -f /opt/countly/plugins/plugins.json ]; then
 	echo "[docker] Plugins have been built, skipping rebuilding"
 else
