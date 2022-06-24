@@ -83,7 +83,7 @@
     "object-hash": "3.0.0",
     "offline-geocoder": "github:iartem/offline-geocoder",
     "properties-parser": "0.3.1",
-    "puppeteer": "14.4.1",
+    "puppeteer": "15.0.0",
     "request": "2.88.2",
     "sass": "1.53.0",
     "uglify-js": "3.16.1",
