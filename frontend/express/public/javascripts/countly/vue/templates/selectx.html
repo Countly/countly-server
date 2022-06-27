@@ -51,7 +51,7 @@
                 <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>
             </div>
             <div class="bu-level">
-                <div class="bu-level-item" v-if="searchable">
+                <div class="bu-level-item" v-if="isSearchShown">
                     <el-input
                         v-show="showList"
                         ref="searchBox"

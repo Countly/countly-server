@@ -103,9 +103,12 @@
             },
             filterSummary: function() {
                 var summary = [
-                    this.roleMap[this.currentFilter.role] || CV.i18n("management-users.all-roles"),
-                    this.groupMap[this.currentFilter.group] || CV.i18n("management-users.all-groups")
+                    this.roleMap[this.currentFilter.role] || CV.i18n("management-users.all-roles")
                 ];
+
+                if (isGroupPluginEnabled) {
+                    summary.push(this.groupMap[this.currentFilter.group] || CV.i18n("management-users.all-groups"));
+                }
 
                 return summary.join(", ");
             }
