@@ -88,7 +88,7 @@ plugins.setConfigs("crashes", {
                         if (Object.keys(updates).length) {
                             bulk.find({uid: newUid, group: group}).upsert().updateOne(updates);
                         }
-                        bulk.find({uid: oldUid, group: group}).remove();
+                        bulk.find({uid: oldUid, group: group}).delete();
                     }
                     bulk.execute(function(bulkerr) {
                         if (bulkerr) {
