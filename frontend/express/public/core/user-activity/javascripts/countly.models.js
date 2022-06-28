@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlyCommon,countlyGlobal,countlySession,Promise */
+/*global countlyVue,CV,countlyCommon,countlyGlobal,countlySession */
 (function(countlyUserActivity) {
 
     countlyUserActivity.helpers = {

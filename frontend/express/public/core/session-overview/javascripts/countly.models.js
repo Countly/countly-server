@@ -1,4 +1,4 @@
-/*global countlyVue,countlySession,countlyTotalUsers,Promise,CV,countlyCommon*/
+/*global countlyVue,countlySession,countlyTotalUsers,CV,countlyCommon*/
 (function(countlySessionOverview) {
 
     countlySessionOverview.service = {
