@@ -19,7 +19,8 @@ var pluginDependencies = require('./pluginDependencies.js'),
     log = require('../api/utils/log.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
-    exec = cp.exec;
+    exec = cp.exec,
+    spawn = cp.spawn;
 
 /**
 * This module handles communicaton with plugins
@@ -865,7 +866,18 @@ var pluginManager = function pluginManager() {
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
-                exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error2) {
+                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
+                var error2 = "";
+
+                cmd.stdout.on('data', (data) => {
+                    console.log(`${data}`);
+                });
+
+                cmd.stderr.on('data', (data) => {
+                    error2 += data;
+                });
+
+                cmd.on('close', () => {
                     if (error2) {
                         errors = true;
                         console.log('error: %j', error2);
@@ -919,7 +931,19 @@ var pluginManager = function pluginManager() {
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
-                exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error2) {
+
+                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
+                var error2 = "";
+
+                cmd.stdout.on('data', (data) => {
+                    console.log(`${data}`);
+                });
+
+                cmd.stderr.on('data', (data) => {
+                    error2 += data;
+                });
+
+                cmd.on('close', () => {
                     if (error2) {
                         errors = true;
                         console.log('error: %j', error2);
