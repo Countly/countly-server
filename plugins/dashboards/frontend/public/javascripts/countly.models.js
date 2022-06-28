@@ -1,4 +1,4 @@
-/*global jQuery, countlyCommon, CV, countlyVue, _, CountlyHelpers, countlyGlobal, Promise */
+/*global jQuery, countlyCommon, CV, countlyVue, _, CountlyHelpers, countlyGlobal */
 
 (function(countlyDashboards) {
 

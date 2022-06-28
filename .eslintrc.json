@@ -131,7 +131,8 @@
                 "plugins/*/frontend/public/javascripts/countly.*.js"
             ],
             "env": {
-                "browser": true
+                "browser": true,
+                "es6": true
             },
             "rules": {
                 "valid-jsdoc": [
@@ -199,9 +200,10 @@
                 "plugins/pluginManager.js",
                 "plugins/pluginDependencies.js",
                 "plugins/*/api/**/*.js",
-                "plugins/*/frontend/*.js",
-                "plugins/*/extend/*.js"
+                "plugins/*/frontend/**/*.js",
+                "plugins/*/extend/**/*.js"
             ],
+            "excludedFiles": "plugins/*/frontend/public/**/*.js",
             "env": {
                 "es6": true,
                 "node": true
@@ -275,9 +277,11 @@
             "files": [
                 "Gruntfile.js",
                 "bin/**/*.js",
+                "scripts/**/*.js",
                 "extend/**/*.js",
                 "plugins/*/*.js",
-                "plugins/*/scripts/*.js"
+                "plugins/*/scripts/*.js",
+                "./*.js"
             ],
             "excludedFiles": "plugins/*/tests.js",
             "env": {

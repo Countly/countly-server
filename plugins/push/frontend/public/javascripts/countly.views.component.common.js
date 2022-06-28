@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise, Map*/
+/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
         props: {

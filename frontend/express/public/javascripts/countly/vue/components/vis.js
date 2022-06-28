@@ -1,4 +1,4 @@
-/* global Promise, Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
+/* global Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
 
 // _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
 

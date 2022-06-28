@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery, countlyVue, CV, Promise, Vue*/
+/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery, countlyVue, CV, Vue*/
 (function(countlyTaskManager, $) {
 
     //Private Properties
