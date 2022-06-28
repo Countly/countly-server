@@ -15,12 +15,25 @@ let protos = {
  * 
  * @returns {Agent} Agent subclass with support for this particular request
  */
-function proxyAgent(url, proxy, agentConfig) {
+function proxyAgent(url, proxy, agentConfig = {}) {
     url = new URL(url);
+
+    // agentConfig.maxSockets = 1;
+    agentConfig.keepAlive = true;
 
     let Super;
     let Constructor = function() {
         Super.constructor.apply(this, [agentConfig]);
+
+        // this.keepSocketAlive = socket => {
+        //     socket.setKeepAlive(true, this.keepAliveMsecs);
+        //     socket.unref();
+        //     return true;
+        // };
+
+        // this.reuseSocket = (socket /*, request*/) => {
+        //     socket.ref();
+        // };
 
         this.createConnection = (options, callback) => {
             let connectOptions = {
@@ -57,26 +70,37 @@ function proxyAgent(url, proxy, agentConfig) {
                 // socket.removeAllListeners();
 
                 if (response.statusCode === 200) {
-                    // let sock = Super.createConnection.apply(self, [{...options, socket}, () => callback(null, sock)]);
-                    // sock.once('err', err => {
-                    //     console.error(err);
-                    //     sock.removeAllListeners();
-                    //     callback(err);
-                    // });
-                    // Super.createConnection.apply(self, [{...options, socket}, callback]);
                     options.socket = socket;
+                    options.rejectUnauthorized = proxy.auth;
                     if (proxy.http2) {
                         options.ALPNProtocols = ['h2'];
                     }
-                    let sock = (options.protocol === 'https:' ? protos.tls : protos.net).connect(options, function() {
-                        // log.d('TLS callback');
-                        callback(null, sock);
-                    });
-                    sock.on('error', function(err) {
-                        // log.e('TLS error', err);
+                    let sock = Super.createConnection.apply(this, [options]);
+                    sock.once('err', err => {
+                        // console.error(err);
+                        // sock.removeAllListeners();
                         callback(err);
                     });
-                    // callback(null, Super.createConnection.apply(self, [options]));
+                    callback(null, sock);
+                    // callback(null, sock);
+                    // Super.createConnection.apply(self, [{...options, socket}, callback]);
+                    // let secure = options.protocol === 'https:' || options.port === 443;
+                    // options.socket = socket;
+                    // if (proxy.http2) {
+                    //     options.ALPNProtocols = ['h2'];
+                    // }
+                    // if (secure) {
+                    //     options.rejectUnauthorized = proxy.auth;
+                    // }
+                    // let sock = (secure ? protos.tls : protos.net).connect(options, function() {
+                    //     // log.d('TLS callback');
+                    //     callback(null, sock);
+                    // });
+                    // sock.on('error', function(err) {
+                    //     // log.e('TLS error', err);
+                    //     callback(err);
+                    // });
+                    // // callback(null, Super.createConnection.apply(self, [options]));
                 }
                 else {
                     callback(new Error(`Bad response ${response.statusCode} (${response.statusMessage}) from proxy server`));
@@ -233,3 +257,62 @@ module.exports = {
 
 
 
+// /**
+//  * 
+//  * @param {Agent} agent agent instance
+//  * @param {Socket} s socket instance
+//  * @param {object} options socket options
+//  */
+// function installListeners(agent, s, options) {
+//     /**
+//      * onFree
+//      */
+//     function onFree() {
+//         agent.emit('free', s, options);
+//     }
+//     s.on('free', onFree);
+
+//     /**
+//      * onClose
+//      * @param {Error} err error
+//      */
+//     function onClose(/*err*/) {
+//         // This is the only place where sockets get removed from the Agent.
+//         // If you want to remove a socket from the pool, just close it.
+//         // All socket errors end in a close event anyway.
+//         agent.totalSocketCount--;
+//         agent.removeSocket(s, options);
+//     }
+//     s.on('close', onClose);
+
+//     /**
+//      * onTimeout
+//      */
+//     function onTimeout() {
+//         // Destroy if in free list.
+//         // TODO(ronag): Always destroy, even if not in free list.
+//         const sockets = agent.freeSockets;
+//         for (let name in sockets) {
+//             if (sockets[name].includes(s)) {
+//                 s.destroy();
+//             }
+//         }
+//     }
+//     s.on('timeout', onTimeout);
+
+//     /**
+//      * onRemove
+//      */
+//     function onRemove() {
+//         // We need this function for cases like HTTP 'upgrade'
+//         // (defined by WebSockets) where we need to remove a socket from the
+//         // pool because it'll be locked up indefinitely
+//         agent.totalSocketCount--;
+//         agent.removeSocket(s, options);
+//         s.removeListener('close', onClose);
+//         s.removeListener('free', onFree);
+//         s.removeListener('timeout', onTimeout);
+//         s.removeListener('agentRemove', onRemove);
+//     }
+//     s.on('agentRemove', onRemove);
+// }

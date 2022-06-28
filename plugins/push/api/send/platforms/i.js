@@ -1,11 +1,10 @@
 const { ConnectionError, PushError, SendError, ERROR, Creds, Template } = require('../data'),
     { Base } = require('../std'),
-    http = require('http'),
-    tls = require('tls'),
     FORGE = require('node-forge'),
     logger = require('../../../../../api/utils/log'),
     jwt = require('jsonwebtoken'),
     { threadId } = require('worker_threads'),
+    { proxyAgent } = require('../../proxy'),
     HTTP2 = require('http2');
 
 
@@ -527,6 +526,10 @@ class APN extends Base {
         super(log, type, creds, messages, options);
         this.log = logger(log).sub(`${threadId}-i`);
 
+        if (this._options.proxy) {
+            this._options.proxy.http2 = true;
+        }
+
         this.templates = {};
         this.results = [];
 
@@ -822,43 +825,22 @@ class APN extends Base {
             callback();
             return;
         }
-        let reqopts = {
-            host: this._options.proxy.host,
-            port: this._options.proxy.port,
-            method: 'CONNECT',
-            path: host + ':' + port,
-            headers: { host },
-            rejectUnauthorized: this._options.proxy.auth,
-        };
 
-        if (this._options.proxy.user && this._options.proxy.pass) {
-            reqopts.headers['Proxy-Authorization'] = 'Basic ' + Buffer.from(this._options.proxy.user + ':' + this._options.proxy.pass).toString('base64');
+        if (!this.agent) {
+            let ProxyAgent = proxyAgent('https://example.com', this._options.proxy);
+            this.agent = new ProxyAgent();
         }
 
-        this.log.d('Connecting to proxy');
-        let req = http.request(reqopts);
 
-        req.on('connect', (res, socket) => {
-            this.log.d('connected to proxy');
-            this.sessionOptions.createConnection = () => {
-                this.log.d('Creating proxied connection to APN');
-                return tls.connect({
-                    host,
-                    port,
-                    socket: socket,
-                    rejectUnauthorized: this._options.proxy.auth,
-                    ALPNProtocols: ['h2']
-                });
-            };
-            callback();
+        this.agent.createConnection({host, port, protocol: 'https:'}, (err, socket) => {
+            if (err) {
+                callback(err);
+            }
+            else {
+                this.sessionOptions.createConnection = () => socket;
+                callback();
+            }
         });
-
-        req.on('error', err => {
-            this.log.e('proxy request error', err);
-            callback(err);
-        });
-
-        req.end();
     }
 
     /**
