@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, Promise, CV, countlyVue, app, countlyAuth */
+/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, CV, countlyVue, app, countlyAuth */
 
 (function(countlyViews) {
 
