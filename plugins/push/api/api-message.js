@@ -3,7 +3,7 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
-    { requestEither } = require('./proxy');
+    { request } = require('./proxy');
 
 
 /**
@@ -603,6 +603,7 @@ module.exports.mime = async params => {
     try {
         let info = await mimeInfo(params.qstring.url);
         if ((info.status === 301 || info.status === 302) && info.headers.location) {
+            log.d('Following redirect to', info.headers.location);
             info = await mimeInfo(info.headers.location);
 
             if (info.status !== 200) {
@@ -1123,7 +1124,9 @@ function mimeInfo(url, method = 'HEAD') {
     }
 
     return new Promise((resolve, reject) => {
-        let req = requestEither(url.toString(), method, conf, res => {
+        let req = request(url.toString(), method, conf);
+
+        req.once('response', res => {
             let status = res.statusCode,
                 headers = res.headers,
                 data = 0;

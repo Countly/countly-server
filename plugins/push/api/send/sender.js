@@ -149,16 +149,10 @@ class Sender {
                 });
 
             pushes
-                .pipe(connector, {end: false})
-                .pipe(batcher, {end: false})
+                .pipe(connector)
+                .pipe(batcher)
                 .pipe(resultor, {end: false});
 
-            pushes.once('close', () => {
-                connector.end();
-            });
-            connector.once('close', () => {
-                batcher.end();
-            });
             // batcher.once('close', () => {
             //     resultor.end(function() {
             //         resultor.destroy();

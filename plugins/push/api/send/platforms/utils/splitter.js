@@ -1,7 +1,8 @@
 const { Template, Message, PushError, ERROR } = require('../../data'),
     { Base } = require('../../std'),
-    { ProxyAgent } = require('./agent'),
+    { proxyAgent } = require('../../../proxy'),
     { Agent } = require('https'),
+    // { ProxyAgent } = require('./agent'),
     https = require('https');
 const { FRAME } = require('../../proto');
 
@@ -28,35 +29,16 @@ class Splitter extends Base {
         super(log, type, creds, messages, options);
 
         if (options.proxy) {
-            this.agent = new ProxyAgent(options);
+            let ProxyAgent = proxyAgent('https://example.com', options.proxy);
+            this.agent = new ProxyAgent();
+            // this.agent = new ProxyAgent(options);
         }
         else {
             this.agent = new Agent();
         }
 
-        this.agent.maxSockets = 1;
         this.templates = {};
         this.results = [];
-        this.opts = {
-            agent: this.agent,
-            hostname: 'fcm.googleapis.com',
-            port: 443,
-            path: '/fcm/send',
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `key=${creds._data.key}`,
-            },
-        };
-        // this.onSocket = socket => {
-        //     this.socket = socket;
-        // };
-
-        // this.onError = error => {
-        //     this.log.e('socket error', error);
-        //     this.rejectAndClose(error);
-        // };
     }
 
     /**
@@ -102,11 +84,11 @@ class Splitter extends Base {
                     res.reply += d;
                 });
                 res.on('end', () => handler(res));
-                res.on('close', () => handler(res));
+                // res.on('close', () => handler(res));
             });
-            req.on('socket', socket => {
-                this.socket = socket;
-            });
+            // req.on('socket', socket => {
+            //     this.socket = socket;
+            // });
             req.on('error', error => reject([0, error]));
             req.end(content);
         });
