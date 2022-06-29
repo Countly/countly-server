@@ -817,6 +817,7 @@ module.exports.all = async params => {
         iSortCol_0: {type: 'String', required: false},
         sSortDir_0: {type: 'String', required: false, in: ['asc', 'desc']},
         sEcho: {type: 'String', required: false},
+        status: {type: 'String', required: false}
     }, true);
 
     if (data.result) {
@@ -849,6 +850,10 @@ module.exports.all = async params => {
                 {'contents.title': data.sSearch},
             ];
         }
+        if (data.status) {
+            query.status = data.status;
+        }
+
         let cursor = common.db.collection(Message.collection).find(query),
             count = await cursor.count();
 
