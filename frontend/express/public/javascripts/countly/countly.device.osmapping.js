@@ -44,7 +44,7 @@ var countlyOsMapping = {
     "nokia": {short: "n", name: "Nokia"},
     "firefox": {short: "f", name: "Firefox OS"},
     "tizen": {short: "t", name: "Tizen"},
-    "arch": {short: "l", name: "Arch"}
+	"arch": {short: "l", name: "Linux"}
 };
 
 /*global module*/
