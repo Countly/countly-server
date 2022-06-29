@@ -298,7 +298,8 @@ common.os_mapping = {
     "debian": "d",
     "nokia": "n",
     "firefox": "f",
-    "tizen": "t"
+    "tizen": "t",
+    "arch": "l"
 };
 
 /**
