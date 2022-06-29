@@ -299,7 +299,7 @@ common.os_mapping = {
     "nokia": "n",
     "firefox": "f",
     "tizen": "t",
-	"arch":"l"
+    "arch": "l"
 };
 
 /**
