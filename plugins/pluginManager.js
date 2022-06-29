@@ -1796,7 +1796,7 @@ var pluginManager = function pluginManager() {
                 var cursor = this._aggregate(query, options);
                 cursor._count = cursor.count;
                 cursor.count = function(...countArgs) {
-                    if (!query || (typeof query === "object" && Object.keys(query) === 0)) {
+                    if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
                         return ob.estimatedDcoumentCount.call(ob, ...countArgs);
                     }
                     return ob.countDocuments.call(ob, query, ...countArgs);
@@ -1848,7 +1848,7 @@ var pluginManager = function pluginManager() {
                 var cursor = this._find(query, options);
                 cursor._count = cursor.count;
                 cursor.count = function(...countArgs) {
-                    if (!query || (typeof query === "object" && Object.keys(query) === 0)) {
+                    if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
                         return ob.estimatedDcoumentCount.call(ob, ...countArgs);
                     }
                     return ob.countDocuments.call(ob, query, ...countArgs);
@@ -1867,7 +1867,7 @@ var pluginManager = function pluginManager() {
 
             ob._count = ob.count;
             ob.count = function(query, ...countArgs) {
-                if (!query || (typeof query === "object" && Object.keys(query) === 0)) {
+                if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
                     return ob.estimatedDcoumentCount.call(ob, ...countArgs);
                 }
                 return ob.countDocuments.call(ob, query, ...countArgs);
