@@ -78,14 +78,18 @@ plugins.setConfigs("remote-config", {
                 }
             }
             params.parameter_criteria = {"$and": []};
-            
+            params.parameter_criteria.$and.push({
+                $or: [
+                    {"status": {$exists: false}},
+                    {"status": {$exists: true, $eq: "Running"}},
+                ]
+            });
             params.parameter_criteria.$and.push({
                 $or: [
                     {"expiry_dttm": {$exists: true, $gt: Date.now()}},
                     {"expiry_dttm": null}
                 ]
             });
-
             if (keys.length || omitKeys.length) {
                 if (keys.length) {
                     params.parameter_criteria.$and.push({"parameter_key": { $in: keys }});
@@ -97,26 +101,149 @@ plugins.setConfigs("remote-config", {
             }
             params.app_user = params.app_user || {};
             var user = JSON.parse(JSON.stringify(params.app_user));
+            var processMetrics = params.processed_metrics;
+
+            for (var prop in processMetrics) {
+                if ((processMetrics[prop] !== undefined) && (processMetrics[prop] !== null)) {
+                    user[prop] = processMetrics[prop];
+                    params.app_user[prop] = processMetrics[prop];
+                }
+            }
 
             async.series([
+                fetchParametersFromRCDB.bind(null, params),
                 fetchParametersFromAB.bind(null, params)
             ], function(err, result) {
                 if (err || !result) {
                     common.returnMessage(params, 400, 'Error while fetching remote config data.');
                     return reject(true);
                 }
-                var abParameters = result[0] || [];
+
+                var parameters = result[0] || [];
+                var abParameters = result[1] || [];
+                if (params.qstring.oi !== 1) {
+                    abParameters = [];
+                }
                 var output = {};
 
+                var parametersArray = [];
+                for (let i = 0; i < parameters.length; i++) {
+                    parametersArray.push(parameters[i].parameter_key);
+                }
+
+                //PRIORITY GIVEN TO PARAMETERS PRESENT IN AB TESTING
                 for (let i = 0; i < abParameters.length; i++) {
                     var parameterKey = abParameters[i].parameter_key;
                     var paramValue = abParameters[i].value;
 
+                    var indexOfKey = parametersArray.indexOf(parameterKey);
+                    if (indexOfKey > -1) {
+                        parameters.splice(indexOfKey, 1);
+                        parametersArray.splice(indexOfKey, 1);
+                    }
+
                     output[parameterKey] = paramValue;
                 }
-                common.returnOutput(params, output, true);
-                return resolve(true);
+
+                async.map(parameters, function(parameter, callback) {
+                    var paramConditions = parameter.conditions || [];
+                    var parameterValue = parameter.default_value;
+                    var paramConditionIds = [];
+                    for (let i = 0; i < paramConditions.length; i++) {
+                        paramConditionIds.push(common.outDb.ObjectID(paramConditions[i].condition_id));
+                    }
+
+                    params.condition_criteria = {
+                        _id: {
+                            $in: paramConditionIds
+                        }
+                    };
+
+                    async.series([fetchConditions.bind(null, params)], function(er, res) {
+                        if (er || !res) {
+                            output[parameter.parameter_key] = parameterValue;
+                            log.w("Error while fetching condition", parameter);
+                            if (parameter.c) {
+                                parameter.c = parameter.c + 1;
+                            }
+                            else {
+                                parameter.c = 1;
+                            }
+                            parametersCountArray.push({
+                                parameter
+                            });
+                            return callback(null);
+                        }
+
+                        var paramConditionsInfo = res[0];
+                        var conditionCount = false;
+
+                        for (let i = 0; i < paramConditions.length; i++) {
+                            var conditionInfo = paramConditionsInfo.filter(function(cond) {
+                                return cond._id.toString() === paramConditions[i].condition_id.toString();
+                            });
+
+                            if (!conditionInfo.length) {
+                                continue;
+                            }
+
+                            var conditionObj = conditionInfo[0];
+                            conditionObj.value = paramConditions[i].value;
+
+                            try {
+                                conditionObj.condition = JSON.parse(conditionObj.condition);
+                                plugins.dispatch("/drill/preprocess_query", {
+                                    query: conditionObj.condition
+                                });
+                            }
+                            catch (e) {
+                                log.w("Skipping condition", conditionObj);
+                                continue;
+                            }
+
+                            var seed = conditionObj.seed_value || "";
+                            var deviceId = params.qstring.device_id || "";
+                            user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
+
+                            var conditionStatus = remoteConfig.processFilter(params, user, conditionObj.condition);
+
+                            if (conditionStatus) {
+                                parameterValue = conditionObj.value;
+                                conditionCount = true;
+                                if (parameter.conditions[i].c) {
+                                    parameter.conditions[i].c = parameter.conditions[i].c + 1;
+                                }
+                                else {
+                                    parameter.conditions[i].c = 1;
+                                }
+                                break;
+                            }
+                        }
+                        if (!conditionCount) {
+                            if (parameter.c) {
+                                parameter.c = parameter.c + 1;
+                            }
+                            else {
+                                parameter.c = 1;
+                            }
+                        }
+                        output[parameter.parameter_key] = parameterValue;
+                        parametersCountArray.push({
+                            parameter
+                        });
+                        return callback(null);
+                    });
+                }, function(e) {
+                    if (e) {
+                        common.returnMessage(params, 400, 'Error while fetching remote config data.');
+                        return reject(true);
+                    }
+                    updateParametersInDb(params, parametersCountArray);
+                    common.returnOutput(params, output, true);
+                    return resolve(true);
+                });
             });
+            
         });
 
     })
