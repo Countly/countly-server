@@ -1215,7 +1215,7 @@
                 return this.$store.getters['countlyPushNotificationDashboard/isLoading'];
             },
             areRowsLoading: function() {
-                this.$store.getters.countlyPushNotificationMain.pushTable.lastResponse.rows = this.pushNotificationRows;
+                this.$store.state.countlyPushNotificationMain.pushTable.lastResponse.rows = this.pushNotificationRows;
                 return this.$store.state.countlyPushNotificationMain.areRowsLoading;
             },
             isUserCommandLoading: function() {
