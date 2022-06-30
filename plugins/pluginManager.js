@@ -1796,6 +1796,9 @@ var pluginManager = function pluginManager() {
                 var cursor = this._aggregate(query, options);
                 cursor._count = cursor.count;
                 cursor.count = function(...countArgs) {
+                    if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                        return ob.estimatedDocumentCount.call(ob, ...countArgs);
+                    }
                     return ob.countDocuments.call(ob, query, ...countArgs);
                 };
                 cursor._toArray = cursor.toArray;
@@ -1845,6 +1848,9 @@ var pluginManager = function pluginManager() {
                 var cursor = this._find(query, options);
                 cursor._count = cursor.count;
                 cursor.count = function(...countArgs) {
+                    if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                        return ob.estimatedDocumentCount.call(ob, ...countArgs);
+                    }
                     return ob.countDocuments.call(ob, query, ...countArgs);
                 };
                 cursor._toArray = cursor.toArray;
@@ -1860,7 +1866,12 @@ var pluginManager = function pluginManager() {
             //backwards compatability
 
             ob._count = ob.count;
-            ob.count = ob.countDocuments;
+            ob.count = function(query, ...countArgs) {
+                if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                    return ob.estimatedDocumentCount.call(ob, ...countArgs);
+                }
+                return ob.countDocuments.call(ob, query, ...countArgs);
+            };
             ob.ensureIndex = ob.createIndex;
 
             ob.update = function(selector, document, options, callback) {
