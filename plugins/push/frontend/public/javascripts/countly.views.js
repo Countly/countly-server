@@ -1288,6 +1288,11 @@
                     this.$store.dispatch("countlyPushNotificationMain/onSetStatusFilter", value);
                 }
             },
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyPushNotificationMain/isLoadingTable"];
+                }
+            },
             selectedPlatformFilter: {
                 get: function() {
                     return this.$store.state.countlyPushNotificationMain.platformFilter;

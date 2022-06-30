@@ -551,6 +551,7 @@
     };
     var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
         onRequest: function(context) {
+            context.rootState.countlyPushNotificationMain.isLoadingTable = true;
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'messaging',
@@ -589,6 +590,7 @@
                     time: rows[index].info && rows[index].info.started ? moment(rows[index].info.started).format("h:mm:ss a") : null,
                 };
             }
+            context.rootState.countlyPushNotificationMain.isLoadingTable = false;
             return rows;
         },
         onError: function(context, error) {
@@ -2790,6 +2792,7 @@
                 pushNotificationId: null
             },
             isDrawerOpen: false,
+            isLoadingTable: true,
         };
     };
 
@@ -2907,10 +2910,16 @@
 
     countlyPushNotification.main = {};
     countlyPushNotification.main.getVuexModule = function() {
+        var getters = {
+            isLoadingTable: function(state) {
+                return state.isLoadingTable;
+            },
+        };
         return countlyVue.vuex.Module("countlyPushNotificationMain", {
             state: getMainInitialState,
             actions: mainActions,
             mutations: mainMutations,
+            getters: getters,
             submodules: [countlyVue.vuex.FetchMixin(), pushTableResource]
         });
     };

@@ -48,7 +48,7 @@
                 </cly-chart-time>
             </cly-section>
             <cly-section>
-                <cly-datatable-n :data-source="remoteTableDataSource" v-loading="areRowsLoading || isUserCommandLoading" :force-loading="areRowsLoading || isUserCommandLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true" class="is-clickable cly-vue-push-notification-table">
+                <cly-datatable-n :data-source="remoteTableDataSource" v-loading="areRowsLoading || isUserCommandLoading" :force-loading="isLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true" class="is-clickable cly-vue-push-notification-table">
                     <template v-slot:header-left>
                         <el-select v-model="selectedStatusFilter">
                             <el-option
