@@ -2138,11 +2138,13 @@ plugins.setConfigs("dashboards", {
      */
     function importWidgets(params, importData) {
         return new Promise((resolve, reject)=>{
-            importData.data._id = common.db.ObjectID(importData.data._id);
-            if (importData?.data?.widget_type === 'formulas') {
+            if (importData.data?._id) {
+                importData.data._id = common.db.ObjectID(importData.data._id);
+            }
+            if (importData.data?.widget_type === 'formulas') {
                 delete importData.data.cmetrics;
             }
-            if (importData?.data?.widget_type === 'drill') {
+            if (importData.data?.widget_type === 'drill') {
                 delete importData.data.drill_report;
             }
             common.db.collection("widgets").insert(importData.data, function(er, result) {
