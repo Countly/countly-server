@@ -20,12 +20,55 @@ var pluginDependencies = require('./pluginDependencies.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
     exec = cp.exec,
-    spawn = cp.spawn;
+    spawn = cp.spawn,
+    Module = require('module'),
+    { join } = require('path');
 
 /**
 * This module handles communicaton with plugins
 * @module "plugins/pluginManager"
 */
+
+const defreq = Module.prototype.require;
+/**
+ * Override default require to be able to require ee from core and vice versa 
+ * 
+ * @param {string} p module path
+ * @returns {any} module
+ * @throws {Error} if module not found
+ */
+Module.prototype.require = function(p) {
+    try {
+        return defreq.apply(this, [p]);
+    }
+    catch (e) {
+        if (p.includes('/plugins/')) {
+            if (this.path.includes('/core/')) {
+                return defreq.apply(this, [join(this.path, '..', p)]);
+            }
+            else {
+                return defreq.apply(this, [join(this.path, '..', p.replace('/plugins/', '/core/plugins/'))]);
+            }
+        }
+        else if (p.includes('/api/')) {
+            if (this.path.includes('/core/')) {
+                throw e;
+            }
+            else {
+                return defreq.apply(this, [join(this.path, '..', p.replace('/api/', '/core/api/'))]);
+            }
+        }
+        else if (p.includes('/frontend/')) {
+            if (this.path.includes('/core/')) {
+                throw e;
+            }
+            else {
+                return defreq.apply(this, [join(this.path, '..', p.replace('/frontend/', '/core/frontend/'))]);
+            }
+        }
+        throw e;
+    }
+};
 
 /** @lends module:plugins/pluginManager */
 var pluginManager = function pluginManager() {
@@ -857,16 +900,22 @@ var pluginManager = function pluginManager() {
         var self = this;
         console.log('Installing plugin %j...', plugin);
         callback = callback || function() {};
-        var errors = false;
+        var errors = false,
+            cwd;
 
         new Promise(function(resolve) {
             var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
             if (eplugin && eplugin.prepackaged) {
                 return resolve(errors);
             }
-            var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+            cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+            if (!fs.existsSync(cwd)) {
+                cwd = path.join(__dirname, '..', '..', 'plugins', plugin);
+            }
             if (!self.getConfig("api").offline_mode) {
-                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
+                const cmd = process.platform === 'darwin' ?
+                    spawn("npm", ["install"], {cwd: cwd})
+                    : spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
                 var error2 = "";
 
                 cmd.stdout.on('data', (data) => {
@@ -891,7 +940,7 @@ var pluginManager = function pluginManager() {
                 console.log('Server is in offline mode, this command cannot be run. %j');
             }
         }).then(function(result) {
-            var scriptPath = path.join(__dirname, plugin, 'install.js');
+            var scriptPath = path.join(cwd, 'install.js');
             var m = cp.spawn("nodejs", [scriptPath]);
 
             m.stdout.on('data', (data) => {
@@ -922,17 +971,23 @@ var pluginManager = function pluginManager() {
         var self = this;
         console.log('Upgrading plugin %j...', plugin);
         callback = callback || function() {};
-        var errors = false;
+        var errors = false,
+            cwd;
 
         new Promise(function(resolve) {
             var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
             if (eplugin && eplugin.prepackaged) {
                 return resolve(errors);
             }
-            var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+            cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+            if (!fs.existsSync(cwd)) {
+                cwd = path.join(__dirname, '..', '..', 'plugins', plugin);
+            }
             if (!self.getConfig("api").offline_mode) {
 
-                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
+                const cmd = process.platform === 'darwin' ?
+                    spawn("npm", ["install"], {cwd: cwd})
+                    : spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
                 var error2 = "";
 
                 cmd.stdout.on('data', (data) => {
@@ -957,7 +1012,7 @@ var pluginManager = function pluginManager() {
                 console.log('Server is in offline mode, this command cannot be run. %j');
             }
         }).then(function(result) {
-            var scriptPath = path.join(__dirname, plugin, 'install.js');
+            var scriptPath = path.join(cwd, 'install.js');
             var m = cp.spawn("nodejs", [scriptPath]);
 
             m.stdout.on('data', (data) => {

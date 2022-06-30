@@ -4,10 +4,9 @@
 */
 
 /** @lends module:api/utils/common */
-var common = {},
+var common = global.CLY = {},
     moment = require('moment-timezone'),
     crypto = require('crypto'),
-    logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose'),
@@ -22,6 +21,25 @@ var matchLessHtmlRegExp = /[<>]/;
  * Because why requiring both all the time
  */
 common.plugins = plugins;
+
+/**
+ * Easy plugin APIs exposure
+ */
+common.apis = plugins.getPluginsApis();
+
+/**
+ * Jobs handle
+ */
+common.jobs = require('../parts/jobs');
+
+/**
+* Logger object for creating module specific logging
+* @type {module:api/utils/log~Logger} 
+* @example
+* var log = common.log('myplugin:api');
+* log.i('myPlugin got a request: %j', params.qstring);
+*/
+common.log = require('./log.js');
 
 /**
 * Escape special characters in the given string of html.
@@ -162,14 +180,6 @@ function getJSON(val) {
     }
     return ret;
 }
-/**
-* Logger object for creating module specific logging
-* @type {module:api/utils/log~Logger} 
-* @example
-* var log = common.log('myplugin:api');
-* log.i('myPlugin got a request: %j', params.qstring);
-*/
-common.log = logger;
 
 /**
 * Mapping some common property names from longer understandable to shorter representation stored in database
