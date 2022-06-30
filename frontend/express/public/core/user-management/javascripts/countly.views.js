@@ -673,6 +673,8 @@
         },
         watch: {
             'groups': function() {
+                this.$refs.userDrawer.editedObject.global_admin = false;
+
                 if (this.groups.length === 0) {
                     this.$refs.userDrawer.editedObject.permission._.u = [[]];
                     this.$refs.userDrawer.editedObject.permission._.a = [];
