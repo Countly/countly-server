@@ -246,6 +246,73 @@ plugins.setConfigs("remote-config", {
             
         });
 
+    });
+
+    plugins.register("/o/sdk/ab", function (ob) {
+        var params = ob.params;
+        if (params.qstring.method !== "ab") {
+            return false;
+        }
+        return new Promise(function (resolve, reject) {
+            params.qstring.app_id = params.app_id;
+            var keys = [];
+
+            if (params.qstring.keys) {
+                try {
+                    keys = JSON.parse(params.qstring.keys);
+                }
+                catch (SyntaxError) {
+                    console.log('Parse keys failed: ', params.qstring.keys);
+                }
+            }
+            params.parameter_criteria = { "$and": [] };
+            params.parameter_criteria.$and.push({
+                $or: [
+                    { "status": { $exists: false } },
+                    { "status": { $exists: true, $eq: "Running" } },
+                ]
+            });
+            params.parameter_criteria.$and.push({
+                $or: [
+                    { "expiry_dttm": { $exists: true, $gt: Date.now() } },
+                    { "expiry_dttm": null }
+                ]
+            });
+            if (keys.length) {
+                params.parameter_criteria.$and.push({ "parameter_key": { $in: keys } });
+            }
+            params.app_user = params.app_user || {};
+            var user = JSON.parse(JSON.stringify(params.app_user));
+            var processMetrics = params.processed_metrics;
+
+            for (var prop in processMetrics) {
+                if ((processMetrics[prop] !== undefined) && (processMetrics[prop] !== null)) {
+                    user[prop] = processMetrics[prop];
+                    params.app_user[prop] = processMetrics[prop];
+                }
+            }
+
+            async.series([
+                fetchParametersFromAB.bind(null, params)
+            ], function (err, result) {
+                if (err || !result) {
+                    common.returnMessage(params, 400, 'Error while fetching remote config data.');
+                    return reject(true);
+                }
+                var abParameters = result[0] || [];
+                var output = {};
+                for (let i = 0; i < abParameters.length; i++) {
+                    var parameterKey = abParameters[i].parameter_key;
+                    var paramValue = abParameters[i].value;
+
+                    output[parameterKey] = paramValue;
+                }
+                common.returnOutput(params, output, true);
+                return resolve(true);
+
+            });
+
+        })
     })
 
     plugins.register("/o/sdk", function(ob) {
