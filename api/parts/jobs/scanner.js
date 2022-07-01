@@ -2,7 +2,8 @@
 
 const log = require('../../utils/log.js')('jobs:scanner'),
     manager = require('../../../plugins/pluginManager.js'),
-    fs = require('fs');
+    fs = require('fs'),
+    {join} = require('path');
 
 module.exports = (db, filesObj, classesObj) => {
     return new Promise((resolve, reject) => {
@@ -25,10 +26,19 @@ module.exports = (db, filesObj, classesObj) => {
             category: 'api',
             dir: __dirname + '/../../jobs'
         }].concat(jobs.map(function(plugin) {
-            return {
-                category: plugin,
-                dir: __dirname + '/../../../plugins/' + plugin + '/api/jobs'
-            };
+            if (fs.existsSync(join(__dirname, '/../../../plugins/', plugin))) {
+                return {
+                    category: plugin,
+                    dir: __dirname + '/../../../plugins/' + plugin + '/api/jobs'
+                };
+            }
+            else if (fs.existsSync(join(__dirname, '../../../../plugins'))) {
+                return {
+                    category: plugin,
+                    dir: join(__dirname, '../../../../plugins', plugin, '/api/jobs')
+                };
+
+            }
         }));
 
         let promises = jobs.map(job => {
