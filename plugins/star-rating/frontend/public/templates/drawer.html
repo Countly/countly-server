@@ -31,10 +31,10 @@
                 <div v-tooltip="drawerScope.editedObject.ratings_texts[4]" @click="setRatingItemActive(4)" :class="[ratingItem[4].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[4].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
               </div>
               <div class="ratings-drawer__rp-optional-area">
-                <el-checkbox v-model="drawerScope.editedObject.contact_enable">{{ drawerScope.editedObject.popup_comment_callout }}</el-checkbox>
+                <el-checkbox v-model="drawerScope.editedObject.comment_enable">{{ drawerScope.editedObject.popup_comment_callout }}</el-checkbox>
               </div>
               <div class="ratings-drawer__rp-optional-area">
-                <el-checkbox v-model="drawerScope.editedObject.comment_enable">{{ drawerScope.editedObject.popup_email_callout }}</el-checkbox>
+                <el-checkbox v-model="drawerScope.editedObject.contact_enable">{{ drawerScope.editedObject.popup_email_callout }}</el-checkbox>
               </div>
               <div class="ratings-drawer__rp-action-area">
                 <el-button :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color}" class="ratings-drawer__rp-callout-button">{{ drawerScope.editedObject.popup_button_callout }} </el-button>
