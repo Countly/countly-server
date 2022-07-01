@@ -758,7 +758,13 @@
                     var user = usersObj[userId];
 
                     if (user.group_id) {
-                        user.groupName = this.groupMap[user.group_id[0]];
+                        var groupNames = [];
+
+                        for (var idx = 0; idx < user.group_id.length; idx++) {
+                            groupNames.push(this.groupMap[user.group_id[idx]]);
+                        }
+
+                        user.groupNames = groupNames.join(", ");
                     }
 
                     this.users.push(user);
