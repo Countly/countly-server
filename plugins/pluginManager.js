@@ -1,3 +1,42 @@
+const Module = require('module'),
+    { join } = require('path');
+
+const defreq = Module.prototype.require,
+    corepath = join(__dirname, '..'),
+    rootpath = join(__dirname, '..', '..');
+/**
+ * Override default require to be able to require ee from core and vice versa 
+ * 
+ * @param {string} p module path
+ * @returns {any} module
+ * @throws {Error} if module not found
+ */
+Module.prototype.require = function(p) {
+    try {
+        return defreq.apply(this, [p]);
+    }
+    catch (e) {
+        if (p.startsWith(rootpath)) { // absolute path
+            if (p.startsWith(corepath)) { // absolute from core, check ee
+                let suf = p.substring(corepath.length);
+                return defreq(join(rootpath, suf));
+            }
+            else { // absolute from ee, check core
+                let suf = p.substring(rootpath.length);
+                return defreq(join(rootpath, 'core', suf));
+            }
+        }
+        else if (this.path.startsWith(corepath)) { // from core
+            let suf = this.path.substring(corepath.length);
+            return defreq.apply(this, [join(rootpath, suf, p)]);
+        }
+        else {
+            let suf = this.path.substring(rootpath.length); // from ee
+            return defreq(join(rootpath, 'core', suf, p));
+        }
+    }
+};
+
 var pluginDependencies = require('./pluginDependencies.js'),
     path = require('path'),
     plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
@@ -20,55 +59,12 @@ var pluginDependencies = require('./pluginDependencies.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
     exec = cp.exec,
-    spawn = cp.spawn,
-    Module = require('module'),
-    { join } = require('path');
+    spawn = cp.spawn;
 
 /**
 * This module handles communicaton with plugins
 * @module "plugins/pluginManager"
 */
-
-const defreq = Module.prototype.require;
-/**
- * Override default require to be able to require ee from core and vice versa 
- * 
- * @param {string} p module path
- * @returns {any} module
- * @throws {Error} if module not found
- */
-Module.prototype.require = function(p) {
-    try {
-        return defreq.apply(this, [p]);
-    }
-    catch (e) {
-        if (p.includes('/plugins/')) {
-            if (this.path.includes('/core/')) {
-                return defreq.apply(this, [join(this.path, '..', p)]);
-            }
-            else {
-                return defreq.apply(this, [join(this.path, '..', p.replace('/plugins/', '/core/plugins/'))]);
-            }
-        }
-        else if (p.includes('/api/')) {
-            if (this.path.includes('/core/')) {
-                throw e;
-            }
-            else {
-                return defreq.apply(this, [join(this.path, '..', p.replace('/api/', '/core/api/'))]);
-            }
-        }
-        else if (p.includes('/frontend/')) {
-            if (this.path.includes('/core/')) {
-                throw e;
-            }
-            else {
-                return defreq.apply(this, [join(this.path, '..', p.replace('/frontend/', '/core/frontend/'))]);
-            }
-        }
-        throw e;
-    }
-};
 
 /** @lends module:plugins/pluginManager */
 var pluginManager = function pluginManager() {
