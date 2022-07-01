@@ -64,7 +64,7 @@
                   </validation-provider>
                 </div>
               </div>
-              <component class="bu-mt-5" v-if="groupsInput.length > 0" :defaultGroup="group" @group-change="onGroupChange" :is="groupsInput[0].component"></component>
+              <component class="bu-mt-5" v-if="groupsInput.length > 0" :defaultGroups="groups" @group-change="onGroupChange" :is="groupsInput[0].component"></component>
             </div>
             <div class="bu-column user-management-drawer-content__profile-picture-area bu-ml-4">
               <div class="user-management-drawer-content__label">
@@ -77,16 +77,16 @@
                   <el-dropdown-item command="edit-pp">{{i18n('common.edit')}}</el-dropdown-item>
                 </cly-more-options>
               </div>
-              <cly-dropzone 
+              <cly-dropzone
                 v-if="pictureEditMode || !$props.settings.editMode"
-                @vdropzone-removed-file="onFileRemoved" 
+                @vdropzone-removed-file="onFileRemoved"
                 @vdropzone-file-added="onFileAdded"
                 @vdropzone-sending="onSending"
                 @vdropzone-thumbnail="thumbnail"
                 @vdropzone-complete="onComplete"
-                ref="userDrawerDropzone" 
+                ref="userDrawerDropzone"
                 id="user-drawer-dropzone"
-                :useCustomSlot=true 
+                :useCustomSlot=true
                 :options="dropzoneOptions">
                     <div class="dropzone-custom-content">
                       <img v-if="$props.settings.editMode" :src="'/memberimages/' + user._id + '.png?t=' + Date.now()" class="user-management-drawer-content__profile-picture-area__upload-section__img-box"/>
@@ -99,7 +99,7 @@
               </cly-dropzone>
             </div>
           </div>
-          <div v-if="!group._id" class="user-management-drawer-content__bottom-section">
+          <div v-if="groups.length === 0" class="user-management-drawer-content__bottom-section">
             <div class="user-management-drawer-content__drawer-sub-section bu-px-4 bu-pt-4 bu-pb-5">
               <div class="user-management-drawer-content__section-title">
                 <div>
@@ -111,10 +111,10 @@
                 <component v-for="roleInput in rolesInput" :is="roleInput.component" :user="drawerScope.editedObject" @role-change="onRoleChange" key="roleInput.key"></component>
               </div>
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin && !group._id" class="user-management-drawer-content__drawer-sub-title bu-mt-2">
+            <div v-if="!drawerScope.editedObject.global_admin && groups.length === 0" class="user-management-drawer-content__drawer-sub-title bu-mt-2">
               {{ i18n('management-users.permission-settings') }}
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin && !group._id" class="user-management-drawer-content__drawer-sub-section bu-px-4 bu-pt-4">
+            <div v-if="!drawerScope.editedObject.global_admin && groups.length === 0" class="user-management-drawer-content__drawer-sub-section bu-px-4 bu-pt-4">
               <div class="user-management-drawer-content__section-title">
                 <div>
                   <span class="user-management-drawer-content__section-header"> {{ i18n('management-users.grant-admin-access-to-apps') }} <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
@@ -139,7 +139,7 @@
                 </div>
               </div>
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin && !group._id" :key="index" v-for="(set, index) in permissionSets" class="user-management-drawer-content__drawer-sub-section bu-mt-2 bu-mb-5">
+            <div v-if="!drawerScope.editedObject.global_admin && groups.length === 0" :key="index" v-for="(set, index) in permissionSets" class="user-management-drawer-content__drawer-sub-section bu-mt-2 bu-mb-5">
               <div class="user-management-drawer-content__section-title bu-px-4 bu-pt-4">
                 <div>
                   <span class="user-management-drawer-content__section-header">{{ i18n('management-users.grant-user-access-to-apps') }} <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
@@ -205,7 +205,7 @@
                 </div>
               </div>
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin && !group._id" class="user-management-drawer-content__add-permission-set" @click="addPermissionSet">
+            <div v-if="!drawerScope.editedObject.global_admin && groups.length === 0" class="user-management-drawer-content__add-permission-set" @click="addPermissionSet">
               {{ i18n('management-users.add-permission-set') }}
             </div>
           </div>

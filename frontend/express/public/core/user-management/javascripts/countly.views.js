@@ -208,7 +208,7 @@
                 },
                 uploadCompleted: false,
                 fileAdded: false,
-                group: {},
+                groups: [],
                 roles: {}
             };
         },
@@ -473,8 +473,8 @@
 
                 // block process if no app selected
                 // and user is not admin
-                // and user doesn't have assigned to any group
-                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin && typeof this.group._id === "undefined") {
+                // and user is not assigned to any group
+                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin && this.groups.length === 0) {
                     CountlyHelpers.notify({
                         message: CV.i18n('management-users.at-least-one-app-required'),
                         type: 'error'
@@ -486,13 +486,13 @@
                 var self = this;
                 this.addRolesToUserUnderEdit(submitted);
                 if (this.settings.editMode) {
-                    if (typeof this.group._id === "undefined") {
+                    if (this.groups.length === 0) {
                         submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     }
                     countlyUserManagement.editUser(this.user._id, submitted, function(res) {
                         if (res.result && typeof res.result === "string") {
                             if (self.groupsInput.length) {
-                                var group_id = self.group._id ? [self.group._id] : [];
+                                var group_id = self.groups;
                                 groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id }, function() {});
                             }
                             self.$emit('refresh-table');
@@ -547,8 +547,8 @@
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.createUser(submitted, function(res) {
                         if (res.full_name) {
-                            if (typeof self.group._id !== "undefined") {
-                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] }, function() {});
+                            if (self.groups.length > 0) {
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: self.groups }, function() {});
                             }
                             self.group = {};
                             self.$emit('refresh-table');
@@ -604,13 +604,13 @@
 
                 // clear permission sets
                 this.permissionSets = [];
-                this.group = {};
+                this.groups = [];
                 // if it's in edit mode
                 if (this.settings.editMode) {
                     // is user member of a group?
                     if (this.user.group_id && countlyGlobal.plugins.indexOf('groups') > -1) {
-                        // set group state
-                        this.group = { _id: this.user.group_id[0] };
+                        // set groups state
+                        this.groups = this.user.group_id;
                         // add initial permission state for cases who unselected group
                         this.permissionSets.push({ c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
                     }
@@ -665,15 +665,17 @@
                 }
             },
             onGroupChange: function(groupVal) {
-                this.group = groupVal;
+                this.groups = groupVal;
             },
             onRoleChange: function(role) {
                 this.roles[role.name] = role;
             }
         },
         watch: {
-            'group._id': function() {
-                if (typeof this.group._id === "undefined") {
+            'groups': function() {
+                this.$refs.userDrawer.editedObject.global_admin = false;
+
+                if (this.groups.length === 0) {
                     this.$refs.userDrawer.editedObject.permission._.u = [[]];
                     this.$refs.userDrawer.editedObject.permission._.a = [];
                 }
@@ -756,7 +758,13 @@
                     var user = usersObj[userId];
 
                     if (user.group_id) {
-                        user.groupName = this.groupMap[user.group_id[0]];
+                        var groupNames = [];
+
+                        for (var idx = 0; idx < user.group_id.length; idx++) {
+                            groupNames.push(this.groupMap[user.group_id[idx]]);
+                        }
+
+                        user.groupNames = groupNames.join(", ");
                     }
 
                     this.users.push(user);
