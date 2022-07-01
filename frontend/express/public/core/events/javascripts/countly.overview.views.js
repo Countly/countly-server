@@ -286,7 +286,7 @@
                             "change": currentData[j].change,
                             "eventProperty": currentData[j].eventProperty,
                             "total": currentData[j].total,
-
+                            "name": currentData[j].name
                         });
                     }
                     return editedMonitorEventsData;
@@ -315,7 +315,10 @@
                         }
                     },
                     yAxis: {
-                        type: 'value'
+                        type: 'value',
+                        splitNumber: 1,
+                        minInterval: 1,
+                        position: 'right'
                     },
                     legend: {
                         bottom: "0%",
