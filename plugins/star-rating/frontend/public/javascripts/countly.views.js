@@ -795,6 +795,8 @@
                     };
                 }
                 this.widget.target_page = this.widget.target_page === "selected";
+                this.widget.comment_enable = (this.widget.comment_enable === 'true');
+                this.widget.contact_enable = (this.widget.contact_enable === 'true');
                 this.openDrawer('widget', this.widget);
             },
             handleCommand: function(command) {
