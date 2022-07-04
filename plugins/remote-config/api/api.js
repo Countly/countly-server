@@ -49,7 +49,7 @@ plugins.setConfigs("remote-config", {
         }
      */
 
-    plugins.register("/o/sdk/get", function(ob) {
+    plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
         if (params.qstring.method !== "rc") {
             return false;
@@ -238,7 +238,6 @@ plugins.setConfigs("remote-config", {
                         common.returnMessage(params, 400, 'Error while fetching remote config data.');
                         return reject(true);
                     }
-                    updateParametersInDb(params, parametersCountArray);
                     common.returnOutput(params, output, true);
                     return resolve(true);
                 });
@@ -248,7 +247,7 @@ plugins.setConfigs("remote-config", {
 
     });
 
-    plugins.register("/o/sdk/ab", function (ob) {
+    plugins.register("/o/sdk", function (ob) {
         var params = ob.params;
         if (params.qstring.method !== "ab") {
             return false;
