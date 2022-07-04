@@ -242,17 +242,16 @@ plugins.setConfigs("remote-config", {
                     return resolve(true);
                 });
             });
-            
         });
 
     });
 
-    plugins.register("/o/sdk", function (ob) {
+    plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
         if (params.qstring.method !== "ab") {
             return false;
         }
-        return new Promise(function (resolve, reject) {
+        return new Promise(function(resolve, reject) {
             params.qstring.app_id = params.app_id;
             var keys = [];
 
@@ -293,7 +292,7 @@ plugins.setConfigs("remote-config", {
 
             async.series([
                 fetchParametersFromAB.bind(null, params)
-            ], function (err, result) {
+            ], function(err, result) {
                 if (err || !result) {
                     common.returnMessage(params, 400, 'Error while fetching remote config data.');
                     return reject(true);
@@ -310,9 +309,8 @@ plugins.setConfigs("remote-config", {
                 return resolve(true);
 
             });
-
-        })
-    })
+        });
+    });
 
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
