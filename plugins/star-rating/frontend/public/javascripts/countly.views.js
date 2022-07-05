@@ -517,13 +517,13 @@
                     trigger_position: 'mleft',
                     trigger_size: 'm',
                     contact_enable: false,
-                    popup_email_callout: 'Contact me e-mail',
+                    popup_email_callout: 'Contact me via e-mail',
                     popup_comment_callout: 'Add comment',
                     comment_enable: false,
                     ratings_texts: [
-                        'Very dissatisfied',
-                        'Somewhat dissatisfied',
-                        'Neither satisfied Nor Dissatisfied',
+                        'Very Dissatisfied',
+                        'Somewhat Dissatisfied',
+                        'Neither Satisfied Nor Dissatisfied',
                         'Somewhat Satisfied',
                         'Very Satisfied'
                     ],
