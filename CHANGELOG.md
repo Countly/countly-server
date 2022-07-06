@@ -1,3 +1,33 @@
+## Version 22.06.2
+
+Fixes:
+- [core] remove select-x dropdown gradient if there is no tab or search
+- [docker] load cities and plugin list updates
+- [metrics] fix Linux Arch os reporting
+- [server-stats] fixed commandline reporting
+- [star-rating] fix texts
+- [star-rating] fixed checkbox bugs in rating
+
+Enterprise fixes:
+- [gateway] use parallel transform
+- [surveys] changes for exclusive options to deselect other if exclusive options are selected
+- [surveys] changes to remove all of above for radio button
+
+## Version 22.06.1
+
+Fixes:
+- [db] old option fixes for native_parser
+- [events] add tooltips to the monitored event charts
+- [push] Weird streaming issue
+- [push] Wrong data path for silent messages in Android
+- [push] proxy support
+- [slipping-away-users] fixing api call without query option
+- [ui] add searching for dropdown selectors
+- [user-management] fixed groupModel check
+
+Enterprise fixes:
+- [crash_symbolication] fix return_url for symoblication
+
 ## Version 22.06
 
 Fixes:
