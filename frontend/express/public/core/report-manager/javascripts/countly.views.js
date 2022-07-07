@@ -234,6 +234,7 @@
                     "all": CV.i18n("report-manager.all-statuses"),
                     "running": CV.i18n("common.running"),
                     "rerunning": CV.i18n("taskmanager.rerunning"),
+                    "stopped": CV.i18n("common.stopped"),
                     "completed": CV.i18n("common.completed"),
                     "errored": CV.i18n("common.errored")
                 },
