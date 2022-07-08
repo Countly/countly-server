@@ -992,33 +992,18 @@ taskmanager.stopTask = function(options, callback) {
             reqData = {};
         }
 
-        reqData.json.task_id = options.id;
-        reqData.strictSSL = false;
-        options.subtask = res.subtask;
-        reqData.json.autoUpdate = options.autoUpdate || false;
-        if (!reqData.json.api_key && res.creator) {
+        if (res.creator) {
             options.db.collection("members").findOne({ _id: common.db.ObjectID(res.creator) }, function(err1, member) {
-                if (member && member.api_key) {
-                    reqData.json.api_key = member.api_key;
+                if (member) {
                     stopTask(res.op_id);
                 }
                 else if (res.global) {
-                    //AD and other outer login users might not have their user documents
-                    options.db.collection("members").findOne({ global_admin: true }, function(err2, admin) {
-                        if (admin && admin.api_key) {
-                            reqData.json.api_key = admin.api_key;
-                            stopTask(res.op_id);
-                        }
-                        else {
-                            callback(null, "No permission to stop this task");
-                        }
-                    });
+                    stopTask(res.op_id);
                 }
                 else {
                     callback(null, "No permission to stop this task");
                 }
             });
-
         }
         else {
             stopTask(res.op_id);
