@@ -857,17 +857,18 @@ module.exports.all = async params => {
         let cursor = common.db.collection(Message.collection).find(query),
             count = await cursor.count();
 
-        if (data.iDisplayStart) {
-            cursor.skip(data.iDisplayStart);
-        }
-        if (data.iDisplayLength) {
-            cursor.limit(data.iDisplayLength);
-        }
         if (data.iSortCol_0 && data.sSortDir_0) {
             cursor.sort({[data.iSortCol_0]: data.sSortDir_0 === 'asc' ? -1 : 1});
         }
         else {
             cursor.sort({'triggers.start': -1});
+        }
+
+        if (data.iDisplayStart && parseInt(data.iDisplayStart, 10) !== 0) {
+            cursor.skip(parseInt(data.iDisplayStart, 10));
+        }
+        if (data.iDisplayLength && parseInt(data.iDisplayLength, 10) !== -1) {
+            cursor.limit(parseInt(data.iDisplayLength, 10));
         }
 
         let items = await cursor.toArray();
@@ -904,8 +905,8 @@ module.exports.all = async params => {
 
         common.returnOutput(params, {
             sEcho: data.sEcho,
-            iTotalRecords: total,
-            iTotalDisplayRecords: count,
+            iTotalRecords: count || items.length,
+            iTotalDisplayRecords: count || items.length,
             aaData: items || []
         }, true);
 
