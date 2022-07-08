@@ -554,10 +554,14 @@
             context.rootState.countlyPushNotificationMain.isLoadingTable = true;
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
-                method: 'messaging',
-                action: 'getTable',
                 visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
             };
+            var type = context.rootState.countlyPushNotificationMain.selectedPushNotificationType;
+            var status = context.rootState.countlyPushNotificationMain.statusFilter;
+            var params = countlyPushNotification.service.getFetchAllParameters(type,status);    
+            for(var key in params){
+                data[key] = params[key]
+            }
             return {
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/push/message/all",
@@ -2877,7 +2881,6 @@
         },
         onSetStatusFilter: function(context, value) {
             context.commit('setStatusFilter', value);
-            context.dispatch('fetchAll', true);
         },
     };
 
