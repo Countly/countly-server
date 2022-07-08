@@ -1286,6 +1286,7 @@
                 },
                 set: function(value) {
                     this.$store.dispatch("countlyPushNotificationMain/onSetStatusFilter", value);
+                    this.applyFilter();
                 }
             },
             isLoading: {
@@ -1321,7 +1322,10 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyPushNotificationMain/fetchAll', false);
+                this.$store.dispatch('countlyPushNotificationMain/fetchPushTable');
+            },
+            applyFilter: function() {
+                this.$store.dispatch('countlyPushNotificationMain/fetchPushTable');
             },
             formatPercentage: function(value, decimalPlaces) {
                 return this.formatNumber(CountlyHelpers.formatPercentage(value, decimalPlaces));
