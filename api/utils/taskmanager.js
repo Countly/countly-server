@@ -68,82 +68,64 @@ taskmanager.longtask = function(options) {
     var start = new Date().getTime();
     var timeout;
 
-    var saveOpId = async function(comment_id) {
-        var password, host, port, db, user;
-
-        try {
-            password = apiUtils.decrypt(common.config.admindb.password);
-            host = common.config.admindb.host;
-            port = common.config.admindb.port;
-            db = common.config.admindb.db;
-            user = common.config.admindb.username;
-        }
-        catch (err) {
-            console.log('Error reading admin database credentials');
-            return;
-        }
-
-        const uri = `mongodb://${user}:${password}@${host}:${port}/${db}`;
-        const client = new mongoClient(uri, { useUnifiedTopology: true });
-        client.connect(err => {
-            if (err) {
-                console.error('Error connecting admin database');
-                return;
-            }
-
-            const admindb = client.db(db);
-            var job = new cronJob("*/1 * * * * *", function() {
-                admindb.command({ currentOp: 1 }, async function(error, result) {
-                    if (error) {
-                        console.error('Error getting mongo operations');
+    var saveOpId = async function(comment_id, retryCount) {
+        common.db.admin().command({ currentOp: 1 }, async function(error, result) {
+            for (var i = 0; i < result.inprog.length; i++) {
+                let op = result.inprog[i];
+                if (!('$truncated' in op.command) && (i !== result.inprog.length - 1)) {
+                    continue;
+                }
+                if (!('$truncated' in op.command) && (i === result.inprog.length - 1)) {
+                    if (retryCount < 3) {
+                        setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
+                        break;
                     }
                     else {
-                        for (var i = 0; i < result.inprog.length; i++) {
-                            let op = result.inprog[i];
-                            if (!('$truncated' in op.command)) {
-                                continue;
-                            }
-
-                            let comment_position = op.command.$truncated.indexOf('$comment');
-                            if (comment_position === -1) {
-                                continue;
-                            }
-                            try {
-                                let substr = op.command.$truncated.substring(comment_position, op.command.$truncated.length);
-                                var comment_val = substr.match(/"(.*?)"/)[1];
-
-                                if (comment_val === comment_id) {
-                                    job.stop();
-                                    var task_id = options.id;
-                                    var op_id = op.opid;
-                                    await common.db.collection("long_tasks").findOneAndUpdate({ _id: common.db.ObjectID(task_id) }, { $set: { op_id: op_id } });
-                                    console.info(`Operation found task id ${task_id} and op id ${op_id}`);
-                                    break;
-                                }
-                            }
-                            catch (e) {
-                                console.info(`Operation not found task id ${task_id} and op id ${op_id}`);
-                            }
-                        }
+                        console.log(`operation not found for task:${options.id} comment: ${comment_id}`);
+                        break;
                     }
-                });
-            }, null, true);
-
-            setTimeout(() => {
-                if (job.running) {
-                    job.stop();
-                    console.warn('query could not found');
                 }
-            }, 3000);
+
+                let comment_position = op.command.$truncated.indexOf('$comment');
+                if (comment_position === -1) {
+                    continue;
+                }
+                let substr = op.command.$truncated.substring(comment_position, op.command.$truncated.length);
+                var comment_val = substr.match(/"(.*?)"/)[1];
+
+                if (comment_val === comment_id) {
+                    var task_id = options.id;
+                    var op_id = op.opid;
+                    await common.db.collection("long_tasks").findOneAndUpdate({ _id: common.db.ObjectID(task_id) }, { $set: { op_id: op_id } });
+                    console.info(`Operation found task: ${task_id} op:${op_id} comment: ${comment_id}`);
+                    break;
+                }
+                else if ((comment_val !== comment_id) && (i === (result.inprog.length - 1))) {
+                    if (retryCount < 3) {
+                        setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
+                        break;
+                    }
+                    else {
+                        console.log(`operation not found for task:${options.id} comment: ${comment_id}`);
+                        break;
+                    }
+                }
+            }
         });
     };
 
     if (options.comment_id) {
+        var retryCount = 0;
         try {
-            saveOpId(options.comment_id);
+            saveOpId(options.comment_id, retryCount);
         }
         catch (err) {
-            console.log('error saving mongo operation id');
+            if (retryCount < 3) {
+                setTimeout(() =>saveOpId(options.comment_id, ++retryCount), 500);
+            }
+            else {
+                console.log(err);
+            }
         }
     }
 
@@ -151,7 +133,6 @@ taskmanager.longtask = function(options) {
     function switchToLongTask() {
         timeout = null;
         exceeds = true;
-        options.comment_id = crypto.randomUUID();
 
         if (!options.request && options.params && options.params.qstring) {
             var json = options.params.qstring || {};
@@ -985,37 +966,17 @@ taskmanager.rerunTask = function(options, callback) {
 
 taskmanager.stopTask = function(options, callback) {
     options.db = options.db || common.db;
+
     /**
-    * Runs task
-    * @param {object} options1 - options for the task
+    * Stop task
+    * @param {object} op_id - operation id for mongo process
     * @param {object} options1.db - database connection
     * @param {string} options1.id - id of the task result
     * @param {object} reqData  -  request data
     * @param {funciton} callback1 - callback for the result
     */
-
-    var password, host, port, db, user;
-
-    try {
-        password = apiUtils.decrypt(common.config.admindb.password);
-        host = common.config.admindb.host;
-        port = common.config.admindb.port;
-        db = common.config.admindb.db;
-        user = common.config.admindb.username;
-    }
-    catch (err) {
-        callback(null, "Admin Db credentials not found");
-    }
-
-    const MongoClient = require('mongodb').MongoClient;
-    const uri = `mongodb://${user}:${password}@${host}:${port}/${db}`;
-    const client = new MongoClient(uri, { useUnifiedTopology: true });
-    client.connect(err => {
-        if (err) {
-            callback(null, "Admin Db connection failed");
-        }
-        const admindb = client.db(db);
-        admindb.command({ killOp: 1, op: Number.parseInt(options.op_id) }, function(error, result) {
+    function stopTask(op_id) {
+        common.db.admin().command({ killOp: 1, op: Number.parseInt(op_id) }, function(error, result) {
             if (result.ok === 1) {
                 callback(null, "Success");
             }
@@ -1023,6 +984,48 @@ taskmanager.stopTask = function(options, callback) {
                 callback(null, "Operation could not be stopped");
             }
         });
+    }
+
+    options.db.collection("long_tasks").findOne({ _id: options.id }, function (err, res) {
+        var reqData = {};
+        try {
+            reqData = JSON.parse(res.request);
+        }
+        catch (ex) {
+            reqData = {};
+        }
+
+        reqData.json.task_id = options.id;
+        reqData.strictSSL = false;
+        options.subtask = res.subtask;
+        reqData.json.autoUpdate = options.autoUpdate || false;
+        if (!reqData.json.api_key && res.creator) {
+            options.db.collection("members").findOne({ _id: common.db.ObjectID(res.creator) }, function (err1, member) {
+                if (member && member.api_key) {
+                    reqData.json.api_key = member.api_key;
+                    stopTask(res.op_id);
+                }
+                else if (res.global) {
+                    //AD and other outer login users might not have their user documents
+                    options.db.collection("members").findOne({ global_admin: true }, function (err2, admin) {
+                        if (admin && admin.api_key) {
+                            reqData.json.api_key = admin.api_key;
+                            stopTask(res.op_id);
+                        }
+                        else {
+                            callback(null, "No permission to stop this task");
+                        }
+                    });
+                }
+                else {
+                    callback(null, "No permission to stop this task");
+                }
+            });
+
+        }
+        else {
+            stopTask(res.op_id);
+        }
     });
 };
 

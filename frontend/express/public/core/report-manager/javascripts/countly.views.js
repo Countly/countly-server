@@ -269,7 +269,7 @@
                 }
             },
             isStopable: function(row) {
-                if (row.type === "views" || row.type === "tableExport" || row.status === "running") {
+                if (row.status === "running" && row.op_id && row.comment_id) {
                     return true;
                 }
                 else {
