@@ -12,9 +12,6 @@ var crypto = require("crypto");
 var request = require("request");
 var plugins = require('../../plugins/pluginManager.js');
 const log = require('./log.js')('core:taskmanager');
-const apiUtils = require('../../api/utils/utils');
-const mongoClient = require('mongodb').MongoClient;
-const cronJob = require('cron').CronJob;
 
 /**
 * Monitors DB query or some other potentially long task and switches to long task manager if it exceeds threshold
@@ -986,7 +983,7 @@ taskmanager.stopTask = function(options, callback) {
         });
     }
 
-    options.db.collection("long_tasks").findOne({ _id: options.id }, function (err, res) {
+    options.db.collection("long_tasks").findOne({ _id: options.id }, function(err, res) {
         var reqData = {};
         try {
             reqData = JSON.parse(res.request);
@@ -1000,14 +997,14 @@ taskmanager.stopTask = function(options, callback) {
         options.subtask = res.subtask;
         reqData.json.autoUpdate = options.autoUpdate || false;
         if (!reqData.json.api_key && res.creator) {
-            options.db.collection("members").findOne({ _id: common.db.ObjectID(res.creator) }, function (err1, member) {
+            options.db.collection("members").findOne({ _id: common.db.ObjectID(res.creator) }, function(err1, member) {
                 if (member && member.api_key) {
                     reqData.json.api_key = member.api_key;
                     stopTask(res.op_id);
                 }
                 else if (res.global) {
                     //AD and other outer login users might not have their user documents
-                    options.db.collection("members").findOne({ global_admin: true }, function (err2, admin) {
+                    options.db.collection("members").findOne({ global_admin: true }, function(err2, admin) {
                         if (admin && admin.api_key) {
                             reqData.json.api_key = admin.api_key;
                             stopTask(res.op_id);
