@@ -877,9 +877,12 @@ var pluginManager = function pluginManager() {
                     error2 += data;
                 });
 
+                cmd.on('error', function() {
+                    errors = true;
+                });
+
                 cmd.on('close', () => {
                     if (error2) {
-                        errors = true;
                         console.log('error: %j', error2);
                     }
                     console.log('Done running npm install %j', plugin);
@@ -943,9 +946,12 @@ var pluginManager = function pluginManager() {
                     error2 += data;
                 });
 
+                cmd.on('error', function() {
+                    errors = true;
+                });
+
                 cmd.on('close', () => {
                     if (error2) {
-                        errors = true;
                         console.log('error: %j', error2);
                     }
                     console.log('Done running npm update with %j', plugin);
