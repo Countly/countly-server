@@ -69,84 +69,80 @@ taskmanager.longtask = function(options) {
     var timeout;
 
     var saveOpId = async function(comment_id) {
-        var password,host, port, db, user;
+        var password, host, port, db, user;
 
-        try
-        {
+        try {
             password = apiUtils.decrypt(common.config.admindb.password);
             host = common.config.admindb.host;
             port = common.config.admindb.port;
             db = common.config.admindb.db;
             user = common.config.admindb.username;
         }
-        catch(err)
-        {
+        catch (err) {
             console.log('Error reading admin database credentials');
             return;
         }
 
         const uri = `mongodb://${user}:${password}@${host}:${port}/${db}`;
-        const client = new mongoClient(uri);
+        const client = new mongoClient(uri, { useUnifiedTopology: true });
         client.connect(err => {
-            if(err) {
+            if (err) {
                 console.error('Error connecting admin database');
                 return;
             }
 
             const admindb = client.db(db);
-            var job = new cronJob("*/1 * * * * *", function() { 
-                admindb.command({ currentOp: 1 }, async function (err, result) {
-                    if (err) {
+            var job = new cronJob("*/1 * * * * *", function() {
+                admindb.command({ currentOp: 1 }, async function(error, result) {
+                    if (error) {
                         console.error('Error getting mongo operations');
-                    } else {
-                        for (var i = 0; i< result.inprog.length; i++) {
+                    }
+                    else {
+                        for (var i = 0; i < result.inprog.length; i++) {
                             let op = result.inprog[i];
-                            if(!op.command.hasOwnProperty('$truncated'))
+                            if (!('$truncated' in op.command)) {
                                 continue;
+                            }
+
                             let comment_position = op.command.$truncated.indexOf('$comment');
-                            if(comment_position == -1)
+                            if (comment_position === -1) {
                                 continue;
-                            try
-                            {
+                            }
+                            try {
                                 let substr = op.command.$truncated.substring(comment_position, op.command.$truncated.length);
                                 var comment_val = substr.match(/"(.*?)"/)[1];
 
-                                if(comment_val == comment_id)
-                                {
+                                if (comment_val === comment_id) {
                                     job.stop();
-                                    let task_id = options.id;
-                                    let op_id = op.opid;
-                                    await common.db.collection("long_tasks").findOneAndUpdate({_id: common.db.ObjectID(task_id)},{$set: {op_id: op_id}});
+                                    var task_id = options.id;
+                                    var op_id = op.opid;
+                                    await common.db.collection("long_tasks").findOneAndUpdate({ _id: common.db.ObjectID(task_id) }, { $set: { op_id: op_id } });
                                     console.info(`Operation found task id ${task_id} and op id ${op_id}`);
                                     break;
                                 }
                             }
-                            catch(err)
-                            {
+                            catch (e) {
                                 console.info(`Operation not found task id ${task_id} and op id ${op_id}`);
                             }
                         }
                     }
                 });
             }, null, true);
-        
-            setTimeout(() => { 
-                if(job.running)
-                {
-                    job.stop();
-                    console.warn('query could not found'); 
-                }
-            },3000)
-        });
-    }
 
-    if(options.comment_id)
-    {
-        try{
+            setTimeout(() => {
+                if (job.running) {
+                    job.stop();
+                    console.warn('query could not found');
+                }
+            }, 3000);
+        });
+    };
+
+    if (options.comment_id) {
+        try {
             saveOpId(options.comment_id);
         }
-        catch(err)
-        {
+        catch (err) {
             console.log('error saving mongo operation id');
         }
     }
@@ -228,11 +224,13 @@ taskmanager.longtask = function(options) {
                 else {
                     if (err1) {
                         options.errored = true;
-                        
-                        if(typeof err1 == "object")
+
+                        if (typeof err1 === "object") {
                             options.error = err1;
-                        else
+                        }
+                        else {
                             options.errormsg = err1;
+                        }
                     }
                     taskmanager.saveResult(options, res1);
                 }
@@ -308,8 +306,9 @@ taskmanager.createTask = function(options, callback) {
     update.subtask_key = options.subtask_key || "";
     update.taskgroup = options.taskgroup || false;
     update.linked_to = options.linked_to;
-    if(options.comment_id)
+    if (options.comment_id) {
         update.comment_id = options.comment_id;
+    }
     if (options.subtask && options.subtask !== "") {
         update.subtask = options.subtask;
         var updateSub = {$set: {}};
@@ -358,7 +357,7 @@ taskmanager.saveResult = function(options, data, callback) {
         if (options.errormsg) {
             message = options.errormsg;
         }
-        else if(options.error) {
+        else if (options.error) {
             message = options.error.errormsg;
         }
 
@@ -366,15 +365,12 @@ taskmanager.saveResult = function(options, data, callback) {
             message = message.message;
         }
 
-        if(options.hasOwnProperty('error'))
-        {
-            if(options.error.hasOwnProperty('code') && options.error.code == 11601)
-            {
-                update.status = "stopped"; 
+        if ('error' in options) {
+            if (('code' in options.error) && options.error.code === 11601) {
+                update.status = "stopped";
             }
         }
-        else
-        {
+        else {
             update.status = "errored";
         }
 
@@ -998,27 +994,37 @@ taskmanager.stopTask = function(options, callback) {
     * @param {funciton} callback1 - callback for the result
     */
 
-     let password = apiUtils.decrypt(common.config.admindb.password);
-     let host = common.config.admindb.host;
-     let port = common.config.admindb.port;
-     let db = common.config.admindb.db;
-     let user = common.config.admindb.username;
+    var password, host, port, db, user;
+
+    try {
+        password = apiUtils.decrypt(common.config.admindb.password);
+        host = common.config.admindb.host;
+        port = common.config.admindb.port;
+        db = common.config.admindb.db;
+        user = common.config.admindb.username;
+    }
+    catch (err) {
+        callback(null, "Admin Db credentials not found");
+    }
 
     const MongoClient = require('mongodb').MongoClient;
     const uri = `mongodb://${user}:${password}@${host}:${port}/${db}`;
-    const client = new MongoClient(uri);
+    const client = new MongoClient(uri, { useUnifiedTopology: true });
     client.connect(err => {
+        if (err) {
+            callback(null, "Admin Db connection failed");
+        }
         const admindb = client.db(db);
-        admindb.command({ killOp: 1, op: Number.parseInt(options.op_id) }, function (err, result) {
-            if (result.ok == 1) {
+        admindb.command({ killOp: 1, op: Number.parseInt(options.op_id) }, function(error, result) {
+            if (result.ok === 1) {
                 callback(null, "Success");
             }
             else {
                 callback(null, "Operation could not be stopped");
             }
         });
-    });    
-}
+    });
+};
 
 /**
  *  Create a callback for getting result, including checking gridfs
