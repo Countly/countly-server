@@ -984,29 +984,23 @@ taskmanager.stopTask = function(options, callback) {
     }
 
     options.db.collection("long_tasks").findOne({ _id: options.id }, function(err, res) {
-        var reqData = {};
-        try {
-            reqData = JSON.parse(res.request);
-        }
-        catch (ex) {
-            reqData = {};
-        }
-
-        if (res.creator) {
-            options.db.collection("members").findOne({ _id: common.db.ObjectID(res.creator) }, function(err1, member) {
-                if (member) {
-                    stopTask(res.op_id);
-                }
-                else if (res.global) {
-                    stopTask(res.op_id);
-                }
-                else {
-                    callback(null, "No permission to stop this task");
-                }
-            });
+        if (res) {
+            if (res.creator) {
+                options.db.collection("members").findOne({ _id: common.db.ObjectID(res.creator) }, function(err1, member) {
+                    if (member) {
+                        stopTask(res.op_id);
+                    }
+                    else {
+                        callback(null, "No permission to stop this task");
+                    }
+                });
+            }
+            else {
+                stopTask(res.op_id);
+            }
         }
         else {
-            stopTask(res.op_id);
+            callback(null, "Task does not exist");
         }
     });
 };
