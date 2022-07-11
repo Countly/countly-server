@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store, countlyAuth, CountlyHelpers */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, VueCompositionAPI, app, countlyGlobal, store, countlyAuth, CountlyHelpers */
 
 (function(countlyVue, $) {
 

@@ -1,3 +1,63 @@
+## Version 22.06.2
+
+Fixes:
+- [core] remove select-x dropdown gradient if there is no tab or search
+- [docker] load cities and plugin list updates
+- [metrics] fix Linux Arch os reporting
+- [server-stats] fixed commandline reporting
+- [star-rating] fix texts
+- [star-rating] fixed checkbox bugs in rating
+
+Enterprise fixes:
+- [gateway] use parallel transform
+- [surveys] changes for exclusive options to deselect other if exclusive options are selected
+- [surveys] changes to remove all of above for radio button
+
+## Version 22.06.1
+
+Fixes:
+- [db] old option fixes for native_parser
+- [events] add tooltips to the monitored event charts
+- [push] Weird streaming issue
+- [push] Wrong data path for silent messages in Android
+- [push] proxy support
+- [slipping-away-users] fixing api call without query option
+- [ui] add searching for dropdown selectors
+- [user-management] fixed groupModel check
+
+Enterprise fixes:
+- [crash_symbolication] fix return_url for symoblication
+
+## Version 22.06
+
+Fixes:
+- [compare] correctly respond to core events
+- [dashboards] add more rows and columns
+- [dashboards] do not close dashboard sidebar if drawer is open
+- [dashboards] send emails on dashboard invites
+- [data-migration] make export path non mandatory field in data migration
+- [dbviewer] fixed for export with query
+- [jobs] back button doesn't work
+- [menu] stay on same view after page refresh
+- [mongodb] driver update
+- [push] fixing capping display
+- [push] following redirects for mime
+- [push] new proxy logic
+- [star-rating] fixed preview screen for ratings
+- [ui] 31 day month period is cut off in graphs
+- [ui] chart label orientation fixes
+- [user-management] fix reset filter button style
+
+Enterprise fixes:
+- [cognito] create config file on plugin install, if it does not exist
+- [concurrent_users] Max online user values should be resettable from an app level configuration
+- [config-transfer] fix for blank names
+- [drill] drill widget should skip x-axis labels like other time series graphs
+- [funnels] Ability to duplicate funnels
+- [groups] manage user group assignment directly from group management
+- [retention_segments] add column sizes for 13 months and 30 days retention tables for dashboards
+- [retention_segments] fix retention table tooltips
+
 ## Version 22.03.12
 
 Fixes:

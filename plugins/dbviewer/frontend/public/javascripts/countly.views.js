@@ -1,4 +1,4 @@
-/*global countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, moment _*/
+/*global countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers,_*/
 
 (function() {
     var FEATURE_NAME = 'dbviewer';
@@ -178,13 +178,18 @@
                 this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force});
             },
             getExportQuery: function() {
+
+                var sort = "";
+                if (this.sortEnabled) {
+                    sort = JSON.stringify(this.preparedSortObject);
+                }
                 var apiQueryData = {
                     api_key: countlyGlobal.member.api_key,
                     app_id: countlyCommon.ACTIVE_APP_ID,
-                    filename: "DBViewer" + moment().format("DD-MMM-YYYY"),
+                    //filename: "DBViewer" + moment().format("DD-MMM-YYYY"), - using passed filename from form
                     projection: JSON.stringify(this.preparedProjectionFields),
                     query: this.queryFilter,
-                    //sort: JSON.stringify(this.preparedSortObject),
+                    sort: sort,
                     collection: this.collection,
                     db: this.db,
                     url: "/o/export/db"
@@ -242,14 +247,18 @@
             },
             preparedProjectionFields: function() {
                 var ob = {};
-                for (var i = 0; i < this.projection.length; i++) {
-                    ob[this.projection[i]] = 1;
+                if (this.projection && Array.isArray(this.projection)) {
+                    for (var i = 0; i < this.projection.length; i++) {
+                        ob[this.projection[i]] = 1;
+                    }
                 }
                 return ob;
             },
             preparedSortObject: function() {
                 var ob = {};
-                ob[this.sort] = this.isDescentSort ? -1 : 1;
+                if (this.sort) {
+                    ob[this.sort] = this.isDescentSort ? -1 : 1;
+                }
                 return ob;
             }
         },

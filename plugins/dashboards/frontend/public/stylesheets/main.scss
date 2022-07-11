@@ -176,6 +176,15 @@
                 }
             }
 
+            &--vis-table {
+                overflow: auto;
+                margin-top: 6px;
+
+                td {
+                    padding: 9px 0;
+                }
+            }
+
             //Data table css
             .cly-vue-eldatatable__footer {
                 display:none;

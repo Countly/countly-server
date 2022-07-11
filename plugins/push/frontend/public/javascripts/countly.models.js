@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -1415,7 +1415,7 @@
                     triggerNotMet: triggerDto.cancels ? TriggerNotMetEnum.CANCEL_ON_EXIT : TriggerNotMetEnum.SEND_ANYWAY,
                     cohorts: triggerDto.cohorts || [],
                     events: triggerDto.events || [],
-                    capping: Boolean(triggerDto.cap) && Boolean(triggerDto.sleep),
+                    capping: Boolean(triggerDto.cap),
                     usersTimezone: null,
                 };
                 if (triggerDto.time) {

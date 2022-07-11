@@ -18,6 +18,9 @@ else
 	a=$(echo "$COUNTLY_PLUGINS" | tr ',' '\n')
 	printf %s\\n "${a[@]}"|sed 's/["\]/\\&/g;s/.*/"&"/;1s/^/[/;$s/$/]/;$!s/$/,/' > /opt/countly/plugins/plugins.json
 
+        #load city data into database
+        node "/opt/countly/bin/scripts/loadCitiesInDb.js"
+
 	while read -r plugin; do
       if [ -f "/opt/countly/plugins/$plugin/install.js" ]; then
         echo "[docker] Installing ${plugin}:"

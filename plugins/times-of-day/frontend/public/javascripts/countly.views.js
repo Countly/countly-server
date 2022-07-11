@@ -136,8 +136,9 @@
                     isPluginWidget: true,
                     apps: [],
                     data_type: "",
-                    events: [],
+                    events: "",
                     period: "",
+                    visualization: "punchcard"
                 };
             },
             beforeLoadFn: function(doc, isEdited) {
@@ -161,12 +162,12 @@
             component: TimesOfDayWidgetComponent,
             dimensions: function() {
                 return {
-                    minWidth: 2,
-                    minHeight: 4,
-                    width: 3,
+                    minWidth: 4,
+                    minHeight: 3,
+                    width: 4,
                     height: 4
                 };
-            },
+            }
         }
     });
 })();

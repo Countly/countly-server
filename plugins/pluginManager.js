@@ -19,7 +19,8 @@ var pluginDependencies = require('./pluginDependencies.js'),
     log = require('../api/utils/log.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
-    exec = cp.exec;
+    exec = cp.exec,
+    spawn = cp.spawn;
 
 /**
 * This module handles communicaton with plugins
@@ -865,9 +866,23 @@ var pluginManager = function pluginManager() {
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
-                exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error2) {
+                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
+                var error2 = "";
+
+                cmd.stdout.on('data', (data) => {
+                    console.log(`${data}`);
+                });
+
+                cmd.stderr.on('data', (data) => {
+                    error2 += data;
+                });
+
+                cmd.on('error', function() {
+                    errors = true;
+                });
+
+                cmd.on('close', () => {
                     if (error2) {
-                        errors = true;
                         console.log('error: %j', error2);
                     }
                     console.log('Done running npm install %j', plugin);
@@ -919,9 +934,24 @@ var pluginManager = function pluginManager() {
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
-                exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error2) {
+
+                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
+                var error2 = "";
+
+                cmd.stdout.on('data', (data) => {
+                    console.log(`${data}`);
+                });
+
+                cmd.stderr.on('data', (data) => {
+                    error2 += data;
+                });
+
+                cmd.on('error', function() {
+                    errors = true;
+                });
+
+                cmd.on('close', () => {
                     if (error2) {
-                        errors = true;
                         console.log('error: %j', error2);
                     }
                     console.log('Done running npm update with %j', plugin);
@@ -1078,12 +1108,8 @@ var pluginManager = function pluginManager() {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
         }
 
-        if (config && typeof config.mongodb === "string") {
-            config.mongodb = {uri: config.mongodb};
-        }
-
-        if (config.mongodb.uri) {
-            var dbName = this.replaceDatabaseString(config.mongodb.uri, db);
+        if (typeof config.mongodb === 'string') {
+            var dbName = this.replaceDatabaseString(config.mongodb, db);
             //remove protocol
             dbName = dbName.split("://").pop();
             if (dbName.indexOf("@") !== -1) {
@@ -1102,10 +1128,16 @@ var pluginManager = function pluginManager() {
                 var qstring = parts[1];
                 if (qstring && qstring.length) {
                     qstring = querystring.parse(qstring);
-                    if (qstring.ssl) {
+                    if (qstring.ssl && (qstring.ssl === true || qstring.ssl === "true")) {
                         ob.ssl = "";
                         ob.sslAllowInvalidCertificates = "";
                         ob.sslAllowInvalidHostnames = "";
+                    }
+                    if (qstring.tls && (qstring.tls === true || qstring.tls === "true")) {
+                        ob.tls = "";
+                        ob.tlsAllowInvalidCertificates = "";
+                        ob.tlsAllowInvalidHostnames = "";
+                        ob.tlsInsecure = "";
                     }
                     if (qstring.replicaSet) {
                         ob.host = qstring.replicaSet + "/" + ob.host;
@@ -1129,10 +1161,16 @@ var pluginManager = function pluginManager() {
             else {
                 ob.host = (config.mongodb.host + ':' + config.mongodb.port);
             }
-            if (config.mongodb.serverOptions && config.mongodb.serverOptions.ssl) {
+            if (config.mongodb.serverOptions && config.mongodb.serverOptions.ssl && (config.mongodb.serverOptions.ssl === true || config.mongodb.serverOptions.ssl === "true")) {
                 ob.ssl = "";
                 ob.sslAllowInvalidCertificates = "";
                 ob.sslAllowInvalidHostnames = "";
+            }
+            if (config.mongodb.serverOptions && config.mongodb.serverOptions.tls && (config.mongodb.serverOptions.tls === true || config.mongodb.serverOptions.tls === "true")) {
+                ob.tls = "";
+                ob.tlsAllowInvalidCertificates = "";
+                ob.tlsAllowInvalidHostnames = "";
+                ob.tlsInsecure = "";
             }
             if (config.mongodb.username && config.mongodb.password) {
                 ob.username = config.mongodb.username;
@@ -1156,13 +1194,12 @@ var pluginManager = function pluginManager() {
     * @returns {string} modified connection string
     **/
     this.replaceDatabaseString = function(str, db) {
-        var parts = str.split("?");
-        var i = parts[0].lastIndexOf('/countly');
-        var k = parts[0].lastIndexOf('/' + db);
+        var i = str.lastIndexOf('/countly');
+        var k = str.lastIndexOf('/' + db);
         if (i !== k && i !== -1 && db) {
-            return parts[0].substr(0, i) + "/" + db + parts[0].substr(i + ('/countly').length);
+            return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
         }
-        return parts.join("?");
+        return str;
     };
 
     this.connectToAllDatabases = async() => {
@@ -1222,11 +1259,7 @@ var pluginManager = function pluginManager() {
         }
 
         if (config && typeof config.mongodb === "string") {
-            config.mongodb = {uri: config.mongodb};
-        }
-
-        if (config.mongodb.uri) {
-            var urlParts = url.parse(config.mongodb.uri, true);
+            var urlParts = url.parse(config.mongodb, true);
             if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
                 maxPoolSize = urlParts.query.maxPoolSize;
             }
@@ -1249,8 +1282,8 @@ var pluginManager = function pluginManager() {
             useNewUrlParser: true,
             useUnifiedTopology: true
         };
-        if (config.mongodb.uri) {
-            dbName = this.replaceDatabaseString(config.mongodb.uri, db);
+        if (typeof config.mongodb === 'string') {
+            dbName = this.replaceDatabaseString(config.mongodb, db);
         }
         else {
             config.mongodb.db = db || config.mongodb.db || 'countly';
@@ -1267,6 +1300,8 @@ var pluginManager = function pluginManager() {
         }
 
         if (config.mongodb.dbOptions) {
+            //delete old config option
+            delete config.mongodb.dbOptions.native_parser;
             _.extend(dbOptions, config.mongodb.dbOptions);
         }
 
@@ -1275,13 +1310,7 @@ var pluginManager = function pluginManager() {
         }
 
         if (config.mongodb.username && config.mongodb.password) {
-            dbName = dbName.replace('mongodb://', '').replace('mongodb+srv://', '');
             dbName = encodeURIComponent(config.mongodb.username) + ":" + encodeURIComponent(utils.decrypt(config.mongodb.password)) + "@" + dbName;
-        }
-
-        if (config.mongodb.username) {
-            dbName = dbName.replace('mongodb://', '').replace('mongodb+srv://', '');
-            dbName = encodeURIComponent(config.mongodb.username) + "@" + dbName;
         }
 
         if (dbName.indexOf('mongodb://') !== 0 && dbName.indexOf('mongodb+srv://') !== 0) {
@@ -1322,6 +1351,11 @@ var pluginManager = function pluginManager() {
         }
         catch (ex) {
             logDbRead.e("Error connecting to database", ex);
+            logDbRead.e("With params %j", {
+                db: db_name,
+                connection: dbName,
+                options: dbOptions
+            });
             //exit to retry to reconnect on restart
             process.exit(1);
             return;
@@ -1768,6 +1802,9 @@ var pluginManager = function pluginManager() {
                 var cursor = this._aggregate(query, options);
                 cursor._count = cursor.count;
                 cursor.count = function(...countArgs) {
+                    if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                        return ob.estimatedDocumentCount.call(ob, ...countArgs);
+                    }
                     return ob.countDocuments.call(ob, query, ...countArgs);
                 };
                 cursor._toArray = cursor.toArray;
@@ -1817,6 +1854,9 @@ var pluginManager = function pluginManager() {
                 var cursor = this._find(query, options);
                 cursor._count = cursor.count;
                 cursor.count = function(...countArgs) {
+                    if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                        return ob.estimatedDocumentCount.call(ob, ...countArgs);
+                    }
                     return ob.countDocuments.call(ob, query, ...countArgs);
                 };
                 cursor._toArray = cursor.toArray;
@@ -1832,7 +1872,12 @@ var pluginManager = function pluginManager() {
             //backwards compatability
 
             ob._count = ob.count;
-            ob.count = ob.countDocuments;
+            ob.count = function(query, ...countArgs) {
+                if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                    return ob.estimatedDocumentCount.call(ob, ...countArgs);
+                }
+                return ob.countDocuments.call(ob, query, ...countArgs);
+            };
             ob.ensureIndex = ob.createIndex;
 
             ob.update = function(selector, document, options, callback) {

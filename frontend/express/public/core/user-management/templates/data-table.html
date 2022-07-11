@@ -72,6 +72,7 @@
           <el-table-column
             v-if="col.value === 'role'"
             prop="role"
+            sortable="true"
             :label="i18n('management-users.role')">
             <template v-slot="rowScope">
               <span class="text-medium">
@@ -85,7 +86,7 @@
           </el-table-column>
           <el-table-column
             v-if="col.value === 'group'"
-            sortable="true" prop="groupName" :label="i18n('management-users.group')">
+            sortable="true" prop="groupNames" :label="i18n('management-users.group')">
           </el-table-column>
           <el-table-column
             v-if="col.value === 'created_at'"

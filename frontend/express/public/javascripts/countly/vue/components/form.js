@@ -1,4 +1,4 @@
-/* global Vue, app, Promise */
+/* global Vue, app */
 
 (function(countlyVue) {
 

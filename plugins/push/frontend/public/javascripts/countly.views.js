@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth*/
 
 (function() {
 
@@ -2816,15 +2816,7 @@
                 beforeSaveFn: function() {}
             },
             grid: {
-                component: PushNotificationWidgetComponent,
-                dimensions: function() {
-                    return {
-                        minWidth: 2,
-                        minHeight: 4,
-                        width: 2,
-                        height: 4
-                    };
-                }
+                component: PushNotificationWidgetComponent
             }
 
         });

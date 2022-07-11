@@ -3,14 +3,12 @@
     <clyd-datatype v-model="scope.editedObject.data_type" :enabledTypes="['event','session']" :extra-types="[{value: 'event', label: i18nM('times-of-day.event')}]"></clyd-datatype>
     <template v-if="scope.editedObject.data_type === 'event'">
         <cly-form-field name="selectedEvent" rules="required" :label="i18n('times-of-day.event')">
-            <el-select v-model="scope.editedObject.events">
-                <el-option
-                    v-for="item in eventOptions"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                </el-option>
-            </el-select>
+            <cly-select-x
+                :auto-commit="true"
+                :hide-all-options-tab="true"
+                :options="eventOptions"
+                v-model="scope.editedObject.events">
+            </cly-select-x>
         </cly-form-field>
     </template>
     <cly-form-field name="timePeriod" rules="required" :label="i18n('times-of-day.time-period')">

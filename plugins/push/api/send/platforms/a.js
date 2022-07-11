@@ -213,7 +213,7 @@ function empty(msg) {
  */
 function finish(data) {
     if (!data.data.message && !data.data.sound) {
-        data.data.data['c.s'] = 'true';
+        data.data['c.s'] = 'true';
     }
     return data;
 }
