@@ -921,6 +921,9 @@ taskmanager.rerunTask = function(options, callback) {
             if (reqData.uri) {
                 reqData.json.task_id = options.id;
                 reqData.strictSSL = false;
+                if (reqData.json && reqData.json.period && Array.isArray(reqData.json.period)) {
+                    reqData.json.period = JSON.stringify(reqData.json.period);
+                }
                 options.subtask = res.subtask;
                 reqData.json.autoUpdate = options.autoUpdate || false;
                 if (!reqData.json.api_key && res.creator) {
