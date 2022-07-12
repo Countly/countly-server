@@ -315,6 +315,10 @@
             sortable: {
                 type: Boolean,
                 default: false
+            },
+            disableNonSelected: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
@@ -429,7 +433,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="disableNonSelected && !innerValue.includes(option.value)">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
@@ -833,6 +837,9 @@
                 }
 
                 return false;
+            },
+            disableNonSelected: function() {
+                return this.innerValue.length === this.maxItems;
             }
         },
         mounted: function() {
