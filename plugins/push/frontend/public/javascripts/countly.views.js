@@ -1321,7 +1321,7 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyPushNotificationMain/fetchPushTable');
+                //this.$store.dispatch('countlyPushNotificationMain/fetchPushTable');
             },
             applyFilter: function() {
                 this.$store.dispatch('countlyPushNotificationMain/fetchPushTable');
@@ -1497,7 +1497,7 @@
                 },
                 set: function(value) {
                     this.$store.dispatch('countlyPushNotificationMain/onSetPushNotificationType', value);
-                    this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
+                    this.$store.dispatch('countlyPushNotificationMain/fetchPushTable', true);
                 }
             },
             isDrawerOpen: function() {
