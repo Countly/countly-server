@@ -99,12 +99,12 @@
                                 <cly-status-tag :text="statusOptions[scope.row.status] && statusOptions[scope.row.status].label || '' " :color="getStatusBackgroundColor(scope.row.status)"> </cly-status-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="custom":label="i18n('push-notification.table-sent')" class="cly-vue-push-notification-table-column">
+                        <el-table-column sortable="custom" prop="sent" :label="i18n('push-notification.table-sent')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <span class="cly-vue-push-notification-table-column__numbers-only"> {{scope.row.sent}} </span>
                             </template>
                         </el-table-column>
-                        <el-table-column width="200" sortable="custom" :label="i18n('push-notification.table-actioned')" class="cly-vue-push-notification-table-column">
+                        <el-table-column width="200" sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-level">
                                     <div class="bu-level-left cly-vue-push-notification-table-column__numbers-only">

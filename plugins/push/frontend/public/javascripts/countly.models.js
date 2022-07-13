@@ -550,6 +550,7 @@
         }
     };
     var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
+        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'sentDateTime'],
         onRequest: function(context) {
             context.rootState.countlyPushNotificationMain.isLoadingTable = true;
             var data = {

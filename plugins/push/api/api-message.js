@@ -857,8 +857,11 @@ module.exports.all = async params => {
         let cursor = common.db.collection(Message.collection).find(query),
             count = await cursor.count();
 
+        var columns = ['info.title', 'status', 'result.sent', 'result.actioned', 'info.created', 'info.started'];
+        
         if (data.iSortCol_0 && data.sSortDir_0) {
-            cursor.sort({[data.iSortCol_0]: data.sSortDir_0 === 'asc' ? -1 : 1});
+            var sortcol = columns[parseInt(data.iSortCol_0, 10)];
+            cursor.sort({[sortcol]: data.sSortDir_0 === 'asc' ? -1 : 1});
         }
         else {
             cursor.sort({'triggers.start': -1});
