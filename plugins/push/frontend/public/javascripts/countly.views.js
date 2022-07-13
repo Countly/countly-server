@@ -1473,7 +1473,7 @@
             }
         },
         mounted: function() {
-            this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
+            this.$store.dispatch('countlyPushNotificationMain/fetchPushTable', true);
         }
     });
 
