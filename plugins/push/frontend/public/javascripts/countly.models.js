@@ -559,9 +559,9 @@
             };
             var type = context.rootState.countlyPushNotificationMain.selectedPushNotificationType;
             var status = context.rootState.countlyPushNotificationMain.statusFilter;
-            var params = countlyPushNotification.service.getFetchAllParameters(type,status);    
-            for(var key in params){
-                data[key] = params[key]
+            var params = countlyPushNotification.service.getFetchAllParameters(type, status); 
+            for (var key in params) {
+                data[key] = params[key];
             }
             return {
                 type: "GET",

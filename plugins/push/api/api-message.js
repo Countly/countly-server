@@ -842,8 +842,6 @@ module.exports.all = async params => {
             query['triggers.kind'] = TriggerKind.Plain;
         }
 
-        let total = await Message.count(query);
-
         if (data.sSearch) {
             query.$or = [
                 {'contents.message': data.sSearch},
@@ -858,7 +856,7 @@ module.exports.all = async params => {
             count = await cursor.count();
 
         var columns = ['info.title', 'status', 'result.sent', 'result.actioned', 'info.created', 'info.started'];
-        
+
         if (data.iSortCol_0 && data.sSortDir_0) {
             var sortcol = columns[parseInt(data.iSortCol_0, 10)];
             cursor.sort({[sortcol]: data.sSortDir_0 === 'asc' ? -1 : 1});
