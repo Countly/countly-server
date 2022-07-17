@@ -276,7 +276,7 @@ class Pool extends Duplex {
             connection.destroy();
         });
         connection.on('push_done', () => {
-            this.log.i('worker is done');
+            this.log.i('worker %s %s is done', this.id, connection.id);
             if (!this.destroyed) { // connections are reset to undefined on destroy
                 let idx = this.connections.indexOf(connection);
                 if (idx !== -1) {
@@ -415,7 +415,7 @@ class Pool extends Duplex {
                         else {
                             let conn = this.connections[Math.floor(Math.random() * this.connections.length)];
                             this.processing += length;
-                            conn.write(data, data, chunkCallback);
+                            conn.write(data, chunkCallback);
                         }
                     }
                 }

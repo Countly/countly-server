@@ -66,7 +66,6 @@ class FCM extends Splitter {
      * @param {string} options.proxy.auth proxy require https correctness
      */
     constructor(log, type, creds, messages, options) {
-        options.pool.concurrency = 500;
         super(log, type, creds, messages, options);
 
         this.log = logger(log).sub(`${threadId}-a`);
@@ -97,7 +96,7 @@ class FCM extends Splitter {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let content = this.template(pushes[0].m).compile(pushes[0]),
-                one = Math.floor(bytes / pushes.length);
+                one = Math.ceil(bytes / pushes.length);
 
             content.registration_ids = pushes.map(p => p.t);
             this.log.d('sending to %j', content.registration_ids);
@@ -175,19 +174,29 @@ class FCM extends Splitter {
             }, ([code, error]) => {
                 this.log.w('FCM error %d / %j', code, error);
                 if (code === 0) {
-                    throw PushError.deserialize(error);
+                    if (error.message === 'ECONNRESET' || error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT' ||
+                        error.code === 'ECONNREFUSED' || error.code === 'ECONNABORTED' || error.code === 'EHOSTUNREACH' ||
+                        error.code === 'EAI_AGAIN') {
+                        this.log.w('FCM error %d / %j', bytes, pushes.map(p => p._id));
+                        throw new ConnectionError(`FCM ${error.code}`, ERROR.CONNECTION_PROVIDER)
+                            .setConnectionError(error.code, `${error.errno} ${error.code} ${error.syscall}`)
+                            .addAffected(pushes.map(p => p._id), bytes);
+                    }
+                    let pe = PushError.deserialize(error);
+                    pe.addAffected(pushes.map(p => p._id), bytes);
+                    throw pe;
                 }
                 else if (code >= 500) {
-                    throw new ConnectionError(`FCM Unavailable: ${code}`, ERROR.CONNECTION_PROVIDER);
+                    throw new ConnectionError(`FCM Unavailable: ${code}`, ERROR.CONNECTION_PROVIDER).addAffected(pushes.map(p => p._id), bytes);
                 }
                 else if (code === 401) {
-                    throw new ConnectionError(`FCM Unauthorized: ${code}`, ERROR.INVALID_CREDENTIALS);
+                    throw new ConnectionError(`FCM Unauthorized: ${code}`, ERROR.INVALID_CREDENTIALS).addAffected(pushes.map(p => p._id), bytes);
                 }
                 else if (code === 400) {
-                    throw new ConnectionError(`FCM Bad message: ${code}`, ERROR.DATA_PROVIDER);
+                    throw new ConnectionError(`FCM Bad message: ${code}`, ERROR.DATA_PROVIDER).addAffected(pushes.map(p => p._id), bytes);
                 }
                 else {
-                    throw new ConnectionError(`FCM Bad response code: ${code}`, ERROR.EXCEPTION);
+                    throw new ConnectionError(`FCM Bad response code: ${code}`, ERROR.EXCEPTION).addAffected(pushes.map(p => p._id), bytes);
                 }
             });
         });

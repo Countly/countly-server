@@ -330,12 +330,17 @@ class ProcessingError extends PushError {
      * 
      * Affected pushes will be returned in a recoverable error. Once 3 ProcessingError happen in a row, sending will be terminated with the rest (left) removed from the queue.
      * 
-     * @param {string} id ID of push object which might not be sent due to this error
+     * @param {string|string[]} id ID of push object which might not be sent due to this error
      * @param {number} bytes number of bytes in push object behind id
      * @returns {ProcessingError} this instance
      */
     addAffected(id, bytes) {
-        this.affected.push(id);
+        if (Array.isArray(id)) {
+            id.forEach(i => this.affected.push(i));
+        }
+        else {
+            this.affected.push(id);
+        }
         this.affectedBytes += bytes;
         return this;
     }
@@ -379,12 +384,17 @@ class ProcessingError extends PushError {
     /**
      * Add left push object which was still in queue when unrecoverable error happened
      * 
-     * @param {string} id ID of push object which won't be sent because an unrecoverable error happened earlier
+     * @param {string|string[]} id ID of push object which won't be sent because an unrecoverable error happened earlier
      * @param {number} bytes number of bytes in push object behind id
      * @returns {ProcessingError} this instance
      */
     addLeft(id, bytes) {
-        this.left.push(id);
+        if (Array.isArray(id)) {
+            id.forEach(i => this.left.push(i));
+        }
+        else {
+            this.left.push(id);
+        }
         this.leftBytes += bytes;
         return this;
     }

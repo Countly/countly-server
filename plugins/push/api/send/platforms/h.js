@@ -156,7 +156,7 @@ class HPK extends Splitter {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let content = this.template(pushes[0].m).compile(pushes[0]),
-                one = Math.floor(bytes / pushes.length);
+                one = Math.ceil(bytes / pushes.length);
 
             content.message.token = pushes.map(p => p.t);
 
