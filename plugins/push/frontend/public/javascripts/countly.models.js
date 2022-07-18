@@ -549,7 +549,63 @@
             return key !== CV.i18n(key);
         }
     };
-
+    var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
+        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'sentDateTime'],
+        onRequest: function(context) {
+            context.rootState.countlyPushNotificationMain.isLoadingTable = true;
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
+            };
+            var type = context.rootState.countlyPushNotificationMain.selectedPushNotificationType;
+            var status = context.rootState.countlyPushNotificationMain.statusFilter;
+            var params = countlyPushNotification.service.getFetchAllParameters(type, status);
+            for (var key in params) {
+                data[key] = params[key];
+            }
+            return {
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + "/push/message/all",
+                data: data
+            };
+        },
+        onReady: function(context, rows) {
+            for (var index = 0; index < rows.length; index++) {
+                var editedPlatforms = rows[index].platforms.map(function(element) {
+                    if (element === "i") {
+                        element = "ios";
+                    }
+                    else if (element === "a") {
+                        element = "android";
+                    }
+                    return element;
+                });
+                rows[index].platforms = editedPlatforms;
+                rows[index].sent = rows[index].result.sent || 0;
+                rows[index].actioned = rows[index].result.actioned || 0;
+                rows[index].name = rows[index].info && rows[index].info.title || '-';
+                rows[index].createdBy = rows[index].info && rows[index].info.createdByName || '';
+                rows[index].content = rows[index].contents[0].message;
+                rows[index].createdDateTime = {
+                    date: moment(rows[index].info && rows[index].info.created).format("MMMM Do YYYY"),
+                    time: moment(rows[index].info && rows[index].info.created).format("h:mm:ss a")
+                },
+                rows[index].sentDateTime = {
+                    date: rows[index].info && rows[index].info.started ? moment(rows[index].info.started).format("MMMM Do YYYY") : null,
+                    time: rows[index].info && rows[index].info.started ? moment(rows[index].info.started).format("h:mm:ss a") : null,
+                };
+            }
+            context.rootState.countlyPushNotificationMain.isLoadingTable = false;
+            return rows;
+        },
+        onError: function(context, error) {
+            if (error) {
+                if (error.status !== 0) {
+                    console.log(error);
+                }
+            }
+        }
+    });
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
     countlyPushNotification.api = {
         findById: function(id) {
@@ -2741,6 +2797,7 @@
                 pushNotificationId: null
             },
             isDrawerOpen: false,
+            isLoadingTable: true,
         };
     };
 
@@ -2825,7 +2882,6 @@
         },
         onSetStatusFilter: function(context, value) {
             context.commit('setStatusFilter', value);
-            context.dispatch('fetchAll', true);
         },
     };
 
@@ -2858,11 +2914,17 @@
 
     countlyPushNotification.main = {};
     countlyPushNotification.main.getVuexModule = function() {
+        var getters = {
+            isLoadingTable: function(state) {
+                return state.isLoadingTable;
+            },
+        };
         return countlyVue.vuex.Module("countlyPushNotificationMain", {
             state: getMainInitialState,
             actions: mainActions,
             mutations: mainMutations,
-            submodules: [countlyVue.vuex.FetchMixin()]
+            getters: getters,
+            submodules: [countlyVue.vuex.FetchMixin(), pushTableResource]
         });
     };
 
