@@ -1,3 +1,19 @@
+## Version 22.06.4
+
+Feature:
+- [core] disable select x options when max items is reached
+- [core] new eslint
+- [longtasks] added stopping feature for long running tasks
+- [plugins] handle install error differently
+- [push] Missing app_id parameter validation for tx messages
+- [push] change push messages table to server side table
+- [push] various fixes, back to safe mode
+- [times-of-day] fixed day names
+
+Enterprise fixes:
+- [ldap] added optional group DN in sample config
+
+
 ## Version 22.06.2
 
 Fixes:
