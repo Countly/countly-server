@@ -96,6 +96,10 @@ if (isMainThread) {
                 else if (frame & FRAME.RESULTS) {
                     let l = frame_length(m.buffer);
                     this.processing -= l;
+                    if (this.processing < 0) {
+                        this.processing = 0;
+                    }
+                    this.log.d('processing %d / %d (results)', -l, this.processing);
 
                     if (!(frame & FRAME.ERROR)) {
                         this.out.inc(l);
@@ -104,7 +108,14 @@ if (isMainThread) {
                     this.push(m);
                 }
                 else if (frame === (FRAME.SEND | FRAME.ERROR)) {
-                    this.emit('push_fail', decode(m.buffer).payload);
+                    let l = frame_length(m.buffer);
+                    this.processing -= l;
+                    if (this.processing < 0) {
+                        this.processing = 0;
+                    }
+                    this.log.d('processing %d / %d (send error)', -l, this.processing);
+                    this.push(m);
+                    // this.emit('push_fail', decode(m.buffer).payload);
                 }
                 else if (frame & FRAME.CMD) {
                     this.push(m);
@@ -173,22 +184,56 @@ if (isMainThread) {
          * @param {function} callback called when the frame is fully processed
          */
         _writev(chunks, callback) {
-            this.log.f('d', log => {
-                log('Writing %d chunks to worker thread, first is %d', chunks.length, frame_type(chunks[0].chunk.buffer));
-                log('Load %s in %s/%s/%s out %s/%s/%s', this.load.toFixed(2), this.in.avg(5), this.in.avg(30), this.in.avg(60), this.out.avg(5), this.out.avg(30), this.out.avg(60));
-            });
-            chunks.forEach(chunk => {
-                let c = chunk.chunk,
-                    l = c.buffer.byteLength,
-                    f = frame_type(c.buffer);
-                if (f & FRAME.SEND) {
-                    this.processing += l;
-                    this.in.inc(l);
-                }
+            // this.log.f('d', log => {
+            //     log('Writing %d chunks to worker thread, first is %d', chunks.length, frame_type(chunks[0].chunk.buffer));
+            //     log('load %s in %s/%s/%s out %s/%s/%s', this.load.toFixed(2), this.in.avg(5), this.in.avg(30), this.in.avg(60), this.out.avg(5), this.out.avg(30), this.out.avg(60));
+            // });
+            // chunks.forEach(chunk => {
+            //     let c = chunk.chunk,
+            //         l = c.buffer.byteLength,
+            //         f = frame_type(c.buffer);
+            //     if (f & FRAME.SEND) {
+            //         this.processing += l;
+            //         this.log.d('processing %d (send)', this.processing);
+            //         this.in.inc(l);
+            //     }
+            //     this.worker.postMessage(c, [c.buffer]);
+            // });
+            // this.log.d('Done writing %d chunks to the worker thread', chunks.length);
+            // callback(null);
+            this.wait_and_write(chunks, callback);
+        }
+
+        /**
+         * Wait for the worker to become free and write next chunk
+         * 
+         * @param {chunk[]} chunks array of chunks to send to the worker
+         * @param {function} callback callback to be called when all chunks are written
+         */
+        wait_and_write(chunks, callback) {
+            if (!chunks.length) {
+                callback(null);
+                return;
+            }
+
+            let f = frame_type(chunks[0].chunk.buffer);
+
+            if (!(f & FRAME.SEND)) {
+                let c = chunks.shift().chunk;
                 this.worker.postMessage(c, [c.buffer]);
-            });
-            this.log.d('Done writing %d chunks to the worker thread', chunks.length);
-            callback(null);
+                this.log.d('processing %d (send not)', this.processing);
+            }
+            else if (this.free && (f & FRAME.SEND)) {
+                let c = chunks.shift().chunk;
+                this.processing += c.buffer.byteLength - 5; // 5 service bytes
+                this.worker.postMessage(c, [c.buffer]);
+                this.log.d('processing %d (send)', this.processing);
+            }
+            else {
+                this.log.d('delaying %s', FRAME_NAME[f]);
+            }
+
+            setTimeout(this.wait_and_write.bind(this, chunks, callback), 100);
         }
 
         /**
@@ -260,8 +305,11 @@ else {
         log = logger(logid).sub(threadId + ''),
         post = function(frame, payload, length = 0) {
             processing -= length;
+            if (processing < 0) {
+                processing = 0;
+            }
             let arr = encode(frame, payload || {}, length);
-            log.d('OUT message %s %d bytes (processing %d)', FRAME_NAME[arr[0]], arr.length, processing);
+            log.d('OUT message %s %d bytes (processing %d / %d)', FRAME_NAME[arr[0]], arr.length, -length, processing);
             parentPort.postMessage(arr);
         };
 
@@ -335,7 +383,7 @@ else {
         }
         else if (data.frame === FRAME.SEND) {
             processing += data.length;
-            log.d('sending %d, processing %d', data.length, processing);
+            log.d('processing %d / %d (sending)', data.length, processing);
             connection.write(data, err => {
                 if (err) {
                     log.e('failed to write to connection', err);

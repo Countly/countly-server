@@ -6,6 +6,7 @@ const { Audience, TriggerKind, Filter, Content, PushError, ERROR, ValidationErro
 
 const schemes = {
     [true]: {
+        app_id: {type: 'ObjectID', required: true},
         _id: {type: 'ObjectID', required: true},
         start: {type: 'Date', required: true},
         filter: {type: Filter.scheme, required: true},
@@ -19,6 +20,7 @@ const schemes = {
         variables: {type: 'Object'}
     },
     [false]: {
+        app_id: {type: 'ObjectID', required: true},
         _id: {type: 'ObjectID', required: true},
         filter: {type: Filter.scheme, required: true},
     }
@@ -74,6 +76,7 @@ async function check(params, push) {
  * @apiDescription Add notifications to previously created message with API trigger
  * @apiGroup Push Notifications
  *
+ * @apiQuery {ObjectID} app_id application id
  * @apiBody {ObjectID} _id Message ID
  * @apiBody {Date} start Date to send notifications on
  * @apiBody {Object} filter User profile filter to limit recipients of this message, must not be empty
@@ -116,6 +119,7 @@ module.exports.apiPush = async params => {
  * @apiDescription Remove notifications from previously created message with API trigger
  * @apiGroup Push Notifications
  *
+ * @apiQuery {ObjectID} app_id application id
  * @apiBody {ObjectID} _id Message ID
  * @apiBody {Object} filter User profile filter to limit recipients of this message, must not be empty
  * @apiBody {String} [filter.user] JSON with app_usersAPPID collection filter

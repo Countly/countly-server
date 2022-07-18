@@ -38,8 +38,8 @@ class Sender {
                 retryFactor: 1000,
             },
             pool: {
-                pushes: 100000,
-                bytes: 100000,
+                pushes: 500,
+                bytes: 10000,
                 concurrency: 5,
                 pools: 10
             }
@@ -146,7 +146,37 @@ class Sender {
                 promise = new Promise((res, rej) => {
                     resolve = res;
                     reject = rej;
-                });
+                }),
+                last = Date.now(),
+                /**
+                 * Periodic check to ensure mongo stream is closed once no more data is sent
+                 */
+                check = function() {
+                    if (last === null) {
+                        // do nothing, already closed
+                    }
+                    else if (last + 60 * 1000 < Date.now()) {
+                        last = null;
+                        connector.destroy(new PushError('Streaming timeout'));
+                    }
+                    else {
+                        setTimeout(check, 10000);
+                    }
+                };
+
+            pushes.on('close', () => {
+                last = null;
+                this.log.w('pushes close');
+            });
+            pushes.on('unpipe', () => {
+                last = null;
+                this.log.w('pushes unpipe');
+            });
+            connector.on('close', () => this.log.w('connector close'));
+            connector.on('unpipe', () => this.log.w('connector unpipe'));
+
+            connector.on('data', () => last = Date.now());
+            setTimeout(check, 10000);
 
             pushes
                 .pipe(connector)
