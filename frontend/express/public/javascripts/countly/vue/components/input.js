@@ -319,6 +319,10 @@
             disableNonSelected: {
                 type: Boolean,
                 default: false
+            },
+            maxLimit: {
+                type: Number,
+                default: 1000
             }
         },
         data: function() {
@@ -423,6 +427,7 @@
                         :ops="scrollCfg"\>\
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <el-checkbox-group\
+                                :max="maxLimit"\
                                 v-model="innerValue">\
                                 <draggable \
                                     handle=".drag-handler"\
@@ -750,6 +755,11 @@
             collapseTags: {
                 type: Boolean,
                 default: true,
+                required: false
+            },
+            maxLimit: {
+                type: Number,
+                default: 1000,
                 required: false
             },
             //
