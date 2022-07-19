@@ -839,7 +839,7 @@
                 return false;
             },
             disableNonSelected: function() {
-                return this.innerValue.length === this.maxItems;
+                return this.innerValue && this.innerValue.length === this.maxItems;
             }
         },
         mounted: function() {
