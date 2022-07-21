@@ -755,7 +755,8 @@
             //
             remote: {type: Boolean, default: false},
             remoteMethod: {type: Function, required: false},
-            showSearch: {type: Boolean, default: false}
+            showSearch: {type: Boolean, default: false},
+            popperAppendToBody: {type: Boolean, default: true}
         },
         data: function() {
             return {
