@@ -1943,10 +1943,19 @@ var pluginManager = function pluginManager() {
             ob._save = ob.save;
             ob.save = function(doc, options, callback) {
                 if (doc._id) {
+                    var selector = {"_id": doc._id};
+                    delete doc._id;
                     options = options || {};
-                    options.upsert = true;
-                    var secector = {"_id": doc._id};
-                    return ob.updateOne(selector, doc, options, callback);
+                    if (options && typeof options === "object") {
+                        options.upsert = true;
+                        return ob.updateOne(selector, {"$set": doc}, options, callback);
+                    }
+                    else {
+                        var myoptions = {"upsert": true};
+                        return ob.updateOne(selector, {"$set": doc}, myoptions, options); //we have callback in options param
+                    }
+
+
                 }
                 else {
                     return ob.insertOne(doc, options, callback);
