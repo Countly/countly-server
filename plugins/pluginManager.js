@@ -1942,9 +1942,15 @@ var pluginManager = function pluginManager() {
 
             ob._save = ob.save;
             ob.save = function(doc, options, callback) {
-                options = options || {};
-                options.upsert = true;
-                return ob.insertOne(doc, options, callback);
+                if (doc._id) {
+                    options = options || {};
+                    options.upsert = true;
+                    var secector = {"_id": doc._id};
+                    return ob.updateOne(selector, doc, options, callback);
+                }
+                else {
+                    return ob.insertOne(doc, options, callback);
+                }
             };
 
 
