@@ -38,7 +38,7 @@
                     acceptedFiles: 'image/jpeg,image/png,image/gif',
                     dictDefaultMessage: this.i18n('feedback.drop-message'),
                     dictRemoveFile: this.i18n('feedback.remove-file'),
-                    url: "/i/feedback/logo" + "?api_key=" + countlyGlobal.member.api_key,
+                    url: "/i/feedback/logo" + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
                     paramName: "logo",
                     params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
                 },
