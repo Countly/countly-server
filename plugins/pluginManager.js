@@ -1940,6 +1940,14 @@ var pluginManager = function pluginManager() {
                 }
             };
 
+            ob._save = ob.save;
+            ob.save = function(doc, options, callback) {
+                options = options || {};
+                options.upsert = true;
+                return ob.insertOne(doc, options, callback);
+            };
+
+
 
             countlyDb._collection_cache[collection] = ob;
 
