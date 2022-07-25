@@ -755,7 +755,8 @@
             //
             remote: {type: Boolean, default: false},
             remoteMethod: {type: Function, required: false},
-            showSearch: {type: Boolean, default: false}
+            showSearch: {type: Boolean, default: false},
+            popperAppendToBody: {type: Boolean, default: true}
         },
         data: function() {
             return {
@@ -771,7 +772,7 @@
                     "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.showTabs,
                     "cly-vue-select-x__pop--has-single-option": this.hasSingleOption,
                     "cly-vue-select-x__pop--has-slim-header": !this.searchable && !this.showTabs,
-                    "cly-vue-select-x__pop--hidden-header": !this.isSearchShown && !this.$scopedSlots.header && !this.$scopedSlots.action
+                    "cly-vue-select-x__pop--hidden-header": !this.isSearchShown && !this.$scopedSlots.header && !this.$scopedSlots.action && !this.title && !this.showSelectedCount
                 };
             },
             currentTab: function() {

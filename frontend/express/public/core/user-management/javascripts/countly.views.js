@@ -673,9 +673,14 @@
         },
         watch: {
             'groups': function() {
-                this.$refs.userDrawer.editedObject.global_admin = false;
+                if (this.groups.length > 0) {
+                    // Remove global admin role if user is assigned to any group
+                    this.$refs.userDrawer.editedObject.global_admin = false;
+                }
 
                 if (this.groups.length === 0) {
+                    // Restore global admin role if user is not assigned to any group
+                    this.$refs.userDrawer.editedObject.global_admin = this.user.global_admin;
                     this.$refs.userDrawer.editedObject.permission._.u = [[]];
                     this.$refs.userDrawer.editedObject.permission._.a = [];
                 }
