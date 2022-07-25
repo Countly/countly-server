@@ -610,7 +610,12 @@
                     // is user member of a group?
                     if (this.user.group_id && countlyGlobal.plugins.indexOf('groups') > -1) {
                         // set groups state
-                        this.groups = this.user.group_id;
+                        if (Array.isArray(this.user.group_id)) {
+                            this.groups = this.user.group_id;
+                        }
+                        else {
+                            this.groups = [this.user.group_id];
+                        }
                         // add initial permission state for cases who unselected group
                         this.permissionSets.push({ c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
                     }
