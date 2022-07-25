@@ -16,11 +16,11 @@ class Connector extends DoFinish {
      * @param {State} state state shared across the streams
      */
     constructor(log, db, state) {
-        super({objectMode: true, writableHighWaterMark: 3});
+        super({objectMode: true, writableHighWaterMark: state.cfg.pool.pushes * 10});
         this.log = log.sub('connector');
         this.db = db;
         this.state = state;
-        this.limit = state.cfg.pool.pushes;
+        this.limit = state.cfg.pool.pushes * 10;
         this.connects = [];
         this.resetErrors();
     }
