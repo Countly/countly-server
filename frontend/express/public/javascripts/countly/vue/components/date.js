@@ -1008,7 +1008,7 @@
             doCommit: function(value, isShortcut) {
                 if (value) {
                     if (this.isRange && this.rangeLimits.maxLength && this.rangeLimits.maxLength.length === 2) {
-                        var allowedMax = moment(this.minDate).add(this.rangeLimits.maxLength[0], this.rangeLimits.maxLength[1]);
+                        var allowedMax = moment(this.minDate).add(this.rangeLimits.maxLength[0] + 1, this.rangeLimits.maxLength[1]);
                         if (allowedMax < moment(this.maxDate)) {
                             return this.triggerCommitWarning('maxLength');
                         }
