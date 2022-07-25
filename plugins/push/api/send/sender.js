@@ -121,6 +121,7 @@ class Sender {
             }
         }
 
+        this.log.i('Current configuration %j', cfg);
         return cfg;
     }
 
