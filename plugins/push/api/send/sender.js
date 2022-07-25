@@ -55,11 +55,59 @@ class Sender {
 
         if (plugins.push) {
             if (plugins.push.sendahead) {
-                try {
-                    cfg.sendAhead = parseInt(plugins.push.sendahead, 10);
+                if (typeof plugins.push.sendahead === 'number') {
+                    cfg.sendAhead = plugins.push.sendahead;
                 }
-                catch (e) {
+                else {
                     this.log.w('Invalid sendahead plugin configuration: %j', plugins.push.sendahead);
+                }
+            }
+            if (plugins.push.connection_retries) {
+                if (typeof plugins.push.connection_retries === 'number') {
+                    cfg.connection.retries = plugins.push.connection_retries;
+                }
+                else {
+                    this.log.w('Invalid connection_retries plugin configuration: %j', plugins.push.connection_retries);
+                }
+            }
+            if (plugins.push.connection_factor) {
+                if (typeof plugins.push.connection_factor === 'number') {
+                    cfg.connection.retryFactor = plugins.push.connection_factor;
+                }
+                else {
+                    this.log.w('Invalid connection_factor plugin configuration: %j', plugins.push.connection_factor);
+                }
+            }
+            if (plugins.push.pool_pushes) {
+                if (typeof plugins.push.pool_pushes === 'number') {
+                    cfg.pool.pushes = plugins.push.pool_pushes;
+                }
+                else {
+                    this.log.w('Invalid pool_pushes plugin configuration: %j', plugins.push.pool_pushes);
+                }
+            }
+            if (plugins.push.pool_bytes) {
+                if (typeof plugins.push.pool_bytes === 'number') {
+                    cfg.pool.bytes = plugins.push.pool_bytes;
+                }
+                else {
+                    this.log.w('Invalid pool_bytes plugin configuration: %j', plugins.push.pool_bytes);
+                }
+            }
+            if (plugins.push.pool_concurrency) {
+                if (typeof plugins.push.pool_concurrency === 'number') {
+                    cfg.pool.concurrency = plugins.push.pool_concurrency;
+                }
+                else {
+                    this.log.w('Invalid pool_concurrency plugin configuration: %j', plugins.push.pool_concurrency);
+                }
+            }
+            if (plugins.push.pool_pools) {
+                if (typeof plugins.push.pool_pools === 'number') {
+                    cfg.pool.pools = plugins.push.pool_pools;
+                }
+                else {
+                    this.log.w('Invalid pool_pools plugin configuration: %j', plugins.push.pool_pools);
                 }
             }
             if (plugins.push.proxyhost && plugins.push.proxyport) {
@@ -71,24 +119,9 @@ class Sender {
                     auth: !(plugins.push.proxyunauthorized || false),
                 };
             }
-            if (plugins.push.bytes) {
-                try {
-                    cfg.pool.bytes = parseInt(plugins.push.bytes, 10);
-                }
-                catch (e) {
-                    this.log.w('Invalid bytes plugin configuration: %j', plugins.push.bytes);
-                }
-            }
-            if (plugins.push.concurrency) {
-                try {
-                    cfg.pool.concurrency = parseInt(plugins.push.concurrency, 10);
-                }
-                catch (e) {
-                    this.log.w('Invalid concurrency plugin configuration: %j', plugins.push.concurrency);
-                }
-            }
         }
 
+        this.log.i('Current configuration %j', cfg);
         return cfg;
     }
 

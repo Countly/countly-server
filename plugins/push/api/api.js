@@ -56,7 +56,14 @@ plugins.setConfigs(FEATURE_NAME, {
     rate: {
         rate: '',
         period: ''
-    }
+    },
+    sendahead: 60000, // send pushes scheduled up to 60 sec in the future
+    connection_retries: 3, // retry this many times on recoverable errors
+    connection_factor: 1000, // exponential backoff factor
+    pool_pushes: 400, // object mode streams high water mark
+    pool_bytes: 10000, // bytes mode streams high water mark
+    pool_concurrency: 5, // max number of same type connections
+    pool_pools: 10 // max number of connections in total
 });
 
 plugins.internalEvents.push('[CLY]_push_sent');

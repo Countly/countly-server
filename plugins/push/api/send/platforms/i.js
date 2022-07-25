@@ -520,7 +520,7 @@ class APN extends Base {
      * @param {Creds} creds credentials instance
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently
      */
     constructor(log, type, creds, messages, options) {
         super(log, type, creds, messages, options);
@@ -646,7 +646,7 @@ class APN extends Base {
             this.log.d('sending %d streams', pushes.length);
             pushes.forEach((p, i) => {
                 // this.log.d('%d: sending', i);
-                if (i % 100 === 0) {
+                if (i % 200 === 0) {
                     this.log.d('state', this.session.state);
                 }
                 if (nonRecoverableError) {
@@ -728,6 +728,7 @@ class APN extends Base {
                                     }
                                 }
                                 else {
+                                    self.log.e('provider returned %d: %j', status, json);
                                     error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                                 }
                             }
@@ -740,7 +741,11 @@ class APN extends Base {
                                 }
                             }
                             else if (status === 429) {
+                                self.log.e('provider returned %d: %j', status, json);
                                 error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
+                            }
+                            else {
+                                throw new PushError('IMPOSSIBRU');
                             }
                         }
                         catch (e) {

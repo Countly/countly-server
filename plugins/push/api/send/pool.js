@@ -17,13 +17,13 @@ class Pool extends Duplex {
      * @param {State} state state instance
      * @param {Object} cfg cfg object
      * @param {integer} cfg.pool.bytes how much bytes can be processed simultaniously by a single connection
-     * @param {integer} cfg.pool.concurrency how much connections (workers) can be used in parallel
+     * @param {integer} cfg.pool.concurrency how much connections (workers) can be used in parallel within particular pool
      */
     constructor(id, type, creds, state, cfg) {
         super({
             // writableHighWaterMark: cfg.bytes * cfg.workers,
             readableObjectMode: true,
-            readableHighWaterMark: 10000,
+            writableHighWaterMark: cfg.pool.bytes,
             writableObjectMode: false,
         });
         this.platform = type.substr(0, 1);

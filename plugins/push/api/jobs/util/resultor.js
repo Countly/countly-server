@@ -101,7 +101,7 @@ class Resultor extends DoFinish {
         }
         else if (frame & FRAME.RESULTS) {
             if (frame & FRAME.ERROR) {
-                this.log.d('Error results %d %s %s affected %d %j left %d %j', results.type, results.name, results.date, results.affectedBytes, results.affected, results.leftBytes, results.left);
+                this.log.d('Error results %d %s %s %s affected %d %j left %d %j', results.type, results.name, results.message, results.date, results.affectedBytes, results.affected, results.leftBytes, results.left);
                 [results.affected, results.left].forEach(arr => {
                     if (results.is(ERROR.DATA_TOKEN_EXPIRED) || results.is(ERROR.DATA_TOKEN_INVALID)) {
                         arr.forEach(id => {
@@ -232,7 +232,7 @@ class Resultor extends DoFinish {
             let error = results.messageError(),
                 mids = {};
 
-            this.log.d('Error %d %s %s affected %d %j left %d %j', results.type, results.name, results.date, results.affectedBytes, results.affected, results.leftBytes, results.left);
+            this.log.d('Error %d %s %s %s affected %d %j left %d %j', results.type, results.name, results.message, results.date, results.affectedBytes, results.affected, results.leftBytes, results.left);
 
             [results.affected, results.left].forEach(arr => {
                 arr.forEach(id => {

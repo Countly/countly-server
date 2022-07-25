@@ -217,17 +217,17 @@ class PushError extends Error {
         else {
             let e;
             if (data.name === 'SendError') {
-                e = new SendError(data.message, data.type)
+                e = new SendError(data.message, data.type, data.date)
                     .setAffected(data.affected, data.affectedBytes);
             }
             else if (data.name === 'ConnectionError') {
-                e = new ConnectionError(data.message, data.type)
+                e = new ConnectionError(data.message, data.type, data.date)
                     .setConnectionError(data.connectionErrorMessage, data.connectionErrorCode)
                     .setAffected(data.affected, data.affectedBytes)
                     .setLeft(data.left, data.leftBytes);
             }
             else {
-                e = new PushError(data.message, data.type || ERROR.EXCEPTION);
+                e = new PushError(data.message, data.type || ERROR.EXCEPTION, data.date);
             }
 
             e.stack = data.stack;

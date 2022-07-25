@@ -58,7 +58,7 @@ class FCM extends Splitter {
      * @param {Credentials} creds FCM server key
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently, this parameter is strictly set to 500
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently, this parameter is strictly set to 500
      * @param {string} options.proxy.host proxy host
      * @param {string} options.proxy.port proxy port
      * @param {string} options.proxy.user proxy user
@@ -131,7 +131,8 @@ class FCM extends Splitter {
                                 errors[err] = new SendError(message, code);
                             }
                             return errors[err];
-                        };
+                        },
+                        printBody = false;
 
                     resp.results.forEach((r, i) => {
                         if (r.message_id) {
@@ -152,12 +153,15 @@ class FCM extends Splitter {
                             error(ERROR.DATA_TOKEN_INVALID, r.error).addAffected(pushes[i]._id, one);
                         }
                         else if (r.error === 'InvalidParameters') { // still hasn't figured out why this error is thrown, therefore not critical yet
+                            printBody = true;
                             error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
                         }
                         else if (r.error === 'MessageTooBig' || r.error === 'InvalidDataKey' || r.error === 'InvalidTtl') {
+                            printBody = true;
                             error(ERROR.DATA_PROVIDER, '' + r.error).addAffected(pushes[i]._id, one);
                         }
                         else {
+                            printBody = true;
                             error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
                         }
                     });
@@ -168,6 +172,9 @@ class FCM extends Splitter {
                     }
                     if (oks.length) {
                         this.send_results(oks, bytes - errored);
+                    }
+                    if (printBody) {
+                        this.log.e('Provider returned error %j for %j', resp, content);
                     }
                 }
 

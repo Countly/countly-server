@@ -34,13 +34,13 @@ class Base extends Duplex {
      * @param {Creds} creds authorization key: server key for FCM/HW, P8/P12 for APN
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently
      */
     constructor(log, type, creds, messages, options) {
         super({
             readableObjectMode: true,
             writableObjectMode: true,
-            writableHighWaterMark: options.pool.concurrency,
+            writableHighWaterMark: options.pool.pushes,
         });
         this.type = type;
         this.creds = creds;
