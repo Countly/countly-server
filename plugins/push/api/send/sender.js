@@ -59,7 +59,7 @@ class Sender {
                     cfg.sendAhead = plugins.push.sendahead;
                 }
                 else {
-                    this.log.w('Invalid sendahead plugin configuration: %j', plugins.push.sendahead);
+                    common.log(`push:send`).w('Invalid sendahead plugin configuration: %j', plugins.push.sendahead);
                 }
             }
             if (plugins.push.connection_retries) {
@@ -67,7 +67,7 @@ class Sender {
                     cfg.connection.retries = plugins.push.connection_retries;
                 }
                 else {
-                    this.log.w('Invalid connection_retries plugin configuration: %j', plugins.push.connection_retries);
+                    common.log(`push:send`).w('Invalid connection_retries plugin configuration: %j', plugins.push.connection_retries);
                 }
             }
             if (plugins.push.connection_factor) {
@@ -75,7 +75,7 @@ class Sender {
                     cfg.connection.retryFactor = plugins.push.connection_factor;
                 }
                 else {
-                    this.log.w('Invalid connection_factor plugin configuration: %j', plugins.push.connection_factor);
+                    common.log(`push:send`).w('Invalid connection_factor plugin configuration: %j', plugins.push.connection_factor);
                 }
             }
             if (plugins.push.pool_pushes) {
@@ -83,7 +83,7 @@ class Sender {
                     cfg.pool.pushes = plugins.push.pool_pushes;
                 }
                 else {
-                    this.log.w('Invalid pool_pushes plugin configuration: %j', plugins.push.pool_pushes);
+                    common.log(`push:send`).w('Invalid pool_pushes plugin configuration: %j', plugins.push.pool_pushes);
                 }
             }
             if (plugins.push.pool_bytes) {
@@ -91,7 +91,7 @@ class Sender {
                     cfg.pool.bytes = plugins.push.pool_bytes;
                 }
                 else {
-                    this.log.w('Invalid pool_bytes plugin configuration: %j', plugins.push.pool_bytes);
+                    common.log(`push:send`).w('Invalid pool_bytes plugin configuration: %j', plugins.push.pool_bytes);
                 }
             }
             if (plugins.push.pool_concurrency) {
@@ -99,7 +99,7 @@ class Sender {
                     cfg.pool.concurrency = plugins.push.pool_concurrency;
                 }
                 else {
-                    this.log.w('Invalid pool_concurrency plugin configuration: %j', plugins.push.pool_concurrency);
+                    common.log(`push:send`).w('Invalid pool_concurrency plugin configuration: %j', plugins.push.pool_concurrency);
                 }
             }
             if (plugins.push.pool_pools) {
@@ -107,7 +107,7 @@ class Sender {
                     cfg.pool.pools = plugins.push.pool_pools;
                 }
                 else {
-                    this.log.w('Invalid pool_pools plugin configuration: %j', plugins.push.pool_pools);
+                    common.log(`push:send`).w('Invalid pool_pools plugin configuration: %j', plugins.push.pool_pools);
                 }
             }
             if (plugins.push.proxyhost && plugins.push.proxyport) {
@@ -121,7 +121,7 @@ class Sender {
             }
         }
 
-        this.log.i('Current configuration %j', cfg);
+        common.log(`push:send`).i('Current configuration %j', cfg);
         return cfg;
     }
 
