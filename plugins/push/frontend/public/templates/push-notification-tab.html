@@ -104,7 +104,7 @@
                                 <span class="cly-vue-push-notification-table-column__numbers-only"> {{scope.row.sent}} </span>
                             </template>
                         </el-table-column>
-                        <el-table-column width="200" sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')" class="cly-vue-push-notification-table-column">
+                        <el-table-column min-width="200" sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-level">
                                     <div class="bu-level-left cly-vue-push-notification-table-column__numbers-only">
@@ -115,7 +115,7 @@
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column width="220" sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')"  class="cly-vue-push-notification-table-column">
+                        <el-table-column min-width="220" sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')"  class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
                                     <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.createdDateTime.date}}</span>
@@ -123,7 +123,7 @@
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column  width="280" sortable="custom" prop="sentDateTime" :label="i18n('push-notification.table-date-sent')" class="cly-vue-push-notification-table-column">
+                        <el-table-column  min-width="280" sortable="custom" prop="sentDateTime" :label="i18n('push-notification.table-date-sent')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
                                     <template v-if="scope.row.sentDateTime && scope.row.sentDateTime.date"> 
