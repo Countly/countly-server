@@ -671,6 +671,10 @@
             },
             onGroupChange: function(groupVal) {
                 this.groups = groupVal;
+                if (groupVal.length === 0) {
+                    this.$refs.userDrawer.editedObject.permission._.u = [[]];
+                    this.$refs.userDrawer.editedObject.permission._.a = [];
+                }
             },
             onRoleChange: function(role) {
                 this.roles[role.name] = role;
@@ -686,8 +690,6 @@
                 if (this.groups.length === 0) {
                     // Restore global admin role if user is not assigned to any group
                     this.$refs.userDrawer.editedObject.global_admin = this.user.global_admin;
-                    this.$refs.userDrawer.editedObject.permission._.u = [[]];
-                    this.$refs.userDrawer.editedObject.permission._.a = [];
                 }
             }
         },
