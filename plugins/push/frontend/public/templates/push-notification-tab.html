@@ -115,6 +115,19 @@
                                 </div>
                             </template>
                         </el-table-column>
+						<el-table-column  min-width="280" sortable="custom" prop="lastDate" :label="i18n('push-notification.table-date-last')" class="cly-vue-push-notification-table-column">
+                            <template slot-scope="scope">
+                                <div class="bu-is-flex bu-is-flex-direction-column">
+                                    <template v-if="scope.row.lastDate && scope.row.lastDate.date"> 
+                                        <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.lastDate.date}}</span>
+                                        <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.lastDate.time}}</span>
+                                    </template>
+                                    <template v-else>
+                                        <span>-</span>
+                                    </template>
+                                </div>
+                            </template>
+                        </el-table-column>
                         <el-table-column min-width="220" sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')"  class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">

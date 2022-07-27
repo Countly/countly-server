@@ -550,7 +550,7 @@
         }
     };
     var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
-        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'sentDateTime'],
+        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'sentDateTime', 'lastDate'],
         onRequest: function(context) {
             context.rootState.countlyPushNotificationMain.isLoadingTable = true;
             var data = {
@@ -1076,6 +1076,10 @@
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
                         createdBy: pushNotificationDtoItem.info && pushNotificationDtoItem.info.createdByName || '',
+                        lastDate: {
+                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("MMMM Do YYYY") : null,
+                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("h:mm:ss a") : null,
+                        },
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                         content: self.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
                     };

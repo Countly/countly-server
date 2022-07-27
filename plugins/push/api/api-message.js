@@ -861,18 +861,14 @@ module.exports.all = async params => {
         var dataPipeline = [];
 
         var columns = ['info.title', 'status', 'result.sent', 'result.actioned', 'info.created', 'info.started', 'triggers.start'];
-
+        var sortcol = 'triggers.start';
         if (data.iSortCol_0 && data.sSortDir_0) {
-            var sortcol = columns[parseInt(data.iSortCol_0, 10)];
-
-        }
-        else {
-            sortcol = 'triggers.start';
+            sortcol = columns[parseInt(data.iSortCol_0, 10)];
         }
 
-        if (sortcol === 0) { //sorting by title, so get right names now.
+        if (sortcol === 'info.title') { //sorting by title, so get right names now.
             dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title", {"$first": "$contents"}]}}});
-            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title.title", "$info.title"]}}});
+            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title.message", "$info.title"]}}});
             dataPipeline.push({"$sort": {[sortcol]: data.sSortDir_0 === 'asc' ? -1 : 1}});
         }
         else {
@@ -888,7 +884,9 @@ module.exports.all = async params => {
                     dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
                 }
 
-                dataPipeline.push({"$sort": {"triggerObject.start": data.sSortDir_0 === 'asc' ? -1 : 1}});
+                dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}, "info.isDraft": {"$cond": [{"$eq": ["$status", "draft"]}, 1, 0]}}});
+
+                dataPipeline.push({"$sort": {"info.isDraft": -1, "info.lastDate": data.sSortDir_0 === 'desc' ? 1 : -1}});//if not defined sort by -1;
             }
             else {
                 dataPipeline.push({"$sort": {[sortcol]: data.sSortDir_0 === 'asc' ? -1 : 1}});
@@ -902,9 +900,21 @@ module.exports.all = async params => {
             dataPipeline.push({"$limit": parseInt(data.iDisplayLength, 10)});
         }
 
-        if (sortcol !== 0) { //adding correct titles now
+        if (sortcol !== 'info.title') { //adding correct titles now after narrowing down data
             dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title", {"$first": "$contents"}]}}});
-            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title.title", "$info.title"]}}});
+            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title.message", "$info.title"]}}});
+        }
+        if (sortcol !== 'triggers.start') { //add triggers start fields
+            if (data.auto) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", [TriggerKind.Event, TriggerKind.Cohort]]}, "as": "item"}}}}});
+            }
+            else if (data.api) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
+            }
+            else {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+            }
+            dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}}});
         }
 
         pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
