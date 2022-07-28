@@ -1568,7 +1568,7 @@
 
                             if (existingLegend) {
                                 legend.status = existingLegend.status;
-                                legend.displayColor = existingLegend.displayColor;
+                                // legend.displayColor = existingLegend.displayColor;
                             }
                         }
                     }
