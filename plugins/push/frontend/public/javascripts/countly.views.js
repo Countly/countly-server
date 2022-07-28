@@ -1220,15 +1220,6 @@
             isUserCommandLoading: function() {
                 return this.$store.getters['countlyPushNotificationMain/isLoading'];
             },
-            pushNotificationRows: function() {
-                var self = this;
-                if (this.selectedStatusFilter === countlyPushNotification.service.ALL_FILTER_OPTION_VALUE) {
-                    return this.$store.state.countlyPushNotificationMain.rows;
-                }
-                return this.$store.state.countlyPushNotificationMain.rows.filter(function(rowItem) {
-                    return rowItem.status === self.selectedStatusFilter;
-                });
-            },
             pushNotificationOptions: function() {
                 return {
                     xAxis: {

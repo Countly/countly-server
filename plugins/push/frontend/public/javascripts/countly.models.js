@@ -550,7 +550,7 @@
         }
     };
     var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
-        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'sentDateTime'],
+        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'lastDate'],
         onRequest: function(context) {
             context.rootState.countlyPushNotificationMain.isLoadingTable = true;
             var data = {
@@ -570,31 +570,7 @@
             };
         },
         onReady: function(context, rows) {
-            for (var index = 0; index < rows.length; index++) {
-                var editedPlatforms = rows[index].platforms.map(function(element) {
-                    if (element === "i") {
-                        element = "ios";
-                    }
-                    else if (element === "a") {
-                        element = "android";
-                    }
-                    return element;
-                });
-                rows[index].platforms = editedPlatforms;
-                rows[index].sent = rows[index].result.sent || 0;
-                rows[index].actioned = rows[index].result.actioned || 0;
-                rows[index].name = rows[index].info && rows[index].info.title || '-';
-                rows[index].createdBy = rows[index].info && rows[index].info.createdByName || '';
-                rows[index].content = rows[index].contents[0].message;
-                rows[index].createdDateTime = {
-                    date: moment(rows[index].info && rows[index].info.created).format("MMMM Do YYYY"),
-                    time: moment(rows[index].info && rows[index].info.created).format("h:mm:ss a")
-                },
-                rows[index].sentDateTime = {
-                    date: rows[index].info && rows[index].info.started ? moment(rows[index].info.started).format("MMMM Do YYYY") : null,
-                    time: rows[index].info && rows[index].info.started ? moment(rows[index].info.started).format("h:mm:ss a") : null,
-                };
-            }
+            rows = countlyPushNotification.mapper.incoming.mapRows({"aaData": rows});
             context.rootState.countlyPushNotificationMain.isLoadingTable = false;
             return rows;
         },
@@ -1093,13 +1069,13 @@
                             date: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("MMMM Do YYYY"),
                             time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("h:mm:ss a")
                         },
-                        sentDateTime: {
-                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("MMMM Do YYYY") : null,
-                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("h:mm:ss a") : null,
-                        },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
                         createdBy: pushNotificationDtoItem.info && pushNotificationDtoItem.info.createdByName || '',
+                        lastDate: {
+                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("MMMM Do YYYY") : null,
+                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("h:mm:ss a") : null,
+                        },
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                         content: self.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
                     };
@@ -2802,18 +2778,8 @@
     };
 
     var mainActions = {
-        fetchAll: function(context, useLoader) {
-            if (useLoader) {
-                context.dispatch('onSetAreRowsLoading', true);
-            }
-            countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType, context.state.statusFilter)
-                .then(function(response) {
-                    context.commit('setRows', response);
-                }).catch(function(error) {
-                    console.error(error);
-                }).finally(function() {
-                    context.dispatch('onSetAreRowsLoading', false);
-                });
+        fetchAll: function(context) {
+            context.dispatch('fetchPushTable');
         },
         onDelete: function(context, id) {
             context.dispatch('onFetchInit', {useLoader: true});
