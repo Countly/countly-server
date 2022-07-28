@@ -550,7 +550,7 @@
         }
     };
     var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
-        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'sentDateTime', 'lastDate'],
+        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'lastDate'],
         onRequest: function(context) {
             context.rootState.countlyPushNotificationMain.isLoadingTable = true;
             var data = {
@@ -1068,10 +1068,6 @@
                         createdDateTime: {
                             date: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("MMMM Do YYYY"),
                             time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("h:mm:ss a")
-                        },
-                        sentDateTime: {
-                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("MMMM Do YYYY") : null,
-                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("h:mm:ss a") : null,
                         },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,

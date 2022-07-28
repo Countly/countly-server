@@ -860,7 +860,7 @@ module.exports.all = async params => {
         var totalPipeline = [{"$group": {"_id": null, "cn": {"$sum": 1}}}];
         var dataPipeline = [];
 
-        var columns = ['info.title', 'status', 'result.sent', 'result.actioned', 'info.created', 'info.started', 'triggers.start'];
+        var columns = ['info.title', 'status', 'result.sent', 'result.actioned', 'info.created', 'triggers.start'];
         var sortcol = 'triggers.start';
         if (data.iSortCol_0 && data.sSortDir_0) {
             sortcol = columns[parseInt(data.iSortCol_0, 10)];
