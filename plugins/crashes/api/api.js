@@ -803,7 +803,7 @@ plugins.setConfigs("crashes", {
                                             }
                                         }
                                     }
-                                    var cursor = common.db.collection('app_crashes' + params.app_id).find({group: result._id}, {fields: {binary_crash_dump: 0}}).sort({ $natural: -1 });
+                                    var cursor = common.db.collection('app_crashes' + params.app_id).find({group: result._id}, {fields: {binary_crash_dump: 0}});
                                     cursor.limit(plugins.getConfig("crashes").report_limit);
                                     cursor.toArray(function(cursorErr, res) {
                                         if (res && res.length) {
