@@ -179,6 +179,7 @@
           Local variables
         */
         var widget_id = getParameterByName('widget_id');
+        var platform = getParameterByName('platform');
         var device_id = getParameterByName('device_id');
         var sdk_version = getParameterByName('sdk_version');
         var app_key = getParameterByName('app_key');
@@ -190,6 +191,13 @@
         var h = d.getHours();
         var dow = d.getDay();
         var symbol = 'emoji';
+
+        if (!platform || (platform === "undefined") || (platform === "null")) {
+                platform = "Web";
+            }
+        if (!app_version || (app_version === "undefined") || (app_version === "null")) {
+                app_version = "1";
+            }
 
         $('.modal-content').hide();
         /*
@@ -261,8 +269,8 @@
             segmentation: {
                 widget_id: widget_id,
                 contactMe: false,
-                platform: "Web",
-                app_version: 1,
+                platform: platform,
+                app_version: app_version,
                 platform_version_rate: "",
                 rating: 0,
                 email: "",
