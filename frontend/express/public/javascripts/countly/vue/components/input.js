@@ -27,6 +27,9 @@
             },
             localValue: {
                 get: function() {
+                    if(typeof this.value === "object"){
+                        return this.value.hex.replace("#", "");
+                    }
                     return this.value.replace("#", "");
                 },
                 set: function(value) {
