@@ -470,7 +470,7 @@
             if (typeof state.crashgroup._id !== "undefined") {
                 return {
                     platform: state.crashgroup.os,
-                    occurrences: state.crashgroup.total,
+                    occurrences: state.crashgroup.reports,
                     affectedUsers: state.crashgroup.users,
                     crashFrequency: ("session" in state.crashgroup) ? state.crashgroup.session.total / state.crashgroup.session.count : 0,
                     latestAppVersion: state.crashgroup.latest_version

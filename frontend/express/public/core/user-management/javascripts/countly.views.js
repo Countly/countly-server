@@ -610,7 +610,12 @@
                     // is user member of a group?
                     if (this.user.group_id && countlyGlobal.plugins.indexOf('groups') > -1) {
                         // set groups state
-                        this.groups = this.user.group_id;
+                        if (Array.isArray(this.user.group_id)) {
+                            this.groups = this.user.group_id;
+                        }
+                        else {
+                            this.groups = [this.user.group_id];
+                        }
                         // add initial permission state for cases who unselected group
                         this.permissionSets.push({ c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
                     }
@@ -666,6 +671,10 @@
             },
             onGroupChange: function(groupVal) {
                 this.groups = groupVal;
+                if (groupVal.length === 0) {
+                    this.$refs.userDrawer.editedObject.permission._.u = [[]];
+                    this.$refs.userDrawer.editedObject.permission._.a = [];
+                }
             },
             onRoleChange: function(role) {
                 this.roles[role.name] = role;
@@ -681,8 +690,6 @@
                 if (this.groups.length === 0) {
                     // Restore global admin role if user is not assigned to any group
                     this.$refs.userDrawer.editedObject.global_admin = this.user.global_admin;
-                    this.$refs.userDrawer.editedObject.permission._.u = [[]];
-                    this.$refs.userDrawer.editedObject.permission._.a = [];
                 }
             }
         },

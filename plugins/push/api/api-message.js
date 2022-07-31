@@ -853,64 +853,89 @@ module.exports.all = async params => {
             query.status = data.status;
         }
 
-        let cursor = common.db.collection(Message.collection).find(query),
-            count = await cursor.count();
 
-        var columns = ['info.title', 'status', 'result.sent', 'result.actioned', 'info.created', 'info.started'];
+        var pipeline = [];
+        pipeline.push({"$match": query});
 
+        var totalPipeline = [{"$group": {"_id": null, "cn": {"$sum": 1}}}];
+        var dataPipeline = [];
+
+        var columns = ['info.title', 'status', 'result.sent', 'result.actioned', 'info.created', 'triggers.start'];
+        var sortcol = 'triggers.start';
         if (data.iSortCol_0 && data.sSortDir_0) {
-            var sortcol = columns[parseInt(data.iSortCol_0, 10)];
-            cursor.sort({[sortcol]: data.sSortDir_0 === 'asc' ? -1 : 1});
+            sortcol = columns[parseInt(data.iSortCol_0, 10)];
+        }
+
+        if (sortcol === 'info.title') { //sorting by title, so get right names now.
+            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title", {"$first": "$contents"}]}}});
+            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title.message", "$info.title"]}}});
+            dataPipeline.push({"$sort": {[sortcol]: data.sSortDir_0 === 'asc' ? -1 : 1}});
         }
         else {
-            cursor.sort({'triggers.start': -1});
+            if (sortcol === 'triggers.start') {
+                //gets right trigger object
+                if (data.auto) {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", [TriggerKind.Event, TriggerKind.Cohort]]}, "as": "item"}}}}});
+                }
+                else if (data.api) {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
+                }
+                else {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+                }
+
+                dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}, "info.isDraft": {"$cond": [{"$eq": ["$status", "draft"]}, 1, 0]}}});
+
+                dataPipeline.push({"$sort": {"info.isDraft": -1, "info.lastDate": data.sSortDir_0 === 'desc' ? 1 : -1}});//if not defined sort by -1;
+            }
+            else {
+                dataPipeline.push({"$sort": {[sortcol]: data.sSortDir_0 === 'asc' ? -1 : 1}});
+            }
         }
 
         if (data.iDisplayStart && parseInt(data.iDisplayStart, 10) !== 0) {
-            cursor.skip(parseInt(data.iDisplayStart, 10));
+            dataPipeline.push({"$skip": parseInt(data.iDisplayStart, 10)});
         }
         if (data.iDisplayLength && parseInt(data.iDisplayLength, 10) !== -1) {
-            cursor.limit(parseInt(data.iDisplayLength, 10));
+            dataPipeline.push({"$limit": parseInt(data.iDisplayLength, 10)});
         }
 
-        let items = await cursor.toArray();
-
-        // mongo sort doesn't work for selected array elements
-        if (!data.iSortCol_0 || data.iSortCol_0 === 'triggers.start') {
-            items.sort((a, b) => {
-                a = a.triggers.filter(t => {
-                    if (data.auto) {
-                        return [TriggerKind.Event, TriggerKind.Cohort].includes(t.kind);
-                    }
-                    else if (data.api) {
-                        return t.kind === TriggerKind.API;
-                    }
-                    else {
-                        return t.kind === TriggerKind.Plain;
-                    }
-                })[0];
-                b = b.triggers.filter(t => {
-                    if (data.auto) {
-                        return [TriggerKind.Event, TriggerKind.Cohort].includes(t.kind);
-                    }
-                    else if (data.api) {
-                        return t.kind === TriggerKind.API;
-                    }
-                    else {
-                        return t.kind === TriggerKind.Plain;
-                    }
-                })[0];
-
-                return new Date(b.start).getTime() - new Date(a.start).getTime();
-            });
+        if (sortcol !== 'info.title') { //adding correct titles now after narrowing down data
+            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title", {"$first": "$contents"}]}}});
+            dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title.message", "$info.title"]}}});
+        }
+        if (sortcol !== 'triggers.start') { //add triggers start fields
+            if (data.auto) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", [TriggerKind.Event, TriggerKind.Cohort]]}, "as": "item"}}}}});
+            }
+            else if (data.api) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
+            }
+            else {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+            }
+            dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}}});
         }
 
-        common.returnOutput(params, {
-            sEcho: data.sEcho,
-            iTotalRecords: count || items.length,
-            iTotalDisplayRecords: count || items.length,
-            aaData: items || []
-        }, true);
+        pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
+        common.db.collection(Message.collection).aggregate(pipeline, function(err, res) {
+            res = res || [];
+            res = res[0] || {};
+
+            var items = res.data || [];
+            var total = 0;
+            if (res.total && res.total[0] && res.total[0].cn) {
+                total = res.total[0].cn;
+            }
+
+            common.returnOutput(params, {
+                sEcho: data.sEcho,
+                iTotalRecords: total || items.length,
+                iTotalDisplayRecords: total || items.length,
+                aaData: items || []
+            }, true);
+
+        });
 
     }
     else {
