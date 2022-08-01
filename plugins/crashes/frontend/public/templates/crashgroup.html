@@ -80,21 +80,34 @@
                 <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card" style="border-radius: 4px;">
                     <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
                         <crash-stacktrace :code="crashgroup.error">
-                            <template v-slot:header-left v-if="symbolicationEnabled">
-                                <el-button class="crash-link text-medium" type="text" @click="symbolicateCrash('group')"
-                                    :loading="isCrashBeingSymbolicated(crashgroup.lrid)" v-if="!!crashgroup._symbol_id">
-                                    {{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") :
-                                    i18n("crash_symbolication.resymbolicate")}}</el-button>
-                                <a class="crash-link text-medium" href="#/crash/symbols/"
-                                    v-else>{{i18n("crash_symbolication.should-upload")}}</a>
+                            <template v-slot:header-left>
                             </template>
                             <template v-slot:header-right>
-                                <a class="crash-link text-medium bu-mr-5"
-                                    :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid"
-                                    v-if="!!crashgroup.binary_images">{{i18n("crashes.show-binary-images")}}</a>
-                                <a class="crash-link text-medium"
-                                    :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid"
-                                    download>{{i18n("crashes.download-stacktrace")}}</a>
+                                <cly-more-options>
+                                    <el-dropdown-item v-if="symbolicationEnabled">
+                                        <el-button
+                                            type="text"
+                                            @click="symbolicateCrash('group')"
+                                            :loading="isCrashBeingSymbolicated(crashgroup.lrid)"
+                                            v-if="!!crashgroup._symbol_id">
+                                            {{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
+                                        </el-button>
+                                        <a href="#/crash/symbols/" v-else>
+                                            {{i18n("crash_symbolication.should-upload")}}
+                                        </a>
+                                    </el-dropdown-item>
+                                    <el-dropdown-item v-if="!!crashgroup.binary_images">
+                                        <a :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid">
+                                            {{i18n("crashes.show-binary-images")}}
+                                        </a>
+                                    </el-dropdown-item>
+                                    <el-dropdown-item>
+                                        <a :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid"
+                                            download>
+                                            {{i18n("crashes.download-stacktrace")}}
+                                        </a>
+                                    </el-dropdown-item>
+                                </cly-more-options>
                             </template>
                         </crash-stacktrace>
                     </el-tab-pane>
