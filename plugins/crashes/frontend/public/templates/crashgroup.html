@@ -81,6 +81,12 @@
                     <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
                         <crash-stacktrace :code="crashgroup.error">
                             <template v-slot:header-left>
+                                <div v-if="!!crashgroup.symbolicated">
+                                    <el-switch v-model="crashgroup.showSymbolicated"></el-switch>
+                                    <span class="text-small bu-ml-3">{{crashgroup.showSymbolicated ?
+                                        i18n('crash_symbolication.symbolicate') :
+                                        i18n('crash_symbolication.symbolicated')}}</span>
+                                </div>
                             </template>
                             <template v-slot:header-right>
                                 <cly-more-options>
