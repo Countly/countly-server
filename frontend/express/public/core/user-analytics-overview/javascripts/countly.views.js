@@ -265,40 +265,40 @@ var GridComponent = countlyVue.views.create({
             return data.lineOptions;
         },
         number: function() {
-			this.data = this.data || {};
-				var mm = 'u';
-				if(this.data && this.data.metrics && this.data.metrics[0]){
-					mm = this.data.metrics[0];
-				}
-				var value={};
-				this.data.dashData =  this.data.dashData || {};
-                this.data.dashData.data = this.data.dashData.data || {};
-                for (var app in this.data.dashData.data) {
-                    value = this.data.dashData.data[app];
-					if(mm === 'r'){
-						var returning = {"trend":"u"};
-						if(value["u"]&& value["n"]) {
-							returning["total"] = (value["u"]["total"] || 0) - (value["n"]["total"] || 0)
-							returning["prev-total"] = (value["u"]["prev-total"] || 0) - (value["n"]["prev-total"] || 0)
-						}
-						else {
-							returning["total"] = 0;
-							returning["prev-total"] = 0;
-						}
-						if(returning["prev-total"]>returning["total"]){
-							returning["trend"] = "d";
-						}
-						returning.change = countlyCommon.getPercentChange(returning["prev-total"],returning["total"]);
-						returning.trend = returning.change.trend;
-						returning.change = returning.change.percent;
-						
-						value["r"] = returning;
-					}
-					if(value[mm]){
-						value = value[mm];
-					}
+            this.data = this.data || {};
+            var mm = 'u';
+            if (this.data && this.data.metrics && this.data.metrics[0]) {
+                mm = this.data.metrics[0];
+            }
+            var value = {};
+            this.data.dashData = this.data.dashData || {};
+            this.data.dashData.data = this.data.dashData.data || {};
+            for (var app in this.data.dashData.data) {
+                value = this.data.dashData.data[app];
+                if (mm === 'r') {
+                    var returning = {"trend": "u"};
+                    if (value.u && value.n) {
+                        returning.total = (value.u.total || 0) - (value.n.total || 0);
+                        returning["prev-total"] = (value.u["prev-total"] || 0) - (value.n["prev-total"] || 0);
+                    }
+                    else {
+                        returning.total = 0;
+                        returning["prev-total"] = 0;
+                    }
+                    if (returning["prev-total"] > returning.total) {
+                        returning.trend = "d";
+                    }
+                    returning.change = countlyCommon.getPercentChange(returning["prev-total"], returning.total);
+                    returning.trend = returning.change.trend;
+                    returning.change = returning.change.percent;
+
+                    value.r = returning;
                 }
-                return value;
+                if (value[mm]) {
+                    value = value[mm];
+                }
+            }
+            return value;
         },
         legendLabels: function() {
             var labels = {};
