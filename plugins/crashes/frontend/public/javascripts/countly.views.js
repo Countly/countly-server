@@ -734,7 +734,14 @@
                 }
             },
             handleRowClick: function(row) {
-                this.$refs.tableData.$refs.elTable.toggleRowExpansion(row);
+                // Only expand row if text inside of it are not highlighted
+                var noTextSelected = window.getSelection().toString().length === 0;
+                // Links should not expand row when clicked
+                var targetIsOK = !event.target.closest('a');
+
+                if (noTextSelected && targetIsOK) {
+                    this.$refs.tableData.$refs.elTable.toggleRowExpansion(row);
+                }
             },
             generateEventLogs: function(cid) {
                 var self = this;
