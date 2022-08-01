@@ -102,8 +102,7 @@
                                         </a>
                                     </el-dropdown-item>
                                     <el-dropdown-item>
-                                        <a :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid"
-                                            download>
+                                        <a :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid" download>
                                             {{i18n("crashes.download-stacktrace")}}
                                         </a>
                                     </el-dropdown-item>
@@ -289,29 +288,43 @@
                                     <crash-stacktrace
                                         :code="(props.row.showSymbolicated || !props.row.symbolicated) ? props.row.error : props.row.olderror">
                                         <template v-slot:header-left>
+                                            <div>
+                                                <span class="text-medium bu-mr-3 text-uppercase font-weight-bold">
+                                                    {{i18n("crashes.stacktrace")}}
+                                                </span>
+                                            </div>
                                             <div v-if="!!props.row.symbolicated">
                                                 <el-switch v-model="props.row.showSymbolicated"></el-switch>
                                                 <span class="text-small bu-ml-3">{{props.row.showSymbolicated ?
                                                     i18n('crash_symbolication.symbolicate') :
                                                     i18n('crash_symbolication.symbolicated')}}</span>
                                             </div>
-                                            <div v-else>
-                                                <el-button class="crash-link text-medium" type="text"
-                                                    @click="symbolicateCrash(props.row)"
-                                                    :loading="isCrashBeingSymbolicated(props.row._id)"
-                                                    v-if="!!crashgroup._symbol_id">
-                                                    {{i18n("crash_symbolication.symbolicate_error")}}</el-button>
-                                                <span
-                                                    class="text-medium bu-ml-3 text-uppercase font-weight-bold">{{i18n("crashes.stacktrace")}}</span>
-                                            </div>
                                         </template>
                                         <template v-slot:header-right>
-                                            <a class="crash-link text-medium bu-mr-5"
-                                                :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id"
-                                                v-if="!!props.row.binary_images">{{i18n('crashes.show-binary-images')}}</a>
-                                            <a class="crash-link text-medium"
-                                                :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + props.row._id"
-                                                download>{{i18n('crashes.download-stacktrace')}}</a>
+                                            <cly-more-options>
+                                                <el-dropdown-item v-if="symbolicationEnabled">
+                                                    <el-button
+                                                        type="text"
+                                                        @click="symbolicateCrash(props.row)"
+                                                        :loading="isCrashBeingSymbolicated(props.row._id)"
+                                                        v-if="!!crashgroup._symbol_id">
+                                                        {{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
+                                                    </el-button>
+                                                    <a href="#/crash/symbols/" v-else>
+                                                        {{i18n("crash_symbolication.should-upload")}}
+                                                    </a>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item v-if="!!props.row.binary_images">
+                                                    <a :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id">
+                                                        {{i18n('crashes.show-binary-images')}}
+                                                    </a>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item>
+                                                    <a :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + props.row._id" download>
+                                                        {{i18n('crashes.download-stacktrace')}}
+                                                    </a>
+                                                </el-dropdown-item>
+                                            </cly-more-options>
                                         </template>
                                     </crash-stacktrace>
                                 </el-card>
