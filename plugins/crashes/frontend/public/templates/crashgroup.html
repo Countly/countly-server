@@ -91,13 +91,9 @@
                             <template v-slot:header-right>
                                 <cly-more-options>
                                     <el-dropdown-item v-if="symbolicationEnabled">
-                                        <el-button
-                                            type="text"
-                                            @click="symbolicateCrash('group')"
-                                            :loading="isCrashBeingSymbolicated(crashgroup.lrid)"
-                                            v-if="!!crashgroup._symbol_id">
+                                        <a @click="symbolicateCrash('group')" v-if="!!crashgroup._symbol_id">
                                             {{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
-                                        </el-button>
+                                        </a>
                                         <a href="#/crash/symbols/" v-else>
                                             {{i18n("crash_symbolication.should-upload")}}
                                         </a>
@@ -309,13 +305,9 @@
                                         <template v-slot:header-right>
                                             <cly-more-options>
                                                 <el-dropdown-item v-if="symbolicationEnabled">
-                                                    <el-button
-                                                        type="text"
-                                                        @click="symbolicateCrash(props.row)"
-                                                        :loading="isCrashBeingSymbolicated(props.row._id)"
-                                                        v-if="!!crashgroup._symbol_id">
+                                                    <a @click="symbolicateCrash(props.row)" v-if="!!crashgroup._symbol_id">
                                                         {{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
-                                                    </el-button>
+                                                    </a>
                                                     <a href="#/crash/symbols/" v-else>
                                                         {{i18n("crash_symbolication.should-upload")}}
                                                     </a>
