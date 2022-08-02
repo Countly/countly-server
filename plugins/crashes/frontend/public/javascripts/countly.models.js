@@ -701,9 +701,9 @@
 
                                 var ajaxPromise = countlyCrashSymbols.fetchSymbols(false);
                                 ajaxPromises.push(ajaxPromise);
-                                ajaxPromise.then(function(symbolIndexing) {
+                                ajaxPromise.then(function(fetchSymbolsResponse) {
                                     crashes.forEach(function(crash, crashIndex) {
-                                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
+                                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing);
                                         if (typeof symbol_id !== "undefined") {
                                             if (crashIndex === 0) {
                                                 crashgroupJson._symbol_id = symbol_id;
