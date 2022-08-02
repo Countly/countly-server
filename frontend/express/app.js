@@ -838,7 +838,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
     /**
      * Stringify all object nested properties named `prop`
-     * 
+     *
      * @param {object} obj object to fix
      * @param {string} prop property name
      */
@@ -1582,7 +1582,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
                         countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
                             fs.unlink(tmp_path, function() {});
-                            countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.session.uid + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
+                            countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.body.member_image_id + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
                                 res.send("memberimages/" + req.body.member_image_id + ".png");
                             });
                         });
