@@ -592,7 +592,7 @@
                                         <div class="cly-vue-push-notification-drawer__input-label">
                                             {{i18n('push-notification.message-title')}}
                                         </div>
-                                        <div>
+                                        <div v-if="pushNotificationUnderEdit.ee">
                                             <el-button type="text" @click="onAddUserProperty('title')" class="bu-px-0 cly-text-button" size="small">{{i18n('push-notification.add-variable')}}</el-button>
                                         </div>
                                     </div>
@@ -620,7 +620,7 @@
                                         <div class="cly-vue-push-notification-drawer__input-label">
                                             {{i18n('push-notification.message-content')}}
                                         </div>
-                                        <div>
+                                        <div v-if="pushNotificationUnderEdit.ee">
                                             <el-button type="text" @click="onAddUserProperty('content')" class="bu-px-0 cly-text-button" size="small">{{i18n('push-notification.add-variable')}}</el-button>
                                         </div>
                                     </div>
