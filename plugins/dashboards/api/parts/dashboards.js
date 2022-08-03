@@ -376,12 +376,14 @@ dashboard.fetchAnalyticsData = async function(params, apps, widget) {
                 for (var k = 0;k < widget.metrics.length; k++) {
                     metrics.push(widget.metrics[k]);
                 }
-                widget.metrics = ['u', 'n'];
+
+                widget.metrics = ['u', 'n']; //calculate all by those
+
                 for (let i = 0; i < widgetApps.length; i++) {
                     var appId3 = widgetApps[i];
                     widgetData[appId3] = await getAnalyticsSessionDataForApp(params, apps, appId3, widget);
                 }
-                widget.metrics = metrics;
+                widget.metrics = metrics; //put back original
                 dashData.isValid = true;
                 dashData.data = widgetData;
 
@@ -619,7 +621,16 @@ async function getAnalyticsSessionDataForApp(params, apps, appId, widget) {
 
         break;
     case 'number':
-        widgetData = model.getNumber();
+        if (widget.data_type === "user-analytics") {
+            widgetData = {};
+            widgetData.u = model.getNumber();
+            widget.metrics = ['n'];
+            model = await getSessionModel(params, apps, appId, collection, segment, widget);
+            widgetData.n = model.getNumber();
+        }
+        else {
+            widgetData = model.getNumber();
+        }
 
         break;
     case 'bar-chart':
