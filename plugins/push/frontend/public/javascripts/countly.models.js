@@ -219,6 +219,7 @@
         },
         getInitialBaseModel: function() {
             return {
+                ee: typeof countlySegmentation !== 'undefined',
                 _id: null,
                 demo: false,
                 name: "",
@@ -771,6 +772,9 @@
             });
         },
         findAllUserProperties: function() {
+            if (typeof countlySegmentation === 'undefined') {
+                return Promise.resolve({});
+            }
             return countlySegmentation.initialize("").then(function() {
                 return Promise.resolve(countlySegmentation.getFilters());
             });
@@ -2186,6 +2190,9 @@
             if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
                 return Promise.resolve([]);
             }
+            if (typeof countlyCohorts === 'undefined') {
+                return Promise.resolve([]);
+            }
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "GET",
@@ -2222,6 +2229,9 @@
         },
         fetchLocations: function(locationIdsList, shouldFetchIfEmpty) {
             if (!shouldFetchIfEmpty && locationIdsList && !locationIdsList.length) {
+                return Promise.resolve([]);
+            }
+            if (typeof countlyLocationTargetComponent === 'undefined') {
                 return Promise.resolve([]);
             }
             return new Promise(function(resolve, reject) {

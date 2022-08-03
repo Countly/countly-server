@@ -64,7 +64,7 @@
                     </validation-provider>
                 </div>
                 <template v-if="type === TypeEnum.ONE_TIME">
-                    <div  class="cly-vue-drawer-step__section">
+                    <div  class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit[TypeEnum.ONE_TIME].ee">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                             {{i18n('push-notification.targeting')}}
                             <cly-tooltip-icon 
