@@ -301,7 +301,7 @@
                     hours: 0
                 },
                 deliveryDateCalculation: DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
-                trigger: TriggerEnum.COHORT_ENTRY,
+                trigger: typeof countlyCohorts === 'undefined' ? TriggerEnum.EVENT : TriggerEnum.COHORT_ENTRY,
                 triggerNotMet: TriggerNotMetEnum.SEND_ANYWAY,
                 events: [],
                 cohorts: [],

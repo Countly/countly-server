@@ -1475,11 +1475,9 @@
             return {
                 pushNotificationTabs: [
                     {title: CV.i18n('push-notification.one-time'), name: countlyPushNotification.service.TypeEnum.ONE_TIME, component: PushNotificationTabView},
-                ].concat(typeof countlySegmentation === 'undefined' ? [] : [
                     {title: CV.i18n('push-notification.automated'), name: countlyPushNotification.service.TypeEnum.AUTOMATIC, component: PushNotificationTabView},
-                ]).concat([
                     {title: CV.i18n('push-notification.transactional'), name: countlyPushNotification.service.TypeEnum.TRANSACTIONAL, component: PushNotificationTabView}
-                ]),
+                ],
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum
             };
         },

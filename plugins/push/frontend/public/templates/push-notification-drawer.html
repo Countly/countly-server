@@ -158,7 +158,7 @@
                     </div>
                 </template>
                 <template v-else-if="type === TypeEnum.AUTOMATIC">
-                    <div class="cly-vue-drawer-step__section">
+                    <div class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.isGeo">
                         <div class="bu-is-flex bu-is-align-items-center">
                             <el-switch v-model="isLocationSet" class="bu-mr-1"></el-switch>
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
@@ -200,6 +200,7 @@
                                 v-model="pushNotificationUnderEdit.automatic.trigger"
                                 :title="i18n('push-notification.cohorts-entry')"
                                 :description="i18n('push-notification.cohorts-entry-description')"
+                                v-if="pushNotificationUnderEdit.isCohorts"
                                 border>
                             </line-radio-button-with-description>
                             <line-radio-button-with-description
@@ -207,6 +208,7 @@
                                 v-model="pushNotificationUnderEdit.automatic.trigger"
                                 :title="i18n('push-notification.cohorts-exit')"
                                 :description="i18n('push-notification.cohorts-exit-description')"
+                                v-if="pushNotificationUnderEdit.isCohorts"
                                 border>
                             </line-radio-button-with-description>
                             <line-radio-button-with-description
