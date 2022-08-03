@@ -219,7 +219,9 @@
         },
         getInitialBaseModel: function() {
             return {
-                ee: typeof countlySegmentation !== 'undefined',
+                isEe: typeof countlySegmentation !== 'undefined',
+                isGeo: typeof countlyLocationTargetComponent !== 'undefined',
+                isCohorts: typeof countlyCohorts !== 'undefined',
                 _id: null,
                 demo: false,
                 name: "",

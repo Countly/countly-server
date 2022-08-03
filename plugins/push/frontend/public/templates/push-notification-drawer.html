@@ -64,7 +64,7 @@
                     </validation-provider>
                 </div>
                 <template v-if="type === TypeEnum.ONE_TIME">
-                    <div  class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit[TypeEnum.ONE_TIME].ee">
+                    <div  class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.isEe">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                             {{i18n('push-notification.targeting')}}
                             <cly-tooltip-icon 
@@ -90,7 +90,7 @@
                             </large-radio-button-with-description>
                         </div>
                     </div>
-                    <template v-if="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED">
+                    <template v-if="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED && pushNotificationUnderEdit.isCohorts">
                         <div class="cly-vue-drawer-step__section">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.send-to-users-in-cohorts')}}</div>
                             <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.send-to-users-in-cohorts-description')}}</div>
@@ -114,7 +114,7 @@
                                 </el-select>
                             </validation-provider>
                         </div>
-                        <div class="cly-vue-drawer-step__section">
+                        <div class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.isGeo">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">{{i18n('push-notification.send-to-users-in-locations')}}</div>
                             <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.send-to-users-in-locations-description')}}</div>
                             <validation-provider vid="location" v-slot="validation" :rules="{required:areCohortsAndLocationsRequired}" :detectInput="true">
@@ -592,7 +592,7 @@
                                         <div class="cly-vue-push-notification-drawer__input-label">
                                             {{i18n('push-notification.message-title')}}
                                         </div>
-                                        <div v-if="pushNotificationUnderEdit.ee">
+                                        <div v-if="pushNotificationUnderEdit.isEe">
                                             <el-button type="text" @click="onAddUserProperty('title')" class="bu-px-0 cly-text-button" size="small">{{i18n('push-notification.add-variable')}}</el-button>
                                         </div>
                                     </div>
@@ -620,7 +620,7 @@
                                         <div class="cly-vue-push-notification-drawer__input-label">
                                             {{i18n('push-notification.message-content')}}
                                         </div>
-                                        <div v-if="pushNotificationUnderEdit.ee">
+                                        <div v-if="pushNotificationUnderEdit.isEe">
                                             <el-button type="text" @click="onAddUserProperty('content')" class="bu-px-0 cly-text-button" size="small">{{i18n('push-notification.add-variable')}}</el-button>
                                         </div>
                                     </div>
