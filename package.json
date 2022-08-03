@@ -67,7 +67,7 @@
     "json2csv": "5.0.7",
     "later": "1.2.0",
     "lodash": "4.17.21",
-    "lru-cache": "7.13.1",
+    "lru-cache": "7.13.2",
     "mcc-mnc-list": "1.1.8",
     "method-override": "3.0.0",
     "moment": "2.29.4",
@@ -84,7 +84,7 @@
     "properties-parser": "0.3.1",
     "puppeteer": "15.5.0",
     "request": "2.88.2",
-    "sass": "1.54.0",
+    "sass": "1.54.1",
     "uglify-js": "3.16.3",
     "underscore": "1.13.4",
     "yamljs": "0.3.0"

@@ -1,3 +1,28 @@
+## Version 22.06.5
+
+Fixes:
+- [crashes] fix number of occurences on crash details page
+- [crashes] remove $natural sorting from app_crashes query
+- [date-picker] fixed the date constraint that does not include the last day
+- [docker] bundle lates geoip lite db with each image
+- [docker] install mongoexport for user exporting
+- [mongodb] Backwards compability for depricated .save()
+- [pre-login] add success notification
+- [push] Adding connection settings for push plugin
+- [push] fixes for push table
+- [push] Fixing styling issues
+- [push] Logging current configuration in the sender
+- [push] Safer pushes limit
+- [server-stats] Change text from Deleted app to not available
+- [star-rating] fixed displaying logo
+- [ui] Always show search in datatable column filter
+- [ui] Fix select x hidden header condition
+- [ui] Fix select x max items check
+- [user-management] do not validate member image flag
+- [user-management] Fix user global admin value in user drawer
+- [user-management] Fix user permission value in user drawer
+- [user-management] Make sure that groups in user drawer is an array
+
 ## Version 22.06.4
 
 Fixes:

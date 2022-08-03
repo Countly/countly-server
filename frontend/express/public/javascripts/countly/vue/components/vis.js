@@ -1568,11 +1568,10 @@
 
                             if (existingLegend) {
                                 legend.status = existingLegend.status;
-                                legend.displayColor = existingLegend.displayColor;
+                                legend.displayColor = existingLegend.displayColor === 'transparent' ? existingLegend.displayColor : data[i].color;
                             }
                         }
                     }
-
                     this.legendData = data;
                 }
             }
