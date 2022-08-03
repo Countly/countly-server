@@ -775,8 +775,8 @@
                     reject(null);
                 }
                 else {
-                    countlyCrashSymbols.fetchSymbols(false).then(function(symbolIndexing) {
-                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
+                    countlyCrashSymbols.fetchSymbols(false).then(function(fetchSymbolsResponse) {
+                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing);
                         countlyCrashSymbols.symbolicate(crash._id, symbol_id)
                             .then(function(json) {
                                 resolve(json);
