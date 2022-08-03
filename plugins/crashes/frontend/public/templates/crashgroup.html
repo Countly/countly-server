@@ -89,12 +89,14 @@
                                 </div>
                             </template>
                             <template v-slot:header-right>
-                                <cly-more-options>
-                                    <el-dropdown-item v-if="symbolicationEnabled">
-                                        <a @click="symbolicateCrash('group')" v-if="!!crashgroup._symbol_id">
+                                <cly-more-options @command="handleCrashgroupStacktraceCommand($event)">
+                                    <el-dropdown-item v-if="symbolicationEnabled && !!crashgroup._symbol_id" command="symbolicate">
+                                        <span>
                                             {{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
-                                        </a>
-                                        <a href="#/crash/symbols/" v-else>
+                                        </span>
+                                    </el-dropdown-item>
+                                    <el-dropdown-item v-if="symbolicationEnabled && !crashgroup._symbol_id">
+                                        <a href="#/crash/symbols/">
                                             {{i18n("crash_symbolication.should-upload")}}
                                         </a>
                                     </el-dropdown-item>
@@ -303,12 +305,14 @@
                                             </div>
                                         </template>
                                         <template v-slot:header-right>
-                                            <cly-more-options>
-                                                <el-dropdown-item v-if="symbolicationEnabled">
-                                                    <a @click="symbolicateCrash(props.row)" v-if="!!crashgroup._symbol_id">
+                                            <cly-more-options @command="handleCrashStacktraceCommand($event, props.row)">
+                                                <el-dropdown-item v-if="symbolicationEnabled && !!crashgroup._symbol_id" command="symbolicate">
+                                                    <span>
                                                         {{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
-                                                    </a>
-                                                    <a href="#/crash/symbols/" v-else>
+                                                    </span>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item v-if="symbolicationEnabled && !crashgroup._symbol_id">
+                                                    <a href="#/crash/symbols/">
                                                         {{i18n("crash_symbolication.should-upload")}}
                                                     </a>
                                                 </el-dropdown-item>

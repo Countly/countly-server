@@ -949,6 +949,16 @@
                         }
                     });
                 }
+            },
+            handleCrashgroupStacktraceCommand: function(command) {
+                if (command === "symbolicate") {
+                    this.symbolicateCrash('group');
+                }
+            },
+            handleCrashStacktraceCommand: function(command, crash) {
+                if (command === "symbolicate") {
+                    this.symbolicateCrash(crash);
+                }
             }
         },
         beforeCreate: function() {
