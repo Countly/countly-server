@@ -79,11 +79,11 @@
             <cly-section id="crash-tabs" v-if="!!(crashgroup && crashgroup.error)">
                 <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card" style="border-radius: 4px;">
                     <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
-                        <crash-stacktrace :code="crashgroup.error">
+                        <crash-stacktrace :code="(!showSymbolicated && crashgroup.olderror) ? crashgroup.olderror : crashgroup.error">
                             <template v-slot:header-left>
                                 <div v-if="!!crashgroup.symbolicated">
-                                    <el-switch v-model="crashgroup.showSymbolicated"></el-switch>
-                                    <span class="text-small bu-ml-3">{{crashgroup.showSymbolicated ?
+                                    <el-switch v-model="showSymbolicated"></el-switch>
+                                    <span class="text-small bu-ml-3">{{showSymbolicated ?
                                         i18n('crash_symbolication.symbolicate') :
                                         i18n('crash_symbolication.symbolicated')}}</span>
                                 </div>
@@ -289,8 +289,7 @@
                                     </div>
                                 </el-card>
                                 <el-card class="bu-mb-5" shadow="never" :body-style="{padding: '0px'}">
-                                    <crash-stacktrace
-                                        :code="(props.row.showSymbolicated || !props.row.symbolicated) ? props.row.error : props.row.olderror">
+                                    <crash-stacktrace :code="(!showSymbolicated && props.row.olderror) ? props.row.olderror : props.row.error">
                                         <template v-slot:header-left>
                                             <div>
                                                 <span class="text-medium bu-mr-3 text-uppercase font-weight-bold">
@@ -298,8 +297,8 @@
                                                 </span>
                                             </div>
                                             <div v-if="!!props.row.symbolicated">
-                                                <el-switch v-model="props.row.showSymbolicated"></el-switch>
-                                                <span class="text-small bu-ml-3">{{props.row.showSymbolicated ?
+                                                <el-switch v-model="showSymbolicated"></el-switch>
+                                                <span class="text-small bu-ml-3">{{showSymbolicated ?
                                                     i18n('crash_symbolication.symbolicate') :
                                                     i18n('crash_symbolication.symbolicated')}}</span>
                                             </div>

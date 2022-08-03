@@ -628,7 +628,8 @@
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
-                hasUserPermission: countlyAuth.validateRead('users')
+                hasUserPermission: countlyAuth.validateRead('users'),
+                showSymbolicated: false,
             };
         },
         computed: {
@@ -963,6 +964,11 @@
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crashgroup/initialize", groupId);
+        },
+        mounted: function() {
+            if (this.symbolicationEnabled) {
+                this.showSymbolicated = true;
+            }
         }
     });
 
