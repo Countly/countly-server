@@ -79,9 +79,9 @@
             <cly-section id="crash-tabs" v-if="!!(crashgroup && crashgroup.error)">
                 <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card" style="border-radius: 4px;">
                     <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
-                        <crash-stacktrace :code="(!showSymbolicated && crashgroup.olderror) ? crashgroup.olderror : crashgroup.error">
+                        <crash-stacktrace :code="(!showSymbolicated && crashgroupUnsymbolicatedStacktrace) ? crashgroupUnsymbolicatedStacktrace : crashgroup.error">
                             <template v-slot:header-left>
-                                <div v-if="!!crashgroup.symbolicated">
+                                <div v-if="crashgroupUnsymbolicatedStacktrace">
                                     <el-switch v-model="showSymbolicated"></el-switch>
                                     <span class="text-small bu-ml-3">{{showSymbolicated ?
                                         i18n('crash_symbolication.symbolicate') :
@@ -92,7 +92,7 @@
                                 <cly-more-options @command="handleCrashgroupStacktraceCommand($event)">
                                     <el-dropdown-item v-if="symbolicationEnabled && !!crashgroup._symbol_id" command="symbolicate">
                                         <span>
-                                            {{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
+                                            {{!crashgroupUnsymbolicatedStacktrace ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
                                         </span>
                                     </el-dropdown-item>
                                     <el-dropdown-item v-if="symbolicationEnabled && !crashgroup._symbol_id">
@@ -307,7 +307,7 @@
                                             <cly-more-options @command="handleCrashStacktraceCommand($event, props.row)">
                                                 <el-dropdown-item v-if="symbolicationEnabled && !!crashgroup._symbol_id" command="symbolicate">
                                                     <span>
-                                                        {{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
+                                                        {{!props.row.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
                                                     </span>
                                                 </el-dropdown-item>
                                                 <el-dropdown-item v-if="symbolicationEnabled && !crashgroup._symbol_id">

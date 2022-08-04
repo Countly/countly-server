@@ -639,6 +639,9 @@
             crashgroupName: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/crashgroupName"];
             },
+            crashgroupUnsymbolicatedStacktrace: function() {
+                return this.$store.getters["countlyCrashes/crashgroup/crashgroupUnsymbolicatedStacktrace"];
+            },
             comments: function() {
                 return ("comments" in this.crashgroup) ? this.crashgroup.comments : [];
             },
