@@ -653,7 +653,9 @@
                         self.activeTabId = "__root";
                     }
                     else if (self.value && self.val2tab[self.value]) {
-                        self.activeTabId = self.val2tab[self.value];
+                        if (self.val2tab[self.value] !== "__selected") {
+                            self.activeTabId = self.val2tab[self.value];
+                        }
                     }
                     else if (this.hasAllOptionsTab) {
                         self.activeTabId = "__all";
