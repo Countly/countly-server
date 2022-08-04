@@ -305,12 +305,12 @@
                                         </template>
                                         <template v-slot:header-right>
                                             <cly-more-options @command="handleCrashStacktraceCommand($event, props.row)">
-                                                <el-dropdown-item v-if="symbolicationEnabled && !!crashgroup._symbol_id" command="symbolicate">
+                                                <el-dropdown-item v-if="symbolicationEnabled && !!props.row._symbol_id" command="symbolicate">
                                                     <span>
                                                         {{!props.row.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
                                                     </span>
                                                 </el-dropdown-item>
-                                                <el-dropdown-item v-if="symbolicationEnabled && !crashgroup._symbol_id">
+                                                <el-dropdown-item v-if="symbolicationEnabled && !props.row._symbol_id">
                                                     <a href="#/crash/symbols/">
                                                         {{i18n("crash_symbolication.should-upload")}}
                                                     </a>
