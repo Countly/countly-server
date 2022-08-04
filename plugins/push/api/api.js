@@ -97,6 +97,7 @@ plugins.register('/master/runners', runners => {
                 sender = undefined;
             }
             catch (e) {
+                log.e('Sender crached', e);
                 sender = undefined;
             }
         }
