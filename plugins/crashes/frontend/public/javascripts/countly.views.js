@@ -630,6 +630,7 @@
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
                 hasUserPermission: countlyAuth.validateRead('users'),
                 showSymbolicated: false,
+                activeThreadPanels: []
             };
         },
         computed: {

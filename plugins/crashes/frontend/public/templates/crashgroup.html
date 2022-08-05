@@ -114,6 +114,25 @@
                             </template>
                         </crash-stacktrace>
                     </el-tab-pane>
+                    <el-tab-pane :label="i18n('crashes.all-threads')" name="threads" v-if="crashgroup.threads">
+                        <el-collapse v-model="activeThreadPanels">
+                            <el-collapse-item
+                                v-for="(thread, idx) in crashgroup.threads"
+                                :title="thread.name"
+                                :name="idx"
+                                :icon="{position: 'right', direction: 'down'}">
+                                <template v-slot:title>
+                                    <div class="bu-px-4 bu-py-2">
+                                        {{thread.name}}
+                                        <span v-if="thread.crashed" class="bu-tag text-uppercase crash-badge crash-badge--negative">{{i18n("crashes.crashed")}}</span>
+                                    </div>
+                                </template>
+                                <div class="bu-px-4">
+                                    <pre class="crashgroup-thread-content"><code>{{thread.error.trim()}}</code></pre>
+                                </div>
+                            </el-collapse-item>
+                        </el-collapse>
+                    </el-tab-pane>
                     <el-tab-pane name="comments">
                         <span slot="label">
                             {{i18n("crashes.comments")}} <span class="bu-tag"
