@@ -317,7 +317,7 @@
                 create: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var settings = widget.settings || {};
-                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object") {
+                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object" && widget.settings.feature !== "funnels") {
                         if (Array.isArray(widget.settings.custom_period)) {
                             if (widget.settings.custom_period[0] && widget.settings.custom_period[0].toString().length === 13) {
                                 widget.settings.custom_period[0] = Math.floor(widget.settings.custom_period[0] / 1000);
@@ -343,7 +343,7 @@
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var widgetId = widget.id;
                     var settings = widget.settings;
-                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object") {
+                    if (widget.settings && widget.settings.custom_period && typeof widget.settings.custom_period === "object" && widget.settings.feature !== "funnels") {
                         if (Array.isArray(widget.settings.custom_period)) {
                             if (widget.settings.custom_period[0] && widget.settings.custom_period[0].toString().length === 13) {
                                 widget.settings.custom_period[0] = Math.floor(widget.settings.custom_period[0] / 1000);

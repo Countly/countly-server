@@ -1173,6 +1173,7 @@
         mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.auth(featureName)],
         data: function() {
             return {
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyPushNotificationMain", "pushTable"),
                 platformFilters: platformFilterOptions,
                 platformFilterLabels: {
                     oneTime: CV.i18n('push-notification.platform-filter-label-one-time'),
@@ -1218,15 +1219,6 @@
             },
             isUserCommandLoading: function() {
                 return this.$store.getters['countlyPushNotificationMain/isLoading'];
-            },
-            pushNotificationRows: function() {
-                var self = this;
-                if (this.selectedStatusFilter === countlyPushNotification.service.ALL_FILTER_OPTION_VALUE) {
-                    return this.$store.state.countlyPushNotificationMain.rows;
-                }
-                return this.$store.state.countlyPushNotificationMain.rows.filter(function(rowItem) {
-                    return rowItem.status === self.selectedStatusFilter;
-                });
             },
             pushNotificationOptions: function() {
                 return {
@@ -1284,6 +1276,12 @@
                 },
                 set: function(value) {
                     this.$store.dispatch("countlyPushNotificationMain/onSetStatusFilter", value);
+                    this.applyFilter();
+                }
+            },
+            isLoading: {
+                get: function() {
+                    return this.$store.getters["countlyPushNotificationMain/isLoadingTable"];
                 }
             },
             selectedPlatformFilter: {
@@ -1314,7 +1312,10 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyPushNotificationMain/fetchAll', false);
+                //this.$store.dispatch('countlyPushNotificationMain/fetchPushTable');
+            },
+            applyFilter: function() {
+                this.$store.dispatch('countlyPushNotificationMain/fetchPushTable');
             },
             formatPercentage: function(value, decimalPlaces) {
                 return this.formatNumber(CountlyHelpers.formatPercentage(value, decimalPlaces));
@@ -1463,7 +1464,7 @@
             }
         },
         mounted: function() {
-            this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
+            this.$store.dispatch('countlyPushNotificationMain/fetchPushTable', true);
         }
     });
 
@@ -1487,7 +1488,7 @@
                 },
                 set: function(value) {
                     this.$store.dispatch('countlyPushNotificationMain/onSetPushNotificationType', value);
-                    this.$store.dispatch('countlyPushNotificationMain/fetchAll', true);
+                    this.$store.dispatch('countlyPushNotificationMain/fetchPushTable', true);
                 }
             },
             isDrawerOpen: function() {

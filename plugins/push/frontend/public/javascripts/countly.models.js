@@ -219,6 +219,9 @@
         },
         getInitialBaseModel: function() {
             return {
+                isEe: typeof countlySegmentation !== 'undefined',
+                isGeo: typeof countlyLocationTargetComponent !== 'undefined',
+                isCohorts: typeof countlyCohorts !== 'undefined',
                 _id: null,
                 demo: false,
                 name: "",
@@ -298,7 +301,7 @@
                     hours: 0
                 },
                 deliveryDateCalculation: DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
-                trigger: TriggerEnum.COHORT_ENTRY,
+                trigger: typeof countlyCohorts === 'undefined' ? TriggerEnum.EVENT : TriggerEnum.COHORT_ENTRY,
                 triggerNotMet: TriggerNotMetEnum.SEND_ANYWAY,
                 events: [],
                 cohorts: [],
@@ -549,7 +552,39 @@
             return key !== CV.i18n(key);
         }
     };
-
+    var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
+        columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'lastDate'],
+        onRequest: function(context) {
+            context.rootState.countlyPushNotificationMain.isLoadingTable = true;
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
+            };
+            var type = context.rootState.countlyPushNotificationMain.selectedPushNotificationType;
+            var status = context.rootState.countlyPushNotificationMain.statusFilter;
+            var params = countlyPushNotification.service.getFetchAllParameters(type, status);
+            for (var key in params) {
+                data[key] = params[key];
+            }
+            return {
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + "/push/message/all",
+                data: data
+            };
+        },
+        onReady: function(context, rows) {
+            rows = countlyPushNotification.mapper.incoming.mapRows({"aaData": rows});
+            context.rootState.countlyPushNotificationMain.isLoadingTable = false;
+            return rows;
+        },
+        onError: function(context, error) {
+            if (error) {
+                if (error.status !== 0) {
+                    console.log(error);
+                }
+            }
+        }
+    });
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
     countlyPushNotification.api = {
         findById: function(id) {
@@ -739,6 +774,9 @@
             });
         },
         findAllUserProperties: function() {
+            if (typeof countlySegmentation === 'undefined') {
+                return Promise.resolve({});
+            }
             return countlySegmentation.initialize("").then(function() {
                 return Promise.resolve(countlySegmentation.getFilters());
             });
@@ -1037,13 +1075,13 @@
                             date: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("MMMM Do YYYY"),
                             time: moment(pushNotificationDtoItem.info && pushNotificationDtoItem.info.created).format("h:mm:ss a")
                         },
-                        sentDateTime: {
-                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("MMMM Do YYYY") : null,
-                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.started ? moment(pushNotificationDtoItem.info.started).format("h:mm:ss a") : null,
-                        },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
                         createdBy: pushNotificationDtoItem.info && pushNotificationDtoItem.info.createdByName || '',
+                        lastDate: {
+                            date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("MMMM Do YYYY") : null,
+                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("h:mm:ss a") : null,
+                        },
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                         content: self.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
                     };
@@ -2154,6 +2192,9 @@
             if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
                 return Promise.resolve([]);
             }
+            if (typeof countlyCohorts === 'undefined') {
+                return Promise.resolve([]);
+            }
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "GET",
@@ -2190,6 +2231,9 @@
         },
         fetchLocations: function(locationIdsList, shouldFetchIfEmpty) {
             if (!shouldFetchIfEmpty && locationIdsList && !locationIdsList.length) {
+                return Promise.resolve([]);
+            }
+            if (typeof countlyLocationTargetComponent === 'undefined') {
                 return Promise.resolve([]);
             }
             return new Promise(function(resolve, reject) {
@@ -2741,22 +2785,13 @@
                 pushNotificationId: null
             },
             isDrawerOpen: false,
+            isLoadingTable: true,
         };
     };
 
     var mainActions = {
-        fetchAll: function(context, useLoader) {
-            if (useLoader) {
-                context.dispatch('onSetAreRowsLoading', true);
-            }
-            countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType, context.state.statusFilter)
-                .then(function(response) {
-                    context.commit('setRows', response);
-                }).catch(function(error) {
-                    console.error(error);
-                }).finally(function() {
-                    context.dispatch('onSetAreRowsLoading', false);
-                });
+        fetchAll: function(context) {
+            context.dispatch('fetchPushTable');
         },
         onDelete: function(context, id) {
             context.dispatch('onFetchInit', {useLoader: true});
@@ -2825,7 +2860,6 @@
         },
         onSetStatusFilter: function(context, value) {
             context.commit('setStatusFilter', value);
-            context.dispatch('fetchAll', true);
         },
     };
 
@@ -2858,11 +2892,17 @@
 
     countlyPushNotification.main = {};
     countlyPushNotification.main.getVuexModule = function() {
+        var getters = {
+            isLoadingTable: function(state) {
+                return state.isLoadingTable;
+            },
+        };
         return countlyVue.vuex.Module("countlyPushNotificationMain", {
             state: getMainInitialState,
             actions: mainActions,
             mutations: mainMutations,
-            submodules: [countlyVue.vuex.FetchMixin()]
+            getters: getters,
+            submodules: [countlyVue.vuex.FetchMixin(), pushTableResource]
         });
     };
 

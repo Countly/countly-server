@@ -64,10 +64,73 @@ taskmanager.longtask = function(options) {
     var exceeds = false;
     var start = new Date().getTime();
     var timeout;
+
+    var saveOpId = async function(comment_id, retryCount) {
+        common.db.admin().command({ currentOp: 1 }, async function(error, result) {
+            for (var i = 0; i < result.inprog.length; i++) {
+                let op = result.inprog[i];
+                if (!('$truncated' in op.command) && (i !== result.inprog.length - 1)) {
+                    continue;
+                }
+                if (!('$truncated' in op.command) && (i === result.inprog.length - 1)) {
+                    if (retryCount < 3) {
+                        setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
+                        break;
+                    }
+                    else {
+                        console.log(`operation not found for task:${options.id} comment: ${comment_id}`);
+                        break;
+                    }
+                }
+
+                let comment_position = op.command.$truncated.indexOf('$comment');
+                if (comment_position === -1) {
+                    continue;
+                }
+                let substr = op.command.$truncated.substring(comment_position, op.command.$truncated.length);
+                var comment_val = substr.match(/"(.*?)"/)[1];
+
+                if (comment_val === comment_id) {
+                    var task_id = options.id;
+                    var op_id = op.opid;
+                    await common.db.collection("long_tasks").findOneAndUpdate({ _id: common.db.ObjectID(task_id) }, { $set: { op_id: op_id } });
+                    console.info(`Operation found task: ${task_id} op:${op_id} comment: ${comment_id}`);
+                    break;
+                }
+                else if ((comment_val !== comment_id) && (i === (result.inprog.length - 1))) {
+                    if (retryCount < 3) {
+                        setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
+                        break;
+                    }
+                    else {
+                        console.log(`operation not found for task:${options.id} comment: ${comment_id}`);
+                        break;
+                    }
+                }
+            }
+        });
+    };
+
+    if (options.comment_id) {
+        var retryCount = 0;
+        try {
+            saveOpId(options.comment_id, retryCount);
+        }
+        catch (err) {
+            if (retryCount < 3) {
+                setTimeout(() =>saveOpId(options.comment_id, ++retryCount), 500);
+            }
+            else {
+                console.log(err);
+            }
+        }
+    }
+
     /** switching to long task */
     function switchToLongTask() {
         timeout = null;
         exceeds = true;
+
         if (!options.request && options.params && options.params.qstring) {
             var json = options.params.qstring || {};
             json = JSON.parse(JSON.stringify(json));
@@ -139,7 +202,13 @@ taskmanager.longtask = function(options) {
                 else {
                     if (err1) {
                         options.errored = true;
-                        options.errormsg = err1;
+
+                        if (typeof err1 === "object") {
+                            options.error = err1;
+                        }
+                        else {
+                            options.errormsg = err1;
+                        }
                     }
                     taskmanager.saveResult(options, res1);
                 }
@@ -215,6 +284,9 @@ taskmanager.createTask = function(options, callback) {
     update.subtask_key = options.subtask_key || "";
     update.taskgroup = options.taskgroup || false;
     update.linked_to = options.linked_to;
+    if (options.comment_id) {
+        update.comment_id = options.comment_id;
+    }
     if (options.subtask && options.subtask !== "") {
         update.subtask = options.subtask;
         var updateSub = {$set: {}};
@@ -263,10 +335,23 @@ taskmanager.saveResult = function(options, data, callback) {
         if (options.errormsg) {
             message = options.errormsg;
         }
+        else if (options.error) {
+            message = options.error.errormsg;
+        }
+
         if (message.message) {
             message = message.message;
         }
-        update.status = "errored";
+
+        if ('error' in options) {
+            if (('code' in options.error) && options.error.code === 11601) {
+                update.status = "stopped";
+            }
+        }
+        else {
+            update.status = "errored";
+        }
+
         update.errormsg = message;
     }
     else {
@@ -836,6 +921,9 @@ taskmanager.rerunTask = function(options, callback) {
             if (reqData.uri) {
                 reqData.json.task_id = options.id;
                 reqData.strictSSL = false;
+                if (reqData.json && reqData.json.period && Array.isArray(reqData.json.period)) {
+                    reqData.json.period = JSON.stringify(reqData.json.period);
+                }
                 options.subtask = res.subtask;
                 reqData.json.autoUpdate = options.autoUpdate || false;
                 if (!reqData.json.api_key && res.creator) {
@@ -872,6 +960,50 @@ taskmanager.rerunTask = function(options, callback) {
         }
         else {
             callback(null, "This task cannot be run again");
+        }
+    });
+};
+
+taskmanager.stopTask = function(options, callback) {
+    options.db = options.db || common.db;
+
+    /**
+    * Stop task
+    * @param {object} op_id - operation id for mongo process
+    * @param {object} options1.db - database connection
+    * @param {string} options1.id - id of the task result
+    * @param {object} reqData  -  request data
+    * @param {funciton} callback1 - callback for the result
+    */
+    function stopTask(op_id) {
+        common.db.admin().command({ killOp: 1, op: Number.parseInt(op_id) }, function(error, result) {
+            if (result.ok === 1) {
+                callback(null, "Success");
+            }
+            else {
+                callback(null, "Operation could not be stopped");
+            }
+        });
+    }
+
+    options.db.collection("long_tasks").findOne({ _id: options.id }, function(err, res) {
+        if (res) {
+            if (res.creator) {
+                options.db.collection("members").findOne({ _id: common.db.ObjectID(res.creator) }, function(err1, member) {
+                    if (member) {
+                        stopTask(res.op_id);
+                    }
+                    else {
+                        callback(null, "No permission to stop this task");
+                    }
+                });
+            }
+            else {
+                stopTask(res.op_id);
+            }
+        }
+        else {
+            callback(null, "Task does not exist");
         }
     });
 };

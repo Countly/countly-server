@@ -1,3 +1,80 @@
+## Version 22.08
+
+Fixes:
+- [core] fix member image endpoint, replace session id with member id
+- [dashboards] fixed user overview shows same 'number' for total, returning and new.
+- [push] logging sender crashes
+- [push] removing EE dependencies from CE
+- [star-rating] fix for platform and app version
+- [ui] color mismatch is fixed between legend and chart line in multi-legends as chart data changes
+- [ui] improvement of selected tab on multiline select element
+
+Features:
+- [long-tasks] allowing to kill long tasks on DB side
+- [push] allowing on-event auto push in CE
+
+Enterprise fixes:
+- [ab-testing] improved detail page
+- [cohorts] fixing special period handling
+- [config-transfer] fixed dashboards export
+- [data-manager] Fix transform event drawer regex input
+- [funnels] changes for funnel datepicker
+- [gateway_processor] fixed processing on error
+- [gateway_processor] localization and menu fixes for new UI
+- [group] fixes for ui
+- [surveys] fixed total responses NaN
+- [users] refresh user details page
+
+Enterprise features:
+- [data-manager] data redacting for user properties
+- [oidc] work with new permissions
+- [retention_segments] breakdown by segments
+- [revenue] revenue widget for the custom dashboard
+- [users] breakdown of users by segments
+
+## Version 22.06.5
+
+Fixes:
+- [crashes] fix number of occurences on crash details page
+- [crashes] remove $natural sorting from app_crashes query
+- [date-picker] fixed the date constraint that does not include the last day
+- [docker] bundle lates geoip lite db with each image
+- [docker] install mongoexport for user exporting
+- [mongodb] Backwards compability for depricated .save()
+- [pre-login] add success notification
+- [push] Adding connection settings for push plugin
+- [push] fixes for push table
+- [push] Fixing styling issues
+- [push] Logging current configuration in the sender
+- [push] Safer pushes limit
+- [server-stats] Change text from Deleted app to not available
+- [star-rating] fixed displaying logo
+- [ui] Always show search in datatable column filter
+- [ui] Fix select x hidden header condition
+- [ui] Fix select x max items check
+- [user-management] do not validate member image flag
+- [user-management] Fix user global admin value in user drawer
+- [user-management] Fix user permission value in user drawer
+- [user-management] Make sure that groups in user drawer is an array
+
+## Version 22.06.4
+
+Fixes:
+- [core] disable select x options when max items is reached
+- [core] new eslint
+- [longtasks] added stopping feature for long running tasks
+- [plugins] handle install error differently
+- [push] Missing app_id parameter validation for tx messages
+- [push] change push messages table to server side table
+- [push] various fixes, back to safe mode
+- [times-of-day] fixed day names
+
+Enterprise fixes:
+- [ldap] added optional group DN in sample config
+
+## Version 22.06.3
+Rebuild of 22.06.2 with correct sync of repos
+
 ## Version 22.06.2
 
 Fixes:

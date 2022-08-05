@@ -34,7 +34,7 @@ var trace = require('../api/parts/stacktrace.js');
                                 }
 
                                 if (result.share.reports) {
-                                    var cursor = countlyDb.collection('app_crashes' + crash.app_id).find({group: result._id}, {fields: {binary_crash_dump: 0}}).sort({ $natural: -1 });
+                                    var cursor = countlyDb.collection('app_crashes' + crash.app_id).find({group: result._id}, {fields: {binary_crash_dump: 0}}).sort({ ts: -1 });
                                     if (config && config.report_limit) {
                                         cursor.limit(config.report_limit);
                                     }

@@ -409,10 +409,6 @@ usersApi.updateUser = async function(params) {
                 'type': 'Boolean',
                 'exclude-from-ret-obj': true
             },
-            'member_image': {
-                'type': 'String',
-                'required': false
-            },
             'permission': {
                 'required': false,
                 'type': 'Object'
@@ -442,7 +438,7 @@ usersApi.updateUser = async function(params) {
         updatedMember.email = updatedMember.email.trim();
     }
 
-    if (updatedMember.member_image && updatedMember.member_image === 'delete') {
+    if (params.qstring.args.member_image && params.qstring.args.member_image === 'delete') {
         updatedMember.member_image = "";
     }
 

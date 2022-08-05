@@ -520,7 +520,7 @@ class APN extends Base {
      * @param {Creds} creds credentials instance
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently
      */
     constructor(log, type, creds, messages, options) {
         super(log, type, creds, messages, options);
@@ -604,7 +604,7 @@ class APN extends Base {
                 recoverableErrors = 0,
                 oks = [],
                 errors = {},
-                one = Math.floor(pushes.length / bytes),
+                one = Math.ceil(bytes / pushes.length),
                 /**
                  * Get an error for given code & message, create it if it doesn't exist yet
                  * 
@@ -643,7 +643,12 @@ class APN extends Base {
                     }
                 };
 
-            pushes.forEach(p => {
+            this.log.d('sending %d streams', pushes.length);
+            pushes.forEach((p, i) => {
+                // this.log.d('%d: sending', i);
+                if (i % 200 === 0) {
+                    this.log.d('state', this.session.state);
+                }
                 if (nonRecoverableError) {
                     nonRecoverableError.addLeft(p._id, one);
                     streamDone();
@@ -666,8 +671,22 @@ class APN extends Base {
                         nonRecoverableError.addAffected(p._id, one);
                     }
                 });
+                stream.on('frameError', (type, code, id) => {
+                    this.log.e('stream frameError %d, %d, %d', type, code, id);
+                });
+                stream.on('timeout', () => {
+                    this.log.e('stream timeout');
+                    if (!nonRecoverableError) {
+                        nonRecoverableError = new ConnectionError(`APN Stream Error: timeout`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
+                    }
+                    else {
+                        nonRecoverableError.addAffected(p._id, one);
+                    }
+                    streamDone();
+                });
                 stream.on('response', function(headers) {
                     status = headers[':status'];
+                    // self.log.d('%d: status %d: %j', i, status, self.session.state);
                     if (status === 200) {
                         oks.push(p._id);
                         stream.destroy();
@@ -709,6 +728,7 @@ class APN extends Base {
                                     }
                                 }
                                 else {
+                                    self.log.e('provider returned %d: %j', status, json);
                                     error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                                 }
                             }
@@ -721,7 +741,11 @@ class APN extends Base {
                                 }
                             }
                             else if (status === 429) {
+                                self.log.e('provider returned %d: %j', status, json);
                                 error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
+                            }
+                            else {
+                                throw new PushError('IMPOSSIBRU');
                             }
                         }
                         catch (e) {
@@ -732,6 +756,10 @@ class APN extends Base {
                     }
                 });
                 stream.setEncoding('utf-8');
+                stream.setTimeout(10000, () => {
+                    self.log.w('%d: cancelling stream %d for push %s / %s', i, stream.id, p._id, p.t);
+                    stream.close(HTTP2.constants.NGHTTP2_CANCEL);
+                });
                 stream.end(content);
             });
         }));

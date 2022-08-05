@@ -67,6 +67,15 @@ class Resultor extends DoFinish {
     }
 
     /**
+     * Flush results once in a while to ensure timeout won't result in full resend
+     */
+    ping() {
+        if (this.count) {
+            this.do_flush();
+        }
+    }
+
+    /**
      * Transform's transform impementation
      * 
      * @param {object[]} chunk array of results [push id|[push id, new token]]
@@ -92,6 +101,7 @@ class Resultor extends DoFinish {
         }
         else if (frame & FRAME.RESULTS) {
             if (frame & FRAME.ERROR) {
+                this.log.d('Error results %d %s %s %s affected %d %j left %d %j', results.type, results.name, results.message, results.date, results.affectedBytes, results.affected, results.leftBytes, results.left);
                 [results.affected, results.left].forEach(arr => {
                     if (results.is(ERROR.DATA_TOKEN_EXPIRED) || results.is(ERROR.DATA_TOKEN_INVALID)) {
                         arr.forEach(id => {
@@ -103,6 +113,7 @@ class Resultor extends DoFinish {
                         });
                     }
                     arr.forEach(id => {
+                        this.log.d('Error %d %s for %s', results.type, results.name, id);
                         if (id < 0) {
                             return;
                         }
@@ -149,9 +160,11 @@ class Resultor extends DoFinish {
                 results.forEach(res => {
                     let id, token;
                     if (typeof res === 'string') {
+                        this.log.d('Ok for %s', id);
                         id = res;
                     }
                     else {
+                        this.log.d('New token for %s', id);
                         id = res[0];
                         token = res[1];
                     }
@@ -219,11 +232,14 @@ class Resultor extends DoFinish {
             let error = results.messageError(),
                 mids = {};
 
+            this.log.d('Error %d %s %s %s affected %d %j left %d %j', results.type, results.name, results.message, results.date, results.affectedBytes, results.affected, results.leftBytes, results.left);
+
             [results.affected, results.left].forEach(arr => {
                 arr.forEach(id => {
                     if (id < 0) {
                         return;
                     }
+                    this.log.d('Error %d %s for %s', results.type, results.name, id);
                     let {m, p, pr} = this.data.pushes[id],
                         result, rp, rl;
                     mids[m] = (mids[m] || 0) + 1;

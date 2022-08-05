@@ -34,13 +34,13 @@ class Base extends Duplex {
      * @param {Creds} creds authorization key: server key for FCM/HW, P8/P12 for APN
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently
      */
     constructor(log, type, creds, messages, options) {
         super({
             readableObjectMode: true,
             writableObjectMode: true,
-            writableHighWaterMark: options.pool.concurrency,
+            writableHighWaterMark: options.pool.pushes,
         });
         this.type = type;
         this.creds = creds;
@@ -115,17 +115,29 @@ class Base extends Duplex {
      * @param {array} chunks Array of chunks
      */
     async do_writev(chunks) {
+        let i;
         chunks = chunks.map(c => c.chunk);
-        for (let i = 0; i < chunks.length; i++) {
-            let {frame, payload, length} = chunks[i];
-            this.log.d('do_writev %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
-            if (frame & FRAME.CMD) {
-                this.push(chunks[i]);
+        try {
+            for (i = 0; i < chunks.length; i++) {
+                let {frame, payload, length} = chunks[i];
+                this.log.d('do_writev %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
+                if (frame & FRAME.CMD) {
+                    this.push(chunks[i]);
+                }
+                else {
+                    await this.send(payload, length);
+                }
+                this.log.d('do_writev done %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
             }
-            else {
-                await this.send(payload, length);
+        }
+        catch (err) {
+            if (i < chunks.length - 1) {
+                for (let x = i + 1; x < chunks.length; x++) {
+                    if (chunks[x].frame & FRAME.CMD) {
+                        this.push(chunks[i]);
+                    }
+                }
             }
-            this.log.d('do_writev done %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
         }
     }
 
@@ -250,8 +262,10 @@ class Base extends Duplex {
                         e.affected = [];
                         e.affectedBytes = 0;
                     }
-                    data = e.left;
-                    bytes = e.leftBytes;
+                    if (e.hasLeft) {
+                        data = e.left;
+                        bytes = e.leftBytes;
+                    }
                     error = e;
                 }
                 else {

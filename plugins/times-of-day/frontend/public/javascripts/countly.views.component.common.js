@@ -61,13 +61,13 @@
                     yAxis: {
                         type: 'category',
                         data: [
+                            CV.i18n('times-of-day.sunday'),
                             CV.i18n('times-of-day.monday'),
                             CV.i18n('times-of-day.tuesday'),
                             CV.i18n('times-of-day.wednesday'),
                             CV.i18n('times-of-day.thursday'),
                             CV.i18n('times-of-day.friday'),
-                            CV.i18n('times-of-day.saturday'),
-                            CV.i18n('times-of-day.sunday')
+                            CV.i18n('times-of-day.saturday')
                         ],
                         nameLocation: 'middle',
                         boundaryGap: true,

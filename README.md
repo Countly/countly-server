@@ -9,7 +9,7 @@
 
 <p align="center">
 
-![header2](https://count.ly/github/countly-editions.png?v2)
+![header2](https://count.ly/github/countly-editions.png?v3)
 
 </p>
 
@@ -60,7 +60,7 @@ With Countly, understand your digital customer journey across devices. Build bet
 
 Click on the below image for a 1 minute video introduction to Countly (opens Youtube);
 
-[![Countly Community Edition - Video](https://count.ly/github/countly-community-1min-v1808.png)](https://youtu.be/htKeh9bsZwA)
+[![Countly Community Edition - Video](https://count.ly/github/countly-community-1min-v1808.png?v3)](https://youtu.be/htKeh9bsZwA)
 
 
 ## What is included?
@@ -76,7 +76,7 @@ This repository includes server-side part of Countly, with following features:
 * [Rich and interactive push notifications](https://count.ly/plugins/rich-push-notifications) for iOS & Android
 * Email reporting
 
-![content](https://count.ly/github/countly-highlights.png)
+![content](https://count.ly/github/countly-highlights.png?v3)
 
 ## What can Countly track?
 

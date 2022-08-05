@@ -563,6 +563,11 @@ class PusherPopper {
         // Decrease amount of data we process here
         await this.audience.addProjection(steps, userFields);
 
+        // Increase parallelism by ensuring similar messages go next to each other
+        steps.push({
+            $sort: {la: 1}
+        });
+
         // Lookup for tokens & msgs
         steps.push({
             $lookup: {
@@ -703,7 +708,7 @@ class Pusher extends PusherPopper {
                 updates[`result.subs.${p}.subs.${la}.total`] = rpl.total;
 
                 if (PLATFORM[p].parent) {
-                    rp = result.sub(PLATFORM[p].parent),
+                    rp = result.sub(PLATFORM[p].parent);
                     rpl = rp.sub(la);
                     rp.total++;
                     rpl.total++;
@@ -712,7 +717,7 @@ class Pusher extends PusherPopper {
                     updates[`result.subs.${PLATFORM[p].parent}.subs.${la}.total`] = rpl.total;
                 }
 
-                note.h = util.hash(note.pr);
+                note.h = util.hash(note.pr, note.c ? util.hash(note.c) : undefined);
 
                 if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);

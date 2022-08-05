@@ -315,6 +315,10 @@
             sortable: {
                 type: Boolean,
                 default: false
+            },
+            disableNonSelected: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
@@ -429,7 +433,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="disableNonSelected && !innerValue.includes(option.value)">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
@@ -649,7 +653,9 @@
                         self.activeTabId = "__root";
                     }
                     else if (self.value && self.val2tab[self.value]) {
-                        self.activeTabId = self.val2tab[self.value];
+                        if (self.val2tab[self.value] !== "__selected") {
+                            self.activeTabId = self.val2tab[self.value];
+                        }
                     }
                     else if (this.hasAllOptionsTab) {
                         self.activeTabId = "__all";
@@ -751,7 +757,8 @@
             //
             remote: {type: Boolean, default: false},
             remoteMethod: {type: Function, required: false},
-            showSearch: {type: Boolean, default: false}
+            showSearch: {type: Boolean, default: false},
+            popperAppendToBody: {type: Boolean, default: true}
         },
         data: function() {
             return {
@@ -767,7 +774,7 @@
                     "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.showTabs,
                     "cly-vue-select-x__pop--has-single-option": this.hasSingleOption,
                     "cly-vue-select-x__pop--has-slim-header": !this.searchable && !this.showTabs,
-                    "cly-vue-select-x__pop--hidden-header": !this.isSearchShown && !this.$scopedSlots.header
+                    "cly-vue-select-x__pop--hidden-header": !this.isSearchShown && !this.$scopedSlots.header && !this.$scopedSlots.action && !this.title && !this.showSelectedCount
                 };
             },
             currentTab: function() {
@@ -833,6 +840,9 @@
                 }
 
                 return false;
+            },
+            disableNonSelected: function() {
+                return this.innerValue && this.innerValue.length === this.maxItems;
             }
         },
         mounted: function() {

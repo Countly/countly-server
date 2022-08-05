@@ -1,6 +1,7 @@
 const { LRU } = require('./lru'),
     personalize = require('./pers'),
-    { Content } = require('./content');
+    { Content } = require('./content'),
+    { Message } = require('./message');
 
 /**
  * Simple class for abstracting template/compilation-related logic
@@ -114,26 +115,24 @@ class Template {
             this.defaults[la] = JSON.stringify(this.result);
         }
 
-        let title = push.ov && push.ov.title ? null : undefined, // null makes following for loop ignore title in this case
-            message = push.ov && push.ov.message ? null : undefined,
-            buttons = push.ov && push.ov.buttons ? null : undefined,
-            data = push.ov && push.ov.data ? null : undefined,
-            extras = push.ov && push.ov.extras ? null : undefined,
-            specific = {};
+        let title,
+            message,
+            buttons,
+            data,
+            extras,
+            specific = {},
+            fields = {},
+            overrides = [];
 
-        if (push.ov && push.ov.specific) {
-            push.ov.specific.forEach(obj => {
-                for (let k in obj) {
-                    specific[k] = obj[k];
-                }
-            });
+        if (push.c && push.c.length) {
+            overrides = Message.filterContents(push.c, this.platform.key, la).map(Content.from);
         }
 
         // now go backwards through all contents picking the latest title/message/etc 
         // this ensures that any overrides don't mess with less important values (i.e. we cannot apply data without picking, message/messagePers etc are inter dependent as well)
         // we also don't want to apply content items multiple times overriding each other
-        for (let i = this.contents.length - 1; i >= 0; i--) {
-            let c = this.contents[i];
+        for (let i = this.contents.length + overrides.length - 1; i >= 0; i--) {
+            let c = i >= this.contents.length ? overrides[i - this.contents.length] : this.contents[i];
             if (c.la && c.la !== la) {
                 continue;
             }
@@ -172,59 +171,35 @@ class Template {
                     }
                 });
             }
+
+            // record last fields
+            for (let f = 0; f < this.platform.fields.length; f++) {
+                let field = this.platform.fields[f],
+                    value = c[field];
+                if (value !== null && value !== undefined && fields[field] === undefined) {
+                    fields[field] = value;
+                }
+            }
         }
 
         // now apply all picked content items unless there's an override in push.ov
-        if (push.ov && push.ov.title) {
-            if (push.ov.titlePers) {
-                this.platform.map.title(this, personalize(push.ov.title, Content.deupPers(push.ov.titlePers))(push.pr));
-            }
-            else {
-                this.platform.map.title(this, push.ov.title, push.pr);
-            }
-        }
-        else if (title) {
+        if (title) {
             this.platform.map.title(this, title, push.pr);
         }
 
-        if (push.ov && push.ov.message) {
-            if (push.ov.messagePers) {
-                this.platform.map.message(this, personalize(push.ov.message, Content.deupPers(push.ov.messagePers))(push.pr));
-            }
-            else {
-                this.platform.map.message(this, push.ov.message, push.pr);
-            }
-        }
-        else if (message) {
+        if (message) {
             this.platform.map.message(this, message, push.pr);
         }
 
-        if (push.ov && push.ov.buttons) {
-            this.platform.map.buttons(this, push.ov.buttons, push.pr);
-        }
-        else if (buttons) {
+        if (buttons) {
             this.platform.map.buttons(this, buttons, push.pr);
         }
 
-        if (push.ov && push.ov.data) {
-            push.ov.data = typeof push.ov.data === 'string' ? JSON.parse(push.ov.data) : push.ov.data;
-            this.platform.map.data(this, push.ov.data, push.pr);
-        }
-        else if (data) {
+        if (data) {
             this.platform.map.data(this, data, push.pr);
         }
 
-        if (push.ov && push.ov.extras) {
-            this.platform.map.extras(this, Content.deupExtras(push.ov.extras), push.pr);
-        }
-        else if (extras) {
-            this.platform.map.extras(this, extras, push.pr);
-        }
-
-        if (push.ov && push.ov.extras) {
-            this.platform.map.extras(this, Content.deupExtras(push.ov.extras), push.pr);
-        }
-        else if (extras) {
+        if (extras) {
             this.platform.map.extras(this, extras, push.pr);
         }
 
@@ -232,9 +207,8 @@ class Template {
             this.platform.map.specific(this, specific, push.pr);
         }
 
-        // apply other overrides if any
-        if (push.ov) {
-            this.appl(this.platform.fields, push.ov, push.pr);
+        for (let field in fields) {
+            this.platform.map[field](this, fields[field], push.pr);
         }
 
         this.result = this.platform.finish ? this.platform.finish(this.result) : this.result;
