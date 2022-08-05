@@ -1,4 +1,4 @@
-/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue, moment*/
 (function() {
     var FEATURE_NAME = 'star_rating';
 
@@ -161,6 +161,7 @@
             preparedRows: function() {
                 return this.comments.map(function(comment) {
                     comment.cd = countlyCommon.formatTimeAgo(comment.cd);
+                    comment.time = moment.unix(comment.ts).format("DD MMMM YYYY HH:MM:SS");
                     return comment;
                 });
             }
