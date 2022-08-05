@@ -704,11 +704,16 @@
                             }
 
                             if (typeof countlyCrashSymbols !== "undefined") {
+                                var latestCrash = crashgroupJson.data.find(function(item) {
+                                    return item._id === crashgroupJson.lrid;
+                                });
+
                                 var crashes = [{
                                     _id: crashgroupJson.lrid,
                                     os: crashgroupJson.os,
                                     native_cpp: crashgroupJson.native_cpp,
-                                    app_version: crashgroupJson.latest_version
+                                    app_version: crashgroupJson.latest_version,
+                                    build_uuid: latestCrash.build_uuid
                                 }];
 
                                 crashes = crashes.concat(crashgroupJson.data);
