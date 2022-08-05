@@ -717,7 +717,7 @@ class Pusher extends PusherPopper {
                     updates[`result.subs.${PLATFORM[p].parent}.subs.${la}.total`] = rpl.total;
                 }
 
-                note.h = util.hash(note.pr);
+                note.h = util.hash(note.pr, note.c ? util.hash(note.c) : undefined);
 
                 if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);

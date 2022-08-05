@@ -1,3 +1,37 @@
+## Version 22.08
+
+Fixes:
+- [core] fix member image endpoint, replace session id with member id
+- [dashboards] fixed user overview shows same 'number' for total, returning and new.
+- [push] logging sender crashes
+- [push] removing EE dependencies from CE
+- [star-rating] fix for platform and app version
+- [ui] color mismatch is fixed between legend and chart line in multi-legends as chart data changes
+- [ui] improvement of selected tab on multiline select element
+
+Features:
+- [long-tasks] allowing to kill long tasks on DB side
+- [push] allowing on-event auto push in CE
+
+Enterprise fixes:
+- [ab-testing] improved detail page
+- [cohorts] fixing special period handling
+- [config-transfer] fixed dashboards export
+- [data-manager] Fix transform event drawer regex input
+- [funnels] changes for funnel datepicker
+- [gateway_processor] fixed processing on error
+- [gateway_processor] localization and menu fixes for new UI
+- [group] fixes for ui
+- [surveys] fixed total responses NaN
+- [users] refresh user details page
+
+Enterprise features:
+- [data-manager] data redacting for user properties
+- [oidc] work with new permissions
+- [retention_segments] breakdown by segments
+- [revenue] revenue widget for the custom dashboard
+- [users] breakdown of users by segments
+
 ## Version 22.06.5
 
 Fixes:
