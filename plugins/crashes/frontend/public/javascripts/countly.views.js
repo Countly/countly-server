@@ -628,7 +628,9 @@
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
-                hasUserPermission: countlyAuth.validateRead('users')
+                hasUserPermission: countlyAuth.validateRead('users'),
+                showSymbolicated: false,
+                activeThreadPanels: []
             };
         },
         computed: {
@@ -637,6 +639,9 @@
             },
             crashgroupName: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/crashgroupName"];
+            },
+            crashgroupUnsymbolicatedStacktrace: function() {
+                return this.$store.getters["countlyCrashes/crashgroup/crashgroupUnsymbolicatedStacktrace"];
             },
             comments: function() {
                 return ("comments" in this.crashgroup) ? this.crashgroup.comments : [];
@@ -734,7 +739,14 @@
                 }
             },
             handleRowClick: function(row) {
-                this.$refs.tableData.$refs.elTable.toggleRowExpansion(row);
+                // Only expand row if text inside of it are not highlighted
+                var noTextSelected = window.getSelection().toString().length === 0;
+                // Links should not expand row when clicked
+                var targetIsOK = !event.target.closest('a');
+
+                if (noTextSelected && targetIsOK) {
+                    this.$refs.tableData.$refs.elTable.toggleRowExpansion(row);
+                }
             },
             generateEventLogs: function(cid) {
                 var self = this;
@@ -942,10 +954,25 @@
                         }
                     });
                 }
+            },
+            handleCrashgroupStacktraceCommand: function(command) {
+                if (command === "symbolicate") {
+                    this.symbolicateCrash('group');
+                }
+            },
+            handleCrashStacktraceCommand: function(command, crash) {
+                if (command === "symbolicate") {
+                    this.symbolicateCrash(crash);
+                }
             }
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crashgroup/initialize", groupId);
+        },
+        mounted: function() {
+            if (this.symbolicationEnabled) {
+                this.showSymbolicated = true;
+            }
         }
     });
 
