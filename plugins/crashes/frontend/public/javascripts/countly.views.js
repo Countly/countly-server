@@ -1073,6 +1073,9 @@
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crash/initialize", crashId);
         },
+        mounted: function() {
+            this.refresh();
+        },
         mixins: [countlyVue.mixins.hasDrawers("crashSymbol")]
     });
 
