@@ -80,7 +80,7 @@
                 <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card" style="border-radius: 4px;">
                     <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
                         <crash-stacktrace :code="(!showSymbolicated && crashgroupUnsymbolicatedStacktrace) ? crashgroupUnsymbolicatedStacktrace : crashgroup.error">
-                            <template v-slot:header-left>
+                            <template v-slot:header-left v-if="symbolicationEnabled">
                                 <div v-if="crashgroupUnsymbolicatedStacktrace">
                                     <el-switch v-model="showSymbolicated"></el-switch>
                                     <span class="text-small bu-ml-3">{{showSymbolicated ?
