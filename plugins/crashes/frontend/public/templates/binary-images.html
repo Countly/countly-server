@@ -10,9 +10,7 @@
     <cly-main>
         <cly-datatable-n :rows="binaryImages" ref="tableData">
             <template v-slot:header-left>
-                <div class="text-big font-weight-bold">
-                    {{crash.name}}
-                </div>
+                <div class="text-big font-weight-bold" v-html="crash.name"></div>
             </template>
             <template v-slot:header-right>
                 <div class="bu-flex bu-flex-direction-column bu-mr-3">
