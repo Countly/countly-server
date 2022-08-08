@@ -1047,10 +1047,10 @@
                 if (this.symbolicationEnabled) {
                     promises.push(new Promise(function(resolve, reject) {
                         countlyCrashSymbols.fetchSymbols(true)
-                            .then(function(symbolIndexing) {
+                            .then(function(fetchSymbolsResponse) {
                                 self.symbols = {};
 
-                                var buildIdMaps = Object.values(symbolIndexing);
+                                var buildIdMaps = Object.values(fetchSymbolsResponse.symbolIndexing);
                                 buildIdMaps.forEach(function(buildIdMap) {
                                     Object.keys(buildIdMap).forEach(function(buildId) {
                                         self.symbols[buildId] = buildIdMap[buildId];
