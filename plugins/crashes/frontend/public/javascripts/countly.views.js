@@ -1067,7 +1067,7 @@
                 return Promise.all(promises);
             },
             hasSymbol: function(uuid) {
-                return uuid in this.symbols;
+                return uuid in this.symbols || uuid.toUpperCase() in this.symbols || uuid.toLowerCase() in this.symbols;
             }
         },
         beforeCreate: function() {
