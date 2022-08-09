@@ -1,3 +1,26 @@
+## Version 22.08.1
+Fixes:
+- [crashes] Add crashgroup toggle symbolication switch
+- [crashes] Display threads in crashgroup view
+- [crashes] Fix crashgroup refresh action
+- [crashes] Fix crashgroup symbolicate action
+- [crashes] Fix show symbolication switch
+- [crashes] Improve crash group datatable expansion handler
+- [crashes] Move datatable row stacktrace actions to dropdown menu
+- [crashes] Move stacktrace actions to dropdown menu
+- [db] provide different configs for different databases through ENV variables
+- [populator] udpated data for populator
+- [report-manager] correctly handle case when admin permissions are not given
+- [star-rating] changes for adding time in excel for ratings
+- [star-rating] emojis backward compatibility fix for ratings
+- [star-rating] logo preview dimensions adjusted
+
+Enterprise fixes:
+- [crash_symbolication] Fix symbold build id checking
+- [crash_symbolication] Update symbolication switch text
+- [drill] use random function that is fully supported in nodejs 14
+- [oidc] additionally store check in coookie to fallback if session expires
+
 ## Version 22.08
 
 Fixes:
