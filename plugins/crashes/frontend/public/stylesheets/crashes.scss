@@ -138,7 +138,7 @@
 
 	.crashgroup-mobile-diagnostics {
 		&__tiles-container {
- 			height: 170px;
+      height: 170px;
 			box-shadow: 0px 2px 0px #EAECEF;
 		}
 
@@ -155,8 +155,8 @@
 
 	.crashgroup-mobile-metrics {
 		&__tiles-container {
- 			height: 104px;
-			box-shadow: 0px 2px 0px #EAECEF; 
+      height: 104px;
+			box-shadow: 0px 2px 0px #EAECEF;
 		}
 	}
 
@@ -164,7 +164,16 @@
 		.el-tabs__nav {
 			border-top: 0;
 		}
+
+    .el-collapse-item__arrow {
+      margin-right: 16px;
+    }
 	}
+
+  .crashgroup-thread-content {
+    margin: 0;
+    white-space: pre-wrap;
+  }
 
 	.crash-stacktrace {
 		&__header {
@@ -210,7 +219,7 @@
 
 	.crashgroup-common-metrics {
 		&__tiles-container {
- 			height: 104px;
+      height: 104px;
 		}
 		box-shadow: 0px 1px 0px #EAECEF;
 	}

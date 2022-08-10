@@ -219,7 +219,7 @@
                 $('#cf-email-text').html(response.popup_email_callout);
                 $('#cf-submit-button').html(response.popup_button_callout);
                 $('#thanks-area').html(response.popup_thanks_message);
-                
+                response.rating_symbol = response.rating_symbol ? response.rating_symbol : "emojis";
                 if (response.rating_symbol) {
                   symbol = response.rating_symbol;
                   for (var i = 0; i < 5; i++) {
