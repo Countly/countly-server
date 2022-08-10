@@ -241,32 +241,32 @@ class Connector extends DoFinish {
                     if (inc.processed) {
                         inc.processed++;
                         inc.errored++;
-                        inc['errors.Rejected']++;
+                        inc['result.errors.Rejected']++;
                     }
                     else {
                         inc.processed = 1;
                         inc.errored = 1;
-                        inc['errors.Rejected'] = 1;
+                        inc['result.errors.Rejected'] = 1;
                     }
-                    if (inc[`subs.${push.p}.processed`]) {
-                        inc[`subs.${push.p}.processed`]++;
-                        inc[`subs.${push.p}.errored`]++;
-                        inc[`subs.${push.p}.errors.Rejected`]++;
-                    }
-                    else {
-                        inc[`subs.${push.p}.processed`] = 1;
-                        inc[`subs.${push.p}.errored`] = 1;
-                        inc[`subs.${push.p}.errors.Rejected`] = 1;
-                    }
-                    if (inc[`subs.${push.p}.subs.${la}.processed`]) {
-                        inc[`subs.${push.p}.subs.${la}.processed`]++;
-                        inc[`subs.${push.p}.subs.${la}.errored`]++;
-                        inc[`subs.${push.p}.subs.${la}.errors.Rejected`]++;
+                    if (inc[`result.subs.${push.p}.processed`]) {
+                        inc[`result.subs.${push.p}.processed`]++;
+                        inc[`result.subs.${push.p}.errored`]++;
+                        inc[`result.subs.${push.p}.errors.Rejected`]++;
                     }
                     else {
-                        inc[`subs.${push.p}.subs.${la}.processed`] = 1;
-                        inc[`subs.${push.p}.subs.${la}.errored`] = 1;
-                        inc[`subs.${push.p}.subs.${la}.errors.Rejected`] = 1;
+                        inc[`result.subs.${push.p}.processed`] = 1;
+                        inc[`result.subs.${push.p}.errored`] = 1;
+                        inc[`result.subs.${push.p}.errors.Rejected`] = 1;
+                    }
+                    if (inc[`result.subs.${push.p}.subs.${la}.processed`]) {
+                        inc[`result.subs.${push.p}.subs.${la}.processed`]++;
+                        inc[`result.subs.${push.p}.subs.${la}.errored`]++;
+                        inc[`result.subs.${push.p}.subs.${la}.errors.Rejected`]++;
+                    }
+                    else {
+                        inc[`result.subs.${push.p}.subs.${la}.processed`] = 1;
+                        inc[`result.subs.${push.p}.subs.${la}.errored`] = 1;
+                        inc[`result.subs.${push.p}.subs.${la}.errors.Rejected`] = 1;
                     }
                 });
                 this.log.w('Message %s doesn\'t exist or is in inactive state, ignoring %d pushes', mid, pushes.length);
