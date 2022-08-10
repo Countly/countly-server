@@ -121,7 +121,6 @@ class Sender {
             }
         }
 
-        common.log(`push:send`).i('Current configuration %j', cfg);
         return cfg;
     }
 
@@ -162,7 +161,7 @@ class Sender {
      * - handle results
      */
     async send() {
-        this.log.i('>>>>>>>>>> sending');
+        this.log.i('>>>>>>>>>> sending, current configuration is %j', this.cfg);
 
         // data shared across multiple streams
         let state = new State(this.cfg),

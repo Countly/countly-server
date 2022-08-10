@@ -352,7 +352,7 @@ class ProcessingError extends PushError {
      * @returns {SendError} with affected from this instance
      */
     affectedError() {
-        let e = new SendError(this.message, this.type, this.date).setAffected(this.affected.map(p => p._id), this.affectedBytes);
+        let e = new SendError(this.message, this.type, this.date).setAffected(this.affected, this.affectedBytes);
         e.stack = this.stack;
         return e;
     }
