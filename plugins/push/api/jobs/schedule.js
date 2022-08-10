@@ -60,6 +60,11 @@ class ScheduleJob extends J.Job {
             error = 'No plain trigger in the message';
         }
         else {
+            let res = await this.message.updateAtomically({_id: this.message._id, state: State.Created | State.Streamable}, update);
+            if (!res) {
+                error = 'Failed to update message';
+            }
+
             let trigger = this.message.triggerPlain(),
                 result = await this.audience.push(trigger).setStart(this.data.start).run(); // this.data.start is supposed to be undefined for now
 
