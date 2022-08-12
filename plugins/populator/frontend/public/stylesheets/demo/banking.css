@@ -9,7 +9,15 @@
 
 .demo-banking .top-bar > .col-sm-3 {
   margin-top: 18px;
+}
+
+.demo-banking .top-bar > .col-sm-3 a {
   cursor: pointer;
+  color: white;
+}
+
+.demo-banking .top-bar > .col-sm-3 a:hover {
+  text-decoration: none;
 }
 
 .demo-banking .search-bar {
