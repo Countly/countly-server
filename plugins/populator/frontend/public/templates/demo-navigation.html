@@ -8,13 +8,19 @@
       <div class="container demo-navigation">
         <div class="row top-bar">
           <div class="col-sm-2">
-            Countly Maps
+            <a href="demo-navigation.html">
+              Countly Maps
+            </a>
           </div>
           <div class="col-sm-2">
-            Partners
+            <a href="demo-navigation-1.html">
+              Partners
+            </a>
           </div>
           <div class="col-sm-2 offset-4 text-center">
-            Live Map
+            <a href="demo-navigation-2.html">
+              Live Map
+            </a>
           </div>
           <div class="col-sm-2 text-center">
             Log in
@@ -49,20 +55,20 @@
           // Some default pre init
           var Countly = Countly || {};
           Countly.q = Countly.q || [];
-      
+
           // Provide your app key that you retrieved from Countly dashboard
           var parts = document.location.href.split("/");
           Countly.app_key = parts[parts.length - 2];
-      
+
           // Provide your server IP or name. Use try.count.ly for EE trial server.
           // If you use your own server, make sure you have https enabled if you use
           // https below.
           Countly.url = window.location.origin;
           Countly.q.push(['enable_feedback',{'popups':['5eb02d1ecb41b52f5eb57476']}]);
-          
+
           // Load countly script asynchronously
           (function() {
-            var cly = document.createElement('script'); cly.type = 'text/javascript'; 
+            var cly = document.createElement('script'); cly.type = 'text/javascript';
             cly.async = true;
             // Enter url of script here (see below for other option)
             cly.src = '/sdk/web/countly.js';

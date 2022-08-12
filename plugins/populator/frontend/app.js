@@ -12,6 +12,8 @@ var exported = {},
             "demo-healthcare.html",
             "demo-healthcare-hospitals.html",
             "demo-navigation.html",
+            "demo-navigation-map.html",
+            "demo-navigation-partner.html",
         ];
         app.get(countlyConfig.path + '/populator/:id/:page', function(req, res) {
             let url = 'public/templates/demo-page.html';

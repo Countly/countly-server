@@ -9,7 +9,15 @@
 
 .demo-navigation .top-bar > .col-sm-2 {
   margin-top: 18px;
+}
+
+.demo-navigation .top-bar > .col-sm-2 a {
   cursor: pointer;
+  color: white;
+}
+
+.demo-navigation .top-bar > .col-sm-2 a:hover {
+  text-decoration: none;
 }
 
 .demo-navigation .top-bar > .col-sm-2:first-of-type {
