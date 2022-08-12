@@ -385,7 +385,11 @@ class Pool extends Duplex {
                 if (type === FRAME.CONNECT) {
                     this.log.d('sending messages %j', decode(data.buffer).payload.map(m => m._id));
                     let times = timesCallback(this.connections.length, chunkCallback);
-                    this.connections.forEach(conn => conn.write(data, times));
+                    this.connections.forEach(conn => {
+                        let buf = Buffer.alloc(data.length);
+                        data.copy(buf);
+                        conn.write(buf, times);
+                    });
                 }
                 else if (type === FRAME.SEND) {
                     let sent = false,
