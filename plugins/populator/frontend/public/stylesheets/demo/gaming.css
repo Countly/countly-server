@@ -7,13 +7,26 @@
 
 .demo-gaming .top-bar > .col-sm-1 {
   margin-top: 18px;
+}
+
+.demo-gaming .top-bar > .col-sm-1 a {
   cursor: pointer;
+  color: white;
+}
+
+.demo-gaming .top-bar > .col-sm-1 a:hover {
+  text-decoration: none;
 }
 
 .demo-gaming .top-bar > .col-sm-8 {
   font-size: 20px;
   margin-top: 15px;
   font-weight: bolder;
+}
+
+.demo-gaming .top-bar > .col-sm-8 a {
+  color: white;
+  text-decoration: none;
 }
 
 .demo-gaming .content {
