@@ -8,15 +8,21 @@
       <div class="container demo-healthcare">
         <div class="row top-bar">
           <div class="col-sm-3">
-            <strong>Countly Healthcare</strong>
+            <a href="demo-healthcare.html">
+              <strong>Countly Healthcare</strong>
+            </a>
           </div>
           <div class="col-sm-3">
           </div>
           <div class="col-sm-3 text-center">
-            Our Hospitals
+            <a href="demo-healthcare-1.html">
+              Our Hospitals
+            </a>
           </div>
           <div class="col-sm-3 text-center">
-            Online Appointment
+            <a href="demo-healthcare-2.html">
+              Online Appointment
+            </a>
           </div>
         </div>
         <div class="row search-bar">
@@ -51,20 +57,20 @@
           // Some default pre init
           var Countly = Countly || {};
           Countly.q = Countly.q || [];
-      
+
           // Provide your app key that you retrieved from Countly dashboard
           var parts = document.location.href.split("/");
           Countly.app_key = parts[parts.length - 2];
-      
+
           // Provide your server IP or name. Use try.count.ly for EE trial server.
           // If you use your own server, make sure you have https enabled if you use
           // https below.
           Countly.url = window.location.origin;
           Countly.q.push(['enable_feedback',{'popups':['5eb02d1ecb41b52f5eb57476']}]);
-          
+
           // Load countly script asynchronously
           (function() {
-            var cly = document.createElement('script'); cly.type = 'text/javascript'; 
+            var cly = document.createElement('script'); cly.type = 'text/javascript';
             cly.async = true;
             // Enter url of script here (see below for other option)
             cly.src = '/sdk/web/countly.js';

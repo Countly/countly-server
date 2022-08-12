@@ -7,9 +7,24 @@
   border-bottom-right-radius: 5px;
 }
 
-.demo-healthcare .top-bar > .col-sm-3 {
+.demo-healthcare .top-bar > .col-sm-3.no-link {
   margin-top: 18px;
+}
+
+.demo-healthcare .top-bar > .col-sm-3 {
+  margin-top: 0;
+}
+
+.demo-healthcare .top-bar > .col-sm-3 a {
   cursor: pointer;
+  color: white;
+  height: 100%;
+  padding-top: 18px;
+  display: block;
+}
+
+.demo-healthcare .top-bar > .col-sm-3 a:hover {
+  text-decoration: none;
 }
 
 .demo-healthcare .search-bar {
@@ -33,4 +48,3 @@
   padding: 20px;
   outline: none;
 }
-

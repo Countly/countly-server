@@ -5,7 +5,14 @@ var exported = {},
 
 (function(plugin) {
     plugin.init = function(app) {
-        const predefinedTypes = ["demo-banking.html", "demo-gaming.html", "demo-navigation.html", "demo-healthcare.html", "demo-ecommerce.html"];
+        const predefinedTypes = [
+            "demo-banking.html",
+            "demo-ecommerce.html",
+            "demo-gaming.html",
+            "demo-healthcare.html",
+            "demo-healthcare-hospitals.html",
+            "demo-navigation.html",
+        ];
         app.get(countlyConfig.path + '/populator/:id/:page', function(req, res) {
             let url = 'public/templates/demo-page.html';
             if (predefinedTypes.includes(req.params.page)) {
