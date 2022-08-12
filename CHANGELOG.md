@@ -1,3 +1,23 @@
+## Version 22.08.2
+Features:
+- [core] script to remove old permission properties
+- [crashes] Fix binary image symbol id check
+- [crashes] Fix build uuid check for latest crash
+- [crashes] Fix fetch symbols response
+- [crashes] Prefill symbol drawer called from binary page
+- [crashes] Unescape binary page crash name
+- [push] fixed arraybuffer crash
+- [push] Fixing wrong reporting of retriable errors
+- [push] Mark message as streamable before scheduling starts
+
+Enterprise features:
+- [crash_symbolication] Fixed symbol drawer
+- [crash_symbolication] Show uploaded file in symbol drawer
+- [crash_symbolication] Update symbol file validation
+- [surveys] removed usage of formatNumber when passing to metric cards as a prop
+- [users] Fixed bug with downloading user export if it went to report manager
+- [users] when loading user profile page, check data and show active "export download" button if there is existing export for this user
+
 ## Version 22.08.1
 Fixes:
 - [crashes] Add crashgroup toggle symbolication switch
