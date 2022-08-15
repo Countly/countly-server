@@ -1,7 +1,8 @@
 var exported = {},
     countlyConfig = require("../../../frontend/express/config"),
     path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    ejs = require('ejs');
 
 (function(plugin) {
     plugin.init = function(app) {
@@ -27,9 +28,12 @@ var exported = {},
             if (predefinedTypes.includes(req.params.page)) {
                 url = 'public/templates/' + req.params.page;
             }
-            var pageSourceCode = fs.readFileSync(path.resolve(__dirname, url));
-            res.writeHead(200, { 'Content-Type': 'text/html'});
-            res.end(pageSourceCode);
+            const file = path.resolve(__dirname, url);
+            const pageIndex = url.replace(/\D/g, '') || '0';
+            const pageSourceCode = fs.readFileSync(file, 'utf-8');
+            const response = ejs.render(pageSourceCode, { pageIndex });
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(response);
         });
     };
 }(exported));
