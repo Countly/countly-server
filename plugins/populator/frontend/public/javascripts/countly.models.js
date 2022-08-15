@@ -238,6 +238,19 @@
     }
 
     /**
+     * Creates an array of html sample pages
+     * @param {string} populatorType - populator template type ('banking', 'gaming', etc.)
+     * @returns {array} returns an array of html pages based on populatorType
+     **/
+    function getPageTemplates(populatorType) {
+        return [
+            "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html",
+            "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + "-1.html",
+            "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + "-2.html"
+        ];
+    }
+
+    /**
      * Create user properties with Facebook Login, Twitter Login,
      * Twitter Login name and Has Apple Watch Os properties
      * @param {object} templateUp user properties template, if available
@@ -578,11 +591,7 @@
                 Object.keys(viewSegments).forEach(function(key) {
                     var values = [];
                     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && key === "name") {
-                        values = [
-                            "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html",
-                            "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + "-1.html",
-                            "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + "-2.html"
-                        ];
+                        values = getPageTemplates(populatorType);
                     }
                     else {
                         values = viewSegments[key];
@@ -749,11 +758,7 @@
             // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
             var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
 
-            var views = [
-                "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html",
-                "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + "-1.html",
-                "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + "-2.html"
-            ];
+            var views = getPageTemplates(populatorType);
             var event = {
                 "key": "[CLY]_action",
                 "count": 1,
@@ -806,11 +811,7 @@
             // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
             var populatorType = countlyPopulator.getSelectedTemplate().substr(7).toLowerCase();
 
-            var views = [
-                "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html",
-                "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + "-1.html",
-                "/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + "-2.html"
-            ];
+            var views = getPageTemplates(populatorType);
             var event = {
                 "key": "[CLY]_action",
                 "count": 1,
