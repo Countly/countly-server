@@ -14,9 +14,6 @@
 .demo-navigation .top-bar > .col-sm-2 a {
   cursor: pointer;
   color: white;
-}
-
-.demo-navigation .top-bar > .col-sm-2 a:hover {
   text-decoration: none;
 }
 

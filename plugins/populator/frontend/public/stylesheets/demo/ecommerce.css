@@ -12,9 +12,6 @@
 .demo-ecommerce .top-bar > .col-sm-2 a {
   cursor: pointer;
   color: white;
-}
-
-.demo-ecommerce .top-bar > .col-sm-2 a:hover {
   text-decoration: none;
 }
 

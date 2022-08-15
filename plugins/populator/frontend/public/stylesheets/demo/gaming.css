@@ -12,9 +12,6 @@
 .demo-gaming .top-bar > .col-sm-1 a {
   cursor: pointer;
   color: white;
-}
-
-.demo-gaming .top-bar > .col-sm-1 a:hover {
   text-decoration: none;
 }
 
