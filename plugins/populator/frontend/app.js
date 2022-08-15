@@ -25,13 +25,19 @@ var exported = {},
         ];
         app.get(countlyConfig.path + '/populator/:id/:page', function(req, res) {
             let url = 'public/templates/demo-page.html';
+            let pageIndex;
             if (predefinedTypes.includes(req.params.page)) {
-                url = 'public/templates/' + req.params.page;
+                pageIndex = req.params.page.replace(/\D/g, '') || '0';
+                url = 'public/templates/' + req.params.page.replace(/-\d/, '');
             }
             const file = path.resolve(__dirname, url);
-            const pageIndex = url.replace(/\D/g, '') || '0';
             const pageSourceCode = fs.readFileSync(file, 'utf-8');
-            const response = ejs.render(pageSourceCode, { pageIndex });
+            const includes = {
+                scripts: path.resolve(__dirname, 'public/templates/demo-scripts.html'),
+            };
+
+            const response = ejs.render(pageSourceCode, { pageIndex, includes });
+
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end(response);
         });
