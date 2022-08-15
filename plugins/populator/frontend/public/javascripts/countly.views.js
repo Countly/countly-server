@@ -1,4 +1,4 @@
-/* global app, countlyAuth, countlyVue, countlyPopulator, CountlyHelpers, CV, countlyCommon, $, countlyGlobal, Vue */
+/* global app, countlyAuth, countlyVue, countlyPopulator, CountlyHelpers, CV, countlyCommon, countlyGlobal, Vue */
 (function() {
     var FEATURE_NAME = 'populator';
 
