@@ -68,7 +68,6 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="details" :label="i18n('logger.details')" min-width="413">
                         <template slot-scope="rowScope">
-							
                             <logger-details :device="rowScope.row.d" :version="rowScope.row.v" :sdk="rowScope.row.s"
                                 :location="rowScope.row.l"></logger-details>
                         </template>
