@@ -415,6 +415,7 @@
                                 break;
                             }
                         }
+                        self.discardForm();
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.changed"],
                             message: jQuery.i18n.map["configs.saved"]
@@ -581,7 +582,12 @@
                 else {
                     ["name", "category", "type", "key", "country", "timezone", "salt", "_id", "redirect_url"].forEach(function(currentKey) {
                         if (editedObject[currentKey] !== selectedApp[currentKey]) {
-                            differences.push(currentKey);
+                            if (currentKey === "name" && !editedObject[currentKey]) {
+                                return differences;
+                            }
+                            else {
+                                differences.push(currentKey);
+                            }
                         }
                     });
                     return differences;

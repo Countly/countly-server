@@ -303,7 +303,7 @@ appsApi.updateApp = function(params) {
                 'exclude-from-ret-obj': true
             },
             'name': {
-                'required': false,
+                'required': true,
                 'type': 'String'
             },
             'type': {
