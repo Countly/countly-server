@@ -74,7 +74,7 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="info" :label="i18n('logger.info')" min-width="283">
                         <template slot-scope="rowScope">
-							<b v-if="rowScope.row.c" class='red-text'>{{i18n('logger.request-canceled')}}</b>
+							<strong v-if="rowScope.row.c" class='red-text'>{{i18n('logger.request-canceled')}}</strong>
 							<div v-if="rowScope.row.c" class="bu-pt-2" >{{rowScope.row.c}}</div>
                             <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>
                         </template>
