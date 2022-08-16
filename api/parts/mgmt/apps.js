@@ -256,7 +256,9 @@ appsApi.createApp = async function(params) {
         }
     }
     const appKey = common.sha1Hash(seed, true);
-    newApp.key = appKey;
+    if (!newApp.key) {
+        newApp.key = appKey;
+    }
 
     common.db.collection('apps').insert(newApp, function(err, app) {
         if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
@@ -303,7 +305,7 @@ appsApi.updateApp = function(params) {
                 'exclude-from-ret-obj': true
             },
             'name': {
-                'required': false,
+                'required': true,
                 'type': 'String'
             },
             'type': {
