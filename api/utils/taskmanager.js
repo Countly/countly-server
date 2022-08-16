@@ -343,7 +343,7 @@ taskmanager.saveResult = function(options, data, callback) {
         if (options.errormsg) {
             message = options.errormsg;
         }
-        else if (options.error) {
+        else if (options.error && options.error.errormsg) {
             message = options.error.errormsg;
         }
 
