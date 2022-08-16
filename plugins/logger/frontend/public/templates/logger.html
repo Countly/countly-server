@@ -68,13 +68,15 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="details" :label="i18n('logger.details')" min-width="413">
                         <template slot-scope="rowScope">
-							<b v-if="rowScope.row.c" class='red-text'>{{i18n('logger.request-canceled')}}</b>
+							
                             <logger-details :device="rowScope.row.d" :version="rowScope.row.v" :sdk="rowScope.row.s"
                                 :location="rowScope.row.l"></logger-details>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="info" :label="i18n('logger.info')" min-width="283">
                         <template slot-scope="rowScope">
+							<b v-if="rowScope.row.c" class='red-text'>{{i18n('logger.request-canceled')}}</b>
+							<div v-if="rowScope.row.c" class="bu-pt-2" >{{rowScope.row.c}}</div>
                             <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>
                         </template>
                     </el-table-column>
