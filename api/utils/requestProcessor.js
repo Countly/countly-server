@@ -2760,6 +2760,7 @@ const processBulkRequest = (i, requests, params) => {
  * @returns {Function} - done or boolean value
  */
 const checksumSaltVerification = (params) => {
+    params.app.checksum_salt = params.app.checksum_salt || params.app.salt;
     if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
         const payloads = [];
         payloads.push(params.href.substr(params.fullPath.length + 1));
