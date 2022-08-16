@@ -166,7 +166,7 @@
                                             type="primary">{{i18n( newApp ? 'common.create' : 'common.apply')}}
                                         </el-button>
                                     </div>
-                                    <cly-diff-helper v-if="!edited" :diff="compare(formScope.editedObject,apps[selectedApp])" @discard="discardForm()" @save="save(formScope.editedObject)"></cly-diff-helper>
+                                    <cly-diff-helper v-if="!edited && formScope.editedObject.name" :diff="compare(formScope.editedObject,apps[selectedApp])" @discard="discardForm()" @save="save(formScope.editedObject)"></cly-diff-helper>
                                 </template>
                             </cly-form>
                         </div>
