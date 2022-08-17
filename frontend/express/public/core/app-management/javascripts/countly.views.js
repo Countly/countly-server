@@ -415,13 +415,13 @@
                                 break;
                             }
                         }
-                        self.discardForm();
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.changed"],
                             message: jQuery.i18n.map["configs.saved"]
                         });
                     },
                     error: function(xhr, status, error) {
+                        self.discardForm();
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.not-saved"],
                             message: error || jQuery.i18n.map["configs.not-changed"],
@@ -582,12 +582,7 @@
                 else {
                     ["name", "category", "type", "key", "country", "timezone", "salt", "_id", "redirect_url"].forEach(function(currentKey) {
                         if (editedObject[currentKey] !== selectedApp[currentKey]) {
-                            if (currentKey === "name" && !editedObject[currentKey]) {
-                                return differences;
-                            }
-                            else {
-                                differences.push(currentKey);
-                            }
+                            differences.push(currentKey);
                         }
                     });
                     return differences;

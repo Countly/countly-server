@@ -305,7 +305,7 @@ appsApi.updateApp = function(params) {
                 'exclude-from-ret-obj': true
             },
             'name': {
-                'required': true,
+                'required': false,
                 'type': 'String'
             },
             'type': {
@@ -342,6 +342,11 @@ appsApi.updateApp = function(params) {
     var updateAppValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(updatedApp = updateAppValidation.obj)) {
         common.returnMessage(params, 400, 'Error: ' + updateAppValidation.errors);
+        return false;
+    }
+
+    if (!updateAppValidation.obj.name.length) {
+        common.returnMessage(params, 400, 'Invalid app name');
         return false;
     }
 
