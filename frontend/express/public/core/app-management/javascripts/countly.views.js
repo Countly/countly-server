@@ -422,7 +422,6 @@
                         });
                     },
                     error: function(xhr, status, error) {
-                        self.discardForm();
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.not-saved"],
                             message: error || jQuery.i18n.map["configs.not-changed"],
