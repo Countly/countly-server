@@ -345,7 +345,7 @@ appsApi.updateApp = function(params) {
         return false;
     }
 
-    if (!updateAppValidation.obj.name || updateAppValidation.obj.name.length === 0) {
+    if (!updateAppValidation.obj.name) {
         common.returnMessage(params, 400, 'Invalid app name');
         return false;
     }
