@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global countlyIndexedDbService,Promise*/
+/* global countlyIndexedDbService*/
 (function(countlyLoggerService) {
 
     var LoggerLevelEnum = Object.freeze({
