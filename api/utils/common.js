@@ -298,7 +298,8 @@ common.os_mapping = {
     "debian": "d",
     "nokia": "n",
     "firefox": "f",
-    "tizen": "t"
+    "tizen": "t",
+    "arch": "l"
 };
 
 /**
@@ -637,6 +638,7 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
         daily: tmpMoment.format("YYYY.M.D"),
         hourly: tmpMoment.format("YYYY.M.D.H"),
         weekly: Math.ceil(tmpMoment.format("DDD") / 7),
+        weeklyISO: tmpMoment.isoWeek(),
         month: tmpMoment.format("M"),
         day: tmpMoment.format("D"),
         hour: tmpMoment.format("H")

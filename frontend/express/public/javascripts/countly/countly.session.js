@@ -118,7 +118,7 @@
                     func: function(dataObj) {
                         return dataObj.t;
                     },
-                    period: "previous"
+                    period: countlyCommon.getPeriod() === 'day' ? "previousThisMonth" : "previous"
                 },
                 { name: "t" }
             ];

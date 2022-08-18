@@ -1,0 +1,13 @@
+.cly-vue-surveys-preview { direction: rtl; }
+.cly-vue-surveys-preview .close-button { float: left !important; }
+.cly-vue-surveys-preview .header-text { float: right !important; }
+.cly-vue-surveys-preview .submit-wrapper .submit-button { float: left !important; }
+.cly-vue-surveys-preview .submit-wrapper img { float: right !important; }
+.cly-vue-nps-preview { direction: rtl; }
+.cly-vue-nps-preview .close-button { float: left !important; }
+.cly-vue-nps-preview .main-text { float: right !important; }
+.cly-vue-nps-preview .rating-labels .left { float: right !important; }
+.cly-vue-nps-preview .rating-labels .right { float: left !important; }
+.cly-vue-nps-preview .submit-wrapper .submit-button { float: left !important; }
+.cly-vue-nps-preview .submit-wrapper img { float: right !important; }
+.cly-vue-ratings-preview { direction: rtl; }

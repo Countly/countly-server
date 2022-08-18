@@ -1,4 +1,4 @@
-/* global Promise, Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
+/* global Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
 
 // _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
 
@@ -325,6 +325,116 @@
 
     countlyVue.mixins.zoom = ExternalZoomMixin;
 
+    /**
+     * Calculating width of text
+     * @param {string} txt Text value to calculate width.
+     * @param {string} fontname Font name of text
+     * @param {int} fontsize Font size of text
+     * @returns {int} calculated width
+    */
+    function getWidthOfText(txt, fontname, fontsize) {
+        if (getWidthOfText.c === undefined) {
+            getWidthOfText.c = document.createElement('canvas');
+            getWidthOfText.ctx = getWidthOfText.c.getContext('2d');
+        }
+        var fontspec = fontsize + ' ' + fontname;
+        if (getWidthOfText.ctx.font !== fontspec) {
+            getWidthOfText.ctx.font = fontspec;
+        }
+        return getWidthOfText.ctx.measureText(txt).width;
+    }
+
+    var xAxisOverflowHandler = {
+        data: function() {
+            return {
+                chartWidth: 0,
+                chartHeight: 0
+            };
+        },
+        props: {
+            xAxisLabelOverflow: {
+                type: String,
+                default: 'auto',
+                required: false
+            }
+        },
+        methods: {
+            patchOptionsForXAxis: function(opt) {
+                var xAxisOverflowPatch = this.handleXAxisOverflow(opt, this.xAxisLabelOverflow, {
+                    w: this.chartWidth,
+                    h: this.chartHeight
+                });
+                if (xAxisOverflowPatch) {
+                    opt = _merge(opt, xAxisOverflowPatch);
+                }
+                return opt;
+            },
+            onChartFinished: function() {
+                var ref = this.$refs.echarts;
+                this.chartWidth = ref.getWidth();
+                this.chartHeight = ref.getHeight();
+            },
+            handleXAxisOverflow: function(options, strategy, size) {
+                if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
+                    return null;
+                }
+
+                var xAxis = options.xAxis;
+                var labelW = Math.floor((size.w - 100) / (xAxis.data.length + 1));
+                var maxLen = 0;
+                var maxStr = "";
+
+                xAxis.data.forEach(function(item) {
+                    var str = "";
+                    if (Array.isArray(item)) {
+                        str = (item[1] || item[0] || "") + "";
+                    }
+                    else {
+                        str = (item || "") + "";
+                    }
+
+                    if (str.length > maxLen) {
+                        maxStr = str;
+                    }
+
+                    maxLen = Math.max(maxLen, str.length);
+                });
+
+                var longestLabelTextW = getWidthOfText(maxStr, FONT_FAMILY, "12px");
+                var returnObj = {
+                    xAxis: {
+                        axisLabel: {
+                            fontSize: 12,
+                            interval: 0,
+                            width: labelW,
+                            rotate: 0,
+                            overflow: "truncate",
+                        }
+                    }
+                };
+                if (longestLabelTextW > labelW) {
+                    returnObj.xAxis.axisLabel.margin = -5;
+                    returnObj.xAxis.axisLabel.overflow = "break";
+                    returnObj.grid = {bottom: 40};
+
+                    returnObj.xAxis.axisLabel.formatter = function(value) {
+                        var ellipsis = "...";
+                        var lengthToTruncate = (Math.floor(maxLen / Math.ceil(longestLabelTextW / labelW)) * 2);
+                        if (value.length > lengthToTruncate) {
+                            return value.substr(0, lengthToTruncate - ellipsis.length) + ellipsis;
+                        }
+                        else {
+                            return value;
+                        }
+                    };
+                }
+
+                return returnObj;
+            }
+        }
+    };
+
+
     /*
         Use xAxis.axisLabel.showMinLabel to change visibility of minimum label
         Use xAxis.axisLabel.showMaxLabel to change visibility of maximum label
@@ -355,7 +465,7 @@
         props: {
             height: {
                 type: [Number, String],
-                default: 472
+                default: 440
             },
             autoresize: {
                 type: Boolean,
@@ -413,9 +523,9 @@
                     },
                     grid: {
                         top: 30,
-                        bottom: 15,
-                        left: 36,
-                        right: 24,
+                        bottom: 30,
+                        left: 43,
+                        right: 30,
                         containLabel: true
                     },
                     legend: {
@@ -483,7 +593,7 @@
                             var template = "";
                             if (params.seriesType === 'pie') {
                                 template += '<div class="bu-is-flex">\
-                                                        <div class="chart-tooltip__bar bu-mr-2" style="background-color: ' + params.color + ';"></div>\
+                                                        <div class="chart-tooltip__bar bu-mr-2 bu-mt-1" style="background-color: ' + params.color + ';"></div>\
                                                         <div>\
                                                             <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
                                                             <div class="text-small"> ' + params.data.name + '</div>\
@@ -494,19 +604,28 @@
                                 return template;
                             }
                             else {
-                                template = "<div class='chart-tooltip'>";
+                                template = "<div class='chart-tooltip" + ((params.length > 10) ? " chart-tooltip__has-scroll" : "") + "'>";
                                 if (params.length > 0) {
                                     template += "<span class='chart-tooltip__header text-smaller font-weight-bold'>" + params[0].axisValueLabel + "</span></br>";
                                 }
 
+                                params.sort(function(a, b) {
+                                    if (typeof a.value === 'object') {
+                                        return b.value[1] - a.value[1];
+                                    }
+                                    else {
+                                        return b.value - a.value;
+                                    }
+                                });
+
                                 for (var i = 0; i < params.length; i++) {
-                                    template += '<div class="chart-tooltip__body">\
-                                                        <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
+                                    template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
+                                                    <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
-                                                            <span class="text-small bu-mr-2">' + params[i].seriesName + '</span>\
-                                                        <div class="chart-tooltip__value">\
-                                                            <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
-                                                        </div>\
+                                                            <span class="text-small">' + params[i].seriesName + '</span>\
+                                                    </div>\
+                                                    <div class="chart-tooltip__value">\
+                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
@@ -540,8 +659,6 @@
                         axisLabel: {
                             show: true,
                             color: "#81868D",
-                            showMinLabel: true,
-                            showMaxLabel: true,
                             fontSize: 14
                         },
                         splitLine: {
@@ -806,94 +923,6 @@
 
                 return opt;
             }
-        },
-        methods: {
-            handleXAxisOverflow: function(options, strategy, size) {
-                if (strategy === "unset" || !options || !options.xAxis || !options.xAxis.data) {
-                    return null;
-                }
-
-                var widthOverflowThreshold = (options.clyCustom && options.clyCustom.widthOverflowThreshold) || 500;
-
-                if (size && size.w >= widthOverflowThreshold) {
-                    return null;
-                }
-
-                var xAxis = options.xAxis;
-
-                // Early return, no need to analyze the array
-                if (xAxis.data.length > 15) {
-                    // no need to force all points to be present
-                    // if there are too many of them
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 100,
-                                overflow: "truncate",
-                                rotate: 45,
-                            }
-                        }
-                    };
-                }
-                else if (xAxis.data.length >= 5) {
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 100,
-                                overflow: "truncate",
-                                interval: 0,
-                                rotate: 45,
-                            }
-                        }
-                    };
-                }
-
-                var maxLen = 0;
-
-                xAxis.data.forEach(function(item) {
-                    var str = "";
-                    if (Array.isArray(item)) {
-                        str = (item[1] || item[0] || "") + "";
-                    }
-                    else {
-                        str = (item || "") + "";
-                    }
-                    maxLen = Math.max(maxLen, str.length);
-                });
-
-                if (maxLen > 25 && xAxis.data.length >= 2) {
-                    return {
-                        grid: {containLabel: false, bottom: 90, left: 75},
-                        xAxis: {
-                            axisLabel: {
-                                width: 150,
-                                overflow: "truncate",
-                                interval: 0,
-                                rotate: 30,
-                            }
-                        }
-                    };
-                }
-                else if (xAxis.data.length >= 2) {
-                    return {
-                        grid: {
-                            bottom: 50
-                        },
-                        xAxis: {
-                            axisLabel: {
-                                width: 150,
-                                overflow: "break",
-                                interval: 0
-                            }
-                        }
-                    };
-                }
-                return {
-                    xAxis: {axisLabel: {interval: 0}}
-                };
-            }
         }
     });
 
@@ -943,7 +972,7 @@
                 },
                 seriesOptions: {
                     type: 'pie',
-                    radius: ['60%', '95%'],
+                    radius: ['50%', '80%'],
                     center: ['50%', '50%'],
                     itemStyle: {
                         borderRadius: 0,
@@ -1539,11 +1568,10 @@
 
                             if (existingLegend) {
                                 legend.status = existingLegend.status;
-                                legend.displayColor = existingLegend.displayColor;
+                                legend.displayColor = existingLegend.displayColor === 'transparent' ? existingLegend.displayColor : data[i].color;
                             }
                         }
                     }
-
                     this.legendData = data;
                 }
             }
@@ -1665,7 +1693,7 @@
                             </chart-header>\
 							<div class="chart-wrapper" :style="{height: (chartOptions.chartheight) + \'px\'}">\
                                 <vue-scroll :ops="scrollOptions" >\
-                                    <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
+                                    <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{\'min-width\':\'100%\',height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
                                             <echarts\
                                                 v-if="!isChartEmpty"\
                                                 :updateOptions="echartUpdateOptions"\
@@ -1693,6 +1721,9 @@
     }));
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
+        mixins: [
+            xAxisOverflowHandler
+        ],
         data: function() {
             return {
                 forwardedSlots: ["chart-left", "chart-right"]
@@ -1707,6 +1738,7 @@
                 var opt = _merge({}, this.mergedOptions);
 
                 opt = this.patchChart(opt);
+                opt = this.patchOptionsForXAxis(opt);
 
                 return opt;
             }
@@ -1727,6 +1759,7 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     :autoresize="autoresize"\
+                                    @finished="onChartFinished"\
                                     @datazoom="onDataZoom">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
@@ -1862,19 +1895,13 @@
     }));
 
     Vue.component("cly-chart-bar", BaseBarChart.extend({
+        mixins: [
+            xAxisOverflowHandler
+        ],
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right"],
-                chartWidth: 0,
-                chartHeight: 0
+                forwardedSlots: ["chart-left", "chart-right"]
             };
-        },
-        props: {
-            xAxisLabelOverflow: {
-                type: String,
-                default: 'auto',
-                required: false
-            }
         },
         components: {
             'chart-header': ChartHeader,
@@ -1884,21 +1911,8 @@
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 opt = this.patchChart(opt);
-                var xAxisOverflowPatch = this.handleXAxisOverflow(opt, this.xAxisLabelOverflow, {
-                    w: this.chartWidth,
-                    h: this.chartHeight
-                });
-                if (xAxisOverflowPatch) {
-                    opt = _merge(opt, xAxisOverflowPatch);
-                }
+                opt = this.patchOptionsForXAxis(opt);
                 return opt;
-            }
-        },
-        methods: {
-            onChartFinished: function() {
-                var ref = this.$refs.echarts;
-                this.chartWidth = ref.getWidth();
-                this.chartHeight = ref.getHeight();
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\

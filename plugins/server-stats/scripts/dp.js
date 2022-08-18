@@ -13,6 +13,9 @@ pluginManager.dbConnection().then((db) => {
 
     var monthBack = 12;
     var period = myArgs[0] || utcMoment.format("YYYY") + "-" + utcMoment.format("M");
+    if (period !== utcMoment.format("YYYY") + "-" + utcMoment.format("M")) { //not this month as start month
+        utcMoment = moment.utc(period + "-15");
+    }
 
     for (let i = monthBack - 1; i > 0; i--) {
         utcMoment.subtract(i, "months");
@@ -20,17 +23,19 @@ pluginManager.dbConnection().then((db) => {
         utcMoment.add(i, "months");
     }
 
-    periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
+    periodsToFetch.push(period);
+    var dateObj = [];
 
     var filter = {
         _id: {$in: []}
     };
 
     for (let i = 0; i < periodsToFetch.length; i++) {
+        dateObj[periodsToFetch[i]] = {"full": true};
         filter._id.$in.push(new RegExp(".*_" + periodsToFetch[i]));
     }
 
-    stats.fetchDatapoints(db, filter, periodsToFetch, function(toReturn) {
+    stats.fetchDatapoints(db, filter, {"dateObj": dateObj, "dateObjPrev": {}}, function(toReturn) {
         var apps = Object.keys(toReturn);
         db.collection("apps").find({_id: {$in: apps.map(id => db.ObjectID(id))}}, {projection: {name: 1}}).toArray(function(err, appResult) {
             if (appResult) {
@@ -41,9 +46,9 @@ pluginManager.dbConnection().then((db) => {
             db.close();
             var res = [];
             for (let app in toReturn) {
-                if (toReturn[app][period]) {
-                    toReturn[app][period].app = stats.getAppName(app, appNames);
-                    res.push(toReturn[app][period]);
+                if (toReturn[app]) {
+                    toReturn[app].app = stats.getAppName(app, appNames);
+                    res.push(toReturn[app]);
                 }
             }
             res.sort(function(a, b) {

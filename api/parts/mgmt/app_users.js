@@ -230,7 +230,7 @@ usersApi.delete = function(app_id, query, params, callback) {
                             action: "app_user_deleted",
                             data: {
                                 app_id: app_id,
-                                query: query,
+                                query: JSON.stringify(query),
                                 uids: res[0].uid,
                             }
                         });
@@ -330,7 +330,7 @@ usersApi.count = function(app_id, query, callback) {
         query: query
     });
 
-    common.db.collection('app_users' + app_id).find(query).count(callback);
+    common.db.collection('app_users' + app_id).count(query, callback);
 };
 
 /**
@@ -1015,7 +1015,7 @@ usersApi.export = function(app_id, query, params, callback) {
                                             action: "export_app_user",
                                             data: {
                                                 result: "error",
-                                                info: err
+                                                info: err + ""
                                             }
                                         });
                                         callDeleteExport(export_filename, params, app_id, eid, "Storing exported files failed. Unable to clean up file system.", "Storing exported files failed. Partially exported data deleted.", callback);

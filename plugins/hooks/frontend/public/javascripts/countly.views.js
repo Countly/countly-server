@@ -1,5 +1,5 @@
 /*global
-   CV, _,  countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
+   CV, _,  countlyVue, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
  */
 (function() {
     var FEATURE_NAME = "hooks";
@@ -879,14 +879,11 @@
         this.renderWhenReady(hooksDetailView);
     });
 
-    $(document).ready(function() {
-        app.addMenu("management", {code: "hooks", permission: FEATURE_NAME, url: "#/manage/hooks", text: "hooks.plugin-title", priority: 110});
+    app.addMenu("management", {code: "hooks", permission: FEATURE_NAME, url: "#/manage/hooks", text: "hooks.plugin-title", priority: 110});
 
-        //check if configuration view exists
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("hooks", "hooks.plugin-title");
-            app.configurationsView.registerLabel("hooks.batchSize", "hooks.batch-size");
-        }
-
-    });
+    //check if configuration view exists
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("hooks", "hooks.plugin-title");
+        app.configurationsView.registerLabel("hooks.batchSize", "hooks.batch-size");
+    }
 })();

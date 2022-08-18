@@ -9,6 +9,82 @@ plugins.setConfigs("systemlogs", {
     preventIPTracking: false
 });
 
+/**
+ * @api {get} /o?method=systemlogs/query Get system logs
+ * @apiName GetSystemLogs
+ * @apiGroup SystemLogs
+ * 
+ * @apiDescription return the records of the system logs
+ * @apiQuery {String} method which kind systemlogs requested, it should be 'systemlogs'
+ * @apiQuery {String} user_id Filtering is performed according to the user
+ * @apiQuery {String} a Filtering is performed according to action
+ * 
+ * @apiSuccess {Number} iTotalRecords Total number of system logs
+ * @apiSuccess {Number} iTotalDisplayRecords Total number of system logs by filtering
+ * @apiSuccess {Objects[]} aaData System logs details
+ * @apiSuccess {Number} sEcho DataTable's internal counter
+ * 
+ * @apiSuccessExample {json} Success-Response:
+ * HTTP/1.1 200 OK
+ * {
+ *   "sEcho": "29",
+ *   "iTotalRecords": 81270,
+ *   "iTotalDisplayRecords": 390,
+ *   "aaData": [
+ *       {
+ *           "_id": "6270ea3dbccff991b16ef7f0",
+ *           "a": "clear_all",
+ *           "i": {
+ *               "_id": "6181431e09e272efa5f64305",
+ *               "name": "DTE_test_app",
+ *               "country": "TR",
+ *               "type": "web",
+ *               "category": "6",
+ *               "timezone": "Europe/Istanbul",
+ *               "app_domain": "",
+ *               "created_at": 1635861278,
+ *               "edited_at": 1635861278,
+ *               "owner": "617f9c7e5b25eea3b9afabf8",
+ *               "seq": 21,
+ *               "key": "21cf5a730c3152bf1cb0d1ace048e25ac9d66b90",
+ *               "last_data": 1651489932,
+ *               "plugins": {
+ *                   "push": {
+ *                       "i": {
+ *                           "_id": "demo"
+ *                       },
+ *                       "a": {
+ *                           "_id": "demo"
+ *                       },
+ *                       "h": {
+ *                           "_id": "demo"
+ *                       }
+ *                   }
+ *               },
+ *               "blocks": [
+ *                   {
+ *                       "type": "all",
+ *                       "key": "*",
+ *                       "name": "Country is United States",
+ *                       "rule": "{\"up.cc\":{\"$in\":[\"US\"]}}",
+ *                       "status": true,
+ *                       "is_arbitrary_input": false,
+ *                       "_id": "6181621e09e272efa5f64a3a"
+ *                   }
+ *               ],
+ *               "app_id": "6181431e09e272efa5f64305"
+ *           },
+ *           "ts": 1651567165,
+ *           "cd": "2022-05-03T08:39:25.256Z",
+ *           "u": "deniz.erten@count.ly",
+ *           "ip": null,
+ *           "app_id": "6181431e09e272efa5f64305",
+ *           "user_id": "617f9c7e5b25eea3b9afabf8"
+ *       },
+ *   ]
+ * }
+*/
+
 (function() {
     /*plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);

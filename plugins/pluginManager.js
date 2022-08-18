@@ -15,11 +15,13 @@ var pluginDependencies = require('./pluginDependencies.js'),
     cp = require('child_process'),
     async = require("async"),
     _ = require('underscore'),
+    crypto = require('crypto'),
     Promise = require("bluebird"),
     log = require('../api/utils/log.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
-    exec = cp.exec;
+    exec = cp.exec,
+    spawn = cp.spawn;
 
 /**
 * This module handles communicaton with plugins
@@ -37,6 +39,7 @@ var pluginManager = function pluginManager() {
     var excludeFromUI = {plugins: true};
     var finishedSyncing = true;
     var expireList = [];
+    var masking = {};
 
     /**
      *  Registered app types
@@ -77,6 +80,15 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    this.initPlugin = function(pluginName) {
+        try {
+            pluginsApis[pluginName] = require("./" + pluginName + "/api/api");
+        }
+        catch (ex) {
+            console.error(ex.stack);
+        }
+    };
+
     /**
     * Load configurations from database
     * @param {object} db - database connection for countly db
@@ -105,6 +117,7 @@ var pluginManager = function pluginManager() {
                 callback();
             }
         });
+        this.fetchMaskingConf({"db": db});
     };
 
     /**
@@ -865,9 +878,23 @@ var pluginManager = function pluginManager() {
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
-                exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error2) {
+                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
+                var error2 = "";
+
+                cmd.stdout.on('data', (data) => {
+                    console.log(`${data}`);
+                });
+
+                cmd.stderr.on('data', (data) => {
+                    error2 += data;
+                });
+
+                cmd.on('error', function() {
+                    errors = true;
+                });
+
+                cmd.on('close', () => {
                     if (error2) {
-                        errors = true;
                         console.log('error: %j', error2);
                     }
                     console.log('Done running npm install %j', plugin);
@@ -919,9 +946,24 @@ var pluginManager = function pluginManager() {
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
-                exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error2) {
+
+                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
+                var error2 = "";
+
+                cmd.stdout.on('data', (data) => {
+                    console.log(`${data}`);
+                });
+
+                cmd.stderr.on('data', (data) => {
+                    error2 += data;
+                });
+
+                cmd.on('error', function() {
+                    errors = true;
+                });
+
+                cmd.on('close', () => {
                     if (error2) {
-                        errors = true;
                         console.log('error: %j', error2);
                     }
                     console.log('Done running npm update with %j', plugin);
@@ -1098,10 +1140,16 @@ var pluginManager = function pluginManager() {
                 var qstring = parts[1];
                 if (qstring && qstring.length) {
                     qstring = querystring.parse(qstring);
-                    if (qstring.ssl) {
+                    if (qstring.ssl && (qstring.ssl === true || qstring.ssl === "true")) {
                         ob.ssl = "";
                         ob.sslAllowInvalidCertificates = "";
                         ob.sslAllowInvalidHostnames = "";
+                    }
+                    if (qstring.tls && (qstring.tls === true || qstring.tls === "true")) {
+                        ob.tls = "";
+                        ob.tlsAllowInvalidCertificates = "";
+                        ob.tlsAllowInvalidHostnames = "";
+                        ob.tlsInsecure = "";
                     }
                     if (qstring.replicaSet) {
                         ob.host = qstring.replicaSet + "/" + ob.host;
@@ -1125,10 +1173,16 @@ var pluginManager = function pluginManager() {
             else {
                 ob.host = (config.mongodb.host + ':' + config.mongodb.port);
             }
-            if (config.mongodb.serverOptions && config.mongodb.serverOptions.ssl) {
+            if (config.mongodb.serverOptions && config.mongodb.serverOptions.ssl && (config.mongodb.serverOptions.ssl === true || config.mongodb.serverOptions.ssl === "true")) {
                 ob.ssl = "";
                 ob.sslAllowInvalidCertificates = "";
                 ob.sslAllowInvalidHostnames = "";
+            }
+            if (config.mongodb.serverOptions && config.mongodb.serverOptions.tls && (config.mongodb.serverOptions.tls === true || config.mongodb.serverOptions.tls === "true")) {
+                ob.tls = "";
+                ob.tlsAllowInvalidCertificates = "";
+                ob.tlsAllowInvalidHostnames = "";
+                ob.tlsInsecure = "";
             }
             if (config.mongodb.username && config.mongodb.password) {
                 ob.username = config.mongodb.username;
@@ -1258,6 +1312,8 @@ var pluginManager = function pluginManager() {
         }
 
         if (config.mongodb.dbOptions) {
+            //delete old config option
+            delete config.mongodb.dbOptions.native_parser;
             _.extend(dbOptions, config.mongodb.dbOptions);
         }
 
@@ -1307,6 +1363,11 @@ var pluginManager = function pluginManager() {
         }
         catch (ex) {
             logDbRead.e("Error connecting to database", ex);
+            logDbRead.e("With params %j", {
+                db: db_name,
+                connection: dbName,
+                options: dbOptions
+            });
             //exit to retry to reconnect on restart
             process.exit(1);
             return;
@@ -1320,7 +1381,85 @@ var pluginManager = function pluginManager() {
         client.db = function(database, options) {
             return mngr.wrapDatabase(client._db(database, options), client, db_name, dbName, dbOptions);
         };
-        return client.db(db_name);
+
+        if (db_name === "countly") {
+            var wrapped = client.db(db_name);
+            await this.fetchMaskingConf({db: wrapped});
+            return wrapped;
+        }
+        else {
+            return client.db(db_name);
+        }
+    };
+
+    this.fetchMaskingConf = async function(options) {
+        var apps = await options.db.collection("apps").find({}, {"masking": true}).toArray();
+
+        var appObj = {};
+
+        for (let z = 0; z < apps.length; z++) {
+            appObj[apps[z]._id] = apps[z].masking;
+        }
+
+        masking.apps = appObj;
+        var hashMap = {};
+        var eventsDb = await options.db.collection("events").find({}, {"list": true}).toArray();
+        for (let z = 0; z < eventsDb.length; z++) {
+            eventsDb[z]._id = eventsDb[z]._id + "";
+            for (let i = 0; i < eventsDb[z].list.length; i++) {
+                hashMap[crypto.createHash('sha1').update(eventsDb[z].list[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": eventsDb[z].list[i]};
+            }
+
+            var internalDrillEvents = ["[CLY]_session", "[CLY]_view", "[CLY]_nps", "[CLY]_crash", "[CLY]_action", "[CLY]_session", "[CLY]_survey", "[CLY]_star_rating", "[CLY]_apm_device", "[CLY]_apm_network", "[CLY]_push_action"];
+            var internalEvents = ["[CLY]_session", "[CLY]_view", "[CLY]_nps", "[CLY]_crash", "[CLY]_action", "[CLY]_session", "[CLY]_survey", "[CLY]_star_rating", "[CLY]_apm_device", "[CLY]_apm_network", "[CLY]_push_action"];
+
+            if (internalDrillEvents) {
+                for (let i = 0; i < internalDrillEvents.length; i++) {
+                    hashMap[crypto.createHash('sha1').update(internalDrillEvents[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": internalDrillEvents[i]};
+                }
+            }
+
+            if (internalEvents) {
+                for (let i = 0; i < internalEvents.length; i++) {
+                    hashMap[crypto.createHash('sha1').update(internalEvents[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": internalEvents[i]};
+                }
+            }
+        }
+        masking.hashMap = hashMap;
+        masking.isLoaded = Date.now().valueOf();
+        return;
+
+    };
+
+    this.getMaskingSettings = function(appID) {
+        if (masking && masking.apps && masking.apps[appID]) {
+            return JSON.parse(JSON.stringify(masking.apps[appID]));
+        }
+        else {
+            return {};
+        }
+    };
+    this.getAppEventFromHash = function(hashValue) {
+        if (masking && masking.hashMap && masking.hashMap[hashValue]) {
+            var record = JSON.parse(JSON.stringify(masking.hashMap[hashValue]));
+            record.hash = hashValue;
+            return record;
+        }
+        else {
+            return {};
+        }
+    };
+
+    this.getEHashes = function(appID) {
+        var map = {};
+        if (masking && masking.hashMap) {
+            for (var hash in masking.hashMap) {
+                if (masking.hashMap[hash].a === appID) {
+                    map[masking.hashMap[hash].e] = hash;
+                }
+            }
+        }
+        return map;
     };
 
     /**
@@ -1440,6 +1579,17 @@ var pluginManager = function pluginManager() {
                     return;
                 }
                 return function(err, res) {
+                    if (res) {
+                        if (!res.result) {
+                            res.result = {};
+                        }
+                        if (!res.result.ok) {
+                            res.result.ok = !err;
+                        }
+                        if (!res.result.nModified) {
+                            res.result.nModified = res.modifiedCount || 0;
+                        }
+                    }
                     if (err) {
                         if (retry && err.code === 11000) {
                             if (typeof retry === "function") {
@@ -1740,9 +1890,19 @@ var pluginManager = function pluginManager() {
                 logDbRead.d("aggregate " + collection + " %j %j" + at, query, options);
                 logDbRead.d("From connection %j", countlyDb._cly_debug);
                 var cursor = this._aggregate(query, options);
+                cursor._count = cursor.count;
+                cursor.count = function(...countArgs) {
+                    if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                        return ob.estimatedDocumentCount.call(ob, ...countArgs);
+                    }
+                    return ob.countDocuments.call(ob, query, ...countArgs);
+                };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(cb) {
                     return handlePromiseErrors(cursor._toArray(logForReads(cb, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
+                };
+                cursor.isClosed = function() {
+                    return cursor.closed || cursor.killed;
                 };
                 if (typeof callback === "function") {
                     return cursor.toArray(callback);
@@ -1782,9 +1942,34 @@ var pluginManager = function pluginManager() {
                 logDbRead.d("find " + collection + " %j %j" + at, query, options);
                 logDbRead.d("From connection %j", countlyDb._cly_debug);
                 var cursor = this._find(query, options);
+                cursor._count = cursor.count;
+                cursor.count = function(...countArgs) {
+                    if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                        return ob.estimatedDocumentCount.call(ob, ...countArgs);
+                    }
+                    return ob.countDocuments.call(ob, query, ...countArgs);
+                };
+
+                cursor._project = cursor.project;
+                cursor.project = function(projection) {
+                    //Fix projection
+                    var newOptions = JSON.parse(JSON.stringify(projection));
+                    newOptions.projection = projection;
+                    mngr.dispatch("/db/read", {
+                        db: dbName,
+                        operation: "find",
+                        collection: collection,
+                        query: query,
+                        options: newOptions
+                    });
+                    return cursor._project(newOptions.projection);
+                };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
                     return handlePromiseErrors(cursor._toArray(logForReads(callback, e, copyArguments(args, "find"))), e, copyArguments(arguments, "find"));
+                };
+                cursor.isClosed = function() {
+                    return cursor.closed || cursor.killed;
                 };
                 return cursor;
             };
@@ -1792,7 +1977,12 @@ var pluginManager = function pluginManager() {
             //backwards compatability
 
             ob._count = ob.count;
-            ob.count = ob.countDocuments;
+            ob.count = function(query, ...countArgs) {
+                if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                    return ob.estimatedDocumentCount.call(ob, ...countArgs);
+                }
+                return ob.countDocuments.call(ob, query, ...countArgs);
+            };
             ob.ensureIndex = ob.createIndex;
 
             ob.update = function(selector, document, options, callback) {
@@ -1840,6 +2030,43 @@ var pluginManager = function pluginManager() {
             ob.findAndRemove = function(query, sort, options, callback) {
                 return ob.findOneAndDelete(query, options, callback);
             };
+
+            ob._drop = ob.drop;
+            ob.drop = function() {
+                if (!arguments.length) {
+                    return ob._drop().catch(function(ex) {
+                        if (ex.code !== 26) {
+                            throw ex;
+                        }
+                    });
+                }
+                else {
+                    return ob._drop.apply(ob, arguments);
+                }
+            };
+
+            ob._save = ob.save;
+            ob.save = function(doc, options, callback) {
+                if (doc._id) {
+                    var selector = {"_id": doc._id};
+                    delete doc._id;
+                    options = options || {};
+                    if (options && typeof options === "object") {
+                        options.upsert = true;
+                        return ob.updateOne(selector, {"$set": doc}, options, callback);
+                    }
+                    else {
+                        var myoptions = {"upsert": true};
+                        return ob.updateOne(selector, {"$set": doc}, myoptions, options); //we have callback in options param
+                    }
+
+
+                }
+                else {
+                    return ob.insertOne(doc, options, callback);
+                }
+            };
+
 
 
             countlyDb._collection_cache[collection] = ob;

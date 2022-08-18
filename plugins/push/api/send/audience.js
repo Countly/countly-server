@@ -488,6 +488,17 @@ class CohortsEventsMapper extends Mapper {
             }
         }
 
+        if (this.trigger.cap || this.trigger.sleep) {
+            let arr = (user[TK][0].msgs || {})[this.message.id];
+            if (arr && this.trigger.cap && arr.length >= this.trigger.cap) {
+                return null;
+            }
+
+            if (arr && this.trigger.sleep && (d - Math.max(...arr)) < this.trigger.sleep) {
+                return null;
+            }
+        }
+
         // delayed message to spread the load across time
         if (this.trigger.delay) {
             d += this.trigger.delay;
@@ -551,6 +562,11 @@ class PusherPopper {
 
         // Decrease amount of data we process here
         await this.audience.addProjection(steps, userFields);
+
+        // Increase parallelism by ensuring similar messages go next to each other
+        steps.push({
+            $sort: {la: 1}
+        });
 
         // Lookup for tokens & msgs
         steps.push({
@@ -667,6 +683,9 @@ class Pusher extends PusherPopper {
                 if (!note) {
                     continue;
                 }
+                for (let k in (this.variables || {})) {
+                    note.pr[k] = this.variables[k];
+                }
 
                 let p = pf[0],
                     d = note._id.getTimestamp().getTime(),
@@ -689,7 +708,7 @@ class Pusher extends PusherPopper {
                 updates[`result.subs.${p}.subs.${la}.total`] = rpl.total;
 
                 if (PLATFORM[p].parent) {
-                    rp = result.sub(PLATFORM[p].parent),
+                    rp = result.sub(PLATFORM[p].parent);
                     rpl = rp.sub(la);
                     rp.total++;
                     rpl.total++;
@@ -698,7 +717,7 @@ class Pusher extends PusherPopper {
                     updates[`result.subs.${PLATFORM[p].parent}.subs.${la}.total`] = rpl.total;
                 }
 
-                note.h = util.hash(note.pr);
+                note.h = util.hash(note.pr, note.c ? util.hash(note.c) : undefined);
 
                 if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);

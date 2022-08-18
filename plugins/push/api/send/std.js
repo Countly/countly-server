@@ -34,19 +34,20 @@ class Base extends Duplex {
      * @param {Creds} creds authorization key: server key for FCM/HW, P8/P12 for APN
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently
      */
     constructor(log, type, creds, messages, options) {
         super({
             readableObjectMode: true,
             writableObjectMode: true,
-            writableHighWaterMark: options.pool.concurrency,
+            writableHighWaterMark: options.pool.pushes,
         });
         this.type = type;
         this.creds = creds;
         // this.id = `wrk-${type}-${hash(key.toString() + (secret || '').toString(16))}-${Date.now()}`;
         // this.log = log.sub(this.id);
         this.messages = {};
+        this.sending = 0;
         this._options = options;
         messages.forEach(m => this.message(m));
         // this.log.i('initialized %s', type);
@@ -69,6 +70,9 @@ class Base extends Duplex {
      * @param {object} data Message data / Message instance
      */
     message(data) {
+        if (this.log) {
+            this.log.d('Received message %s', data._id);
+        }
         if (data instanceof Message) {
             this.messages[data.id] = data;
         }
@@ -111,17 +115,29 @@ class Base extends Duplex {
      * @param {array} chunks Array of chunks
      */
     async do_writev(chunks) {
+        let i;
         chunks = chunks.map(c => c.chunk);
-        for (let i = 0; i < chunks.length; i++) {
-            let {frame, payload, length} = chunks[i];
-            this.log.d('do_writev %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
-            if (frame & FRAME.CMD) {
-                this.push(chunks[i]);
+        try {
+            for (i = 0; i < chunks.length; i++) {
+                let {frame, payload, length} = chunks[i];
+                this.log.d('do_writev %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
+                if (frame & FRAME.CMD) {
+                    this.push(chunks[i]);
+                }
+                else {
+                    await this.send(payload, length);
+                }
+                this.log.d('do_writev done %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
             }
-            else {
-                await this.send(payload, length);
+        }
+        catch (err) {
+            if (i < chunks.length - 1) {
+                for (let x = i + 1; x < chunks.length; x++) {
+                    if (chunks[x].frame & FRAME.CMD) {
+                        this.push(chunks[i]);
+                    }
+                }
             }
-            this.log.d('do_writev done %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
         }
     }
 
@@ -221,10 +237,13 @@ class Base extends Duplex {
      * @param {integer} max max number of attempts, 3 by default
      */
     async with_retries(data, bytes, fun, max = this._options.connection.retries || 3) {
+        this.sending += bytes;
         let error;
         for (let attempt = 1; attempt <= max; attempt++) {
             try {
-                return await fun(data, bytes, attempt);
+                let ret = await fun(data, bytes, attempt);
+                this.sending -= bytes;
+                return ret;
             }
             catch (e) {
                 this.log.w('Retriable error %d of %d', attempt, max, e);
@@ -243,8 +262,10 @@ class Base extends Duplex {
                         e.affected = [];
                         e.affectedBytes = 0;
                     }
-                    data = e.left;
-                    bytes = e.leftBytes;
+                    if (e.hasLeft) {
+                        data = e.left;
+                        bytes = e.leftBytes;
+                    }
                     error = e;
                 }
                 else {
@@ -253,6 +274,7 @@ class Base extends Duplex {
             }
         }
         if (error) {
+            this.sending -= bytes;
             error.left = error.left ? error.left.map(l => l._id) : error.left;
             throw error;
         }
@@ -266,16 +288,44 @@ class Base extends Duplex {
             // do something
         }
     }
+
+    /**
+     * Wait for requests to finish and invoke the callback
+     * 
+     * @param {function} callback callback to call
+     */
+    drainAndCall(callback) {
+        if (this.sending || this.readableLength) {
+            this.log.d('.');
+            setTimeout(this.drainAndCall.bind(this, callback), 1000);
+        }
+        else {
+            callback();
+        }
+    }
+
+    /**
+     * Tear down the stream
+     * 
+     * @param {function} callback callback to call when done
+     */
+    _final(callback) {
+        this.drainAndCall(callback);
+    }
 }
 
 /**
  * Hash 
  * 
  * @param {any} data data to hash
+ * @param {String} seed seed to start from
  * @returns {String} 64-bit hash hex string
  */
-function hash(data) {
+function hash(data, seed) {
     xx64.reset();
+    if (seed) {
+        xx64.update(Buffer.from(seed, 'hex'));
+    }
     xx64.update(Buffer.from(JSON.stringify(data), 'utf-8'));
     return xx64.digest().toString('hex');
     // if (seed) {

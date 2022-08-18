@@ -29,11 +29,56 @@ catch (ex) {
         p5: 90,
     });
 
+    /**
+     * @api {get} /o/slipping Get slipping away data 
+     * @apiName  getData
+     * @apiGroup slipping
+     *
+     * @apiDescription get user count and percentage sliping away from 
+     *  7, 14, 30, 60, 90 days ago. 
+     * @apiQuery {string} method set "slipping" to get slipping away data 
+     * @apiQuery {String} query JSON string of user filter query on DB  
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * [
+     *     {
+     *       "period": 7,
+     *       "count": 0,
+     *       "percentage": "0.00",
+     *       "timeStamp": 1649816027
+     *     },
+     *     {
+     *       "period": 14,
+     *       "count": 0,
+     *       "percentage": "0.00",
+     *       "timeStamp": 1649211227
+     *     },
+     *     {
+     *       "period": 30,
+     *       "count": 0,
+     *       "percentage": "0.00",
+     *       "timeStamp": 1647828827
+     *     },
+     *     {
+     *       "period": 60,
+     *       "count": 0,
+     *       "percentage": "0.00",
+     *       "timeStamp": 1645236827
+     *     },
+     *     {
+     *       "period": 90,
+     *       "count": 0,
+     *       "percentage": "0.00",
+     *       "timeStamp": 1642644827
+     *     }
+     *   ]
+     */
     plugins.register("/o/slipping", function(ob) {
         const params = ob.params;
         const app_id = params.qstring.app_id;
-        let user_query = params.qstring.query;
-        if (user_query) {
+        let user_query = params.qstring.query || {};
+        if (typeof user_query === "string") {
             try {
                 user_query = JSON.parse(user_query);
             }
@@ -70,13 +115,12 @@ catch (ex) {
 
             conditions.forEach((condition) => {
                 tasks.push(new BPromise(function(resolve, reject) {
-                    countlyDb.collection('app_users' + app_id).find(condition)
-                        .count(function(err, count) {
-                            if (err) {
-                                return reject(err);
-                            }
-                            return resolve(count);
-                        });
+                    countlyDb.collection('app_users' + app_id).count(condition, function(err, count) {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve(count);
+                    });
                 }));
             });
 

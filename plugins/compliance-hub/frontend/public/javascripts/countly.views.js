@@ -1,4 +1,4 @@
-/*global $, CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, CountlyHelpers, countlyGlobal, countlyAuth */
+/*global CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager, CountlyHelpers, countlyGlobal, countlyAuth */
 (function() {
     var FEATURE_NAME = "compliance_hub";
     var UserView = countlyVue.views.create({
@@ -193,6 +193,12 @@
 
                 });
             },
+            tableRowClickHandler: function(row) {
+                // Only expand row if text inside of it are not highlighted
+                if (window.getSelection().toString().length === 0) {
+                    this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+                }
+            }
         }
 
     });
@@ -672,8 +678,6 @@
         renderedView.params = params;
         this.renderWhenReady(renderedView);
     });
-    $(document).ready(function() {
-        app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
-    });
+    app.addSubMenu("management", {code: "compliance", permission: "compliance_hub", url: "#/manage/compliance/", text: "compliance_hub.title", priority: 60});
 
 })();

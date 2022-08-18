@@ -1,9 +1,10 @@
-const {Worker, isMainThread, parentPort, workerData} = require('worker_threads'),
+const {Worker, isMainThread, parentPort, workerData, threadId} = require('worker_threads'),
     {Duplex} = require('stream'),
     {FRAME, FRAME_NAME, encode, decode, frame_type, frame_length} = require('./proto'),
     Measurement = require('./measure'),
-    { PushError } = require('./data/error'),
+    { PushError, ConnectionError } = require('./data/error'),
     { Creds } = require('./data/creds'),
+    plugins = require('../../../pluginManager'),
     logger = require('../../../../api/utils/log.js');
 
 /**
@@ -42,9 +43,9 @@ if (isMainThread) {
             this.out = new Measurement();
             this.processing = 0;
             this.bytes = opts.cfg.pool.bytes;
-            this.worker = new Worker(__filename, {workerData: {json: JSON.stringify(opts)}});
+            this.worker = new Worker(__filename, {workerData: {json: JSON.stringify(Object.assign(opts, {logs: plugins.getConfig('logs')}))}});
             this.worker.unref();
-            this.log = logger(opts.log).sub(`wrk-m`);
+            this.log = logger(opts.log).sub(`${this.worker.threadId}-m`);
             this.init = new Promise((res, rej) => {
                 this.initRes = res;
                 this.initRej = rej;
@@ -52,7 +53,7 @@ if (isMainThread) {
             this.worker.on('message', m => {
                 let frame = frame_type(m.buffer);
                 this.log.d('IN message %s %d bytes', FRAME_NAME[frame], m.buffer.byteLength);
-                if (frame & FRAME.CLOSE) {
+                if (frame & FRAME.END) {
                     let error = (frame & FRAME.ERROR) ? decode(m.buffer).payload : undefined;
                     if (this.closeCallback) {
                         clearTimeout(this.closeTimeout);
@@ -61,6 +62,7 @@ if (isMainThread) {
                         this.closeCallback = undefined;
                     }
                     if (this.worker) {
+                        this.push(m);
                         this.destroy();
                         // this.worker.terminate().catch(this.log.e.bind(this.log, 'Error when terminating worker')).then(() => {
                         //     this.emit('push_done');
@@ -94,6 +96,10 @@ if (isMainThread) {
                 else if (frame & FRAME.RESULTS) {
                     let l = frame_length(m.buffer);
                     this.processing -= l;
+                    if (this.processing < 0) {
+                        this.processing = 0;
+                    }
+                    this.log.d('processing %d / %d (results)', -l, this.processing);
 
                     if (!(frame & FRAME.ERROR)) {
                         this.out.inc(l);
@@ -102,7 +108,14 @@ if (isMainThread) {
                     this.push(m);
                 }
                 else if (frame === (FRAME.SEND | FRAME.ERROR)) {
-                    this.emit('push_fail', decode(m.buffer).payload);
+                    let l = frame_length(m.buffer);
+                    this.processing -= l;
+                    if (this.processing < 0) {
+                        this.processing = 0;
+                    }
+                    this.log.d('processing %d / %d (send error)', -l, this.processing);
+                    this.push(m);
+                    // this.emit('push_fail', decode(m.buffer).payload);
                 }
                 else if (frame & FRAME.CMD) {
                     this.push(m);
@@ -171,21 +184,56 @@ if (isMainThread) {
          * @param {function} callback called when the frame is fully processed
          */
         _writev(chunks, callback) {
-            this.log.d('Writing %d chunks to the worker thread', chunks.length);
-            this.log.f('i', log => {
-                log('Load %s in %d/%d/%d out %d/%d/%d', this.load.toFixed(2), this.in.avg(5), this.in.avg(30), this.in.avg(60), this.out.avg(5), this.out.avg(30), this.out.avg(60));
-            });
-            chunks.forEach(chunk => {
-                let c = chunk.chunk,
-                    l = c.buffer.byteLength;
-                if (frame_type(c.buffer) & FRAME.SEND) {
-                    this.processing += l;
-                    this.in.inc(l);
-                }
+            // this.log.f('d', log => {
+            //     log('Writing %d chunks to worker thread, first is %d', chunks.length, frame_type(chunks[0].chunk.buffer));
+            //     log('load %s in %s/%s/%s out %s/%s/%s', this.load.toFixed(2), this.in.avg(5), this.in.avg(30), this.in.avg(60), this.out.avg(5), this.out.avg(30), this.out.avg(60));
+            // });
+            // chunks.forEach(chunk => {
+            //     let c = chunk.chunk,
+            //         l = c.buffer.byteLength,
+            //         f = frame_type(c.buffer);
+            //     if (f & FRAME.SEND) {
+            //         this.processing += l;
+            //         this.log.d('processing %d (send)', this.processing);
+            //         this.in.inc(l);
+            //     }
+            //     this.worker.postMessage(c, [c.buffer]);
+            // });
+            // this.log.d('Done writing %d chunks to the worker thread', chunks.length);
+            // callback(null);
+            this.wait_and_write(chunks, callback);
+        }
+
+        /**
+         * Wait for the worker to become free and write next chunk
+         * 
+         * @param {chunk[]} chunks array of chunks to send to the worker
+         * @param {function} callback callback to be called when all chunks are written
+         */
+        wait_and_write(chunks, callback) {
+            if (!chunks.length) {
+                callback(null);
+                return;
+            }
+
+            let f = frame_type(chunks[0].chunk.buffer);
+
+            if (!(f & FRAME.SEND)) {
+                let c = chunks.shift().chunk;
                 this.worker.postMessage(c, [c.buffer]);
-            });
-            this.log.d('Done writing %d chunks to the worker thread', chunks.length);
-            callback(null);
+                this.log.d('processing %d (send not)', this.processing);
+            }
+            else if (this.free && (f & FRAME.SEND)) {
+                let c = chunks.shift().chunk;
+                this.processing += c.buffer.byteLength - 5; // 5 service bytes
+                this.worker.postMessage(c, [c.buffer]);
+                this.log.d('processing %d (send)', this.processing);
+            }
+            else {
+                this.log.d('delaying %s', FRAME_NAME[f]);
+            }
+
+            setTimeout(this.wait_and_write.bind(this, chunks, callback), 100);
         }
 
         /**
@@ -205,7 +253,7 @@ if (isMainThread) {
                     }
                     callback();
                 }, 10000); // close in 10 sec if it didn't close itself
-                this.worker.postMessage(encode(FRAME.CLOSE));
+                this.worker.postMessage(encode(FRAME.END));
             }
             else {
                 callback();
@@ -240,7 +288,7 @@ if (isMainThread) {
     //     let worker = new Worker(__filename, {workerData: opts});
     //     worker.on('message', m => {
     //         let frame = frame_type(m.buffer);
-    //         if (frame & FRAME.CLOSE) {
+    //         if (frame & FRAME.END) {
     //             worker.terminate().catch(logger.e.bind(logger));
     //         }
     //     });
@@ -250,21 +298,27 @@ if (isMainThread) {
 else {
     let processing = 0;
 
-    const {id: wrkid, log: logid, type, creds, messages, cfg} = JSON.parse(workerData.json),
-        id = `wrk-${wrkid}-w`,
-        connection = factory(logid, type, creds, messages, cfg),
-        log = logger(logid).sub(id),
+    const {log: logid, type, creds, messages, cfg, logs} = JSON.parse(workerData.json);
+    logger.ipcHandler({cmd: 'log', config: logs});
+
+    const connection = factory(logid, type, creds, messages, cfg),
+        log = logger(logid).sub(threadId + ''),
         post = function(frame, payload, length = 0) {
             processing -= length;
+            if (processing < 0) {
+                processing = 0;
+            }
             let arr = encode(frame, payload || {}, length);
-            log.d('OUT message %s %d bytes (processing %d)', FRAME_NAME[arr[0]], arr.length, processing);
+            log.d('OUT message %s %d bytes (processing %d / %d)', FRAME_NAME[arr[0]], arr.length, -length, processing);
             parentPort.postMessage(arr);
         };
+
+    log.i('Starting with messages %s', (messages || []).map(m => m._id).join(', '));
 
     connection.on('error', err => {
         log.w('error in worker %s', err);
         if (connection.closingForcefully) {
-            post(FRAME.ERROR | FRAME.CLOSE, PushError.deserialize(err));
+            post(FRAME.ERROR | FRAME.END, PushError.deserialize(err));
         }
         else {
             post(FRAME.ERROR, PushError.deserialize(err));
@@ -295,25 +349,33 @@ else {
         else {
             log.i('closed');
         }
-        post(FRAME.CLOSE | (connection.closingForcefully ? FRAME.ERROR : FRAME.SUCCESS), connection.closingForcefully || {});
+        post(FRAME.END | (connection.closingForcefully ? FRAME.ERROR : FRAME.SUCCESS), connection.closingForcefully || {});
     });
 
     parentPort.on('message', arr => {
         log.d('IN message %s %d bytes', FRAME_NAME[arr[0]], arr.length);
         const data = decode(arr.buffer);
         if (data.frame === FRAME.CONNECT) {
+            if (data.payload && Array.isArray(data.payload)) {
+                log.d('IN CONNECT with messages %s', data.payload.map(m => m._id).join(', '));
+            }
             if (connection.connected) {
                 if (data.payload && Array.isArray(data.payload)) {
                     data.payload.forEach(m => connection.message(m));
                 }
             }
             else {
-                connection.connect().then(() => {
-                    connection.connected = true;
-                    if (data.payload && Array.isArray(data.payload)) {
-                        data.payload.forEach(m => connection.message(m));
+                connection.connect().then(valid => {
+                    if (valid) {
+                        connection.connected = true;
+                        if (data.payload && Array.isArray(data.payload)) {
+                            data.payload.forEach(m => connection.message(m));
+                        }
+                        post(FRAME.SUCCESS | FRAME.CONNECT, {});
                     }
-                    post(FRAME.SUCCESS | FRAME.CONNECT, {});
+                    else {
+                        post(FRAME.ERROR | FRAME.CONNECT, new ConnectionError('Credentials were rejected'));
+                    }
                 }, err => {
                     post(FRAME.ERROR | FRAME.CONNECT, err);
                 });
@@ -321,7 +383,7 @@ else {
         }
         else if (data.frame === FRAME.SEND) {
             processing += data.length;
-            log.d('sending %d, processing %d', data.length, processing);
+            log.d('processing %d / %d (sending)', data.length, processing);
             connection.write(data, err => {
                 if (err) {
                     log.e('failed to write to connection', err);
@@ -331,7 +393,7 @@ else {
                 }
             });
         }
-        else if (data.frame === FRAME.CLOSE) {
+        else if (data.frame & FRAME.END) {
             if (connection.writable) {
                 if (data.payload.force) {
                     log.w('closing forcefully');
@@ -340,7 +402,10 @@ else {
                 }
                 else {
                     log.i('closing');
-                    connection.end();
+                    connection.drainAndCall(function() {
+                        post(data.frame, data.payload);
+                        connection.end();
+                    });
                 }
             }
             else {

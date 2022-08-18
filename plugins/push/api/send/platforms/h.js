@@ -47,17 +47,17 @@ class HPK extends Splitter {
      * @param {Credentials} creds HMS server key
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently, this parameter is strictly set to 500
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently, this parameter is strictly set to 500
      * @param {string} options.proxy.host proxy host
      * @param {string} options.proxy.port proxy port
      * @param {string} options.proxy.user proxy user
      * @param {string} options.proxy.pass proxy pass
+     * @param {string} options.proxy.auth proxy require https correctness
      */
     constructor(log, type, creds, messages, options) {
-        options.pool.concurrency = 500;
         super(log, type, creds, messages, options);
 
-        this.log = logger(log).sub(`wh-${threadId}`);
+        this.log = logger(log).sub(`${threadId}-h`);
         this.opts = {
             agent: this.agent,
             hostname: 'push-api.cloud.huawei.com',
@@ -155,7 +155,7 @@ class HPK extends Splitter {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let content = this.template(pushes[0].m).compile(pushes[0]),
-                one = Math.floor(bytes / pushes.length);
+                one = Math.ceil(bytes / pushes.length);
 
             content.message.token = pushes.map(p => p.t);
 
@@ -528,6 +528,7 @@ const CREDS = {
             return Object.assign(super.scheme, {
                 app: { required: true, type: 'String', 'min-length': 7, 'max-length': 12},
                 secret: { required: true, type: 'String', 'min-length': 64, 'max-length': 64},
+                hash: { required: false, type: 'String' },
             });
         }
 

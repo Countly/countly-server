@@ -5,6 +5,7 @@
     :placeholder="placeholder"
     :disabled="disabled"
     :pop-class="popClass"
+    :popper-append-to-body="popperAppendToBody"
     v-bind="$attrs"
     v-on="$listeners"
     @show="handleDropdownShow"
@@ -51,7 +52,7 @@
                 <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>
             </div>
             <div class="bu-level">
-                <div class="bu-level-item" v-if="searchable">
+                <div class="bu-level-item" v-if="isSearchShown">
                     <el-input
                         v-show="showList"
                         ref="searchBox"
@@ -95,6 +96,7 @@
                     :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check'"
+                    :disable-non-selected="disableNonSelected"
                     :bordered="false"
                     :options="getMatching(tab.options)"
                     @change="handleValueChange"
@@ -104,6 +106,7 @@
                     :noMatchFoundPlaceholder="noMatchFoundPlaceholder"
                     v-show="showList"
                     v-else-if="mode === 'multi-check-sortable'"
+                    :disable-non-selected="disableNonSelected"
                     :sortable="true"
                     :bordered="false"
                     :options="getMatching(tab.options)"

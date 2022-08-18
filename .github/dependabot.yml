@@ -5,46 +5,10 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   reviewers:
   - ar2rsawseen
   assignees:
   - ar2rsawseen
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-  ignore:
-  - dependency-name: puppeteer
-    versions:
-    - 6.0.0
-    - 7.0.0
-    - 7.0.1
-    - 7.0.3
-    - 7.0.4
-    - 7.1.0
-    - 8.0.0
-  - dependency-name: uglify-js
-    versions:
-    - 3.12.5
-    - 3.12.6
-    - 3.12.7
-    - 3.12.8
-    - 3.13.0
-    - 3.13.1
-    - 3.13.2
-    - 3.13.3
-  - dependency-name: grunt-cli
-    versions:
-    - 1.4.0
-  - dependency-name: mcc-mnc-list
-    versions:
-    - 1.1.6
-- package-ecosystem: npm
-  directory: "/plugins/EChartMap"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -53,7 +17,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -62,7 +25,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -71,7 +33,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -80,7 +41,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -89,7 +49,14 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/consolidate"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -98,14 +65,26 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/dashboards"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
   versioning-strategy: increase-if-necessary
 - package-ecosystem: npm
   directory: "/plugins/data_migration"
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/data-manager"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -114,7 +93,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -123,7 +101,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -132,7 +109,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -141,7 +117,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -150,7 +125,14 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/hooks"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -159,7 +141,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -168,7 +149,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -177,7 +157,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -186,7 +165,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -195,7 +173,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   reviewers:
   - Cookiezaurs
   assignees:
@@ -208,7 +185,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -217,7 +193,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -226,11 +201,26 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   reviewers:
   - iartem
   assignees:
   - iartem
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/recaptcha"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/remote-config"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -239,7 +229,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -248,7 +237,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -257,7 +245,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -266,7 +253,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -275,7 +261,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -284,7 +269,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -293,7 +277,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -302,7 +285,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -311,11 +293,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
-  reviewers:
-  - LVMBDV
-  assignees:
-  - LVMBDV
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
@@ -324,7 +301,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   reviewers:
   - Cookiezaurs
   assignees:
@@ -337,11 +313,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
-  target-branch: next
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary
-  ignore:
-  - dependency-name: ua-parser-js
-    versions:
-    - 0.7.25

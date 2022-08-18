@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, Promise, CV, countlyVue, app, countlyAuth */
+/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, CV, countlyVue, app, countlyAuth */
 
 (function(countlyViews) {
 
@@ -162,8 +162,9 @@
             }
             for (var k = 0; k < rows.length; k++) {
                 rows[k].view = rows[k].display || rows[k].view || rows[k]._id;
-                rows[k].u = rows[k].uvalue || rows[k].u || 0;
-
+                if (rows[k].uvalue) {
+                    rows[k].u = Math.min(rows[k].uvalue, rows[k].u);
+                }
                 if (rows[k].t > 0) {
                     rows[k].dCalc = countlyCommon.timeString((rows[k].d / rows[k].t) / 60);
                     var vv = parseFloat(rows[k].scr) / parseFloat(rows[k].t);

@@ -92,10 +92,10 @@
                         for (var k = 0; k < this.data.metrics.length; k++) {
                             if (multiApps) {
                                 if (this.data.metrics.length > 1) {
-                                    name = eventName + " " + (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (this.__allApps[app] && this.__allApps[app].name || "");
+                                    name = eventName + " " + (this.map[this.data.metrics[k]] || this.data.metrics[k]) + " " + (this.__allApps[app] && this.__allApps[app].name || "Unknown");
                                 }
                                 else {
-                                    name = (eventName + " " + this.__allApps[app] && this.__allApps[app].name || "");
+                                    name = (eventName + " " + (this.__allApps[app] && this.__allApps[app].name || "Unknown"));
                                 }
                             }
                             else {
@@ -292,15 +292,7 @@
             }
         },
         grid: {
-            component: WidgetComponent,
-            dimensions: function() {
-                return {
-                    minWidth: 2,
-                    minHeight: 4,
-                    width: 2,
-                    height: 4
-                };
-            }
+            component: WidgetComponent
         }
     });
 })();

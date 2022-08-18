@@ -1,4 +1,4 @@
-/* global Vue, CV, _, Promise */
+/* global Vue, CV, _ */
 
 (function(countlyVue) {
 
@@ -315,6 +315,10 @@
             sortable: {
                 type: Boolean,
                 default: false
+            },
+            disableNonSelected: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
@@ -429,7 +433,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
-                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="disableNonSelected && !innerValue.includes(option.value)">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
@@ -457,7 +461,8 @@
         },
         data: function() {
             return {
-                activeTabId: null
+                activeTabId: null,
+                initialOptionsCount: 0
             };
         },
         computed: {
@@ -648,7 +653,9 @@
                         self.activeTabId = "__root";
                     }
                     else if (self.value && self.val2tab[self.value]) {
-                        self.activeTabId = self.val2tab[self.value];
+                        if (self.val2tab[self.value] !== "__selected") {
+                            self.activeTabId = self.val2tab[self.value];
+                        }
                     }
                     else if (this.hasAllOptionsTab) {
                         self.activeTabId = "__all";
@@ -675,6 +682,10 @@
                 this.determineActiveTabId();
             },
             'flatOptions.length': function(newVal) {
+                if (this.initialOptionsCount === 0) {
+                    this.initialOptionsCount = newVal;
+                }
+
                 if (!newVal && this.hasSelectedOptionsTab) {
                     this.activeTabId = "__selected";
                 }
@@ -745,7 +756,9 @@
             },
             //
             remote: {type: Boolean, default: false},
-            remoteMethod: {type: Function, required: false}
+            remoteMethod: {type: Function, required: false},
+            showSearch: {type: Boolean, default: false},
+            popperAppendToBody: {type: Boolean, default: true}
         },
         data: function() {
             return {
@@ -760,7 +773,8 @@
                 return {
                     "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.showTabs,
                     "cly-vue-select-x__pop--has-single-option": this.hasSingleOption,
-                    "cly-vue-select-x__pop--has-slim-header": !this.searchable && !this.showTabs
+                    "cly-vue-select-x__pop--has-slim-header": !this.searchable && !this.showTabs,
+                    "cly-vue-select-x__pop--hidden-header": !this.isSearchShown && !this.$scopedSlots.header && !this.$scopedSlots.action && !this.title && !this.showSelectedCount
                 };
             },
             currentTab: function() {
@@ -811,6 +825,24 @@
                     return true;
                 }
                 return Array.isArray(this.innerValue) && this.innerValue.length >= this.minItems && this.innerValue.length <= this.maxItems;
+            },
+            isSearchShown: function() {
+                if (this.searchable) {
+                    if (this.remote && this.initialOptionsCount > 10) {
+                        return true;
+                    }
+                    else if (this.showSearch) {
+                        return true;
+                    }
+                    else if (this.flatOptions.length > 10) {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
+            disableNonSelected: function() {
+                return this.innerValue && this.innerValue.length === this.maxItems;
             }
         },
         mounted: function() {

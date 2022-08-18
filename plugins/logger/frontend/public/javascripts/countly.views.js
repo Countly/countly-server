@@ -1,4 +1,4 @@
-/*global $, moment, countlyVue, app, countlyLogger, countlyCommon, CV, countlyGlobal */
+/*global moment, countlyVue, app, countlyLogger, countlyCommon, CV, countlyGlobal */
 (function() {
     var isSecondFormat = (Math.round(parseFloat(this.timestamp)) + "").length === 10;
 
@@ -174,6 +174,15 @@
             },
             filterChange: function() {
                 this.fetchRequestLogs();
+            },
+            handleTableRowClick: function(row) {
+                // Only expand row if text inside of it are not highlighted
+                if (window.getSelection().toString().length === 0) {
+                    this.$refs.requestLogTable.$refs.elTable.toggleRowExpansion(row);
+                }
+            },
+            tableRowClassName: function() {
+                return 'bu-is-clickable';
             }
         },
         filters: {
@@ -209,28 +218,26 @@
         }]
     });
 
-    $(document).ready(function() {
-        app.logger = logger;
+    app.logger = logger;
 
-        app.route('/manage/logger', 'logger', function() {
-            var params = {};
-            this.logger.params = params;
-            this.renderWhenReady(this.logger);
-        });
-
-        app.addSubMenu("management", { code: "logger", permission: "logger", url: "#/manage/logger", text: "logger.title", priority: 50 });
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("logger.state", "logger.state");
-            app.configurationsView.registerInput("logger.state", {
-                input: "el-select",
-                attrs: {},
-                list: [
-                    { value: 'on', label: CV.i18n("logger.state-on") },
-                    { value: 'off', label: CV.i18n("logger.state-off") },
-                    { value: 'automatic', label: CV.i18n("logger.state-automatic") }
-                ]
-            });
-            app.configurationsView.registerLabel("logger.limit", "logger.limit");
-        }
+    app.route('/manage/logger', 'logger', function() {
+        var params = {};
+        this.logger.params = params;
+        this.renderWhenReady(this.logger);
     });
+
+    app.addSubMenu("management", { code: "logger", permission: "logger", url: "#/manage/logger", text: "logger.title", priority: 50 });
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("logger.state", "logger.state");
+        app.configurationsView.registerInput("logger.state", {
+            input: "el-select",
+            attrs: {},
+            list: [
+                { value: 'on', label: CV.i18n("logger.state-on") },
+                { value: 'off', label: CV.i18n("logger.state-off") },
+                { value: 'automatic', label: CV.i18n("logger.state-automatic") }
+            ]
+        });
+        app.configurationsView.registerLabel("logger.limit", "logger.limit");
+    }
 })();

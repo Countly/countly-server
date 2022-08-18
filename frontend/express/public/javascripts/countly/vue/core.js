@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store, countlyAuth, CountlyHelpers */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, VueCompositionAPI, app, countlyGlobal, store, countlyAuth, CountlyHelpers */
 
 (function(countlyVue, $) {
 
@@ -163,7 +163,7 @@
                     return this.__allApps[appId].name;
                 }
                 else {
-                    return appId;
+                    return "Deleted";
                 }
             },
             __getAppLogo: function(appId) {

@@ -67,9 +67,11 @@ let exp = module.exports = {
     compilation: [
         {_id: ObjectID(), a: a1, m: m1, u: 'u1', t: 't1', p: 't', f: 'p', d, pr: {}},
         {_id: ObjectID(), a: a1, m: m1, u: 'u2', t: 't2', p: 't', f: 'p', d, pr: {la: 'en'}},
-        {_id: ObjectID(), a: a1, m: m1, u: 'u2', t: 't2', p: 't', f: 'p', d, pr: {la: 'en'}, ov: {sound: 'sound.wav'}},
-        {_id: ObjectID(), a: a1, m: m1, u: 'u2', t: 't2', p: 't', f: 'p', d, pr: {}, ov: {sound: 'sound.wav', data: '{"a": 2}'}},
-        {_id: ObjectID(), a: a1, m: m1, u: 'u3', t: 't3', p: 't', f: 'p', d, pr: {la: 'en', name: 'n3', 'custom.arr': ['a', 'b', 'c']}, ov: {}},
+        {_id: ObjectID(), a: a1, m: m1, u: 'u2', t: 't2', p: 't', f: 'p', d, pr: {la: 'en'}, c: [{sound: 'sound.wav'}]},
+        {_id: ObjectID(), a: a1, m: m1, u: 'u2', t: 't2', p: 't', f: 'p', d, pr: {la: 'en'}, c: [{la: 'en', sound: 'sound.wav'}]},
+        {_id: ObjectID(), a: a1, m: m1, u: 'u2', t: 't2', p: 't', f: 'p', d, pr: {la: 'en'}, c: [{la: 'de', sound: 'sound.wav'}]},
+        {_id: ObjectID(), a: a1, m: m1, u: 'u2', t: 't2', p: 't', f: 'p', d, pr: {}, c: [{sound: 'sound.wav', data: '{"a": 2}'}]},
+        {_id: ObjectID(), a: a1, m: m1, u: 'u3', t: 't3', p: 't', f: 'p', d, pr: {la: 'en', name: 'n3', 'custom.arr': ['a', 'b', 'c']}, c: []},
         {_id: ObjectID(), a: a1, m: m1, u: 'u4', t: 't4', p: 't', f: 'p', d, pr: {la: 'en', name: 'n4', 'custom.obj': {a: 10, x: 'x', y: 1}}},
     ],
     compilation_results: {
@@ -77,6 +79,8 @@ let exp = module.exports = {
             {c: {i: m1.toString()}, aps: {sound: 'default', badge: 0, alert: {body: 'message/default'}}, a: 1, b: {c: 2}},
             {c: {i: m1.toString()}, aps: {sound: 'default', badge: 0, alert: {body: 'message/en'}}, a: 1, b: {c: 2}},
             {c: {i: m1.toString()}, aps: {sound: 'sound.wav', badge: 0, alert: {body: 'message/en'}}, a: 1, b: {c: 2}},
+            {c: {i: m1.toString()}, aps: {sound: 'sound.wav', badge: 0, alert: {body: 'message/en'}}, a: 1, b: {c: 2}},
+            {c: {i: m1.toString()}, aps: {sound: 'default', badge: 0, alert: {body: 'message/en'}}, a: 1, b: {c: 2}},
             {c: {i: m1.toString()}, aps: {sound: 'sound.wav', badge: 0, alert: {body: 'message/default'}}, a: 2},
             {c: {i: m1.toString(), e: {name: 'n3', 'custom.arr': ['a', 'b', 'c']}}, aps: {sound: 'default', badge: 0, alert: {body: 'message/en'}}, a: 1, b: {c: 2}},
             {c: {i: m1.toString(), e: {name: 'n4', 'custom.obj': {a: 10, x: 'x', y: 1}}}, aps: {sound: 'default', badge: 0, alert: {body: 'message/en'}}, a: 1, b: {c: 2}},
@@ -543,6 +547,6 @@ let exp = module.exports = {
 
 ['compilation', 'personalization'].forEach(k => {
     module.exports[k].forEach(p => {
-        p.h = hash(p.pr, p.ov ? hash(p.ov) : 0);
+        p.h = hash(p.pr, p.c ? hash(p.c) : 0);
     });
 });

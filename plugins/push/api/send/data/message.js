@@ -353,7 +353,19 @@ class Message extends Mongoable {
      * @returns {Content[]} array of contents which are applicable for this p/l case
      */
     filterContents(p, la) {
-        return (this._data.contents || []).filter(c => (!p || (!c.p || c.p === p)) && (!la || (!c.la || c.la === la)));
+        return Message.filterContents(this._data.contents, p, la);
+    }
+
+    /**
+     * Filter contents for given lang-platform combination
+     * 
+     * @param {Content[]|object[]} contents array of contents to filter
+     * @param {string} p platform key
+     * @param {string} la language key
+     * @returns {Content[]} array of contents which are applicable for this p/l case
+     */
+    static filterContents(contents, p, la) {
+        return (contents || []).filter(c => (!p || (!c.p || c.p === p)) && (!la || (!c.la || c.la === la)));
     }
 
     /**
@@ -540,8 +552,8 @@ class Message extends Mongoable {
                 status = Status.Scheduled;
             }
             else {
-                state = State.Done;
-                status = Status.Stopped;
+                state = State.Created | State.Streamable;
+                status = Status.Scheduled;
             }
         }
         else if (old & OldStatus.Created) {
@@ -550,8 +562,8 @@ class Message extends Mongoable {
                 status = Status.Inactive;
             }
             else {
-                state = State.Done;
-                status = Status.Stopped;
+                state = State.Created;
+                status = Status.Created;
             }
         }
         else {

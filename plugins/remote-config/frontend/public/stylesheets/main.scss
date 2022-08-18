@@ -99,7 +99,7 @@
 }
 .cly-vue-remote-config-percentages-breakdown {
   table-layout: fixed;
-  width: 100%;
+  width: 100% !important;
   padding: 15px 24px 10px;
   border-collapse: unset;
   &__data {

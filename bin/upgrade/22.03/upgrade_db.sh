@@ -31,7 +31,7 @@ then
         countly plugin upgrade web
         countly plugin upgrade push
         countly plugin upgrade hooks
-    
+        countly plugin upgrade drill
         
         #enable new plugins
         countly plugin enable data-manager
@@ -54,12 +54,12 @@ then
     nodejs "$CUR/scripts/remove_old_flows_collections.js"
     nodejs "$CUR/scripts/update_widgets_reports.js"
     nodejs "$CUR/scripts/clear_old_report_data.js"
+    nodejs "$CUR/scripts/mark_upgraded_custom_dashboards.js"
     
     #change config settings
     countly config "api.batch_on_master" null --force
     countly config "api.batch_read_on_master" null --force
     countly config "funnels.funnel_caching" true --force
-    countly config "frontend.production" false --force
     
     #add indexes
     nodejs "$DIR/scripts/add_indexes.js"

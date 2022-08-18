@@ -1,13 +1,13 @@
 const { FRAME, FRAME_NAME } = require('../../send/proto'),
-    { SynFlushTransform } = require('./syn'),
-    { ERROR, TriggerKind, State, Status } = require('../../send/data');
+    { DoFinish } = require('./do_finish'),
+    { ERROR, TriggerKind, State, Status, PushError, Result } = require('../../send/data');
 
 /**
  * Stream responsible for handling sending results:
  * - buffer incoming results
  * - write them to db once in a while
  */
-class Resultor extends SynFlushTransform {
+class Resultor extends DoFinish {
     /**
      * Constructor
      * 
@@ -17,7 +17,7 @@ class Resultor extends SynFlushTransform {
      * @param {function} check function which returns boolean in case no more data is expected and the stream can be closed
      */
     constructor(log, db, data, check) {
-        super(log.sub('resultor'), {objectMode: true});
+        super({objectMode: true});
         this.log = log.sub('resultor');
         this.data = data;
         this.db = db;
@@ -30,6 +30,7 @@ class Resultor extends SynFlushTransform {
         this.sentUsers = {}; // {aid: {mid: {users: [uid, uid, uid], 'a': 0, 'i': 2132}}}
         this.removeTokens = {}; // {aid: {field: [uid, uid, uid]}}
         this.errors = {}; // {mid: {platform: {InvalidToken: 0}}}
+        this.noMessage = {}; // {mid: Result}
         this.fatalErrors = {}; // {mid: []}
         this.toDelete = []; // [push id, push id, ...]
         this.count = 0; // number of results cached
@@ -66,6 +67,15 @@ class Resultor extends SynFlushTransform {
     }
 
     /**
+     * Flush results once in a while to ensure timeout won't result in full resend
+     */
+    ping() {
+        if (this.count) {
+            this.do_flush();
+        }
+    }
+
+    /**
      * Transform's transform impementation
      * 
      * @param {object[]} chunk array of results [push id|[push id, new token]]
@@ -77,24 +87,21 @@ class Resultor extends SynFlushTransform {
             { PLATFORM } = require('../../send/platforms');
         this.log.d('in resultor _transform', FRAME_NAME[frame]);
         if (frame & FRAME.CMD) {
-            if (frame & FRAME.FLUSH) {
-                this.flushed = results;
-            }
-            if (frame & (FRAME.FLUSH | FRAME.SYN)) {
+            if (frame & FRAME.END) {
                 this.do_flush(() => {
-                    this.log.d('flush push');
-                    this.push(chunk);
-                    this.log.d('flush callback');
+                    this.log.d('DONE');
                     callback();
+                    this.destroy();
                 });
             }
             else {
-                callback();
+                callback(new PushError('Wrong CMD in resultor', ERROR.EXCEPTION));
             }
             return;
         }
         else if (frame & FRAME.RESULTS) {
             if (frame & FRAME.ERROR) {
+                this.log.d('Error results %d %s %s %s affected %d %j left %d %j', results.type, results.name, results.message, results.date, results.affectedBytes, results.affected, results.leftBytes, results.left);
                 [results.affected, results.left].forEach(arr => {
                     if (results.is(ERROR.DATA_TOKEN_EXPIRED) || results.is(ERROR.DATA_TOKEN_INVALID)) {
                         arr.forEach(id => {
@@ -106,22 +113,35 @@ class Resultor extends SynFlushTransform {
                         });
                     }
                     arr.forEach(id => {
+                        this.log.d('Error %d %s for %s', results.type, results.name, id);
                         if (id < 0) {
                             return;
                         }
                         let {p, m, pr} = this.data.pushes[id],
                             msg = this.data.message(m),
-                            rp = msg.result.sub(p, undefined, PLATFORM[p].parent),
-                            rl = rp.sub(pr.la || 'default');
-                        msg.result.processed++;
-                        msg.result.recordError(results.message, 1);
+                            result,
+                            rp, rl;
+
+                        if (msg) {
+                            result = msg.result;
+                            result.lastRun.processed++;
+                            result.lastRun.errored++;
+                        }
+                        else {
+                            result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                        }
+                        rp = result.sub(p, undefined, PLATFORM[p].parent);
+                        rl = rp.sub(pr.la || 'default');
+
+                        result.processed++;
+                        result.recordError(results.message, 1);
                         rp.recordError(results.message, 1);
                         rp.processed++;
                         rl.recordError(results.message, 1);
                         rl.processed++;
 
                         if (PLATFORM[p].parent) {
-                            rp = msg.result.sub(PLATFORM[p].parent),
+                            rp = result.sub(PLATFORM[p].parent),
                             rl = rp.sub(pr.la || 'default');
                             rp.recordError(results.message, 1);
                             rp.processed++;
@@ -140,9 +160,11 @@ class Resultor extends SynFlushTransform {
                 results.forEach(res => {
                     let id, token;
                     if (typeof res === 'string') {
+                        this.log.d('Ok for %s', id);
                         id = res;
                     }
                     else {
+                        this.log.d('New token for %s', id);
                         id = res[0];
                         token = res[1];
                     }
@@ -154,19 +176,29 @@ class Resultor extends SynFlushTransform {
 
                     this.data.decSending(p.m);
 
-                    let m = this.data.message(p.m);
-                    m.result.sent++;
-                    m.result.processed++;
+                    let m = this.data.message(p.m),
+                        result, rp, rl;
 
-                    let rp = m.result.sub(p.p, undefined, PLATFORM[p.p].parent),
-                        rl = rp.sub(p.pr.la || 'default');
+                    if (m) {
+                        result = m.result;
+                        result.lastRun.processed++;
+                    }
+                    else {
+                        result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                    }
+                    rp = result.sub(p.p, undefined, PLATFORM[p.p].parent);
+                    rl = rp.sub(p.pr.la || 'default');
+
+                    result.sent++;
+                    result.processed++;
+
                     rp.sent++;
                     rp.processed++;
                     rl.sent++;
                     rl.processed++;
 
                     if (PLATFORM[p.p].parent) {
-                        rp = m.result.sub(PLATFORM[p.p].parent),
+                        rp = result.sub(PLATFORM[p.p].parent),
                         rl = rp.sub(p.pr.la || 'default');
                         rp.sent++;
                         rp.processed++;
@@ -200,24 +232,36 @@ class Resultor extends SynFlushTransform {
             let error = results.messageError(),
                 mids = {};
 
+            this.log.d('Error %d %s %s %s affected %d %j left %d %j', results.type, results.name, results.message, results.date, results.affectedBytes, results.affected, results.leftBytes, results.left);
+
             [results.affected, results.left].forEach(arr => {
                 arr.forEach(id => {
                     if (id < 0) {
                         return;
                     }
-                    let {m, p, pr} = this.data.pushes[id];
+                    this.log.d('Error %d %s for %s', results.type, results.name, id);
+                    let {m, p, pr} = this.data.pushes[id],
+                        result, rp, rl;
                     mids[m] = (mids[m] || 0) + 1;
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
 
                     m = this.data.message(m);
-                    let rp = m.result.sub(p, undefined, PLATFORM[p].parent),
-                        rl = rp.sub(pr.la || 'default');
+                    if (m) {
+                        result = m.result;
+                    }
+                    else {
+                        result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                    }
+
+                    rp = result.sub(p, undefined, PLATFORM[p].parent);
+                    rl = rp.sub(pr.la || 'default');
+
                     rp.processed++;
                     rl.processed++;
 
                     if (PLATFORM[p].parent) {
-                        rp = m.result.sub(PLATFORM[p].parent),
+                        rp = result.sub(PLATFORM[p].parent),
                         rl = rp.sub(pr.la || 'default');
                         rp.processed++;
                         rl.processed++;
@@ -228,9 +272,23 @@ class Resultor extends SynFlushTransform {
             });
 
             for (let mid in mids) {
-                let m = this.data.message(mid);
-                m.result.processed[m] += mids[mid];
-                m.result.pushError(error);
+                let m = this.data.message(mid),
+                    result;
+                if (m) {
+                    result = m.result;
+                }
+                else {
+                    result = this.noMessage[m] || (this.noMessage[m] = new Result());
+                }
+                result.processed[m] += mids[mid];
+
+                let run = result.lastRun;
+                if (run) {
+                    run.processed += mids[mid];
+                    run.errored += mids[mid];
+                }
+
+                result.pushError(error);
                 this.data.decSending(mid);
             }
         }
@@ -254,6 +312,8 @@ class Resultor extends SynFlushTransform {
 
         let updates = {},
             promises = this.data.messages().map(m => {
+                m.result.lastRun.ended = new Date();
+
                 if (this.data.isSending(m.id)) {
                     this.log.d('message %s is still in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
                     return m.save();
@@ -292,6 +352,7 @@ class Resultor extends SynFlushTransform {
                     m.state = state;
                     m.status = status;
                     if (status === Status.Sent || status === Status.Failed) {
+                        this.log.i('done sending message', m.id, state, status);
                         m.info.finished = new Date();
                     }
                     if (error) {
@@ -303,7 +364,13 @@ class Resultor extends SynFlushTransform {
                     this.log.d('message %s is in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
                     return m.save();
                 }
-            });
+            }).concat(Object.keys(this.noMessage).map(mid => {
+                this.log.e('Message %s doesn\'t exist, ignoring result %j', mid, this.noMessage[mid]);
+
+                let count = this.noMessage[mid].processed;
+                delete this.noMessage[mid];
+                return this.db.updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
+            }));
 
         if (this.toDelete.length) {
             promises.push(this.db.collection('push').deleteMany({_id: {$in: this.toDelete.map(this.db.ObjectID)}}));
@@ -335,18 +402,32 @@ class Resultor extends SynFlushTransform {
 
         // expired tokens - unset
         for (let aid in this.removeTokens) {
-            let collection = 'push_' + aid;
-            if (!updates[collection]) {
-                updates[collection] = [];
+            let collectionPush = `push_${aid}`,
+                collectionAppUsers = `app_users${aid}`;
+            if (!updates[collectionPush]) {
+                updates[collectionPush] = [];
+            }
+            if (!updates[collectionAppUsers]) {
+                updates[collectionAppUsers] = [];
             }
             for (let field in this.removeTokens[aid]) {
                 if (this.removeTokens[aid][field].length) {
-                    updates[collection].push({
+                    updates[collectionPush].push({
                         updateMany: {
                             filter: {_id: {$in: this.removeTokens[aid][field]}},
                             update: {
                                 $unset: {
                                     ['tk.' + field]: 1
+                                }
+                            }
+                        }
+                    });
+                    updates[collectionAppUsers].push({
+                        updateMany: {
+                            filter: {uid: {$in: this.removeTokens[aid][field]}},
+                            update: {
+                                $unset: {
+                                    ['tk' + field]: 1
                                 }
                             }
                         }
@@ -368,7 +449,7 @@ class Resultor extends SynFlushTransform {
                         updateMany: {
                             filter: {_id: {$in: this.sentUsers[aid][mid].users}},
                             update: {
-                                $set: {
+                                $addToSet: {
                                     ['msgs.' + mid]: now
                                 }
                             }
@@ -434,15 +515,20 @@ class Resultor extends SynFlushTransform {
 
         Promise.all(promises).then(() => {
             this.log.d('do_flush done');
-            if (callback) {
-                callback();
-            }
+            callback();
         }, err => {
             this.log.e('do_flush error', err);
-            if (callback) {
-                callback(err);
-            }
+            callback(err);
         });
+    }
+
+    /**
+     * Flush & release resources
+     * 
+     * @param {function} callback callback function
+     */
+    do_final(callback) {
+        callback();
     }
 
 
@@ -700,26 +786,6 @@ class Resultor extends SynFlushTransform {
     //         });
     //     }
     // }
-
-    /**
-     * Transform's flush impementation
-     * 
-     * @param {function} callback callback
-     */
-    _flush(callback) {
-        this.log.d('in resultor _flush');
-        this.do_flush(err => {
-            if (err) {
-                this.log.d('in resultor _flush err');
-                callback(err);
-            }
-            else {
-                this.log.d('in resultor _flush syn');
-                this.syn(callback);
-            }
-        });
-    }
-
 }
 
 module.exports = { Resultor };

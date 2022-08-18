@@ -95,7 +95,7 @@ const _ = require('underscore');
                                     },
                                     function(parallelCallback) {
                                         // (1.5) Share dashboard
-                                        db.collection('members').find({user_of: apc.app_id}).count(function(err1, userCount) {
+                                        db.collection('members').count({user_of: apc.app_id}, function(err1, userCount) {
                                             const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.share-dashboard", assistant.NOTIF_TYPE_QUICK_TIPS, 3, NOTIFICATION_VERSION);
                                             const not_enough_users = (userCount < 3);
                                             const max_show_time_not_exceeded = anc.showAmount < 1;

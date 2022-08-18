@@ -3,10 +3,10 @@
     var FEATURE_NAME = 'star_rating';
 
     /**
- * Replace escaped characters
- * @param {string} val - string to replace
- * @returns {string} - replaced escaped characters
- */
+    * Replace escaped characters
+    * @param {string} val - string to replace
+    * @returns {string} - replaced escaped characters
+    */
     function replaceEscapes(val) {
         return val.replace("&#39;", "'");
     }
@@ -20,12 +20,16 @@
         mixins: [],
         data: function() {
             return {
+                imageSource: '',
+                deleteLogo: false,
+                imageSrc: '',
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
                 // TODO: will be localized
                     trigger_sizes: [{label: 'Small', value: 's'}, {label: 'Medium', value: 'm'}, {label: 'Large', value: 'l'}],
                     trigger_positions: [{value: 'mleft', label: 'Center left', key: 'middle-left'}, { value: 'mright', label: 'Center right', key: 'middle-right' }, { value: 'bleft', label: 'Bottom left', key: 'bottom-left'}, { value: 'bright', label: 'Bottom right', key: 'bottom-right' }]
                 },
+                ratingSymbols: ['emojis', 'thumbs', 'stars'],
                 logoDropzoneOptions: {
                     createImageThumbnails: false,
                     maxFilesize: 2, // MB
@@ -34,7 +38,7 @@
                     acceptedFiles: 'image/jpeg,image/png,image/gif',
                     dictDefaultMessage: this.i18n('feedback.drop-message'),
                     dictRemoveFile: this.i18n('feedback.remove-file'),
-                    url: "/i/feedback/logo",
+                    url: "/i/feedback/logo" + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
                     paramName: "logo",
                     params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
                 },
@@ -43,13 +47,21 @@
                 cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
             };
         },
+        watch: {
+            imageSource: {
+                immediate: true,
+                handler: function(newValue) {
+                    this.imageSrc = newValue;
+                }
+            },
+        },
         methods: {
         // drawer event handlers
             onClose: function() {},
             setRatingItemActive: function(index) {
                 var self = this;
                 this.ratingItem.forEach(function(item) {
-                    if (self.ratingItem.indexOf(item) !== index) {
+                    if (self.ratingItem.indexOf(item) > index) {
                         item.inactive = true;
                         item.active = false;
                     }
@@ -64,6 +76,10 @@
 
                 if (this.logoFile !== "") {
                     submitted.logo = this.logoFile;
+                }
+
+                if (this.deleteLogo) {
+                    submitted.logo = '';
                 }
 
                 if (this.cohortsEnabled) {
@@ -100,9 +116,25 @@
                     });
                 }
             },
-            onOpen: function() {},
-            onFileAdded: function() {
+            onOpen: function() {
                 var self = this;
+                var loadImage = new Image();
+                loadImage.src = window.location.origin + "/star-rating/images/star-rating/" + this.controls.initialEditedObject.logo;
+                loadImage.onload = function() {
+                    self.imageSource = loadImage.src;
+                };
+            },
+            onFileRemoved: function() {
+                this.imageSource = '';
+                this.deleteLogo = true;
+            },
+            onFileAdded: function(file) {
+                var img = new FileReader();
+                var self = this;
+                img.onload = function() {
+                    self.imageSource = img.result;
+                };
+                img.readAsDataURL(file);
                 this.stamp = Date.now();
                 this.logoDropzoneOptions.params.identifier = this.stamp;
                 setTimeout(function() {
@@ -111,6 +143,10 @@
             },
             onComplete: function(res) {
                 this.logoFile = this.stamp + "." + res.upload.filename.split(".")[1];
+            },
+            remove: function() {
+                this.imageSource = '';
+                this.deleteLogo = true;
             }
         }
     });
@@ -481,13 +517,13 @@
                     trigger_position: 'mleft',
                     trigger_size: 'm',
                     contact_enable: false,
-                    popup_email_callout: 'Contact me e-mail',
+                    popup_email_callout: 'Contact me via e-mail',
                     popup_comment_callout: 'Add comment',
                     comment_enable: false,
                     ratings_texts: [
-                        'Very dissatisfied',
-                        'Somewhat dissatisfied',
-                        'Neither satisfied Nor Dissatisfied',
+                        'Very Dissatisfied',
+                        'Somewhat Dissatisfied',
+                        'Neither Satisfied Nor Dissatisfied',
                         'Somewhat Satisfied',
                         'Very Satisfied'
                     ],
@@ -759,6 +795,8 @@
                     };
                 }
                 this.widget.target_page = this.widget.target_page === "selected";
+                this.widget.comment_enable = (this.widget.comment_enable === 'true');
+                this.widget.contact_enable = (this.widget.contact_enable === 'true');
                 this.openDrawer('widget', this.widget);
             },
             handleCommand: function(command) {
@@ -1137,16 +1175,14 @@ app.addPageScript("/drill#", function() {
 });
 */
 
-    $(document).ready(function() {
-        app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
-        app.addSubMenu("feedback", {
-            code: "star-rating",
-            permission: FEATURE_NAME,
-            url: "#/feedback/ratings",
-            text: "star.menu-title",
-            icon: '<div class="logo ion-android-star-half"></div>',
-            priority: 30
-        });
+    app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
+    app.addSubMenu("feedback", {
+        code: "star-rating",
+        permission: FEATURE_NAME,
+        url: "#/feedback/ratings",
+        text: "star.menu-title",
+        icon: '<div class="logo ion-android-star-half"></div>',
+        priority: 30
     });
 
     countlyVue.container.registerMixin("/manage/export/export-features", {

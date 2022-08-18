@@ -556,7 +556,7 @@
                     password: ""
                 },
                 changePassword: {
-                    showDialog: false,
+                    showDialog: this.$route.params && this.$route.params.reset || false,
                     title: CV.i18n("configs.change-password"),
                     saveButtonLabel: CV.i18n("configs.change-password"),
                     cancelButtonLabel: CV.i18n("configs.cancel"),
@@ -954,8 +954,6 @@
     }
     app.configurationsView.registerInput("apps.country", {input: "el-select", attrs: {}, list: countryList});
 
-    app.configurationsView.registerInput("frontend.theme", {input: "el-select", attrs: {}, list: countlyPlugins.getThemeList()});
-
     app.configurationsView.registerInput("logs.default", {
         input: "el-select",
         attrs: {},
@@ -1094,6 +1092,7 @@
                 }
                 app.addAppManagementInput(key, jQuery.i18n.map['configs.' + key], inputs);
             }
+            app.configurationsView.registerInput("frontend.theme", {input: "el-select", attrs: {}, list: countlyPlugins.getThemeList()});
         });
     }
 
@@ -1101,24 +1100,28 @@
         this.renderWhenReady(getAccountView());
     });
 
-    $(document).ready(function() {
-        if (countlyAuth.validateGlobalAdmin()) {
-            if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
-                app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
-            }
-        }
-        if (countlyAuth.validateGlobalAdmin()) {
-            app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 10});
-
-            var isCurrentHostnameIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(window.location.hostname);
-            var isGlobalDomainHasValue = countlyGlobal.domain === "" || typeof countlyGlobal.domain === "undefined" ? false : true;
-            if (!isCurrentHostnameIP && !isGlobalDomainHasValue) {
-                countlyPlugins.updateConfigs({"api": {"domain": window.location.protocol + "//" + window.location.hostname}}, function(err) {
-                    if (err) {
-                    // throw err
-                    }
-                });
-            }
-        }
+    app.route('/account-settings/reset', 'account-settings', function() {
+        var view = getAccountView();
+        view.params = {reset: true};
+        this.renderWhenReady(view);
     });
+
+    if (countlyAuth.validateGlobalAdmin()) {
+        if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
+            app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 80});
+        }
+    }
+    if (countlyAuth.validateGlobalAdmin()) {
+        app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 10});
+
+        var isCurrentHostnameIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(window.location.hostname);
+        var isGlobalDomainHasValue = countlyGlobal.domain === "" || typeof countlyGlobal.domain === "undefined" ? false : true;
+        if (!isCurrentHostnameIP && !isGlobalDomainHasValue) {
+            countlyPlugins.updateConfigs({"api": {"domain": window.location.protocol + "//" + window.location.hostname}}, function(err) {
+                if (err) {
+                // throw err
+                }
+            });
+        }
+    }
 })();

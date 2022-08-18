@@ -1,4 +1,4 @@
-/* global Vue, Vuex, _, countlyGlobal, CV, Promise, app */
+/* global Vue, Vuex, _, countlyGlobal, CV, app */
 
 (function(countlyVue) {
 

@@ -8,8 +8,9 @@ var exports = {},
     common = require('./../../utils/common.js'),
     moment = require('moment-timezone'),
     plugin = require('./../../../plugins/pluginManager.js'),
-    json2csv = require('json2csv'),
-    json2xls = require('json2xls');
+    json2csv = require('json2csv');
+
+//const log = require('./../../utils/log.js')('core:export');
 
 //npm install node-xlsx-stream !!!!!
 var xlsx = require("node-xlsx-stream");
@@ -167,7 +168,20 @@ exports.convertData = function(data, type) {
     case "xls":
     case "xlsx":
         obj = flattenArray(data);
-        return json2xls(obj.data, {fields: obj.fields});
+        var xc = xlsx();
+        var sheet = xc.sheet("Countly export");
+        sheet.write(obj.fields);
+        for (var k = 0; k < obj.data.length; k++) {
+            var arr1 = [];
+            for (var z = 0; z < obj.fields.length; z++) {
+                arr1.push(obj.data[k][obj.fields[z]] || "");
+            }
+            sheet.write(arr1);
+        }
+        sheet.end();
+        xc.finalize();
+
+        return xc;
     default:
         return data;
     }
@@ -195,8 +209,10 @@ exports.output = function(params, data, filename, type) {
     }
     headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename) + "." + type;
 
-    if (type === "xlsx" || type === "xls") {
-        common.returnRaw(params, 200, new Buffer(data, 'binary'), headers);
+    if (type === "xlsx" || type === "xls") { //we have stream
+        params.res.writeHead(200, headers);
+        data.pipe(params.res);
+        //common.returnRaw(params, 200, new Buffer(data, 'binary'), headers);
     }
     else {
         common.returnRaw(params, 200, data, headers);
@@ -292,7 +308,7 @@ function getValues(values, valuesMap, paramList, doc, options) {
 /**
 * Stream data as response
 * @param {params} params - params object
-* @param {Stream} stream - cursor stream
+* @param {Stream} stream - cursor object. Need to call stream on it. 
 * @param {string} options - options object 
 		options.filename - name of the file to output to browser
 		options.type - type to be used in content type
@@ -330,7 +346,7 @@ exports.stream = function(params, stream, options) {
             params.res.write(head.join(',') + '\r\n');
         }
 
-        stream.on('data', function(doc) {
+        stream.stream(options.streamOptions).on('data', function(doc) {
             var values = [];
             var valuesMap = {};
             getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd}); // if we have list at end - then we don'thave projection
@@ -358,7 +374,7 @@ exports.stream = function(params, stream, options) {
         if (listAtEnd === false) {
             sheet.write(paramList);
         }
-        stream.on('data', function(doc) {
+        stream.stream(options.streamOptions).on('data', function(doc) {
             var values = [];
             var valuesMap = {};
             getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
@@ -376,7 +392,7 @@ exports.stream = function(params, stream, options) {
     else {
         params.res.write("[");
         var first = false;
-        stream.on('data', function(doc) {
+        stream.stream(options.streamOptions).on('data', function(doc) {
             if (!first) {
                 first = true;
                 params.res.write(doc);
@@ -454,30 +470,24 @@ exports.fromDatabase = function(options) {
         if (options.sort) {
             cursor.sort(options.sort);
         }
-        if (options.limit) {
-            cursor.limit(parseInt(options.limit));
-        }
+
         if (options.skip) {
             cursor.skip(parseInt(options.skip));
         }
-
-        if (options.type === "stream" || options.type === "json") {
-            options.output = options.output || function(stream) {
-                exports.stream(options.params, stream, options);
-            };
-            cursor.stream({
-                transform: function(doc) {
-                    doc = transformValuesInObject(doc, options.mapper);
-                    return JSON.stringify(doc);
-                }
-            });
-            options.output(cursor);
+        if (options.limit) {
+            cursor.limit(parseInt(options.limit));
         }
-        else if (options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
+        options.streamOptions = {};
+        if (options.type === "stream" || options.type === "json") {
+            options.streamOptions.transform = function(doc) {
+                doc = transformValuesInObject(doc, options.mapper);
+                return JSON.stringify(doc);
+            };
+        }
+        if (options.type === "stream" || options.type === "json" || options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
             options.output = options.output || function(stream) {
                 exports.stream(options.params, stream, options);
             };
-            cursor.stream();
             options.output(cursor);
         }
         else {
@@ -569,19 +579,15 @@ exports.fromRequestQuery = function(options) {
                         done(null, data);
                     }
                 });
+                options.streamOptions = {};
                 if (options.type === "stream" || options.type === "json") {
-                    cursor.stream({
-                        transform: function(doc) {
-                            doc = transformValuesInObject(doc, options.mapper);
-                            return JSON.stringify(doc);
-                        }
-                    });
-                    exports.stream({res: outputStream}, cursor, options);
+                    options.streamOptions.transform = function(doc) {
+                        doc = transformValuesInObject(doc, options.mapper);
+                        return JSON.stringify(doc);
+                    };
                 }
-                else if (options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
-                    cursor.stream();
-                    exports.stream({res: outputStream}, cursor, options);
-                }
+                exports.stream({res: outputStream}, cursor, options);
+
                 options.output(outputStream);
             }
         }

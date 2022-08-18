@@ -272,7 +272,6 @@ appsApi.createApp = async function(params) {
                 expireAfterSeconds: 60 * 60 * 3,
                 background: true
             }, function() {});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: -1}, { background: true }, function() {});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
             plugins.dispatch("/i/apps/create", {
@@ -504,8 +503,10 @@ appsApi.updateAppPlugins = function(params) {
                             common.dbPromise('apps', 'updateOne', {_id: app._id}, {$set: {[`plugins.${k}`]: params.qstring.args[k]}}).then(() => {
                                 plugins.dispatch('/systemlogs', {
                                     params: params,
-                                    action: `plugin_${k}_config_updated`,
+                                    action: `app_config_updated`,
                                     data: {
+                                        config: k,
+                                        app_id: app._id + "",
                                         before: common.dot(app, `plugins.${k}` || {}),
                                         after: params.qstring.args[k]
                                     }
@@ -523,8 +524,10 @@ appsApi.updateAppPlugins = function(params) {
                     common.dbPromise('apps', 'updateOne', {_id: app._id}, {$set: {[`plugins.${k}`]: params.qstring.args[k]}}).then(() => {
                         plugins.dispatch('/systemlogs', {
                             params: params,
-                            action: `plugin_${k}_config_updated`,
+                            action: `app_config_updated`,
                             data: {
+                                config: k,
+                                app_id: app._id + "",
                                 before: common.dot(app, `plugins.${k}` || {}),
                                 after: params.qstring.args[k]
                             }
@@ -778,7 +781,6 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     common.db.collection('app_users' + appId).drop(function() {
         if (!fromAppDelete) {
             common.db.collection('metric_changes' + appId).drop(function() {
-                common.db.collection('metric_changes' + appId).ensureIndex({ts: -1}, { background: true }, function() {});
                 common.db.collection('metric_changes' + appId).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
                 common.db.collection('metric_changes' + appId).ensureIndex({uid: 1}, { background: true }, function() {});
             });

@@ -1,11 +1,10 @@
 const { ConnectionError, PushError, SendError, ERROR, Creds, Template } = require('../data'),
     { Base } = require('../std'),
-    http = require('http'),
-    tls = require('tls'),
     FORGE = require('node-forge'),
     logger = require('../../../../../api/utils/log'),
     jwt = require('jsonwebtoken'),
     { threadId } = require('worker_threads'),
+    { proxyAgent } = require('../../proxy'),
     HTTP2 = require('http2');
 
 
@@ -81,6 +80,7 @@ const CREDS = {
                 notAfter: { required: false, type: 'Date' },
                 topics: { required: false, type: 'String[]' },
                 bundle: { required: false, type: 'String' },
+                hash: { required: false, type: 'String' },
             });
         }
 
@@ -262,6 +262,7 @@ const CREDS = {
                 bundle: { required: true, type: 'String' },
                 team: { required: true, type: 'String' },
                 fileType: { required: false, type: 'String' },
+                hash: { required: false, type: 'String' },
             });
         }
 
@@ -519,11 +520,15 @@ class APN extends Base {
      * @param {Creds} creds credentials instance
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
-     * @param {number} options.concurrency number of notifications which can be processed concurrently
+     * @param {number} options.pool.pushes number of notifications which can be processed concurrently
      */
     constructor(log, type, creds, messages, options) {
         super(log, type, creds, messages, options);
-        this.log = logger(log).sub(`wi-${threadId}`);
+        this.log = logger(log).sub(`${threadId}-i`);
+
+        if (this._options.proxy) {
+            this._options.proxy.http2 = true;
+        }
 
         this.templates = {};
         this.results = [];
@@ -557,8 +562,8 @@ class APN extends Base {
         }
         if (this.creds instanceof CREDS.apn_token) {
             this.headersFirst.authorization = this.headersSecond.authorization = this.creds.bearer;
-            this.headersFirst['apns-topic'] = this.headersSecond['apns-topic'] = this.creds._data.bundle;
         }
+        this.headersFirst['apns-topic'] = this.headersSecond['apns-topic'] = this.creds._data.bundle;
     }
 
     /**
@@ -582,7 +587,14 @@ class APN extends Base {
      */
     send(pushesData, length) {
         if (!this.session) {
-            return this.connect().then(this.send.bind(this, pushesData, length));
+            return this.connect().then(ok => {
+                if (ok) {
+                    return this.send(pushesData, length);
+                }
+                else {
+                    return ok;
+                }
+            });
         }
         return this.with_retries(pushesData, length, (pushes, bytes, attempt) => new Promise((resolve, reject) => {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
@@ -592,7 +604,7 @@ class APN extends Base {
                 recoverableErrors = 0,
                 oks = [],
                 errors = {},
-                one = Math.floor(pushes.length / bytes),
+                one = Math.ceil(bytes / pushes.length),
                 /**
                  * Get an error for given code & message, create it if it doesn't exist yet
                  * 
@@ -631,11 +643,20 @@ class APN extends Base {
                     }
                 };
 
-            pushes.forEach(p => {
+            this.log.d('sending %d streams', pushes.length);
+            pushes.forEach((p, i) => {
+                // this.log.d('%d: sending', i);
+                if (i % 200 === 0) {
+                    this.log.d('state', this.session.state);
+                }
                 if (nonRecoverableError) {
                     nonRecoverableError.addLeft(p._id, one);
                     streamDone();
                     return;
+                }
+
+                if (!this.messages[p.m]) {
+                    this.log.e('No message %s', p.m);
                 }
 
                 let content = this.template(p.m).compile(p),
@@ -650,8 +671,22 @@ class APN extends Base {
                         nonRecoverableError.addAffected(p._id, one);
                     }
                 });
+                stream.on('frameError', (type, code, id) => {
+                    this.log.e('stream frameError %d, %d, %d', type, code, id);
+                });
+                stream.on('timeout', () => {
+                    this.log.e('stream timeout');
+                    if (!nonRecoverableError) {
+                        nonRecoverableError = new ConnectionError(`APN Stream Error: timeout`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
+                    }
+                    else {
+                        nonRecoverableError.addAffected(p._id, one);
+                    }
+                    streamDone();
+                });
                 stream.on('response', function(headers) {
                     status = headers[':status'];
+                    // self.log.d('%d: status %d: %j', i, status, self.session.state);
                     if (status === 200) {
                         oks.push(p._id);
                         stream.destroy();
@@ -693,6 +728,7 @@ class APN extends Base {
                                     }
                                 }
                                 else {
+                                    self.log.e('provider returned %d: %j', status, json);
                                     error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
                                 }
                             }
@@ -705,7 +741,11 @@ class APN extends Base {
                                 }
                             }
                             else if (status === 429) {
+                                self.log.e('provider returned %d: %j', status, json);
                                 error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
+                            }
+                            else {
+                                throw new PushError('IMPOSSIBRU');
                             }
                         }
                         catch (e) {
@@ -716,6 +756,10 @@ class APN extends Base {
                     }
                 });
                 stream.setEncoding('utf-8');
+                stream.setTimeout(10000, () => {
+                    self.log.w('%d: cancelling stream %d for push %s / %s', i, stream.id, p._id, p.t);
+                    stream.close(HTTP2.constants.NGHTTP2_CANCEL);
+                });
                 stream.end(content);
             });
         }));
@@ -729,12 +773,16 @@ class APN extends Base {
     async connect(messages) {
         if (messages) {
             if (!this.session) {
-                await this.connect();
+                let ok = await this.connect();
+                if (!ok) {
+                    return ok;
+                }
             }
             if (!this.session) {
                 throw new Error('Failed to connect');
             }
             messages.forEach(m => this.message(m._id, m));
+            return true;
         }
         else {
             return new Promise((resolve, reject) => {
@@ -805,39 +853,22 @@ class APN extends Base {
             callback();
             return;
         }
-        let reqopts = {
-            host: this._options.proxy.host,
-            port: this._options.proxy.port,
-            method: 'CONNECT',
-            path: host + ':' + port,
-            headers: { host },
-        };
 
-        if (this._options.proxy.user && this._options.proxy.pass) {
-            reqopts.headers['Proxy-Authorization'] = 'Basic ' + Buffer.from(this._options.proxy.user + ':' + this._options.proxy.pass).toString('base64');
+        if (!this.agent) {
+            let ProxyAgent = proxyAgent('https://example.com', this._options.proxy);
+            this.agent = new ProxyAgent();
         }
 
-        let req = http.request(reqopts);
 
-        req.on('connect', (res, socket) => {
-            this.log.d('connected to proxy');
-            this.sessionOptions.createConnection = () => {
-                return tls.connect({
-                    host,
-                    port,
-                    socket: socket,
-                    ALPNProtocols: ['h2']
-                });
-            };
-            callback();
+        this.agent.createConnection({host, port, protocol: 'https:'}, (err, socket) => {
+            if (err) {
+                callback(err);
+            }
+            else {
+                this.sessionOptions.createConnection = () => socket;
+                callback();
+            }
         });
-
-        req.on('error', err => {
-            this.log.e('proxy request error', err);
-            callback(err);
-        });
-
-        req.end();
     }
 
     /**

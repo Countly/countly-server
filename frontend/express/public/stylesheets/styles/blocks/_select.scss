@@ -50,6 +50,25 @@
                 }
             }
         }
+
+        &--hidden-header {
+            .cly-vue-select-x__header {
+                padding: 0;
+            }
+        }
+
+        &--hidden-tabs#{&}--hidden-header {
+            .el-tabs {
+                &__header {
+                    &::after {
+                        background: none;
+                        height: 0;
+                        width: 0;
+                    }
+                }
+            }
+        }
+
         // .cly-vue-listbox {
         //     padding: v.$select-dropdown-item-default-padding;
         // }

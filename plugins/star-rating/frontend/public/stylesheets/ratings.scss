@@ -19,7 +19,6 @@
 }
 
 .ratings-drawer {
-
   &__target-page-selector {
     width: 100%;
   }
@@ -39,6 +38,17 @@
     flex-direction: column;
     justify-content: space-evenly;
     align-items: center;
+  }
+
+  &__image {
+      height: 19px;
+      width: 132px;
+  }
+
+  &__logo {
+    &__width {
+        width: 100px;
+    }
   }
 
   &__thanks-popup {
@@ -179,18 +189,50 @@
   }
 
   &__rp-ratings-item {
-    font-size: 44px;
-    margin: 0px 10px;
     cursor: pointer;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    margin: 0px 5px 0px 5px;
+  }
+  
+  &__rp-ratings-item__emojis {
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    margin: 0px 5px 0px 5px;
+    background-image: url('/star-rating/images/star-rating/emoji.svg');
   }
 
-  &__rp-ratings-inactive-item {
-    opacity: 0.5;
+  &__rp-ratings-active-item__emojis {
+    background-image: url('/star-rating/images/star-rating/emoji_filled.svg');
   }
 
-  &__rp-ratings-active-item {
-    opacity: 1;
-    transform: scale(1.2);
+  &__rp-ratings-item__thumbs {
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    margin: 0px 5px 0px 5px;
+    background-image: url('/star-rating/images/star-rating/thumbs.svg');
+  }
+
+  &__rp-ratings-active-item__thumbs {
+    background-image: url('/star-rating/images/star-rating/thumbs_filled.svg');
+  }
+
+  &__rp-ratings-item__stars {
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    margin: 0px 5px 0px 5px;
+    background-image: url('/star-rating/images/star-rating/stars.svg');
+  }
+
+  &__rp-ratings-active-item__stars {
+    background-image: url('/star-rating/images/star-rating/stars_filled.svg');
   }
 
   &__rp-question-area {

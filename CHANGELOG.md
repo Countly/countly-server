@@ -1,3 +1,318 @@
+## Version 22.08
+
+Fixes:
+- [core] fix member image endpoint, replace session id with member id
+- [dashboards] fixed user overview shows same 'number' for total, returning and new.
+- [push] logging sender crashes
+- [push] removing EE dependencies from CE
+- [star-rating] fix for platform and app version
+- [ui] color mismatch is fixed between legend and chart line in multi-legends as chart data changes
+- [ui] improvement of selected tab on multiline select element
+
+Features:
+- [long-tasks] allowing to kill long tasks on DB side
+- [push] allowing on-event auto push in CE
+
+Enterprise fixes:
+- [ab-testing] improved detail page
+- [cohorts] fixing special period handling
+- [config-transfer] fixed dashboards export
+- [data-manager] Fix transform event drawer regex input
+- [funnels] changes for funnel datepicker
+- [gateway_processor] fixed processing on error
+- [gateway_processor] localization and menu fixes for new UI
+- [group] fixes for ui
+- [surveys] fixed total responses NaN
+- [users] refresh user details page
+
+Enterprise features:
+- [data-manager] data redacting for user properties
+- [oidc] work with new permissions
+- [retention_segments] breakdown by segments
+- [revenue] revenue widget for the custom dashboard
+- [users] breakdown of users by segments
+
+## Version 22.06.5
+
+Fixes:
+- [crashes] fix number of occurences on crash details page
+- [crashes] remove $natural sorting from app_crashes query
+- [date-picker] fixed the date constraint that does not include the last day
+- [docker] bundle lates geoip lite db with each image
+- [docker] install mongoexport for user exporting
+- [mongodb] Backwards compability for depricated .save()
+- [pre-login] add success notification
+- [push] Adding connection settings for push plugin
+- [push] fixes for push table
+- [push] Fixing styling issues
+- [push] Logging current configuration in the sender
+- [push] Safer pushes limit
+- [server-stats] Change text from Deleted app to not available
+- [star-rating] fixed displaying logo
+- [ui] Always show search in datatable column filter
+- [ui] Fix select x hidden header condition
+- [ui] Fix select x max items check
+- [user-management] do not validate member image flag
+- [user-management] Fix user global admin value in user drawer
+- [user-management] Fix user permission value in user drawer
+- [user-management] Make sure that groups in user drawer is an array
+
+## Version 22.06.4
+
+Fixes:
+- [core] disable select x options when max items is reached
+- [core] new eslint
+- [longtasks] added stopping feature for long running tasks
+- [plugins] handle install error differently
+- [push] Missing app_id parameter validation for tx messages
+- [push] change push messages table to server side table
+- [push] various fixes, back to safe mode
+- [times-of-day] fixed day names
+
+Enterprise fixes:
+- [ldap] added optional group DN in sample config
+
+## Version 22.06.3
+Rebuild of 22.06.2 with correct sync of repos
+
+## Version 22.06.2
+
+Fixes:
+- [core] remove select-x dropdown gradient if there is no tab or search
+- [docker] load cities and plugin list updates
+- [metrics] fix Linux Arch os reporting
+- [server-stats] fixed commandline reporting
+- [star-rating] fix texts
+- [star-rating] fixed checkbox bugs in rating
+
+Enterprise fixes:
+- [gateway] use parallel transform
+- [surveys] changes for exclusive options to deselect other if exclusive options are selected
+- [surveys] changes to remove all of above for radio button
+
+## Version 22.06.1
+
+Fixes:
+- [db] old option fixes for native_parser
+- [events] add tooltips to the monitored event charts
+- [push] Weird streaming issue
+- [push] Wrong data path for silent messages in Android
+- [push] proxy support
+- [slipping-away-users] fixing api call without query option
+- [ui] add searching for dropdown selectors
+- [user-management] fixed groupModel check
+
+Enterprise fixes:
+- [crash_symbolication] fix return_url for symoblication
+
+## Version 22.06
+
+Fixes:
+- [compare] correctly respond to core events
+- [dashboards] add more rows and columns
+- [dashboards] do not close dashboard sidebar if drawer is open
+- [dashboards] send emails on dashboard invites
+- [data-migration] make export path non mandatory field in data migration
+- [dbviewer] fixed for export with query
+- [jobs] back button doesn't work
+- [menu] stay on same view after page refresh
+- [mongodb] driver update
+- [push] fixing capping display
+- [push] following redirects for mime
+- [push] new proxy logic
+- [star-rating] fixed preview screen for ratings
+- [ui] 31 day month period is cut off in graphs
+- [ui] chart label orientation fixes
+- [user-management] fix reset filter button style
+
+Enterprise fixes:
+- [cognito] create config file on plugin install, if it does not exist
+- [concurrent_users] Max online user values should be resettable from an app level configuration
+- [config-transfer] fix for blank names
+- [drill] drill widget should skip x-axis labels like other time series graphs
+- [funnels] Ability to duplicate funnels
+- [groups] manage user group assignment directly from group management
+- [retention_segments] add column sizes for 13 months and 30 days retention tables for dashboards
+- [retention_segments] fix retention table tooltips
+
+## Version 22.03.12
+
+Fixes:
+- [UI] Custom file name for export functionality in the datatable
+- [dashboards] Subheading and label prop in the select app component
+- [jobs] More rescheduling attempts
+- [push] Adding lastRuns
+- [push] Adding too late to send error
+- [push] Filtering messages by status
+- [push] Variables for API messages
+- [push] Waiting for connect promise to resolve
+- [systemlogs] Make sure we store correct MongoDB documents
+- [user-management] Apply filter when reset filter button is clicked
+- [user-management] Set filter dropdown width
+
+Enterprise fixes:
+- [cohorts] Cohort name is not editable after creation
+- [cohorts] Cohorts aren't sortable in "Current Users" column
+- [concurrent_users] Don't show period in online users widget
+- [concurrent_users] Max online user values should be resettable from an app level configuration
+- [concurrent_users] x-Axis labels of this online users graph on dashboards horizontally
+- [config-transfer] Config transfer supports Fitlering rules
+- [drill] Make default visualization 'Bar Chart' if query contains BY in Drill
+- [drill] When exporting BY query table result in drill to excel file, key column is empty
+- [formulas] Expression value checks for copy formulas
+- [users] Decode event name in userprofile event timeline section
+
+## Version 22.03.11
+
+Fixes:
+- [applications] update application details values when dropdown is open
+- [compliance-hub] Full row click to open row
+- [data-manager] Add view regeneration to data manager regenerate drawer
+- [date] Correct period for ndays
+- [dbviewer] Full row click to open row
+- [device_list] updated device list from model to name
+- [geo] Correct user estimation for totals
+- [logger] Full row click to open row
+- [remote-config] Full row click to open row
+- [sessions] Display total users as unique sessions
+- [sources] Full row click to open row
+- [star-rating] Fix displaying chart data
+- [systemlogs] Full row click to open row
+- [ui] Added warning type to the dialog box
+- [ui] Localization fixes
+- [user-management] Added role/group filter
+- [user-management] Display group name in table
+- [user-management] Display group name in table
+
+Enterprise Fixes:
+- [cognito] Add attribution plugin to docker build
+- [drill] Passing period correctly if BYVAL + custom period
+- [drill] Regenerating views from granular data
+- [formulas] Bucket array check
+- [users] Fixed for general cohort based query in export users
+- [users] Fixed user table export only exports filtered users
+
+## Version 22.03.10
+
+Fixes:
+- [dashboards] The graph tooltip should overflow from the widget's bounding box
+- [push] Expired credentials case
+- [ui] Pressing enter refreshes the page
+
+Enterprise fixes:
+- [auth_plugins] Remove old UI artifacts
+- [drill] View regeneration from drill data
+- [surveys] Fixed tooltip localization
+
+## Version 22.03.9
+
+Fixes:
+- [batcher] more no fallback errors
+- [compliance-hub] Table column design fix
+- [push] Arrays for sent messages
+- [push] Method to get notifications sent to a particular user
+- [push] Missing audit logs calls
+- [push] Missing capping / sleeping support
+- [push] Parsing only string args for legacy api
+- [push] Set test pushes as prod in upgrade script
+- [ui] Chart label scaling issue fixed
+- [versions] Showing mongodb version in versions view
+- [views] Using isoWeek for unique views values
+
+Enterprise Fixes:
+- [ab-testing] fix of undefined array
+- [attribution] Added null check for unpopulated data case
+- [attribution] Fixed the issue where metadata was not displayed in segments
+- [users] Always translate surveys
+- [users] Fix for sorting session table
+- [users] Handled formating case for numbers
+- [users] Missing tooltip added
+- [users] Optimize calculating event count for session for single user in aggregation pipeline
+- [white-labeling] Default button color code changed
+
+## Version 22.03.8
+
+Fixes:
+- [dependency] update dependencies
+- [ui] fixed scaling issues and x-axis labels on charts
+- [ui] tab title should update when switching app types
+
+Enterprise fixes:
+- [crashes-jira] new UI integration
+- [funnels] save button's label changed for edit case.
+- [retention_segments] fixed retention filter query
+- [users] fixed export query
+- [users] fixed query bookmark
+
+## Version 22.03.7
+
+Fixes:
+- [compare] Adding tests
+- [members] Secure password reset token generation
+- [push] Allowing no platform results for migrated messages
+- [push] Migrating messages in batches
+- [remote-config] Fix for percentage bars
+- [upgrade] Remove even more files
+- [views] Fix view regeneration
+
+Enterprise fixes:
+- [flows] ui fix
+
+## Version 22.03.6
+
+Fixes:
+- [compare] loading state fix
+- [ui] X-axis overflow handling changes
+- [upgrade] add drill indexes
+- [upgrade] do not upgrade new users that have permission object
+
+Fixes Enterprise:
+- [attribution] added information toast when clicked show/hide button
+- [surveys] handling appearance null cases for sdk api
+- [users] add engagement score
+
+## Version 22.03.5
+
+Fixes:
+
+- [core] Fixing logging issues
+- [crashes] Fixed app_version filter
+- [dashboards] Add dashboard name to audit logs when widget deleted
+- [dashboards] Show that app is deleted in widgets if app was deleted
+- [docker] Fixed dependency for HTML PDF on centos images
+- [grunt] Fixed production mode
+- [push] Destroy connection on credentials validation failure
+- [push] Fixing change streams in sender until driver update
+- [push] Longer muticasts
+- [push] Self signed proxy certificate support
+- [star-rating] Added custom rating symbol support
+
+## Version 22.03.4
+
+Fixes:
+- [push] added missing files
+
+## Version 22.03.3
+
+Fixes:
+- [crashes] defaults for optional fields
+- [dashboards] custom period for events widget
+- [dbviewer] fixed exporting of other databases
+- [frontend] fixed sorting of analytics tables
+- [populator] add push events
+- [push] credential validation fixes
+- [push] logger fixes
+- [push] remove send job
+- [report-manager] fixed localization strings
+
+Enterprise Fixes:
+- [attribution] new ui transition
+- [drill] allow storing objects/arrays in event segments
+- [flows] correct view name mapping if start and end point selected for flow
+- [revenue] average paying customer data fixes and css improvement
+- [surveys] fix to show logo preview
+- [users] fixed decoding properties in user profiles
+
 ## Version 22.03.2
 
 Fixes:
@@ -46,6 +361,11 @@ Fixes:
 - [push] mutable-content for buttons
 - [scripts] fixed Compiler Version for 22.03 upgrade and installation
 - [upgrade] remove old files
+
+## Version 21.11.4
+
+Fixes:
+- [members] Secure password reset token generation
 
 ## Version 21.11.3
 

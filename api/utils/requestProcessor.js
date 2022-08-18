@@ -22,6 +22,7 @@ const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
+const request = require('request');
 
 var loaded_configs_time = 0;
 
@@ -232,12 +233,103 @@ const processRequest = (params) => {
                 }
 
                 switch (paths[3]) {
+                /**
+                 * @api {get} /i/users/create Create new user
+                 * @apiName Create User
+                 * @apiGroup User Management
+                 *
+                 * @apiDescription Access database, get collections, indexes and data
+                 * @apiQuery {Object} args User data object
+                 * @apiQuery {String} args.full_name Full name 
+                 * @apiQuery {String} args.username Username
+                 * @apiQuery {String} args.password Password
+                 * @apiQuery {String} args.email Email
+                 * @apiQuery {Object} args.permission Permission object
+                 * @apiQuery {Boolean} args.global_admin Global admin flag
+                 * 
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *  "full_name":"fn",
+                 *  "username":"un",
+                 *  "email":"e@ms.cd",
+                 *  "permission": {
+                 *    "c":{},
+                 *    "r":{},
+                 *    "u":{},
+                 *    "d":{},
+                 *    "_":{
+                 *      "u":[[]],
+                 *      "a":[]
+                 *    }
+                 *  },
+                 *  "global_admin":true,
+                 *  "password_changed":0,
+                 *  "created_at":1651240780,
+                 *  "locked":false,
+                 *  "api_key":"1c5e93c6657d76ae8903f14c32cb3796",
+                 *  "_id":"626bef4cb00db29a02f8f7a0"
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 * }
+                 */
                 case 'create':
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.users.createUser);
                     break;
+                /**
+                 * @api {get} /i/users/update Update user
+                 * @apiName Update User
+                 * @apiGroup User Management
+                 *
+                 * @apiDescription Access database, get collections, indexes and data
+                 * @apiQuery {Object} args User data object
+                 * @apiQuery {String} args.full_name Full name 
+                 * @apiQuery {String} args.username Username
+                 * @apiQuery {String} args.password Password
+                 * @apiQuery {String} args.email Email
+                 * @apiQuery {Object} args.permission Permission object
+                 * @apiQuery {Boolean} args.global_admin Global admin flag
+                 * 
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *  "result":"Success"
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 * }
+                 */
                 case 'update':
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.users.updateUser);
                     break;
+                /**
+                 * @api {get} /i/users/delete Delete user
+                 * @apiName Delete User
+                 * @apiGroup User Management
+                 *
+                 * @apiDescription Access database, get collections, indexes and data
+                 * @apiQuery {Object} args User data object
+                 * @apiQuery {String} args.user_ids IDs array for users which will be deleted
+                 * 
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *  "result":"Success"
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 * }
+                 */
                 case 'delete':
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.users.deleteUser);
                     break;
@@ -600,6 +692,17 @@ const processRequest = (params) => {
                         taskmanager.rerunTask({
                             db: common.db,
                             id: params.qstring.task_id
+                        }, (err, res) => {
+                            common.returnMessage(params, 200, res);
+                        });
+                    });
+                    break;
+                case 'stop':
+                    validateUserForWrite(params, () => {
+                        taskmanager.stopTask({
+                            db: common.db,
+                            id: params.qstring.task_id,
+                            op_id: params.qstring.op_id
                         }, (err, res) => {
                             common.returnMessage(params, 200, res);
                         });
@@ -1890,6 +1993,48 @@ const processRequest = (params) => {
             }
             case '/i/token': {
                 switch (paths[3]) {
+                /**
+                 * @api {get} /i/token/delete
+                 * @apiName deleteToken
+                 * @apiGroup TokenManager
+                 *
+                 * @apiDescription Deletes related token that given id
+                 * @apiQuery {String} tokenid, Token id to be deleted
+                 *
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *    "result": {
+                 *      "result": {
+                 *       "n": 1,
+                 *       "ok": 1
+                 *       },
+                 *       "connection": {
+                 *       "_events": {},
+                 *       "_eventsCount": 4,
+                 *       "id": 4,
+                 *       "address": "127.0.0.1:27017",
+                 *       "bson": {},
+                 *       "socketTimeout": 999999999,
+                 *       "host": "localhost",
+                 *       "port": 27017,
+                 *       "monitorCommands": false,
+                 *       "closed": false,
+                 *       "destroyed": false,
+                 *       "lastIsMasterMS": 15
+                 *       },
+                 *       "deletedCount": 1,
+                 *       "n": 1,
+                 *       "ok": 1
+                 *     }
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *    "result": "Token id not provided"
+                 * }
+                */
                 case 'delete':
                     validateUser(() => {
                         if (params.qstring.tokenid) {
@@ -1910,6 +2055,32 @@ const processRequest = (params) => {
                         }
                     }, params);
                     break;
+                /**
+                 * @api {get} /i/token/create
+                 * @apiName createToken
+                 * @apiGroup TokenManager
+                 *
+                 * @apiDescription Creates spesific token
+                 * @apiQuery {String} purpose, Purpose is description of the created token
+                 * @apiQuery {Array} endpointquery, Includes "params" and  "endpoint" inside
+                 * {"params":{qString Key: qString Val}
+                 * "endpoint": "_endpointAdress"
+                 * @apiQuery {Boolean} multi, Defines availability multiple times
+                 * @apiQuery {Boolean} apps, App Id of selected application
+                 * @apiQuery {Boolean} ttl, expiration time for token
+                 * 
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *    "result": "0e1c012f855e7065e779b57a616792fb5bd03834"
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter "api_key" or "auth_token""
+                 * }
+                */
                 case 'create':
                     validateUser(params, () => {
                         let ttl, multi, endpoint, purpose, apps;
@@ -1998,6 +2169,51 @@ const processRequest = (params) => {
                         });
                     });
                     break;
+                /**
+                 * @api {get} /o/token/list
+                 * @apiName initialize
+                 * @apiGroup TokenManager
+                 *
+                 * @apiDescription Returns active tokens as an array that uses tokens in order to protect the API key
+                 * @apiQuery {String} app_id, App Id of related application or {String} auth_token
+                 * 
+                 * @apiSuccessExample {json} Success-Response:
+                 * HTTP/1.1 200 OK
+                 * {
+                 *    "result": [
+                 *        {
+                 *        "_id": "884803f9e9eda51f5dbbb45ba91fa7e2b1dbbf4b",
+                 *        "ttl": 0,
+                 *        "ends": 1650466609,
+                 *        "multi": false,
+                 *        "owner": "60e42efa5c23ee7ec6259af0",
+                 *        "app": "",
+                 *        "endpoint": [
+                 *            
+                 *        ],
+                 *        "purpose": "Test Token",
+                 *        "temporary": false
+                 *        },
+                 *        {
+                 *        "_id": "08976f4a2037d39a9e8a7ada8afe1707769b7878",
+                 *        "ttl": 1,
+                 *        "ends": 1650632001,
+                 *        "multi": true,
+                 *        "owner": "60e42efa5c23ee7ec6259af0",
+                 *        "app": "",
+                 *        "endpoint": "",
+                 *        "purpose": "LoggedInAuth",
+                 *        "temporary": false
+                 *        }
+                 *    ]
+                 * }
+                 * 
+                 * @apiErrorExample {json} Error-Response:
+                 * HTTP/1.1 400 Bad Request
+                 * {
+                 *  "result": "Missing parameter "api_key" or "auth_token""
+                 * }
+                */
                 case 'list':
                     validateUser(params, function() {
                         common.db.collection("auth_tokens").find({"owner": params.member._id + ""}).toArray(function(err, res) {
@@ -2023,6 +2239,74 @@ const processRequest = (params) => {
 
                 switch (params.qstring.method) {
                 case 'jobs':
+                    /**
+                     * @api {get} /o?method=jobs Get Jobs Table Information
+                     * @apiName GetJobsTableInfo
+                     * @apiGroup Jobs
+                     * 
+                     * @apiDescription Get jobs information in the jobs table
+                     * @apiQuery {String} method which kind jobs requested, it should be 'jobs'
+                     * 
+                     * @apiSuccess {Number} iTotalRecords Total number of jobs
+                     * @apiSuccess {Number} iTotalDisplayRecords Total number of jobs by filtering
+                     * @apiSuccess {Objects[]} aaData Job details
+                     * @apiSuccess {Number} sEcho DataTable's internal counter
+                     * 
+                     * @apiSuccessExample {json} Success-Response:
+                     * HTTP/1.1 200 OK
+                     * {
+                     *   "sEcho": "0",
+                     *   "iTotalRecords": 14,
+                     *   "iTotalDisplayRecords": 14,
+                     *   "aaData": [{
+                     *     "_id": "server-stats:stats",
+                     *     "name": "server-stats:stats",
+                     *     "status": "SCHEDULED",
+                     *     "schedule": "every 1 day",
+                     *     "next": 1650326400000,
+                     *     "finished": 1650240007917,
+                     *     "total": 1
+                     *   }]
+                     * }
+                     */
+
+                    /**
+                    * @api {get} /o?method=jobs/name Get Job Details Table Information
+                    * @apiName GetJobDetailsTableInfo
+                    * @apiGroup Jobs
+                    * 
+                    * @apiDescription Get the information of the filtered job in the table
+                    * @apiQuery {String} method Which kind jobs requested, it should be 'jobs'
+                    * @apiQuery {String} name The job name is required to redirect to the selected job
+                    * 
+                    * @apiSuccess {Number} iTotalRecords Total number of jobs
+                    * @apiSuccess {Number} iTotalDisplayRecords Total number of jobs by filtering
+                    * @apiSuccess {Objects[]} aaData Job details
+                    * @apiSuccess {Number} sEcho DataTable's internal counter
+                    * 
+                    * @apiSuccessExample {json} Success-Response:
+                    * HTTP/1.1 200 OK
+                    * {
+                    *   "sEcho": "0",
+                    *   "iTotalRecords": 1,
+                    *   "iTotalDisplayRecords": 1,
+                    *   "aaData": [{
+                    *     "_id": "62596cd41307dc89c269b5a8",
+                    *     "name": "api:ping",
+                    *     "created": 1650027732240,
+                    *     "status": "SCHEDULED",
+                    *     "started": 1650240000865,
+                    *     "finished": 1650240000891,
+                    *     "duration": 30,
+                    *     "data": {},
+                    *     "schedule": "every 1 day",
+                    *     "next": 1650326400000,
+                    *     "modified": 1650240000895,
+                    *     "error": null
+                    *   }]
+                    * }
+                    */
+
                     validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
                     break;
                 case 'total_users':
@@ -2175,22 +2459,34 @@ const processRequest = (params) => {
                     //load previos version info if exist
                     loadFsVersionMarks(function(errFs, fsValues) {
                         loadDbVersionMarks(function(errDb, dbValues) {
-                            var response = {};
-                            if (errFs) {
-                                response.fs = errFs;
-                            }
-                            else {
-                                response.fs = fsValues;
-                            }
-                            if (errDb) {
-                                response.db = errDb;
-                            }
-                            else {
-                                response.db = dbValues;
-                            }
-                            response.pkg = packageJson.version || "";
-                            var statusCode = (errFs && errDb) ? 400 : 200;
-                            common.returnMessage(params, statusCode, response);
+                            //load mongodb version
+                            common.db.command({ buildInfo: 1 }, function(errorV, info) {
+                                var response = {};
+                                if (errorV) {
+                                    response.mongo = errorV;
+                                }
+                                else {
+                                    if (info && info.version) {
+                                        response.mongo = info.version;
+                                    }
+                                }
+
+                                if (errFs) {
+                                    response.fs = errFs;
+                                }
+                                else {
+                                    response.fs = fsValues;
+                                }
+                                if (errDb) {
+                                    response.db = errDb;
+                                }
+                                else {
+                                    response.db = dbValues;
+                                }
+                                response.pkg = packageJson.version || "";
+                                var statusCode = (errFs && errDb) ? 400 : 200;
+                                common.returnMessage(params, statusCode, response);
+                            });
                         });
                     });
                 });
@@ -2494,6 +2790,82 @@ const checksumSaltVerification = (params) => {
 };
 
 
+//Function check if there is app redirect set
+//In that case redirect data and sets up params to know that request is getting redirected
+/**
+ * @param  {object} ob - params object
+ * @returns {Boolean} - false if redirected
+ */
+function validateRedirect(ob) {
+    var params = ob.params,
+        app = ob.app;
+    if (!params.cancelRequest && app.redirect_url && app.redirect_url !== '') {
+        var newPath = params.urlParts.path;
+
+        //check if we have query part
+        if (newPath.indexOf('?') === -1) {
+            newPath += "?";
+        }
+
+        var opts = {
+            uri: app.redirect_url + newPath + '&ip_address=' + params.ip_address,
+            method: 'GET'
+        };
+
+        //should we send post request
+        if (params.req.method.toLowerCase() === 'post') {
+            opts.method = "POST";
+            //check if we have body from post method
+            if (params.req.body) {
+                opts.json = true;
+                opts.body = params.req.body;
+            }
+        }
+
+        request(opts, function(error, response, body) {
+            var code = 400;
+            var message = "Redirect error. Tried to redirect to:" + app.redirect_url;
+
+            if (response && response.statusCode) {
+                code = response.statusCode;
+            }
+
+
+            if (response && response.body) {
+                try {
+                    var resp = JSON.parse(response.body);
+                    message = resp.result || resp;
+                }
+                catch (e) {
+                    if (response.result) {
+                        message = response.result;
+                    }
+                    else {
+                        message = response.body;
+                    }
+                }
+            }
+            if (error) { //error
+                log.e("Redirect error", error, body, opts, app, params);
+            }
+
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+                common.returnMessage(params, code, message);
+            }
+        });
+        params.cancelRequest = "Redirected: " + app.redirect_url;
+        params.waitForResponse = false;
+        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+            params.waitForResponse = true;
+        }
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+
 /**
  * Validate App for Write API
  * Checks app_key from the http request against "apps" collection.
@@ -2586,37 +2958,53 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
                 }
             }
-
             plugins.dispatch("/sdk/pre", {
                 params: params,
                 app: app
             }, () => {
-                plugins.dispatch("/sdk", {
-                    params: params,
-                    app: app
-                }, () => {
+                var processMe = validateRedirect({params: params, app: app});
+                /*
+					Keeping option open to add some request cancelation on /sdk for different cases than redirect.
+					(That is why duplicate code)
+				*/
+                if (!processMe) {
                     plugins.dispatch("/sdk/log", {params: params});
-                    if (!params.cancelRequest) {
-                        processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
-                            if (userErr) {
-                                if (!params.res.finished) {
-                                    common.returnMessage(params, 400, userErr);
+                    //params.cancelRequest is true
+                    if (!params.res.finished && !params.waitForResponse) {
+                        common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
+                        //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                    }
+                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                    return done ? done() : false;
+                }
+                else {
+                    plugins.dispatch("/sdk", {
+                        params: params,
+                        app: app
+                    }, () => {
+                        plugins.dispatch("/sdk/log", {params: params});
+                        if (!params.cancelRequest) {
+                            processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
+                                if (userErr) {
+                                    if (!params.res.finished) {
+                                        common.returnMessage(params, 400, userErr);
+                                    }
                                 }
-                            }
-                            else {
-                                processRequestData(params, app, done);
-                            }
-                        });
-                    }
-                    else {
-                        if (!params.res.finished && !params.waitForResponse) {
-                            common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
-                            //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                                else {
+                                    processRequestData(params, app, done);
+                                }
+                            });
                         }
-                        common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
-                        return done ? done() : false;
-                    }
-                });
+                        else {
+                            if (!params.res.finished && !params.waitForResponse) {
+                                common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
+                                //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                            }
+                            common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                            return done ? done() : false;
+                        }
+                    });
+                }
             });
         });
     });

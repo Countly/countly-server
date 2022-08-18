@@ -13,5 +13,7 @@ module.exports = {
         db.collection('push').createIndexes([
             {name: 'main', key: {_id: 1, m: 1, p: 1, f: 1}},
         ]).catch(() => {});
+
+        db.collection('plugins').updateMany({}, {$unset: {'push.proxyhttp': 1}}).catch(() => {});
     }
 };

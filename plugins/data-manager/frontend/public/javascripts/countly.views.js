@@ -1,4 +1,4 @@
-/*global app, countlyAuth, countlyVue, CV, $, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers */
+/*global app, countlyAuth, countlyVue, CV, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers */
 
 (function() {
 
@@ -942,6 +942,7 @@
                     this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                     this.$store.dispatch('countlyDataManager/loadValidations');
                     this.$store.dispatch('countlyDataManager/loadInternalEvents');
+                    this.$store.dispatch('countlyDataManager/loadViews');
                 }
             },
             handleCreateCommand: function(event, tab) {
@@ -1305,8 +1306,5 @@
         this.renderWhenReady(detailView);
     });
 
-    $(document).ready(function() {
-        app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
-    });
-
+    app.addSubMenu("management", { code: "data-manager", permission: FEATURE_NAME, url: "#/manage/data-manager/", text: "data-manager.plugin-title", priority: 20 });
 })();

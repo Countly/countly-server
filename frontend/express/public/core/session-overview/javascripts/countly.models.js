@@ -1,4 +1,4 @@
-/*global countlyVue,countlySession,countlyTotalUsers,Promise,CV,countlyCommon*/
+/*global countlyVue,countlySession,countlyTotalUsers,CV,countlyCommon*/
 (function(countlySessionOverview) {
 
     countlySessionOverview.service = {
@@ -40,18 +40,6 @@
                 return null;
             }
             return changeDto.split('%')[0];
-        },
-        findUniqueSessionsTotal: function(dto) {
-            var total = 0;
-            Object.keys(dto.chartDP).forEach(function(key) {
-                if (dto.chartDP[key].label === "Unique Sessions") {
-                    total = dto.chartDP[key].data.reduce(function(sum, dataItem) {
-                        sum += dataItem[1];
-                        return sum;
-                    }, total);
-                }
-            });
-            return total;
         },
         mapSessionOverviewTrends: function(dto) {
             return [
@@ -95,8 +83,7 @@
                     .then(function() {
                         var sessionDP = countlySession.getSessionDP();
                         var sessionData = countlySession.getSessionData();
-                        sessionData.usage['unique-sessions'] = {};
-                        sessionData.usage['unique-sessions'].total = self.findUniqueSessionsTotal(sessionDP);
+                        sessionData.usage['unique-sessions'] = sessionData.usage['total-users'];
                         resolve(self.mapSessionOverviewDtoToModel(sessionDP, sessionData));
                     }).catch(function(error) {
                         reject(error);
