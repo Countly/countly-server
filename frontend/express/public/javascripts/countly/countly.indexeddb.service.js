@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global localforage, Promise */
+/* global localforage */
 
 
 (function(countlyIndexedDbService) {
