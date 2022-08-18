@@ -1,7 +1,7 @@
-/*globals $,countlyErrorLogs,countlyGlobal,jQuery,countlyCommon,CountlyHelpers,app,countlyVue,CV,countlyAuth */
+/*globals $,countlyErrorLogs,countlyGlobal,jQuery,countlyCommon,CountlyHelpers,app,countlyVue,CV,countlyAuth, countlyLoggerService */
 (function() {
     var FEATURE_NAME = "errorlogs";
-    var ErrorLogsView = countlyVue.views.create({
+    var ServerLogsView = countlyVue.views.create({
         template: CV.T('/errorlogs/templates/logs.html'),
         data: function() {
             return {
@@ -61,15 +61,94 @@
             }
         }
     });
+
+    var ClientLogsView = countlyVue.views.create({
+        template: CV.T('/errorlogs/templates/client-logs.html'),
+        data: function() {
+            return {
+                logs: "",
+                isLoading: false,
+            };
+        },
+        methods: {
+            setLogs: function(value) {
+                this.logs = value;
+            },
+            clear: function() {
+                var self = this;
+                CountlyHelpers.confirm(
+                    CV.i18n("errorlogs.confirm-delete-client-logs"),
+                    "popStyleGreen",
+                    function(result) {
+                        if (!result) {
+                            return;
+                        }
+                        self.isLoading = true;
+                        countlyLoggerService.clear()
+                            .then(function() {
+                                self.setLogs("");
+                            })
+                            .catch(function(error) {
+                                CountlyHelpers.notify({message: error.message || error, type: error});
+                            }).finally(function() {
+                                self.isLoading = false;
+                            });
+                    },
+                    [CV.i18n("common.no-dont-delete"), CV.i18n("common.yes-clear-it")],
+                    {
+                        title: CV.i18n("errorlogs.clear-client-logs"),
+                    });
+            },
+            download: function() {
+                var self = this;
+                this.isLoading = true;
+                countlyLoggerService.export()
+                    .catch(function(error) {
+                        CountlyHelpers.notify({message: error.message || error, type: error});
+                    }).finally(function() {
+                        self.isLoading = false;
+                    });
+            },
+            getLogs: function() {
+                var self = this;
+                this.isLoading = true;
+                countlyLoggerService.getLogs()
+                    .then(function(result) {
+                        self.setLogs(result);
+                    }).catch(function(error) {
+                        CountlyHelpers.notify({message: error.message || error, type: error});
+                        self.setLogs("");
+                    }).finally(function() {
+                        self.isLoading = false;
+                    });
+            },
+            refresh: function() {
+                this.getLogs();
+            }
+        },
+        mounted: function() {
+            this.getLogs();
+        }
+    });
+
     if (countlyAuth.validateGlobalAdmin()) {
         countlyVue.container.registerTab("/manage/logs", {
             priority: 1,
             route: "#/manage/logs/errorlogs",
-            component: ErrorLogsView,
+            component: ServerLogsView,
             title: "Server Logs",
             name: "errorlogs",
             permission: FEATURE_NAME,
             vuex: []
         });
     }
+    countlyVue.container.registerTab("/manage/logs", {
+        priority: 3,
+        route: "#/manage/logs/clientlogs",
+        component: ClientLogsView,
+        title: "Client Logs",
+        name: "clientlogs",
+        permission: FEATURE_NAME,
+        vuex: []
+    });
 })();
