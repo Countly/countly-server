@@ -71,7 +71,12 @@
                 callback(null, result);
             },
             error: function(xhr, status, error) {
-                callback(error, null);
+                if (xhr.responseJSON) {
+                    callback({ message: xhr.responseJSON.result }, null);
+                }
+                else {
+                    callback(error, null);
+                }
             }
         });
     };
