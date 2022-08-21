@@ -207,7 +207,7 @@ usersApi.delete = function(app_id, query, params, callback) {
                             }
                         }
                         //deleting userimages(if they exist);
-                        if (res[0].picure) {
+                        if (res[0].picture) {
                             for (let i = 0;i < res[0].picture.length; i++) {
                                 //remove /userimages/ 
                                 let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
