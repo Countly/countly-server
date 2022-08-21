@@ -189,7 +189,15 @@ usersApi.delete = function(app_id, query, params, callback) {
                     query: query,
                     uids: res[0].uid,
                     params: params
-                }, function() {
+                }, function(_, otherPluginResults) {
+                    const rejectReasons = otherPluginResults.filter(result => result.status === "rejected");
+
+                    if (rejectReasons.length > 0) {
+                        log.e("User deletion failed\n%j", rejectReasons);
+                        common.returnMessage(params, 500, "User deletion failed. Failed to delete some data related to this user.");
+                        return;
+                    }
+
                     common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err) {
                         if (res[0].exported) {
                             //delete exports if exist
