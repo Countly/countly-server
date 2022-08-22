@@ -1309,7 +1309,7 @@ TableTools.prototype = {
 		else if ( oConfig.sAction == "flash_pdf" )
 		{
 			flash.setAction( 'pdf' );
-			flash.setFileName( oConfig.sFileName.replace('*', this.fnGetTitle(oConfig)) );
+			flash.setFileName( oConfig.sFileName.replace(/\*/g, this.fnGetTitle(oConfig)) );
 		}
 		else
 		{
