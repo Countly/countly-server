@@ -28,7 +28,7 @@
           <div class="bu-is-flex bu-is-align-items-center cly-vue-draggable-item bu-mb-2" :key="idx" v-for="(item, idx) in selectedEvents">
             <i class="bu-is-clickable cly-events-overview-drawer--dragicon drag-icon ion-navicon-round"></i>
             <div class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center cly-events-overview-drawer__event-records" >
-              <div class="text-medium cly-events-overview-drawer__basis bu-is-flex-grow-2">{{ item.eventName }}</div>
+              <div class="text-medium cly-events-overview-drawer__basis bu-is-flex-grow-2">{{ decode(item.eventName) }}</div>
               <div class="text-medium cly-events-overview-drawer__basis bu-has-text-centered bu-is-flex-grow-2">{{ item.propertyName }}</div>
               <div @click="onDelete(idx)" class="cly-events-overview-drawer__basis cly-icon-button--gray bu-has-text-right bu-is-flex-grow-1"><i class="ion-ios-close-empty bu-is-clickable cly-events-overview-drawer__close-icon"></i></div>
             </div>

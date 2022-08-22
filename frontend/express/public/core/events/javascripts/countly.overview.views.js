@@ -67,6 +67,15 @@
             }
         },
         methods: {
+            decode: function(str) {
+                if (typeof str === 'string') {
+                    return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+                }
+                return str;
+            },
+            encode: function(str) {
+                return str.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/<=/g, "&le;").replace(/>=/g, "&ge;");
+            },
             onClose: function(event) {
                 this.selectEvent = '',
                 this.selectProperty = '',
@@ -106,7 +115,13 @@
                     });
                 }
                 else {
-                    var eventAttributes = this.$store.getters["countlyEventsOverview/eventMapping"][this.selectEvent];
+                    var eventAttributes;
+                    if (typeof this.selectEvent === 'string') {
+                        eventAttributes = this.$store.getters["countlyEventsOverview/eventMapping"][this.encode(this.selectEvent)];
+                    }
+                    else {
+                        eventAttributes = this.$store.getters["countlyEventsOverview/eventMapping"][this.selectEvent];
+                    }
                     var obj = {
                         "order": this.selectedEvents.length,
                         "eventKey": this.selectEvent,
@@ -210,6 +225,12 @@
             'overview-drawer': OverviewConfigureDrawer
         },
         methods: {
+            decode: function(str) {
+                if (typeof str === 'string') {
+                    return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+                }
+                return str;
+            },
             configureOverview: function() {
                 this.$store.dispatch('countlyEventsOverview/fetchConfigureOverview');
                 this.openDrawer("configureDrawer", {});
