@@ -165,7 +165,7 @@
             return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
         },
         getEventLongName: function(eventKey, eventMap) {
-            var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(".", "\\u002e");
+            var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
             if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
                 return eventMap[mapKey].name;
             }
