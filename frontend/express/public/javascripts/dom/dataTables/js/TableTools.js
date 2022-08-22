@@ -1304,7 +1304,7 @@ TableTools.prototype = {
 			flash.setAction( 'save' );
 			flash.setCharSet( (oConfig.sCharSet=="utf16le") ? 'UTF16LE' : 'UTF8' );
 			flash.setBomInc( oConfig.bBomInc );
-			flash.setFileName( oConfig.sFileName.replace('*', this.fnGetTitle(oConfig)) );
+			flash.setFileName( oConfig.sFileName.replace(/\*/g, this.fnGetTitle(oConfig)) );
 		}
 		else if ( oConfig.sAction == "flash_pdf" )
 		{
