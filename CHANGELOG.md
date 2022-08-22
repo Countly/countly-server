@@ -1,3 +1,22 @@
+## Version 22.08.3
+Fixes:
+- [api] fix bug with new apps and salt, when requests are not rejected
+- [applciations] if there is an app key, a new one should not be produced
+- [applications] will not be able to edit any Application to have an empty name
+- [crashes] pass symbol id from crashgroup for symbolication
+- [dbviewer] refresh of all data when changing the collection
+- [events] fixes for encoding decoding issues in events overview and details page
+- [logger] showing if request is cancelled in logger
+- [populator] add multiple heatmap examples
+- [populator] cleanup duplicate code in populator
+- [populator] populator templates datatable's alignment issue
+- [ratings] backward compatibility fixes for emoticons
+
+Enterprise Fixes:
+- [block] fixed filtering rule saving issue
+- [cohorts] fixed home table alignment issue for Safari browser
+
+
 ## Version 22.08.2
 Features:
 - [core] script to remove old permission properties
