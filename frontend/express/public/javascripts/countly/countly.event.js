@@ -808,7 +808,7 @@
             eventNames = [];
 
         for (var event in eventSegmentations) {
-            var mapKey = event.replace(/\\/g, "\\\\").replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
+            var mapKey = event.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
             if (eventMap[mapKey] && eventMap[mapKey].name) {
                 eventNames.push({
                     "key": event,
