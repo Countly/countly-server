@@ -780,7 +780,8 @@
                         _id: this.crashgroup.lrid,
                         os: this.crashgroup.os,
                         native_cpp: this.crashgroup.native_cpp,
-                        app_version: this.crashgroup.latest_version
+                        app_version: this.crashgroup.latest_version,
+                        symbol_id: this.crashgroup.symbol_id
                     };
                 }
 
