@@ -190,10 +190,16 @@ usersApi.delete = function(app_id, query, params, callback) {
                     uids: res[0].uid,
                     params: params
                 }, function(_, otherPluginResults) {
-                    const rejectReasons = otherPluginResults.filter(result => result.status === "rejected");
+                    const rejectReasons = otherPluginResults.reduce((acc, result) => {
+                        if (result.status === "rejected") {
+                            acc.push((result.reason && result.reason.message) || '');
+                        }
+
+                        return acc;
+                    }, []);
 
                     if (rejectReasons.length > 0) {
-                        log.e("User deletion failed\n%j", rejectReasons);
+                        log.e("User deletion failed\n%j", rejectReasons.join("\n"));
                         common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
                         return;
                     }
