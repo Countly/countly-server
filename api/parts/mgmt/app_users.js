@@ -194,7 +194,7 @@ usersApi.delete = function(app_id, query, params, callback) {
 
                     if (rejectReasons.length > 0) {
                         log.e("User deletion failed\n%j", rejectReasons);
-                        common.returnMessage(params, 500, "User deletion failed. Failed to delete some data related to this user.");
+                        common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
                         return;
                     }
 
