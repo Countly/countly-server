@@ -12,7 +12,7 @@ var pluginOb = {},
     { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'views';
-const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true};
+const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true};
 //keys to not use as segmentation
 (function() {
     plugins.register("/permissions/features", function(ob) {
@@ -1714,7 +1714,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                                 updateMultiViewParams[k] = results[p].segmentation[k];
                                             }
                                             if (Object.keys(updateMultiViewParams).length > 0 || results[p].dur) {
-                                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: updateMultiViewParams, duration: results[p].dur, viewName: results[p].viewAlias});
+                                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: updateMultiViewParams, duration: results[p].dur, viewName: results[p].viewAlias, _ivd: results[p].segmentation._idv});
                                             }
                                         }
                                         //geting all segment info
