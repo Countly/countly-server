@@ -781,7 +781,7 @@
                         os: this.crashgroup.os,
                         native_cpp: this.crashgroup.native_cpp,
                         app_version: this.crashgroup.latest_version,
-                        symbol_id: this.crashgroup.symbol_id
+                        symbol_id: this.crashgroup._symbol_id
                     };
                 }
 
