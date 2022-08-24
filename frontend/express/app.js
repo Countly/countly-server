@@ -1452,7 +1452,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
     app.get(countlyConfig.path + '/sdks.js', function(req, res) {
         if (!plugins.getConfig("api").offline_mode) {
-            var options = {uri: "http://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
+            var options = {uri: "https://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
             request(options, function(a, c, b) {
                 res.set('Content-type', 'application/javascript').status(200).send(b);
             });
