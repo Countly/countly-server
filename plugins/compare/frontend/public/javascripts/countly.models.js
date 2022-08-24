@@ -182,7 +182,7 @@
                     if (item.status) {
                         var obj = {
                             "label": countlyCompareEvents.helpers.decode(item.name) + "(" + CV.i18n("events.all.group") + ")",
-                            "value": countlyCompareEvents.helpers.decode(item._id)
+                            "value": item._id
                         };
                         allEvents.push(obj);
                     }
@@ -210,7 +210,7 @@
             if (groupList) {
                 groupList.forEach(function(item) {
                     if (item.status) {
-                        allEvents[countlyCompareEvents.helpers.decode(item._id)] = true;
+                        allEvents[item._id] = true;
                     }
                 });
             }
