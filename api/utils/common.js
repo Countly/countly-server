@@ -85,11 +85,11 @@ common.escape_html = function(string, more) {
 * @returns {string} escaped string
 **/
 common.decode_html = function(string) {
-    string = string.replace(/&amp;/g, '&');
     string = string.replace(/&#39;/g, "'");
     string = string.replace(/&quot;/g, '"');
     string = string.replace(/&lt;/g, '<');
     string = string.replace(/&gt;/g, '>');
+    string = string.replace(/&amp;/g, '&');
     return string;
 };
 
