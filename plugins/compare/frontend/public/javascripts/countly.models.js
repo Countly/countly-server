@@ -20,7 +20,7 @@
                 var props = countlyCompareEvents.helpers.getProperties(),
                     tableRow = {
                         "id": context.state.selectedEvents[i],
-                        "name": context.state.selectedEvents[i].startsWith("[CLY]_group") ? context.state.groupData[context.state.selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(context.state.selectedEvents[i], context.state.allEventsData.map),
+                        "name": context.state.selectedEvents[i].startsWith("[CLY]_group") ? countlyCompareEvents.helpers.decode(context.state.groupData[context.state.selectedEvents[i]]) : countlyCompareEvents.helpers.getEventLongName(context.state.selectedEvents[i], context.state.allEventsData.map),
                         "checked": _.isEmpty(tableStateMap) ? true : tableStateMap[context.state.selectedEvents[i]]
                     };
 
@@ -95,7 +95,7 @@
         getLineChartData: function(context, selectedEvents) {
             var series = [];
             if (selectedEvents.length === 1) {
-                var dataObj = countlyCompareEvents.helpers.getChartData(context, selectedEvents[0], context.state.selectedGraphMetric);
+                var dataObj = countlyCompareEvents.helpers.getChartData(context, countlyCompareEvents.helpers.encode(selectedEvents[0]), context.state.selectedGraphMetric);
                 var data = [];
                 var prevData = [];
                 for (var j = 0;j < dataObj.chartData.length;j++) {
@@ -181,8 +181,8 @@
                 groupList.forEach(function(item) {
                     if (item.status) {
                         var obj = {
-                            "label": item.name + "(" + CV.i18n("events.all.group") + ")",
-                            "value": item._id
+                            "label": countlyCompareEvents.helpers.decode(item.name) + "(" + CV.i18n("events.all.group") + ")",
+                            "value": countlyCompareEvents.helpers.decode(item._id)
                         };
                         allEvents.push(obj);
                     }
@@ -210,7 +210,7 @@
             if (groupList) {
                 groupList.forEach(function(item) {
                     if (item.status) {
-                        allEvents[item._id] = true;
+                        allEvents[countlyCompareEvents.helpers.decode(item._id)] = true;
                     }
                 });
             }
