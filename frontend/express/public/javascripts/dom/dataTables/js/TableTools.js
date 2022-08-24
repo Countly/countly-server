@@ -1688,11 +1688,11 @@ TableTools.prototype = {
 	"_fnHtmlDecode": function ( sData )
 	{
 		//convert  code to normal
-		sData = sData.replace(/&amp;/g, '&');
 		sData = sData.replace(/&#39;/g, "'");
 		sData = sData.replace(/&quot;/g, '"');
 		sData = sData.replace(/&lt;/g, '<');
 		sData = sData.replace(/&gt;/g, '>');
+		sData = sData.replace(/&amp;/g, '&');
 		if ( sData.indexOf('&') === -1 )
 		{
 			return sData;
