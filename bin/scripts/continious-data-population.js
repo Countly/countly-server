@@ -7,14 +7,13 @@
 
 // var date = new Date();
 // Please set below parameters properly before running script.
-var INTERVAL_PERIOD = 5000; // 60 * 60 * 24 * 30;
+var INTERVAL_AS_SECOND = 1; // 60 * 60 * 24 * 30;
 var APP_ID = ""; // Enter your app Id
 var POPULATOR_TEMPLATE_ID = "defaultBanking"; // Enter the custom populator template ID you created or default template _id "{defaultGaming}"
 var SERVER_URL = "https://master.count.ly";
 
-
 //script variables
-let maxUserCount = 100;
+let maxUserCount = 50;
 var counter = {sent: 0, success: 0, error: 0};
 let stopOnError = true;
 var defaultTemplates = [
@@ -214,38 +213,48 @@ async function readDbParameters() {
 readDbParameters();
 
 var interval = setInterval(async function() {
+    users = [];
+    var userCount = getRandomInt(1, maxUserCount);
     if (users.length === 0) {
-        for (var i = 0; i < getRandomInt(1, 10); i++) { // will change
+        for (var i = 0; i < userCount; i++) {
             user = new getUser(template && template.up);
             users.push(user);
         }
     }
     else {
         if (users.length !== maxUserCount) {
-            if (getRandomInt(1, 10) === 1) {
+            if (userCount === 1) {
                 user = new getUser(template && template.up);
                 users.push(user);
             }
         }
     }
 
-    var shuffledArray = users.sort(() => 0.5 - Math.random());
-    var selectedRandomUsers = shuffledArray.slice(0, getRandomInt(1, users.length - 1));
+    var upperBoundary = Math.floor(userCount / 2);
 
-    selectedRandomUsers.forEach(function(user) {
-        if (stats.s !== 0) {
-            if (getRandomInt(1, 3) === 1) {
-                user.addEvent(template, getRandomInt(1, template.events.length - 1));
+    var indexes = [];
+    for (var i0 = 0; i0 < upperBoundary; i0++) {
+        indexes.push(getRandomInt(0, users.length - 1));
+    }
+
+    indexes.forEach(function(index) {
+        if (users[index].hasSession) {
+            if (users[index].eventsInSession > 9) {
+                users[index].eventsInSession = 0;
+                users[index].startSession(template);
             }
             else {
-                user.startSession(template);
+                if (getRandomInt(1, 3) === 1) {
+                    users[index].addEvent(template, getRandomInt(1, template.events.length - 1));
+                    users[index].eventsInSession++;
+                }
             }
         }
         else {
-            user.startSession(template);
+            users[index].startSession(template);
         }
     });
-}, INTERVAL_PERIOD);
+}, (INTERVAL_AS_SECOND * 1000 * 5));
 
 
 /**
@@ -273,52 +282,56 @@ function capitaliseFirstLetter(string) {
  * @returns {Promise} - resolved or rejected
  **/
 async function sendRequest(params) {
-    var body = {};
-    //mandatory values for each request
-    body.timestamp = Date.now();
-    body.hour = 1;
-    body.dow = 1;
+    try {
+        var body = {};
+        //mandatory values for each request
+        body.timestamp = Date.now();
+        body.hour = 1;
+        body.dow = 1;
 
-    //add dynamic values to body
+        //add dynamic values to body
 
-    var requestBodyKeys = params.body ? Object.keys(params.body) : [];
-    for (var i = 0; i < requestBodyKeys.length; i++) {
-        var requestKey = requestBodyKeys[i];
-        body[requestKey] = params.body[requestKey];
-    }
+        var requestBodyKeys = params.body ? Object.keys(params.body) : [];
+        for (var i = 0; i < requestBodyKeys.length; i++) {
+            var requestKey = requestBodyKeys[i];
+            body[requestKey] = params.body[requestKey];
+        }
 
-    var options = {
-        uri: params.Url || SERVER_URL,
-        method: params.requestType,
-        json: true,
-        body: body,
-        strictSSL: false
-    };
-    counter.sent++;
-    return new Promise(function(resolve, reject) {
-        request(options, function(error, response) {
-            if (error || !response) {
-                counter.error++;
-                reject({err: 'There was an error while sending a request.', code: response.statusCode});
-            }
-            else if (response.statusCode === 200) {
-                counter.success++;
-                resolve(true);
-            }
-            else {
-                counter.error++;
-                if (!counter[response.statusCode]) {
-                    counter[response.statusCode] = 0;
+        var options = {
+            uri: params.Url || SERVER_URL,
+            method: params.requestType,
+            json: true,
+            body: body,
+            strictSSL: false
+        };
+        counter.sent++;
+        return new Promise(function(resolve, reject) {
+            request(options, function(error, response) {
+                if (error || !response) {
+                    counter.error++;
+                    reject({err: 'There was an error while sending a request.', code: response.statusCode});
                 }
-                counter[response.statusCode]++;
-                reject({err: 'There was an error while sending a request.', code: response.statusCode});
-            }
-            if (stopOnError && counter.error > 0) {
-                console.log(((Date.now()) / 1000 / 60).toFixed(2), JSON.stringify(counter));
-                reject({err: 'There was an error while sending a request.', code: stopOnError});
-            }
+                else if (response.statusCode === 200) {
+                    counter.success++;
+                    resolve(true);
+                }
+                else {
+                    counter.error++;
+                    if (!counter[response.statusCode]) {
+                        counter[response.statusCode] = 0;
+                    }
+                    counter[response.statusCode]++;
+                    reject({err: 'There was an error while sending a request.', code: response.statusCode});
+                }
+                if (stopOnError && counter.error > 0) {
+                    reject({err: 'There was an error while sending a request.', code: stopOnError});
+                }
+            });
         });
-    });
+    }
+    catch (e) {
+        console.log('sendRequest failed: ', e);
+    }
 }
 
 // Populator variables and functions
@@ -388,7 +401,6 @@ var bucket = 50;
 var timeout = 1000;
 var totalCountWithoutUserProps = 0;
 var totalUserCount = 0;
-var hasSession = false;
 var ratingWidgetList = [], npsWidgetList = [], surveyWidgetList = {};
 
 /**
@@ -432,16 +444,21 @@ function getUserProperties(templateUp) {
  * Sends bulk request for populator
  **/
 async function countlyPopulatorSync() {
-    var req = bulk.splice(0, bucket);
-    await sendRequest({
-        requestType: 'POST',
-        Url: SERVER_URL + "/i/bulk",
-        body: {
-            app_key: app.key,
-            requests: JSON.stringify(req),
-            populator: true
-        }
-    });
+    try {
+        var req = bulk.splice(0, bucket);
+        await sendRequest({
+            requestType: 'POST',
+            Url: SERVER_URL + "/i/bulk",
+            body: {
+                app_key: app.key,
+                requests: JSON.stringify(req),
+                populator: true
+            }
+        });
+    }
+    catch (e) {
+        console.log('request failed: ', e);
+    }
 }
 
 /**
@@ -499,7 +516,7 @@ function getUser(templateUp) {
     this.stats = stats;
     this.id = this.getId();
     this.isRegistered = false;
-    hasSession = false;
+    this.hasSession = false;
     this.ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
     if ((totalCountWithoutUserProps < totalUserCount / 3)) {
         this.userdetails = { custom: getUserProperties(templateUp) };
@@ -511,6 +528,7 @@ function getUser(templateUp) {
     this.userdetails.custom.populator = true;
     this.metrics = {};
     this.events = [];
+    this.eventsInSession = 0;
     if (app && app.type === "web") {
         this.platform = this.getProp("_os_web");
     }
@@ -1087,7 +1105,7 @@ function getUser(templateUp) {
             req.consent[consents[consentIndex]] = (Math.random() > 0.8) ? false : true;
         }
 
-        hasSession = true;
+        this.hasSession = true;
         this.request(req);
         this.timer = setTimeout(function() {
             that.extendSession(template);
@@ -1095,7 +1113,7 @@ function getUser(templateUp) {
     };
 
     this.extendSession = function(template) {
-        if (hasSession) {
+        if (this.hasSession) {
             var req = {};
             this.ts = this.ts + 30;
             this.stats.x++;
@@ -1125,8 +1143,8 @@ function getUser(templateUp) {
             clearTimeout(this.timer);
             this.timer = null;
         }
-        if (hasSession) {
-            hasSession = false;
+        if (this.hasSession) {
+            this.hasSession = false;
             var events = this.getEvents(2, template && template.events);
             this.request({timestamp: this.ts, end_session: 1, events: events, apm: this.getTrace()});
         }
@@ -1146,15 +1164,20 @@ function getUser(templateUp) {
     };
 
     this.reportConversion = async function(uid, campaingId) {
-        await sendRequest({
-            requestType: 'GET',
-            body: {
-                campaign_id: uid,
-                campaign_user: campaingId,
-                app_key: app.key,
-                device_id: this.id,
-                populator: true
-            }
-        });
+        try {
+            await sendRequest({
+                requestType: 'GET',
+                body: {
+                    campaign_id: uid,
+                    campaign_user: campaingId,
+                    app_key: app.key,
+                    device_id: this.id,
+                    populator: true
+                }
+            });
+        }
+        catch (e) {
+            console.log('request failed: ', e);
+        }
     };
 }
