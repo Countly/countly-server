@@ -7,15 +7,14 @@
 
 // var date = new Date();
 // Please set below parameters properly before running script.
-var INTERVAL_PERIOD = 3000; // //(60 - date.getSeconds()) * 1000;
+var INTERVAL_PERIOD = 5000; // 60 * 60 * 24 * 30;
 var APP_ID = ""; // Enter your app Id
 var POPULATOR_TEMPLATE_ID = "defaultBanking"; // Enter the custom populator template ID you created or default template _id "{defaultGaming}"
-var APP_KEY = "";
 var SERVER_URL = "https://master.count.ly";
+
 
 //script variables
 let maxUserCount = 100;
-var sessionChance = 0, intervalCounter = 0;
 var counter = {sent: 0, success: 0, error: 0};
 let stopOnError = true;
 var defaultTemplates = [
@@ -162,7 +161,8 @@ var defaultTemplates = [
     }
 ];
 var app = null, template = null, pluginList = null;
-var users = [];
+var users = [], user = null;
+var stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
 
 var plugins = require('../../plugins/pluginManager.js'),
     request = require('request'),
@@ -203,11 +203,6 @@ async function readDbParameters() {
             db.close();
             writeMsg('INVALID POPULATOR_TEMPLATE_ID ', POPULATOR_TEMPLATE_ID);
         }
-
-        if (app.key !== APP_KEY) {
-            db.close();
-            writeMsg('INVALID APP_KEY ', APP_KEY);
-        }
         db.close();
     }
     catch (error) {
@@ -219,28 +214,37 @@ async function readDbParameters() {
 readDbParameters();
 
 var interval = setInterval(async function() {
-    sessionChance = getRandomInt(1, 5);
-    if (users.length !== maxUserCount) {
-        var u = new getUser(template && template.up);
-        users.push(u);
+    if (users.length === 0) {
+        for (var i = 0; i < getRandomInt(1, 10); i++) { // will change
+            user = new getUser(template && template.up);
+            users.push(user);
+        }
     }
-
-    if (sessionChance === 1) { // start session with 20% chance
-        try {
-            if (template && template.up) {
-                users[getRandomInt(0, users.length - 1)].startSession(template);
-                intervalCounter++;
-                console.log('generating...');
+    else {
+        if (users.length !== maxUserCount) {
+            if (getRandomInt(1, 10) === 1) {
+                user = new getUser(template && template.up);
+                users.push(user);
             }
         }
-        catch (err) {
-            console.log('There was an error sending the session request! ', err);
+    }
+
+    var shuffledArray = users.sort(() => 0.5 - Math.random());
+    var selectedRandomUsers = shuffledArray.slice(0, getRandomInt(1, users.length - 1));
+
+    selectedRandomUsers.forEach(function(user) {
+        if (stats.s !== 0) {
+            if (getRandomInt(1, 3) === 1) {
+                user.addEvent(template, getRandomInt(1, template.events.length - 1));
+            }
+            else {
+                user.startSession(template);
+            }
         }
-    }
-    if (intervalCounter === maxUserCount) {
-        clearInterval(interval);
-        process.exit();
-    }
+        else {
+            user.startSession(template);
+        }
+    });
 }, INTERVAL_PERIOD);
 
 
@@ -276,7 +280,8 @@ async function sendRequest(params) {
     body.dow = 1;
 
     //add dynamic values to body
-    var requestBodyKeys = Object.keys(params.body);
+
+    var requestBodyKeys = params.body ? Object.keys(params.body) : [];
     for (var i = 0; i < requestBodyKeys.length; i++) {
         var requestKey = requestBodyKeys[i];
         body[requestKey] = params.body[requestKey];
@@ -289,7 +294,6 @@ async function sendRequest(params) {
         body: body,
         strictSSL: false
     };
-
     counter.sent++;
     return new Promise(function(resolve, reject) {
         request(options, function(error, response) {
@@ -433,7 +437,7 @@ async function countlyPopulatorSync() {
         requestType: 'POST',
         Url: SERVER_URL + "/i/bulk",
         body: {
-            app_key: APP_KEY,
+            app_key: app.key,
             requests: JSON.stringify(req),
             populator: true
         }
@@ -492,7 +496,7 @@ function getUser(templateUp) {
 
     this.getProp = getProp;
     var that = this;
-    this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
+    this.stats = stats;
     this.id = this.getId();
     this.isRegistered = false;
     hasSession = false;
@@ -768,7 +772,7 @@ function getUser(templateUp) {
             Object.keys(viewSegments).forEach(function(key) {
                 var values = [];
                 if (app.type === "web" && key === "name") {
-                    values = ["/populator/" + APP_KEY + "/demo-" + populatorType + ".html"];
+                    values = ["/populator/" + app.key + "/demo-" + populatorType + ".html"];
                 }
                 else {
                     values = viewSegments[key];
@@ -942,7 +946,7 @@ function getUser(templateUp) {
         else {
             populatorType = template._id;
         }
-        var views = ["/populator/" + APP_KEY + "/demo-" + populatorType + ".html"];
+        var views = ["/populator/" + app.key + "/demo-" + populatorType + ".html"];
         var event = {
             "key": "[CLY]_action",
             "count": 1,
@@ -1003,7 +1007,7 @@ function getUser(templateUp) {
         else {
             populatorType = template._id;
         }
-        var views = ["/populator/" + APP_KEY + "/demo-" + populatorType + ".html"];
+        var views = ["/populator/" + app.key + "/demo-" + populatorType + ".html"];
         var event = {
             "key": "[CLY]_action",
             "count": 1,
@@ -1021,6 +1025,27 @@ function getUser(templateUp) {
         event.domain = SERVER_URL;
         event.segmentation.view = views[Math.floor(Math.random() * views.length)];
         return [event];
+    };
+
+    this.addEvent = function(template, eventChance) {
+        var req = {};
+        var events;
+
+        if (!this.isRegistered) {
+            this.isRegistered = true;
+            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+            events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
+            req = {timestamp: this.ts, events: events};
+            req.events = req.events.concat(this.getHeatmapEvents());
+            req.events = req.events.concat(this.getFeedbackEvents());
+            req.events = req.events.concat(this.getScrollmapEvents());
+        }
+        else {
+            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+            events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
+            req = {timestamp: this.ts, events: events};
+        }
+        this.request(req);
     };
 
     this.startSession = function(template) {
@@ -1126,7 +1151,7 @@ function getUser(templateUp) {
             body: {
                 campaign_id: uid,
                 campaign_user: campaingId,
-                app_key: APP_KEY,
+                app_key: app.key,
                 device_id: this.id,
                 populator: true
             }
