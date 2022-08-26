@@ -130,7 +130,7 @@
                 groupList.forEach(function(item) {
                     if (item.status) {
                         var obj = {
-                            "label": item.name,
+                            "label": countlyEventsOverview.helpers.decode(item.name),
                             "value": item._id
                         };
                         allEvents.push(obj);
