@@ -312,7 +312,9 @@ plugins.register('/permissions/features', ob => ob.features.push(FEATURE_NAME));
 plugins.register('/i/apps/reset', reset);
 plugins.register('/i/apps/clear_all', clear);
 plugins.register('/i/apps/delete', reset);
-plugins.register('/i/app_users/delete', ({app_id, uids}) => removeUsers(app_id, uids));
+plugins.register('/i/app_users/delete', async({app_id, uids}) => {
+    await removeUsers(app_id, uids);
+});
 plugins.register('/consent/change', ({params, changes}) => {
     if (changes && changes.push === false && params.app_id && params.app_user && params.app_user.uid !== undefined) {
         return removeUsers(params.app_id, [params.app_user.uid]);
