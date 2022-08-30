@@ -780,7 +780,8 @@
                         _id: this.crashgroup.lrid,
                         os: this.crashgroup.os,
                         native_cpp: this.crashgroup.native_cpp,
-                        app_version: this.crashgroup.latest_version
+                        app_version: this.crashgroup.latest_version,
+                        symbol_id: this.crashgroup._symbol_id
                     };
                 }
 
@@ -1047,10 +1048,10 @@
                 if (this.symbolicationEnabled) {
                     promises.push(new Promise(function(resolve, reject) {
                         countlyCrashSymbols.fetchSymbols(true)
-                            .then(function(symbolIndexing) {
+                            .then(function(fetchSymbolsResponse) {
                                 self.symbols = {};
 
-                                var buildIdMaps = Object.values(symbolIndexing);
+                                var buildIdMaps = Object.values(fetchSymbolsResponse.symbolIndexing);
                                 buildIdMaps.forEach(function(buildIdMap) {
                                     Object.keys(buildIdMap).forEach(function(buildId) {
                                         self.symbols[buildId] = buildIdMap[buildId];
@@ -1067,11 +1068,14 @@
                 return Promise.all(promises);
             },
             hasSymbol: function(uuid) {
-                return uuid in this.symbols;
+                return uuid in this.symbols || uuid.toUpperCase() in this.symbols || uuid.toLowerCase() in this.symbols;
             }
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crash/initialize", crashId);
+        },
+        mounted: function() {
+            this.refresh();
         },
         mixins: [countlyVue.mixins.hasDrawers("crashSymbol")]
     });

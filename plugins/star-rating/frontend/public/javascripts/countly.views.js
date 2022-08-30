@@ -795,6 +795,39 @@
                         steps: null
                     };
                 }
+                if (!this.widget.rating_symbol) {
+                    this.widget.rating_symbol = "emojis";
+                }
+                if (!this.widget.ratings_texts) {
+                    this.widget.ratings_texts = [
+                        'Very Dissatisfied',
+                        'Somewhat Dissatisfied',
+                        'Neither Satisfied Nor Dissatisfied',
+                        'Somewhat Satisfied',
+                        'Very Satisfied'
+                    ];
+                }
+                if (!this.widget.contact_enable) {
+                    this.widget.contact_enable = false;
+                }
+                if (!this.widget.comment_enable) {
+                    this.widget.comment_enable = false;
+                }
+                if (!this.widget.trigger_size) {
+                    this.widget.trigger_size = 'm';
+                }
+                if (!this.widget.status) {
+                    this.widget.status = true;
+                }
+                if (!this.widget.logo) {
+                    this.widget.logo = null;
+                }
+                if (!this.widget.targeting) {
+                    this.widget.targeting = {
+                        user_segmentation: null,
+                        steps: null
+                    };
+                }
                 this.widget.target_page = this.widget.target_page === "selected";
                 this.widget.comment_enable = (this.widget.comment_enable === 'true');
                 this.widget.contact_enable = (this.widget.contact_enable === 'true');

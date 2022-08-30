@@ -159,7 +159,7 @@
 
     &__table {
         .el-table__only-options-fixed-right {
-            height: 580px !important;
+            min-height: 580px !important;
         }
     }
 }

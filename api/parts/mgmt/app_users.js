@@ -189,7 +189,21 @@ usersApi.delete = function(app_id, query, params, callback) {
                     query: query,
                     uids: res[0].uid,
                     params: params
-                }, function() {
+                }, function(_, otherPluginResults) {
+                    const rejectReasons = otherPluginResults.reduce((acc, result) => {
+                        if (result.status === "rejected") {
+                            acc.push((result.reason && result.reason.message) || '');
+                        }
+
+                        return acc;
+                    }, []);
+
+                    if (rejectReasons.length > 0) {
+                        log.e("User deletion failed\n%j", rejectReasons.join("\n"));
+                        common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
+                        return;
+                    }
+
                     common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err) {
                         if (res[0].exported) {
                             //delete exports if exist
@@ -207,7 +221,7 @@ usersApi.delete = function(app_id, query, params, callback) {
                             }
                         }
                         //deleting userimages(if they exist);
-                        if (res[0].picure) {
+                        if (res[0].picture) {
                             for (let i = 0;i < res[0].picture.length; i++) {
                                 //remove /userimages/ 
                                 let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);

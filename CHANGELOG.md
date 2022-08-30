@@ -1,3 +1,42 @@
+## Version 22.08.3
+Fixes:
+- [api] fix bug with new apps and salt, when requests are not rejected
+- [applciations] if there is an app key, a new one should not be produced
+- [applications] will not be able to edit any Application to have an empty name
+- [crashes] pass symbol id from crashgroup for symbolication
+- [dbviewer] refresh of all data when changing the collection
+- [events] fixes for encoding decoding issues in events overview and details page
+- [logger] showing if request is cancelled in logger
+- [populator] add multiple heatmap examples
+- [populator] cleanup duplicate code in populator
+- [populator] populator templates datatable's alignment issue
+- [ratings] backward compatibility fixes for emoticons
+
+Enterprise Fixes:
+- [block] fixed filtering rule saving issue
+- [cohorts] fixed home table alignment issue for Safari browser
+
+
+## Version 22.08.2
+Features:
+- [core] script to remove old permission properties
+- [crashes] Fix binary image symbol id check
+- [crashes] Fix build uuid check for latest crash
+- [crashes] Fix fetch symbols response
+- [crashes] Prefill symbol drawer called from binary page
+- [crashes] Unescape binary page crash name
+- [push] fixed arraybuffer crash
+- [push] Fixing wrong reporting of retriable errors
+- [push] Mark message as streamable before scheduling starts
+
+Enterprise features:
+- [crash_symbolication] Fixed symbol drawer
+- [crash_symbolication] Show uploaded file in symbol drawer
+- [crash_symbolication] Update symbol file validation
+- [surveys] removed usage of formatNumber when passing to metric cards as a prop
+- [users] Fixed bug with downloading user export if it went to report manager
+- [users] when loading user profile page, check data and show active "export download" button if there is existing export for this user
+
 ## Version 22.08.1
 Fixes:
 - [crashes] Add crashgroup toggle symbolication switch

@@ -1437,29 +1437,45 @@ const processRequest = (params) => {
                     if (paths[4] && paths[4] !== '') {
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
-                            var myfile = '../../export/AppUser/' + filename[0] + '.tar.gz';
-                            countlyFs.gridfs.getSize("appUsers", myfile, {id: filename[0] + '.tar.gz'}, function(error, size) {
-                                if (error) {
-                                    common.returnMessage(params, 400, error);
+                            new Promise(function(resolve) {
+                                if (filename[0].startsWith("appUser_")) {
+                                    filename[0] = filename[0] + '.tar.gz';
+                                    resolve();
                                 }
-                                else if (parseInt(size) === 0) {
-                                    common.returnMessage(params, 400, "Export doesn't exist");
-                                }
-                                else {
-                                    countlyFs.gridfs.getStream("appUsers", myfile, {id: filename[0] + '.tar.gz'}, function(err, stream) {
-                                        if (err) {
-                                            common.returnMessage(params, 400, "Export doesn't exist");
+                                else { //we have task result. Try getting from there
+                                    taskmanager.getResult({id: filename[0]}, function(err, res) {
+                                        if (res && res.data) {
+                                            filename[0] = res.data;
+                                            filename[0] = filename[0].replace(/\"/g, '');
                                         }
-                                        else {
-                                            params.res.writeHead(200, {
-                                                'Content-Type': 'application/x-gzip',
-                                                'Content-Length': size,
-                                                'Content-Disposition': 'inline; filename="' + filename[0] + '.tar.gz"'
-                                            });
-                                            stream.pipe(params.res);
-                                        }
+                                        resolve();
                                     });
                                 }
+                            }).then(function() {
+                                var myfile = '../../export/AppUser/' + filename[0];
+                                countlyFs.gridfs.getSize("appUsers", myfile, {id: filename[0]}, function(error, size) {
+                                    if (error) {
+                                        common.returnMessage(params, 400, error);
+                                    }
+                                    else if (parseInt(size) === 0) {
+                                        common.returnMessage(params, 400, "Export doesn't exist");
+                                    }
+                                    else {
+                                        countlyFs.gridfs.getStream("appUsers", myfile, {id: filename[0]}, function(err, stream) {
+                                            if (err) {
+                                                common.returnMessage(params, 400, "Export doesn't exist");
+                                            }
+                                            else {
+                                                params.res.writeHead(200, {
+                                                    'Content-Type': 'application/x-gzip',
+                                                    'Content-Length': size,
+                                                    'Content-Disposition': 'inline; filename="' + filename[0]
+                                                });
+                                                stream.pipe(params.res);
+                                            }
+                                        });
+                                    }
+                                });
                             });
                         });
                     }
@@ -2744,6 +2760,7 @@ const processBulkRequest = (i, requests, params) => {
  * @returns {Function} - done or boolean value
  */
 const checksumSaltVerification = (params) => {
+    params.app.checksum_salt = params.app.checksum_salt || params.app.salt;
     if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
         const payloads = [];
         payloads.push(params.href.substr(params.fullPath.length + 1));

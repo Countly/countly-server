@@ -256,7 +256,9 @@ appsApi.createApp = async function(params) {
         }
     }
     const appKey = common.sha1Hash(seed, true);
-    newApp.key = appKey;
+    if (!newApp.key) {
+        newApp.key = appKey;
+    }
 
     common.db.collection('apps').insert(newApp, function(err, app) {
         if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
@@ -340,6 +342,11 @@ appsApi.updateApp = function(params) {
     var updateAppValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(updatedApp = updateAppValidation.obj)) {
         common.returnMessage(params, 400, 'Error: ' + updateAppValidation.errors);
+        return false;
+    }
+
+    if (updateAppValidation.obj.name === "") {
+        common.returnMessage(params, 400, 'Invalid app name');
         return false;
     }
 

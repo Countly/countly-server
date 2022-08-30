@@ -713,7 +713,7 @@
                                     os: crashgroupJson.os,
                                     native_cpp: crashgroupJson.native_cpp,
                                     app_version: crashgroupJson.latest_version,
-                                    build_uuid: latestCrash.build_uuid
+                                    build_uuid: latestCrash && latestCrash.build_uuid
                                 }];
 
                                 crashes = crashes.concat(crashgroupJson.data);
@@ -795,7 +795,7 @@
                 }
                 else {
                     countlyCrashSymbols.fetchSymbols(false).then(function(fetchSymbolsResponse) {
-                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing);
+                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing) || crash.symbol_id;
                         countlyCrashSymbols.symbolicate(crash._id, symbol_id)
                             .then(function(json) {
                                 resolve(json);

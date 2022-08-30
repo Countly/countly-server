@@ -1121,7 +1121,7 @@ var pluginManager = function pluginManager() {
                     //user default config
                     config = JSON.parse(JSON.stringify(countlyConfig));
                 }
-                if (this.dbConfigEnvs[config]) {
+                if (this.dbConfigEnvs[confDb]) {
                     config = configextender(this.dbConfigEnvs[confDb], config, process.env);
                 }
             }
@@ -1275,7 +1275,7 @@ var pluginManager = function pluginManager() {
                     //user default config
                     config = JSON.parse(JSON.stringify(countlyConfig));
                 }
-                if (this.dbConfigEnvs[config]) {
+                if (this.dbConfigEnvs[confDb]) {
                     config = configextender(this.dbConfigEnvs[confDb], config, process.env);
                 }
             }
