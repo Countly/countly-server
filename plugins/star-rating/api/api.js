@@ -235,7 +235,7 @@ function uploadFile(myfile, id, callback) {
             //convert file to data
             if (data) {
                 try {
-                    var pp = path.resolve(__dirname, './../frontend/public/images/star-rating/' + id + "." + ext);
+                    var pp = path.resolve(__dirname, './../images/' + id + "." + ext);
                     countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + ext, writeMode: "overwrite" }, function(err3) {
                         if (err3) {
                             callback("Failed to upload image");
