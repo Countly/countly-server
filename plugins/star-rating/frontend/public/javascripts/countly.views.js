@@ -119,7 +119,9 @@
             onOpen: function() {
                 var self = this;
                 var loadImage = new Image();
-                loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
+                if (this.controls.initialEditedObject.logo) {
+                    loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
+                }
                 loadImage.onload = function() {
                     self.imageSource = loadImage.src;
                 };
