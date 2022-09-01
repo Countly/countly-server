@@ -39,12 +39,14 @@
                         <img src="/populator/images/banking.svg" style="width:100%">
                     </div>
                 <% } else if (pageIndex === '1') { %>
-                    <div class="col-sm-12 text-center">
+                    <div class="col-sm-12">
                         <h1>Our Services</h1>
+                        <%- include(includes.content2Cols); %>
                     </div>
                 <% } else if (pageIndex === '2') { %>
-                    <div class="col-sm-12 text-center">
+                    <div class="col-sm-12">
                         <h1>Internet Banking</h1>
+                        <%- include(includes.content3Cols); %>
                     </div>
                 <% } %>
             </div>

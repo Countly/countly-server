@@ -40,12 +40,14 @@
                         <img src="/populator/images/navigation.svg" style="width:100%">
                     </div>
                 <% } else if (pageIndex === '1') { %>
-                    <div class="col-sm-12 download-section text-center">
+                    <div class="col-sm-12">
                         <h1>Partner</h1>
+                        <%- include(includes.content3Cols); %>
                     </div>
                 <% } else if (pageIndex === '2') { %>
-                    <div class="col-sm-12 download-section text-center">
+                    <div class="col-sm-12">
                         <h1>Live Map</h1>
+                        <%- include(includes.content2Cols); %>
                     </div>
                 <% } %>
             </div>

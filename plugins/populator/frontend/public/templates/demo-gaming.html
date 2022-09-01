@@ -43,12 +43,14 @@
                         <img src="/populator/images/gaming.svg" style="width:100%">
                     </div>
                 <% } else if (pageIndex === '1') { %>
-                    <div class="col-sm-12 text-center">
+                    <div class="col-sm-12">
                         <h1>Our Games</h1>
+                        <%- include(includes.content3Cols); %>
                     </div>
                 <% } else if (pageIndex === '2') { %>
-                    <div class="col-sm-12 text-center">
+                    <div class="col-sm-12">
                         <h1>Our Lovely Community</h1>
+                        <%- include(includes.content2Cols); %>
                     </div>
                 <% } %>
             </div>
