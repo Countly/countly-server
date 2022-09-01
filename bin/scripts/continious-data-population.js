@@ -8,9 +8,10 @@
 // var date = new Date();
 // Please set below parameters properly before running script.
 var INTERVAL_AS_SECOND = 1; // 60 * 60 * 24 * 30;
-var APP_ID = ""; // Enter your app Id
-var POPULATOR_TEMPLATE_ID = "defaultBanking"; // Enter the custom populator template ID you created or default template _id "{defaultGaming}"
-var SERVER_URL = "https://master.count.ly";
+var SERVER_URL = "http://localhost";
+var inputs = [{"APP_ID": "", "POPULATOR_TEMPLATE_ID": ""}]; //POPULATOR_TEMPLATE_ID: Enter the custom populator template ID you created or default template _id "{defaultGaming}"
+
+
 
 //script variables
 let maxUserCount = 50;
@@ -159,9 +160,8 @@ var defaultTemplates = [
         }
     }
 ];
-var app = null, template = null, pluginList = null;
-var users = [], user = null;
-var stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
+var app = {}, template = {}, pluginList = null;
+var users = {}, user = null;
 
 var plugins = require('../../plugins/pluginManager.js'),
     request = require('request'),
@@ -178,84 +178,86 @@ function writeMsg(msg) {
 async function readDbParameters() {
     try {
         const db = await plugins.dbConnection("countly");
-        app = await db.collection('apps').findOne({'_id': db.ObjectID(APP_ID)});
         pluginList = await db.collection('plugins').find({}).toArray();
-        if (POPULATOR_TEMPLATE_ID.length > 18) {
-            template = await db.collection('populator_templates').findOne({'_id': db.ObjectID(POPULATOR_TEMPLATE_ID)});
-        }
-        else { // default template
-            defaultTemplates.forEach(function(item) {
-                if (item._id === POPULATOR_TEMPLATE_ID) {
-                    template = item;
+
+        for (var i = 0; i < Object.keys(inputs).length; i++) {
+            app[inputs[i].APP_ID] = await db.collection('apps').findOne({'_id': db.ObjectID(inputs[i].APP_ID)});
+            if (inputs[i].POPULATOR_TEMPLATE_ID.length > 18) {
+                template[inputs[i].APP_ID] = await db.collection('populator_templates').findOne({'_id': db.ObjectID(inputs[i].POPULATOR_TEMPLATE_ID)});
+            }
+            else { // default template
+                defaultTemplates.forEach(function(item) {
+                    if (item._id === inputs[i].POPULATOR_TEMPLATE_ID) {
+                        template[inputs[i].APP_ID] = item;
+                    }
+                });
+                if (!template[inputs[i].APP_ID]) {
+                    db.close();
+                    writeMsg('INVALID POPULATOR_TEMPLATE_ID ', inputs[i].POPULATOR_TEMPLATE_ID);
                 }
-            });
+            }
+            if (!app[inputs[i].APP_ID]) {
+                db.close();
+                writeMsg('INVALID APP_ID ', inputs[i].APP_ID);
+            }
             if (!template) {
                 db.close();
-                writeMsg('INVALID POPULATOR_TEMPLATE_ID ', POPULATOR_TEMPLATE_ID);
+                writeMsg('INVALID POPULATOR_TEMPLATE_ID ', inputs[i].POPULATOR_TEMPLATE_ID);
             }
-        }
-        if (!app) {
             db.close();
-            writeMsg('INVALID APP_ID ', APP_ID);
+            users[inputs[i].APP_ID] = [];
         }
-        if (!template) {
-            db.close();
-            writeMsg('INVALID POPULATOR_TEMPLATE_ID ', POPULATOR_TEMPLATE_ID);
-        }
-        db.close();
     }
     catch (error) {
         clearInterval(interval);
         writeMsg('There was an error while checking db parameters', error);
     }
 }
-
 readDbParameters();
 
 var interval = setInterval(async function() {
-    users = [];
-    var userCount = getRandomInt(1, maxUserCount);
-    if (users.length === 0) {
-        for (var i = 0; i < userCount; i++) {
-            user = new getUser(template && template.up);
-            users.push(user);
-        }
-    }
-    else {
-        if (users.length !== maxUserCount) {
-            if (userCount === 1) {
-                user = new getUser(template && template.up);
-                users.push(user);
-            }
-        }
-    }
-
-    var upperBoundary = Math.floor(userCount / 2);
-
-    var indexes = [];
-    for (var i0 = 0; i0 < upperBoundary; i0++) {
-        indexes.push(getRandomInt(0, users.length - 1));
-    }
-
-    indexes.forEach(function(index) {
-        if (users[index].hasSession) {
-            if (users[index].eventsInSession > 9) {
-                users[index].eventsInSession = 0;
-                users[index].startSession(template);
-            }
-            else {
-                if (getRandomInt(1, 3) === 1) {
-                    users[index].addEvent(template, getRandomInt(1, template.events.length - 1));
-                    users[index].eventsInSession++;
-                }
+    for (var z = 0; z < Object.keys(inputs).length; z++) {
+        //users = [];
+        var userCount = getRandomInt(maxUserCount / 2, maxUserCount);
+        if (!users[inputs[z].APP_ID] || users[inputs[z].APP_ID].length === 0) {
+            for (var i = 0; i < userCount; i++) {
+                user = new getUser(template[inputs[z].APP_ID] && template[inputs[z].APP_ID].up);
+                users[inputs[z].APP_ID].push(user);
             }
         }
         else {
-            users[index].startSession(template);
+            if (users[inputs[z].APP_ID].length < maxUserCount) {
+                if (getRandomInt(1, 3) === 1) {
+                    user = new getUser(template && template.up);
+                    users[inputs[z].APP_ID].push(user);
+                }
+            }
         }
-    });
-}, (INTERVAL_AS_SECOND * 1000 * 5));
 
+        var upperBoundary = Math.floor(userCount / 2);
+
+        var indexes = [];
+        for (var i0 = 0; i0 < upperBoundary; i0++) {
+            indexes.push(getRandomInt(0, users[inputs[z].APP_ID].length - 1));
+        }
+        console.log(users[inputs[z].APP_ID].length, 'user length for ', inputs[z].APP_ID, ' app id');
+        indexes.forEach(function(index) {
+            if (users[inputs[z].APP_ID][index].hasSession) {
+                if (users[inputs[z].APP_ID][index].eventsInSession > 9) {
+                    users[inputs[z].APP_ID][index].eventsInSession = 0;
+                    users[inputs[z].APP_ID][index].startSession(template[inputs[z].APP_ID], app[inputs[z].APP_ID].key, inputs[z].POPULATOR_TEMPLATE_ID);
+                }
+                else {
+                    users[inputs[z].APP_ID][index].addEvent(template[inputs[z].APP_ID], getRandomInt(1, template[inputs[z].APP_ID].events.length - 1), app[inputs[z].APP_ID].key, inputs[z].POPULATOR_TEMPLATE_ID);
+                    users[inputs[z].APP_ID][index].eventsInSession++;
+                }
+            }
+            else {
+                users[inputs[z].APP_ID][index].startSession(template[inputs[z].APP_ID], app[inputs[z].APP_ID].key, inputs[z].POPULATOR_TEMPLATE_ID);
+            }
+        });
+    }
+}, (INTERVAL_AS_SECOND * 1000 * 5));
 
 /**
  * Generate random int between passed range
@@ -443,14 +445,14 @@ function getUserProperties(templateUp) {
 /**
  * Sends bulk request for populator
  **/
-async function countlyPopulatorSync() {
+async function countlyPopulatorSync(appKey) {
     try {
         var req = bulk.splice(0, bucket);
         await sendRequest({
             requestType: 'POST',
             Url: SERVER_URL + "/i/bulk",
             body: {
-                app_key: app.key,
+                app_key: appKey,
                 requests: JSON.stringify(req),
                 populator: true
             }
@@ -513,7 +515,6 @@ function getUser(templateUp) {
 
     this.getProp = getProp;
     var that = this;
-    this.stats = stats;
     this.id = this.getId();
     this.isRegistered = false;
     this.hasSession = false;
@@ -736,9 +737,7 @@ function getUser(templateUp) {
         return trace;
     };
 
-    this.getEvent = function(id, eventTemplates) {
-        this.stats.e++;
-
+    this.getEvent = function(id, eventTemplates, appKey, templateId) {
         var event = {
             "key": id,
             "count": 1,
@@ -777,9 +776,9 @@ function getUser(templateUp) {
         else if (id === "[CLY]_view") {
             event.segmentation = {};
             var populatorType = null;
-            if (POPULATOR_TEMPLATE_ID.length <= 10) { //defaultTemplate
+            if (templateId.length <= 10) { //defaultTemplate
                 defaultTemplates.forEach(function(template) {
-                    if (template.name === POPULATOR_TEMPLATE_ID) {
+                    if (template.name === templateId) {
                         populatorType = template._id;
                     }
                 });
@@ -790,7 +789,7 @@ function getUser(templateUp) {
             Object.keys(viewSegments).forEach(function(key) {
                 var values = [];
                 if (app.type === "web" && key === "name") {
-                    values = ["/populator/" + app.key + "/demo-" + populatorType + ".html"];
+                    values = ["/populator/" + appKey + "/demo-" + populatorType + ".html"];
                 }
                 else {
                     values = viewSegments[key];
@@ -805,7 +804,7 @@ function getUser(templateUp) {
         return [event];
     };
 
-    this.getEvents = function(count, templateEvents) {
+    this.getEvents = function(count, templateEvents, appKey, templateId) {
         if (Object.keys(templateEvents).length === 0) {
             return [];
         }
@@ -815,7 +814,7 @@ function getUser(templateUp) {
 
         for (var eventIndex = 0; eventIndex < count; eventIndex++) {
             var eventKey = eventKeys[getRandomInt(0, eventKeys.length - 1)];
-            events.push(this.getEvent(eventKey, templateEvents[eventKey])[0]);
+            events.push(this.getEvent(eventKey, templateEvents[eventKey], appKey, templateId)[0]);
         }
 
         return events;
@@ -832,8 +831,6 @@ function getUser(templateUp) {
     };
 
     this.getRatingEvent = function() {
-        this.stats.e++;
-
         var event = {
             "key": "[CLY]_star_rating",
             "count": 1,
@@ -857,8 +854,6 @@ function getUser(templateUp) {
     };
 
     this.getNPSEvent = function() {
-        this.stats.e++;
-
         var event = {
             "key": "[CLY]_nps",
             "count": 1,
@@ -882,8 +877,6 @@ function getUser(templateUp) {
     };
 
     this.getSurveyEvent = function() {
-        this.stats.e++;
-
         var event = {
             "key": "[CLY]_survey",
             "count": 1,
@@ -937,26 +930,25 @@ function getUser(templateUp) {
         return event;
     };
 
-    this.getHeatmapEvents = function() {
-        var events = this.getHeatmapEvent();
+    this.getHeatmapEvents = function(appKey, templateId) {
+        var events = this.getHeatmapEvent(appKey, templateId);
 
         if (Math.random() >= 0.5) {
-            events = events.concat(this.getHeatmapEvent());
+            events = events.concat(this.getHeatmapEvent(appKey, templateId));
 
             if (Math.random() >= 0.8) {
-                events = events.concat(this.getHeatmapEvent());
+                events = events.concat(this.getHeatmapEvent(appKey, templateId));
             }
         }
 
         return events;
     };
 
-    this.getHeatmapEvent = function() {
-        this.stats.e++;
+    this.getHeatmapEvent = function(appKey, templateId) {
         var populatorType = null;
-        if (POPULATOR_TEMPLATE_ID.length <= 10) { //defaultTemplate
+        if (templateId.length <= 10) { //defaultTemplate
             defaultTemplates.forEach(function(template) {
-                if (template.name === POPULATOR_TEMPLATE_ID) {
+                if (template.name === templateId) {
                     populatorType = template._id;
                 }
             });
@@ -964,7 +956,7 @@ function getUser(templateUp) {
         else {
             populatorType = template._id;
         }
-        var views = ["/populator/" + app.key + "/demo-" + populatorType + ".html"];
+        var views = ["/populator/" + appKey + "/demo-" + populatorType + ".html"];
         var event = {
             "key": "[CLY]_action",
             "count": 1,
@@ -998,26 +990,25 @@ function getUser(templateUp) {
         return [event];
     };
 
-    this.getScrollmapEvents = function() {
-        var events = this.getHeatmapEvent();
+    this.getScrollmapEvents = function(appKey, templateId) {
+        var events = this.getHeatmapEvent(appKey, templateId);
 
         if (Math.random() >= 0.5) {
-            events = events.concat(this.getScrollmapEvent());
+            events = events.concat(this.getScrollmapEvent(appKey, templateId));
 
             if (Math.random() >= 0.8) {
-                events = events.concat(this.getScrollmapEvent());
+                events = events.concat(this.getScrollmapEvent(appKey, templateId));
             }
         }
 
         return events;
     };
 
-    this.getScrollmapEvent = function() {
-        this.stats.e++;
+    this.getScrollmapEvent = function(appKey, templateId) {
         var populatorType = null;
-        if (POPULATOR_TEMPLATE_ID.length <= 10) { //defaultTemplate
+        if (templateId.length <= 10) { //defaultTemplate
             defaultTemplates.forEach(function(template) {
-                if (template.name === POPULATOR_TEMPLATE_ID) {
+                if (template.name === templateId) {
                     populatorType = template._id;
                 }
             });
@@ -1025,7 +1016,7 @@ function getUser(templateUp) {
         else {
             populatorType = template._id;
         }
-        var views = ["/populator/" + app.key + "/demo-" + populatorType + ".html"];
+        var views = ["/populator/" + appKey + "/demo-" + populatorType + ".html"];
         var event = {
             "key": "[CLY]_action",
             "count": 1,
@@ -1045,46 +1036,43 @@ function getUser(templateUp) {
         return [event];
     };
 
-    this.addEvent = function(template, eventChance) {
+    this.addEvent = function(template, eventChance, appKey, templateId) {
         var req = {};
         var events;
 
         if (!this.isRegistered) {
             this.isRegistered = true;
-            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(4, template && template.events, appKey, templateId));
             events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
             req = {timestamp: this.ts, events: events};
-            req.events = req.events.concat(this.getHeatmapEvents());
+            req.events = req.events.concat(this.getHeatmapEvents(appKey, templateId));
             req.events = req.events.concat(this.getFeedbackEvents());
-            req.events = req.events.concat(this.getScrollmapEvents());
+            req.events = req.events.concat(this.getScrollmapEvents(appKey, templateId));
         }
         else {
-            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(4, template && template.events, appKey, templateId));
             events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
             req = {timestamp: this.ts, events: events};
         }
-        this.request(req);
+        this.request(req, appKey);
     };
 
-    this.startSession = function(template) {
+    this.startSession = function(template, appKey, templateId) {
         this.ts = this.ts + 60 * 60 * 24 + 100;
-        this.stats.s++;
         var req = {};
         var events;
 
         if (!this.isRegistered) {
             this.isRegistered = true;
-            this.stats.u++;
             // note login event was here
-            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(4, template && template.events, appKey, templateId));
             req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
-            this.stats.p++;
-            req.events = req.events.concat(this.getHeatmapEvents());
+            req.events = req.events.concat(this.getHeatmapEvents(appKey, templateId));
             req.events = req.events.concat(this.getFeedbackEvents());
-            req.events = req.events.concat(this.getScrollmapEvents());
+            req.events = req.events.concat(this.getScrollmapEvents(appKey, templateId));
         }
         else {
-            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
+            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(4, template && template.events, appKey, templateId));
             req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
         }
 
@@ -1095,7 +1083,6 @@ function getUser(templateUp) {
             req[this.platform.toLowerCase() + "_token"] = randomString(8);
         }
 
-        this.stats.c++;
         req.crash = this.getCrash();
 
         var consents = ["sessions", "events", "views", "scrolls", "clicks", "forms", "crashes", "push", "attribution", "users"];
@@ -1106,78 +1093,54 @@ function getUser(templateUp) {
         }
 
         this.hasSession = true;
-        this.request(req);
+        this.request(req, appKey);
         this.timer = setTimeout(function() {
-            that.extendSession(template);
+            that.extendSession(template, appKey, templateId);
         }, timeout);
     };
 
-    this.extendSession = function(template) {
+    this.extendSession = function(template, appKey, templateId) {
         if (this.hasSession) {
             var req = {};
             this.ts = this.ts + 30;
-            this.stats.x++;
-            this.stats.d += 30;
-            var events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(2, template && template.events));
+            var events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(2, template && template.events, appKey, templateId));
             req = {timestamp: this.ts, session_duration: 30, events: events, apm: this.getTrace()};
             if (Math.random() > 0.8) {
                 this.timer = setTimeout(function() {
-                    that.extendSession(template);
+                    that.extendSession(template, appKey, templateId);
                 }, timeout);
             }
             else {
                 if (Math.random() > 0.5) {
-                    this.stats.c++;
                     req.crash = this.getCrash();
                 }
                 this.timer = setTimeout(function() {
-                    that.endSession(template);
+                    that.endSession(template, appKey, templateId);
                 }, timeout);
             }
-            this.request(req);
+            this.request(req, appKey);
         }
     };
 
-    this.endSession = function(template) {
+    this.endSession = function(template, appKey, templateId) {
         if (this.timer) {
             clearTimeout(this.timer);
             this.timer = null;
         }
         if (this.hasSession) {
             this.hasSession = false;
-            var events = this.getEvents(2, template && template.events);
-            this.request({timestamp: this.ts, end_session: 1, events: events, apm: this.getTrace()});
+            var events = this.getEvents(2, template && template.events, appKey, templateId);
+            this.request({timestamp: this.ts, end_session: 1, events: events, apm: this.getTrace()}, appKey);
         }
     };
 
-    this.request = async function(params) {
-        this.stats.r++;
+    this.request = async function(params, appKey) {
         params.device_id = this.id;
         params.ip_address = this.ip;
         params.hour = getRandomInt(0, 23);
         params.dow = getRandomInt(0, 6);
-        params.stats = JSON.parse(JSON.stringify(this.stats));
         params.populator = true;
         bulk.push(params);
-        this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
-        countlyPopulatorSync();
-    };
-
-    this.reportConversion = async function(uid, campaingId) {
-        try {
-            await sendRequest({
-                requestType: 'GET',
-                body: {
-                    campaign_id: uid,
-                    campaign_user: campaingId,
-                    app_key: app.key,
-                    device_id: this.id,
-                    populator: true
-                }
-            });
-        }
-        catch (e) {
-            console.log('request failed: ', e);
-        }
+        countlyPopulatorSync(appKey);
     };
 }
