@@ -329,15 +329,24 @@ module.exports.update = async params => {
         msg.info.rejectedBy = null;
         msg.info.rejectedByName = null;
 
-        if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
-            msg.status = Status.Created;
-            msg.state = State.Created;
-            await msg.save();
-            await msg.schedule(log, params);
-            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated_draft', data: msg.json});
+        if (msg.status === Status.Draft) {
+            if (params.qstring.status === Status.Created) {
+                msg.status = Status.Created;
+                msg.state = State.Created;
+                await msg.save();
+                await msg.schedule(log, params);
+                common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated_draft', data: msg.json});
+            }
+            else {
+                await msg.save();
+                common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
+            }
         }
         else {
             await msg.save();
+            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable))) {
+                await msg.schedule(log, params);
+            }
             common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
         }
     }
