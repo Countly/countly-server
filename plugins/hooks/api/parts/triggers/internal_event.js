@@ -21,6 +21,11 @@ class InternalEventTrigger {
                 }
                 catch (e) {
                     log.e("[hooks internal_events] parsing originalInput", e);
+                    // Rethrow error if event is delete
+                    // This error will then be caught by app users api dispatch so that it can cancel app user deletion
+                    if (data.eventType && data.eventType === '/i/app_users/delete') {
+                        throw e;
+                    }
                 }
                 return options.pipeline(data);
             };
@@ -151,6 +156,11 @@ class InternalEventTrigger {
                 }
                 catch (err) {
                     console.log(err, "[InternalEventTrigger]");
+                    // Rethrow error if event is delete
+                    // This error will then be caught by app users api dispatch so that it can cancel app user deletion
+                    if (eventType === '/i/app_users/delete') {
+                        throw err;
+                    }
                 }
                 const userData = {user: user || {}};
                 if (ob.update) {
@@ -192,9 +202,8 @@ class InternalEventTrigger {
      */
     register() {
         InternalEvents.forEach((e) => {
-            plugins.register(e, (ob) => {
-                this.process(ob, e);
-                //console.log("mmmm", e);
+            plugins.register(e, async(ob) => {
+                await this.process(ob, e);
             });
         });
     }
