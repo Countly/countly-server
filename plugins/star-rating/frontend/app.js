@@ -20,11 +20,13 @@ var exported = {},
         app.get(countlyConfig.path + '/feedback', renderPopup);
         app.get(countlyConfig.path + '/star-rating/images/*', function(req, res) {
             countlyFs.getStats("star-rating", path.resolve(__dirname, './../images/' + req.params[0]), {id: "" + req.params[0]}, function(statsErr, stats) {
+                console.log(statsErr);
                 if (statsErr || !stats || !stats.size) {
                     res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
                 }
                 else {
                     countlyFs.getStream("star-rating", path.resolve(__dirname, './../images/' + req.params[0]), {id: "" + req.params[0]}, function(streamErr, stream) {
+                        console.log(streamErr);
                         if (streamErr || !stream) {
                             res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
                         }
