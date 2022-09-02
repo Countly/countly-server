@@ -78,7 +78,7 @@
                     submitted.logo = this.logoFile;
                 }
 
-                if (this.deleteLogo) {
+                if (!this.imageSource) {
                     submitted.logo = '';
                 }
 
@@ -131,6 +131,7 @@
                 this.deleteLogo = true;
             },
             onFileAdded: function(file) {
+                this.deleteLogo = false;
                 var img = new FileReader();
                 var self = this;
                 img.onload = function() {
