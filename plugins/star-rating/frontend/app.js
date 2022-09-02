@@ -19,6 +19,8 @@ var exported = {},
         // keep this for backward compatability
         app.get(countlyConfig.path + '/feedback', renderPopup);
         app.get(countlyConfig.path + '/star-rating/images/*', function(req, res) {
+            console.log("directory"+ __dirname);
+            console.log("directory"+ req.params[0]);
             countlyFs.getStats("star-rating", path.resolve(__dirname, './../images/' + req.params[0]), {id: "" + req.params[0]}, function(statsErr, stats) {
                 console.log(statsErr);
                 if (statsErr || !stats || !stats.size) {
