@@ -36,7 +36,9 @@ const OVERRIDES = {
 
     WEB: {
         USE_INTERCOM: 'use_intercom',
-        SECURE_COOKIES: 'secure_cookies'
+        SECURE_COOKIES: 'secure_cookies',
+        SESSION_SECRET: 'session_secret',
+        SESSION_NAME: 'session_name'
     },
 
     IGNOREPROXIES: 'ignoreProxies',
