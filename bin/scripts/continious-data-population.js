@@ -251,13 +251,12 @@ var interval = setInterval(async function() {
 
         indexes.forEach(function(index) {
             if (users[inputs[z].APP_ID][index].hasSession) {
-                if (users[inputs[z].APP_ID][index].eventsInSession >= 1) {
+                if ((users[inputs[z].APP_ID][index].eventsInSession >= 9)) {
                     users[inputs[z].APP_ID][index].eventsInSession = 0;
                     users[inputs[z].APP_ID][index].startSession(template[inputs[z].APP_ID], app[inputs[z].APP_ID], inputs[z].POPULATOR_TEMPLATE_ID);
                 }
                 else {
                     users[inputs[z].APP_ID][index].addEvent(template[inputs[z].APP_ID], app[inputs[z].APP_ID], inputs[z].POPULATOR_TEMPLATE_ID);
-                    users[inputs[z].APP_ID][index].eventsInSession++;
                 }
             }
             else {
@@ -1070,19 +1069,19 @@ function getUser(templateUp) {
 
         if (!this.isRegistered) {
             this.isRegistered = true;
-            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
-            // events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
+            events = this.getEvents(1, template && template.events, app.key, templateId);
             req = {timestamp: this.ts, events: events};
             req.events = req.events.concat(this.getHeatmapEvents(app.key, templateId));
             req.events = req.events.concat(this.getFeedbackEvents(app._id));
             req.events = req.events.concat(this.getScrollmapEvents(app.key, templateId));
-            req.events = req.events[Math.floor(Math.random() * req.events.length)];
         }
         else {
-            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
+            events = this.getEvents(1, template && template.events, app.key, templateId);
             // events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
-            events = events[Math.floor(Math.random() * events.length)];
             req = {timestamp: this.ts, events: events};
+        }
+        if (req.events) {
+            this.eventsInSession += req.events.length;
         }
         this.request(req, app.key);
     };
@@ -1097,22 +1096,22 @@ function getUser(templateUp) {
             // note login event was here
             req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, apm: this.getTrace()};
             if (getRandomInt(1, 3) === 3) {
-                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
+                events = this.getEvents(1, template && template.events, app.key, templateId);
                 req.events = events;
                 req.events = req.events.concat(this.getHeatmapEvents(app.key, templateId));
                 req.events = req.events.concat(this.getFeedbackEvents(app._id));
                 req.events = req.events.concat(this.getScrollmapEvents(app.key, templateId));
-                req.events = req.events[Math.floor(Math.random() * req.events.length)];
             }
         }
         else {
             req = {timestamp: this.ts, begin_session: 1, apm: this.getTrace()};
             if (getRandomInt(1, 3) === 3) {
-                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
-                req.events = events[Math.floor(Math.random() * events.length)];
+                events = this.getEvents(1, template && template.events, app.key, templateId);
             }
         }
-
+        if (req.events) {
+            this.eventsInSession += req.events.length;
+        }
         if (Math.random() > 0.10) {
             this.hasPush = true;
             req.token_session = 1;
