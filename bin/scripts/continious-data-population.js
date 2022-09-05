@@ -5,12 +5,11 @@
  *  Command: node continious-data-population.js
  */
 
-// var date = new Date();
 // Please set below parameters properly before running script.
-var INTERVAL_AS_SECOND = 1; // 60 * 60 * 24 * 30;
+var INTERVAL_AS_SECOND = 60;
 var SERVER_URL = "http://localhost";
 var inputs = [{"APP_ID": "", "POPULATOR_TEMPLATE_ID": ""}]; //POPULATOR_TEMPLATE_ID: Enter the custom populator template ID you created or default template _id "{defaultGaming}"
-
+var API_KEY = "";
 
 
 //script variables
@@ -160,8 +159,10 @@ var defaultTemplates = [
         }
     }
 ];
-var app = {}, template = {}, pluginList = null;
+var app = {}, template = {}, pluginList = {};
 var users = {}, user = null;
+var intervalCount = 0;
+var campaingClicks = [];
 
 var plugins = require('../../plugins/pluginManager.js'),
     request = require('request'),
@@ -178,9 +179,9 @@ function writeMsg(msg) {
 async function readDbParameters() {
     try {
         const db = await plugins.dbConnection("countly");
-        pluginList = await db.collection('plugins').find({}).toArray();
 
         for (var i = 0; i < Object.keys(inputs).length; i++) {
+            pluginList[inputs[i].APP_ID] = [];
             app[inputs[i].APP_ID] = await db.collection('apps').findOne({'_id': db.ObjectID(inputs[i].APP_ID)});
             if (inputs[i].POPULATOR_TEMPLATE_ID.length > 18) {
                 template[inputs[i].APP_ID] = await db.collection('populator_templates').findOne({'_id': db.ObjectID(inputs[i].POPULATOR_TEMPLATE_ID)});
@@ -206,6 +207,13 @@ async function readDbParameters() {
             }
             db.close();
             users[inputs[i].APP_ID] = [];
+
+
+            pluginList[inputs[i].APP_ID] = await sendRequest({
+                requestType: 'GET',
+                Url: SERVER_URL + "/o/plugins?",
+                requestParamKeys: { app_id: inputs[i].APP_ID, api_key: API_KEY }
+            });
         }
     }
     catch (error) {
@@ -234,30 +242,39 @@ var interval = setInterval(async function() {
             }
         }
 
-        var upperBoundary = Math.floor(userCount / 2);
+        var upperBoundary = Math.floor(userCount / 10);
 
         var indexes = [];
         for (var i0 = 0; i0 < upperBoundary; i0++) {
             indexes.push(getRandomInt(0, users[inputs[z].APP_ID].length - 1));
         }
-        console.log(users[inputs[z].APP_ID].length, 'user length for ', inputs[z].APP_ID, ' app id');
+
         indexes.forEach(function(index) {
             if (users[inputs[z].APP_ID][index].hasSession) {
-                if (users[inputs[z].APP_ID][index].eventsInSession > 9) {
+                if (users[inputs[z].APP_ID][index].eventsInSession >= 1) {
                     users[inputs[z].APP_ID][index].eventsInSession = 0;
-                    users[inputs[z].APP_ID][index].startSession(template[inputs[z].APP_ID], app[inputs[z].APP_ID].key, inputs[z].POPULATOR_TEMPLATE_ID);
+                    users[inputs[z].APP_ID][index].startSession(template[inputs[z].APP_ID], app[inputs[z].APP_ID], inputs[z].POPULATOR_TEMPLATE_ID);
                 }
                 else {
-                    users[inputs[z].APP_ID][index].addEvent(template[inputs[z].APP_ID], getRandomInt(1, template[inputs[z].APP_ID].events.length - 1), app[inputs[z].APP_ID].key, inputs[z].POPULATOR_TEMPLATE_ID);
+                    users[inputs[z].APP_ID][index].addEvent(template[inputs[z].APP_ID], app[inputs[z].APP_ID], inputs[z].POPULATOR_TEMPLATE_ID);
                     users[inputs[z].APP_ID][index].eventsInSession++;
                 }
             }
             else {
-                users[inputs[z].APP_ID][index].startSession(template[inputs[z].APP_ID], app[inputs[z].APP_ID].key, inputs[z].POPULATOR_TEMPLATE_ID);
+                users[inputs[z].APP_ID][index].startSession(template[inputs[z].APP_ID], app[inputs[z].APP_ID], inputs[z].POPULATOR_TEMPLATE_ID);
             }
         });
     }
-}, (INTERVAL_AS_SECOND * 1000 * 5));
+    if (intervalCount === 5) { // it should run one time each interval with some users.
+        for (var x = 0; x < Object.keys(inputs).length; x++) {
+            await addCohorts(template[inputs[x].APP_ID], app[inputs[x].APP_ID]);
+            generateWidgets(app[inputs[x].APP_ID]._id, function() {
+            });
+            addExtras(app[inputs[x].APP_ID]._id);
+        }
+    }
+    intervalCount++;
+}, (INTERVAL_AS_SECOND * 1000));
 
 /**
  * Generate random int between passed range
@@ -299,23 +316,37 @@ async function sendRequest(params) {
             body[requestKey] = params.body[requestKey];
         }
 
+        var url = new URL(params.Url || SERVER_URL);
+
+        var requestParamKeys = params.requestParamKeys ? Object.keys(params.requestParamKeys) : [];
+        if (requestParamKeys.length > 0) {
+            for (var z = 0; z < requestParamKeys.length; z++) {
+                var requestParamKey = requestParamKeys[z];
+                var requestParamValue = Object.values(params.requestParamKeys)[z];
+                url.searchParams.append(requestParamKey, requestParamValue);
+            }
+        }
+
         var options = {
-            uri: params.Url || SERVER_URL,
+            uri: url.href,
             method: params.requestType,
             json: true,
             body: body,
             strictSSL: false
         };
+        if (params.print) {
+            console.log(options.uri, 'URL');
+        }
         counter.sent++;
         return new Promise(function(resolve, reject) {
             request(options, function(error, response) {
                 if (error || !response) {
                     counter.error++;
-                    reject({err: 'There was an error while sending a request.', code: response.statusCode});
+                    reject({err: 'There was an error while sending a request.', code: response});
                 }
-                else if (response.statusCode === 200) {
+                else if (response.statusCode === 200 || response.statusCode === 201) {
                     counter.success++;
-                    resolve(true);
+                    resolve(response.body);
                 }
                 else {
                     counter.error++;
@@ -468,17 +499,14 @@ async function countlyPopulatorSync(appKey) {
  * @param {string} pluginName - pluginName
  * @returns {boolean} returns true or false
  **/
-function isPluginExists(pluginName) {
-    pluginList.forEach(function(item) {
-        if (item._id === "plugins") {
-            if (item[pluginName]) {
-                return true;
-            }
-            else {
-                return false;
-            }
+async function isPluginExists(pluginName, appId) {
+    var isExist = false;
+    pluginList[appId].forEach(function(plugin) {
+        if (plugin.name === pluginName && plugin.enabled) {
+            isExist = true;
         }
     });
+    return isExist;
 }
 
 /**
@@ -820,10 +848,10 @@ function getUser(templateUp) {
         return events;
     };
 
-    this.getFeedbackEvents = function() {
+    this.getFeedbackEvents = function(appId) {
         var events = [];
         events.push(this.getRatingEvent());
-        if (isPluginExists('surveys')) {
+        if (isPluginExists('surveys', appId)) {
             events.push(this.getNPSEvent());
             events.push(this.getSurveyEvent());
         }
@@ -1036,28 +1064,30 @@ function getUser(templateUp) {
         return [event];
     };
 
-    this.addEvent = function(template, eventChance, appKey, templateId) {
+    this.addEvent = function(template, app, templateId) {
         var req = {};
         var events;
 
         if (!this.isRegistered) {
             this.isRegistered = true;
-            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(4, template && template.events, appKey, templateId));
-            events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
+            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
+            // events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
             req = {timestamp: this.ts, events: events};
-            req.events = req.events.concat(this.getHeatmapEvents(appKey, templateId));
-            req.events = req.events.concat(this.getFeedbackEvents());
-            req.events = req.events.concat(this.getScrollmapEvents(appKey, templateId));
+            req.events = req.events.concat(this.getHeatmapEvents(app.key, templateId));
+            req.events = req.events.concat(this.getFeedbackEvents(app._id));
+            req.events = req.events.concat(this.getScrollmapEvents(app.key, templateId));
+            req.events = req.events[Math.floor(Math.random() * req.events.length)];
         }
         else {
-            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(4, template && template.events, appKey, templateId));
-            events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
+            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
+            // events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
+            events = events[Math.floor(Math.random() * events.length)];
             req = {timestamp: this.ts, events: events};
         }
-        this.request(req, appKey);
+        this.request(req, app.key);
     };
 
-    this.startSession = function(template, appKey, templateId) {
+    this.startSession = function(template, app, templateId) {
         this.ts = this.ts + 60 * 60 * 24 + 100;
         var req = {};
         var events;
@@ -1065,15 +1095,22 @@ function getUser(templateUp) {
         if (!this.isRegistered) {
             this.isRegistered = true;
             // note login event was here
-            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(4, template && template.events, appKey, templateId));
-            req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
-            req.events = req.events.concat(this.getHeatmapEvents(appKey, templateId));
-            req.events = req.events.concat(this.getFeedbackEvents());
-            req.events = req.events.concat(this.getScrollmapEvents(appKey, templateId));
+            req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, apm: this.getTrace()};
+            if (getRandomInt(1, 3) === 3) {
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
+                req.events = events;
+                req.events = req.events.concat(this.getHeatmapEvents(app.key, templateId));
+                req.events = req.events.concat(this.getFeedbackEvents(app._id));
+                req.events = req.events.concat(this.getScrollmapEvents(app.key, templateId));
+                req.events = req.events[Math.floor(Math.random() * req.events.length)];
+            }
         }
         else {
-            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(4, template && template.events, appKey, templateId));
-            req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
+            req = {timestamp: this.ts, begin_session: 1, apm: this.getTrace()};
+            if (getRandomInt(1, 3) === 3) {
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
+                req.events = events[Math.floor(Math.random() * events.length)];
+            }
         }
 
         if (Math.random() > 0.10) {
@@ -1093,9 +1130,9 @@ function getUser(templateUp) {
         }
 
         this.hasSession = true;
-        this.request(req, appKey);
+        this.request(req, app.key);
         this.timer = setTimeout(function() {
-            that.extendSession(template, appKey, templateId);
+            that.extendSession(template, app.key, templateId);
         }, timeout);
     };
 
@@ -1143,4 +1180,682 @@ function getUser(templateUp) {
         bulk.push(params);
         countlyPopulatorSync(appKey);
     };
+}
+
+
+/**
+ * Generates cohorts for once 
+ * @param {object} template user properties template
+**/
+async function addCohorts(template, app) {
+    var data = {};
+    var DEBUG_STEP_COUNT = "";
+
+    try {
+        if (template && template.events && Object.keys(template.events).length > 0) {
+            var firstEventKey = Object.keys(template.events)[0];
+
+            if (template.up && Object.keys(template.up).length > 0) {
+                var firstUserProperty = Object.keys(template.up)[0];
+                var firstUserPropertyValue = JSON.stringify(template.up[firstUserProperty][0]);
+                DEBUG_STEP_COUNT = "addCohorts_1.0";
+                data = {
+                    cohort_name: firstUserProperty + " = " + firstUserPropertyValue + " users who performed " + firstEventKey,
+                    steps: JSON.stringify([
+                        {
+                            type: "did",
+                            event: firstEventKey,
+                            times: "{\"$gte\":1}",
+                            period: "0days",
+                            query: "{\"custom." + firstUserProperty + "\":{\"$in\":[" + firstUserPropertyValue + "]}}",
+                            byVal: "",
+                        }
+                    ]),
+                    populator: true,
+                    app_id: app._id,
+                    api_key: "68e12a3d3991f8e82076981820f68801"
+                };
+
+                DEBUG_STEP_COUNT = "addCohorts_1.1";
+                await sendRequest({
+                    requestType: 'POST',
+                    Url: SERVER_URL + "/i/cohorts/add?",
+                    requestParamKeys: data
+                });
+            }
+
+
+            if (template.events[firstEventKey].segments && Object.keys(template.events[firstEventKey].segments).length > 0) {
+                var firstEventSegment = Object.keys(template.events[firstEventKey].segments)[0];
+                var firstEventSegmentValue = JSON.stringify(template.events[firstEventKey].segments[firstEventSegment][0]);
+
+                DEBUG_STEP_COUNT = "addCohorts_2.0";
+                data = {
+                    cohort_name: "Users who performed " + firstEventKey + " with " + firstEventSegment + " = " + firstEventSegmentValue,
+                    steps: JSON.stringify([
+                        {
+                            type: "did",
+                            event: firstEventKey,
+                            times: "{\"$gte\":1}",
+                            period: "0days",
+                            query: "{\"sg." + firstEventSegment + ":{\"$in\":[" + firstEventSegmentValue + "]}}",
+                            byVal: "",
+                        }
+                    ]),
+                    populator: true,
+                    app_id: app._id,
+                    api_key: "68e12a3d3991f8e82076981820f68801"
+                };
+
+                DEBUG_STEP_COUNT = "addCohorts_2.1";
+                await sendRequest({
+                    requestType: 'POST',
+                    Url: SERVER_URL + "/i/cohorts/add?",
+                    requestParamKeys: data
+                });
+
+                DEBUG_STEP_COUNT = "addCohorts_2.2";
+            }
+
+            if (Object.keys(template.events).length > 1) {
+                var secondEventKey = Object.keys(template.events)[1];
+                DEBUG_STEP_COUNT = "addCohorts_3.0";
+                data = {
+                    cohort_name: "Users who performed " + firstEventKey + " but not " + secondEventKey,
+                    steps: JSON.stringify([
+                        {
+                            type: "did",
+                            event: firstEventKey,
+                            times: "{\"$gte\":1}",
+                            period: "0days",
+                            query: "{}",
+                            byVal: "",
+                            conj: "and"
+                        },
+                        {
+                            type: "didnot",
+                            event: secondEventKey,
+                            times: "{\"$gte\":1}",
+                            period: "0days",
+                            query: "{}",
+                            byVal: "",
+                            conj: "and"
+                        }
+                    ]),
+                    populator: true,
+                    app_id: app._id,
+                    api_key: "68e12a3d3991f8e82076981820f68801"
+                };
+
+                DEBUG_STEP_COUNT = "addCohorts_3.1";
+                await sendRequest({
+                    requestType: 'POST',
+                    Url: SERVER_URL + "/i/cohorts/add?",
+                    requestParamKeys: data
+                });
+
+                DEBUG_STEP_COUNT = "addCohorts_3.2";
+            }
+        }
+
+        data = {
+            cohort_name: "Users who experienced a crash",
+            steps: JSON.stringify([
+                {
+                    type: "did",
+                    event: "[CLY]_crash",
+                    times: "{\"$gte\":1}",
+                    period: "0days",
+                    query: "{}",
+                    byVal: "",
+                }
+            ]),
+            populator: true,
+            app_id: app._id,
+            api_key: "68e12a3d3991f8e82076981820f68801"
+        };
+        DEBUG_STEP_COUNT = "addCohorts_4.0";
+        await sendRequest({
+            requestType: 'POST',
+            Url: SERVER_URL + "/i/cohorts/add?",
+            requestParamKeys: data
+        });
+
+        data = {
+            cohort_name: "iOS users with at least 2 sessions",
+            steps: JSON.stringify([
+                {
+                    type: "did",
+                    event: "[CLY]_session",
+                    times: "{\"$gte\":2}",
+                    period: "0days",
+                    query: "{\"up.p\":{\"$in\":[\"iOS\"]}}",
+                    byVal: "",
+                }
+            ]),
+            populator: true,
+            app_id: app._id,
+            api_key: "68e12a3d3991f8e82076981820f68801"
+        };
+        DEBUG_STEP_COUNT = "addCohorts_5.0";
+        await sendRequest({
+            requestType: 'POST',
+            Url: SERVER_URL + "/i/cohorts/add?",
+            requestParamKeys: data
+        });
+
+        DEBUG_STEP_COUNT = "addCohorts_6.0";
+        data = {
+            cohort_name: "Users who didnt view privacy policy",
+            steps: JSON.stringify([
+                {
+                    type: "didnot",
+                    event: "[CLY]_view",
+                    times: "{\"$gte\":1}",
+                    period: "0days",
+                    query: "{\"sg.name\":{\"$in\":[\"Privacy Policy\"]}}",
+                    byVal: "",
+                }
+            ]),
+            populator: true,
+            app_id: app._id,
+            api_key: "68e12a3d3991f8e82076981820f68801"
+        };
+
+
+        DEBUG_STEP_COUNT = "addCohorts_7.0";
+        await sendRequest({
+            requestType: 'POST',
+            Url: SERVER_URL + "/i/cohorts/add?",
+            requestParamKeys: data
+        });
+
+        DEBUG_STEP_COUNT = "addCohorts_8.0";
+    }
+    catch (error) {
+        console.log("There was an error in AddCohorts function. Error: ", error, ' Debug: ', DEBUG_STEP_COUNT);
+    }
+}
+
+async function createFeedbackWidget(popup_header_text, popup_comment_callout, popup_email_callout, popup_button_callout, popup_thanks_message, trigger_position, trigger_bg_color, trigger_font_color, trigger_button_text, target_devices, target_pages, target_page, is_active, hide_sticker, appId, callback) {
+    try {
+        const data = {
+            popup_header_text: popup_header_text,
+            popup_comment_callout: popup_comment_callout,
+            popup_email_callout: popup_email_callout,
+            popup_button_callout: popup_button_callout,
+            popup_thanks_message: popup_thanks_message,
+            trigger_position: trigger_position,
+            trigger_bg_color: trigger_bg_color,
+            trigger_font_color: trigger_font_color,
+            trigger_button_text: trigger_button_text,
+            target_devices: JSON.stringify(target_devices),
+            target_pages: JSON.stringify(target_pages),
+            target_page: target_page,
+            is_active: is_active,
+            hide_sticker: hide_sticker,
+            app_id: appId,
+            populator: true,
+            api_key: "68e12a3d3991f8e82076981820f68801"
+        };
+
+        const result = await sendRequest({
+            requestType: 'POST',
+            Url: SERVER_URL + "/i/feedback/widgets/create?",
+            requestParamKeys: data
+        });
+
+        if (result) {
+            callback();
+        }
+    }
+    catch (error) {
+        console.log("There is an error in CreateFeedbackWidget. Err: ", error);
+    }
+}
+
+async function createNPSWidget(name, followUpType, mainQuestion, followUpPromoter, followUpPassive, followUpDetractor, followUpAll, thanks, style, show, color, appId, callback) {
+    try {
+        const data = {
+            status: true,
+            name: name,
+            followUpType: followUpType || "score",
+            msg: JSON.stringify({
+                mainQuestion: mainQuestion,
+                followUpPromoter: followUpPromoter,
+                followUpPassive: followUpPassive,
+                followUpDetractor: followUpDetractor,
+                followUpAll: followUpAll,
+                thanks: thanks
+            }),
+            appearance: JSON.stringify({
+                style: style || "",
+                show: show || "",
+                color: color || ""
+            }),
+            targeting: null,
+            app_id: appId,
+            populator: true,
+            api_key: API_KEY
+        };
+
+        const result = await sendRequest({
+            requestType: 'POST',
+            Url: SERVER_URL + "/i/surveys/nps/create?",
+            requestParamKeys: data
+        });
+
+        if (result) {
+            callback();
+        }
+    }
+    catch (error) {
+        console.log("There is an error in CreateNPSWidget. Err: ", error);
+    }
+}
+
+async function createSurveyWidget(name, questions, thanks, position, show, color, logo, exitPolicy, appId, callback) {
+    try {
+        const data = {
+            status: true,
+            name: name,
+            questions: JSON.stringify(questions),
+            msg: JSON.stringify({
+                thanks: thanks
+            }),
+            appearance: JSON.stringify({
+                position: position,
+                show: show,
+                color: color,
+                logo: logo
+            }),
+            targeting: null,
+            exitPolicy: exitPolicy || "onAbandon",
+            app_id: appId,
+            populator: true,
+            api_key: API_KEY
+        };
+
+        const result = await sendRequest({
+            requestType: 'POST',
+            Url: SERVER_URL + "/i/surveys/survey/create?",
+            requestParamKeys: data
+        });
+
+        if (result) {
+            callback();
+        }
+    }
+    catch (error) {
+        console.log("There is an error in createSurveyWidget. Err: ", error);
+    }
+}
+
+/**
+ * Generate feedback popups three times
+ * @param {funciton} done - callback method
+ **/
+function generateWidgets(appId, done) {
+    var _appId = appId;
+    function generateRatingWidgets(_appId, callback) {
+        createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, _appId, function() {
+            createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, _appId, function() {
+                createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, _appId, function() {
+                    callback();
+                });
+            });
+        });
+    }
+
+    function generateNPSWidgets(_appId, callback) {
+        createNPSWidget("Separate per response type", "score", "How likely are you to recommend our product to a friend or colleague?", "We're glad you like us. What do you like the most about our product?", "Thank you for your feedback. How can we improve your experience?", "We're sorry to hear it. What would you like us to improve on?", "", "Thank you for your feedback", "full", "uclose", "#ddd", _appId, function() {
+            createNPSWidget("One response for all", "one", "How likely are you to recommend our product to a friend or colleague?", "", "", "", "What can/should we do to WOW you?", "Thank you for your feedback", "full", "uclose", "#ddd", _appId, callback);
+        });
+    }
+
+    function generateSurveyWidgets(_appId, callback) {
+        createSurveyWidget("Product Feedback example", [
+            {
+                "type": "rating",
+                "question": "How satisfied are you with the stability of the app?",
+                "required": true
+            },
+            {
+                "type": "multi",
+                "question": "Which feature of the app are most important to you?",
+                "choices": ["Ready-to-use templates", "Image editor", "Download in multiple formats"],
+                "required": true
+            },
+            {
+                "type": "text",
+                "question": "What features would you like to add to the app?",
+                "required": true
+            }
+        ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", _appId, function() {
+            createSurveyWidget("User Experience example", [
+                {
+                    "type": "rating",
+                    "question": "How satisfied are you with the look and feel of the app?",
+                    "required": true
+                },
+                {
+                    "type": "text",
+                    "question": "What confused/annoyed you about the app?",
+                    "required": true
+                },
+                {
+                    "type": "dropdown",
+                    "question": "Which feature did you like most on new version?",
+                    "choices": ["In-app support", "Quick access to menu", "Template library", "User management"],
+                    "required": true
+                }
+            ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", _appId, function() {
+                createSurveyWidget("Customer support example", [
+                    {
+                        "type": "radio",
+                        "question": "Were you able to find the information you were looking for?",
+                        "choices": ["Yes", "No"],
+                        "required": true
+                    },
+                    {
+                        "type": "text",
+                        "question": "What type of support communication methods do you prefer?",
+                        "required": true
+                    },
+                    {
+                        "type": "rating",
+                        "question": "How would you rate our service on a scale of 0-10?",
+                        "required": true
+                    }
+                ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", _appId, function() {
+                    callback();
+                });
+            });
+        });
+    }
+
+    generateRatingWidgets(_appId, function() {
+        if (isPluginExists("surveys", _appId)) {
+            generateNPSWidgets(_appId, function() {
+                generateSurveyWidgets(_appId, done);
+            });
+        }
+        else {
+            done();
+        }
+    });
+}
+
+function generateRetention(templateUp, callback) {
+    var userAmount = 1000;
+    if (typeof countlyRetention === "undefined") {
+        callback();
+        return;
+    }
+    var ts = new Date().getTime() / 1000 - 60 * 60 * 24 * 9;
+    var ids = [ts];
+    var userCount = 10;
+    var retentionCall = 8; // number of generateRetentionUser function call
+    var retentionLastUserCount = (userCount - retentionCall) + 1;
+
+    var idCount = 1;
+    for (var i = userCount; i >= retentionLastUserCount; i--) { //total retension user
+        totalUserCount += idCount * i;
+        idCount++;
+    }
+
+    totalUserCount += userAmount + retentionCall; // campaign users
+    totalCountWithoutUserProps = 0;
+
+    generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+        ts += 60 * 60 * 24;
+        ids.push(ts);
+        generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+            ts += 60 * 60 * 24;
+            ids.push(ts);
+            generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                ts += 60 * 60 * 24;
+                ids.push(ts);
+                generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                    ts += 60 * 60 * 24;
+                    ids.push(ts);
+                    generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                        ts += 60 * 60 * 24;
+                        ids.push(ts);
+                        generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                            ts += 60 * 60 * 24;
+                            ids.push(ts);
+                            generateRetentionUser(ts, userCount--, ids, templateUp, function() {
+                                ts += 60 * 60 * 24;
+                                ids.push(ts);
+                                generateRetentionUser(ts, userCount--, ids, templateUp, callback);
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+}
+
+function generateRetentionUser(ts, userCount, ids, templateUp, app, callback) {
+    var chance = new Chance();
+    var bulker = [];
+    for (var userIndex = 0; userIndex < userCount; userIndex++) {
+        for (var j = 0; j < ids.length; j++) {
+            var metrics = {};
+            var platform;
+            if (app.type === "web") {
+                platform = getProp("_os_web");
+            }
+            else if (app.type === "desktop") {
+                platform = getProp("_os_desktop");
+            }
+            else {
+                platform = getProp("_os");
+            }
+            metrics._os = platform;
+            var m_props = metric_props.mobile;
+            if (app.type && metric_props[app.type]) {
+                m_props = metric_props[app.type];
+            }
+            for (var k = 0; k < m_props.length; k++) {
+                if (m_props[k] !== "_os") {
+                    //handle specific cases
+                    if (m_props[k] === "_store" && app.type === "web") {
+                        metrics[m_props[k]] = getProp("_source");
+                    }
+                    else {
+                        //check os specific metric
+                        if (typeof props[m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_")] !== "undefined") {
+                            metrics[m_props[k]] = getProp(m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_"));
+                        }
+                        //default metric set
+                        else {
+                            metrics[m_props[k]] = getProp(m_props[k]);
+                        }
+                    }
+                }
+            }
+
+            var userdetails = new getUser(templateUp);
+            userdetails.begin_session = 1;
+            userdetails.device_id = userIndex + "" + ids[j];
+            userdetails.dow = getRandomInt(0, 6);
+            userdetails.hour = getRandomInt(0, 23);
+            userdetails.ip_address = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
+            delete userdetails.ip;
+            userdetails.request_id = userIndex + "" + ids[j] + "_" + ts;
+            userdetails.timestamp = ts;
+            delete userdetails.metrics;
+            userdetails.metrics = metrics;
+
+            bulker.push(userdetails);
+            // totalStats.s++;
+            // totalStats.u++;
+        }
+    }
+
+    // totalStats.r++;
+    for (var index = 0; index < bulker.length; index++) {
+        bulker[index].startSession(template[app._id], app[app._id], template[app._id]._id);
+    }
+
+    callback("");
+}
+
+async function createCampaign(id, name, cost, type, appId, callback) {
+    try {
+        const data = {
+            args: JSON.stringify({
+                "_id": id + appId,
+                "name": name,
+                "link": "http://count.ly",
+                "cost": cost,
+                "costtype": type,
+                "fingerprint": false,
+                "links": {},
+                "postbacks": [],
+                "app_id": appId
+            }),
+        };
+        const result = await sendRequest({
+            requestType: 'POST',
+            Url: SERVER_URL + "/i/campaign/create?args=" + data.args + "&populator=true&api_key=" + API_KEY
+        });
+        if (result) {
+            callback();
+        }
+    }
+    catch (error) {
+        console.log("There is an error in createCampaign. Err: ", error);
+    }
+}
+
+function parseQueryString(queryString) {
+    var params = {}, queries, temp, i, l;
+    queries = queryString.split("&");
+    for (i = 0, l = queries.length; i < l; i++) {
+        temp = queries[i].split('=');
+        params[temp[0]] = temp[1];
+    }
+    return params;
+}
+
+async function clickCampaign(name, appId) {
+    try {
+        var chance = new Chance();
+        var ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
+        var data = {ip_address: ip, test: true, timestamp: Date.now(), populator: true, api_key: API_KEY};
+
+        const result = await sendRequest({
+            requestType: 'POST',
+            Url: SERVER_URL + "/i/campaign/click/" + name + appId + "?",
+            requestParamKeys: data
+        });
+
+        if (result) {
+            var link = result.link.replace('&amp;', '&');
+            var queryString = link.split('?')[1];
+            var parameters = parseQueryString(queryString);
+            campaingClicks.push({
+                name: name,
+                cly_id: parameters.cly_id,
+                cly_uid: parameters.cly_uid
+            });
+        }
+    }
+    catch (error) {
+        console.log("There is an error in clickCampaign. Err: ", error);
+    }
+}
+
+function generateCampaigns(appId, callback) {
+    var campaignsIndex = 0;
+    if (!isPluginExists("attribution", appId)) {
+        return;
+    }
+
+    /**
+     * Recursively generates all the campaigns in the global variable
+     **/
+    function recursiveCallback() {
+        try {
+            if (campaignsIndex < campaigns.length) {
+                createCampaign(campaigns[campaignsIndex].id, campaigns[campaignsIndex].name, campaigns[campaignsIndex].cost, campaigns[campaignsIndex].type, appId, recursiveCallback);
+                campaignsIndex++; // future async issues?
+            }
+            else {
+                for (var clickIndex = 0; clickIndex < (campaigns.length * 33); clickIndex++) {
+                    clickCampaign(campaigns[getRandomInt(0, campaigns.length - 1)].id, appId);
+                }
+                setTimeout(callback, 3000);
+            }
+        }
+        catch (error) {
+            console.log("There is an error in recursiveCallback. Err: ", error);
+        }
+    }
+
+    recursiveCallback();
+}
+
+function createUser(appId) {
+    if (users[appId].length < maxUserCount) {
+        var u = new getUser(template[appId] && template[appId].up);
+        users[appId].push(u);
+        u.timer = setTimeout(function() {
+            u.startSession(template[appId], app[appId], template[appId]._id);
+        }, Math.random() * 2000);
+    }
+}
+
+function reportConversions() {
+    for (var i = 0; i < campaingClicks.length; i++) {
+        var click = campaingClicks[i];
+        if ((Math.random() > 0.5)) {
+            users[i].reportConversion(click.cly_id, click.cly_uid);
+        }
+    }
+}
+
+function processUser(u, appId) {
+    if (u && !u.hasSession) {
+        u.timer = setTimeout(function() {
+            u.startSession(template[appId], app[appId], template[appId]._id);
+        }, Math.random() * timeout);
+    }
+}
+
+function processUsers(appId) {
+    for (var userAmountIndex = 0; userAmountIndex < maxUserCount; userAmountIndex++) {
+        processUser(users[userAmountIndex], appId);
+    }
+    if (users.length > 0) {
+        setTimeout(processUsers(appId), timeout);
+    }
+    else {
+        countlyPopulatorSync();
+    }
+}
+
+function addExtras(appId) {
+    if (isPluginExists("star-rating", appId)) {
+        generateWidgets(appId, function() {
+            generateRetention(template, function() {
+                generateCampaigns(appId, function() {
+                    for (var campaignAmountIndex = 0; campaignAmountIndex < maxUserCount; campaignAmountIndex++) {
+                        createUser(appId);
+                    }
+                    // Generate campaigns conversion for web
+                    if (app.type === "web") {
+                        setTimeout(reportConversions, timeout);
+                    }
+                    setTimeout(function() {
+                        processUsers(appId);
+                    }, timeout);
+                });
+            });
+        });
+    }
 }
