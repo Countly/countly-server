@@ -119,13 +119,13 @@
 				$('.cly-vue-notification__alert-box').show();
 				$('#header').css("margin-top","18px");
 				showMessage("<%= message %>");
-				if (resetResultMessage.indexOf("reset.result") === -1){
-					$('.cly-vue-notification__alert-box').addClass('cly-vue-notification__alert-box__alert-text--light-destructive');
-					$('#notification-image').attr("src", "images/icons/notification-toast-destructive.svg")
-				}
-				else{
+				if (resetResultMessage.indexOf("reset.result") !== -1 && resetResultMessage.length === 12){
 					$('.cly-vue-notification__alert-box').addClass('cly-vue-notification__alert-box__alert-text--light-successful');
 					$('#notification-image').attr("src", "images/icons/notification-toast-successful.svg")
+				}
+				else{
+					$('.cly-vue-notification__alert-box').addClass('cly-vue-notification__alert-box__alert-text--light-destructive');
+					$('#notification-image').attr("src", "images/icons/notification-toast-destructive.svg")
 				}
 			<% } 
 			else{ %>
