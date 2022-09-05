@@ -234,7 +234,7 @@ plugins.setConfigs("remote-config", {
             if (keys.length) {
                 params.parameter_criteria.$and.push({ "parameter_key": { $in: keys } });
             }
-            else{
+            else {
                 common.returnMessage(params, 400, 'Missing Keys');
                 return reject(true);
             }
@@ -1471,7 +1471,7 @@ plugins.setConfigs("remote-config", {
      * @param  {Function} callback - callback function
      */
     function fetchParametersFromAB(params, callback) {
-        if(params.qstring.method === "rc" && params.qstring.oi!=="1"){
+        if (params.qstring.method === "rc" && params.qstring.oi !== "1") {
             return callback(null, []);
         }
         plugins.dispatch("/ab/parameters", { params: params }, function() {
