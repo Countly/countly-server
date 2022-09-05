@@ -1292,6 +1292,7 @@ plugins.setConfigs("remote-config", {
      * Function to fetch paramters from AB testing
      * @param  {Object} params - params object
      * @param  {Function} callback - callback function
+     * @returns {Array} response
      */
     function fetchParametersFromAB(params, callback) {
         if (params.qstring.method === "rc" && params.qstring.oi !== "1") {
