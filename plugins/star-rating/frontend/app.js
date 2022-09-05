@@ -1,7 +1,7 @@
 var exported = {},
     countlyFs = require('../../../api/utils/countlyFs.js'),
     countlyConfig = require("../../../frontend/express/config");
-    var path = require('path');
+var path = require('path');
 (function(plugin) {
     plugin.init = function(app) {
 
