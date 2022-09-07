@@ -79,7 +79,7 @@ plugins.setConfigs("remote-config", {
 
                     output[parameterKey] = paramValue;
                 }
-                common.returnOutput(params, output, true);
+                common.returnMessage(params, 200, "Successfully enrolled in ab tests");
                 return resolve(true);
 
             });
@@ -1292,12 +1292,8 @@ plugins.setConfigs("remote-config", {
      * Function to fetch paramters from AB testing
      * @param  {Object} params - params object
      * @param  {Function} callback - callback function
-     * @returns {Array} response
      */
     function fetchParametersFromAB(params, callback) {
-        if (params.qstring.method === "rc" && params.qstring.oi !== "1") {
-            return callback(null, []);
-        }
         plugins.dispatch("/ab/parameters", { params: params }, function() {
             var abParameters = params.ab_parameters || [];
             return callback(null, abParameters);
