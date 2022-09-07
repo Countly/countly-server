@@ -163,11 +163,12 @@ var app = {}, template = {}, pluginList = {};
 var users = {}, user = null;
 var intervalCount = 0;
 var campaingClicks = [];
+var ratingWidgetList = [], npsWidgetList = [], surveyWidgetList = {};
+
 
 var plugins = require('../../plugins/pluginManager.js'),
     request = require('request'),
-    Chance = require('chance');
-
+    Chance = require('../../plugins/populator/frontend/public/javascripts/chance.js');
 
 function writeMsg(msg) {
     process.stdout.write(JSON.stringify(msg) + '\n');
@@ -205,15 +206,18 @@ async function readDbParameters() {
                 db.close();
                 writeMsg('INVALID POPULATOR_TEMPLATE_ID ', inputs[i].POPULATOR_TEMPLATE_ID);
             }
-            db.close();
-            users[inputs[i].APP_ID] = [];
 
+            users[inputs[i].APP_ID] = [];
+            ratingWidgetList[inputs[i].APP_ID] = [];
+            npsWidgetList[inputs[i].APP_ID] = [];
+            surveyWidgetList[inputs[i].APP_ID] = {};
 
             pluginList[inputs[i].APP_ID] = await sendRequest({
                 requestType: 'GET',
                 Url: SERVER_URL + "/o/plugins?",
                 requestParamKeys: { app_id: inputs[i].APP_ID, api_key: API_KEY }
             });
+            db.close();
         }
     }
     catch (error) {
@@ -267,8 +271,6 @@ var interval = setInterval(async function() {
     if (intervalCount === 5) { // it should run one time each interval with some users.
         for (var x = 0; x < Object.keys(inputs).length; x++) {
             await addCohorts(template[inputs[x].APP_ID], app[inputs[x].APP_ID]);
-            generateWidgets(app[inputs[x].APP_ID]._id, function() {
-            });
             addExtras(app[inputs[x].APP_ID]._id);
         }
     }
@@ -433,7 +435,6 @@ var bucket = 50;
 var timeout = 1000;
 var totalCountWithoutUserProps = 0;
 var totalUserCount = 0;
-var ratingWidgetList = [], npsWidgetList = [], surveyWidgetList = {};
 
 /**
  * Get property of prop object with parameter,
@@ -849,15 +850,15 @@ function getUser(templateUp) {
 
     this.getFeedbackEvents = function(appId) {
         var events = [];
-        events.push(this.getRatingEvent());
+        events.push(this.getRatingEvent(appId));
         if (isPluginExists('surveys', appId)) {
-            events.push(this.getNPSEvent());
-            events.push(this.getSurveyEvent());
+            events.push(this.getNPSEvent(appId));
+            events.push(this.getSurveyEvent(appId));
         }
         return events;
     };
 
-    this.getRatingEvent = function() {
+    this.getRatingEvent = function(appId) {
         var event = {
             "key": "[CLY]_star_rating",
             "count": 1,
@@ -874,13 +875,13 @@ function getUser(templateUp) {
         event.segmentation.rating = getRandomInt(1, 5);
         event.segmentation.app_version = this.metrics._app_version;
         event.segmentation.platform = this.metrics._os;
-        if (ratingWidgetList.length) {
-            event.segmentation.widget_id = ratingWidgetList[getRandomInt(0, ratingWidgetList.length - 1)]._id;
+        if (ratingWidgetList[appId].length) {
+            event.segmentation.widget_id = ratingWidgetList[appId][getRandomInt(0, ratingWidgetList[appId].length - 1)]._id;
         }
         return event;
     };
 
-    this.getNPSEvent = function() {
+    this.getNPSEvent = function(appId) {
         var event = {
             "key": "[CLY]_nps",
             "count": 1,
@@ -897,13 +898,13 @@ function getUser(templateUp) {
         event.segmentation.app_version = this.metrics._app_version;
         event.segmentation.platform = this.metrics._os;
         event.segmentation.shown = 1;
-        if (npsWidgetList.length) {
-            event.segmentation.widget_id = npsWidgetList[getRandomInt(0, npsWidgetList.length - 1)];
+        if (npsWidgetList[appId].length) {
+            event.segmentation.widget_id = npsWidgetList[appId][getRandomInt(0, npsWidgetList[appId].length - 1)];
         }
         return event;
     };
 
-    this.getSurveyEvent = function() {
+    this.getSurveyEvent = function(appId) {
         var event = {
             "key": "[CLY]_survey",
             "count": 1,
@@ -918,12 +919,12 @@ function getUser(templateUp) {
         event.segmentation.app_version = this.metrics._app_version;
         event.segmentation.platform = this.metrics._os;
         event.segmentation.shown = 1;
-        var keys = Object.keys(surveyWidgetList);
+        var keys = Object.keys(surveyWidgetList[appId]);
         if (keys.length) {
 
             event.segmentation.widget_id = keys[getRandomInt(0, keys.length - 1)];
 
-            var structure = surveyWidgetList[event.segmentation.widget_id];
+            var structure = surveyWidgetList[appId][event.segmentation.widget_id];
 
             for (var z = 0; z < structure.questions.length; z++) {
                 //"multi", "radio", "text", "dropdown", "rating"
@@ -1066,18 +1067,18 @@ function getUser(templateUp) {
     this.addEvent = function(template, app, templateId) {
         var req = {};
         var events;
-
         if (!this.isRegistered) {
             this.isRegistered = true;
-            events = this.getEvents(1, template && template.events, app.key, templateId);
+            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
             req = {timestamp: this.ts, events: events};
             req.events = req.events.concat(this.getHeatmapEvents(app.key, templateId));
-            req.events = req.events.concat(this.getFeedbackEvents(app._id));
             req.events = req.events.concat(this.getScrollmapEvents(app.key, templateId));
+            req.events = [req.events[Math.floor(Math.random() * req.events.length)]];
+            req.events = req.events.concat(this.getFeedbackEvents(app._id));
         }
         else {
-            events = this.getEvents(1, template && template.events, app.key, templateId);
-            // events = events.sort(() => 0.5 - Math.random()).slice(eventChance);
+            events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
+            events = [events[Math.floor(Math.random() * events.length)]];
             req = {timestamp: this.ts, events: events};
         }
         if (req.events) {
@@ -1096,17 +1097,19 @@ function getUser(templateUp) {
             // note login event was here
             req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, apm: this.getTrace()};
             if (getRandomInt(1, 3) === 3) {
-                events = this.getEvents(1, template && template.events, app.key, templateId);
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
                 req.events = events;
                 req.events = req.events.concat(this.getHeatmapEvents(app.key, templateId));
-                req.events = req.events.concat(this.getFeedbackEvents(app._id));
                 req.events = req.events.concat(this.getScrollmapEvents(app.key, templateId));
+                req.events = [req.events[Math.floor(Math.random() * req.events.length)]];
+                req.events = req.events.concat(this.getFeedbackEvents(app._id));
             }
         }
         else {
             req = {timestamp: this.ts, begin_session: 1, apm: this.getTrace()};
             if (getRandomInt(1, 3) === 3) {
-                events = this.getEvents(1, template && template.events, app.key, templateId);
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
+                events = [events[Math.floor(Math.random() * events.length)]];
             }
         }
         if (req.events) {
@@ -1139,7 +1142,8 @@ function getUser(templateUp) {
         if (this.hasSession) {
             var req = {};
             this.ts = this.ts + 30;
-            var events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(2, template && template.events, appKey, templateId));
+            var events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(1, template && template.events, appKey, templateId));
+            events = [events[Math.floor(Math.random() * events.length)]];
             req = {timestamp: this.ts, session_duration: 30, events: events, apm: this.getTrace()};
             if (Math.random() > 0.8) {
                 this.timer = setTimeout(function() {
@@ -1212,7 +1216,7 @@ async function addCohorts(template, app) {
                     ]),
                     populator: true,
                     app_id: app._id,
-                    api_key: "68e12a3d3991f8e82076981820f68801"
+                    api_key: API_KEY
                 };
 
                 DEBUG_STEP_COUNT = "addCohorts_1.1";
@@ -1243,7 +1247,7 @@ async function addCohorts(template, app) {
                     ]),
                     populator: true,
                     app_id: app._id,
-                    api_key: "68e12a3d3991f8e82076981820f68801"
+                    api_key: API_KEY
                 };
 
                 DEBUG_STEP_COUNT = "addCohorts_2.1";
@@ -1283,7 +1287,7 @@ async function addCohorts(template, app) {
                     ]),
                     populator: true,
                     app_id: app._id,
-                    api_key: "68e12a3d3991f8e82076981820f68801"
+                    api_key: API_KEY
                 };
 
                 DEBUG_STEP_COUNT = "addCohorts_3.1";
@@ -1311,7 +1315,7 @@ async function addCohorts(template, app) {
             ]),
             populator: true,
             app_id: app._id,
-            api_key: "68e12a3d3991f8e82076981820f68801"
+            api_key: API_KEY
         };
         DEBUG_STEP_COUNT = "addCohorts_4.0";
         await sendRequest({
@@ -1334,7 +1338,7 @@ async function addCohorts(template, app) {
             ]),
             populator: true,
             app_id: app._id,
-            api_key: "68e12a3d3991f8e82076981820f68801"
+            api_key: API_KEY
         };
         DEBUG_STEP_COUNT = "addCohorts_5.0";
         await sendRequest({
@@ -1358,7 +1362,7 @@ async function addCohorts(template, app) {
             ]),
             populator: true,
             app_id: app._id,
-            api_key: "68e12a3d3991f8e82076981820f68801"
+            api_key: API_KEY
         };
 
 
@@ -1395,7 +1399,7 @@ async function createFeedbackWidget(popup_header_text, popup_comment_callout, po
             hide_sticker: hide_sticker,
             app_id: appId,
             populator: true,
-            api_key: "68e12a3d3991f8e82076981820f68801"
+            api_key: API_KEY
         };
 
         const result = await sendRequest({
@@ -1445,6 +1449,13 @@ async function createNPSWidget(name, followUpType, mainQuestion, followUpPromote
         });
 
         if (result) {
+            if (result.result) {
+                var id = result.result.split(" ");
+                npsWidgetList[appId].push(id[2]);
+            }
+            callback();
+        }
+        else {
             callback();
         }
     }
@@ -1499,8 +1510,18 @@ function generateWidgets(appId, done) {
     function generateRatingWidgets(_appId, callback) {
         createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, _appId, function() {
             createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, _appId, function() {
-                createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, _appId, function() {
-                    callback();
+                createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, _appId, async function() {
+                    const result = await sendRequest({
+                        requestType: 'GET',
+                        Url: SERVER_URL + "/o/feedback/widgets?app_id=" + _appId + "&api_key=" + API_KEY
+                    });
+                    if (result) {
+                        ratingWidgetList[appId] = result;
+                        callback();
+                    }
+                    else {
+                        callback();
+                    }
                 });
             });
         });
@@ -1566,8 +1587,20 @@ function generateWidgets(appId, done) {
                         "question": "How would you rate our service on a scale of 0-10?",
                         "required": true
                     }
-                ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", _appId, function() {
-                    callback();
+                ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", _appId, async function() {
+                    const result = await sendRequest({
+                        requestType: 'GET',
+                        Url: SERVER_URL + "/o/surveys/survey/widgets?app_id=" + _appId + "&api_key=" + API_KEY
+                    });
+                    if (result && result.aaData) {
+                        for (var i = 0; i < result.aaData.length; i++) {
+                            surveyWidgetList[_appId][result.aaData[i]._id] = result.aaData[i];
+                        }
+                        callback();
+                    }
+                    else {
+                        callback();
+                    }
                 });
             });
         });
@@ -1771,9 +1804,6 @@ async function clickCampaign(name, appId) {
 
 function generateCampaigns(appId, callback) {
     var campaignsIndex = 0;
-    if (!isPluginExists("attribution", appId)) {
-        return;
-    }
 
     /**
      * Recursively generates all the campaigns in the global variable
@@ -1842,18 +1872,20 @@ function addExtras(appId) {
     if (isPluginExists("star-rating", appId)) {
         generateWidgets(appId, function() {
             generateRetention(template, function() {
-                generateCampaigns(appId, function() {
-                    for (var campaignAmountIndex = 0; campaignAmountIndex < maxUserCount; campaignAmountIndex++) {
-                        createUser(appId);
-                    }
-                    // Generate campaigns conversion for web
-                    if (app.type === "web") {
-                        setTimeout(reportConversions, timeout);
-                    }
-                    setTimeout(function() {
-                        processUsers(appId);
-                    }, timeout);
-                });
+                if (isPluginExists("attribution", appId)) {
+                    generateCampaigns(appId, function() {
+                        for (var campaignAmountIndex = 0; campaignAmountIndex < maxUserCount; campaignAmountIndex++) {
+                            createUser(appId);
+                        }
+                        // Generate campaigns conversion for web
+                        if (app.type === "web") {
+                            setTimeout(reportConversions, timeout);
+                        }
+                        setTimeout(function() {
+                            processUsers(appId);
+                        }, timeout);
+                    });
+                }
             });
         });
     }
