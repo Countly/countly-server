@@ -43,21 +43,27 @@
                         <img src="/populator/images/healthcare.svg" style="width:100%">
                     </div>
                 <% } else if (pageIndex === '1') { %>
-                    <div class="col-sm-12 text-center">
+                    <div class="col-sm-12">
                         <h1>Our Hospitals</h1>
+                        <%- include(includes.content3Cols); %>
                     </div>
                 <% } else if (pageIndex === '2') { %>
-                    <div class="col-sm-12 text-center">
+                    <div class="col-sm-12">
                         <h1>Online Appointment</h1>
+                        <%- include(includes.content2Cols); %>
                     </div>
                 <% } %>
             </div>
-            <div class="row footer">
+            <div class="container row footer">
                 <div class="col-sm">
-                    Our Objective
+                    <a href="demo-healthcare-1.html">
+                        Our Hospitals
+                    </a>
                 </div>
                 <div class="col-sm">
-                    Medical Visa Application
+                    <a href="demo-healthcare-2.html">
+                        Online Appointment
+                    </a>
                 </div>
                 <div class="col-sm">
                     Guest House
