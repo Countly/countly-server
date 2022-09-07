@@ -989,8 +989,14 @@ function uploadFile(myfile, id, callback) {
                 }
             }).toArray(function(err, docs) {
                 if (!err) {
-                    common.returnOutput(params, docs);
-                    return true;
+                    if (docs.length) {
+                        common.returnOutput(params, docs);
+                        return true;
+                    }
+                    else {
+                        common.returnMessage(params, 404, 'Widgets not found.');
+                        return true;
+                    }
                 }
                 else {
                     common.returnMessage(params, 500, err.message);
@@ -1124,21 +1130,18 @@ function uploadFile(myfile, id, callback) {
      */
     plugins.register('/o/feedback/widget', function(ob) {
         var params = ob.params;
-        // check widget_id param is provided?
-        if (!params.qstring.widget_id) {
-            common.returnMessage(ob.params, 400, 'Missing parameter "widget_id"');
-            return true;
-        }
-        // for request which sent from countly with app_key without app_id
         var widgetId = params.qstring.widget_id;
         var collectionName = 'feedback_widgets';
+
         try {
-            widgetId = common.db.ObjectID(widgetId);
+            widgetId = common.db.ObjectID(params.qstring.widget_id);
         }
         catch (e) {
-            common.returnMessage(params, 500, 'Invalid widget id.');
+            log.e(e);
+            common.returnMessage(params, 400, 'Missing parameter "widget_id"');
             return true;
         }
+
         common.db.collection(collectionName).findOne({
             "_id": widgetId
         }, function(err, doc) {
