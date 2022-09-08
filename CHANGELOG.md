@@ -1,4 +1,38 @@
+## Version 22.08.4
+
+Fixes:
+- [config] fixed web configs for config extender
+- [core] fixed user picture condition check in user deletion
+- [core] prevent app user deletion if there is an error from other plugins
+- [db] fixed config variables for docker for different databases
+- [events] fixed encoding decoding issue in events
+- [linting] fixed codeql issues
+- [logger] add debug logs to request logs
+- [populator] add more demo pages with links
+- [push] reschedule on edits
+- [scripts] fixed one liner installer script
+- [star-rating] changes for ratings images in countlyFS
+- [ui] in dropdowns the scroll bar is not shown by default
+- [views] add support for handling SDK provided ids for views
+- [views] fixed heatmap top bar check mark
+
+Enterprise fixes:
+- [ab-testing] add link click handler for metric breakdown
+- [ab-testing] remove target blank from link in metric breakdown
+- [active-users] fixed to stop timeout on active users job exit
+- [active-users] fixed wrong active user/visitor data
+- [cognito] implement cognito authorization code flow
+- [concurrent_users] added isNaN control where max item is displayed
+- [crash_symbolication] call return connection test from dashboard
+- [crash_symbolication] enable platform and status filter
+- [crash_symbolication] fixed crashgroup symbol_id passing
+- [crash_symbolication] fixed symbol jobs
+- [ldap] expose configs in docker
+- [surveys] fixed bar colors on nps chart
+- [users] add backlink to index view header
+
 ## Version 22.08.3
+
 Fixes:
 - [api] fix bug with new apps and salt, when requests are not rejected
 - [applciations] if there is an app key, a new one should not be produced
