@@ -995,10 +995,10 @@ function uploadFile(myfile, id, callback) {
                     }
                     else {
                         if (ob.from_survey) {
-                          common.returnMessage(params, 404, 'Widgets not found.');
+                            common.returnMessage(params, 404, 'Widgets not found.');
                         }
                         else {
-                          common.returnOutput(params, docs);
+                            common.returnOutput(params, docs);
                         }
                         return true;
                     }
