@@ -78,7 +78,7 @@
                     submitted.logo = this.logoFile;
                 }
 
-                if (this.deleteLogo) {
+                if (!this.imageSource) {
                     submitted.logo = '';
                 }
 
@@ -119,7 +119,9 @@
             onOpen: function() {
                 var self = this;
                 var loadImage = new Image();
-                loadImage.src = window.location.origin + "/star-rating/images/star-rating/" + this.controls.initialEditedObject.logo;
+                if (this.controls.initialEditedObject.logo) {
+                    loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
+                }
                 loadImage.onload = function() {
                     self.imageSource = loadImage.src;
                 };
@@ -129,6 +131,7 @@
                 this.deleteLogo = true;
             },
             onFileAdded: function(file) {
+                this.deleteLogo = false;
                 var img = new FileReader();
                 var self = this;
                 img.onload = function() {

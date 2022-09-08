@@ -337,9 +337,9 @@
 #cly-heatmap-topbar .cly-heatmap-checkbox input:checked ~ .cly-heatmap-checkmark:after {
     display: block;
     left: 5px;
-    top: 2px;
-    width: 2.5px;
-    height: 6px;
+    top: 1.5px;
+    width: 4.5px;
+    height: 8px;
     border: 1px solid #474747;
     border-width: 0 2px 2px 0;
     -webkit-transform: rotate(45deg);

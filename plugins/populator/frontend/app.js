@@ -33,6 +33,8 @@ var exported = {},
             const file = path.resolve(__dirname, url);
             const pageSourceCode = fs.readFileSync(file, 'utf-8');
             const includes = {
+                content2Cols: path.resolve(__dirname, 'public/templates/demo-content-2-cols.html'),
+                content3Cols: path.resolve(__dirname, 'public/templates/demo-content-3-cols.html'),
                 scripts: path.resolve(__dirname, 'public/templates/demo-scripts.html'),
             };
 

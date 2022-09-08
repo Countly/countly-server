@@ -44,30 +44,38 @@
                         <img src="/populator/images/ecommerce.svg" style="width:100%">
                     </div>
                 <% } else if (pageIndex === '1') { %>
-                    <div class="col-sm-4 offset-1 text-center">
-                        <h1>Shopping bag</h1>
+                    <div class="row col-sm-12">
+                        <div class="col-sm-4 offset-3">
+                            <h1 class="mt-5">Shopping bag</h1>
+                        </div>
+                        <div class="col-sm-4">
+                            <svg id="bag-icon" class="bi bi-bag" width="12em" height="12em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M14 5H2v9a1 1 0 001 1h10a1 1 0 001-1V5zM1 4v10a2 2 0 002 2h10a2 2 0 002-2V4H1z" clip-rule="evenodd"/>
+                                <path d="M8 1.5A2.5 2.5 0 005.5 4h-1a3.5 3.5 0 117 0h-1A2.5 2.5 0 008 1.5z"/>
+                            </svg>
+                        </div>
                     </div>
-                    <div class="col-sm-4 offset-1 text-center">
-                        <svg id="bag-icon" class="bi bi-bag" width="12em" height="12em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M14 5H2v9a1 1 0 001 1h10a1 1 0 001-1V5zM1 4v10a2 2 0 002 2h10a2 2 0 002-2V4H1z" clip-rule="evenodd"/>
-                            <path d="M8 1.5A2.5 2.5 0 005.5 4h-1a3.5 3.5 0 117 0h-1A2.5 2.5 0 008 1.5z"/>
-                        </svg>
-                    </div>
+                    <%- include(includes.content3Cols); %>
                 <% } else if (pageIndex === '2') { %>
                     <div class="col-sm-12 text-center">
                         <h1>Product List</h1>
+                        <%- include(includes.content3Cols); %>
                     </div>
                 <% } %>
             </div>
-            <div class="row footer">
+            <div class="container row footer">
                 <div class="col-sm">
-                    Conditions of Use
+                    <a href="demo-ecommerce-2.html">
+                        Products
+                    </a>
+                </div>
+                <div class="col-sm">
+                    <a href="demo-ecommerce-1.html">
+                        Shopping Bag
+                    </a>
                 </div>
                 <div class="col-sm">
                     Privacy Notice
-                </div>
-                <div class="col-sm">
-                    Interest-Based Ads
                 </div>
             </div>
         </div>

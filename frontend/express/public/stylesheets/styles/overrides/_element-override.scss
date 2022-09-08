@@ -302,3 +302,11 @@
         }
     }
 }
+
+.el-select-dropdown {
+    .el-scrollbar {
+        &__bar{
+            opacity: 1 !important;
+        }
+    }
+}
