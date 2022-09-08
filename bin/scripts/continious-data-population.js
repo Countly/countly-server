@@ -6,17 +6,17 @@
  */
 
 // Please set below parameters properly before running script.
-var INTERVAL_AS_SECOND = 60;
-var SERVER_URL = "http://localhost";
-var inputs = [{"APP_ID": "", "POPULATOR_TEMPLATE_ID": ""}]; //POPULATOR_TEMPLATE_ID: Enter the custom populator template ID you created or default template _id "{defaultGaming}"
-var API_KEY = "";
+const INTERVAL_AS_SECOND = 60;
+const SERVER_URL = "http://localhost";
+const inputs = [{"APP_ID": "", "POPULATOR_TEMPLATE_ID": ""}]; //POPULATOR_TEMPLATE_ID: Enter the custom populator template ID you created or default template _id "{defaultGaming}"
+const API_KEY = "";
 
 
 //script variables
 let maxUserCount = 50;
-var counter = {sent: 0, success: 0, error: 0};
+const counter = {sent: 0, success: 0, error: 0};
 let stopOnError = true;
-var defaultTemplates = [
+const defaultTemplates = [
     {
         "_id": "defaultBanking",
         "name": "Banking",
@@ -159,14 +159,14 @@ var defaultTemplates = [
         }
     }
 ];
-var app = {}, template = {}, pluginList = {};
-var users = {}, user = null;
-var intervalCount = 0;
-var campaingClicks = [];
-var ratingWidgetList = [], npsWidgetList = [], surveyWidgetList = {};
+const app = {}, template = {}, pluginList = {};
+let users = {}, user = null;
+let intervalCount = 0;
+const campaingClicks = [];
+const ratingWidgetList = {}, npsWidgetList = {}, surveyWidgetList = {};
 
 
-var plugins = require('../../plugins/pluginManager.js'),
+const plugins = require('../../plugins/pluginManager.js'),
     request = require('request'),
     Chance = require('../../plugins/populator/frontend/public/javascripts/chance.js');
 
@@ -181,7 +181,7 @@ async function readDbParameters() {
     try {
         const db = await plugins.dbConnection("countly");
 
-        for (var i = 0; i < Object.keys(inputs).length; i++) {
+        for (let i = 0; i < Object.keys(inputs).length; i++) {
             pluginList[inputs[i].APP_ID] = [];
             app[inputs[i].APP_ID] = await db.collection('apps').findOne({'_id': db.ObjectID(inputs[i].APP_ID)});
             if (inputs[i].POPULATOR_TEMPLATE_ID.length > 18) {
@@ -195,16 +195,16 @@ async function readDbParameters() {
                 });
                 if (!template[inputs[i].APP_ID]) {
                     db.close();
-                    writeMsg('INVALID POPULATOR_TEMPLATE_ID ', inputs[i].POPULATOR_TEMPLATE_ID);
+                    writeMsg('INVALID POPULATOR_TEMPLATE_ID: ' + inputs[i].POPULATOR_TEMPLATE_ID);
                 }
             }
             if (!app[inputs[i].APP_ID]) {
                 db.close();
-                writeMsg('INVALID APP_ID ', inputs[i].APP_ID);
+                writeMsg('INVALID APP_ID: ' + inputs[i].APP_ID);
             }
             if (!template) {
                 db.close();
-                writeMsg('INVALID POPULATOR_TEMPLATE_ID ', inputs[i].POPULATOR_TEMPLATE_ID);
+                writeMsg('INVALID POPULATOR_TEMPLATE_ID: ' + inputs[i].POPULATOR_TEMPLATE_ID);
             }
 
             users[inputs[i].APP_ID] = [];
@@ -222,17 +222,16 @@ async function readDbParameters() {
     }
     catch (error) {
         clearInterval(interval);
-        writeMsg('There was an error while checking db parameters', error);
+        writeMsg('There was an error while checking db parameters. Error: ' + error);
     }
 }
 readDbParameters();
 
-var interval = setInterval(async function() {
-    for (var z = 0; z < Object.keys(inputs).length; z++) {
-        //users = [];
-        var userCount = getRandomInt(maxUserCount / 2, maxUserCount);
+const interval = setInterval(async function() {
+    for (let z = 0; z < Object.keys(inputs).length; z++) {
+        const userCount = getRandomInt(maxUserCount / 2, maxUserCount);
         if (!users[inputs[z].APP_ID] || users[inputs[z].APP_ID].length === 0) {
-            for (var i = 0; i < userCount; i++) {
+            for (let i = 0; i < userCount; i++) {
                 user = new getUser(template[inputs[z].APP_ID] && template[inputs[z].APP_ID].up);
                 users[inputs[z].APP_ID].push(user);
             }
@@ -246,10 +245,10 @@ var interval = setInterval(async function() {
             }
         }
 
-        var upperBoundary = Math.floor(userCount / 10);
+        const upperBoundary = Math.floor(userCount / 10);
 
-        var indexes = [];
-        for (var i0 = 0; i0 < upperBoundary; i0++) {
+        const indexes = [];
+        for (let i0 = 0; i0 < upperBoundary; i0++) {
             indexes.push(getRandomInt(0, users[inputs[z].APP_ID].length - 1));
         }
 
@@ -269,7 +268,7 @@ var interval = setInterval(async function() {
         });
     }
     if (intervalCount === 5) { // it should run one time each interval with some users.
-        for (var x = 0; x < Object.keys(inputs).length; x++) {
+        for (let x = 0; x < Object.keys(inputs).length; x++) {
             await addCohorts(template[inputs[x].APP_ID], app[inputs[x].APP_ID]);
             addExtras(app[inputs[x].APP_ID]._id);
         }
@@ -303,7 +302,7 @@ function capitaliseFirstLetter(string) {
  **/
 async function sendRequest(params) {
     try {
-        var body = {};
+        let body = {};
         //mandatory values for each request
         body.timestamp = Date.now();
         body.hour = 1;
@@ -311,24 +310,24 @@ async function sendRequest(params) {
 
         //add dynamic values to body
 
-        var requestBodyKeys = params.body ? Object.keys(params.body) : [];
-        for (var i = 0; i < requestBodyKeys.length; i++) {
+        const requestBodyKeys = params.body ? Object.keys(params.body) : [];
+        for (let i = 0; i < requestBodyKeys.length; i++) {
             var requestKey = requestBodyKeys[i];
             body[requestKey] = params.body[requestKey];
         }
 
-        var url = new URL(params.Url || SERVER_URL);
+        const url = new URL(params.Url || SERVER_URL);
 
-        var requestParamKeys = params.requestParamKeys ? Object.keys(params.requestParamKeys) : [];
+        const requestParamKeys = params.requestParamKeys ? Object.keys(params.requestParamKeys) : [];
         if (requestParamKeys.length > 0) {
-            for (var z = 0; z < requestParamKeys.length; z++) {
-                var requestParamKey = requestParamKeys[z];
-                var requestParamValue = Object.values(params.requestParamKeys)[z];
+            for (let z = 0; z < requestParamKeys.length; z++) {
+                const requestParamKey = requestParamKeys[z];
+                const requestParamValue = Object.values(params.requestParamKeys)[z];
                 url.searchParams.append(requestParamKey, requestParamValue);
             }
         }
 
-        var options = {
+        const options = {
             uri: url.href,
             method: params.requestType,
             json: true,
@@ -369,12 +368,12 @@ async function sendRequest(params) {
 }
 
 // Populator variables and functions
-var metric_props = {
+const metric_props = {
     mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_app_version", "_density", "_locale", "_store"],
     web: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_app_version", "_density", "_locale", "_store", "_browser"],
     desktop: ["_os", "_os_version", "_resolution", "_app_version", "_locale"]
 };
-var props = {
+const props = {
     _os: ["Android", "iOS"],
     _os_web: ["Android", "iOS", "Windows", "MacOS"],
     _os_desktop: ["Windows", "MacOS", "Linux"],
@@ -410,7 +409,7 @@ var props = {
     _store: ["com.android.vending", "com.google.android.feedback", "com.google.vending", "com.amazon.venezia", "com.sec.android.app.samsungapps", "com.qihoo.appstore", "com.dragon.android.pandaspace", "me.onemobile.android", "com.tencent.android.qqdownloader", "com.android.browser", "com.bbk.appstore", "com.lenovo.leos.appstore", "com.lenovo.leos.appstore.pad", "com.moto.mobile.appstore", "com.aliyun.wireless.vos.appstore", "um.market.android"],
     _source: ["https://www.google.lv/search?q=countly+analytics", "https://www.google.co.in/search?q=mobile+analytics", "https://www.google.ru/search?q=product+analytics", "http://stackoverflow.com/questions?search=what+is+mobile+analytics", "http://stackoverflow.com/unanswered?search=game+app+analytics", "http://stackoverflow.com/tags?search=product+dashboard", "http://r.search.yahoo.com/?query=analytics+product+manager"]
 };
-var viewSegments = {
+const viewSegments = {
     name: ["Login", "Home", "Dashboard", "Main View", "Detail View Level 1", "Detail View Level 2", "Profile", "Settings", "About", "Privacy Policy", "Terms and Conditions"],
     visit: [1],
     start: [0, 1],
@@ -419,22 +418,22 @@ var viewSegments = {
     segment: ["Android", "iOS", "Windows Phone"]
 };
 // usa, uk, japan, germany, italy, france, turkey, uruguay, netherlands, new zealand, mexico, canada, china, finland, hungary, ukraine, argentina, bahamas, latvia, malaysia
-var predefined_ip_addresses = ["2.167.106.72", "4.69.238.178", "3.112.23.176", "13.32.136.0", "4.69.130.86", "4.69.208.18", "17.67.198.23", "5.145.169.96", "2.59.88.2", "17.86.219.128", "23.65.126.2", "4.14.242.30", "14.192.76.3", "4.68.30.78", "5.38.128.2", "31.40.128.2", "5.145.169.100", "62.67.185.16", "14.139.54.208", "62.40.112.206", "14.192.192.1"];
-var campaigns = [
+const predefined_ip_addresses = ["2.167.106.72", "4.69.238.178", "3.112.23.176", "13.32.136.0", "4.69.130.86", "4.69.208.18", "17.67.198.23", "5.145.169.96", "2.59.88.2", "17.86.219.128", "23.65.126.2", "4.14.242.30", "14.192.76.3", "4.68.30.78", "5.38.128.2", "31.40.128.2", "5.145.169.100", "62.67.185.16", "14.139.54.208", "62.40.112.206", "14.192.192.1"];
+const campaigns = [
     {id: "email", name: "Email campaign", cost: "0.1", type: "click"},
     {id: "email2", name: "Email campaign 2", cost: "0.2", type: "install"},
     {id: "sms", name: "SMS campaign", cost: "0.3", type: "install"},
     {id: "cpc", name: "Cross promotion campaign", cost: "1", type: "install"},
     {id: "blog", name: "Blog post campaign 1", cost: "5", type: "click"},
     {id: "blog2", name: "Blog post campaign 2", cost: "10", type: "install"}];
-var sources = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
+const sources = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
 
 
-var bulk = [];
-var bucket = 50;
-var timeout = 1000;
-var totalCountWithoutUserProps = 0;
-var totalUserCount = 0;
+const bulk = [];
+const bucket = 50;
+const timeout = 1000;
+let totalCountWithoutUserProps = 0;
+let totalUserCount = 0;
 
 /**
  * Get property of prop object with parameter,
@@ -457,7 +456,7 @@ function getProp(name) {
  * @returns {object} returns user properties
  **/
 function getUserProperties(templateUp) {
-    var up = {populator: true};
+    const up = {populator: true};
 
     if (app && app.type === "web" && (Math.random() > 0.5)) {
         up.utm_source = sources[getRandomInt(0, sources.length - 1)];
@@ -466,7 +465,7 @@ function getUserProperties(templateUp) {
     }
 
     Object.keys(templateUp || {}).forEach(function(key) {
-        var values = templateUp[key];
+        const values = templateUp[key];
         up[key] = values[getRandomInt(0, values.length - 1)];
     });
 
@@ -478,7 +477,7 @@ function getUserProperties(templateUp) {
  **/
 async function countlyPopulatorSync(appKey) {
     try {
-        var req = bulk.splice(0, bucket);
+        const req = bulk.splice(0, bucket);
         await sendRequest({
             requestType: 'POST',
             Url: SERVER_URL + "/i/bulk",
@@ -499,10 +498,10 @@ async function countlyPopulatorSync(appKey) {
  * @param {string} pluginName - pluginName
  * @returns {boolean} returns true or false
  **/
-async function isPluginExists(pluginName, appId) {
-    var isExist = false;
+function isPluginExists(pluginName, appId) {
+    let isExist = false;
     pluginList[appId].forEach(function(plugin) {
-        if (plugin.name === pluginName && plugin.enabled) {
+        if (plugin.code === pluginName && plugin.enabled) {
             isExist = true;
         }
     });
@@ -515,9 +514,9 @@ async function isPluginExists(pluginName, appId) {
  * @returns {object} returns random string
  **/
 function randomString(size) {
-    var alphaChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var generatedString = '';
-    for (var index = 0; index < size; index++) {
+    const alphaChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let generatedString = '';
+    for (let index = 0; index < size; index++) {
         generatedString += alphaChars[getRandomInt(0, alphaChars.length - 1)];
     }
 
@@ -529,7 +528,7 @@ function randomString(size) {
  * @param {object} templateUp user properties template, if available
  **/
 function getUser(templateUp) {
-    var chance = new Chance();
+    const chance = new Chance();
     this.getId = function() {
         /**
          * Generate hash for id
@@ -568,11 +567,11 @@ function getUser(templateUp) {
         this.platform = this.getProp("_os");
     }
     this.metrics._os = this.platform;
-    var m_props = metric_props.mobile;
+    let m_props = metric_props.mobile;
     if (app && app.type && metric_props[app.type]) {
         m_props = metric_props[app.type];
     }
-    for (var mPropsIndex = 0; mPropsIndex < m_props.length; mPropsIndex++) {
+    for (let mPropsIndex = 0; mPropsIndex < m_props.length; mPropsIndex++) {
         if (m_props[mPropsIndex] !== "_os") {
             //handle specific cases
             if (m_props[mPropsIndex] === "_store" && app && app.type === "web") {
@@ -592,7 +591,7 @@ function getUser(templateUp) {
     }
 
     this.getCrash = function() {
-        var crash = {};
+        let crash = {};
         crash._os = this.metrics._os;
         crash._os_version = this.metrics._os_version;
         crash._device = this.metrics._device;
@@ -622,9 +621,9 @@ function getUser(templateUp) {
         crash._nonfatal = (Math.random() > 0.5) ? true : false;
         crash._run = getRandomInt(1, 1800);
 
-        var customs = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
+        const customs = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
         crash._custom = {};
-        for (var customsIndex = 0; customsIndex < customs.length; customsIndex++) {
+        for (let customsIndex = 0; customsIndex < customs.length; customsIndex++) {
             if (Math.random() > 0.5) {
                 crash._custom[customs[customsIndex]] = getRandomInt(1, 2) + "." + getRandomInt(0, 9);
             }
@@ -634,24 +633,24 @@ function getUser(templateUp) {
     };
 
     this.getError = function() {
-        var errors = [];
-        var error = "";
-        var stacks = 0;
+        let errors = [];
+        let error = "";
+        let stacks = 0;
         if (app.type === "web") {
             errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
-            var err = new Error(errors[Math.floor(Math.random() * errors.length)], randomString(5) + ".js", getRandomInt(1, 100));
+            const err = new Error(errors[Math.floor(Math.random() * errors.length)], randomString(5) + ".js", getRandomInt(1, 100));
             return err.stack + "";
         }
-        else if (this.platform === "Android") {
+        else if (this.platform == "Android") {
             errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
             error = errors[Math.floor(Math.random() * errors.length)] + ": com.domain.app.Exception<init>\n";
             stacks = getRandomInt(5, 9);
-            for (var stackIndex = 0; stackIndex < stacks; stackIndex++) {
+            for (let stackIndex = 0; stackIndex < stacks; stackIndex++) {
                 error += "at com.domain.app.<init>(Activity.java:" + (stackIndex * 32) + ")\n";
             }
             return error;
         }
-        else if (this.platform === "iOS") {
+        else if (this.platform == "iOS") {
             errors = ["CoreFoundation                  0x182e3adb0 __exceptionPreprocess + 124",
                 "libobjc.A.dylib                 0x18249ff80 objc_exception_throw + 56",
                 "CoreFoundation                  0x182d1b098 -[__NSArrayI objectAtIndex:] + 196",
@@ -675,9 +674,8 @@ function getUser(templateUp) {
                 "CountlyTestApp-iOS              0x10004342c 0x100030000 + 78892",
                 "libdyld.dylib                   0x1828b68b8 start + 4"
             ];
-            error = "";
             stacks = getRandomInt(9, 19);
-            for (var stackIndex2 = 0; stackIndex2 < stacks; stackIndex2++) {
+            for (let stackIndex2 = 0; stackIndex2 < stacks; stackIndex2++) {
                 error += stackIndex2 + " " + errors[Math.floor(Math.random() * errors.length)] + "\n";
             }
             return error;
@@ -691,7 +689,7 @@ function getUser(templateUp) {
     };
 
     this.getLog = function() {
-        var actions = [
+        const actions = [
             "clicked button 1",
             "clicked button 2",
             "clicked button 3",
@@ -712,21 +710,21 @@ function getUser(templateUp) {
             "shake detected"
         ];
 
-        var items = getRandomInt(5, 10);
-        var logs = [];
-        for (var itemIndex = 0; itemIndex < items; itemIndex++) {
+        const items = getRandomInt(5, 10);
+        const logs = [];
+        for (let itemIndex = 0; itemIndex < items; itemIndex++) {
             logs.push(actions[getRandomInt(0, actions.length - 1)]);
         }
         return logs.join("\n");
     };
 
     this.getTrace = function() {
-        var trace = {};
+        let trace = {};
         trace.stz = getRandomInt(this.startTs, this.endTs);
         trace.etz = getRandomInt(trace.stz, this.endTs);
         trace.stz *= 1000;
         trace.etz *= 1000;
-        var rand = Math.random();
+        const rand = Math.random();
         if (rand < 0.3) {
             trace.type = "device";
             trace.apm_metrics = {};
@@ -740,7 +738,7 @@ function getUser(templateUp) {
                 trace.apm_metrics.first_input_delay = getRandomInt(0, 500);
             }
             else {
-                var device_traces = ["app_start", "app_in_background", "app_in_foreground"];
+                let device_traces = ["app_start", "app_in_background", "app_in_foreground"];
                 trace.name = device_traces[getRandomInt(0, device_traces.length - 1)];
                 trace.apm_metrics.duration = getRandomInt(0, 5000);
             }
@@ -766,7 +764,7 @@ function getUser(templateUp) {
     };
 
     this.getEvent = function(id, eventTemplates, appKey, templateId) {
-        var event = {
+        let event = {
             "key": id,
             "count": 1,
             "timestamp": this.ts,
@@ -775,9 +773,10 @@ function getUser(templateUp) {
         };
 
         this.ts += 1000;
+        let eventTemplate;
 
         if (Array.isArray(eventTemplates)) {
-            var eventTemplate = eventTemplates[getRandomInt(0, eventTemplates.length - 1)];
+            eventTemplate = eventTemplates[getRandomInt(0, eventTemplates.length - 1)];
         }
         else {
             eventTemplate = eventTemplates;
@@ -797,13 +796,13 @@ function getUser(templateUp) {
         if (eventTemplate && eventTemplate.segments) {
             event.segmentation = {};
             Object.keys(eventTemplate.segments).forEach(function(key) {
-                var values = eventTemplate.segments[key];
+                let values = eventTemplate.segments[key];
                 event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
             });
         }
         else if (id === "[CLY]_view") {
             event.segmentation = {};
-            var populatorType = null;
+            let populatorType = null;
             if (templateId.length <= 10) { //defaultTemplate
                 defaultTemplates.forEach(function(template) {
                     if (template.name === templateId) {
@@ -815,7 +814,7 @@ function getUser(templateUp) {
                 populatorType = template._id;
             }
             Object.keys(viewSegments).forEach(function(key) {
-                var values = [];
+                let values = [];
                 if (app.type === "web" && key === "name") {
                     values = ["/populator/" + appKey + "/demo-" + populatorType + ".html"];
                 }
@@ -837,11 +836,11 @@ function getUser(templateUp) {
             return [];
         }
 
-        var events = [];
-        var eventKeys = Object.keys(templateEvents || {});
+        let events = [];
+        const eventKeys = Object.keys(templateEvents || {});
 
-        for (var eventIndex = 0; eventIndex < count; eventIndex++) {
-            var eventKey = eventKeys[getRandomInt(0, eventKeys.length - 1)];
+        for (let eventIndex = 0; eventIndex < count; eventIndex++) {
+            const eventKey = eventKeys[getRandomInt(0, eventKeys.length - 1)];
             events.push(this.getEvent(eventKey, templateEvents[eventKey], appKey, templateId)[0]);
         }
 
@@ -849,7 +848,7 @@ function getUser(templateUp) {
     };
 
     this.getFeedbackEvents = function(appId) {
-        var events = [];
+        let events = [];
         events.push(this.getRatingEvent(appId));
         if (isPluginExists('surveys', appId)) {
             events.push(this.getNPSEvent(appId));
@@ -859,7 +858,7 @@ function getUser(templateUp) {
     };
 
     this.getRatingEvent = function(appId) {
-        var event = {
+        const event = {
             "key": "[CLY]_star_rating",
             "count": 1,
             "timestamp": this.ts,
@@ -882,7 +881,7 @@ function getUser(templateUp) {
     };
 
     this.getNPSEvent = function(appId) {
-        var event = {
+        const event = {
             "key": "[CLY]_nps",
             "count": 1,
             "timestamp": this.ts,
@@ -905,7 +904,7 @@ function getUser(templateUp) {
     };
 
     this.getSurveyEvent = function(appId) {
-        var event = {
+        const event = {
             "key": "[CLY]_survey",
             "count": 1,
             "timestamp": this.ts,
@@ -919,12 +918,12 @@ function getUser(templateUp) {
         event.segmentation.app_version = this.metrics._app_version;
         event.segmentation.platform = this.metrics._os;
         event.segmentation.shown = 1;
-        var keys = Object.keys(surveyWidgetList[appId]);
+        const keys = Object.keys(surveyWidgetList[appId]);
         if (keys.length) {
 
             event.segmentation.widget_id = keys[getRandomInt(0, keys.length - 1)];
 
-            var structure = surveyWidgetList[appId][event.segmentation.widget_id];
+            let structure = surveyWidgetList[appId][event.segmentation.widget_id];
 
             for (var z = 0; z < structure.questions.length; z++) {
                 //"multi", "radio", "text", "dropdown", "rating"
@@ -959,7 +958,7 @@ function getUser(templateUp) {
     };
 
     this.getHeatmapEvents = function(appKey, templateId) {
-        var events = this.getHeatmapEvent(appKey, templateId);
+        let events = this.getHeatmapEvent(appKey, templateId);
 
         if (Math.random() >= 0.5) {
             events = events.concat(this.getHeatmapEvent(appKey, templateId));
@@ -973,7 +972,7 @@ function getUser(templateUp) {
     };
 
     this.getHeatmapEvent = function(appKey, templateId) {
-        var populatorType = null;
+        let populatorType = null;
         if (templateId.length <= 10) { //defaultTemplate
             defaultTemplates.forEach(function(template) {
                 if (template.name === templateId) {
@@ -984,8 +983,8 @@ function getUser(templateUp) {
         else {
             populatorType = template._id;
         }
-        var views = ["/populator/" + appKey + "/demo-" + populatorType + ".html"];
-        var event = {
+        const views = ["/populator/" + appKey + "/demo-" + populatorType + ".html"];
+        const event = {
             "key": "[CLY]_action",
             "count": 1,
             "timestamp": this.ts,
@@ -993,16 +992,16 @@ function getUser(templateUp) {
             "dow": getRandomInt(0, 6),
             "test": 1
         };
-        var selectedOffsets = [{x: 468, y: 366}, {x: 1132, y: 87}, {x: 551, y: 87}, {x: 647, y: 87}, {x: 1132, y: 87}];
+        const selectedOffsets = [{x: 468, y: 366}, {x: 1132, y: 87}, {x: 551, y: 87}, {x: 647, y: 87}, {x: 1132, y: 87}];
 
         this.ts += 1000;
 
         event.segmentation = {};
         event.segmentation.type = "click";
 
-        var dice = getRandomInt(0, 6) % 2 === 0 ? true : false;
+        const dice = getRandomInt(0, 6) % 2 === 0 ? true : false;
         if (dice) {
-            var randomIndex = getRandomInt(0, selectedOffsets.length - 1);
+            const randomIndex = getRandomInt(0, selectedOffsets.length - 1);
             event.segmentation.x = selectedOffsets[randomIndex].x;
             event.segmentation.y = selectedOffsets[randomIndex].y;
         }
@@ -1019,7 +1018,7 @@ function getUser(templateUp) {
     };
 
     this.getScrollmapEvents = function(appKey, templateId) {
-        var events = this.getHeatmapEvent(appKey, templateId);
+        let events = this.getHeatmapEvent(appKey, templateId);
 
         if (Math.random() >= 0.5) {
             events = events.concat(this.getScrollmapEvent(appKey, templateId));
@@ -1033,7 +1032,7 @@ function getUser(templateUp) {
     };
 
     this.getScrollmapEvent = function(appKey, templateId) {
-        var populatorType = null;
+        let populatorType = null;
         if (templateId.length <= 10) { //defaultTemplate
             defaultTemplates.forEach(function(template) {
                 if (template.name === templateId) {
@@ -1044,8 +1043,8 @@ function getUser(templateUp) {
         else {
             populatorType = template._id;
         }
-        var views = ["/populator/" + appKey + "/demo-" + populatorType + ".html"];
-        var event = {
+        const views = ["/populator/" + appKey + "/demo-" + populatorType + ".html"];
+        const event = {
             "key": "[CLY]_action",
             "count": 1,
             "timestamp": this.ts,
@@ -1065,8 +1064,8 @@ function getUser(templateUp) {
     };
 
     this.addEvent = function(template, app, templateId) {
-        var req = {};
-        var events;
+        let req = {};
+        let events;
         if (!this.isRegistered) {
             this.isRegistered = true;
             events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
@@ -1089,8 +1088,8 @@ function getUser(templateUp) {
 
     this.startSession = function(template, app, templateId) {
         this.ts = this.ts + 60 * 60 * 24 + 100;
-        var req = {};
-        var events;
+        let req = {};
+        let events;
 
         if (!this.isRegistered) {
             this.isRegistered = true;
@@ -1110,6 +1109,7 @@ function getUser(templateUp) {
             if (getRandomInt(1, 3) === 3) {
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], app.key, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], app.key, templateId), this.getEvents(4, template && template.events, app.key, templateId));
                 events = [events[Math.floor(Math.random() * events.length)]];
+                req.events = events;
             }
         }
         if (req.events) {
@@ -1124,10 +1124,10 @@ function getUser(templateUp) {
 
         req.crash = this.getCrash();
 
-        var consents = ["sessions", "events", "views", "scrolls", "clicks", "forms", "crashes", "push", "attribution", "users"];
+        const consents = ["sessions", "events", "views", "scrolls", "clicks", "forms", "crashes", "push", "attribution", "users"];
         req.consent = {};
 
-        for (var consentIndex = 0; consentIndex < consents.length; consentIndex++) {
+        for (let consentIndex = 0; consentIndex < consents.length; consentIndex++) {
             req.consent[consents[consentIndex]] = (Math.random() > 0.8) ? false : true;
         }
 
@@ -1140,9 +1140,9 @@ function getUser(templateUp) {
 
     this.extendSession = function(template, appKey, templateId) {
         if (this.hasSession) {
-            var req = {};
+            let req = {};
             this.ts = this.ts + 30;
-            var events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(1, template && template.events, appKey, templateId));
+            let events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], appKey, templateId).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], appKey, templateId), this.getEvents(1, template && template.events, appKey, templateId));
             events = [events[Math.floor(Math.random() * events.length)]];
             req = {timestamp: this.ts, session_duration: 30, events: events, apm: this.getTrace()};
             if (Math.random() > 0.8) {
@@ -1169,7 +1169,7 @@ function getUser(templateUp) {
         }
         if (this.hasSession) {
             this.hasSession = false;
-            var events = this.getEvents(2, template && template.events, appKey, templateId);
+            const events = this.getEvents(2, template && template.events, appKey, templateId);
             this.request({timestamp: this.ts, end_session: 1, events: events, apm: this.getTrace()}, appKey);
         }
     };
@@ -1191,16 +1191,16 @@ function getUser(templateUp) {
  * @param {object} template user properties template
 **/
 async function addCohorts(template, app) {
-    var data = {};
-    var DEBUG_STEP_COUNT = "";
+    let data = {};
+    let DEBUG_STEP_COUNT = "";
 
     try {
         if (template && template.events && Object.keys(template.events).length > 0) {
-            var firstEventKey = Object.keys(template.events)[0];
+            const firstEventKey = Object.keys(template.events)[0];
 
             if (template.up && Object.keys(template.up).length > 0) {
-                var firstUserProperty = Object.keys(template.up)[0];
-                var firstUserPropertyValue = JSON.stringify(template.up[firstUserProperty][0]);
+                const firstUserProperty = Object.keys(template.up)[0];
+                const firstUserPropertyValue = JSON.stringify(template.up[firstUserProperty][0]);
                 DEBUG_STEP_COUNT = "addCohorts_1.0";
                 data = {
                     cohort_name: firstUserProperty + " = " + firstUserPropertyValue + " users who performed " + firstEventKey,
@@ -1229,8 +1229,8 @@ async function addCohorts(template, app) {
 
 
             if (template.events[firstEventKey].segments && Object.keys(template.events[firstEventKey].segments).length > 0) {
-                var firstEventSegment = Object.keys(template.events[firstEventKey].segments)[0];
-                var firstEventSegmentValue = JSON.stringify(template.events[firstEventKey].segments[firstEventSegment][0]);
+                const firstEventSegment = Object.keys(template.events[firstEventKey].segments)[0];
+                const firstEventSegmentValue = JSON.stringify(template.events[firstEventKey].segments[firstEventSegment][0]);
 
                 DEBUG_STEP_COUNT = "addCohorts_2.0";
                 data = {
@@ -1261,7 +1261,7 @@ async function addCohorts(template, app) {
             }
 
             if (Object.keys(template.events).length > 1) {
-                var secondEventKey = Object.keys(template.events)[1];
+                const secondEventKey = Object.keys(template.events)[1];
                 DEBUG_STEP_COUNT = "addCohorts_3.0";
                 data = {
                     cohort_name: "Users who performed " + firstEventKey + " but not " + secondEventKey,
@@ -1372,8 +1372,6 @@ async function addCohorts(template, app) {
             Url: SERVER_URL + "/i/cohorts/add?",
             requestParamKeys: data
         });
-
-        DEBUG_STEP_COUNT = "addCohorts_8.0";
     }
     catch (error) {
         console.log("There was an error in AddCohorts function. Error: ", error, ' Debug: ', DEBUG_STEP_COUNT);
@@ -1450,7 +1448,7 @@ async function createNPSWidget(name, followUpType, mainQuestion, followUpPromote
 
         if (result) {
             if (result.result) {
-                var id = result.result.split(" ");
+                const id = result.result.split(" ");
                 npsWidgetList[appId].push(id[2]);
             }
             callback();
@@ -1506,7 +1504,7 @@ async function createSurveyWidget(name, questions, thanks, position, show, color
  * @param {funciton} done - callback method
  **/
 function generateWidgets(appId, done) {
-    var _appId = appId;
+    const _appId = appId;
     function generateRatingWidgets(_appId, callback) {
         createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, _appId, function() {
             createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, _appId, function() {
@@ -1593,7 +1591,7 @@ function generateWidgets(appId, done) {
                         Url: SERVER_URL + "/o/surveys/survey/widgets?app_id=" + _appId + "&api_key=" + API_KEY
                     });
                     if (result && result.aaData) {
-                        for (var i = 0; i < result.aaData.length; i++) {
+                        for (let i = 0; i < result.aaData.length; i++) {
                             surveyWidgetList[_appId][result.aaData[i]._id] = result.aaData[i];
                         }
                         callback();
@@ -1619,19 +1617,19 @@ function generateWidgets(appId, done) {
 }
 
 function generateRetention(templateUp, callback) {
-    var userAmount = 1000;
+    const userAmount = 1000;
     if (typeof countlyRetention === "undefined") {
         callback();
         return;
     }
-    var ts = new Date().getTime() / 1000 - 60 * 60 * 24 * 9;
-    var ids = [ts];
-    var userCount = 10;
-    var retentionCall = 8; // number of generateRetentionUser function call
-    var retentionLastUserCount = (userCount - retentionCall) + 1;
+    let ts = new Date().getTime() / 1000 - 60 * 60 * 24 * 9;
+    let ids = [ts];
+    let userCount = 10;
+    let retentionCall = 8; // number of generateRetentionUser function call
+    let retentionLastUserCount = (userCount - retentionCall) + 1;
 
-    var idCount = 1;
-    for (var i = userCount; i >= retentionLastUserCount; i--) { //total retension user
+    let idCount = 1;
+    for (let i = userCount; i >= retentionLastUserCount; i--) { //total retension user
         totalUserCount += idCount * i;
         idCount++;
     }
@@ -1671,12 +1669,12 @@ function generateRetention(templateUp, callback) {
 }
 
 function generateRetentionUser(ts, userCount, ids, templateUp, app, callback) {
-    var chance = new Chance();
-    var bulker = [];
-    for (var userIndex = 0; userIndex < userCount; userIndex++) {
-        for (var j = 0; j < ids.length; j++) {
-            var metrics = {};
-            var platform;
+    const chance = new Chance();
+    let bulker = [];
+    for (let userIndex = 0; userIndex < userCount; userIndex++) {
+        for (let j = 0; j < ids.length; j++) {
+            let metrics = {};
+            let platform;
             if (app.type === "web") {
                 platform = getProp("_os_web");
             }
@@ -1687,11 +1685,11 @@ function generateRetentionUser(ts, userCount, ids, templateUp, app, callback) {
                 platform = getProp("_os");
             }
             metrics._os = platform;
-            var m_props = metric_props.mobile;
+            let m_props = metric_props.mobile;
             if (app.type && metric_props[app.type]) {
                 m_props = metric_props[app.type];
             }
-            for (var k = 0; k < m_props.length; k++) {
+            for (let k = 0; k < m_props.length; k++) {
                 if (m_props[k] !== "_os") {
                     //handle specific cases
                     if (m_props[k] === "_store" && app.type === "web") {
@@ -1710,7 +1708,7 @@ function generateRetentionUser(ts, userCount, ids, templateUp, app, callback) {
                 }
             }
 
-            var userdetails = new getUser(templateUp);
+            let userdetails = new getUser(templateUp);
             userdetails.begin_session = 1;
             userdetails.device_id = userIndex + "" + ids[j];
             userdetails.dow = getRandomInt(0, 6);
@@ -1723,13 +1721,10 @@ function generateRetentionUser(ts, userCount, ids, templateUp, app, callback) {
             userdetails.metrics = metrics;
 
             bulker.push(userdetails);
-            // totalStats.s++;
-            // totalStats.u++;
         }
     }
 
-    // totalStats.r++;
-    for (var index = 0; index < bulker.length; index++) {
+    for (let index = 0; index < bulker.length; index++) {
         bulker[index].startSession(template[app._id], app[app._id], template[app._id]._id);
     }
 
@@ -1765,7 +1760,7 @@ async function createCampaign(id, name, cost, type, appId, callback) {
 }
 
 function parseQueryString(queryString) {
-    var params = {}, queries, temp, i, l;
+    let params = {}, queries, temp, i, l;
     queries = queryString.split("&");
     for (i = 0, l = queries.length; i < l; i++) {
         temp = queries[i].split('=');
@@ -1776,9 +1771,9 @@ function parseQueryString(queryString) {
 
 async function clickCampaign(name, appId) {
     try {
-        var chance = new Chance();
-        var ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
-        var data = {ip_address: ip, test: true, timestamp: Date.now(), populator: true, api_key: API_KEY};
+        const chance = new Chance();
+        const ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
+        const data = {ip_address: ip, test: true, timestamp: Date.now(), populator: true, api_key: API_KEY};
 
         const result = await sendRequest({
             requestType: 'POST',
@@ -1787,9 +1782,9 @@ async function clickCampaign(name, appId) {
         });
 
         if (result) {
-            var link = result.link.replace('&amp;', '&');
-            var queryString = link.split('?')[1];
-            var parameters = parseQueryString(queryString);
+            const link = result.link.replace('&amp;', '&');
+            const queryString = link.split('?')[1];
+            const parameters = parseQueryString(queryString);
             campaingClicks.push({
                 name: name,
                 cly_id: parameters.cly_id,
@@ -1803,7 +1798,7 @@ async function clickCampaign(name, appId) {
 }
 
 function generateCampaigns(appId, callback) {
-    var campaignsIndex = 0;
+    let campaignsIndex = 0;
 
     /**
      * Recursively generates all the campaigns in the global variable
@@ -1815,7 +1810,7 @@ function generateCampaigns(appId, callback) {
                 campaignsIndex++; // future async issues?
             }
             else {
-                for (var clickIndex = 0; clickIndex < (campaigns.length * 33); clickIndex++) {
+                for (let clickIndex = 0; clickIndex < (campaigns.length * 33); clickIndex++) {
                     clickCampaign(campaigns[getRandomInt(0, campaigns.length - 1)].id, appId);
                 }
                 setTimeout(callback, 3000);
@@ -1831,7 +1826,7 @@ function generateCampaigns(appId, callback) {
 
 function createUser(appId) {
     if (users[appId].length < maxUserCount) {
-        var u = new getUser(template[appId] && template[appId].up);
+        let u = new getUser(template[appId] && template[appId].up);
         users[appId].push(u);
         u.timer = setTimeout(function() {
             u.startSession(template[appId], app[appId], template[appId]._id);
@@ -1839,11 +1834,11 @@ function createUser(appId) {
     }
 }
 
-function reportConversions() {
-    for (var i = 0; i < campaingClicks.length; i++) {
-        var click = campaingClicks[i];
+function reportConversions(appId) {
+    for (let i = 0; i < campaingClicks.length; i++) {
+        const click = campaingClicks[i];
         if ((Math.random() > 0.5)) {
-            users[i].reportConversion(click.cly_id, click.cly_uid);
+            users[appId][i].reportConversion(click.cly_id, click.cly_uid);
         }
     }
 }
@@ -1857,11 +1852,13 @@ function processUser(u, appId) {
 }
 
 function processUsers(appId) {
-    for (var userAmountIndex = 0; userAmountIndex < maxUserCount; userAmountIndex++) {
-        processUser(users[userAmountIndex], appId);
+    for (let userAmountIndex = 0; userAmountIndex < maxUserCount; userAmountIndex++) {
+        processUser(users[appId][userAmountIndex], appId);
     }
-    if (users.length > 0) {
-        setTimeout(processUsers(appId), timeout);
+    if (users[appId].length > 0) {
+        setTimeout(function() {
+            processUsers(appId);
+        }, timeout);
     }
     else {
         countlyPopulatorSync();
@@ -1874,12 +1871,14 @@ function addExtras(appId) {
             generateRetention(template, function() {
                 if (isPluginExists("attribution", appId)) {
                     generateCampaigns(appId, function() {
-                        for (var campaignAmountIndex = 0; campaignAmountIndex < maxUserCount; campaignAmountIndex++) {
+                        for (let campaignAmountIndex = 0; campaignAmountIndex < maxUserCount; campaignAmountIndex++) {
                             createUser(appId);
                         }
                         // Generate campaigns conversion for web
                         if (app.type === "web") {
-                            setTimeout(reportConversions, timeout);
+                            setTimeout(function() {
+                                reportConversions(appId);
+                            }, timeout);
                         }
                         setTimeout(function() {
                             processUsers(appId);
