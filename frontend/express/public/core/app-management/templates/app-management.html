@@ -178,7 +178,7 @@
                                 </div>
                                 <p>&nbsp;</p>
                                     <el-upload
-                                    v-if="!isDisabled() && isGlobalAdmin"
+                                    v-if="(!isDisabled() && isGlobalAdmin) || !isGlobalAdmin"
                                     action="apps/icon"
                                     :on-success="handleUploadSuccess"
                                     :data="uploadData"
