@@ -638,7 +638,7 @@ function getUser(templateUp) {
         let stacks = 0;
         if (app.type === "web") {
             errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
-            const err = new Error(errors[Math.floor(Math.random() * errors.length)], randomString(5) + ".js", getRandomInt(1, 100));
+            const err = new Error(errors[Math.floor(Math.random() * errors.length)] + ' ' + randomString(5) + ".js" + ' ' + getRandomInt(1, 100));
             return err.stack + "";
         }
         else if (this.platform == "Android") {
@@ -837,7 +837,7 @@ function getUser(templateUp) {
         }
 
         let events = [];
-        const eventKeys = Object.keys(templateEvents || {});
+        const eventKeys = Object.keys(templateEvents);
 
         for (let eventIndex = 0; eventIndex < count; eventIndex++) {
             const eventKey = eventKeys[getRandomInt(0, eventKeys.length - 1)];
