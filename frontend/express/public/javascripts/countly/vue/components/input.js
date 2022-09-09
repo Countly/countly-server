@@ -127,7 +127,7 @@
             },
             handleHover: function() {
                 this.focused = true;
-            }
+            },
         },
         data: function() {
             return {
@@ -139,13 +139,15 @@
                         scrollingX: false
                     },
                     rail: {
-                        gutterOfSide: "0px"
+                        gutterOfSide: "0px",
+                        keepShow: true,
                     },
                     bar: {
                         background: "#A7AEB8",
                         size: "6px",
                         specifyBorderRadius: "3px",
-                        keepShow: false
+                        keepShow: true,
+                        onlyShowBarOnScroll: true
                     }
                 }
             };
@@ -246,7 +248,7 @@
         },
         template: '<div\
                     style="height: 100%"\
-                    class="cly-vue-listbox"\
+                    class="cly-vue-listbox scroll-keep-show"\
                     tabindex="0"\
                     :class="topClasses"\
                     @mouseenter="handleHover"\
@@ -410,7 +412,7 @@
         },
         template: '<div\
                     style="height: 100%"\
-                    class="cly-vue-listbox"\
+                    class="cly-vue-listbox scroll-keep-show"\
                     tabindex="0"\
                     :class="topClasses"\
                     @mouseenter="handleHover"\
@@ -864,6 +866,15 @@
             handleDropdownShow: function() {
                 this.$forceUpdate();
                 this.focusOnSearch();
+                document.querySelectorAll(".scroll-keep-show").forEach(function(item) {
+                    item.style.width = '0px';
+                });
+
+                setTimeout(function() {
+                    document.querySelectorAll(".scroll-keep-show").forEach(function(item) {
+                        item.style.width = '100%';
+                    });
+                }, 100);
             },
             focusOnSearch: function() {
                 var self = this;
