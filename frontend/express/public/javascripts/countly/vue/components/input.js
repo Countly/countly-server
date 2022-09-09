@@ -126,7 +126,45 @@
                 this.focused = false;
             },
             handleHover: function() {
+                setTimeout(() => {
+                    var removeCopiedScrollElement = document.querySelectorAll(".mouseEnter");
+                    if (removeCopiedScrollElement.length) {
+                        var copiedElement = removeCopiedScrollElement[0].getElementsByClassName("__bar-wrap-is-vertical_copy");
+                        if (copiedElement.length) {
+                            copiedElement[0].style.opacity = "0";
+                        }
+                    }
+                }, 0);
                 this.focused = true;
+            },
+        },
+        mounted: function() {
+            var scrollElements = document.querySelectorAll("#scrollKeepShow");
+            if (scrollElements.length) {
+                for (var i = 0; i < scrollElements.length; i++) {
+                    var itemCount = scrollElements[i].getElementsByClassName('cly-vue-listbox__item').length;
+                    var totalHeight = (itemCount * 48) + 16;
+                    if (totalHeight < this.height + 94) {
+                        continue;
+                    }
+                    var scrollRate = ((this.height / totalHeight) * 100) / 4;
+                    scrollRate *= 5;
+                    var scrollElement = scrollElements[i].getElementsByClassName('__rail-is-vertical');
+                    var childWrapperElement = document.createElement('div');
+
+                    childWrapperElement.setAttribute("class", "__bar-wrap-is-vertical_copy");
+                    childWrapperElement.setAttribute("id", "vertical-parent-scroll");
+                    childWrapperElement.style.cssText = 'position: absolute; border-radius: 6px; top: 0px; bottom: 0px; width: 100%;';
+                    var childElementExists = scrollElement[0].getElementsByClassName('__bar-wrap-is-vertical_copy');
+                    if (!childElementExists.length) {
+                        scrollElement[0].appendChild(childWrapperElement);
+                        var childElement = document.createElement('div');
+                        childElement.className += 'manipulated_scroll_bar';
+                        childElement.setAttribute("class", "__bar-is-vertical_copy");
+                        childElement.style.cssText = 'cursor: pointer; position: absolute; margin: auto; transition: opacity 0.5s ease 0s; user-select: none; border-radius: inherit; height: ' + scrollRate + '%; background: rgb(167, 174, 184); width: 6px; opacity: 1; transform: translateY(0%); left: 0px; right: 0px;';
+                        childElementExists[0].appendChild(childElement);
+                    }
+                }
             }
         },
         data: function() {
@@ -139,13 +177,15 @@
                         scrollingX: false
                     },
                     rail: {
-                        gutterOfSide: "0px"
+                        gutterOfSide: "0px",
+                        keepShow: true,
                     },
                     bar: {
                         background: "#A7AEB8",
                         size: "6px",
                         specifyBorderRadius: "3px",
-                        keepShow: false
+                        keepShow: true,
+                        onlyShowBarOnScroll: true
                     }
                 }
             };
@@ -265,6 +305,7 @@
                         </form>\
                     </div>\
                     <vue-scroll\
+                        id="scrollKeepShow"\
                         :style="vueScrollStyle"\
                         v-if="searchedOptions.length > 0"\
                         :ops="scrollCfg"\>\
@@ -418,6 +459,7 @@
                     @focus="handleHover"\
                     @blur="handleBlur">\
                     <vue-scroll\
+                        id="scrollKeepShow"\
                         :style="vueScrollStyle"\
                         v-if="options.length > 0"\
                         :ops="scrollCfg"\>\
