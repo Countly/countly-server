@@ -772,8 +772,14 @@
                     if (user.group_id) {
                         var groupNames = [];
 
-                        for (var idx = 0; idx < user.group_id.length; idx++) {
-                            groupNames.push(this.groupMap[user.group_id[idx]]);
+                        if (Array.isArray(user.group_id)) {
+                            for (var idx = 0; idx < user.group_id.length; idx++) {
+                                groupNames.push(this.groupMap[user.group_id[idx]]);
+                            }
+                        }
+                        else {
+                            // There is a case where user group_id is not an array, maybe from previous versions
+                            groupNames.push(this.groupMap[user.group_id]);
                         }
 
                         user.groupNames = groupNames.join(", ");
