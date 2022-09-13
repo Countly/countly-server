@@ -1511,8 +1511,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.post(countlyConfig.path + '/apps/icon', function(req, res, next) {
-        if(req.body.app_image_id) {
-            req.body.app_id = req.body.app_image_id
+        if (req.body.app_image_id) {
+            req.body.app_id = req.body.app_image_id;
         }
         var params = paramsGenerator({req, res});
         validateCreate(params, 'global_upload', function() {
