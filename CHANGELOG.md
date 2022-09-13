@@ -1,3 +1,16 @@
+## Version 22.08.5
+
+Fixes:
+- [apps] admin of app should be able to edit image for app
+- [apps] fixed newly created app is locked
+- [user-management] fixed group name display if user group_id is not an array
+- [crashes] remove os from indexed props in query builder
+
+Enterprise fixes:
+- [ab-testing] changes for new endpoint in ab testing
+- [groups] added checking for user group_id, it has to be an array
+- [drill] added undefined check for _idv parameter
+
 ## Version 22.08.4
 
 Fixes:
