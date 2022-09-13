@@ -924,6 +924,15 @@
                     this.innerValue = this.currentTab.options[0].value;
                     this.doCommit();
                 }
+                document.querySelectorAll(".scroll-keep-show").forEach(function(item) {
+                    item.style.width = '0px';
+                });
+
+                setTimeout(function() {
+                    document.querySelectorAll(".scroll-keep-show").forEach(function(item) {
+                        item.style.width = '100%';
+                    });
+                }, 100);
             },
             value: function(newVal) {
                 if (!this.onlySelectedOptionsTab && this.isMultiple && this.remote && newVal && newVal.length === 0 && this.activeTabId === "__selected") {
