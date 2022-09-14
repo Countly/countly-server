@@ -796,7 +796,7 @@ plugins.setConfigs("remote-config", {
             return true;
         }
 
-        if (!defaultValue) {
+        if (!defaultValue && defaultValue !== false) {
             common.returnMessage(params, 400, 'Invalid parameter: default_value');
             return true;
         }

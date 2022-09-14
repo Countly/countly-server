@@ -412,7 +412,7 @@
             },
             createFilter: function(queryString) {
                 return function(value) {
-                    return value.toLowerCase().indexOf(queryString.toLowerCase()) === 0;
+                    return typeof value === 'string' && value.toLowerCase().indexOf(queryString.toLowerCase()) === 0;
                 };
             },
             querySearchForCondition: function(queryStringForCondition, cb) {
