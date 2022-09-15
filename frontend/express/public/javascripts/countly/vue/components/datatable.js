@@ -43,6 +43,10 @@
                     return { prop: '_id', order: 'asc' };
                 },
                 required: false
+            },
+            preventDefaultSort: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
@@ -301,12 +305,14 @@
                     sort: [],
                     selectedDynamicCols: false
                 };
-
-                if (this.defaultSort) {
+                if (this.defaultSort && this.preventDefaultSort === true) {
                     defaultState.sort = [{
                         field: this.defaultSort.prop,
                         type: this.defaultSort.order === "ascending" ? "asc" : "desc"
                     }];
+                }
+                else {
+                    this.defaultSort = {};
                 }
 
                 if (!this.persistKey) {
