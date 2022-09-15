@@ -94,6 +94,9 @@ class DataStore {
             this.lru.set(id.toString(), data);
             return data;
         }
+        else if (!id) {
+            this.lru.reset();
+        }
         else if (this.read(id) !== null) {
             this.lru.del(id.toString());
         }
