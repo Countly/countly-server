@@ -305,7 +305,7 @@
                     sort: [],
                     selectedDynamicCols: false
                 };
-                if (this.defaultSort && this.preventDefaultSort === true) {
+                if (this.defaultSort && this.preventDefaultSort === false) {
                     defaultState.sort = [{
                         field: this.defaultSort.prop,
                         type: this.defaultSort.order === "ascending" ? "asc" : "desc"
