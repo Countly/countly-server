@@ -3,7 +3,7 @@ const plugins = require('../../pluginManager'),
     log = common.log('push:api'),
     { Message, State, TriggerKind, fields, platforms, ValidationError, PushError, DBMAP, guess } = require('./send'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
-    { onTokenSession, onSessionUser, onAppPluginsUpdate } = require('./api-push'),
+    { onTokenSession, onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
@@ -304,6 +304,9 @@ plugins.register('/cohort/delete', ({_id, ack}) => autoOnCohortDeletion(_id, ack
 plugins.register('/drill/add_push_events', drillAddPushEvents);
 plugins.register('/drill/preprocess_query', drillPreprocessQuery);
 plugins.register('/drill/postprocess_uids', drillPostprocessUids);
+
+// Hook to move data to new uid on user merge
+plugins.register('/i/device_id', onMerge);
 
 // Permissions
 plugins.register('/permissions/features', ob => ob.features.push(FEATURE_NAME));
