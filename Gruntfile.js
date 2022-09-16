@@ -113,6 +113,7 @@ module.exports = function(grunt) {
                 src: [
                     'frontend/express/public/javascripts/countly/countly.auth.js',
                     'frontend/express/public/javascripts/countly/countly.helpers.js',
+                    'frontend/express/public/javascripts/countly/countly.hotkeys.js',
                     'frontend/express/public/javascripts/countly/countly.map.helper.js',
                     'frontend/express/public/javascripts/countly/countly.event.js',
                     'frontend/express/public/javascripts/countly/countly.session.js',
