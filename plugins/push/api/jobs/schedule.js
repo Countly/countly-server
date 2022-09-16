@@ -99,6 +99,9 @@ class ScheduleJob extends J.Job {
             if (!res) {
                 error = 'Failed to update message';
             }
+            else {
+                log.i('Scheduled message %s: %j / %j / %j', this.message.id, this.message.state, this.message.status, this.message.result.json);
+            }
         }
 
         if (error) {
