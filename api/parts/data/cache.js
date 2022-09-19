@@ -76,7 +76,9 @@ class DataStore {
      * @return {Any}    value or undefined if no value under such key is stored
      */
     read(id) {
-        return this.lru.get(id.toString());
+        if (id && id.toString) {
+            return this.lru.get(id.toString());
+        }
     }
 
     /**
