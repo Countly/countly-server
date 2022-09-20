@@ -1,4 +1,4 @@
-/* global app, countlyVue, CV, countlyGlobal, CountlyHelpers, $, countlyCommon */
+/* global app, countlyVue, CV, countlyGlobal, CountlyHelpers, $ */
 
 // if configuration view exists
 if (app.configurationsView) {
@@ -42,8 +42,7 @@ var TwoFAUser = countlyVue.views.create({
                             type: "GET",
                             url: countlyGlobal.path + "/i/two-factor-auth",
                             data: {
-                                method: "disable",
-                                app_id: countlyCommon.ACTIVE_APP_ID
+                                method: "disable"
                             },
                             success: function() {
                                 CountlyHelpers.notify({
@@ -91,8 +90,7 @@ var TwoFAUser = countlyVue.views.create({
                 data: {
                     method: "enable",
                     secret_token: countlyGlobal["2fa_secret_token"],
-                    auth_code: self.secret_code,
-                    app_id: countlyCommon.ACTIVE_APP_ID
+                    auth_code: self.secret_code
                 },
                 success: function() {
                     CountlyHelpers.notify({
