@@ -512,7 +512,7 @@ class ReadBatcher {
                 }
             }
 
-            if (!good_projection || !this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
+            if (!this.process || !good_projection || !this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
                 if (this.process) {
                     this.data[collection][id] = {
                         query: query,
