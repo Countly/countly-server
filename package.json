@@ -87,7 +87,6 @@
     "sass": "1.54.8",
     "uglify-js": "3.17.0",
     "underscore": "1.13.4",
-    "vue-json-pretty": "^1.9.2",
     "yamljs": "0.3.0"
   },
   "jshintConfig": {
