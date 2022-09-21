@@ -434,7 +434,7 @@
             },
             onSubmit: function(doc) {
                 if (doc.expiry_dttm) {
-                    doc.expiry_dttm = doc.expiry_dttm - this.getOffset() * 60 * 1000;
+                    doc.expiry_dttm = doc.expiry_dttm + new Date().getTimezoneOffset() * 60 * 1000;
                 }
                 var self = this;
                 doc.conditions = [];
@@ -466,6 +466,9 @@
             },
             onCopy: function(doc) {
                 if (doc._id) {
+                    if (doc.expiry_dttm) {
+                        doc.expiry_dttm = doc.expiry_dttm - new Date().getTimezoneOffset() * 60 * 1000;
+                    }
                     this.showExpirationDate = false;
                     this.defaultValue = doc.default_value;
 
