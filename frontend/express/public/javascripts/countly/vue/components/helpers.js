@@ -1,10 +1,11 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth*/
+/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty*/
 
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
+    Vue.component("vue-json-pretty", VueJsonPretty.default);
     Vue.component("cly-back-link", countlyBaseComponent.extend(
         // @vue/component
         {
