@@ -193,11 +193,6 @@
                 }
             }
         },
-        filters: {
-            pretty: function(value) {
-                return typeof value === 'string' ? JSON.stringify(JSON.parse(value), null, 2) : JSON.stringify(value, null, 2);
-            }
-        },
         components: {
             "logger-readable-date": ReadableDateComponent,
             "logger-details": DetailsComponent,
