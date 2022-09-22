@@ -189,7 +189,7 @@
                     return JSON.parse(jsonObject);
                 }
                 catch (error) {
-                    error;
+                    //
                 }
             }
         },
