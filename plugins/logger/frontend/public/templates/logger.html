@@ -47,7 +47,7 @@
                             <cly-section>
                                 <el-tabs type="card" value="data">
                                     <el-tab-pane name="data" label="Data">
-                                        <vue-json-pretty :data="JSON.parse(props.row.q) || pretty"/>
+                                        <vue-json-pretty :data="jsonParser(props.row.q) || pretty"/>
                                     </el-tab-pane>  
                                     <el-tab-pane name="header" label="Header">
                                         <vue-json-pretty :data="props.row.h || pretty"/>
