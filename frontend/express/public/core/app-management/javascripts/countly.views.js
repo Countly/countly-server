@@ -240,7 +240,7 @@
                     if (period === "all") {
                         image = "clear-all-app-data";
                     }
-                    CountlyHelpers.confirm(helper_msg, "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(helper_msg, "red", function(result) {
                         if (!result) {
                             return true;
                         }
@@ -491,7 +491,7 @@
             },
             deleteApp: function() {
                 var self = this;
-                CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "popStyleGreen", function(result) {
+                CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "red", function(result) {
 
                     if (!result) {
                         return true;

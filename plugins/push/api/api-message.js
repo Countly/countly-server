@@ -276,6 +276,7 @@ module.exports.create = async params => {
         if (!demo) {
             await msg.schedule(log, params);
         }
+        log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
     }
 
@@ -351,6 +352,7 @@ module.exports.update = async params => {
         }
     }
 
+    log.i('Updated message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
 
     common.returnOutput(params, msg.json);
 };
@@ -491,6 +493,8 @@ module.exports.toggle = async params => {
         await msg.schedule(log, params);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: msg.json});
     }
+
+    log.i('Toggled message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
 
     common.returnOutput(params, msg.json);
 };

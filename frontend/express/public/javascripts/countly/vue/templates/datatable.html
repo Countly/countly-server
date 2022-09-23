@@ -97,6 +97,7 @@
             </div>
         </div>
         <el-table
+            :preventDefaultSort="preventDefaultSort"
             :border="border"
             :row-key="keyFn"
             :data="mutatedRows"
