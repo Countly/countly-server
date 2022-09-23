@@ -110,8 +110,7 @@
                     value: 'user_details',
                     label: this.i18n('logger.user-details')
                 }],
-                loggerFilter: 'all',
-                activeName: "data"
+                loggerFilter: 'all'
             };
         },
         computed: {

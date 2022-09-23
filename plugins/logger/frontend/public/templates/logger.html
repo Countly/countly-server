@@ -45,7 +45,7 @@
                     <el-table-column type="expand" class="shadow">
                         <template v-slot="props">
                             <cly-section>
-                                <el-tabs type="card" value="data" v-model="activeName">
+                                <el-tabs type="card" value="data">
                                     <el-tab-pane name="data" label="Data">
                                         <vue-json-pretty :data="jsonParser(props.row.q)"/>
                                     </el-tab-pane>  
