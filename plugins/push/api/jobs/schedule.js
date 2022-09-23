@@ -60,7 +60,7 @@ class ScheduleJob extends J.Job {
             error = 'No plain trigger in the message';
         }
         else {
-            let res = await this.message.updateAtomically({_id: this.message._id, state: this.message.state}, {$set: {state: State.Created | State.Streamable}});
+            let res = await this.message.updateAtomically({_id: this.message._id, state: this.message.state}, {$set: {state: State.Created | State.Streamable, status: Status.Scheduled}});
             if (!res) {
                 error = 'Failed to update message';
             }
@@ -82,20 +82,10 @@ class ScheduleJob extends J.Job {
                     }
                 };
             }
-            else {
-                update = {
-                    $set: {
-                        'state': State.Created | State.Streamable,
-                        status: Status.Scheduled,
-                        result: result.json
-                    }
-                };
-            }
-
         }
 
         if (update) {
-            let res = await this.message.updateAtomically({_id: this.message._id, state: this.message.state}, update);
+            let res = await this.message.update(update);
             if (!res) {
                 error = 'Failed to update message';
             }
