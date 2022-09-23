@@ -1871,7 +1871,8 @@ function addExtras(appId) {
             generateRetention(template, function() {
                 if (isPluginExists("attribution", appId)) {
                     generateCampaigns(appId, function() {
-                        for (let campaignAmountIndex = 0; campaignAmountIndex < maxUserCount; campaignAmountIndex++) {
+                        var userCount = users[appId].length;
+                        for (let campaignAmountIndex = 0; campaignAmountIndex < userCount; campaignAmountIndex++) {
                             createUser(appId);
                         }
                         // Generate campaigns conversion for web
