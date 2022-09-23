@@ -219,11 +219,16 @@
                 $('#cf-email-text').html(response.popup_email_callout);
                 $('#cf-submit-button').html(response.popup_button_callout);
                 $('#thanks-area').html(response.popup_thanks_message);
-                
+                response.rating_symbol = response.rating_symbol ? response.rating_symbol : "emojis";
                 if (response.rating_symbol) {
                   symbol = response.rating_symbol;
                   for (var i = 0; i < 5; i++) {
-                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
+                      if(symbol==='emojis'){
+                        addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1));
+                      }
+                      else{
+                        addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
+                      }
                   }
                 }
 
@@ -237,7 +242,7 @@
                 }
 
                 if (response.logo) {
-                    $('#powered-by-countly').attr('src', url + '/star-rating/images/star-rating/' + response.logo);
+                    $('#powered-by-countly').attr('src', url + '/star-rating/images/' + response.logo);
                     $('#powered-by-countly').parent().attr('href', 'void(0)');
                     $('#powered-by-countly').css({'width':'100px'});
                 }
@@ -312,12 +317,24 @@
             eventObject["segmentation"].rating = parseInt(modalEmotionImages[index].getAttribute('data-score'));
             for (var i = 0; i < 5; i++) {
               if (i <= index) {
-                removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
-                addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill');
+                  if(symbol==='emojis'){
+                    removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1));
+                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1) + '-fill');
+                  }
+                  else{
+                    removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
+                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill');
+                  }
               }
               else {
-                addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
-                removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill');
+                if(symbol==='emojis'){
+                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1));
+                    removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1) + '-fill');
+                }
+                else{
+                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
+                    removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill'); 
+                }
               }
             }
             removeClass(sendButton, 'disabled-send-button');

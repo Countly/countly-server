@@ -256,18 +256,18 @@ class Base extends Duplex {
                 else if (e.isCredentials) {
                     throw e;
                 }
-                else if (e.hasAffected || e.hasLeft) {
-                    if (e.hasAffected) {
-                        this.send_push_error(e.affectedError());
-                        e.affected = [];
-                        e.affectedBytes = 0;
-                    }
-                    if (e.hasLeft) {
-                        data = e.left;
-                        bytes = e.leftBytes;
-                    }
-                    error = e;
-                }
+                // else if (e.hasAffected || e.hasLeft) {
+                //     if (e.hasAffected) {
+                //         this.send_push_error(e.affectedError());
+                //         e.affected = [];
+                //         e.affectedBytes = 0;
+                //     }
+                //     if (e.hasLeft) {
+                //         data = e.left;
+                //         bytes = e.leftBytes;
+                //     }
+                //     error = e;
+                // }
                 else {
                     error = e;
                 }
@@ -275,7 +275,6 @@ class Base extends Duplex {
         }
         if (error) {
             this.sending -= bytes;
-            error.left = error.left ? error.left.map(l => l._id) : error.left;
             throw error;
         }
     }

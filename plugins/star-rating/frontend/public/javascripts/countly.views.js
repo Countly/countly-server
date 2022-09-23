@@ -1,4 +1,4 @@
-/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue, moment*/
 (function() {
     var FEATURE_NAME = 'star_rating';
 
@@ -78,7 +78,7 @@
                     submitted.logo = this.logoFile;
                 }
 
-                if (this.deleteLogo) {
+                if (!this.imageSource) {
                     submitted.logo = '';
                 }
 
@@ -119,7 +119,9 @@
             onOpen: function() {
                 var self = this;
                 var loadImage = new Image();
-                loadImage.src = window.location.origin + "/star-rating/images/star-rating/" + this.controls.initialEditedObject.logo;
+                if (this.controls.initialEditedObject.logo) {
+                    loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
+                }
                 loadImage.onload = function() {
                     self.imageSource = loadImage.src;
                 };
@@ -129,6 +131,7 @@
                 this.deleteLogo = true;
             },
             onFileAdded: function(file) {
+                this.deleteLogo = false;
                 var img = new FileReader();
                 var self = this;
                 img.onload = function() {
@@ -161,6 +164,7 @@
             preparedRows: function() {
                 return this.comments.map(function(comment) {
                     comment.cd = countlyCommon.formatTimeAgo(comment.cd);
+                    comment.time = moment.unix(comment.ts).format("DD MMMM YYYY HH:MM:SS");
                     return comment;
                 });
             }
@@ -789,6 +793,39 @@
                     this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
                 }
                 else {
+                    this.widget.targeting = {
+                        user_segmentation: null,
+                        steps: null
+                    };
+                }
+                if (!this.widget.rating_symbol) {
+                    this.widget.rating_symbol = "emojis";
+                }
+                if (!this.widget.ratings_texts) {
+                    this.widget.ratings_texts = [
+                        'Very Dissatisfied',
+                        'Somewhat Dissatisfied',
+                        'Neither Satisfied Nor Dissatisfied',
+                        'Somewhat Satisfied',
+                        'Very Satisfied'
+                    ];
+                }
+                if (!this.widget.contact_enable) {
+                    this.widget.contact_enable = false;
+                }
+                if (!this.widget.comment_enable) {
+                    this.widget.comment_enable = false;
+                }
+                if (!this.widget.trigger_size) {
+                    this.widget.trigger_size = 'm';
+                }
+                if (!this.widget.status) {
+                    this.widget.status = true;
+                }
+                if (!this.widget.logo) {
+                    this.widget.logo = null;
+                }
+                if (!this.widget.targeting) {
                     this.widget.targeting = {
                         user_segmentation: null,
                         steps: null

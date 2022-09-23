@@ -105,7 +105,9 @@
         },
         watch: {
             selectedCollection: function(newVal) {
-                window.location.hash = "#/manage/db/" + this.db + "/" + newVal;
+                this.collection = newVal;
+                app.navigate("#/manage/db/" + this.db + "/" + newVal, false);
+                this.tableStore.dispatch("fetchDbviewerTable");
                 store.set('dbviewer_app_filter', this.appFilter);
             }
         },

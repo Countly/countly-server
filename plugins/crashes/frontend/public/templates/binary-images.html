@@ -4,41 +4,36 @@
             <cly-back-link></cly-back-link>
         </template>
         <template v-slot:header-left>
-            <h2>Binary Images</h2>
+            <div class="bu-is-flex bu-is-flex-direction-column">
+                <h2>Binary Images</h2>
+                <div class="text-big font-weight-bold bu-mt-4" v-html="crash.name"></div>
+                <div class="bu-mt-2">
+                    <span class="text-small bu-mr-4" v-if="'app_build' in crash">
+                        App Build Number: {{crash.app_build}}
+                    </span>
+                    <span class="text-small bu-mr-4" v-if="'app_version' in crash">
+                        App Version: {{crash.app_version}}
+                    </span>
+                    <span class="text-small" v-if="'os_version' in crash">
+                        Platform Version: {{crash.os_version}}
+                    </span>
+                </div>
+            </div>
         </template>
     </cly-header>
     <cly-main>
         <cly-datatable-n :rows="binaryImages" ref="tableData">
-            <template v-slot:header-left>
-                <div class="text-big font-weight-bold">
-                    {{crash.name}}
-                </div>
+            <template v-slot="scope">
+                <el-table-column prop="name" width="210" sortable></el-table-column>
+                <el-table-column prop="uuid" label="Build UUID" width="400"></el-table-column>
+                <el-table-column prop="loadAddress" label="Load Address"></el-table-column>
+                <el-table-column width="120" fixed="right" v-if="symbolicationEnabled">
+                    <template slot-scope="col">
+                        <el-button type="text" @click="openDrawer('crashSymbol', { build: col.row.uuid, platform: crash.os })" v-if="!hasSymbol(col.row.uuid)">Add Symbol</el-button>
+                    </template>
+                </el-table-column>
             </template>
-            <template v-slot:header-right>
-                <div class="bu-flex bu-flex-direction-column bu-mr-3">
-                    <div class="text-small" v-if="'app_build' in crash">
-                        App Build Number: {{crash.app_build}}
-                    </div>
-                    <div class="text-small" v-if="'app_version' in crash">
-                        App Version: {{crash.app_version}}
-                    </div>
-                    <div class="text-small" v-if="'os_version' in crash">
-                        Platform Version: {{crash.os_version}}
-                    </div>
-                </div>
-            </template>
-        </template>
-        <template v-slot="scope">
-            <el-table-column prop="name" width="210" sortable></el-table-column>
-            <el-table-column prop="uuid" label="Build UUID" width="400"></el-table-column>
-            <el-table-column prop="loadAddress" label="Load Address"></el-table-column>
-            <el-table-column width="120" fixed="right" v-if="symbolicationEnabled">
-                <template slot-scope="col">
-                    <el-button type="text" @click="openDrawer('crashSymbol', {})" v-if="!hasSymbol(col.row.uuid)">Add Symbol</el-button>
-                </template>
-            </el-table-column>
-        </template>
-    </cly-datatable-n>
-</cly-main>
-<cly-crash-symbol-drawer @symbols-changed="refresh" ref="crashSymbolDrawer" :controls="drawers.crashSymbol" v-if="symbolicationEnabled"></cly-crash-symbol-drawer>
+        </cly-datatable-n>
+    </cly-main>
+    <cly-crash-symbol-drawer @symbols-changed="refresh" ref="crashSymbolDrawer" :controls="drawers.crashSymbol" v-if="symbolicationEnabled"></cly-crash-symbol-drawer>
 </div>

@@ -21,7 +21,8 @@ var pluginDependencies = require('./pluginDependencies.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
     exec = cp.exec,
-    spawn = cp.spawn;
+    spawn = cp.spawn,
+    configextender = require('../api/configextender');
 
 /**
 * This module handles communicaton with plugins
@@ -64,6 +65,15 @@ var pluginManager = function pluginManager() {
         countly_drill: "./drill/config.js",
         countly_out: "../api/configs/config.db_out.js",
         countly_fs: "../api/configs/config.db_fs.js"
+    };
+
+    /**
+     *  Custom configuration files for different databases for docker env
+     */
+    this.dbConfigEnvs = {
+        countly_drill: "PLUGINDRILL",
+        countly_out: "PLUGINOUT",
+        countly_fs: "PLUGINFS"
     };
 
     /**
@@ -1101,6 +1111,7 @@ var pluginManager = function pluginManager() {
         if (typeof config === "string") {
             db = config;
             if (this.dbConfigFiles[config]) {
+                var confDb = config;
                 try {
                     //try loading custom config file
                     var conf = require(this.dbConfigFiles[config]);
@@ -1109,6 +1120,9 @@ var pluginManager = function pluginManager() {
                 catch (ex) {
                     //user default config
                     config = JSON.parse(JSON.stringify(countlyConfig));
+                }
+                if (this.dbConfigEnvs[confDb]) {
+                    config = configextender(this.dbConfigEnvs[confDb], config, process.env);
                 }
             }
             else {
@@ -1251,6 +1265,7 @@ var pluginManager = function pluginManager() {
         if (typeof config === "string") {
             db = config;
             if (this.dbConfigFiles[config]) {
+                var confDb = config;
                 try {
                     //try loading custom config file
                     var conf = require(this.dbConfigFiles[config]);
@@ -1259,6 +1274,9 @@ var pluginManager = function pluginManager() {
                 catch (ex) {
                     //user default config
                     config = JSON.parse(JSON.stringify(countlyConfig));
+                }
+                if (this.dbConfigEnvs[confDb]) {
+                    config = configextender(this.dbConfigEnvs[confDb], config, process.env);
                 }
             }
             else {

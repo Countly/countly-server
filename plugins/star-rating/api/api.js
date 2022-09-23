@@ -235,7 +235,7 @@ function uploadFile(myfile, id, callback) {
             //convert file to data
             if (data) {
                 try {
-                    var pp = path.resolve(__dirname, './../frontend/public/images/star-rating/' + id + "." + ext);
+                    var pp = path.resolve(__dirname, './../images/' + id + "." + ext);
                     countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + ext, writeMode: "overwrite" }, function(err3) {
                         if (err3) {
                             callback("Failed to upload image");
@@ -1375,15 +1375,13 @@ function uploadFile(myfile, id, callback) {
             }, function() {});
         }
     });
-    plugins.register("/i/app_users/delete", function(ob) {
+    plugins.register("/i/app_users/delete", async function(ob) {
         var appId = ob.app_id;
         var uids = ob.uids;
         if (uids && uids.length) {
-            common.db.collection("feedback" + appId).remove({
-                uid: {
-                    $in: uids
-                }
-            }, function() {});
+            // By using await and no callback, error in db operation will be thrown
+            // This error will then be caught by app users api dispatch so that it can cancel app user deletion
+            await common.db.collection("feedback" + appId).remove({ uid: { $in: uids } });
         }
     });
     plugins.register("/i/app_users/export", function(ob) {

@@ -5,79 +5,80 @@
         <link rel="stylesheet" href="/populator/stylesheets/demo/ecommerce.css">
     </head>
     <body>
-      <div class="container">
-        <div class="row top-bar">
-          <div class="col-sm-2">
-            <strong>E-commerce</strong>
-          </div>
-          <div class="col-sm-6 search-bar">
-            <input type="text" placeholder="Search for products, categories or brands!" class="form-control">
-          </div>
-          <div class="col-sm-2 text-center">
-            Log in
-          </div>
-          <div class="col-sm-2 text-center">
-            Your Bag <svg id="bag-icon" class="bi bi-bag" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-  <path fill-rule="evenodd" d="M14 5H2v9a1 1 0 001 1h10a1 1 0 001-1V5zM1 4v10a2 2 0 002 2h10a2 2 0 002-2V4H1z" clip-rule="evenodd"/>
-  <path d="M8 1.5A2.5 2.5 0 005.5 4h-1a3.5 3.5 0 117 0h-1A2.5 2.5 0 008 1.5z"/>
-</svg>
-          </div>
+        <div class="container demo-ecommerce">
+            <div class="row top-bar">
+                <div class="col-sm-2">
+                    <a href="demo-ecommerce.html">
+                        <strong>E-commerce</strong>
+                    </a>
+                </div>
+                <div class="col-sm-6 search-bar">
+                    <input type="text" placeholder="Search for products, categories or brands!" class="form-control">
+                </div>
+                <div class="col-sm-2 text-center">
+                    Log in
+                </div>
+                <div class="col-sm-2 text-center">
+                    <a href="demo-ecommerce-1.html">
+                        Your Bag <svg id="bag-icon" class="bi bi-bag" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M14 5H2v9a1 1 0 001 1h10a1 1 0 001-1V5zM1 4v10a2 2 0 002 2h10a2 2 0 002-2V4H1z" clip-rule="evenodd"/>
+                            <path d="M8 1.5A2.5 2.5 0 005.5 4h-1a3.5 3.5 0 117 0h-1A2.5 2.5 0 008 1.5z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            <a href="demo-ecommerce-2.html" class="row navigation-bar">
+                <div class="col-sm">Electronic</div>
+                <div class="col-sm">Fashion</div>
+                <div class="col-sm">Mom & Baby</div>
+                <div class="col-sm">Sports & Outdoor</div>
+                <div class="col-sm">Supermarket</div>
+                <div class="col-sm">Books & Music</div>
+            </a>
+            <div class="row content">
+                <% if (pageIndex === '0') { %>
+                    <div class="col-sm-4 offset-1 text-center">
+                        <h1>#stayAtHome<br>Buy<br>Your Needs<br>Online!</h1>
+                    </div>
+                    <div class="col-sm-4 offset-1 text-center">
+                        <img src="/populator/images/ecommerce.svg" style="width:100%">
+                    </div>
+                <% } else if (pageIndex === '1') { %>
+                    <div class="row col-sm-12">
+                        <div class="col-sm-4 offset-3">
+                            <h1 class="mt-5">Shopping bag</h1>
+                        </div>
+                        <div class="col-sm-4">
+                            <svg id="bag-icon" class="bi bi-bag" width="12em" height="12em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M14 5H2v9a1 1 0 001 1h10a1 1 0 001-1V5zM1 4v10a2 2 0 002 2h10a2 2 0 002-2V4H1z" clip-rule="evenodd"/>
+                                <path d="M8 1.5A2.5 2.5 0 005.5 4h-1a3.5 3.5 0 117 0h-1A2.5 2.5 0 008 1.5z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <%- include(includes.content3Cols); %>
+                <% } else if (pageIndex === '2') { %>
+                    <div class="col-sm-12 text-center">
+                        <h1>Product List</h1>
+                        <%- include(includes.content3Cols); %>
+                    </div>
+                <% } %>
+            </div>
+            <div class="container row footer">
+                <div class="col-sm">
+                    <a href="demo-ecommerce-2.html">
+                        Products
+                    </a>
+                </div>
+                <div class="col-sm">
+                    <a href="demo-ecommerce-1.html">
+                        Shopping Bag
+                    </a>
+                </div>
+                <div class="col-sm">
+                    Privacy Notice
+                </div>
+            </div>
         </div>
-        <div class="row navigation-bar">
-          <div class="col-sm">Electronic</div>
-          <div class="col-sm">Fashion</div>
-          <div class="col-sm">Mom & Baby</div>
-          <div class="col-sm">Sports & Outdoor</div>
-          <div class="col-sm">Supermarket</div>
-          <div class="col-sm">Books & Music</div>
-        </div>
-        <div class="row content">
-          <div class="col-sm-4 offset-1 text-center">
-            <h1>#stayAtHome<br>Buy<br>Your Needs<br>Online!</h1>
-          </div>
-          <div class="col-sm-4 offset-1 text-center">
-            <img src="/populator/images/ecommerce.svg" style="width:100%">
-          </div>
-        </div>
-        <div class="row footer">
-          <div class="col-sm">
-            Conditions of Use
-          </div>
-          <div class="col-sm">
-            Privacy Notice
-          </div>
-          <div class="col-sm">
-            Interest-Based Ads
-          </div>
-        </div>
-      </div>
-      <script type='text/javascript'>
-          // Some default pre init
-          var Countly = Countly || {};
-          Countly.q = Countly.q || [];
-      
-          // Provide your app key that you retrieved from Countly dashboard
-          var parts = document.location.href.split("/");
-          Countly.app_key = parts[parts.length - 2];
-      
-          // Provide your server IP or name. Use try.count.ly for EE trial server.
-          // If you use your own server, make sure you have https enabled if you use
-          // https below.
-          Countly.url = window.location.origin;
-          Countly.q.push(['enable_feedback',{'popups':['5eb02d1ecb41b52f5eb57476']}]);
-          
-          // Load countly script asynchronously
-          (function() {
-            var cly = document.createElement('script'); cly.type = 'text/javascript'; 
-            cly.async = true;
-            // Enter url of script here (see below for other option)
-            cly.src = '/sdk/web/countly.js';
-            cly.onload = function(){Countly.init()};
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(cly, s);
-          })();
-        </script>
-        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <%- include(includes.scripts); %>
     </body>
 </html>

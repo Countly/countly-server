@@ -61,7 +61,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column class="request-date" sortable="custom"
-                        :label="i18n('logger.requests')" vertical-align="middle" min-width="283" fixed="left">
+                        :label="i18n('logger.requests')" vertical-align="middle" prop="reqts" min-width="283" fixed="left">
                         <template slot-scope="rowScope">
                             <logger-readable-date :timestamp="rowScope.row.reqts"></logger-readable-date>
                         </template>
@@ -74,6 +74,8 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="info" :label="i18n('logger.info')" min-width="283">
                         <template slot-scope="rowScope">
+							<strong v-if="rowScope.row.c" class='red-text'>{{i18n('logger.request-canceled')}}</strong>
+							<div v-if="rowScope.row.c" class="bu-pt-2" >{{rowScope.row.c}}</div>
                             <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>
                         </template>
                     </el-table-column>

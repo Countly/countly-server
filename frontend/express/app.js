@@ -979,14 +979,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             plgns.forEach(plugin => {
                 try {
                     let contents = fs.readdirSync(__dirname + `/../../plugins/${plugin}/frontend/public/javascripts`) || [];
-                    toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                    toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
                 }
                 catch (e) {
                     console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
                 }
                 try {
                     let contents = fs.readdirSync(__dirname + `/../../plugins/${plugin}/frontend/public/stylesheets`) || [];
-                    toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
+                    toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => typeof n === 'string' && n.includes('.css') && n.length > 4 && n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
                 }
                 catch (e) {
                     console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
@@ -1452,7 +1452,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
     app.get(countlyConfig.path + '/sdks.js', function(req, res) {
         if (!plugins.getConfig("api").offline_mode) {
-            var options = {uri: "http://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
+            var options = {uri: "https://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
             request(options, function(a, c, b) {
                 res.set('Content-type', 'application/javascript').status(200).send(b);
             });
@@ -1511,9 +1511,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.post(countlyConfig.path + '/apps/icon', function(req, res, next) {
+        if (req.body.app_image_id) {
+            req.body.app_id = req.body.app_image_id;
+        }
         var params = paramsGenerator({req, res});
         validateCreate(params, 'global_upload', function() {
-            if (!req.session.uid) {
+            if (!req.session.uid && !req.body.app_image_id) {
                 res.end();
                 return false;
             }

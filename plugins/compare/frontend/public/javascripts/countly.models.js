@@ -1,6 +1,18 @@
 /*global countlyVue, CV, _, countlyCommon, CountlyHelpers, jQuery */
 (function(countlyCompareEvents) {
     countlyCompareEvents.helpers = {
+        encode: function(str) {
+            if (typeof str === 'string') {
+                return str.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/<=/g, "&le;").replace(/>=/g, "&ge;");
+            }
+            return str;
+        },
+        decode: function(str) {
+            if (typeof str === 'string') {
+                return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+            }
+            return str;
+        },
         getTableRows: function(context) {
             var tableData = [];
             var tableStateMap = context.state.tableStateMap;
@@ -8,12 +20,12 @@
                 var props = countlyCompareEvents.helpers.getProperties(),
                     tableRow = {
                         "id": context.state.selectedEvents[i],
-                        "name": context.state.selectedEvents[i].startsWith("[CLY]_group") ? context.state.groupData[context.state.selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(context.state.selectedEvents[i], context.state.allEventsData.map),
+                        "name": context.state.selectedEvents[i].startsWith("[CLY]_group") ? countlyCompareEvents.helpers.decode(context.state.groupData[context.state.selectedEvents[i]]) : countlyCompareEvents.helpers.getEventLongName(context.state.selectedEvents[i], context.state.allEventsData.map),
                         "checked": _.isEmpty(tableStateMap) ? true : tableStateMap[context.state.selectedEvents[i]]
                     };
 
                 for (var prop in props) {
-                    var data = countlyCompareEvents.helpers.getChartData(context, context.state.selectedEvents[i], prop),
+                    var data = countlyCompareEvents.helpers.getChartData(context, countlyCompareEvents.helpers.encode(context.state.selectedEvents[i]), prop),
                         tmpPropVals = _.pluck(data.chartData, prop);
 
                     if (tmpPropVals.length) {
@@ -29,7 +41,7 @@
             return tableData;
         },
         getEventLongName: function(eventKey, eventMap) {
-            var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+            var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
             if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
                 return eventMap[mapKey].name;
             }
@@ -83,7 +95,7 @@
         getLineChartData: function(context, selectedEvents) {
             var series = [];
             if (selectedEvents.length === 1) {
-                var dataObj = countlyCompareEvents.helpers.getChartData(context, selectedEvents[0], context.state.selectedGraphMetric);
+                var dataObj = countlyCompareEvents.helpers.getChartData(context, countlyCompareEvents.helpers.encode(selectedEvents[0]), context.state.selectedGraphMetric);
                 var data = [];
                 var prevData = [];
                 for (var j = 0;j < dataObj.chartData.length;j++) {
@@ -91,7 +103,7 @@
                     prevData.push(dataObj.chartData[j]["p" + context.state.selectedGraphMetric]);
                 }
                 var obj = {
-                    name: selectedEvents[0].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[0]] : countlyCompareEvents.helpers.getEventLongName(selectedEvents[0], context.state.allEventsData.map),
+                    name: selectedEvents[0].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[0]] : countlyCompareEvents.helpers.getEventLongName(countlyCompareEvents.helpers.encode(selectedEvents[0], context.state.allEventsData.map)),
                     data: data,
                 };
                 var prevObj = {
@@ -102,13 +114,13 @@
             }
             else {
                 for (var i = 0;i < selectedEvents.length; i++) {
-                    var dataOb = countlyCompareEvents.helpers.getChartData(context, selectedEvents[i], context.state.selectedGraphMetric);
+                    var dataOb = countlyCompareEvents.helpers.getChartData(context, countlyCompareEvents.helpers.encode(selectedEvents[i]), context.state.selectedGraphMetric);
                     var seriesData = [];
                     for (var k = 0;k < dataOb.chartData.length;k++) {
                         seriesData.push(dataOb.chartData[k][context.state.selectedGraphMetric]);
                     }
                     var ob = {
-                        name: selectedEvents[i].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(selectedEvents[i], context.state.allEventsData.map),
+                        name: selectedEvents[i].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(countlyCompareEvents.helpers.encode(selectedEvents[i]), context.state.allEventsData.map),
                         data: seriesData,
                     };
                     series.push(ob);
@@ -122,14 +134,14 @@
             if (selectedEvents.length === 1) {
                 var obj = {};
                 var prevObj = {};
-                obj.name = selectedEvents[0].startsWith('[CLY]_group') ? groupData[selectedEvents[0]] : countlyCompareEvents.helpers.getEventLongName(selectedEvents[0], map);
+                obj.name = selectedEvents[0].startsWith('[CLY]_group') ? groupData[selectedEvents[0]] : countlyCompareEvents.helpers.getEventLongName(countlyCompareEvents.helpers.encode(selectedEvents[0], map));
                 prevObj.name = CV.i18n("compare.events.previous.period");
                 legendData.push(obj, prevObj);
             }
             else {
                 for (var i = 0;i < selectedEvents.length; i++) {
                     var ob = {};
-                    ob.name = selectedEvents[i].startsWith('[CLY]_group') ? groupData[selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(selectedEvents[i], map);
+                    ob.name = selectedEvents[i].startsWith('[CLY]_group') ? groupData[selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(countlyCompareEvents.helpers.encode(selectedEvents[i], map));
                     legendData.push(ob);
                 }
             }
@@ -147,9 +159,19 @@
             if (eventsList) {
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
+                        var label;
+                        if (map[item] && map[item].name && typeof map[item].name === 'string') {
+                            label = countlyCompareEvents.helpers.decode(map[item].name);
+                        }
+                        if (item && typeof item === 'string') {
+                            item = countlyCompareEvents.helpers.decode(item);
+                        }
                         var obj = {
-                            "label": map[item] && map[item].name ? map[item].name : item,
-                            "value": item
+                            "label": map[item] && map[item].name ? label : item,
+                            "value": item,
+                            "custom": {
+                                "value": undefined
+                            }
                         };
                         allEvents.push(obj);
                     }
@@ -159,7 +181,7 @@
                 groupList.forEach(function(item) {
                     if (item.status) {
                         var obj = {
-                            "label": item.name + "(" + CV.i18n("events.all.group") + ")",
+                            "label": countlyCompareEvents.helpers.decode(item.name) + "(" + CV.i18n("events.all.group") + ")",
                             "value": item._id
                         };
                         allEvents.push(obj);
@@ -181,7 +203,7 @@
             if (eventsList) {
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
-                        allEvents[item] = true;
+                        allEvents[countlyCompareEvents.helpers.decode(item)] = true;
                     }
                 });
             }

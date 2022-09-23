@@ -628,7 +628,9 @@
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
-                hasUserPermission: countlyAuth.validateRead('users')
+                hasUserPermission: countlyAuth.validateRead('users'),
+                showSymbolicated: false,
+                activeThreadPanels: []
             };
         },
         computed: {
@@ -637,6 +639,9 @@
             },
             crashgroupName: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/crashgroupName"];
+            },
+            crashgroupUnsymbolicatedStacktrace: function() {
+                return this.$store.getters["countlyCrashes/crashgroup/crashgroupUnsymbolicatedStacktrace"];
             },
             comments: function() {
                 return ("comments" in this.crashgroup) ? this.crashgroup.comments : [];
@@ -734,7 +739,14 @@
                 }
             },
             handleRowClick: function(row) {
-                this.$refs.tableData.$refs.elTable.toggleRowExpansion(row);
+                // Only expand row if text inside of it are not highlighted
+                var noTextSelected = window.getSelection().toString().length === 0;
+                // Links should not expand row when clicked
+                var targetIsOK = !event.target.closest('a');
+
+                if (noTextSelected && targetIsOK) {
+                    this.$refs.tableData.$refs.elTable.toggleRowExpansion(row);
+                }
             },
             generateEventLogs: function(cid) {
                 var self = this;
@@ -768,7 +780,8 @@
                         _id: this.crashgroup.lrid,
                         os: this.crashgroup.os,
                         native_cpp: this.crashgroup.native_cpp,
-                        app_version: this.crashgroup.latest_version
+                        app_version: this.crashgroup.latest_version,
+                        symbol_id: this.crashgroup._symbol_id
                     };
                 }
 
@@ -942,10 +955,25 @@
                         }
                     });
                 }
+            },
+            handleCrashgroupStacktraceCommand: function(command) {
+                if (command === "symbolicate") {
+                    this.symbolicateCrash('group');
+                }
+            },
+            handleCrashStacktraceCommand: function(command, crash) {
+                if (command === "symbolicate") {
+                    this.symbolicateCrash(crash);
+                }
             }
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crashgroup/initialize", groupId);
+        },
+        mounted: function() {
+            if (this.symbolicationEnabled) {
+                this.showSymbolicated = true;
+            }
         }
     });
 
@@ -1020,10 +1048,10 @@
                 if (this.symbolicationEnabled) {
                     promises.push(new Promise(function(resolve, reject) {
                         countlyCrashSymbols.fetchSymbols(true)
-                            .then(function(symbolIndexing) {
+                            .then(function(fetchSymbolsResponse) {
                                 self.symbols = {};
 
-                                var buildIdMaps = Object.values(symbolIndexing);
+                                var buildIdMaps = Object.values(fetchSymbolsResponse.symbolIndexing);
                                 buildIdMaps.forEach(function(buildIdMap) {
                                     Object.keys(buildIdMap).forEach(function(buildId) {
                                         self.symbols[buildId] = buildIdMap[buildId];
@@ -1040,11 +1068,14 @@
                 return Promise.all(promises);
             },
             hasSymbol: function(uuid) {
-                return uuid in this.symbols;
+                return uuid in this.symbols || uuid.toUpperCase() in this.symbols || uuid.toLowerCase() in this.symbols;
             }
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crash/initialize", crashId);
+        },
+        mounted: function() {
+            this.refresh();
         },
         mixins: [countlyVue.mixins.hasDrawers("crashSymbol")]
     });

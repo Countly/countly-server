@@ -240,7 +240,7 @@
                     if (period === "all") {
                         image = "clear-all-app-data";
                     }
-                    CountlyHelpers.confirm(helper_msg, "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(helper_msg, "red", function(result) {
                         if (!result) {
                             return true;
                         }
@@ -354,7 +354,6 @@
                                 value: data._id + "",
                                 label: data.name
                             });
-                            self.selectedSearchBar = data._id + "";
                             self.$store.dispatch("countlyCommon/addToAllApps", data);
                             if (self.firstApp) {
                                 countlyCommon.ACTIVE_APP_ID = data._id + "";
@@ -363,6 +362,9 @@
                                 app.initSidebar();
                             }
                             self.firstApp = self.checkIfFirst();
+                            setTimeout(function() {
+                                self.selectedSearchBar = data._id + "";
+                            }, 1);
                         },
                         error: function(xhr, status, error) {
                             CountlyHelpers.notify({
@@ -415,6 +417,7 @@
                                 break;
                             }
                         }
+                        self.discardForm();
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.changed"],
                             message: jQuery.i18n.map["configs.saved"]
@@ -488,7 +491,7 @@
             },
             deleteApp: function() {
                 var self = this;
-                CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "popStyleGreen", function(result) {
+                CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "red", function(result) {
 
                     if (!result) {
                         return true;

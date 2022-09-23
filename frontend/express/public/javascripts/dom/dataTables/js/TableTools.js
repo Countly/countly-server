@@ -1304,12 +1304,12 @@ TableTools.prototype = {
 			flash.setAction( 'save' );
 			flash.setCharSet( (oConfig.sCharSet=="utf16le") ? 'UTF16LE' : 'UTF8' );
 			flash.setBomInc( oConfig.bBomInc );
-			flash.setFileName( oConfig.sFileName.replace('*', this.fnGetTitle(oConfig)) );
+			flash.setFileName( oConfig.sFileName.replace(/\*/g, this.fnGetTitle(oConfig)) );
 		}
 		else if ( oConfig.sAction == "flash_pdf" )
 		{
 			flash.setAction( 'pdf' );
-			flash.setFileName( oConfig.sFileName.replace('*', this.fnGetTitle(oConfig)) );
+			flash.setFileName( oConfig.sFileName.replace(/\*/g, this.fnGetTitle(oConfig)) );
 		}
 		else
 		{
@@ -1688,11 +1688,11 @@ TableTools.prototype = {
 	"_fnHtmlDecode": function ( sData )
 	{
 		//convert  code to normal
-		sData = sData.replace(/&amp;/g, '&');
 		sData = sData.replace(/&#39;/g, "'");
 		sData = sData.replace(/&quot;/g, '"');
 		sData = sData.replace(/&lt;/g, '<');
 		sData = sData.replace(/&gt;/g, '>');
+		sData = sData.replace(/&amp;/g, '&');
 		if ( sData.indexOf('&') === -1 )
 		{
 			return sData;

@@ -239,26 +239,5 @@
                 app.activeView.dtableactionlogs.fnDraw(false);
             }
         });
-
-        $(document).ready(function() {
-            app.addPageScript("/manage/users", function() {
-                setTimeout(function() {
-                    $("#user-table").on("click", "tr", function() {
-                        var container = $(this);
-                        if (container.find("td.details").length === 0) {
-                            setTimeout(function() {
-                                container = container.next("tr");
-                                var id = container.find(".user_id").val();
-                                container.find(".button-container").append("<a class='icon-button light' data-localize='systemlogs.view-user-actions' href='#/manage/logs/systemlogs/filter/{\"user_id\":\"" + id + "\"}'>" + jQuery.i18n.map["systemlogs.view-user-actions"] + "</a>");
-                            }, 0);
-                        }
-                    });
-                }, 1000);
-            });
-
-            if (app.configurationsView) {
-                app.configurationsView.registerLabel('systemlogs.preventIPTracking', 'systemlogs.prevent-ip-tracking');
-            }
-        });
     }
 })();

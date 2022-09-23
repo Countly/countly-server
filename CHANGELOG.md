@@ -1,3 +1,112 @@
+## Version 22.08.5
+
+Fixes:
+- [apps] admin of app should be able to edit image for app
+- [apps] fixed newly created app is locked
+- [user-management] fixed group name display if user group_id is not an array
+- [crashes] remove os from indexed props in query builder
+
+Enterprise fixes:
+- [ab-testing] changes for new endpoint in ab testing
+- [groups] added checking for user group_id, it has to be an array
+- [drill] added undefined check for _idv parameter
+
+## Version 22.08.4
+
+Fixes:
+- [config] fixed web configs for config extender
+- [core] fixed user picture condition check in user deletion
+- [core] prevent app user deletion if there is an error from other plugins
+- [db] fixed config variables for docker for different databases
+- [events] fixed encoding decoding issue in events
+- [linting] fixed codeql issues
+- [logger] add debug logs to request logs
+- [populator] add more demo pages with links
+- [push] reschedule on edits
+- [scripts] fixed one liner installer script
+- [star-rating] changes for ratings images in countlyFS
+- [ui] in dropdowns the scroll bar is not shown by default
+- [views] add support for handling SDK provided ids for views
+- [views] fixed heatmap top bar check mark
+
+Enterprise fixes:
+- [ab-testing] add link click handler for metric breakdown
+- [ab-testing] remove target blank from link in metric breakdown
+- [active-users] fixed to stop timeout on active users job exit
+- [active-users] fixed wrong active user/visitor data
+- [cognito] implement cognito authorization code flow
+- [concurrent_users] added isNaN control where max item is displayed
+- [crash_symbolication] call return connection test from dashboard
+- [crash_symbolication] enable platform and status filter
+- [crash_symbolication] fixed crashgroup symbol_id passing
+- [crash_symbolication] fixed symbol jobs
+- [ldap] expose configs in docker
+- [surveys] fixed bar colors on nps chart
+- [users] add backlink to index view header
+
+## Version 22.08.3
+
+Fixes:
+- [api] fix bug with new apps and salt, when requests are not rejected
+- [applciations] if there is an app key, a new one should not be produced
+- [applications] will not be able to edit any Application to have an empty name
+- [crashes] pass symbol id from crashgroup for symbolication
+- [dbviewer] refresh of all data when changing the collection
+- [events] fixes for encoding decoding issues in events overview and details page
+- [logger] showing if request is cancelled in logger
+- [populator] add multiple heatmap examples
+- [populator] cleanup duplicate code in populator
+- [populator] populator templates datatable's alignment issue
+- [ratings] backward compatibility fixes for emoticons
+
+Enterprise Fixes:
+- [block] fixed filtering rule saving issue
+- [cohorts] fixed home table alignment issue for Safari browser
+
+
+## Version 22.08.2
+Features:
+- [core] script to remove old permission properties
+- [crashes] Fix binary image symbol id check
+- [crashes] Fix build uuid check for latest crash
+- [crashes] Fix fetch symbols response
+- [crashes] Prefill symbol drawer called from binary page
+- [crashes] Unescape binary page crash name
+- [push] fixed arraybuffer crash
+- [push] Fixing wrong reporting of retriable errors
+- [push] Mark message as streamable before scheduling starts
+
+Enterprise features:
+- [crash_symbolication] Fixed symbol drawer
+- [crash_symbolication] Show uploaded file in symbol drawer
+- [crash_symbolication] Update symbol file validation
+- [surveys] removed usage of formatNumber when passing to metric cards as a prop
+- [users] Fixed bug with downloading user export if it went to report manager
+- [users] when loading user profile page, check data and show active "export download" button if there is existing export for this user
+
+## Version 22.08.1
+Fixes:
+- [crashes] Add crashgroup toggle symbolication switch
+- [crashes] Display threads in crashgroup view
+- [crashes] Fix crashgroup refresh action
+- [crashes] Fix crashgroup symbolicate action
+- [crashes] Fix show symbolication switch
+- [crashes] Improve crash group datatable expansion handler
+- [crashes] Move datatable row stacktrace actions to dropdown menu
+- [crashes] Move stacktrace actions to dropdown menu
+- [db] provide different configs for different databases through ENV variables
+- [populator] udpated data for populator
+- [report-manager] correctly handle case when admin permissions are not given
+- [star-rating] changes for adding time in excel for ratings
+- [star-rating] emojis backward compatibility fix for ratings
+- [star-rating] logo preview dimensions adjusted
+
+Enterprise fixes:
+- [crash_symbolication] Fix symbold build id checking
+- [crash_symbolication] Update symbolication switch text
+- [drill] use random function that is fully supported in nodejs 14
+- [oidc] additionally store check in coookie to fallback if session expires
+
 ## Version 22.08
 
 Fixes:

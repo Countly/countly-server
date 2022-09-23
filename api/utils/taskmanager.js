@@ -67,44 +67,52 @@ taskmanager.longtask = function(options) {
 
     var saveOpId = async function(comment_id, retryCount) {
         common.db.admin().command({ currentOp: 1 }, async function(error, result) {
-            for (var i = 0; i < result.inprog.length; i++) {
-                let op = result.inprog[i];
-                if (!('$truncated' in op.command) && (i !== result.inprog.length - 1)) {
-                    continue;
-                }
-                if (!('$truncated' in op.command) && (i === result.inprog.length - 1)) {
-                    if (retryCount < 3) {
-                        setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
-                        break;
-                    }
-                    else {
-                        console.log(`operation not found for task:${options.id} comment: ${comment_id}`);
-                        break;
-                    }
-                }
+            if (error) {
+                log.e(error);
+                return;
+            }
+            else {
+                if (result && result.inprog) {
+                    for (var i = 0; i < result.inprog.length; i++) {
+                        let op = result.inprog[i];
+                        if (!('$truncated' in op.command) && (i !== result.inprog.length - 1)) {
+                            continue;
+                        }
+                        if (!('$truncated' in op.command) && (i === result.inprog.length - 1)) {
+                            if (retryCount < 3) {
+                                setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
+                                return;
+                            }
+                            else {
+                                log.d(`operation not found for task:${options.id} comment: ${comment_id}`);
+                                break;
+                            }
+                        }
 
-                let comment_position = op.command.$truncated.indexOf('$comment');
-                if (comment_position === -1) {
-                    continue;
-                }
-                let substr = op.command.$truncated.substring(comment_position, op.command.$truncated.length);
-                var comment_val = substr.match(/"(.*?)"/)[1];
+                        let comment_position = op.command.$truncated.indexOf('$comment');
+                        if (comment_position === -1) {
+                            continue;
+                        }
+                        let substr = op.command.$truncated.substring(comment_position, op.command.$truncated.length);
+                        var comment_val = substr.match(/"(.*?)"/)[1];
 
-                if (comment_val === comment_id) {
-                    var task_id = options.id;
-                    var op_id = op.opid;
-                    await common.db.collection("long_tasks").findOneAndUpdate({ _id: common.db.ObjectID(task_id) }, { $set: { op_id: op_id } });
-                    console.info(`Operation found task: ${task_id} op:${op_id} comment: ${comment_id}`);
-                    break;
-                }
-                else if ((comment_val !== comment_id) && (i === (result.inprog.length - 1))) {
-                    if (retryCount < 3) {
-                        setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
-                        break;
-                    }
-                    else {
-                        console.log(`operation not found for task:${options.id} comment: ${comment_id}`);
-                        break;
+                        if (comment_val === comment_id) {
+                            var task_id = options.id;
+                            var op_id = op.opid;
+                            await common.db.collection("long_tasks").findOneAndUpdate({ _id: common.db.ObjectID(task_id) }, { $set: { op_id: op_id } });
+                            log.d(`Operation found task: ${task_id} op:${op_id} comment: ${comment_id}`);
+                            break;
+                        }
+                        else if ((comment_val !== comment_id) && (i === (result.inprog.length - 1))) {
+                            if (retryCount < 3) {
+                                setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
+                                break;
+                            }
+                            else {
+                                log.d(`operation not found for task:${options.id} comment: ${comment_id}`);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -335,7 +343,7 @@ taskmanager.saveResult = function(options, data, callback) {
         if (options.errormsg) {
             message = options.errormsg;
         }
-        else if (options.error) {
+        else if (options.error && options.error.errormsg) {
             message = options.error.errormsg;
         }
 

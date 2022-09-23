@@ -9,7 +9,17 @@
 
 .demo-banking .top-bar > .col-sm-3 {
   margin-top: 18px;
+}
+
+.demo-banking .footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.demo-banking .top-bar > .col-sm-3 a {
   cursor: pointer;
+  color: white;
+  text-decoration: none;
 }
 
 .demo-banking .search-bar {
@@ -17,14 +27,12 @@
 }
 
 .demo-banking .content {
-  margin-top: 120px;
+  margin: 120px 0;
+  min-height: 400px;
 }
 
 .demo-banking .footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  margin-bottom: 15px;
+  padding: 20px 15px;
 }
 
 .demo-banking .search-bar > .col-sm-8 > input {

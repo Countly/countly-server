@@ -1404,7 +1404,7 @@
                 return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowEditUserCommand: function(status) {
-                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED) && this.canUserUpdate;
+                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED || status === this.StatusEnum.CREATED) && this.canUserUpdate;
             },
             shouldShowStartUserCommand: function(status) {
                 if (this.selectedPushNotificationType === this.TypeEnum.ONE_TIME) {

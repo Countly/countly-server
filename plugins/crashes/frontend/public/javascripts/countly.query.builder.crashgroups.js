@@ -13,7 +13,6 @@
                 "opengl",
                 "orientation",
                 "os_version",
-                "os",
                 "resolution",
                 "root",
                 "signal",

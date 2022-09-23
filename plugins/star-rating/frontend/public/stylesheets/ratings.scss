@@ -41,8 +41,7 @@
   }
 
   &__image {
-      height: 19px;
-      width: 132px;
+      width: 100px;
   }
 
   &__logo {
@@ -205,8 +204,73 @@
     background-image: url('/star-rating/images/star-rating/emoji.svg');
   }
 
+  &__rp-ratings-item__emoji1 {
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    margin: 0px 5px 0px 5px;
+    background-image: url('/star-rating/images/star-rating/emoji_1.svg');
+  }
+
+  &__rp-ratings-item__emoji2 {
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    margin: 0px 5px 0px 5px;
+    background-image: url('/star-rating/images/star-rating/emoji_2.svg');
+  }
+
+  &__rp-ratings-item__emoji3 {
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    margin: 0px 5px 0px 5px;
+    background-image: url('/star-rating/images/star-rating/emoji_3.svg');
+  }
+
+  &__rp-ratings-item__emoji4 {
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    margin: 0px 5px 0px 5px;
+    background-image: url('/star-rating/images/star-rating/emoji_4.svg');
+  }
+
+  &__rp-ratings-item__emoji5 {
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    margin: 0px 5px 0px 5px;
+    background-image: url('/star-rating/images/star-rating/emoji_5.svg');
+  }
+
   &__rp-ratings-active-item__emojis {
     background-image: url('/star-rating/images/star-rating/emoji_filled.svg');
+  }
+
+  &__rp-ratings-active-item__emoji1 {
+    background-image: url('/star-rating/images/star-rating/emoji_filled_1.svg');
+  }
+
+  &__rp-ratings-active-item__emoji2 {
+    background-image: url('/star-rating/images/star-rating/emoji_filled_2.svg');
+  }
+
+  &__rp-ratings-active-item__emoji3 {
+    background-image: url('/star-rating/images/star-rating/emoji_filled_3.svg');
+  }
+
+  &__rp-ratings-active-item__emoji4 {
+    background-image: url('/star-rating/images/star-rating/emoji_filled_4.svg');
+  }
+  
+  &__rp-ratings-active-item__emoji5 {
+    background-image: url('/star-rating/images/star-rating/emoji_filled_5.svg');
   }
 
   &__rp-ratings-item__thumbs {
