@@ -316,11 +316,11 @@ plugins.register('/i/apps/reset', reset);
 plugins.register('/i/apps/clear_all', clear);
 plugins.register('/i/apps/delete', reset);
 plugins.register('/i/app_users/delete', async({app_id, uids}) => {
-    await removeUsers(app_id, uids);
+    await removeUsers(app_id, uids, 'purge');
 });
 plugins.register('/consent/change', ({params, changes}) => {
     if (changes && changes.push === false && params.app_id && params.app_user && params.app_user.uid !== undefined) {
-        return removeUsers(params.app_id, [params.app_user.uid]);
+        return removeUsers(params.app_id, [params.app_user.uid], 'consent');
     }
 });
 plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}) => {
