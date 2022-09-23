@@ -3,7 +3,7 @@ const plugins = require('../../pluginManager'),
     log = common.log('push:api'),
     { Message, State, TriggerKind, fields, platforms, ValidationError, PushError, DBMAP, guess } = require('./send'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
-    { onTokenSession, onSessionUser, onAppPluginsUpdate } = require('./api-push'),
+    { onTokenSession, onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
@@ -305,6 +305,9 @@ plugins.register('/drill/add_push_events', drillAddPushEvents);
 plugins.register('/drill/preprocess_query', drillPreprocessQuery);
 plugins.register('/drill/postprocess_uids', drillPostprocessUids);
 
+// Hook to move data to new uid on user merge
+plugins.register('/i/device_id', onMerge);
+
 // Permissions
 plugins.register('/permissions/features', ob => ob.features.push(FEATURE_NAME));
 
@@ -313,11 +316,11 @@ plugins.register('/i/apps/reset', reset);
 plugins.register('/i/apps/clear_all', clear);
 plugins.register('/i/apps/delete', reset);
 plugins.register('/i/app_users/delete', async({app_id, uids}) => {
-    await removeUsers(app_id, uids);
+    await removeUsers(app_id, uids, 'purge');
 });
 plugins.register('/consent/change', ({params, changes}) => {
     if (changes && changes.push === false && params.app_id && params.app_user && params.app_user.uid !== undefined) {
-        return removeUsers(params.app_id, [params.app_user.uid]);
+        return removeUsers(params.app_id, [params.app_user.uid], 'consent');
     }
 });
 plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}) => {
