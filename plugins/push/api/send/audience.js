@@ -732,7 +732,7 @@ class Pusher extends PusherPopper {
                 update.$set = virtuals;
             }
             await this.audience.message.update(update, () => {});
-            this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
+            this.audience.log.d('inserting final batch of %d, %d records total, message update %j', batch.length, batch.total, update);
             await batch.flush([11000]);
         }
 

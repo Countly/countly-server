@@ -51,7 +51,7 @@ class Pool extends Duplex {
         });
 
         this.state.on('message', message => {
-            this.log.d('Sending new message %s', message.id);
+            this.log.d('Sending new message %j', message.json);
             this.write(encode(FRAME.CONNECT, [message.json]));
         });
 
