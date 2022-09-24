@@ -98,15 +98,11 @@ jobs:
           - 27017:27017
 
     container:
-      image: us-docker.pkg.dev/countly-01/internal/countly-ee-core:bitbucket-master
+      image: countly/countly-core:latest
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
-      credentials:
-        username: _json_key
-        password: ${{ secrets.GCP_AR_KEY }}
-    # Steps represent a sequence of tasks that will be executed as part of the job
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
       - uses: actions/checkout@v2
       
       - name: Starting process
