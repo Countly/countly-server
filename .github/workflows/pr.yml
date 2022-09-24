@@ -86,12 +86,24 @@ jobs:
   test:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    container: countly/countly-core:latest
     services:
       mongodb:
-        image: mongo:4.4.12
+        image: mongo:4.4
+        options: >-
+          --health-cmd mongo
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         ports:
           - 27017:27017
+
+    container:
+      image: us-docker.pkg.dev/countly-01/internal/countly-ee-core:bitbucket-master
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+      credentials:
+        username: _json_key
+        password: ${{ secrets.GCP_AR_KEY }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
