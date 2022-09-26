@@ -30,7 +30,7 @@
             <div v-if="firstApp" class="bu-column bu-is-1"></div>
             <div :class="{'bu-column':true, 'bu-is-6':firstApp, 'bu-is-9':!firstApp}">
                 <cly-more-options v-if="!newApp && isGlobalAdmin" size="small" class="bu-is-pulled-right" @command="handleMenuCommand">
-                    <el-dropdown-item :disabled="isDisabled()" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
+                    <el-dropdown-item :disabled="isDisabled()" :class="{'el-dropdown-menu__item--divided__fix-broken':item.divided}" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
                         <el-link :disabled="isDisabled()" class="bu-ml-1">{{item.label}}</el-link>
                     </el-dropdown-item>
                 </cly-more-options>

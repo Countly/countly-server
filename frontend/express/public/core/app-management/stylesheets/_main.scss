@@ -142,8 +142,12 @@
     }
   }  
 }
-.el-dropdown-menu__item--divided:before {
-  height: 0px !important;
+.el-dropdown-menu__item--divided{
+  &__fix-broken {
+    &::before {
+      height: 0px;
+    }
+  }
 }
 @media( max-width: 2133px ) {
 	.app-section span div div:nth-last-child(1) .cly-vue-form-step__section{
