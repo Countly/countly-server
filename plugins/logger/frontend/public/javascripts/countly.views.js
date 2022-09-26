@@ -183,11 +183,14 @@
             },
             tableRowClassName: function() {
                 return 'bu-is-clickable';
-            }
-        },
-        filters: {
-            pretty: function(value) {
-                return typeof value === 'string' ? JSON.stringify(JSON.parse(value), null, 2) : JSON.stringify(value, null, 2);
+            },
+            jsonParser: function(jsonObject) {
+                try {
+                    return JSON.parse(jsonObject);
+                }
+                catch (error) {
+                    //
+                }
             }
         },
         components: {
