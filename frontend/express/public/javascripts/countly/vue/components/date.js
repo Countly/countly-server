@@ -796,6 +796,12 @@
                         customRangeSelection: true
                     };
 
+                if (meta.value[0].toString().length < 13) {
+                    meta.value[0] = meta.value[0] * 1000;
+                }
+                if (meta.value[1].toString().length < 13) {
+                    meta.value[1] = meta.value[1] * 1000;
+                }
                 if (meta.type === "range") {
                     state.rangeMode = 'inBetween';
                     state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
