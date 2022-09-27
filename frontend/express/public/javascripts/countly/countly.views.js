@@ -249,7 +249,6 @@ window.GraphNotesView = countlyView.extend({
                 url: countlyCommon.API_PARTS.data.w + '/notes/save',
                 data: {
                     args: JSON.stringify(args),
-                    api_key: countlyGlobal.member.api_key,
                     app_id: countlyCommon.ACTIVE_APP_ID,
                 },
                 dataType: "json",
@@ -302,7 +301,7 @@ window.GraphNotesView = countlyView.extend({
             "iDisplayLength": 10,
             "aaData": tableData,
             "bServerSide": true,
-            "sAjaxSource": countlyCommon.API_PARTS.data.r + "/notes?api_key=" + countlyGlobal.member.api_key,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "/notes",
             "fnServerData": function(sSource, aoData, fnCallback) {
                 self.request = $.ajax({
                     "dataType": 'json',
@@ -387,7 +386,6 @@ window.GraphNotesView = countlyView.extend({
                     dataType: "json",
                     data: {
                         app_id: countlyCommon.ACTIVE_APP_ID,
-                        api_key: countlyGlobal.member.api_key,
                         note_id: noteId,
                     },
                     success: function() {

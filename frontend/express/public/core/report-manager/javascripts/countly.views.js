@@ -168,7 +168,7 @@
                     }
                     return {
                         type: "GET",
-                        url: countlyCommon.API_PARTS.data.r + "/tasks/list?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                        url: countlyCommon.API_PARTS.data.r + "/tasks/list?app_id=" + countlyCommon.ACTIVE_APP_ID,
                         data: {
                             query: JSON.stringify(queryObject)
                         }
@@ -450,7 +450,7 @@
                     this.fetchingCount = true;
                     CV.$.ajax({
                         type: "GET",
-                        url: countlyCommon.API_PARTS.data.r + "/tasks/count?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                        url: countlyCommon.API_PARTS.data.r + "/tasks/count?app_id=" + countlyCommon.ACTIVE_APP_ID,
                         data: {
                             query: JSON.stringify(q)
                         }
