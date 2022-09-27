@@ -1,4 +1,4 @@
-FROM centos:7
+FROM centos:8
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards
 # Enterprise Edition:
@@ -29,9 +29,12 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	yum -y install nodejs && \
 	ln -s /usr/bin/node /usr/bin/nodejs && \
 	\
-	yum -y install centos-release-scl && \
-	yum -y install openssl-devel devtoolset-7-gcc-c++ make git wget unzip bzip2 make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel python-setuptools which && \
-	source /opt/rh/devtoolset-7/enable && \
+	yum -y install python3-policycoreutils && \
+	yum -y group install "Development Tools" && \
+	yum -y install epel-release && \
+	if [ ! -x "$(command -v python)" ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
+	yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
+	yum -y install wget openssl-devel make git sqlite unzip bzip2 && \
     \
 	# modify standard distribution
 	./bin/docker/modify.sh && \
@@ -47,7 +50,9 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	# cleanup & chown
 	npm remove -y --no-save mocha nyc should supertest && \
 	rm -rf /opt/app-root/src/.npm && \
-	yum remove -y git wget unzip gcc-c++ gcc centos-release-scl devtoolset-7-gcc-c++ devtoolset-7-gcc make automake autoconf makedepend zlib-devel libxml2-devel python-setuptools openssl-devel devtoolset-7-gcc devtoolset-7-libstdc++-devel python36-devel centos-release-scl devtoolset-7-gcc-c++ && \
+	yum remove -y git wget unzip make && \
+	yum --setopt=groupremove_leaf_only=1 groupremove 'Development Tools' && \
+	yum clean all && \
 	yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \
 	yum clean all && \
 	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* && \
