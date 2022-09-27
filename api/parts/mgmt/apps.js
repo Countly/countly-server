@@ -168,6 +168,8 @@ const iconUpload = function(params) {
             return jimp.read(tmp_path, function(err, icon) {
                 if (err) {
                     log.e(err, err.stack);
+                    fs.unlink(tmp_path, function() {});
+                    return true;
                 }
                 icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
                     countlyFs.saveData("appimages", target_path, buffer, {id: appId + ".png", writeMode: "overwrite"}, function(err3) {

@@ -1542,6 +1542,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 jimp.read(tmp_path, function(err, icon) {
                     if (err) {
                         console.log(err, err.stack);
+                        fs.unlink(tmp_path, function() {});
+                        res.status(400).send(false);
+                        return true;
                     }
                     icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
                         countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
