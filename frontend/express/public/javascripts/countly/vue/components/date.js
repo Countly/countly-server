@@ -796,6 +796,12 @@
                         customRangeSelection: true
                     };
 
+                if (meta.value[0].toString().length < 13) {
+                    meta.value[0] = meta.value[0] * 1000;
+                }
+                if (meta.value[1].toString().length < 13) {
+                    meta.value[1] = meta.value[1] * 1000;
+                }
                 if (meta.type === "range") {
                     state.rangeMode = 'inBetween';
                     state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
@@ -950,7 +956,7 @@
                     var _maxDate = new Date(this.maxDate);
 
                     // case of custom range is selected by same day
-                    if (Math.floor(_maxDate.getTime() / 1000) - Math.floor(_minDate.getTime() / 1000) <= 86400000) {
+                    if (_maxDate.getTime() - _minDate.getTime() <= 86400000) {
                         this.exceptionOffset = false;
                     }
                     else {
