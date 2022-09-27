@@ -1557,10 +1557,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         });
     });
 
-    app.post(countlyConfig.path + '/member/icon', function(req, res, next) {
+    app.post(countlyConfig.path + '/member/icon', async function(req, res, next) {
 
         var params = paramsGenerator({req, res});
-        validateCreate(params, 'global_upload', function() {
+        validateCreate(params, 'global_upload', async function() {
             if (!req.files.member_image || !req.body.member_image_id) {
                 res.end();
                 return true;
@@ -1574,6 +1574,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
                 fs.unlink(tmp_path, function() {});
                 res.send(false);
+                return true;
+            }
+            try {
+                // This is to check that the uploaded image is a real image
+                // If jimp cannot read it then it is not a real image
+                const image = await jimp.read(tmp_path);
+
+                if (!image) {
+                    fs.unlink(tmp_path, function() {});
+                    res.status(400).send(false);
+                    return true;
+                }
+            }
+            catch (err) {
+                console.log(err.stack);
+                fs.unlink(tmp_path, function() {});
+                res.status(400).send(false);
                 return true;
             }
             plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
