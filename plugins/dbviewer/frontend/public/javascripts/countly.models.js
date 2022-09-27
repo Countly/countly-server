@@ -1,4 +1,4 @@
-/*global store, countlyCommon, countlyGlobal, countlyTaskManager, $, jQuery, app*/
+/*global store, countlyCommon, countlyTaskManager, $, jQuery, app*/
 (function(countlyDBviewer) {
 
     //Private Properties
@@ -145,7 +145,6 @@
             type: "GET",
             url: countlyCommon.API_URL + '/o/db/mongotop',
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
@@ -165,7 +164,6 @@
             type: "GET",
             url: countlyCommon.API_URL + '/o/db/mongostat',
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
