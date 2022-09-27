@@ -86,7 +86,7 @@
     "request": "2.88.2",
     "sass": "1.54.9",
     "uglify-js": "3.17.2",
-    "underscore": "1.13.4",
+    "underscore": "1.13.6",
     "yamljs": "0.3.0"
   },
   "jshintConfig": {
