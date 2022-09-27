@@ -142,6 +142,22 @@
     }
   }  
 }
+.el-dropdown-menu__item--divided{
+  &__fix-broken {
+    border: none;
+    &::before {
+      height: 0px;
+    }
+  }
+}
+.add-border {
+    margin: 0 8px;
+    padding: 0;
+    border-top: 1px solid #ECECEC;
+    > a {
+      display: none;
+    }
+}
 @media( max-width: 2133px ) {
 	.app-section span div div:nth-last-child(1) .cly-vue-form-step__section{
 		display: block !important;
