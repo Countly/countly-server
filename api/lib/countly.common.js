@@ -99,6 +99,10 @@ function getPeriodObject() {
 
     endTimestamp = _currMoment.clone().endOf("day");
 
+    if (_period.since) {
+        _period = [_period.since, Date.now()];
+    }
+
     if (_period && _period.indexOf(",") !== -1) {
         try {
             _period = JSON.parse(_period);
@@ -1908,7 +1912,7 @@ countlyCommon.getPeriodObj = function(params, defaultPeriod = "30days") {
     let appTimezone = params.appTimezone || (params.app && params.app.timezone);
 
     params.qstring.period = params.qstring.period || defaultPeriod;
-    if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
+    if (params.qstring.period && typeof params.qstring.period === "string" && params.qstring.period.indexOf(",") !== -1) {
         try {
             params.qstring.period = JSON.parse(params.qstring.period);
         }
