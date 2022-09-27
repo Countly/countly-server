@@ -151,9 +151,9 @@
   }
 }
 .add-border {
-    margin: 0;
+    margin: 0 8px;
     padding: 0;
-    border-top: 1px solid;
+    border-top: 1px solid #ECECEC;
     > a {
       display: none;
     }
