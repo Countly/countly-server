@@ -698,6 +698,17 @@
                 var self = this;
                 this.$refs.configObserver.validate().then(function(isValid) {
                     if (isValid) {
+                        var appSettingKeys = Object.keys(app.appManagementViews);
+                        for (var i = 0; i < appSettingKeys.length; i++) {
+                            if (self.changes[appSettingKeys[i]]) {
+                                var subKeys = Object.keys(app.appManagementViews[appSettingKeys[i]].inputs);
+                                for (var j = 0; j < subKeys.length; j++) {
+                                    if (!self.changes[appSettingKeys[i]][subKeys[j].split('.', 2)[1]]) {
+                                        self.changes[appSettingKeys[i]][subKeys[j].split('.', 2)[1]] = app.appManagementViews[appSettingKeys[i]].inputs[subKeys[j]].value;
+                                    }
+                                }
+                            }
+                        }
                         $.ajax({
                             type: "POST",
                             url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
