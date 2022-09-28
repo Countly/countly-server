@@ -17,6 +17,7 @@
                     this.unpatch();
                     app.onAppManagementSwitch(value, countlyGlobal.apps[value] && countlyGlobal.apps[value].type || "mobile");
                     app.navigate("#/manage/apps/" + value);
+                    this.showFileList = false;
                 }
             },
             isCode: function() {
@@ -61,6 +62,7 @@
             }
             var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
             return {
+                showFileList: true,
                 firstApp: this.checkIfFirst(),
                 newApp: this.newApp || false,
                 formId: "app-management-form",
