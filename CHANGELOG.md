@@ -1,4 +1,31 @@
 
+## Version 22.09
+
+Fixes:
+- [apps] app management Reset & Delete buttons broken hover state
+- [apps] fix salt
+- [apps] fixed app icon file selection stays the same after switching to another app
+- [dashboards] fix for widgets with since time period
+- [logger] fixed header tab overflow
+- [push] fixing ampersand encoding in message URLs
+
+Improvements:
+- [data-manager] update localization add property name and type
+- [logger] collapsable json data
+- [security] improved image valdiation
+- [security] remove api_keys from requests
+- [security] update dependencies
+
+Enterprise fixes:
+- [data-manager] fix export for data manager schema
+
+Enterprise improvements:
+- [cohorts] added date control for custom datepicker in Cohort
+- [cohorts] real time optimzied cohort generation
+- [drill] meta regeneration improvements for speed and user properties
+- [performance-monitoring] merge all collections into single apme collection
+- [users] make name exportable in user profiles
+
 ## Version 22.08.6
 
 Fixes:
