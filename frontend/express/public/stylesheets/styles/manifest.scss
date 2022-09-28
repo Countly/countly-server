@@ -14,6 +14,7 @@
 // All "Overrides" specific SASS partials
 @use "overrides/element-override";
 @use "overrides/bulma-overrides";
+@use "overrides/vue-json-pretty-override";
 
 // All "Blocks" SASS partials
 @use "blocks/content";
