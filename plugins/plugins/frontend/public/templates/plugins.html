@@ -30,7 +30,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="deps" :label="i18n('plugins.dependents')" width="200"></el-table-column>
-                    <el-table-column prop="version" :label="i18n('plugins.version')" width="100"></el-table-column>
+                    <!-- <el-table-column prop="version" :label="i18n('plugins.version')" width="100"></el-table-column> -->
                 </template>
                 <template v-slot:header-left>
                     <el-radio-group v-model="filterValue" @change="filter" plain size="small">
