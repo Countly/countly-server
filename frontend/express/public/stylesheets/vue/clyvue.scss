@@ -659,6 +659,12 @@
                 color: map.get(c.$colors, "primary");
             }
 
+            &--deactive {
+                background-color: transparent;
+                border-radius: 0;
+                color: rgb(51, 60, 72);
+            }
+
             &--custom {
                 margin-bottom: 24px;
             }
