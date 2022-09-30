@@ -274,7 +274,7 @@ describe('Testing views plugin', function() {
             if (days_this_year > 25) {
                 tableResponse.month.iTotalRecords += 1;
                 tableResponse.month.iTotalDisplayRecords += 1;
-                pushValues("month", 0, {"t": 1, "s": 1, "uvalue": 1, "n": 1, "view": "testview0"});
+                pushValues("month", 0, {"t": 1, "s": 1, "uvalue": 1, "u": 1, "n": 1, "view": "testview0"});
             }
             else {
                 tableResponse.month.iTotalRecords = 1;
@@ -370,7 +370,7 @@ describe('Testing views plugin', function() {
 
             tableResponse.month.iTotalRecords = 2;
             tableResponse.month.iTotalDisplayRecords = 2;
-            pushValues("month", 1, {"t": 1, "s": 1, "uvalue": 1, "n": 1, "view": "testview1"});
+            pushValues("month", 1, {"t": 1, "s": 1, "uvalue": 1, "u": 1, "n": 1, "view": "testview1"});
 
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview1", "visit": 1, "start": 1}}]);
             request
@@ -872,7 +872,7 @@ describe('Testing views plugin', function() {
                 tableResponse["yesterday"].iTotalDisplayRecords += 1;
 
                 if (days_this_year > 1) {
-                    pushValues("month", 0, {"t": 1, "s": 1, "n": 1, "uvalue": 1});
+                    pushValues("month", 0, {"t": 1, "s": 1, "n": 1, "u": 1, "uvalue": 1});
                     //tableResponse["month"]['aaData'][0]['n']=1;
                     tableResponse.month.iTotalRecords = 1;
                     tableResponse.month.iTotalDisplayRecords = 1;
@@ -931,7 +931,7 @@ describe('Testing views plugin', function() {
                 pushValues("7days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
 
                 if (days_this_year > 1) {
-                    pushValues("month", 0, {"t": 1, "s": 1, "n": 1, "uvalue": 1});
+                    pushValues("month", 0, {"t": 1, "s": 1, "n": 1, "u": 1, "uvalue": 1});
                 }
 
                 var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview00", "visit": 1, "start": 1}}]);
@@ -958,7 +958,7 @@ describe('Testing views plugin', function() {
                 tableResponse["yesterday"].iTotalDisplayRecords += 1;
 
                 if (days_this_year > 1) {
-                    pushValues("month", 1, {"t": 1, "n": 1, "uvalue": 1});
+                    pushValues("month", 1, {"t": 1, "n": 1, "u": 1, "uvalue": 1});
                     tableResponse["month"].iTotalRecords += 1;
                     tableResponse["month"].iTotalDisplayRecords += 1;
                 }

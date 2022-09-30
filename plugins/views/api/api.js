@@ -389,6 +389,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 else {
                     groupBy1.uvalue = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, "$d." + segment + "u", 0]}};
+                    groupBy1.u = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, "$d." + segment + "u", 0]}};
                 }
             }
             pipeline.push({$group: groupBy1});

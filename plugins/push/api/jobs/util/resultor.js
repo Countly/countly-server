@@ -51,6 +51,7 @@ class Resultor extends DoFinish {
         });
 
         this.data.on('message', message => {
+            this.log.d('Received message %j', message.json);
             this.processed[message._id] = 0;
             this.fatalErrors[message._id] = [];
             this.sentUsers[message.app][message._id] = {users: []};

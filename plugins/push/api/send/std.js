@@ -71,13 +71,16 @@ class Base extends Duplex {
      */
     message(data) {
         if (this.log) {
-            this.log.d('Received message %s', data._id);
+            this.log.d('Received message %j', data);
         }
         if (data instanceof Message) {
             this.messages[data.id] = data;
         }
         else {
             this.messages[data._id] = new Message(data);
+        }
+        if (this.log) {
+            this.log.d('Received message %s / %d', data.id, data.result.total);
         }
     }
 

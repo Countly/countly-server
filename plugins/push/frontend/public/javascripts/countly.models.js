@@ -1049,7 +1049,7 @@
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
                     onClickURL: androidSettingsDto && androidSettingsDto.url || '',
-                    mediaURL: androidSettingsDto && androidSettingsDto.media || '',
+                    mediaURL: androidSettingsDto && androidSettingsDto.media ? countlyCommon.decodeHtml(androidSettingsDto.media) : '',
                     mediaMime: androidSettingsDto && androidSettingsDto.mediaMime || '',
                 };
             },
@@ -1062,7 +1062,7 @@
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
                     onClickURL: iosSettingsDto && iosSettingsDto.url || '',
-                    mediaURL: iosSettingsDto && iosSettingsDto.media || '',
+                    mediaURL: iosSettingsDto && iosSettingsDto.media ? countlyCommon.decodeHtml(iosSettingsDto.media) : '',
                     mediaMime: iosSettingsDto && iosSettingsDto.mediaMime || '',
                 };
             },
@@ -1129,7 +1129,7 @@
                 result[PlatformEnum.ANDROID] = this.mapAndroidSettings(androidSetting);
                 var defaultLocale = this.findDefaultLocaleItem(dto.contents);
                 result[PlatformEnum.ALL] = {};
-                result[PlatformEnum.ALL].mediaURL = defaultLocale.media || "";
+                result[PlatformEnum.ALL].mediaURL = defaultLocale.media ? countlyCommon.decodeHtml(defaultLocale.media) : "";
                 result[PlatformEnum.ALL].mediaMime = defaultLocale.mediaMime || "";
                 return result;
             },
@@ -1608,7 +1608,7 @@
                         buttonDto.title = localizedButton.label;
                     }
                     if (localizedButton.url) {
-                        buttonDto.url = localizedButton.url;
+                        buttonDto.url = countlyCommon.decodeHtml(localizedButton.url);
                     }
                     result.push(buttonDto);
                 });
@@ -1644,13 +1644,13 @@
                     result.extras = iosSettings.userData;
                 }
                 if (iosSettings.onClickURL && options.settings[PlatformEnum.IOS].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.url = iosSettings.onClickURL;
+                    result.url = countlyCommon.decodeHtml(iosSettings.onClickURL);
                 }
                 if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
                     result.specific = [{subtitle: iosSettings.subtitle}];
                 }
                 if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.media = model.settings[PlatformEnum.IOS].mediaURL;
+                    result.media = countlyCommon.decodeHtml(model.settings[PlatformEnum.IOS].mediaURL);
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
                 }
                 return result;
@@ -1675,13 +1675,13 @@
                     result.extras = androidSettings.userData;
                 }
                 if (androidSettings.onClickURL && options.settings[PlatformEnum.ANDROID].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.url = androidSettings.onClickURL;
+                    result.url = countlyCommon.decodeHtml(androidSettings.onClickURL);
                 }
                 if (androidSettings.icon && options.settings[PlatformEnum.ANDROID].isIconEnabled) {
                     result.specific = [{large_icon: androidSettings.icon}];
                 }
                 if (model.settings[PlatformEnum.ANDROID].mediaURL && options.settings[PlatformEnum.ANDROID].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
-                    result.media = model.settings[PlatformEnum.ANDROID].mediaURL;
+                    result.media = countlyCommon.decodeHtml(model.settings[PlatformEnum.ANDROID].mediaURL);
                     result.mediaMime = model.settings[PlatformEnum.ANDROID].mediaMime;
                 }
                 return result;
@@ -1874,7 +1874,7 @@
                 var contentsDto = this.mapMessageLocalization(pushNotificationModel);
                 if (pushNotificationModel.settings[PlatformEnum.ALL].mediaURL && pushNotificationModel.messageType === MessageTypeEnum.CONTENT) {
                     var defaultLocale = countlyPushNotification.mapper.incoming.findDefaultLocaleItem(contentsDto);
-                    defaultLocale.media = pushNotificationModel.settings[PlatformEnum.ALL].mediaURL;
+                    defaultLocale.media = countlyCommon.decodeHtml(pushNotificationModel.settings[PlatformEnum.ALL].mediaURL);
                     defaultLocale.mediaMime = pushNotificationModel.settings[PlatformEnum.ALL].mediaMime;
                 }
                 var androidSettingsDto = this.mapAndroidSettings(pushNotificationModel, options);

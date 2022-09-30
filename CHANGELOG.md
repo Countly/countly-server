@@ -1,3 +1,58 @@
+
+## Version 22.09
+
+Fixes:
+- [apps] app management Reset & Delete buttons broken hover state
+- [apps] fix salt
+- [apps] fixed app icon file selection stays the same after switching to another app
+- [dashboards] fix for widgets with since time period
+- [logger] fixed header tab overflow
+- [push] fixing ampersand encoding in message URLs
+
+Improvements:
+- [data-manager] update localization add property name and type
+- [logger] collapsable json data
+- [security] improved image valdiation
+- [security] remove api_keys from requests
+- [security] update dependencies
+
+Enterprise fixes:
+- [data-manager] fix export for data manager schema
+
+Enterprise improvements:
+- [cohorts] added date control for custom datepicker in Cohort
+- [cohorts] real time optimzied cohort generation
+- [drill] meta regeneration improvements for speed and user properties
+- [performance-monitoring] merge all collections into single apme collection
+- [users] make name exportable in user profiles
+
+## Version 22.08.6
+
+Fixes:
+- [2fa] permission fix
+- [apps] admin of APP should be able to edit image for app
+- [batcher] fix cases when data might still be read from cache even if the cache is disabled
+- [core] env variables in tests
+- [dbviewer] fixes in dbviewer aggregation pipeline
+- [events] fixed . usage in events for some cases
+- [logger] change display name of Request Logs to Incoming Data Logs 
+- [push] allowing editing created messages
+- [push] correct formatting for sent number in messages table
+- [push] fixes for user merging
+- [push] fixing clear job
+- [push] fixing errors on push data removals
+- [push] more message transferring logging
+- [push] removing double message update
+- [remote-config] changes to make remote-config params non editable if they are not completed in ab-test
+- [remote-config] fix expire for remote config
+- [ui] add margin top to settings override warning
+- [ui] in dropdowns the scroll bar is not shown by default
+- [ui] make app management delete/clear confirmation buttons red
+- [ui] multiple localization fixes
+
+Enterprise fixes:
+- [active-directory] azure AD multi tenancy support
+
 ## Version 22.08.5
 
 Fixes:

@@ -893,11 +893,15 @@ async function getCrashDataForApp(params, apps, appId, widget) {
  */
 function getSessionModel(params, apps, appId, collection, segment, widget) {
     return new Promise((resolve) => {
+        var period = widget.custom_period || params.qstring.period;
+        if (period.since) {
+            period = [period.since, Date.now()];
+        }
         var paramsObj = {
             app_id: appId,
             appTimezone: apps[appId] && apps[appId].timezone,
             qstring: {
-                period: widget.custom_period || params.qstring.period
+                period: period
             },
             time: common.initTimeObj(apps[appId] && apps[appId].timezone, params.qstring.timestamp)
         };

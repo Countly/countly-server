@@ -17,6 +17,7 @@
                     this.unpatch();
                     app.onAppManagementSwitch(value, countlyGlobal.apps[value] && countlyGlobal.apps[value].type || "mobile");
                     app.navigate("#/manage/apps/" + value);
+                    this.showFileList = false;
                 }
             },
             isCode: function() {
@@ -61,6 +62,7 @@
             }
             var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
             return {
+                showFileList: true,
                 firstApp: this.checkIfFirst(),
                 newApp: this.newApp || false,
                 formId: "app-management-form",
@@ -92,7 +94,9 @@
                     {value: "clear-2year", label: CV.i18n("management-applications.clear-2year-data")},
                     {value: "clear-all", label: CV.i18n("management-applications.clear-all-data")},
                     //{value: "clear", label: CV.i18n("management-applications.clear-data")},
+                    {},
                     {value: "reset", label: CV.i18n("management-applications.clear-reset-data"), divided: true},
+                    {},
                     {value: "delete", label: CV.i18n("management-applications.delete-an-app"), divided: true},
                 ],
                 loadingDetails: false,
@@ -696,6 +700,17 @@
                 var self = this;
                 this.$refs.configObserver.validate().then(function(isValid) {
                     if (isValid) {
+                        var appSettingKeys = Object.keys(app.appManagementViews);
+                        for (var i = 0; i < appSettingKeys.length; i++) {
+                            if (self.changes[appSettingKeys[i]]) {
+                                var subKeys = Object.keys(app.appManagementViews[appSettingKeys[i]].inputs);
+                                for (var j = 0; j < subKeys.length; j++) {
+                                    if (!self.changes[appSettingKeys[i]][subKeys[j].split('.', 2)[1]]) {
+                                        self.changes[appSettingKeys[i]][subKeys[j].split('.', 2)[1]] = app.appManagementViews[appSettingKeys[i]].inputs[subKeys[j]].value;
+                                    }
+                                }
+                            }
+                        }
                         $.ajax({
                             type: "POST",
                             url: countlyCommon.API_PARTS.apps.w + '/update/plugins',

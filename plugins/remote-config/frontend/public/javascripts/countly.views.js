@@ -433,8 +433,11 @@
                 };
             },
             onSubmit: function(doc) {
-                if (doc.expiry_dttm) {
+                if (doc.expiry_dttm && doc.showExpirationDate) {
                     doc.expiry_dttm = doc.expiry_dttm + new Date().getTimezoneOffset() * 60 * 1000;
+                }
+                if (!doc.showExpirationDate) {
+                    doc.expiry_dttm = null;
                 }
                 var self = this;
                 doc.conditions = [];

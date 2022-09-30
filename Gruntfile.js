@@ -75,6 +75,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/vue/vue2-leaflet.min.js',
                     'frontend/express/public/javascripts/utils/vue/inViewportMixin.js',
                     'frontend/express/public/javascripts/utils/vue/vuescroll.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue-json-pretty.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
                     'frontend/express/public/javascripts/utils/simpleUpload.min.js',
@@ -220,6 +221,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/stylesheets/main.min.css': [
                         'frontend/express/public/stylesheets/main.css',
                         'frontend/express/public/stylesheets/vue/clyvue.css',
+                        'frontend/express/public/stylesheets/vue/vue-json-pretty.css',
                         'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
                         'frontend/express/public/stylesheets/leaflet/leaflet.css',
