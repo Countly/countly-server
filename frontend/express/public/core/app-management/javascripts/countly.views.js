@@ -13,7 +13,7 @@
                     this.selectedApp = value;
                     this.$store.dispatch('countlyAppManagement/setSelectedAppId', value);
                     this.uploadData.app_image_id = countlyGlobal.apps[this.selectedApp]._id + "";
-                    this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png")';
+                    this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png?' + Date.now().toString() + '")';
                     this.unpatch();
                     app.onAppManagementSwitch(value, countlyGlobal.apps[value] && countlyGlobal.apps[value].type || "mobile");
                     app.navigate("#/manage/apps/" + value);
@@ -46,7 +46,7 @@
                 return a.label > b.label && 1 || -1;
             });
             var appList = Object.keys(countlyGlobal.admin_apps).map(function(id) {
-                countlyGlobal.apps[id].image = "appimages/" + id + ".png";
+                countlyGlobal.apps[id].image = "appimages/" + id + ".png?" + Date.now().toString();
                 return {
                     label: countlyGlobal.apps[id].name,
                     value: id
@@ -353,7 +353,7 @@
                             countlyGlobal.apps[data._id] = data;
                             countlyGlobal.admin_apps[data._id] = data;
                             Backbone.history.appIds.push(data._id + "");
-                            countlyGlobal.apps[data._id].image = "appimages/" + data._id + ".png";
+                            countlyGlobal.apps[data._id].image = "appimages/" + data._id + ".png?" + Date.now().toString();
                             self.appList.push({
                                 value: data._id + "",
                                 label: data.name
@@ -547,7 +547,7 @@
                                 self.$store.dispatch("countlyCommon/updateActiveApp", nextAapp);
                                 self.selectedApp = nextAapp;
                                 self.uploadData.app_image_id = countlyGlobal.apps[self.selectedApp]._id + "";
-                                self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png")';
+                                self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png?' + Date.now().toString() + '")';
                                 app.navigate("#/manage/apps/" + self.selectedApp);
 
                                 if (countlyCommon.ACTIVE_APP_ID === app_id) {
