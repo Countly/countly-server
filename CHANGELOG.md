@@ -24,12 +24,19 @@ Improvements:
 
 Enterprise fixes:
 - [data-manager] fix export for data manager schema
+- [data-manager] remove data type tooltip from regenerate drawer
+- [data-manager] replace user properties column label with localization
+- [drill] localization key updated for View Segments
+- [flows] period editing bug fix. +added code to deal with messed up period fields
+- [flows] using $substrCP instead of $substr to do not run into problems with special characters
+- [retention_segments] breakdown tooltip removed
 
 Enterprise improvements:
 - [cohorts] added date control for custom datepicker in Cohort
 - [cohorts] real time optimzied cohort generation
 - [drill] meta regeneration improvements for speed and user properties
 - [performance-monitoring] merge all collections into single apme collection
+- [revenue] add currency field
 - [surveys] set a new endpoint for retrieving rating widget data
 - [users] make name exportable in user profiles
 
