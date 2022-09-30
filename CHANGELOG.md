@@ -2,16 +2,22 @@
 ## Version 22.09
 
 Fixes:
+- [apps] app icon change doesn't take effect until clear cache
 - [apps] app management Reset & Delete buttons broken hover state
 - [apps] fix salt
 - [apps] fixed app icon file selection stays the same after switching to another app
+- [crashes] get app version from vuex correctly
 - [dashboards] fix for widgets with since time period
 - [logger] fixed header tab overflow
 - [push] fixing ampersand encoding in message URLs
+- [ui] datepicker fixes
+- [ui] search mixin fixes when value is not string
+- [views] fixed displaying users when period is whole year like 2022
 
 Improvements:
 - [data-manager] update localization add property name and type
 - [logger] collapsable json data
+- [plugins] removed plugin version column from feature management
 - [security] improved image valdiation
 - [security] remove api_keys from requests
 - [security] update dependencies
@@ -24,6 +30,7 @@ Enterprise improvements:
 - [cohorts] real time optimzied cohort generation
 - [drill] meta regeneration improvements for speed and user properties
 - [performance-monitoring] merge all collections into single apme collection
+- [surveys] set a new endpoint for retrieving rating widget data
 - [users] make name exportable in user profiles
 
 ## Version 22.08.6
