@@ -2737,7 +2737,19 @@
                         var now = new Date();
                         // it will add the count of days of the current month to the x-axis label
                         var currentMonthCount = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                        console.log("start day",start)
                         for (i = 0; i < currentMonthCount; i++) {
+                            ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                            tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            start.add(1, 'days');
+                        }
+                    }
+                    else if (_period === "prevMonth"){
+                        start = moment().subtract(1,"month").startOf("month");
+                        //start.add(1,"days");
+                        let current = new Date();
+                        let prevMonthCount = new Date(current.getFullYear(), current.getMonth(), 0).getDate();
+                        for (i = 0; i < prevMonthCount; i++) {
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
                             start.add(1, 'days');
@@ -3710,7 +3722,6 @@
             };
 
             endTimestamp = currentTimestamp.clone().endOf("day");
-
             if (period && period.indexOf(",") !== -1) {
                 try {
                     period = JSON.parse(period);
@@ -3718,6 +3729,13 @@
                 catch (SyntaxError) {
                     period = "30days";
                 }
+            }
+
+            if(period === "prevMonth"){
+                period = [
+                    currentTimestamp.clone().subtract(1,"month").startOf("month"),
+                    currentTimestamp.clone().subtract(1,"month").endOf("month")
+                ]
             }
 
             if (Array.isArray(period)) {
@@ -3798,6 +3816,18 @@
                     previousPeriod: currentTimestamp.clone().subtract(1, "month").format("YYYY.M")
                 });
             }
+            // else if (period === "prevMonth") {
+            //     startTimestamp = currentTimestamp.clone().subtract(1,"month").startOf("month");
+            //     endTimestamp = currentTimestamp.clone().subtract(1,"month").endOf("month");
+            //     cycleDuration = moment.duration(1, "month");
+            //     Object.assign(periodObject, {
+            //         dateString: "D MMM",
+            //         periodMax: currentTimestamp.clone().subtract(1,"month").endOf("month").date(),
+            //         periodMin: 1,
+            //         activePeriod: currentTimestamp.subtract(1,"month").format("YYYY.M"),
+            //         previousPeriod: currentTimestamp.clone().subtract(2, "month").format("YYYY.M")
+            //     });
+            // }
             else if (period === "hour") {
                 startTimestamp = currentTimestamp.clone().startOf("day");
                 cycleDuration = moment.duration(1, "day");
@@ -4217,7 +4247,7 @@
                 start = moment(baseTimeStamp).subtract(1, 'day').hour(0).minute(0).second(0);
                 endTimeStamp = moment(baseTimeStamp).subtract(1, 'day').hour(23).minute(59).second(59).toDate().getTime();
                 break;
-            case 'day':
+            case 'day': 
                 start = moment(baseTimeStamp).date(1).hour(0).minute(0).second(0);
                 break;
             case 'month':
