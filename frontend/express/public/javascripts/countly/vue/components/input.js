@@ -229,7 +229,8 @@
                         return false;
                     }
                     var compareTo = option.label || option.value || "";
-                    return compareTo.toLowerCase().indexOf(query) > -1;
+                    // option label or value is not always a string
+                    return compareTo.toString().toLowerCase().indexOf(query) > -1;
                 });
             }
         }

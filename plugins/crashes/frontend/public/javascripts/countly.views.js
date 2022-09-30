@@ -293,6 +293,15 @@
                     };
                 };
 
+                var self = this;
+                var getAppVersions = function() {
+                    // Get app versions from vuex because drill meta is not always up to date
+                    return self.$store.getters["countlyCrashes/overview/appVersions"].map(function(version) {
+                        var properVersion = version.replace(/:/g, ".");
+                        return { name: properVersion, value: properVersion };
+                    });
+                };
+
                 crashMeta.initialize().then(function() {
                     if (window.countlyQueryBuilder) {
                         filterProperties.push({
@@ -300,7 +309,7 @@
                             name: "App Version",
                             type: countlyQueryBuilder.PropertyType.LIST,
                             group: "Detail",
-                            getValueList: getFilterValues("app_version")
+                            getValueList: getAppVersions
                         });
                         filterProperties.push({
                             id: "opengl",
