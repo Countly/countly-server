@@ -796,10 +796,10 @@
                         customRangeSelection: true
                     };
 
-                if (meta.value[0].toString().length < 13) {
+                if (meta.value[0] && meta.value[0].toString().length < 13) {
                     meta.value[0] = meta.value[0] * 1000;
                 }
-                if (meta.value[1].toString().length < 13) {
+                if (meta.value[1] && meta.value[1].toString().length < 13) {
                     meta.value[1] = meta.value[1] * 1000;
                 }
                 if (meta.type === "range") {
