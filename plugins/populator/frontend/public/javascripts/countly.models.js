@@ -1088,11 +1088,11 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 populator: true
             },
-            success: function(json, textStatus, xhr) {
-                callback(json, textStatus, xhr);
+            success: function() {
+                callback();
             },
-            error: function(json, textStatus, xhr) {
-                callback(json, textStatus, xhr);
+            error: function() {
+                callback();
             }
         });
     }
@@ -1145,11 +1145,11 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 experiment: JSON.stringify(experiment)
             },
-            success: function(json, textStatus, xhr) {
-                callback(json, textStatus, xhr);
+            success: function() {
+                callback();
             },
-            error: function(json, textStatus, xhr) {
-                callback(json, textStatus, xhr);
+            error: function() {
+                callback();
             }
         });
     }
