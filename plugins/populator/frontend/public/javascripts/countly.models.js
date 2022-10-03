@@ -753,6 +753,21 @@
             return events;
         };
 
+        this.createUsersForAB = function(device_id, callback) {
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/o/sdk",
+                data: {
+                    app_key: countlyCommon.ACTIVE_APP_KEY,
+                    device_id: device_id,
+                    keys: JSON.stringify([abExampleName]),
+                    method: "ab"
+                },
+                success: callback,
+                error: callback
+            });
+        };
+
         this.getHeatmapEvent = function() {
             this.stats.e++;
             // var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
@@ -880,6 +895,10 @@
             }, timeout);
         };
 
+        this.startSessionForAb = function() {
+            this.createUsersForAB(getRandomInt(1, countlyPopulator.getUserAmount() * 10));
+        };
+
         this.extendSession = function(template) {
             if (this.hasSession) {
                 var req = {};
@@ -961,6 +980,8 @@
     var totalUserCount = 0;
     var totalCountWithoutUserProps = 0;
     var queued = 0;
+    var abExampleCount = 1;
+    var abExampleName = "Pricing";
     var totalStats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
     var _templateType = '';
     /**
@@ -1044,6 +1065,93 @@
                 error: callback
             });
         }
+    }
+    /**
+     * Add Parameter
+     * @param {string} parameter_key - Parameter Key
+     * @param {string} description - Parameter description
+     * @param {string} default_value - Default value of parameter
+     * @param {function} callback - callback method
+     * @return {function} returns ajax get request
+     **/
+    function addParameter(parameter_key, description, default_value, callback) {
+        var parameter = {
+            parameter_key: parameter_key,
+            description: description,
+            default_value: default_value
+        };
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/remote-config/add-parameter",
+            data: {
+                parameter: JSON.stringify(parameter),
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                populator: true
+            },
+            success: function(json, textStatus, xhr) {
+                callback(json, textStatus, xhr);
+            },
+            error: function(json, textStatus, xhr) {
+                callback(json, textStatus, xhr);
+            }
+        });
+    }
+    /**
+     * Add Parameter
+     * @param {string} name - Name
+     * @param {function} callback - callback method
+     * @return {function} returns ajax get request
+     **/
+    function addExperiment(name, callback) {
+        var experiment = {
+            name: name,
+            description: 'TestPricing',
+            show_target_users: false,
+            target_users: {
+                byVal: [],
+                byValText: "",
+                condition_definition: "",
+                percentage: 100,
+                condition: {}
+            },
+            "goals": [{"user_segmentation": "{\"query\":{},\"queryText\":\"\"}", "steps": "[{\"type\":\"did\",\"event\":\"[CLY]_session\",\"times\":\"{\\\"$gte\\\":1}\",\"period\":\"0days\",\"query\":\"{}\",\"queryText\":\"\",\"byVal\":\"\",\"group\":0,\"conj\":\"and\"}]"}],
+            variants: [
+                {
+                    "name": "Control group",
+                    "parameters": [
+                        {
+                            "name": abExampleName,
+                            "description": "",
+                            "value": "5000/month"
+                        }
+                    ]
+                },
+                {
+                    "name": "Variant A",
+                    "parameters": [
+                        {
+                            "name": abExampleName,
+                            "description": "",
+                            "value": "10000/month"
+                        }
+                    ]
+                }
+            ]
+        };
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.w + "/ab-testing/add-experiment",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                experiment: JSON.stringify(experiment)
+            },
+            success: function(json, textStatus, xhr) {
+                callback(json, textStatus, xhr);
+            },
+            error: function(json, textStatus, xhr) {
+                callback(json, textStatus, xhr);
+            }
+        });
     }
     /**
      * Create feedback popup
@@ -1328,6 +1436,33 @@
                 done();
             }
         });
+    }
+
+
+    /**
+     * Generate ab test
+     * @param {funciton} callback - callback method
+     **/
+    function generateAbTests(callback) {
+        addParameter(abExampleName, "Test Pricing", "5000/month", function() {
+            addExperiment(abExampleName, function(json) {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/ab-testing/start-experiment",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        "experiment_id": json
+                    },
+                    success: function() {
+                        callback();
+                    },
+                    error: function() {
+                        callback();
+                    }
+                });
+            });
+        });
+
     }
 
     /**
@@ -1652,6 +1787,17 @@
             }
         }
         /**
+         * Start user session process for AB
+         * @param {object} u - user object
+         **/
+        function processUserForAb(u) {
+            if (u && !u.hasSession) {
+                u.timer = setTimeout(function() {
+                    u.startSessionForAb();
+                }, Math.random() * timeout);
+            }
+        }
+        /**
          * Start user session process
          * @param {object} u - user object
          **/
@@ -1666,14 +1812,26 @@
                 countlyPopulator.sync(true);
             }
         }
+        /**
+         * Start user session process
+         * @param {object} u - user object
+         **/
+        function processUsersForAb() {
+            for (var userAmountIndex = 0; userAmountIndex < amount; userAmountIndex++) {
+                processUserForAb(users[userAmountIndex]);
+            }
+        }
+        
+        if ((countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) || countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
+            for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
+                createUser();
+            }
+        }
 
         if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
             generateWidgets(function() {
                 generateRetention(template, function() {
                     generateCampaigns(function() {
-                        for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
-                            createUser();
-                        }
                         // Generate campaigns conversion for web
                         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
                             setTimeout(reportConversions, timeout);
@@ -1684,6 +1842,12 @@
             });
         }
 
+        if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
+            abExampleName = "Pricing" + abExampleCount++;
+            generateAbTests(function() {
+                processUsersForAb();
+            });
+        }
 
         if (countlyGlobal.plugins.indexOf("systemlogs") !== -1) {
             $.ajax({
