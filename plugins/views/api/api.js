@@ -414,7 +414,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             pipeline.push({$group: groupBy0});
         }
         else if (period === "prevMonth") { //previous month
-            prevmonth = now.subtract(1,"month").format('YYYY:M');
+            var prevmonth = now.subtract(1,"month").format('YYYY:M');
             var monthNumber = prevmonth.split(':');
             var thisYear = now.format('YYYY');
             pipeline.push({$match: {'_id': {$regex: ".*_" + thisYear + ":0$"}}});
