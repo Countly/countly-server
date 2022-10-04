@@ -199,7 +199,7 @@ function getPeriodObject() {
             dateString: "D MMM",
             periodMax: _currMoment.clone().subtract(1,"month").endOf("month").date(),
             periodMin: 1,
-            activePeriod: _currMoment.subtract(1,"month").format("YYYY.M"),
+            activePeriod: _currMoment.clone().subtract(1,"month").format("YYYY.M"),
             previousPeriod: _currMoment.clone().subtract(2, "month").format("YYYY.M")
         });
     }

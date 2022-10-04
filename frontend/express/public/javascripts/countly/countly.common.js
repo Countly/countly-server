@@ -3817,7 +3817,7 @@
                     dateString: "D MMM",
                     periodMax: currentTimestamp.clone().subtract(1,"month").endOf("month").date(),
                     periodMin: 1,
-                    activePeriod: currentTimestamp.subtract(1,"month").format("YYYY.M"),
+                    activePeriod: currentTimestamp.clone().subtract(1,"month").format("YYYY.M"),
                     previousPeriod: currentTimestamp.clone().subtract(2, "month").format("YYYY.M")
                 });
             }
