@@ -3731,13 +3731,6 @@
                 }
             }
 
-            if(period === "prevMonth"){
-                period = [
-                    currentTimestamp.clone().subtract(1,"month").startOf("month"),
-                    currentTimestamp.clone().subtract(1,"month").endOf("month")
-                ]
-            }
-
             if (Array.isArray(period)) {
                 if ((period[0] + "").length === 10) {
                     period[0] *= 1000;
@@ -3816,18 +3809,18 @@
                     previousPeriod: currentTimestamp.clone().subtract(1, "month").format("YYYY.M")
                 });
             }
-            // else if (period === "prevMonth") {
-            //     startTimestamp = currentTimestamp.clone().subtract(1,"month").startOf("month");
-            //     endTimestamp = currentTimestamp.clone().subtract(1,"month").endOf("month");
-            //     cycleDuration = moment.duration(1, "month");
-            //     Object.assign(periodObject, {
-            //         dateString: "D MMM",
-            //         periodMax: currentTimestamp.clone().subtract(1,"month").endOf("month").date(),
-            //         periodMin: 1,
-            //         activePeriod: currentTimestamp.subtract(1,"month").format("YYYY.M"),
-            //         previousPeriod: currentTimestamp.clone().subtract(2, "month").format("YYYY.M")
-            //     });
-            // }
+            else if (period === "prevMonth") {
+                startTimestamp = currentTimestamp.clone().subtract(1,"month").startOf("month");
+                endTimestamp = currentTimestamp.clone().subtract(1,"month").endOf("month");
+                cycleDuration = moment.duration(1, "month");
+                Object.assign(periodObject, {
+                    dateString: "D MMM",
+                    periodMax: currentTimestamp.clone().subtract(1,"month").endOf("month").date(),
+                    periodMin: 1,
+                    activePeriod: currentTimestamp.subtract(1,"month").format("YYYY.M"),
+                    previousPeriod: currentTimestamp.clone().subtract(2, "month").format("YYYY.M")
+                });
+            }
             else if (period === "hour") {
                 startTimestamp = currentTimestamp.clone().startOf("day");
                 cycleDuration = moment.duration(1, "day");
