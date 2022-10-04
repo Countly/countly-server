@@ -54,6 +54,7 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
                     if (e.code !== 11000) {
                         console.log("Problem inserting", e);
                     }
+                    throw e;
                 }
                 console.log('2, inserted ->', requests.length);
                 requests = [];
