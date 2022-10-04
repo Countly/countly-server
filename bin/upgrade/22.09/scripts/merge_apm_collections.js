@@ -34,13 +34,27 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
                     'insertOne': {"document": doc}
                 });
                 if (requests.length > OPERATION_BATCH_SIZE) {
-                    await countlyDb.collection('apm').bulkWrite(requests);
+                    try {
+                        await countlyDb.collection('apm').bulkWrite(requests, {ordered: false});
+                    }
+                    catch (e) {
+                        if (e.code !== 11000) {
+                            console.log("Problem inserting", e);
+                        }
+                    }
                     console.log('inserted ->', requests.length);
                     requests = [];
                 }
             }
             if (requests.length) {
-                await countlyDb.collection('apm').bulkWrite(requests);
+                try {
+                    await countlyDb.collection('apm').bulkWrite(requests, {ordered: false});
+                }
+                catch (e) {
+                    if (e.code !== 11000) {
+                        console.log("Problem inserting", e);
+                    }
+                }
                 console.log('2, inserted ->', requests.length);
                 requests = [];
             }
