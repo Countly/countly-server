@@ -1145,11 +1145,11 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 experiment: JSON.stringify(experiment)
             },
-            success: function() {
-                callback();
+            success: function(json) {
+                callback(json);
             },
-            error: function() {
-                callback();
+            error: function(json) {
+                callback(json);
             }
         });
     }
@@ -1821,7 +1821,6 @@
                 processUserForAb(users[userAmountIndex]);
             }
         }
-
         if ((countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) || countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
             for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
                 createUser();
