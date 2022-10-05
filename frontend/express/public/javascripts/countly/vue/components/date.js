@@ -798,8 +798,14 @@
 
                 if (meta.type === "range") {
                     state.rangeMode = 'inBetween';
-                    state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
-                    state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input"));
+                    if (this.timestampFormat === 'ms') {
+                        state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
+                        state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input"));
+                    }
+                    else {
+                        state.minDate = new Date(this.fixTimestamp(meta.value[0], "input") * 1000);
+                        state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input") * 1000);
+                    }
                     state.inBetweenInput = {
                         raw: {
                             textStart: moment(state.minDate).format(this.formatter),
@@ -810,7 +816,12 @@
                 }
                 else if (meta.type === "since") {
                     state.rangeMode = 'since';
-                    state.minDate = new Date(this.fixTimestamp(meta.value.since, "input"));
+                    if (this.timestampFormat === 'ms') {
+                        state.minDate = new Date(this.fixTimestamp(meta.value.since, "input"));
+                    }
+                    else {
+                        state.minDate = new Date(this.fixTimestamp(meta.value.since, "input") * 1000);
+                    }
                     state.maxDate = now;
                     state.sinceInput = {
                         raw: {
@@ -821,7 +832,12 @@
                 }
                 else if (meta.type === "on") {
                     state.rangeMode = 'onm';
-                    state.minDate = new Date(this.fixTimestamp(meta.value.on, "input"));
+                    if (this.timestampFormat === 'ms') {
+                        state.minDate = new Date(this.fixTimestamp(meta.value.on, "input"));
+                    }
+                    else {
+                        state.minDate = new Date(this.fixTimestamp(meta.value.on, "input") * 1000);
+                    }
                     state.maxDate = state.minDate;
                     state.onmInput = {
                         raw: {
