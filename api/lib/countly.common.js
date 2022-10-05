@@ -102,7 +102,9 @@ function getPeriodObject() {
     if (_period.since) {
         _period = [_period.since, Date.now()];
     }
-
+    if (_period.on) {
+        _period = [_period.on, Date.now()];
+    }
     if (_period && _period.indexOf(",") !== -1) {
         try {
             _period = JSON.parse(_period);
