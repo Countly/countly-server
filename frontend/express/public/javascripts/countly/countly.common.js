@@ -4243,6 +4243,10 @@
             case 'day': 
                 start = moment(baseTimeStamp).date(1).hour(0).minute(0).second(0);
                 break;
+            case 'prevMonth':
+                start = moment(baseTimeStamp).subtract(1,"month").date(1).hour(0).minute(0).second(0);
+                endTimeStamp = moment(baseTimeStamp).subtract(1,"month").endOf('month').hour(23).minute(59).second(59).toDate().getTime();
+                break;
             case 'month':
                 start = moment(baseTimeStamp).month(0).date(1).hour(0).minute(0).second(0);
                 break;
@@ -4513,6 +4517,12 @@
                     valueAsString: "day"
                 };
             }
+            if (obj.type === "prevMonth") {
+                return {
+                    name: moment().subtract(1,"month").format("MMMM, YYYY"),
+                    valueAsString: "prevMonth"
+                };
+            }
             if (obj.type === "month") {
                 return {
                     name: moment().year(),
@@ -4602,6 +4612,10 @@
             else if (period === "day") {
                 inferredType = "day";
                 inferredValue = "day";
+            }
+            else if (period === "prevMonth") {
+                inferredType = "prevMonth";
+                inferredValue = "prevMonth";
             }
             else if (period === "month") {
                 inferredType = "month";
