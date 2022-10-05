@@ -41,6 +41,13 @@
                 return [moment().startOf("day").subtract(59, "d"), moment().endOf("day")];
             }
         },
+        "prevMonth": {
+            label: moment().subtract(1, "month").format("MMMM, YYYY"),
+            value: "prevMonth",
+            getRange: function() {
+                return [moment().subtract(1, "month").startOf("month"), moment().subtract(1, "month").endOf("month")];
+            }
+        },
         "day": {
             label: moment().format("MMMM, YYYY"),
             value: "day",

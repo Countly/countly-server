@@ -191,6 +191,18 @@ function getPeriodObject() {
             previousPeriod: _currMoment.clone().subtract(1, "month").format("YYYY.M")
         });
     }
+    else if (_period === "prevMonth") {
+        startTimestamp = _currMoment.clone().subtract(1, "month").startOf("month");
+        endTimestamp = _currMoment.clone().subtract(1, "month").endOf("month");
+        cycleDuration = moment.duration(1, "month");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            periodMax: _currMoment.clone().subtract(1, "month").endOf("month").date(),
+            periodMin: 1,
+            activePeriod: _currMoment.clone().subtract(1, "month").format("YYYY.M"),
+            previousPeriod: _currMoment.clone().subtract(2, "month").format("YYYY.M")
+        });
+    }
     else if (_period === "hour") {
         startTimestamp = _currMoment.clone().startOf("day");
         cycleDuration = moment.duration(1, "day");

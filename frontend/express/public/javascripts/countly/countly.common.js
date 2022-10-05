@@ -2743,6 +2743,17 @@
                             start.add(1, 'days');
                         }
                     }
+                    else if (_period === "prevMonth") {
+                        start = moment().subtract(1, "month").startOf("month");
+                        //start.add(1,"days");
+                        let current = new Date();
+                        let prevMonthCount = new Date(current.getFullYear(), current.getMonth(), 0).getDate();
+                        for (i = 0; i < prevMonthCount; i++) {
+                            ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                            tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            start.add(1, 'days');
+                        }
+                    }
                     else {
                         var startYear = start.year();
                         var endYear = moment().year();
@@ -3710,7 +3721,6 @@
             };
 
             endTimestamp = currentTimestamp.clone().endOf("day");
-
             if (period && period.indexOf(",") !== -1) {
                 try {
                     period = JSON.parse(period);
@@ -3796,6 +3806,18 @@
                     periodMin: 1,
                     activePeriod: currentTimestamp.format("YYYY.M"),
                     previousPeriod: currentTimestamp.clone().subtract(1, "month").format("YYYY.M")
+                });
+            }
+            else if (period === "prevMonth") {
+                startTimestamp = currentTimestamp.clone().subtract(1, "month").startOf("month");
+                endTimestamp = currentTimestamp.clone().subtract(1, "month").endOf("month");
+                cycleDuration = moment.duration(1, "month");
+                Object.assign(periodObject, {
+                    dateString: "D MMM",
+                    periodMax: currentTimestamp.clone().subtract(1, "month").endOf("month").date(),
+                    periodMin: 1,
+                    activePeriod: currentTimestamp.clone().subtract(1, "month").format("YYYY.M"),
+                    previousPeriod: currentTimestamp.clone().subtract(2, "month").format("YYYY.M")
                 });
             }
             else if (period === "hour") {
@@ -4220,6 +4242,10 @@
             case 'day':
                 start = moment(baseTimeStamp).date(1).hour(0).minute(0).second(0);
                 break;
+            case 'prevMonth':
+                start = moment(baseTimeStamp).subtract(1, "month").date(1).hour(0).minute(0).second(0);
+                endTimeStamp = moment(baseTimeStamp).subtract(1, "month").endOf('month').hour(23).minute(59).second(59).toDate().getTime();
+                break;
             case 'month':
                 start = moment(baseTimeStamp).month(0).date(1).hour(0).minute(0).second(0);
                 break;
@@ -4490,6 +4516,12 @@
                     valueAsString: "day"
                 };
             }
+            if (obj.type === "prevMonth") {
+                return {
+                    name: moment().subtract(1, "month").format("MMMM, YYYY"),
+                    valueAsString: "prevMonth"
+                };
+            }
             if (obj.type === "month") {
                 return {
                     name: moment().year(),
@@ -4580,6 +4612,10 @@
                 inferredType = "day";
                 inferredValue = "day";
             }
+            else if (period === "prevMonth") {
+                inferredType = "prevMonth";
+                inferredValue = "prevMonth";
+            }
             else if (period === "month") {
                 inferredType = "month";
                 inferredValue = "month";
@@ -4627,7 +4663,6 @@
 
             obj.valueAsString = descriptions.valueAsString;
             obj.name = obj.longName = descriptions.name;
-
             return obj;
         };
 
