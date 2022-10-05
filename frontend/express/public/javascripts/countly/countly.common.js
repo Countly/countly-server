@@ -2737,15 +2737,14 @@
                         var now = new Date();
                         // it will add the count of days of the current month to the x-axis label
                         var currentMonthCount = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                        console.log("start day",start)
                         for (i = 0; i < currentMonthCount; i++) {
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
                             start.add(1, 'days');
                         }
                     }
-                    else if (_period === "prevMonth"){
-                        start = moment().subtract(1,"month").startOf("month");
+                    else if (_period === "prevMonth") {
+                        start = moment().subtract(1, "month").startOf("month");
                         //start.add(1,"days");
                         let current = new Date();
                         let prevMonthCount = new Date(current.getFullYear(), current.getMonth(), 0).getDate();
@@ -3810,14 +3809,14 @@
                 });
             }
             else if (period === "prevMonth") {
-                startTimestamp = currentTimestamp.clone().subtract(1,"month").startOf("month");
-                endTimestamp = currentTimestamp.clone().subtract(1,"month").endOf("month");
+                startTimestamp = currentTimestamp.clone().subtract(1, "month").startOf("month");
+                endTimestamp = currentTimestamp.clone().subtract(1, "month").endOf("month");
                 cycleDuration = moment.duration(1, "month");
                 Object.assign(periodObject, {
                     dateString: "D MMM",
-                    periodMax: currentTimestamp.clone().subtract(1,"month").endOf("month").date(),
+                    periodMax: currentTimestamp.clone().subtract(1, "month").endOf("month").date(),
                     periodMin: 1,
-                    activePeriod: currentTimestamp.clone().subtract(1,"month").format("YYYY.M"),
+                    activePeriod: currentTimestamp.clone().subtract(1, "month").format("YYYY.M"),
                     previousPeriod: currentTimestamp.clone().subtract(2, "month").format("YYYY.M")
                 });
             }
@@ -4240,12 +4239,12 @@
                 start = moment(baseTimeStamp).subtract(1, 'day').hour(0).minute(0).second(0);
                 endTimeStamp = moment(baseTimeStamp).subtract(1, 'day').hour(23).minute(59).second(59).toDate().getTime();
                 break;
-            case 'day': 
+            case 'day':
                 start = moment(baseTimeStamp).date(1).hour(0).minute(0).second(0);
                 break;
             case 'prevMonth':
-                start = moment(baseTimeStamp).subtract(1,"month").date(1).hour(0).minute(0).second(0);
-                endTimeStamp = moment(baseTimeStamp).subtract(1,"month").endOf('month').hour(23).minute(59).second(59).toDate().getTime();
+                start = moment(baseTimeStamp).subtract(1, "month").date(1).hour(0).minute(0).second(0);
+                endTimeStamp = moment(baseTimeStamp).subtract(1, "month").endOf('month').hour(23).minute(59).second(59).toDate().getTime();
                 break;
             case 'month':
                 start = moment(baseTimeStamp).month(0).date(1).hour(0).minute(0).second(0);
@@ -4519,7 +4518,7 @@
             }
             if (obj.type === "prevMonth") {
                 return {
-                    name: moment().subtract(1,"month").format("MMMM, YYYY"),
+                    name: moment().subtract(1, "month").format("MMMM, YYYY"),
                     valueAsString: "prevMonth"
                 };
             }
@@ -4664,7 +4663,6 @@
 
             obj.valueAsString = descriptions.valueAsString;
             obj.name = obj.longName = descriptions.name;
-
             return obj;
         };
 
