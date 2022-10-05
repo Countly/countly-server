@@ -414,15 +414,15 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             pipeline.push({$group: groupBy0});
         }
         else if (period === "prevMonth") { //previous month
-            var prevmonth = now.subtract(1,"month").format('YYYY:M');
-            var monthNumber = prevmonth.split(':');
-            var thisYear = now.format('YYYY');
+            var prevmonth = now.subtract(1, "month").format('YYYY:M');
+            monthNumber = prevmonth.split(':');
+            thisYear = now.format('YYYY');
             pipeline.push({$match: {'_id': {$regex: ".*_" + thisYear + ":0$"}}});
             if (settings && settings.onlyIDs) {
                 pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
             }
 
-            var groupBy0 = {_id: "$vw"};
+            groupBy0 = {_id: "$vw"};
             for (let i = 0; i < settings.levels.daily.length; i++) {
                 if (settings.levels.daily[i] !== 'u') {
                     groupBy0[settings.levels.daily[i]] = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
