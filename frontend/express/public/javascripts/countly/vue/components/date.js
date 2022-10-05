@@ -42,10 +42,10 @@
             }
         },
         "prevMonth": {
-            label: moment().subtract(1,"month").format("MMMM, YYYY"),
+            label: moment().subtract(1, "month").format("MMMM, YYYY"),
             value: "prevMonth",
             getRange: function() {
-                return [moment().subtract(1,"month").startOf("month"), moment().subtract(1,"month").endOf("month")];
+                return [moment().subtract(1, "month").startOf("month"), moment().subtract(1, "month").endOf("month")];
             }
         },
         "day": {
