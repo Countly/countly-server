@@ -94,7 +94,6 @@ class InternalEventTrigger {
         case "/i/users/create":
         case "/i/users/update":
         case "/i/users/delete":
-        case "/crashes/new":
         case "/master":
             utils.updateRuleTriggerTime(rule._id);
             this.pipeline({
@@ -102,6 +101,16 @@ class InternalEventTrigger {
                 rule: rule,
                 eventType,
             });
+            break;
+        case "/crashes/new":
+            if (rule.apps.indexOf(ob.data.app._id + '') > -1) {
+                utils.updateRuleTriggerTime(rule._id);
+                this.pipeline({
+                    params: {data: ob.data, eventType},
+                    rule: rule,
+                    eventType,
+                });
+            }
             break;
         case "/systemlogs":
             utils.updateRuleTriggerTime(rule._id);

@@ -50,24 +50,26 @@ class HTTPEffect {
                 }
                 catch (e) {
                     log.e('http efffect parse post data err:', e);
-                    logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                    logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)} with data: ${parsedRequestData}`);
 
                     utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
                 }
-                await request({
-                    method: 'POST',
-                    uri: parsedURL,
-                    json: parsedJSON,
-                    timeout: this._timeout,
-                },
-                function(e, r, body) {
-                    log.e("[httpeffects]", e, body, rule);
-                    if (e) {
-                        logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
-                        utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
-                    }
+                if (Object.keys(parsedJSON).length) {
+                    await request({
+                        method: 'POST',
+                        uri: parsedURL,
+                        json: parsedJSON,
+                        timeout: this._timeout,
+                    },
+                    function(e, r, body) {
+                        log.e("[httpeffects]", e, body, rule);
+                        if (e) {
+                            logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                            utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
+                        }
 
-                });
+                    });
+                }
                 break;
             }
             }
