@@ -40,7 +40,8 @@
                     :active-text="apps[selectedApp].locked ? i18n('common.locked') : i18n('common.unlocked')"
                     @change="setAppLock"
                     class="bu-is-pulled-right bu-mr-4 bu-mt-1"
-                    v-tooltip.top-start="{content: 'App is Locked. Unlock it to allow changes.'}">
+                    v-tooltip.top-start="apps[selectedApp].locked ? {content: i18n('management-applications.application-tooltip-locked-text')} 
+                    : {content: i18n('management-applications.application-tooltip-unlocked-text')}">
                 </el-switch>
                 <h2 class="bu-mb-4"> {{apps[selectedApp] ? apps[selectedApp].name : i18n('common.add-new-app')}} </h2>
                 <cly-section>
