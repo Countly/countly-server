@@ -4,6 +4,15 @@ const common = require('../../../../../api/utils/common.js');
 const log = common.log("hooks:api:api_endpoint_trigger");
 
 /**
+ * 
+ * @param {string} str - string to escape
+ * @returns {string} escaped string
+ */
+function jsonEscape(str) {
+    return (str + "").replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t");
+}
+
+/**
  * Http effect
  */
 class HTTPEffect {
@@ -46,10 +55,10 @@ class HTTPEffect {
                 //support post formData
                 let parsedJSON = {};
                 try {
-                    parsedJSON = JSON.parse(parsedRequestData);
+                    parsedJSON = JSON.parse(jsonEscape(parsedRequestData));
                 }
                 catch (e) {
-                    log.e('http efffect parse post data err:', e);
+                    log.e('http efffect parse post data err:', e, parsedRequestData);
                     logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)} with data: ${parsedRequestData}`);
 
                     utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);

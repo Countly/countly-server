@@ -1,6 +1,16 @@
 const common = require('../../../api/utils/common.js');
 const utils = {};
 
+
+/**
+ * 
+ * @param {string} str - string to unescape
+ * @returns {string} unescaped string
+ */
+function jsonUnEscape(str) {
+    return (str + "").replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
+}
+
 utils.updateRuleTriggerTime = function updateRuleTriggerTime(hookID) {
     const db = common.db;
     console.log("update rule trigger time,", hookID);
@@ -41,7 +51,12 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
     const parseData = function(obj) {
         let d = "";
         if (typeof obj === 'object') {
-            d = JSON.stringify(obj);
+            if (common.dbext.ObjectId.isValid(obj)) {
+                d = obj + "";
+            }
+            else {
+                d = JSON.stringify(obj);
+            }
         }
         else {
             d = obj;
@@ -49,7 +64,7 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
         if (httpMethod === 'get') {
             return encodeURIComponent(d);
         }
-        return d;
+        return jsonUnEscape(d);
     };
 
     return str.replace(/\{\{(.*?)}\}/g, (sub, path) => {
@@ -69,7 +84,7 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
                 return jsonStr.replace(/"|\\"/g, '\\"');
             }
             props.forEach(prop => {
-                obj = obj[prop] || undefined;
+                obj = (obj && obj[prop]) || undefined;
             });
         }
         catch (e) {

@@ -618,13 +618,13 @@ plugins.setConfigs("crashes", {
                                     if (Object.keys(groupMax).length > 0) {
                                         update.$max = groupMax;
                                     }
-                                    plugins.dispatch("/crashes/new", {data: {crash: groupInsert, user: dbAppUser, app: params.app}});
 
                                     update.$addToSet = {groups: hash};
 
-                                    common.db.collection('app_crashgroups' + params.app_id).findAndModify({'groups': {$elemMatch: {$eq: hash}} }, {}, update, {upsert: true, new: false}, function(crashGroupsErr, crashGroup) {
+                                    common.db.collection('app_crashgroups' + params.app_id).findAndModify({'groups': {$elemMatch: {$eq: hash}} }, {}, update, {upsert: true, new: true}, function(crashGroupsErr, crashGroup) {
                                         crashGroup = crashGroup && crashGroup.ok ? crashGroup.value : null;
-                                        var isNew = ((!crashGroup || !crashGroup.reports) && !crashGroupsErr) ? true : false;
+                                        //var isNew = ((!crashGroup || !crashGroup.reports) && !crashGroupsErr) ? true : false;
+                                        var isNew = crashGroup.lrid === report._id + "";
 
                                         var lastTs;
                                         if (crashGroup) {
@@ -662,7 +662,7 @@ plugins.setConfigs("crashes", {
                                                 common.db.collection('app_crashgroups' + params.app_id).update({'groups': hash }, {$set: group}, function() {});
                                             }
                                         }
-
+                                        plugins.dispatch("/crashes/all", {data: {crash: crashGroup, user: dbAppUser, app: params.app}});
                                         if (isNew) {
                                             plugins.dispatch("/crashes/new", {data: {crash: crashGroup, user: dbAppUser, app: params.app}});
                                         }
