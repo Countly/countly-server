@@ -1,16 +1,6 @@
 const common = require('../../../api/utils/common.js');
 const utils = {};
 
-
-/**
- * 
- * @param {string} str - string to unescape
- * @returns {string} unescaped string
- */
-function jsonUnEscape(str) {
-    return (str + "").replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
-}
-
 utils.updateRuleTriggerTime = function updateRuleTriggerTime(hookID) {
     const db = common.db;
     console.log("update rule trigger time,", hookID);
@@ -64,7 +54,7 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
         if (httpMethod === 'get') {
             return encodeURIComponent(d);
         }
-        return jsonUnEscape(d);
+        return d;
     };
 
     return str.replace(/\{\{(.*?)}\}/g, (sub, path) => {

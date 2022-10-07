@@ -13,6 +13,15 @@ function jsonEscape(str) {
 }
 
 /**
+ * 
+ * @param {string} str - string to unescape
+ * @returns {string} unescaped string
+ */
+function jsonUnEscape(str) {
+    return (str + "").replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
+}
+
+/**
  * Http effect
  */
 class HTTPEffect {
@@ -56,6 +65,9 @@ class HTTPEffect {
                 let parsedJSON = {};
                 try {
                     parsedJSON = JSON.parse(jsonEscape(parsedRequestData));
+                    for (var key in parsedJSON) {
+                        parsedJSON[key] = jsonUnEscape(parsedJSON[key]);
+                    }
                 }
                 catch (e) {
                     log.e('http efffect parse post data err:', e, parsedRequestData);
