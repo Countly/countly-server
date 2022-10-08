@@ -39,7 +39,7 @@
                             <span class="text-medium">{{item.percentText}}</span>
                         </template>
                     </cly-metric-card>
-					<div v-if="platformItems.length < 4 && !isLoading" class="technology-analytics-wrapper__empty-card">
+					<div v-if="platformItems.length < 1 && !isLoading" class="technology-analytics-wrapper__empty-card">
 						<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 					</div>
                 </cly-metric-cards>
@@ -60,7 +60,7 @@
 							:scroll-ops="breakdownScrollOps" 
 							v-for="(item, idx) in platformVersions">
 						</cly-metric-breakdown>
-                        <div v-if="platformItems.length < 4 && !isLoading" class="technology-analytics-wrapper__empty-card">
+                        <div v-if="platformItems.length < 1 && !isLoading" class="technology-analytics-wrapper__empty-card">
                             <div class="text-medium">{{i18n('common.table.no-data')}}</div>
                         </div>
 					</cly-metric-cards>

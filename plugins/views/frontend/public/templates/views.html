@@ -79,7 +79,7 @@
 						</el-table-column>
 						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
 							<template slot-scope="scope">
-								{{formatNumber(scope.row.br)}} %
+								{{formatNumber(scope.row.br)}}%
 							</template>
 						</el-table-column>
 						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>
