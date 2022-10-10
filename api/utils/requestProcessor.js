@@ -2344,6 +2344,14 @@ const processRequest = (params) => {
                 case 'carriers':
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                     break;
+                case 'countries':
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).country_data !== false) {
+                        validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
+                    }
+                    else {
+                        common.returnOutput(params, {});
+                    }
+                    break;
                 case 'cities':
                     if (plugins.getConfig("api", params.app && params.app.plugins, true).city_data !== false) {
                         validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);

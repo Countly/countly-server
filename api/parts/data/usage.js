@@ -163,9 +163,10 @@ usage.setLocation = function(params) {
  * @param  {object} loc - location info
  */
 usage.setUserLocation = function(params, loc) {
-    params.user.country = loc.country;
+    params.user.country = plugins.getConfig('api', params.app && params.app.plugins, true).country_data === false ? undefined : loc.country;
     params.user.region = loc.region;
-    params.user.city = plugins.getConfig('api', params.app && params.app.plugins, true).city_data === false ? undefined : loc.city;
+    params.user.city = (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === false ||
+        plugins.getConfig('api', params.app && params.app.plugins, true).country_data === false) ? undefined : loc.city;
 };
 
 /**
@@ -364,6 +365,10 @@ usage.returnAllProcessedMetrics = function(params) {
                 recvMetricValue = params.qstring.metrics[tmpMetric.name];
             }
 
+            // We check if country data logging is on and user's country is the configured country of the app
+            if (tmpMetric.name === "country" && (plugins.getConfig("api").country_data === false || params.app_cc !== params.user.country)) {
+                continue;
+            }
             // We check if city data logging is on and user's country is the configured country of the app
             if (tmpMetric.name === "city" && (plugins.getConfig("api").city_data === false || params.app_cc !== params.user.country)) {
                 continue;
@@ -667,6 +672,10 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
                     recvMetricValue = params.qstring.metrics[tmpMetric.name];
                 }
 
+                // We check if country data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name === "country" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
+                    continue;
+                }
                 // We check if city data logging is on and user's country is the configured country of the app
                 if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
                     continue;
@@ -725,6 +734,10 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
                     recvMetricValue = params.qstring.metrics[tmpMetric.name];
                 }
 
+                // We check if country data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name === "country" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
+                    continue;
+                }
                 // We check if city data logging is on and user's country is the configured country of the app
                 if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
                     continue;
@@ -1029,6 +1042,11 @@ plugins.register("/sdk/user_properties", async function(ob) {
         if (!userProps.rgn) {
             userProps.rgn = "Unknown";
         }
+    }
+
+    if (config.country_data === false) {
+        userProps.cc = 'Unknown';
+        userProps.cty = 'Unknown';
     }
 
     if (config.city_data === false) {
