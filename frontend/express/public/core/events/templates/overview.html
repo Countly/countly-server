@@ -152,7 +152,7 @@
 			<el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')" min-width="177px">
 			  <template v-slot="rowScope">
 				<div>
-				  {{rowScope.row.duration>0?formatNumber(rowScope.row.duration):"-"}}
+				  {{rowScope.row.duration>0?formatDurNumber(rowScope.row.duration):"-"}}
 				</div>
 			  </template>
 			</el-table-column>
