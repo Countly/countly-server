@@ -802,9 +802,9 @@
                     userImage.found = true;
                 }
                 else {
-                    var defaultAvatarSelector = (member.created_at || Date.now()) % 16 * 60;
+                    var defaultAvatarSelector = (member.created_at || Date.now()) % 10 * -60;
                     userImage.found = false;
-                    userImage.url = "images/avatar-sprite.png";
+                    userImage.url = "images/avatar-sprite.png?v2";
                     userImage.position = defaultAvatarSelector;
                     userImage.initials = this.initials;
                 }
@@ -837,8 +837,8 @@
                     return {'background-image': 'url("' + image + '?' + Date.now() + '")', "background-repeat": "no-repeat", "background-size": "auto 100px"};
                 }
                 else {
-                    var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 100;
-                    return {'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto 100px'};
+                    var defaultAvatarSelector = (countlyGlobal.member.created_at || Date.now()) % 10 * -100;
+                    return {'background-image': 'url("images/avatar-sprite.png?v2")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto 100px'};
                 }
             },
             loadComponents: function() {
