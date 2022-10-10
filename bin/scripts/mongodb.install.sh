@@ -1,6 +1,5 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MONGODB_CONFIG_FILE="/etc/mongod.conf"
 
 function mongodb_configure () {
