@@ -142,7 +142,7 @@ EOF
     message_ok "Disabled transparent hugepages"
 }
 
-function fix_mongod_service_type () {
+function fix_mongod_service_type_and_kill_method () {
     if [[ ! $(/sbin/init --version) =~ upstart ]]; then
         SERVICE_FILE_PATH=$(systemctl status mongod | grep "loaded" | awk -F';' '{print $1}' | awk -F'(' '{print $2}')
 
@@ -150,7 +150,12 @@ function fix_mongod_service_type () {
             sed -i "/Type=/d" "${SERVICE_FILE_PATH}"
         fi
 
+        if grep -q "KillSignal=" "${SERVICE_FILE_PATH}"; then
+            sed -i "/KillSignal=/d" "${SERVICE_FILE_PATH}"
+        fi
+
         sed -i "s#\[Service\]#\[Service\]\nType=simple#g" "${SERVICE_FILE_PATH}"
+        sed -i "s#\[Service\]#\[Service\]\nKillSignal=SIGINT#g" "${SERVICE_FILE_PATH}"
 
         systemctl daemon-reload
 	fi 2> /dev/null
@@ -362,7 +367,8 @@ function mongodb_check() {
     fi
 
     #change mongod systemd service type to 'simple' to prevent systemd timeout interrupt on wiredtiger's long boot
-    fix_mongod_service_type
+    #change how systemd will stop service
+    fix_mongod_service_type_and_kill_method
     #match service system limits to mongodb user's limits
     fix_mongod_service_limits
 
