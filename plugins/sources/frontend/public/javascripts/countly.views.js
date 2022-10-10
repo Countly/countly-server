@@ -568,7 +568,7 @@
                         "name": values[k].name,
                         "value": countlyCommon.getShortNumber(values[k].t || 0),
                         "percent": percent,
-                        "percentText": percent + " % " + CV.i18n('common.of-total'),
+                        "percentText": percent + "% " + CV.i18n('common.of-total'),
                         "info": "some description",
                         "color": "#CDAD7A",
                         "value_": values[k].t
