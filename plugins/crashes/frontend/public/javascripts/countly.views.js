@@ -21,7 +21,7 @@
                     return (typeof this.$props.data !== "undefined" && (this.$props.data.trend === "u") ? "up" : "down");
                 }
             },
-            negatedClass: function () {
+            negatedClass: function() {
                 return (this.$props.negateTrend === true) ? "negated" : "";
             }
         },
