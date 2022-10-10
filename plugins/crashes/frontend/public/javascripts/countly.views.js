@@ -18,17 +18,11 @@
                     return "neutral";
                 }
                 else {
-                    return (typeof this.$props.data !== "undefined" && (this.$props.negateTrend ^ this.$props.data.trend === "u") ? "up" : "down");
+                    return (typeof this.$props.data !== "undefined" && (this.$props.data.trend === "u") ? "up" : "down");
                 }
             },
-            iconClass: function() {
-                if (typeof this.$props.data !== "undefined" && this.$props.data.trend === "n") {
-                    return "minus-round";
-                }
-                else {
-                    return ((typeof this.$props.data !== "undefined" && this.$props.data.trend === "u") ? "arrow-up-c" : "arrow-down-c");
-                }
-
+            negatedClass: function () {
+                return (this.$props.negateTrend === true) ? "negated" : "";
             }
         },
         template: countlyVue.T("/crashes/templates/tab-label.html")
