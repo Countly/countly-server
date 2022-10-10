@@ -432,6 +432,32 @@
                 }
 
                 this.configsData[this.selectedConfig][key] = value;
+                //when user disables country data tracking while city data tracking is enabled
+                if (key === "country_data" && value === false && this.configsData[this.selectedConfig].city_data === true) {
+                    //disable city data tracking 
+                    this.configsData[this.selectedConfig].city_data = false;
+                    //if city data tracking was originally enabled, note the change
+                    index = this.diff.indexOf("city_data");
+                    if (index > -1) {
+                        this.diff.splice(index, 1);
+                    }
+                    if (configsData[this.selectedConfig].city_data === true) {
+                        this.diff.push("city_data");
+                    }
+                }
+                //when user enables city data tracking while country data tracking is disabled
+                if (key === "city_data" && value === true && this.configsData[this.selectedConfig].country_data === false) {
+                    //enable country data tracking
+                    this.configsData[this.selectedConfig].country_data = true;
+                    //if country data tracking was originally disabled, note the change
+                    index = this.diff.indexOf("country_data");
+                    if (index > -1) {
+                        this.diff.splice(index, 1);
+                    }
+                    if (configsData[this.selectedConfig].country_data === false) {
+                        this.diff.push("country_data");
+                    }
+                }
 
                 if (Array.isArray(value) && Array.isArray(configsData[this.selectedConfig][key])) {
                     value.sort();
