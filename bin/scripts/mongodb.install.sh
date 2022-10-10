@@ -308,30 +308,6 @@ function mongodb_check() {
 
     message_ok "Configured security limits for MongoDB user"
 
-    #Check numactl support & configure
-    if [ -x "$(command -v numactl)" ]; then
-        numactl --hardware > /dev/null
-
-        if [ $? -eq 1 ]; then
-            message_optional "NUMA is not available on this system"
-        else
-            NUMA_NODES=$(numactl --hardware | grep nodes | awk -F' ' '{print $2}')
-            NUMA_NODES=$((NUMA_NODES + 0))
-
-            if [ ! $NUMA_NODES -ge 2 ]; then
-                message_optional "NUMA is not available on this system"
-            else
-                update_sysctl "vm.zone_reclaim_mode" "0"
-                sed -i "s#NUMACTL_STATUS=0#NUMACTL_STATUS=1#g" "${DIR}/../commands/systemd/mongodb.sh"
-                bash "${DIR}/../commands/systemd/mongodb.sh"
-
-                message_ok "Changed service file to work with NUMA"
-            fi
-        fi
-    else
-        message_warning "Command numactl not found"
-    fi
-
     #Disable transparent-hugepages
     disable_transparent_hugepages
 
