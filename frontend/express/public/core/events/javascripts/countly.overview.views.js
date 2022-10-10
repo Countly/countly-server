@@ -296,6 +296,10 @@
                                 }
                             }
                         }
+                        let total= countlyCommon.formatNumber(currentData[j].total);
+                        if (currentData[j].eventProperty === 'DUR') {
+                            total= countlyCommon.formatSecond(currentData[j].total);
+                        }
                         editedMonitorEventsData.push({
                             "barData": {
                                 "series": [{
@@ -309,7 +313,7 @@
                             },
                             "change": currentData[j].change,
                             "eventProperty": currentData[j].eventProperty,
-                            "total": currentData[j].total,
+                            "total": total,
                             "name": currentData[j].name
                         });
                     }
