@@ -19,6 +19,11 @@ ENV COUNTLY_CONTAINER="frontend" \
 WORKDIR /opt/countly
 COPY . .
 
+# install required dependencies which slim image doesn't have
+RUN apt-get update && \
+    apt-get install -y apt-transport-https curl wget git python3 python2 make gcc g++ unzip && \
+    ln -s /usr/bin/python2.7 /usr/bin/python
+
 RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
 	dpkg -i /tmp/tini.deb && \
 	\

@@ -22,6 +22,12 @@ ENV COUNTLY_CONTAINER="api" \
 WORKDIR /opt/countly
 COPY . .
 
+# fix 'appstream' repo for CentOS 8
+RUN cd /etc/yum.repos.d/
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+RUN dnf update -y libmodulemd
+
 RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
 	rpm -i /tmp/tini.rpm && \
 	\
@@ -51,7 +57,7 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	npm remove -y --no-save mocha nyc should supertest && \
 	rm -rf /opt/app-root/src/.npm && \
 	yum remove -y git wget unzip make && \
-	yum --setopt=groupremove_leaf_only=1 groupremove 'Development Tools' && \
+	yum --setopt=groupremove_leaf_only=1 groupremove -y 'Development Tools' && \
 	yum clean all && \
 	yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \
 	yum clean all && \
