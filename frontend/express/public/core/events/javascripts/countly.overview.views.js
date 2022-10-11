@@ -245,6 +245,9 @@
             onMetricClick: function(params) {
                 app.navigate("#/analytics/events/key/" + params.key, true);
             },
+            valFormatter: function (val) {
+                return countlyCommon.formatSecond(val);
+            }
         },
         computed: {
             selectedEvents: function() {
@@ -297,8 +300,17 @@
                             }
                         }
                         let total= countlyCommon.formatNumber(currentData[j].total);
+                        let yAxis = this.monitorEventsOptions.yAxis;
                         if (currentData[j].eventProperty === 'DUR') {
                             total= countlyCommon.formatSecond(currentData[j].total);
+                            yAxis = {
+                            ...yAxis,
+                            axisLabel: {
+                              formatter: function (val) {
+                                return countlyCommon.formatSecond(val);
+                              },
+                            },
+                          };
                         }
                         editedMonitorEventsData.push({
                             "barData": {
@@ -309,7 +321,7 @@
                                 }],
                                 "legend": this.monitorEventsOptions.legend,
                                 "xAxis": this.monitorEventsOptions.xAxis,
-                                "yAxis": this.monitorEventsOptions.yAxis
+                                "yAxis": yAxis
                             },
                             "change": currentData[j].change,
                             "eventProperty": currentData[j].eventProperty,
