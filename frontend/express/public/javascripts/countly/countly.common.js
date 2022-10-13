@@ -4091,9 +4091,11 @@
         * Parse second to standard time format
         * @memberof countlyCommon
         * @param {number} second  number
-        * @returns {string} return format "HH:MM:SS"
+        * @param {number} [trimTo=3]  number [1,3]
+        * @returns {string} return format "HH:MM:SS", if trimTo is specified the length of the result is trimmed
+        * @example trimTo = 2, HH:MM:SS result will be trimmed to HH:MM
         */
-        countlyCommon.formatSecond = function(second) {
+        countlyCommon.formatSecond = function(second, trimTo = 3) {
             var timeLeft = parseInt(second);
             var dict = [
                 {k: 'year', v: 31536000},
@@ -4121,7 +4123,14 @@
                 return "0";
             }
             else {
-                return resultStrings.join(" ");
+                let res = resultStrings[0];
+                if (trimTo > 3 || trimTo < 1) {
+                    trimTo = 3;
+                }
+                for (let j = 1; j < trimTo && j < resultStrings.length; j++) {
+                    res += ' ' + resultStrings[j];
+                }
+                return res;
             }
         };
 
