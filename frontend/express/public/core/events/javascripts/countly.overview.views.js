@@ -302,10 +302,10 @@
                         let total = countlyCommon.formatNumber(currentData[j].total);
                         let yAxis = this.monitorEventsOptions.yAxis;
                         if (currentData[j].eventProperty === 'DUR') {
-                            total = countlyCommon.formatSecond(currentData[j].total);
+                            total = countlyCommon.formatSecond(currentData[j].total, 2);
                             yAxis.axisLabel = {
                                 formatter: function(value) {
-                                    return countlyCommon.formatSecond(value);
+                                    return countlyCommon.formatSecond(value, 2);
                                 },
                             };
 
