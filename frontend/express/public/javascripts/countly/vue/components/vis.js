@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
+/* global Vue, countlyCommon, countlyLocation, _merge, CountlyHelpers, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
 
 // _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
 
@@ -1155,6 +1155,10 @@
             zoomInfo: {
                 type: Boolean,
                 default: true
+            },
+            isZoom: {
+                type: Boolean,
+                default: false
             }
         },
         mixins: [
@@ -1164,6 +1168,13 @@
             return {
                 zoomStatus: "reset"
             };
+        },
+        watch: {
+            isZoom: function(newVal) {
+                if (newVal) {
+                    this.onZoomTrigger();
+                }
+            }
         },
         methods: {
             onZoomTrigger: function(e) {
@@ -1231,10 +1242,6 @@
                         <div v-if="zoomInfo && zoomStatus === \'triggered\'" class="bu-mr-3 color-cool-gray-50 text-smallish">\
                             {{i18nM(\'common.zoom-info\')}}\
                         </div>\
-                        <el-button class="chart-zoom-button" @click="onZoomTrigger" v-if="zoomStatus === \'reset\'"\
-                            size="small"\
-                            icon="cly-icon-btn cly-icon-zoom">\
-                        </el-button>\
                         <el-button class="chart-zoom-button" @click="onZoomCancel" v-if="zoomStatus === \'triggered\'" size="small">\
                             {{i18nM(\'common.cancel-zoom\')}}\
                         </el-button>\
@@ -1249,7 +1256,7 @@
             chartType: {
                 type: String,
                 default: 'line'
-            }
+            },
         },
         mixins: [
             countlyVue.mixins.i18n
@@ -1279,6 +1286,64 @@
                     </div>'
     });
 
+    var AnnotationManagement = countlyBaseComponent.extend({
+        props: {
+
+        },
+        mixins: [
+            countlyVue.mixins.i18n
+        ],
+        data: function() {
+            return {
+                selectedItem: ''
+            };
+        },
+        methods: {
+            handleCommand(command) {
+                switch (command) {
+                case "add":
+                    CountlyHelpers.notify({
+                        title: "Warning",
+                        message: "This feature under development",
+                        type: "warning"
+                    });
+                    break;
+                case "manage":
+                    CountlyHelpers.notify({
+                        title: "Warning",
+                        message: "This feature under development",
+                        type: "warning"
+                    });
+                    break;
+                case "show":
+                    CountlyHelpers.notify({
+                        title: "Warning",
+                        message: "This feature under development",
+                        type: "warning"
+                    });
+                    break;
+                default:
+                    break;
+                }
+            }
+        },
+        computed: {
+        },
+        template: '<div class="chart-type-annotation-wrapper">\
+                        <el-dropdown trigger="click" @command="handleCommand($event)">\
+                        <el-button size="small">\
+                            <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
+                        </el-button>\
+                        <el-dropdown-menu slot="dropdown">\
+                            <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>Add Note</span></el-dropdown-item>\
+                            <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>Manage Notes</el-dropdown-item>\
+                            <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>Show Notes</el-dropdown-item>\
+                        </el-dropdown-menu>\
+                    </el-dropdown>\
+                    </div>'
+    });
+
+
     var ChartHeader = countlyBaseComponent.extend({
         mixins: [EchartRefMixin],
         props: {
@@ -1301,12 +1366,14 @@
         },
         data: function() {
             return {
-                isZoom: false
+                isZoom: false,
+                selectedChartType: ''
             };
         },
         components: {
             "zoom-interactive": ZoomInteractive,
-            "chart-toggle": MagicSwitch
+            "chart-toggle": MagicSwitch,
+            "add-note": AnnotationManagement
         },
         methods: {
             downloadImage: function() {
@@ -1341,23 +1408,46 @@
             },
             onZoomReset: function() {
                 this.isZoom = false;
+            },
+            onSeriesChange: function(v) {
+                this.selectedChartType = v;
+            },
+            handleCommand: function(command) {
+                switch (command) {
+                case "download":
+                    this.downloadImage();
+                    break;
+                case "zoom":
+                    this.isZoom = true;
+                    break;
+                default:
+                    break;
+                }
+            }
+        },
+        created: function() {
+            if (!this.selectedChartType) {
+                this.selectedChartType = this.chartType;
             }
         },
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
+                        <div class="bu-level-item" v-if="showToggle && !isZoom">\
+                            <chart-toggle :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
+                        </div>\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
 							<slot name="chart-header-left-input"></slot>\
                         </div>\
                         <div class="bu-level-right">\
+                            <div class="bu-level-item" v-if="selectedChartType === \'line\' && !isZoom">\
+                                <add-note></add-note>\
+                            </div>\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
-                            <div class="bu-level-item" v-if="showDownload && !isZoom">\
-                                <el-button @click="downloadImage" size="small" icon="cly-icon-btn cly-icon-download" class="chart-download-button">\
-                                </el-button>\
-                            </div>\
-                            <div class="bu-level-item" v-if="showToggle && !isZoom">\
-                                <chart-toggle :chart-type="chartType" v-on="$listeners"></chart-toggle>\
-                            </div>\
-                            <zoom-interactive @zoom-reset="onZoomReset" @zoom-triggered="onZoomTrigger" ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
+                            <cly-more-options v-if="!isZoom" class="bu-level-item" size="small" @command="handleCommand($event)">\
+                                <el-dropdown-item v-if="showDownload" command="download">Download</el-dropdown-item>\
+                                <el-dropdown-item v-if="showZoom" command="zoom">Zoom In</el-dropdown-item>\
+                            </cly-more-options>\
+                            <zoom-interactive @zoom-reset="onZoomReset" :is-zoom="isZoom" @zoom-triggered="onZoomTrigger" ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
                         </div>\
                     </div>'
     });
@@ -1991,7 +2081,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1" style="height: 100%">\
-                            <chart-header ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                            <chart-header ref="header" :chart-type="\'pie\'" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\

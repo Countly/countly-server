@@ -261,6 +261,16 @@
     }
 }
 
+.chart-type-annotation-wrapper {
+    &__icon {
+        margin-top: 1px;
+    }
+
+    &__img {
+        margin-bottom: -2px;
+    }
+}
+
 .chart-zoom-button {
     margin-right: 12px;
 }
