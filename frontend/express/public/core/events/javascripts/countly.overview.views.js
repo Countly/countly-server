@@ -370,7 +370,7 @@
             return {
                 description: CV.i18n('events.overview.title.new'),
                 disabledDatePicker: '1months',
-                monitorEventsLegend: { "show": false },
+                monitorEventsLegend: {"show": false},
                 xAxisLabels: []
             };
         },
@@ -387,7 +387,7 @@
         component: EventsOverviewView,
         vuex: eventsOverviewVuex,
         templates: [
-            "/core/events/templates/overview.html"]
+            "/core/events/templates/overview.html" ]
     });
 
     app.route("/analytics/events/overview", "overview", function() {
@@ -400,7 +400,7 @@
         data: function() {
             return {
                 items: [],
-                linkTo: { "label": CV.i18n('events.go-to-events'), "href": "#/analytics/events/overview" },
+                linkTo: {"label": CV.i18n('events.go-to-events'), "href": "#/analytics/events/overview"},
                 isLoading: false,
                 isLoadedOnce: false,
                 scrollCards: {
@@ -453,7 +453,7 @@
                     }
                 }
                 else {
-                    this.$root.$emit("cly-error", { message: errored });//show error
+                    this.$root.$emit("cly-error", {message: errored});//show error
                 }
 
             },
@@ -482,7 +482,7 @@
                 if (this.$refs && this.$refs.bottomSlider) {
                     var pos1 = this.$refs.topSlider.getPosition();
                     pos1 = pos1.scrollLeft;
-                    this.$refs.bottomSlider.scrollTo({ x: pos1 }, 0);
+                    this.$refs.bottomSlider.scrollTo({x: pos1}, 0);
                 }
             }
         }
@@ -490,8 +490,8 @@
     countlyVue.container.registerData("/home/widgets", {
         _id: "events-dashboard-widget",
         permission: "core",
-        enabled: { "default": true }, //object. For each type set if by default enabled
-        available: { "default": true }, //object. default - for all app types. For other as specified.
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": true}, //object. default - for all app types. For other as specified.
         placeBeforeDatePicker: true,
         order: 2,
         component: EventsHomeWidget
