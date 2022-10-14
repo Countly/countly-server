@@ -21,7 +21,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
 
     switch (ob.params.qstring.method) {
     case "enable":
-        validateUser(ob.params, FEATURE_NAME, function() {
+        validateUser(ob.params, function() {
             var member = ob.params.member,
                 secretToken = ob.params.qstring.secret_token,
                 authCode = ob.params.qstring.auth_code;
@@ -65,7 +65,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
         });
         break;
     case "disable":
-        validateUser(ob.params, FEATURE_NAME, function() {
+        validateUser(ob.params, function() {
             var member = ob.params.member;
 
             if (!config.globally_enabled) {
