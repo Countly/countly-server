@@ -88,7 +88,7 @@ update.forEach(function(c) {
             "keyPattern": {"cd": 1},
             expireAfterSeconds: EXPIRE_AFTER
         }
-    }, function(err, res) {
+    }, function(err) {
         console.log(err);
     });
 });

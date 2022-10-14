@@ -58,7 +58,7 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                                 "keyPattern": {"cd": 1},
                                 expireAfterSeconds: EXPIRE_AFTER
                             }
-                        }, function(err, res) {
+                        }, function(err) {
                             if (err) {
                                 console.log(err);
                             }
