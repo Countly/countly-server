@@ -1443,7 +1443,7 @@
                                 <add-note></add-note>\
                             </div>\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
-                            <cly-more-options v-if="!isZoom" class="bu-level-item" size="small" @command="handleCommand($event)">\
+                            <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
                                 <el-dropdown-item v-if="showDownload" command="download">Download</el-dropdown-item>\
                                 <el-dropdown-item v-if="showZoom" command="zoom">Zoom In</el-dropdown-item>\
                             </cly-more-options>\
