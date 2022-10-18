@@ -1,12 +1,8 @@
 .routename-analytics-geo .geo-date-picker-container {
-	margin-bottom:32px;
+	margin-bottom: 32px;
 }
 
-// .geo-countries-section .cly-vue-radio-block .radio-wrapper .radio-button {
-// 	padding: 95px 33px;
-// }
-
-.routename-analytics-geo .radio-column{
+.routename-analytics-geo .radio-column {
 	width: 256px;
 }
 
@@ -14,4 +10,21 @@
     cursor: -webkit-grab;
     cursor: -moz-grab;
     cursor: grab;
+}
+
+.leaflet-control-zoom {
+  user-select: none;
+  border-color: #dcdcdc !important;
+  
+  a {
+    color: #333c48;
+    border-bottom-color: #dcdcdc;
+  }
+}
+
+.geo-analytics-data {
+  .cly-vue-button {
+    padding: 6px 10px;
+    border-radius: 4px;
+  }
 }

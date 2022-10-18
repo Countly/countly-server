@@ -1405,6 +1405,9 @@
             .bu-column {
                 padding: 0px;
             }
+            .divider {
+                color:#A7AEB8;
+            }
         }
         &__value-row {
             border-radius: 4px;
@@ -1437,6 +1440,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            color: #333c48;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 20px;
         }
         &__blur_container {
             position: absolute;
@@ -1561,7 +1568,7 @@
         right: 0;
         top: 0;
         background-color: transparent;
-        z-index: 2000;
+        z-index: 2001;
         width: 100%;
 
         /*

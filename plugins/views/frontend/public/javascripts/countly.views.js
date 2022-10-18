@@ -377,7 +377,7 @@
                     {
                         "name": CV.i18n('views.br'),
                         "description": CV.i18n('views.bounce_rate.desc'),
-                        "value": totals.br + " %",
+                        "value": totals.br + "%",
                         "percent": Math.min(totals.br, 100),
                         isPercentage: true,
                         "color": "#F96300"
@@ -683,7 +683,7 @@
                     {
                         "name": CV.i18n('views.br'),
                         "description": CV.i18n('views.bounce_rate.desc'),
-                        "value": totals.br + " %",
+                        "value": totals.br + "%",
                         "percent": Math.min(totals.br, 100),
                         isPercentage: true,
                         "color": "#F96300"
@@ -850,7 +850,7 @@
                                 if (vv > 100) {
                                     vv = 100;
                                 }
-                                ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + " %";
+                                ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + "%";
                             }
                             else {
                                 ob[this.data.metrics[k]] = 0;
@@ -858,7 +858,7 @@
                         }
                         else if (this.data.metrics[k] === "br") {
                             ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]] || 0;
-                            ob[this.data.metrics[k]] = countlyCommon.formatNumber(ob[this.data.metrics[k]]) + " %";
+                            ob[this.data.metrics[k]] = countlyCommon.formatNumber(ob[this.data.metrics[k]]) + "%";
                         }
                         else {
                             ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]];

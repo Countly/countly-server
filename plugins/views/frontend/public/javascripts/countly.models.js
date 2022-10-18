@@ -179,7 +179,7 @@
                     rows[k].scrCalc = 0;
                 }
 
-                rows[k].br = rows[k].br + " %";
+                rows[k].br = rows[k].br + "%";
                 //FOR ACTION MAPS
                 rows[k].actionLink = "unknown";
                 rows[k].useDropdown = true;

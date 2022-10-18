@@ -4,6 +4,24 @@ const common = require('../../../../../api/utils/common.js');
 const log = common.log("hooks:api:api_endpoint_trigger");
 
 /**
+ * 
+ * @param {string} str - string to escape
+ * @returns {string} escaped string
+ */
+function jsonEscape(str) {
+    return (str + "").replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t");
+}
+
+/**
+ * 
+ * @param {string} str - string to unescape
+ * @returns {string} unescaped string
+ */
+function jsonUnEscape(str) {
+    return (str + "").replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
+}
+
+/**
  * Http effect
  */
 class HTTPEffect {
@@ -46,28 +64,33 @@ class HTTPEffect {
                 //support post formData
                 let parsedJSON = {};
                 try {
-                    parsedJSON = JSON.parse(parsedRequestData);
+                    parsedJSON = JSON.parse(jsonEscape(parsedRequestData));
+                    for (var key in parsedJSON) {
+                        parsedJSON[key] = jsonUnEscape(parsedJSON[key]);
+                    }
                 }
                 catch (e) {
-                    log.e('http efffect parse post data err:', e);
-                    logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                    log.e('http efffect parse post data err:', e, parsedRequestData);
+                    logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)} with data: ${parsedRequestData}`);
 
                     utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
                 }
-                await request({
-                    method: 'POST',
-                    uri: parsedURL,
-                    json: parsedJSON,
-                    timeout: this._timeout,
-                },
-                function(e, r, body) {
-                    log.e("[httpeffects]", e, body, rule);
-                    if (e) {
-                        logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
-                        utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
-                    }
+                if (Object.keys(parsedJSON).length) {
+                    await request({
+                        method: 'POST',
+                        uri: parsedURL,
+                        json: parsedJSON,
+                        timeout: this._timeout,
+                    },
+                    function(e, r, body) {
+                        log.e("[httpeffects]", e, body, rule);
+                        if (e) {
+                            logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                            utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
+                        }
 
-                });
+                    });
+                }
                 break;
             }
             }

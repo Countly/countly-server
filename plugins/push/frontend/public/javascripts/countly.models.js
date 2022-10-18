@@ -1048,7 +1048,7 @@
                     badgeNumber: androidSettingsDto && androidSettingsDto.badge && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
-                    onClickURL: androidSettingsDto && androidSettingsDto.url || '',
+                    onClickURL: androidSettingsDto && androidSettingsDto.url ? countlyCommon.decodeHtml(androidSettingsDto.url) : '',
                     mediaURL: androidSettingsDto && androidSettingsDto.media ? countlyCommon.decodeHtml(androidSettingsDto.media) : '',
                     mediaMime: androidSettingsDto && androidSettingsDto.mediaMime || '',
                 };
@@ -1061,7 +1061,7 @@
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
-                    onClickURL: iosSettingsDto && iosSettingsDto.url || '',
+                    onClickURL: iosSettingsDto && iosSettingsDto.url ? countlyCommon.decodeHtml(iosSettingsDto.url) : '',
                     mediaURL: iosSettingsDto && iosSettingsDto.media ? countlyCommon.decodeHtml(iosSettingsDto.media) : '',
                     mediaMime: iosSettingsDto && iosSettingsDto.mediaMime || '',
                 };
@@ -1153,7 +1153,7 @@
             mapMessageLocalizationButtons: function(buttonsDto) {
                 var buttons = [];
                 buttonsDto.map(function(buttonDtoItem) {
-                    buttons.push({label: buttonDtoItem.title, url: buttonDtoItem.url});
+                    buttons.push({label: buttonDtoItem.title, url: buttonDtoItem.url ? countlyCommon.decodeHtml(buttonDtoItem.url) : buttonDtoItem.url});
                 });
                 return buttons;
             },

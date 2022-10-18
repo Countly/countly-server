@@ -18,10 +18,10 @@
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "grunt-contrib-watch": "1.1.0",
-    "mocha": "10.0.0",
+    "mocha": "10.1.0",
     "nyc": "15.1.0",
     "should": "13.2.3",
-    "supertest": "6.2.4"
+    "supertest": "6.3.0"
   },
   "scripts": {
     "test": "grunt --verbose"
@@ -34,7 +34,7 @@
     "async": "3.2.4",
     "basic-auth": "2.0.1",
     "bluebird": "3.7.2",
-    "body-parser": "1.20.0",
+    "body-parser": "1.20.1",
     "bunyan": "1.8.15",
     "colors": "1.4.0",
     "connect-flash": "0.1.1",
@@ -47,7 +47,7 @@
     "docdash": "1.2.0",
     "ejs": "3.1.8",
     "errorhandler": "1.5.1",
-    "express": "4.18.1",
+    "express": "4.18.2",
     "express-rate-limit": "6.6.0",
     "express-session": "1.17.3",
     "external-ip": "2.3.1",
@@ -71,7 +71,7 @@
     "mcc-mnc-list": "1.1.9",
     "method-override": "3.0.0",
     "moment": "2.29.4",
-    "moment-timezone": "0.5.37",
+    "moment-timezone": "0.5.38",
     "mongodb": "4.9.1",
     "nginx-conf": "2.1.0",
     "node-xlsx-stream": "0.1.8",

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MONGODB_CONFIG_FILE="/etc/mongod.conf"
 
 function mongodb_configure () {
@@ -142,7 +141,7 @@ EOF
     message_ok "Disabled transparent hugepages"
 }
 
-function fix_mongod_service_type () {
+function fix_mongod_service_type_and_kill_method () {
     if [[ ! $(/sbin/init --version) =~ upstart ]]; then
         SERVICE_FILE_PATH=$(systemctl status mongod | grep "loaded" | awk -F';' '{print $1}' | awk -F'(' '{print $2}')
 
@@ -150,7 +149,12 @@ function fix_mongod_service_type () {
             sed -i "/Type=/d" "${SERVICE_FILE_PATH}"
         fi
 
+        if grep -q "KillSignal=" "${SERVICE_FILE_PATH}"; then
+            sed -i "/KillSignal=/d" "${SERVICE_FILE_PATH}"
+        fi
+
         sed -i "s#\[Service\]#\[Service\]\nType=simple#g" "${SERVICE_FILE_PATH}"
+        sed -i "s#\[Service\]#\[Service\]\nKillSignal=SIGINT#g" "${SERVICE_FILE_PATH}"
 
         systemctl daemon-reload
 	fi 2> /dev/null
@@ -303,30 +307,6 @@ function mongodb_check() {
 
     message_ok "Configured security limits for MongoDB user"
 
-    #Check numactl support & configure
-    if [ -x "$(command -v numactl)" ]; then
-        numactl --hardware > /dev/null
-
-        if [ $? -eq 1 ]; then
-            message_optional "NUMA is not available on this system"
-        else
-            NUMA_NODES=$(numactl --hardware | grep nodes | awk -F' ' '{print $2}')
-            NUMA_NODES=$((NUMA_NODES + 0))
-
-            if [ ! $NUMA_NODES -ge 2 ]; then
-                message_optional "NUMA is not available on this system"
-            else
-                update_sysctl "vm.zone_reclaim_mode" "0"
-                sed -i "s#NUMACTL_STATUS=0#NUMACTL_STATUS=1#g" "${DIR}/../commands/systemd/mongodb.sh"
-                bash "${DIR}/../commands/systemd/mongodb.sh"
-
-                message_ok "Changed service file to work with NUMA"
-            fi
-        fi
-    else
-        message_warning "Command numactl not found"
-    fi
-
     #Disable transparent-hugepages
     disable_transparent_hugepages
 
@@ -362,7 +342,8 @@ function mongodb_check() {
     fi
 
     #change mongod systemd service type to 'simple' to prevent systemd timeout interrupt on wiredtiger's long boot
-    fix_mongod_service_type
+    #change how systemd will stop service
+    fix_mongod_service_type_and_kill_method
     #match service system limits to mongodb user's limits
     fix_mongod_service_limits
 
