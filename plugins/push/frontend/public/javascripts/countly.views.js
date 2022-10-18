@@ -1,11 +1,9 @@
 /* eslint-disable no-console */
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth, countlyLoggerService*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth*/
 
 (function() {
 
     var featureName = 'push';
-    var serviceLogger = countlyLoggerService.createCategory("pushNotification");
-
 
     var statusFilterOptions = [
         {label: countlyPushNotification.service.ALL_FILTER_OPTION_LABEL, value: countlyPushNotification.service.ALL_FILTER_OPTION_VALUE},
@@ -489,7 +487,7 @@
                         }
                         resolve(true);
                     }).catch(function(error) {
-                        serviceLogger.error(error, "drawer", "estimate");
+                        console.error(error);
                         self.setLocalizationOptions([]);
                         self.setCurrentNumberOfUsers(0);
                         self.updateEnabledNumberOfUsers(0);
@@ -585,7 +583,7 @@
                     CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-saved')});
                     self.$emit('save');
                 }).catch(function(error) {
-                    serviceLogger.error(error, "drawer", "onDraft");
+                    console.error(error);
                     CountlyHelpers.notify({message: error.message, type: "error"});
                 });
             },
@@ -618,7 +616,7 @@
                     CountlyHelpers.notify({ message: CV.i18n('push-notification.was-successfully-saved')});
                     self.$emit('save');
                 }).catch(function(error) {
-                    serviceLogger.error(error, "drawer", "onSubmit");
+                    console.error(error);
                     CountlyHelpers.notify({ message: error.message, type: "error"});
                     done(true);
                 });
@@ -629,7 +627,7 @@
                 this.sendToTestUsers().then(function() {
                     CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-sent-to-test-users')});
                 }).catch(function(error) {
-                    serviceLogger.error(error, "drawer", "onSendToTestUsers");
+                    console.error(error);
                     CountlyHelpers.notify({ message: error.message, type: "error"});
                 }).finally(function() {
                     self.isLoading = false;
@@ -992,7 +990,7 @@
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
                     }).catch(function(error) {
-                        serviceLogger.error(error, "drawer", "fetchCohorts");
+                        console.error(error);
                         self.setCohortOptions([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
@@ -1008,7 +1006,7 @@
                     .then(function(locations) {
                         self.setLocationOptions(locations);
                     }).catch(function(error) {
-                        serviceLogger.error(error, "drawer", "fetchLocations");
+                        console.error(error);
                         self.setLocationOptions([]);
                     }).finally(function() {
                         self.isFetchLocationsLoading = false;
@@ -1024,7 +1022,7 @@
                     .then(function(events) {
                         self.setEventOptions(events);
                     }).catch(function(error) {
-                        serviceLogger.error(error, "drawer", "fetchEvents");
+                        console.error(error);
                         self.setEventOptions([]);
                     }).finally(function() {
                         self.isFetchEventsLoading = false;
@@ -1124,7 +1122,7 @@
                         }
                     })
                     .catch(function(error) {
-                        serviceLogger.error(error, "drawer", "fetchPushNotificationById");
+                        console.error(error);
                         var initialModel = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(self.type)));
                         initialModel.type = self.type;
                         self.setPushNotificationUnderEdit(initialModel);
@@ -1147,7 +1145,7 @@
                     this.setAppConfig(countlyPushNotification.mapper.incoming.mapAppLevelConfig(appConfig.push));
                 }
                 catch (error) {
-                    serviceLogger.error(error, "drawer", "getAppConfig");
+                    console.error(error);
                 }
             }
         },
@@ -2319,7 +2317,7 @@
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
                     }).catch(function(error) {
-                        serviceLogger.error(error, "AppConfigView", "fetchCohortsIfNotFound");
+                        console.error(error);
                         self.setCohortOptions([]);
                     }).finally(function() {
                         self.isFetchCohortsLoading = false;
@@ -2335,7 +2333,7 @@
                     .then(function(testUserRows) {
                         self.setTestUserRows(testUserRows);
                     }).catch(function(error) {
-                        serviceLogger.error(error, "AppConfigView", "fetchTestUsers");
+                        console.error(error);
                         self.setTestUserRows([]);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
@@ -2397,7 +2395,7 @@
                         CountlyHelpers.notify({message: CV.i18n('push-notification.test-users-were-successfully-removed')});
                         self.fetchTestUsers();
                     }).catch(function(error) {
-                        serviceLogger.error(error, "AppConfigView", "onDeleteTestUser");
+                        console.error(error);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
                         self.isUpdateTestUsersLoading = false;
@@ -2423,7 +2421,7 @@
                         done();
                         CountlyHelpers.notify({message: CV.i18n('push-notification.test-users-were-successfully-added')});
                     }).catch(function(error) {
-                        serviceLogger.error(error, "AppConfigView", "onSubmit");
+                        console.error(error);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                         done(error);
                     }).finally(function() {
@@ -2439,7 +2437,7 @@
                     .then(function(userIds) {
                         self.setUserIdOptions(userIds);
                     }).catch(function(error) {
-                        serviceLogger.error(error, "AppConfigView", "onSearchUsers");
+                        console.error(error);
                         self.setUserIdOptions([]);
                         CountlyHelpers.notify({message: error.message, type: 'error'});
                     }).finally(function() {
