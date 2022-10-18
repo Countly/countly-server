@@ -32,6 +32,7 @@
                         return value >= 1 && value <= 12;
                     }
                 },
+                crossValidationForSubmit: {type: Boolean, required: false, default: false}
             },
             data: function() {
                 return {
