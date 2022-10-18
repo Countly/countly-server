@@ -116,7 +116,6 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.indexeddb.service.js',
                     'frontend/express/public/javascripts/countly/countly.auth.js',
                     'frontend/express/public/javascripts/countly/countly.helpers.js',
-                    'frontend/express/public/javascripts/countly/countly.hotkeys.js',
                     'frontend/express/public/javascripts/countly/countly.map.helper.js',
                     'frontend/express/public/javascripts/countly/countly.event.js',
                     'frontend/express/public/javascripts/countly/countly.session.js',
