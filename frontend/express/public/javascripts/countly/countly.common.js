@@ -4095,7 +4095,7 @@
         * @returns {string} return format "HH:MM:SS", if trimTo is specified the length of the result is trimmed
         * @example trimTo = 2, HH:MM:SS result will be trimmed to HH:MM
         */
-        countlyCommon.formatSecond = function(second, trimTo = 3) {
+        countlyCommon.formatSecond = function(second, trimTo = 5) {
             var timeLeft = parseInt(second);
             var dict = [
                 {k: 'year', v: 31536000},
