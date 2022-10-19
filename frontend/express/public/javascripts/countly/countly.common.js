@@ -4123,14 +4123,10 @@
                 return "0";
             }
             else {
-                let res = resultStrings[0];
-                if (trimTo > 3 || trimTo < 1) {
-                    trimTo = 3;
+                if (trimTo > 5 || trimTo < 1) {
+                    trimTo = 5;
                 }
-                for (let j = 1; j < trimTo && j < resultStrings.length; j++) {
-                    res += ' ' + resultStrings[j];
-                }
-                return res;
+                return (resultStrings.slice(0, Math.min(trimTo, resultStrings.length))).join(' ');
             }
         };
 
