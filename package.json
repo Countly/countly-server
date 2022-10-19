@@ -18,17 +18,17 @@
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "grunt-contrib-watch": "1.1.0",
-    "mocha": "10.0.0",
+    "mocha": "10.1.0",
     "nyc": "15.1.0",
     "should": "13.2.3",
-    "supertest": "6.2.4"
+    "supertest": "6.3.0"
   },
   "scripts": {
     "test": "grunt --verbose"
   },
   "dependencies": {
     "all-the-cities": "3.1.0",
-    "apidoc": "0.53.0",
+    "apidoc": "0.53.1",
     "apidoc-template": "github:kanwarujjaval/dash-apidoc-template",
     "argon2": "0.29.1",
     "async": "3.2.4",
@@ -71,7 +71,7 @@
     "mcc-mnc-list": "1.1.9",
     "method-override": "3.0.0",
     "moment": "2.29.4",
-    "moment-timezone": "0.5.37",
+    "moment-timezone": "0.5.38",
     "mongodb": "4.9.1",
     "nginx-conf": "2.1.0",
     "node-xlsx-stream": "0.1.8",

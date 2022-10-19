@@ -7,8 +7,8 @@
     </div>
 	<div class="clyd-widget__content">
         <div style="width: 100%; height: 100%;" class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center">
-            <div class="bu-pl-2 bu-pr-2 bu-is-clipped" :style="widgetStyling">{{widgetText}}</div>
-            <p v-if="mylink" :style="linkStyling" class="bu-p-2"><a class="bu-pt-4 bu-is-clickable color-dark-blue-100 bu-is-clipped bu-is-block" style="white-space: nowrap;text-overflow: ellipsis;" target="_blank" :href="mylink.link">{{mylink.text}}</a></p>
+            <div class="bu-pl-2 bu-pr-2 bu-is-clipped" :style="widgetStyling" v-html="widgetText"></div>
+            <p v-if="mylink" :style="linkStyling" class="bu-p-2"><a class="bu-pt-4 bu-is-clickable color-dark-blue-100 bu-is-clipped bu-is-block" style="white-space: nowrap;text-overflow: ellipsis;" target="_blank" :href="mylink.link" v-html="mylink.text"></a></p>
         </div>
 	</div>
 </div>
