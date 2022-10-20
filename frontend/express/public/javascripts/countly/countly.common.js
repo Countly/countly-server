@@ -4093,7 +4093,7 @@
         * @param {number} second  number
         * @returns {string} return format "HH:MM:SS"
         */
-        countlyCommon.formatSecond = function(second) {
+        countlyCommon.formatSecond = function(second, trimTo = 5) {
             var timeLeft = parseInt(second);
             var dict = [
                 {k: 'year', v: 31536000},
@@ -4121,7 +4121,10 @@
                 return "0";
             }
             else {
-                return resultStrings.join(" ");
+                if (trimTo > 5 || trimTo < 1) {
+                    trimTo = 5;
+                }
+                return (resultStrings.slice(0, Math.min(trimTo, resultStrings.length))).join(' ');
             }
         };
 
