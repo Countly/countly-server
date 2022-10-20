@@ -1,4 +1,4 @@
-/* globals  countlyCommon, jQuery, $, CountlyHelpers*/
+/* globals  countlyCommon, $, CountlyHelpers*/
 (function(countlyGraphNotes) {
     countlyGraphNotes.save = function(data, callback) {
         var args = {
@@ -13,7 +13,7 @@
             args.emails = data.emails;
         }
 
-        if (data && data._id) {
+        if (data._id) {
             args._id = data._id;
         }
         else {
@@ -75,4 +75,4 @@
             }
         });
     };
-}(window.countlyGraphNotes = window.countlyGraphNotes || {}, jQuery));
+}(window.countlyGraphNotes = window.countlyGraphNotes || {}));

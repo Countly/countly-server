@@ -40,7 +40,9 @@
                     this.defaultType = value;
                     var self = this;
                     var filter = {};
-                    value === "all" ? filter : filter.noteType = value;
+                    if (value !== "all") {
+                        filter = {noteType: value};
+                    }
                     countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], filter, function(data) {
                         self.notes = data;
                     });
