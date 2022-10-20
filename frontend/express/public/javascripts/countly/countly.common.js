@@ -4091,7 +4091,7 @@
         * Parse second to standard time format
         * @memberof countlyCommon
         * @param {number} second  number
-        * @param {number} [trimTo=3]  number [1,3]
+        * @param {number} [trimTo=5]  number [1,5]
         * @returns {string} return format "HH:MM:SS", if trimTo is specified the length of the result is trimmed
         * @example trimTo = 2, HH:MM:SS result will be trimmed to HH:MM
         */
