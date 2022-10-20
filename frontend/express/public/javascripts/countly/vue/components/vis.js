@@ -1,14 +1,12 @@
-/* global Vue, countlyCommon, countlyLocation, _merge, CountlyHelpers, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L */
+/* global Vue, countlyCommon, countlyLocation, _merge, CountlyHelpers, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
 
 // _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
-
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
     var FONT_FAMILY = "Inter";
-
     /**
      * legendOptions depends on calculatedLegend and legend
      * mergedOptions depends on legendOptions
@@ -1290,30 +1288,32 @@
         props: {
 
         },
-        mixins: [
-            countlyVue.mixins.i18n
-        ],
+        mixins: [countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.i18n],
         data: function() {
             return {
-                selectedItem: ''
+                selectedItem: '',
+                drawerSettings: {
+                    createTitle: CV.i18n('notes.add-new-note'),
+                    editTitle: CV.i18n('notes.edit-note'),
+                    saveButtonLabel: CV.i18n('common.save'),
+                    createButtonLabel: CV.i18n('common.create'),
+                    isEditMode: false
+                },
             };
         },
         methods: {
             handleCommand(command) {
                 switch (command) {
                 case "add":
-                    CountlyHelpers.notify({
-                        title: "Warning",
-                        message: "This feature under development",
-                        type: "warning"
+                    this.openDrawer("annotation", {
+                        noteType: "private",
+                        ts: Date.now(),
+                        color: {value: 1, label: '#39C0C8'},
+                        emails: []
                     });
                     break;
                 case "manage":
-                    CountlyHelpers.notify({
-                        title: "Warning",
-                        message: "This feature under development",
-                        type: "warning"
-                    });
+                    window.location.href = '#/analytics/graph-notes';
                     break;
                 case "show":
                     CountlyHelpers.notify({
@@ -1329,18 +1329,23 @@
         },
         computed: {
         },
-        template: '<div class="chart-type-annotation-wrapper">\
-                        <el-dropdown trigger="click" @command="handleCommand($event)">\
-                        <el-button size="small">\
-                            <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
-                        </el-button>\
-                        <el-dropdown-menu slot="dropdown">\
-                            <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>Add Note</span></el-dropdown-item>\
-                            <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>Manage Notes</el-dropdown-item>\
-                            <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>Show Notes</el-dropdown-item>\
-                        </el-dropdown-menu>\
-                    </el-dropdown>\
-                    </div>'
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
+        template:
+            '<div class="chart-type-annotation-wrapper">\
+                <el-dropdown trigger="click" @command="handleCommand($event)">\
+                <el-button size="small">\
+                    <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
+                </el-button>\
+                <el-dropdown-menu slot="dropdown">\
+                    <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>Add Note</span></el-dropdown-item>\
+                    <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>Manage Notes</el-dropdown-item>\
+                    <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>Show Notes</el-dropdown-item>\
+                </el-dropdown-menu>\
+            </el-dropdown>\
+            <drawer :settings="drawerSettings" :controls="drawers.annotation"></drawer>\
+            </div>'
     });
 
 
