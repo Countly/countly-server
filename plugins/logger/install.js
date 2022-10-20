@@ -3,7 +3,7 @@ var async = require('async'),
 
 console.log("Installing logger plugin");
 pluginManager.dbConnection().then((countlyDb) => {
-    countlyDb.collection('apps').find({}).toArray(function(err, apps) {
+    countlyDb.collection('apps').find({}).toArray(function (err, apps) {
 
         if (!apps || err) {
             countlyDb.close();
@@ -15,7 +15,7 @@ pluginManager.dbConnection().then((countlyDb) => {
                 done();
             }
 
-            countlyDb.command({ "listCollections": 1, "filter": { "name": "logs" + app._id } }, function(err, res) {
+            countlyDb.command({ "listCollections": 1, "filter": { "name": "logs" + app._id } }, function (err, res) {
                 if (err) {
                     console.log(err);
                     cb();
@@ -27,15 +27,15 @@ pluginManager.dbConnection().then((countlyDb) => {
                         if (!res.cursor.firstBatch[0].options.capped) {
                             console.log("converting to the capped");
                             countlyDb.command({ "convertToCapped": 'logs' + app._id, size: 10000000, max: 1000 },
-                                function(err) {
+                                function (err) {
                                     if (err) {
                                         console.log(err);
-                                        cb();
                                     }
-
+                                    cb();
                                 });
+                        } else {
+                            cb();
                         }
-                        cb();
                     }
                     else { //collection does not exist
                         console.log("collection does not exist");
@@ -44,7 +44,7 @@ pluginManager.dbConnection().then((countlyDb) => {
                 }
             });
         }
-        async.forEach(apps, upgrade, function() {
+        async.forEach(apps, upgrade, function () {
             console.log("Logger plugin installation finished");
             countlyDb.close();
         });
