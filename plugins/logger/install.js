@@ -17,8 +17,8 @@ pluginManager.dbConnection().then((countlyDb) => {
 
             countlyDb.command({"listCollections": 1, "filter": {"name": "logs" + app._id }}, function(err, res) {
                 if (err) {
-                    countlyDb.close();
-                    return;
+                    console.log(err);
+                    cb();
                 }
                 else {
                     //check if collection capped
@@ -28,8 +28,8 @@ pluginManager.dbConnection().then((countlyDb) => {
                             if (!res.cursor.firstBatch[0].options.capped) {
                                 countlyDb.command({ "convertToCapped": 'logs' + app._id, size: 10000000, max: 1000 }, function(err) {
                                     if (err) {
-                                        countlyDb.close();
-                                        return;
+                                        console.log(err);
+                                        cb();
                                     }
                                     else {
                                         cb();
