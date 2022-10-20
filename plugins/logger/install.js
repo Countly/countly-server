@@ -14,9 +14,40 @@ pluginManager.dbConnection().then((countlyDb) => {
             function cb() {
                 done();
             }
-            countlyDb.command({"convertToCapped": 'logs' + app._id, size: 10000000, max: 1000}, function(err) {
+
+            countlyDb.command({"listCollections": 1, "filter": {"name": "logs" + app._id }}, function(err, res) {
                 if (err) {
-                    countlyDb.createCollection('logs' + app._id, {capped: true, size: 10000000, max: 1000}, cb);
+                    countlyDb.close();
+                    return;
+                }
+                else {
+                    //check if collection capped
+                    if (res && res.cursor && res.cursor.firstBatch) {
+                        //collection exists
+                        if (res.cursor.firstBatch > 0) {
+                            if (!res.cursor.firstBatch[0].options.capped) {
+                                countlyDb.command({ "convertToCapped": 'logs' + app._id, size: 10000000, max: 1000 }, function(err) {
+                                    if (err) {
+                                        countlyDb.close();
+                                        return;
+                                    }
+                                    else {
+                                        cb();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    else { //collection does not exist
+                        countlyDb.createCollection('logs' + app._id, {capped: true, size: 10000000, max: 1000}, cb);
+                    }
+
+                }
+            });
+
+            countlyDb.command({ "convertToCapped": 'logs' + app._id, size: 10000000, max: 1000 }, function(err) {
+                if (err) {
+                    countlyDb.createCollection('logs' + app._id, { capped: true, size: 10000000, max: 1000 }, cb);
                 }
                 else {
                     cb();
