@@ -3,7 +3,7 @@ var async = require('async'),
 
 console.log("Installing logger plugin");
 pluginManager.dbConnection().then((countlyDb) => {
-    countlyDb.collection('apps').find({}).toArray(function (err, apps) {
+    countlyDb.collection('apps').find({}).toArray(function(err, apps) {
 
         if (!apps || err) {
             countlyDb.close();
@@ -15,7 +15,7 @@ pluginManager.dbConnection().then((countlyDb) => {
                 done();
             }
 
-            countlyDb.command({ "listCollections": 1, "filter": { "name": "logs" + app._id} }, function (err, res) {
+            countlyDb.command({ "listCollections": 1, "filter": { "name": "logs" + app._id } }, function(err, res) {
                 if (err) {
                     console.log(err);
                     cb();
@@ -25,12 +25,15 @@ pluginManager.dbConnection().then((countlyDb) => {
                     if (res && res.cursor && res.cursor.firstBatch && res.cursor.firstBatch.length > 0) {
                         //collection exists
                         if (!res.cursor.firstBatch[0].options.capped) {
-                            countlyDb.command({ "convertToCapped": 'logs' + app._id, size: 10000000, max: 1000 }, function (err) {
-                                if (err) {
-                                    console.log(err);
-                                }
-                                cb();
-                            });
+                            console.log("converting to the capped");
+                            countlyDb.command({ "convertToCapped": 'logs' + app._id, size: 10000000, max: 1000 },
+                                function(err) {
+                                    if (err) {
+                                        console.log(err);
+                                        cb();
+                                    }
+
+                                });
                         }
                         cb();
                     }
@@ -41,7 +44,7 @@ pluginManager.dbConnection().then((countlyDb) => {
                 }
             });
         }
-        async.forEach(apps, upgrade, function () {
+        async.forEach(apps, upgrade, function() {
             console.log("Logger plugin installation finished");
             countlyDb.close();
         });
