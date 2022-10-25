@@ -540,6 +540,12 @@
                         if (!e.e) {
                             e.e = e.key;
                         }
+                        if (!e.name) {
+                            e.name = e.key;
+                        }
+                        if (!e.description) {
+                            e.description = '';
+                        }
                         if (isEventCountAvailable) {
                             e.totalCount = eventCount[e.key] || 0;
                             e.totalCountFormatted = countlyCommon.formatNumber(e.totalCount);
