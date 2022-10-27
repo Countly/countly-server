@@ -626,7 +626,7 @@
                                     else {
                                         formatter = countlyCommon.getShortNumber;
                                     }
-                                    let valToFormat;
+                                    var valToFormat;
                                     if (typeof params[i].value === 'object') {
                                         valToFormat = params[i].value[1] || 0;
                                     }
