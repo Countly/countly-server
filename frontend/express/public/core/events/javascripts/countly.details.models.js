@@ -24,7 +24,7 @@
                 }
             }
             var series = [];
-            let yAxis = [{}];
+            var yAxis = [{}];
             if (count > 0) {
                 var countObj = {
                     name: labels.count,
@@ -32,7 +32,7 @@
                     color: "#017AFF"
                 };
                 series.push(countObj);
-                let yAxisObj = {
+                var yAxisObj = {
                     type: 'value',
                 };
                 yAxis.push(yAxisObj);
@@ -53,7 +53,7 @@
                     yAxisIndex: 2
                 };
                 series.push(durObj);
-                let yAxisObj = {
+                var yAxisObj = {
                     type: 'value',
                     axisLabel: {
                         formatter: function(value) {
