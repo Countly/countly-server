@@ -32,10 +32,10 @@
                     color: "#017AFF"
                 };
                 series.push(countObj);
-                var yAxisObj = {
+                var countYAxisObj = {
                     type: 'value',
                 };
-                yAxis.push(yAxisObj);
+                yAxis.push(countYAxisObj);
             }
             if (sum > 0) {
                 var sumObj = {
@@ -53,7 +53,7 @@
                     yAxisIndex: 2
                 };
                 series.push(durObj);
-                var yAxisObj = {
+                var durYAxisObj = {
                     type: 'value',
                     axisLabel: {
                         formatter: function(value) {
@@ -61,7 +61,7 @@
                         }
                     }
                 };
-                yAxis.push(yAxisObj);
+                yAxis.push(durYAxisObj);
             }
             var obj = {
                 series: series,
