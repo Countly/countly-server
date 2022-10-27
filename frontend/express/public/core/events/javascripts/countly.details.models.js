@@ -24,6 +24,7 @@
                 }
             }
             var series = [];
+            let yAxis = [{}];
             if (count > 0) {
                 var countObj = {
                     name: labels.count,
@@ -31,6 +32,10 @@
                     color: "#017AFF"
                 };
                 series.push(countObj);
+                let yAxisObj = {
+                    type: 'value',
+                };
+                yAxis.push(yAxisObj);
             }
             if (sum > 0) {
                 var sumObj = {
@@ -44,12 +49,23 @@
                 var durObj = {
                     name: labels.dur,
                     data: graphData[2],
-                    color: "#FF9382"
+                    color: "#FF9382",
+                    yAxisIndex: 2
                 };
                 series.push(durObj);
+                let yAxisObj = {
+                    type: 'value',
+                    axisLabel: {
+                        formatter: function(value) {
+                            return countlyCommon.formatSecond(value);
+                        }
+                    }
+                };
+                yAxis.push(yAxisObj);
             }
             var obj = {
-                series: series
+                series: series,
+                yAxis: yAxis,
             };
             context.commit('setLineChartData', obj);
         },
