@@ -1049,7 +1049,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 else if (params.qstring.action === "getTotals") {
                     var settings = {app_id: params.qstring.app_id, startPos: 0, dataLength: 0, sortby: {}, sortcol: 0, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["s", "u", "t", "b", "uvc"], monthly: ["u", "t", "s", "b", "s", "uvc"]}};
                     var pipe = createAggregatePipeline(params, settings);
-                    pipe.push({"$group": {"_id": null, "s": {"$sum": "$s"}, "t": {"$sum": "$t"}, "b": {"$sum": "$b"}, "uvc": {"$sum": "$uvc"}}});
+                    pipe.push({"$group": {"_id": null, "s": {"$sum": "$s"}, "t": {"$sum": "$t"}, "b": {"$avg": "$b"}, "uvc": {"$sum": "$uvc"}}});
                     var collectionName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
                     common.db.collection(collectionName).aggregate(pipe, {allowDiskUse: true}, function(err, res) {
                         if (err) {
