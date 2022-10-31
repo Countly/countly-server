@@ -403,11 +403,11 @@
                 xAxis: {data: []},
                 series: [
                     {
-                        name: "newUsers",
+                        name: CV.i18n('common.table.new-users'),
                         data: [],
                     },
                     {
-                        name: "totalSessions",
+                        name: CV.i18n('common.table.total-sessions'),
                         data: [],
                     }
                 ]
