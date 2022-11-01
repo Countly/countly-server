@@ -85,6 +85,7 @@ tracker.enable = function() {
         interval: 10000,
         fail_timeout: 600,
         session_update: 120,
+        remote_config: true,
         debug: (logger.getLevel("tracker:server") === "debug")
     });
     isEnabled = true;
