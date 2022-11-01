@@ -30,7 +30,7 @@
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="timeStamp"  align="center">
+                    <el-table-column prop="timeStamp"  align="center" v-if="showViewUsers">
                         <template slot-scope="scope">
                             <div class="bu-level-right">
                                 <el-link type="primary" @click="onUserListClick(scope.row.timeStamp)" :underline="false" class="slipping-away-users-table__link">{{i18n('slipping-away-users.table-user-list')}}</el-link>
