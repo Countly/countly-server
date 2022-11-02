@@ -9,7 +9,7 @@
     <cly-main>
         <cly-date-picker-g class="session-overview-date-picker-container"></cly-date-picker-g>
         <cly-section>
-            <cly-chart-line  xAxisLabelOverflow="unset" :option="sessionOverviewOptions" :height="400" v-loading="isLoading" :force-loading="isLoading" :legend="legend"></cly-chart-line>
+            <cly-chart-line  xAxisLabelOverflow="unset" :option="sessionOverviewOptions" :height="400" v-loading="isLoading" :force-loading="isLoading" :legend="legend" category="session"></cly-chart-line>
         </cly-section>
         <cly-section>
             <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" :force-loading="isLoading">

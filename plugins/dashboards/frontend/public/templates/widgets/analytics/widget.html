@@ -21,7 +21,7 @@
 
 	<div class="clyd-widget__content" v-loading="loading" :class="'clyd-widget__content--vis-' + data.visualization">
 		<template v-if="!loading">
-            <cly-chart-time v-if="data.visualization === 'time-series'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}">
+            <cly-chart-time v-if="data.visualization === 'time-series'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}" :category="data.data_type || data.feature" :hide-notation="true">
             </cly-chart-time>
             <div v-else-if="data.visualization === 'number'" >
                 <h1 class="bu-pb-2">{{formatNumber(number.total)}}</h1>

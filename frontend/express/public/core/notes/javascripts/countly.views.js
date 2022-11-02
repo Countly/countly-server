@@ -53,7 +53,7 @@
             refresh: function(force) {
                 var self = this;
                 if (force) {
-                    countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], null, function(data) {
+                    countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {}, function(data) {
                         self.notes = data;
                     });
                 }

@@ -6,7 +6,7 @@
             ts: data.ts,
             noteType: data.noteType,
             color: data.color.value,
-            category: 'session',
+            category: data.category,
         };
 
         if (data.noteType === 'shared') {

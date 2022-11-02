@@ -4390,15 +4390,17 @@
             }
             var args = {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
-                "category": (filter && filter.category) ? filter.category : "session",
                 "notes_apps": JSON.stringify(appIds),
                 "period": countlyCommon.getPeriod(),
                 "method": "notes",
+                "dt": Date.now()
             };
             if (filter && filter.noteType) {
                 args.note_type = filter.noteType;
             }
-
+            if (filter && filter.category) {
+                args.category = filter.category;
+            }
             return window.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
