@@ -362,8 +362,10 @@
             if (metric === "br") {
                 takefrom = calculated.chartDP[3].data;
                 for (var k = 0; k < takefrom.length; k++) {
-
-                    data.push(Math.floor(takefrom[k][1] * 100 / (calculated.chartDP[1].data[k][1] || 1)));
+                    var bounceRate = Math.floor(takefrom[k][1] * 100 / (calculated.chartDP[1].data[k][1] || 1));
+                    //there may be cases where bounces are higher than landing. Cap br to 100 for these cases
+                    bounceRate > 100 ? bounceRate = 100 : bounceRate;
+                    data.push(bounceRate);
                 }
             }
             else {
