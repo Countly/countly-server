@@ -6,12 +6,12 @@
         </div>
     </div>
 	<div class="clyd-widget__content">
-        <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center notes-full-w-h">
+        <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center clyd-widget__content__note">
 			<vue-scroll :ops="scrollNote">
 			    <div class="bu-pl-2 bu-pr-2" :style="widgetStyling" v-html="widgetText"></div>
 		    </vue-scroll>
 			<p v-if="mylink" :style="linkStyling" class="bu-p-2">
-                <a class="bu-pt-4 bu-is-clickable color-dark-blue-100 bu-is-clipped bu-is-block notes-link-ellipsis" target="_blank" :href="mylink.link" v-html="mylink.text"></a>
+                <a class="bu-pt-4 bu-is-clickable color-dark-blue-100 bu-is-clipped bu-is-block clyd-widget__content__note--ellipsis" target="_blank" :href="mylink.link" v-html="mylink.text"></a>
             </p>
         </div>
 	</div>

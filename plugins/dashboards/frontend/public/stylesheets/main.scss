@@ -31,18 +31,9 @@
 			position: absolute;
 			top:16px;
 			right:16px;
+            z-index: 1;
 		}
 	}
-
-    .notes-link-ellipsis {
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .notes-full-w-h {
-        width: 100%;
-        height: 100%;
-      }
 }
 
 .dashboards-notes-widget:hover .notes-widget-button {
@@ -192,6 +183,16 @@
 
                 td {
                     padding: 9px 0;
+                }
+            }
+
+            &__note {
+                width: 100%;
+                height: 100%;
+        
+                &--ellipsis {
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
                 }
             }
 
