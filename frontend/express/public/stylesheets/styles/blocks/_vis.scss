@@ -378,3 +378,23 @@
         margin-left: 24px;
     }
 }
+
+.graph-notes-tooltip {
+    width:286px; 
+    max-height:118px;
+    overflow: auto;
+
+    &__header {
+        width: 100%;
+        .input-owner {
+            font-weight: 500;
+        }
+    }
+    &__body {
+        .input-notes {
+            word-break: break-word; 
+            display: inline-block; 
+            white-space: normal;
+        }
+    }
+}
