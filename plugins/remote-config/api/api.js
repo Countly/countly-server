@@ -888,9 +888,6 @@ plugins.setConfigs("remote-config", {
                     if (error) {
                         log.w("Error while bulk write of updating parameters count", error);
                     }
-                    else {
-                        plugins.dispatch("/systemlogs", {params: params, action: "rc_parameters_edited", data: { parameters: parameters }});
-                    }
                 });
             }
         }
