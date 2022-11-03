@@ -245,6 +245,10 @@
             onMetricClick: function(params) {
                 app.navigate("#/analytics/events/key/" + params.key, true);
             },
+            durCheck: function(item) {
+                var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
+                return item.eventProperty === (eventMap[item.name]).dur.toUpperCase();
+            },
             valFormatter: function(val) {
                 return countlyCommon.formatSecond(val);
             }
@@ -299,9 +303,10 @@
                                 }
                             }
                         }
-                        let total = countlyCommon.formatNumber(currentData[j].total);
-                        let yAxis = this.monitorEventsOptions.yAxis;
-                        if (currentData[j].eventProperty === 'DUR') {
+                        var total = countlyCommon.formatNumber(currentData[j].total);
+                        var yAxis = this.monitorEventsOptions.yAxis;
+                        var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
+                        if (currentData[j].eventProperty === (eventMap[currentData[j].name]).dur.toUpperCase()) {
                             total = countlyCommon.formatSecond(currentData[j].total, 2);
                             yAxis.axisLabel = {
                                 formatter: function(value) {
