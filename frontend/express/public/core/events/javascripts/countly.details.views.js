@@ -157,7 +157,11 @@
                 return this.$store.getters["countlyAllEvents/availableSegments"];
             },
             selectedEventName: function() {
-                return this.$store.getters["countlyAllEvents/allEventsProcessed"].eventName;
+                var eventName = this.$store.getters["countlyAllEvents/allEventsProcessed"].eventName;
+                if (eventName) {
+                    this.graphNotesCategory = 'events_' + eventName.split(' ').join('_');
+                }
+                return eventName;
             },
             groupData: function() {
                 return this.$store.getters["countlyAllEvents/groupData"];
@@ -205,7 +209,10 @@
 
         },
         data: function() {
-            return {description: CV.i18n('events.all.title.new') };
+            return {
+                description: CV.i18n('events.all.title.new'),
+                graphNotesCategory: ''
+            };
         },
         beforeCreate: function() {
             var self = this;
