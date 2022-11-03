@@ -1038,6 +1038,9 @@
         watch: {
             notationSelectedBucket: function() {
                 this.getGraphNotes();
+            },
+            category: function() {
+                this.getGraphNotes();
             }
         },
         created: function() {
