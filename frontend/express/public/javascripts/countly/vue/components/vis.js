@@ -867,6 +867,11 @@
                 type: String,
                 required: false,
                 default: ''
+            },
+            notationSelectedBucket: {
+                type: String,
+                required: false,
+                default: "weekly"
             }
         },
         data: function() {
@@ -917,14 +922,30 @@
             graphNotesTimeConverter: function(ts) {
                 var currentPeriod = countlyCommon.periodObj._period;
                 var graphNoteDate = new Date(ts);
-                if (currentPeriod === "hour") {
-                    return graphNoteDate.getUTCHours();
-                }
-                else if (currentPeriod === "yesterday") {
-                    return moment.utc(ts).format("D MMM, hh:00");
+                if (this.category === "drill" || this.category === "formulas") {
+                    if (this.notationSelectedBucket === "hourly") {
+                        return countlyCommon.formatDate(moment(graphNoteDate), "DD MMM YYYY hh:00") || 0;
+                    }
+                    else if (this.notationSelectedBucket === "daily") {
+                        return countlyCommon.formatDate(moment(graphNoteDate), "DD MMM YYYY") || 0;
+                    }
+                    else if (this.notationSelectedBucket === "weekly") {
+                        return "W" + moment(graphNoteDate).isoWeek() + " " + moment(graphNoteDate).isoWeekYear();
+                    }
+                    else if (this.notationSelectedBucket === "monthly") {
+                        return countlyCommon.formatDate(moment(graphNoteDate), "MMM YYYY");
+                    }
                 }
                 else {
-                    return countlyCommon.formatDate(moment(ts), countlyCommon.periodObj.dateString) || 0;
+                    if (currentPeriod === "hour") {
+                        return graphNoteDate.getUTCHours();
+                    }
+                    else if (currentPeriod === "yesterday") {
+                        return moment.utc(ts).format("D MMM, hh:00");
+                    }
+                    else {
+                        return countlyCommon.formatDate(moment(ts), countlyCommon.periodObj.dateString) || 0;
+                    }
                 }
             },
             mergeGraphNotesByDate: function(notes) {
@@ -981,7 +1002,7 @@
                 return template;
             },
             getGraphNotes: function() {
-                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] && this.category !== "drill" && this.category !== "formulas") {
+                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
                     var self = this;
                     countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {category: this.category}).then(function(data) {
                         self.notes = data.aaData;
@@ -1013,6 +1034,11 @@
                     });
                 }
             },
+        },
+        watch: {
+            notationSelectedBucket: function() {
+                this.getGraphNotes();
+            }
         },
         created: function() {
             this.getGraphNotes();
@@ -1467,9 +1493,9 @@
                 }
             },
             notesVisibility: function() {
-                this.persistValue = countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] || false;
                 var persistData = {};
-                persistData["graphNotes_" + countlyCommon.ACTIVE_APP_ID] = !this.persistValue;
+                this.persistValue = !this.persistValue;
+                persistData["graphNotes_" + countlyCommon.ACTIVE_APP_ID] = this.persistValue;
                 countlyCommon.setPersistentSettings(persistData);
                 this.$emit('notes-visibility-change');
             },
@@ -1528,7 +1554,7 @@
                 type: Boolean,
                 default: false,
                 required: false
-            }
+            },
         },
         data: function() {
             return {
@@ -1602,7 +1628,7 @@
                 this.selectedChartType = this.chartType;
             }
         },
-        template: '<div class="bu-level">\
+        template: '<div class="bu-level bu-pr-0">\
                         <div class="bu-level-left">\
                         <div class="bu-level-item" v-if="showToggle && !isZoom">\
                             <chart-toggle :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
@@ -1610,12 +1636,12 @@
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
 							<slot name="chart-header-left-input"></slot>\
                         </div>\
-                        <div class="bu-level-right">\
+                        <div class="bu-level-right bu-mt-1">\
                             <div class="bu-level-item" v-if="selectedChartType === \'line\' && !isZoom && !hideNotation">\
                                 <add-note :category="this.category" @refresh="refresh" @notes-visibility-change="notesVisibility"></add-note>\
                             </div>\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
-                            <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
+                            <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
                                 <el-dropdown-item v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
                                 <el-dropdown-item v-if="showZoom" command="zoom"><i class="cly-icon-btn cly-icon-zoom bu-mr-3"></i>Zoom In</el-dropdown-item>\
                             </cly-more-options>\
@@ -2028,23 +2054,23 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header :chart-type="\'line\'" :category="this.category" :hide-notation="this.hideNotation" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
+                        <chart-header :chart-type="\'line\'" :category="this.category" :hide-notation="this.hideNotation" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
                             <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']" style="min-height: 0">\
-                                <echarts\
-                                    v-if="!isChartEmpty"\
-                                    :updateOptions="echartUpdateOptions"\
-                                    ref="echarts"\
-                                    v-bind="$attrs"\
-                                    v-on="$listeners"\
-                                    :option="chartOptions"\
-                                    :autoresize="autoresize"\
-                                    @finished="onChartFinished"\
-                                    @datazoom="onDataZoom">\
-                                </echarts>\
+                            <echarts\
+                                v-if="!isChartEmpty"\
+                                :updateOptions="echartUpdateOptions"\
+                                ref="echarts"\
+                                v-bind="$attrs"\
+                                v-on="$listeners"\
+                                :option="chartOptions"\
+                                :autoresize="autoresize"\
+                                @finished="onChartFinished"\
+                                @datazoom="onDataZoom">\
+                            </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                     <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
@@ -2157,10 +2183,18 @@
                     this.getGraphNotes();
                 }
             },
+            notesVisibility: function() {
+                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                    this.getGraphNotes();
+                }
+                else {
+                    this.seriesOptions.markPoint.data = [];
+                }
+            }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh">\
+                            <chart-header ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
