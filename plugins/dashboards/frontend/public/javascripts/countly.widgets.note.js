@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon */
+/*global countlyVue, CV, countlyCommon, ElementTiptap */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
@@ -65,6 +65,9 @@
             },
             widgetText: function() {
                 return this.data.content;
+            },
+            widgetHTML: function() {
+                return this.data.contenthtml;
             }
         },
         methods: {
@@ -119,7 +122,30 @@
                             value: "justify"
                         }
                     ]
-                }
+                },
+                extensions: [
+                    new ElementTiptap.Doc(),
+                    new ElementTiptap.Text(),
+                    new ElementTiptap.Paragraph(),
+                    new ElementTiptap.Heading({ level: 5 }),
+                    new ElementTiptap.Bold({ bubble: true }), // render command-button in bubble menu.
+                    new ElementTiptap.Underline({ bubble: true, menubar: false }), // render command-button in bubble menu but not in menubar.
+                    new ElementTiptap.Italic(),
+                    new ElementTiptap.Strike(),
+                    new ElementTiptap.ListItem(),
+                    new ElementTiptap.BulletList(),
+                    new ElementTiptap.OrderedList(),
+                    new ElementTiptap.TodoItem(),
+                    new ElementTiptap.TodoList(),
+                    new ElementTiptap.TextAlign(),
+                    new ElementTiptap.TextColor({colors: countlyCommon.GRAPH_COLORS}),
+                    new ElementTiptap.FontSize(),
+                    new ElementTiptap.FontType(),
+                    new ElementTiptap.LineHeight(),
+                    new ElementTiptap.Link(),
+                    new ElementTiptap.HorizontalRule(),
+                    new ElementTiptap.History(),
+                ]
             };
         }
     });
@@ -146,15 +172,16 @@
                 return {
                     widget_type: "note",
                     feature: "core",
-                    content: "",
+                    //content: "",
                     apps: "*",
-                    text_decoration: [],
-                    bar_color: 1,
-                    font_size: "15",
-                    link_text: "",
-                    link_path: "",
-                    add_link: false,
-                    text_align: ""
+                    contenthtml: "",
+                    // text_decoration: [],
+                    // bar_color: 1,
+                    // font_size: "15",
+                    // link_text: "",
+                    // link_path: "",
+                    // add_link: false,
+                    // text_align: ""
                 };
             },
             beforeSaveFn: function(doc) {
