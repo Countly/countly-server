@@ -157,11 +157,11 @@
                 return this.$store.getters["countlyAllEvents/availableSegments"];
             },
             selectedEventName: function() {
-                var eventName = this.$store.getters["countlyAllEvents/allEventsProcessed"].eventName;
+                var eventName = this.$store.getters["countlyAllEvents/selectedEventName"];
                 if (eventName) {
-                    this.graphNotesCategory = 'events_' + eventName.split(' ').join('_');
+                    this.graphNotesCategory = 'events_' + eventName;
                 }
-                return eventName;
+                return this.$store.getters["countlyAllEvents/allEventsProcessed"].eventName;
             },
             groupData: function() {
                 return this.$store.getters["countlyAllEvents/groupData"];
