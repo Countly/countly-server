@@ -1,0 +1,88 @@
+<div class="cly-vue-revenue">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2 class="bu-mr-2">{{pagetitle}}</h2>
+            <cly-tooltip-icon :tooltip="i18n('revenue.tooltip')"></cly-tooltip-icon>
+        </template>
+        <template v-slot:header-right>
+            <cly-more-options v-if= "canUserUpdate && isGlobalAdmin" size="small">
+                <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+                    <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+                  </el-dropdown-item>
+            </cly-more-options>
+        </template>
+    </cly-header>
+    <cly-main v-loading="!showDatatable">
+        <div class="bu-mb-5">
+            <cly-date-picker-g type="daterange" range-separator="To" start-placeholder="Start date"
+                end-placeholder="End date">
+            </cly-date-picker-g>
+            <cly-notification :text="currencyWarningMsg" v-if="!hasCurrencySymbol"  class="bu-mb-5 bu-mt-5">
+            </cly-notification>
+        </div>
+            <div class="active-revenue-section">
+            <el-tabs :value="active_tab" type="card" stretch>
+                <el-tab-pane :name="item.id" :key="id" v-for="(item, idx) in revenue" >
+                    <div @click="getActiveData(item.id)" slot="label">
+                        <div class="text-medium color-cool-gray-100 bu-p-5">
+                            <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
+                                <div>
+                                    <span class="text-medium">{{item.title}} {{item.subtitle}}</span>
+                                    <cly-tooltip-icon :tooltip="item.tooltip"></cly-tooltip-icon>
+                                </div>
+                            </div>
+                            <div class="bu-is-flex bu-is-align-items-center number">
+                                <h2 v-if="item.data">{{formatTableNumber(item.data.total, item.is_number)}}</h2>
+                                <div v-if="item.data && item.data.change.trend == 'u'" class="cly-trend-up">
+                                    <i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{item.data.change.percent}}</span>
+                                </div>
+                                <div v-if="item.data && item.data.change.trend == 'd'" class="cly-trend-down">
+                                    <i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2"></i><span>{{item.data.change.percent}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class = "bu-pb-4" style="border-radius: 0 0px 4px 4px; background-color: #ffffff; border: 1px solid #ececec ">
+                    <cly-chart-time :option="timeOptions" category="revenue"></cly-chart-time>
+                    </div>
+                </el-tab-pane>	              
+            </el-tabs>
+            </div>			
+        <cly-section>
+            <cly-datatable-n :persist-key="revenueTablePersistKey" v-if="tableHeader.length > 0" :rows="dataTable" :available-dynamic-cols="tableDynamicCols" >
+                <template v-slot="scope">
+                    <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
+                    <el-table-column min-width=126 v-if = "col.value === 'date'" fixed="left" sortable="custom" prop="date" label="Date">
+                    </el-table-column>
+                    <el-table-column min-width=150 v-if ="col.value === 's'" sortable="custom" :label="tableHeader[0]">
+                        <template v-slot="rowScope">
+                            <span class="text-medium">{{formatTableNumber(rowScope.row.s)}}</span>
+                        </template>            
+                    </el-table-column>
+                    <el-table-column min-width=210 v-if= "col.value === 'curr_avg'" sortable="custom" :label="tableHeader[1]">
+                        <template v-slot="rowScope">
+                            <span class="text-medium">{{formatTableNumber(rowScope.row.curr_avg)}}</span>
+                        </template> 
+                    </el-table-column>
+                    <el-table-column min-width=260 v-if = "col.value === 'curr_avg_per_paying_customer'" sortable="custom" :label="tableHeader[2]">
+                        <template v-slot="rowScope">
+                            <span class="text-medium">{{formatTableNumber(rowScope.row.curr_avg_per_paying_customer)}}</span>
+                        </template> 
+                    </el-table-column>
+                    <el-table-column min-width=192 sortable="custom" v-if = "col.value === 'p'" :label="tableHeader[3]">
+                        <template v-slot="rowScope">
+                            <span class="text-medium">{{formatTableNumber(rowScope.row.p,true)}}</span>
+                        </template> 
+                    </el-table-column>
+                    <el-table-column min-width=195 sortable="custom" v-if = "col.value === 'curr_paying_non_paying'" prop="curr_paying_non_paying" :label="tableHeader[4]">
+                        <template v-slot="rowScope">
+                            <span class="text-medium">{{formatTableNumber(rowScope.row.curr_paying_non_paying,true)}}</span>
+                        </template> 
+                    </el-table-column>
+                    </template>
+                </template>
+            </cly-datatable-n>
+
+        </cly-section>
+    </cly-main>
+</div>

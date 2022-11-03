@@ -1,0 +1,141 @@
+<script type="text/x-template" id="cohorts-compare">
+    <div class="cohorts-view cohorts-compare">
+        <cly-header>
+            <template v-slot:header-left>
+                <h2>{{i18n('cohorts.compare-cohorts')}}</h2> 
+            </template>
+            <template v-slot:header-top>
+                <cly-back-link link="/cohorts" class="text-medium" :title="i18n('cohorts.back-to')"></cly-back-link>
+            </template>
+        </cly-header>
+        <cly-main>
+            <el-select
+                style="width:480px"
+                multiple
+                filterable
+                :collapse-tags="false"
+                v-model="selectedCohortList"
+                allow-create
+                default-first-option
+                :multiple-limit="4"
+                class="cohorts-compare__select-cohorts"
+                :placeholder="i18n('cohorts.compare.select-cohorts')">
+                    <el-option
+                    v-for="item in availableCohorts"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item">
+                    </el-option>
+            </el-select>
+            <el-button :disabled="availableCohorts.length==0 || selectedCohortList.length==0" @click="compareCohort" type="success" size="small" >{{i18n('compare.button')}}</el-button>
+            <div class="bu-mt-6">
+                <cly-date-picker-g></cly-date-picker-g>
+            </div>
+            <div class="bu-mt-5 bu-is-flex">
+                <h4 class="bu-mt-1">{{i18n('cohorts.results-by')}}</h4>
+                <el-select class="bu-ml-2" v-model="selectedResult" size="small" :adaptive-length="true" :arrow="false">
+                    <el-option v-for="item in resultTypes"
+                        :key="item.key"
+                        :label="item.value" 
+                        :value="item.key">
+                    </el-option>
+                </el-select>
+            </div>
+            <cly-section class="bu-mt-5">
+                <div>
+                    <cly-chart-time v-if="selectedResult===1" :show-toggle="false" :show-download="false" :show-zoom="false" :option="totalUsersSeriesData" :height="464" category="cohorts"></cly-chart-time>
+                    <cly-chart-time v-if="selectedResult===2" :show-toggle="false" :show-download="false" :show-zoom="false" :option="totalSessionsSeriesData" :height="464" category="cohorts"></cly-chart-time>
+                    <cly-chart-time v-if="selectedResult===3" :show-toggle="false" :show-download="false" :show-zoom="false" :option="avgDurationSeriesData" :height="464" category="cohorts"></cly-chart-time>
+                </div>   
+            </cly-section>
+            <!-- <cly-section> -->
+                <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered bu-is-multiline">
+                    <div class="bu-column bu-is-6">
+                        <cly-section>
+                            <div class="cohorts-compare__entered-users">
+                                <div class="bu-level bu-pt-5 bu-pl-5 bu-pr-5">
+                                    <!-- Left side -->
+                                    <div class="bu-level-left">
+                                        <div class="bu-level-item">
+                                        <h4>
+                                            {{i18n('cohorts.entered-users')}}
+                                        </h4>
+                                        <cly-tooltip-icon class="bu-ml-2"></cly-tooltip-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                                <cly-chart-time 
+                                    :show-toggle="false" 
+                                    :show-zoom="false" 
+                                    :show-download="false"
+                                    :height="285"
+                                    :legend='{position: "bottom"}'
+                                    :option="enteredSeriesData"
+                                    category="cohorts">
+                                </cly-chart-time>
+                            </div>
+                        </cly-section>
+                    </div>
+                    <div class="bu-column bu-is-6">
+                        <cly-section class="bu-ml-3">
+                            <div class="cohorts-compare__exited-users">
+                                <div class="bu-level bu-pt-5 bu-pl-5 bu-pr-5">
+                                    <div class="bu-level-left">
+                                    <div class="bu-level-item">
+                                        <h4>
+                                            {{i18n('cohorts.exited-users')}}
+                                        </h4>
+                                        <cly-tooltip-icon class="bu-ml-2"></cly-tooltip-icon>
+                                    </div>
+                                    </div>
+                                </div>
+                                <cly-chart-time 
+                                    :show-toggle="false" 
+                                    :show-zoom="false"
+                                    :show-download="false"
+                                    :option="exitedSeriesData" 
+                                    :height="285"
+                                    category="cohorts">
+                                </cly-chart-time>
+                            </div>
+                        </cly-section>
+                    </div>
+                </div>
+            <!-- </cly-section> -->
+            <cly-section>
+                <cly-datatable-n
+                    :rows="compareRows">
+                    <template v-slot="scope">
+                        <el-table-column sortable="true" min-width="200" prop="name" :label="i18n('cohorts.name')">
+                            <template v-slot="rowScope">
+                                <div class="bu-tag is-legend bu-mr-2" :style="{backgroundColor: rowScope.row.color}"></div>
+                                <span class="text-medium" v-tooltip="rowScope.row.name" v-html="rowScope.row.name"></span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column sortable="true" prop="u" :label="i18n('cohorts.total-users')">
+                            <template v-slot="rowScope">
+                                <div>
+                                    {{ formatNumber(rowScope.row.u) }}
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column sortable="true" prop="i" :label="i18n('cohorts.entered-users')">
+                            <template v-slot="rowScope">
+                                <div>
+                                    {{ formatNumber(rowScope.row.i) }}
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column sortable="true" prop="o" :label="i18n('cohorts.exited-users')">
+                            <template v-slot="rowScope">
+                                <div>
+                                    {{ formatNumber(rowScope.row.o) }}
+                                </div>
+                            </template>
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </cly-section>
+        </cly-main>
+    </div>
+</script>

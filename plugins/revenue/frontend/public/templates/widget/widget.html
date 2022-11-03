@@ -1,0 +1,32 @@
+<div v-bind:class="[componentId, 'clyd-widget']">
+	<div class="bu-level">
+		<div v-if="revenue_type.length > 0 && data.metric_compare_type !== 'compare_metrics'"
+			class="bu-level-left bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-start"
+			style="min-width: 0">
+			<div>
+				<clyd-widget-title class="bu-level-item" :title="revenue_type[0].label + ' ' +revenue_type[0].subtitle">
+				</clyd-widget-title>
+			</div>
+			<div class="cly-vue-revenue_numerical_value">{{revenueNumericalValue}}
+				{{revenueValue}}</div>
+		</div>
+		<div v-else class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0">
+			<clyd-widget-title v-if="data.metric_compare_type !== 'prev_period'" class="bu-level-item" :title="title"
+				:labels="metricsLabel"></clyd-widget-title>
+			<span>{{revenueValue}}</span>
+		</div>
+		<div class="bu-level-right">
+			<slot name="action"></slot>
+		</div>
+	</div>
+	<div class="bu-level">
+		<div class="bu-is-flex bu-is-justify-content-start">
+			<clyd-primary-legend :showApps="false" :apps="data.apps" :custom-period.sync="custom_period">
+			</clyd-primary-legend>
+		</div>
+	</div>
+	<cly-chart-time ref="echartRef" height="auto" skin="full" :showDownload=false
+		:showToggle=false :showZoom=false :option="timeOptions" :legend="{show: false}"  category="revenue">
+	</cly-chart-time>
+	<clyd-secondary-legend :apps="data.apps" :labels="legendLabels"></clyd-secondary-legend>
+</div>

@@ -1,0 +1,64 @@
+<div class="cly-vue-apm__card bu-is-flex bu-is-flex-direction-column" :style="{height: height + 'px'}">
+    <div class="bu-level bu-mb-2">
+        <div class="bu-level-left">
+            <div class="bu-level-item" v-if="title.label">
+                <div class="text-medium bu-mr-1">
+                    {{title.label}}
+                </div>
+                <cly-tooltip-icon :tooltip="title.tooltip"></cly-tooltip-icon>
+            </div>
+        </div>
+        <div class="bu-level-right">
+            <div class="bu-level-item" v-if="action.url || action.label">
+                <a :href="action.url" class="text-small bu-mr-1">{{action.label || i18nM("performance-monitoring.show-more")}}</a>
+                <i class="ion-android-arrow-forward"></i>
+            </div>
+        </div>
+    </div>
+
+    <slot name="info">
+        <div class="bu-mb-2" v-if="!isEmpty">
+            <h2 class="bu-mr-1" style="display: inline;">{{info.value}}</h2>
+            <span class="text-small">{{info.label}}</span>
+        </div>
+    </slot>
+
+    <div class="bu-is-flex-grow-1">
+        <slot>
+            <div v-if="!isEmpty" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-center" style="height: 100%;">
+                <!-- -12 in chart height as some extra chart offset height -->
+                <cly-chart-time
+                    v-if="setting === 'time'"
+                    height="auto"
+                    :bucket="getBucket()"
+                    :option="timeOptions"
+                    :showDownload="false"
+                    :showZoom="false"
+                    :showToggle="false"
+                    :legend="{show: false}"
+                    :hide-notation="true">
+                </cly-chart-time>
+                <cly-chart-line
+                    v-if="setting === 'aggregate' && mdata.type === 'line'"
+                    height="auto"
+                    :bucket="getBucket()"
+                    :option="aggregateOptions"
+                    :showDownload="false"
+                    :showZoom="false"
+                    :showToggle="false"
+                    :legend="{show: false}"
+                    :hide-notation="true">
+                </cly-chart-line>
+                <cly-progress-bar
+                    style="height: 32px;"
+                    v-if="setting === 'aggregate' && mdata.type === 'bar'"
+                    :height="32"
+                    :percentage="barOptions.percentage"
+                    color="#017AFF"
+                    background-color="#ECECEC">
+                </cly-progress-bar>
+            </div>
+            <cly-blank v-else :classes="{'bu-py-0': true}"></cly-blank>
+        </slot>
+    </div>
+</div>

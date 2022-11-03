@@ -1,0 +1,95 @@
+<div v-bind:class="[componentId, 'clyd-widget']">
+    <div class="bu-level">
+        <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0">
+            <clyd-widget-title class="bu-level-item bu-is-capitalized" :title="title" :labels="labels"></clyd-widget-title>
+        </div>
+        <div class="bu-level-right">
+            <div class="bu-level-item" v-if="isAllowed">
+                <cly-more-options @command="onWidgetCommand">
+                    <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                    <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                    <el-dropdown-item command="zoom" v-if="data.visualization_type !== 'table'">{{i18n('common.zoom-in')}}</el-dropdown-item>
+                </cly-more-options>
+            </div>
+        </div>
+    </div>
+
+    <cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
+
+    <div class="bu-is-flex bu-is-align-items-center">
+        <clyd-primary-legend :apps="data.apps" :show-period="false"></clyd-primary-legend>
+        <i class="fas fa-circle color-cool-gray-50 bu-ml-2 bu-mr-1" style="font-size: 4px;"></i>
+        <span class="text-small color-cool-gray-100">{{formattedPeriodStr[data.period]}}</span>
+        <span v-if="data.visualization_type !== 'table'" class="bu-ml-3 text-small color-cool-gray-100">{{data.visualization_graph_type === 'graph1' ? i18n('retention.graph.standard') : i18n('retention.graph.weighted')}}</span>
+    </div>
+
+    <div class="clyd-widget__content bu-mt-3" v-loading="loading" style="overflow: auto; align-content: flex-start; align-items: flex-start;">
+        <template v-if="!loading">
+            <cly-chart-line v-if="data.visualization_type !== 'table'" :option="retentionLineChartOptions" :legend="{show:false}" :showToggle=false  :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef" :show-download=false height="auto" skin="full" category="retention"></cly-chart-line>
+            <div v-else class="retention-table__widget-flex-disabler" style="height: 100%; width:100%;">
+                <div>
+                    <cly-blank v-if="parsedRetentionRows.length < 2" :classes="{'bu-p-0': true}"></cly-blank>
+                    <div v-else>
+                        <div class="retention-boxes" style="border-top: none; height: 100%;">
+                            <div class="retention-boxes__content">
+                                <div class="retention-boxes__header-row retention-boxes__header-row--widget">
+                                    <div class="retention-boxes__col-date retention-boxes__padding text-small">
+                                        <span>
+                                            {{ i18n('retention.date') }}
+                                        </span>
+                                        <span style="opacity: 0;">Placeholder</span>
+                                    </div>
+                                    <div class="retention-boxes__col-users retention-boxes__padding text-small">
+                                        <span>
+                                            {{ i18n('retention.new-users') }}
+                                        </span>
+                                        <span style="opacity: 0;">Placeholder</span>
+                                    </div>
+                                    <div :class="[index === 0 && 'retention-boxes__first-col' ,'retention-boxes__col text-small retention-boxes__col--widget--' + parsedRetentionRows[0].retention.length]" v-for="(row, index) in (parsedRetentionRows[0] ? parsedRetentionRows[0].retention : [])" :keys="index">
+                                            <span v-if="data.interval === 'adaily'">{{ i18n('common.day.abrv2') }}</span>
+                                            <span v-if="data.interval === 'aweekly'">W</span>
+                                            <span v-if="data.interval === 'amonthly'">{{ i18n('common.month') }}</span>
+                                            <span>{{' +' + (index + 1) }}</span></br>
+                                            <span v-if="daysArray[index]">({{ daysArray[index].substr(0,4) === "Week" ? daysArray[index] = 'W '+daysArray[index].substr(5,6) : daysArray[index] }})</span>
+                                            <span v-if="!daysArray[index]" style="opacity: 0;">(PH)</span>
+                                    </div>
+                                </div>
+                                <div v-if="row.retention.length" class="retention-boxes__row retention-boxes__row--widget" @mouseover="daysArray = JSON.parse(row.retColumns)" v-for="(row, index) in parsedRetentionRows">
+                                    <div class="retention-boxes__col-date retention-boxes__col-date--widget">{{ row.date }}</div>
+                                    <div class="retention-boxes__col-users retention-boxes__col-users--widget">{{ formatNumber(row.users) }}</div>
+                                    <div :style="bgStyle(ret.percentFloat)" :class="[i === 0 && 'retention-boxes__first-col', 'retention-boxes__col text-small retention-boxes__col--widget--' + parsedRetentionRows[0].retention.length ]" v-for="(ret, i) in row.retention" @mouseleave="closePopup(i + '-' + index + '-' + row.bucket)">
+                                        <div class="red-circle" @mouseover="openPopup(i + '-' + index + '-' + row.bucket)"></div>
+                                        <div class="information-popup" @mouseleave="closePopup(i + '-' + index + '-' + row.bucket)" v-bind:style= "[popupShow[i + '-' + index  + '-' + row.bucket] ? {'display': 'flex'} : {'display': 'none'}]">
+                                            <div class="information-popup__left">
+                                                <div class="information-popup__bar" v-bind:style="overrideBarColor()"></div>
+                                            </div>
+                                            <div class="information-popup__right">
+                                                <div class="information-popup__top">
+                                                    <div class="information-popup__text">
+                                                        <span v-if="data.retention_data_type == '[CLY]_session'"> {{  i18n('retention.who-first-seen', row.date) }}</span>
+                                                        <span v-else> {{  i18n('retention.who-performed', data.retention_data_type_desc, row.date) }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="information-popup__value text-small">
+                                                    <span>{{ formatNumber(row.users) }}</span>
+                                                </div>
+                                                <div class="information-popup__percentage-badge-container">
+                                                    <a v-if="data.retention_type=='full' && ret.users > 0" :href="userTooltipLink" target="_blank" class="information-popup__percentage-badge"> {{ret.users}} ({{ ret.percent }}%)</a>
+                                                    <span v-else class="information-popup__percentage-badge">{{ret.users}} ({{ ret.percent }}%)</span>
+                                                </div>
+                                                <div class="information-popup__percentage-text">
+                                                    {{ setTooltipStr(ret.date) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ ret.percent }} %
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

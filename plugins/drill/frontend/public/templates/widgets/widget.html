@@ -1,0 +1,80 @@
+<div v-bind:class="[componentId, 'clyd-widget']">
+    <div class="bu-level" v-if="!showZoom">
+        <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0">
+            <clyd-widget-title class="bu-level-item" :title="title"></clyd-widget-title>
+        </div>
+        <div class="bu-level-right">
+            <clyd-bucket class="bu-mr-1" v-if="data.allowPeriodOverride" :widget-id="data._id" :value="data.bucket"></clyd-bucket>
+            <div class="bu-level-item" v-if="isAllowed">
+                <cly-more-options @command="onWidgetCommand">
+                    <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                    <el-dropdown-item command="zoom">{{i18nM('common.zoom-in')}}</el-dropdown-item>
+                    <el-dropdown-item command="recalculate">{{i18nM('drill.recalculate')}}</el-dropdown-item>
+                    <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                </cly-more-options>
+            </div>
+        </div>
+    </div>
+
+    <cly-chart-zoom
+        ref="zoomRef"
+        v-if="showZoom"
+        @zoom-reset="onZoomReset"
+        :echartRef="$refs.echartRef && $refs.echartRef.$refs && $refs.echartRef.$refs.echarts"
+        class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external">
+    </cly-chart-zoom>
+
+    <clyd-primary-legend :show-apps="false" :custom-period="data.custom_period" v-if="data.custom_period"></clyd-primary-legend>
+
+    <div class="clyd-widget__content" v-loading="loading || isProcessing">
+        <template v-if="!(loading || isProcessing)">
+            <template v-if="isChartAvailable">
+                <cly-chart-pie
+                    v-if="selectedChartType === 'pie'"
+                    :val-formatter="formatChartValue"
+                    :option="pieOptions"
+                    :show-download="false"
+                    :show-zoom="false"
+                    :show-toggle="false"
+                    height="auto"
+                    skin="full">
+                </cly-chart-pie>
+                <cly-chart-bar
+                    v-else-if="selectedChartType === 'bar'"
+                    :show-zoom="false"
+                    :show-download="false"
+                    :show-toggle="false"
+                    @patchzoom="onPatchZoom"
+                    @datazoom="onDataZoom"
+                    ref="echartRef"
+                    :legend="{show: false}"
+                    :val-formatter="formatChartValue"
+                    :option="barOptions"
+                    height="auto"
+                    skin="full">
+                </cly-chart-bar>
+                <cly-chart-line
+                    v-else-if="selectedChartType === 'timeSeries'"
+                    :show-zoom="false"
+                    :show-download="false"
+                    :show-toggle="false"
+					xAxisLabelOverflow="unset" 
+                    @patchzoom="onPatchZoom"
+                    @datazoom="onDataZoom"
+                    ref="echartRef"
+                    :legend="{show: false}"
+                    :val-formatter="formatChartValue"
+                    :option="timeSeriesOptions"
+                    height="auto"
+                    skin="full"
+                    category="drill"
+                    :notation-selected-bucket="data.bucket">
+                </cly-chart-line>
+            </template>
+            <cly-blank v-else :title="blankMessage" :classes="{'bu-p-0': true}"></cly-blank>
+        </template>
+    </div>
+
+    <clyd-secondary-legend :apps="data.apps" :labels="legendLabels"></clyd-secondary-legend>
+
+</div>

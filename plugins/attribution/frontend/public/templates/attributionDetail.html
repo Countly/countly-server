@@ -1,0 +1,139 @@
+<div v-bind:class="[componentId]" class="attribution attribution-detail">
+    <cly-header>
+        <cly-back-link slot="header-top" :title="i18n('attribution.back')" link="/attribution"></cly-back-link>
+        <template v-slot:header-left>
+			<h3 class="bu-mb-1">{{detailData.name}}</h3>
+		</template>
+        <template v-slot:header-right>
+            <el-button @click="editCampaign" v-if="canUserUpdate" type="default" size="small" icon="ion-edit">{{i18n('attribution.edit-campaign')}}</el-button>
+            <cly-more-options v-if="topDropdown" size="small" @command="attributionDetailActions($event)" class="bu-ml-2">
+                <el-dropdown-item class="bu-ml-3" v-if="canUserDelete" command="delete">{{i18n('attribution.delete-campaign')}}</el-dropdown-item>
+                <el-dropdown-item class="bu-ml-3" command="changeVisibility" v-if="canUserUpdate">{{labelVisibility}}</el-dropdown-item>
+                <el-dropdown-item class="bu-ml-3" command="viewUserList" v-if="userProfilesEnabled">{{i18n("userdata.list")}}</el-dropdown-item>
+                <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+                    <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+                </el-dropdown-item>
+            </cly-more-options>
+          </template>
+        <template v-slot:header-bottom>
+            <i class="ion ion-pricetags color-cool-gray-50"></i>
+            <span class="color-cool-gray-50 text-medium bu-ml-1">{{campaignLink}}</span>
+            <i class="ion-ios-copy color-cool-gray-50 bu-is-clickable bu-ml-2" @click="copyCampaignLink"></i>
+        </template>
+    </cly-header>
+    <cly-main v-loading="isLoading">
+        <cly-date-picker-g></cly-date-picker-g>
+        <div class="attribution-tab-cards bu-mt-4">
+            <el-tabs v-model="campaignGraphTab" type="card" stretch v-loading="isLoading">
+                <el-tab-pane :name="item.value" :key="idx" v-for="(item, idx) in chooseProperties">
+                    <div slot="label">
+                        <div class="color-cool-gray-100 bu-p-5">
+                            <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
+                                <div class="text-medium">
+                                    <span>{{item.label}}</span>
+                                    <span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-ml-1"  v-tooltip.top-center="item.description"></span>
+                                </div>
+                            </div>
+                            <div class="bu-is-flex bu-is-align-items-center number">
+                                <h2>{{item.number}}</h2>
+                                <div v-if="item.trend == 'u'" class="cly-trend-up">
+                                    <i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{item.trendValue}}</span>
+                                </div>
+                                <div v-if="item.trend == 'd'" class="cly-trend-down">
+                                    <i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2"></i><span>{{item.trendValue}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bu-pb-4 chart-wrapper">
+                        <cly-chart-time :option="chartData(item.value, item.label)" :show-toggle="false" :show-download="false" :show-zoom="false" category="attribution"></cly-chart-time>
+                    </div>
+                </el-tab-pane>	              
+            </el-tabs>			
+        </div>
+        <h4 class="bu-mt-5 bu-mb-4">{{i18n('attribution.campaign-metrics')}}</h4>
+        <cly-section>
+            <cly-metric-cards>
+                <cly-metric-card v-if="item.value === 'balance' || item.value === 'attribution-cost'" :tooltip="item.name" :label="item.name" :key="idx" v-for="(item, idx) in campaingMetrics">			
+                    <template slot="number">
+                        {{isNaN(item.total) ? 0 : item.total}}
+                    </template>
+                </cly-metric-card>
+                <cly-metric-card v-if="item.value === 'user-conversion' || item.value === 'click-conversion'" :tooltip="item.name" :is-percentage="true" :label="item.name" :color="item.color" :number="item.total" :key="idx" v-for="(item, idx) in campaingMetrics">			
+                </cly-metric-card>
+            </cly-metric-cards>
+        </cly-section>
+        <cly-section class="bu-mt-4">
+            <cly-metric-cards>
+                <cly-metric-card :tooltip="item.name" :label="item.name" :key="idx" v-for="(item, idx) in helpCampaignMetrics">
+                        <template v-slot:header>
+                            {{item.name}}
+                        </template>
+                        <template slot="number">
+                            {{item.total}}
+                            <span class="text-small color-cool-gray-50 bu-mr-6">{{i18n('attribution.total')}}</span>
+                            {{item.user}}
+                            <span class="text-small color-cool-gray-50">{{i18n('attribution.per-user')}}</span>
+                        </template>
+                </cly-metric-card>
+            </cly-metric-cards>
+        </cly-section>
+        <div class="bu-py-3 bu-is-flex bu-is-align-items-center">
+            <h4>{{i18n('attribution.segment-by')}}</h4>
+            <el-select class="bu-ml-2" :arrow="false" v-model="selectedSegment" :adaptiveLength="true">
+                <el-option class="bu-is-capitalized" :label="segments[item]" :value="item" :key="item" v-for="item in Object.keys(segments)"></el-option>
+            </el-select>
+        </div>
+        <cly-section>
+            <cly-datatable-n :rows="detailSegmentTable" :available-dynamic-cols="tableDynamicCols" :hasDynamicCols="true">
+                <template v-slot="scope">
+                    <el-table-column :label="i18n('attribution.value')">
+                        <template v-slot="rowScope">
+                            <div>
+                                <span v-html="rowScope.row[selectedSegment]"></span>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <template v-for="(col, idx) in scope.dynamicCols">
+                        <el-table-column  v-if="col.value === 'aclk'" sortable="true" prop="aclk" :label="i18n('attribution.total-clicks')">
+                            <template v-slot="rowScope">
+                                <div>
+                                    {{ rowScope.row.aclk || 0 }}
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column  v-if="col.value === 'clk'" sortable="true" prop="clk" :label="i18n('attribution.unique-clicks')">
+                            <template v-slot="rowScope">
+                                <div>
+                                    {{ rowScope.row.clk || 0 }}
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column  v-if="col.value === 'ins'" sortable="true" prop="ins" :label="i18n('attribution.installs')">
+                            <template v-slot="rowScope">
+                                <div>
+                                    {{ rowScope.row.ins || 0 }}
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column  v-if="col.value === 'rev'" sortable="true" prop="rev" :label="i18n('attribution.revenue')">
+                            <template v-slot="rowScope">
+                                <div>
+                                    {{ parseFloat(rowScope.row.rev).toFixed(2) || (0).toFixed(2) }}
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column  v-if="col.value === 'ses'" sortable="true" prop="ses" :label="i18n('attribution.sessions')">
+                            <template v-slot="rowScope">
+                                <div>
+                                    {{ rowScope.row.ses }}
+                                </div>
+                            </template>
+                        </el-table-column>
+                    </template>
+                </template>
+              </cly-datatable-n>
+        </cly-section>
+    </cly-main>
+    <attribution-drawer @editRefresh="refresh" :settings="drawerSettings" :controls="drawers.attribution"></attribution-drawer>
+</div>

@@ -1,0 +1,140 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('concurrent-users.title')}}</h2>
+            <cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"></cly-tooltip-icon>
+        </template>
+		<template v-slot:header-right>
+          <cly-more-options v-if="topDropdown" size="small">
+            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+              <!--<span :class="item.icon"></span>-->
+              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+            </el-dropdown-item>
+          </cly-more-options>
+        </template>
+    </cly-header>
+	<cly-main>
+		<div class="bu-level bu-pb-4">
+			<div class="bu-level-left">
+				<h3>{{i18n('concurrent-users.real-time')}}</h3>
+				<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="i18n('concurrent-users.real-time-desc')"></span>
+			</div>
+			<div class="bu-level-right">
+				<a href="#/analytics/users/online-users/compare" class="el-button el-button--default el-button--small">{{i18n('concurrent-users.compare')}}</a>
+			</div>
+		</div>
+		<cly-section>
+			<div class="bu-columns bu-is-gapless">
+				<div class="bu-column bu-is-4 right-now-graph" v-loading="isLoading">
+					<div class="bu-p-5 bu-m-2 bu-ml-4">
+						<div class="bu-level">
+							<div class="bu-level-left">
+								<div class="text-big bu-mr-2">{{i18n('concurrent-users.users-right-now')}}</div>
+								<span class="cly-vue-tooltip-icon ion ion-help-circled" v-tooltip.top-center="i18n('concurrent-users.users-right-now-desc')"></span>
+							</div>
+						</div>
+						<h1>{{onlineCount}}</h1>
+						<div class="text-medium color-cool-gray-50">{{i18n('common.max')}} {{maxOnlineCount}}</div>
+					</div>
+					<div class="bu-pb-3">
+					<cly-chart-line :noEmpty="true" v-loading="isLoading" :legend="{show:false}" :showZoom="false" :showDownload="false" :showToggle="false" :height="238" :padding="0" :option="realTimeGraphs.now" :hide-notation="true"></cly-chart-line>
+					</div>
+				</div>
+				<div class="bu-column bu-is-8" style="border-left: 1px solid #ececec;">
+					<div class="bu-columns bu-is-gapless bu-mb-0">
+						<div class="bu-column bu-is-2" style="margin-right: 58px;">
+							<div class="bu-p-5 bu-m-2">
+								<div class="bu-level" style="width: 128px;">
+									<div class="text-medium">{{i18n('concurrent-users.avg-per-minute')}}
+										<cly-tooltip-icon class="ion ion-help-circled bu-ml-1" :tooltip="i18n('concurrent-users.avg-per-minute-desc')" placement="top-center"></cly-tooltip-icon>
+									</div>
+								</div>
+								<h2>{{realTimeGraphs.minutes.avg}}</h2>
+							</div>
+						</div>
+						<div class="bu-column"><cly-chart-bar xAxisLabelOverflow="unset" :noEmpty="true" v-loading="isLoading" :legend="{show:false}" :showZoom="false" :showDownload="false" :showToggle="false" :height="200" :option="realTimeGraphs.minutes" ></cly-chart-bar></div>
+					</div>
+					<div class="bu-columns bu-is-gapless" style="border-top: 1px solid #ececec;">
+						<div class="bu-column bu-is-2" style="margin-right: 58px;">
+							<div class="bu-p-5 bu-m-2">
+								<div class="bu-level" style="width: 128px;">
+									<div class="text-medium">{{i18n('concurrent-users.avg-per-hour')}}
+										<cly-tooltip-icon class="ion ion-help-circled bu-ml-1" :tooltip="i18n('concurrent-users.avg-per-hour-desc')" placement="top-center"></cly-tooltip-icon>
+									</div>
+								</div>
+								<h2>{{realTimeGraphs.hours.avg}}</h2>
+							</div>
+						</div>
+						<div class="bu-column"><cly-chart-bar xAxisLabelOverflow="unset" :noEmpty="true" v-loading="isLoading" :legend="{show:false}" :showZoom="false" :showDownload="false" :showToggle="false" :height="200" :option="realTimeGraphs.hours" ></cly-chart-bar></div>
+					</div>
+				</div>
+			</div>
+		</cly-section>
+		
+		<cly-section>
+			<div class="bu-columns bu-is-gapless concurrent-users-blocks">
+				<div class="bu-column bu-is-4" :key="idx" v-for="(item, idx) in topData" v-loading="isLoading">
+					<div class="bu-p-3">
+						<div class="bu-level-left bu-p-5">
+							<span class="text-medium color-cool-gray-100">{{item.name}}</span>
+							<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2" v-tooltip.top-center="item.description"></span>
+						</div>
+						<div v-if="item.bars.length >0" class="topData">
+							<div :key="idx2" v-for="(item2, idx2) in item.bars" >
+								<div class="version-graph-block bu-p-3">
+									<div>
+										<div class="bu-columns version-graph-title">
+											<div class="bu-column bu-is-9"><div style="word-break:break-all">{{item2.name}}</div></div>
+											<div class="bu-column bu-is-3">{{item2.percent}} % </div>
+										</div>
+									</div>
+									<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
+								</div>
+							</div>
+						</div>
+						<div v-else class="topData empty bu-mb-5">
+							<div>
+								<span>{{i18n('common.breakdown-not-available')}}</span>
+								<span class="cly-vue-tooltip-icon ion ion-ios-help-outline bu-pl-2" v-tooltip.top-center="i18n('common.breakdown-not-available-desc')"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</cly-section>
+		<div class="bu-level bu-pb-4">
+			<div class="bu-level-left">
+				<h3>{{i18n('concurrent-users.max-online')}}</h3>
+				<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2" v-tooltip.top-center="i18n('concurrent-users.max-online-desc')"></span>
+			</div>
+		</div>
+		<cly-section>
+			<div class="bu-columns bu-is-gapless">
+				<div class="bu-column bu-is-4">
+					<div class="bu-p-5">
+						<div class="text-small color-cool-gray-50 text-uppercase bu-p-2" style="font-weight: 500;">{{i18n('concurrent-users.month-high')}}
+							<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2" style="margin-bottom: 1px;" v-tooltip.top-center="i18n('concurrent-users.month-high-desc')"></span>
+						</div>	
+						<div v-if="isLoading" v-loading="isLoading" style="height: 150px;"></div>
+						<div  class="bu-level bu-p-1 bu-pl-2" :key="idx" v-for="(item, idx) in highLow.high" >
+							<div class="bu-level-left text-medium">{{item.l}}</div><div class="bu-level-right text-big">{{item.v}}</div>
+						</div>
+					</div>
+					<div class="bu-pb-5 bu-pl-5 bu-pr-5">
+						<div class="text-small color-cool-gray-50 text-uppercase bu-p-2" style="font-weight: 500;">{{i18n('concurrent-users.month-low')}}
+							<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2" style="margin-bottom: 1px;" v-tooltip.top-center="i18n('concurrent-users.month-low-desc')"></span>
+						</div>	
+						<div v-if="isLoading" v-loading="isLoading" style="height: 150px;"></div>
+						<div class="bu-level bu-p-1 bu-pl-2" :key="idx" v-for="(item, idx) in highLow.low" >
+							<div class="bu-level-left text-medium">{{item.l}}</div><div class="bu-level-right text-big">{{item.v}}</div>
+						</div>
+					</div>
+				</div>
+				<div class="bu-column bu-is-8" style="border-left: 1px solid #ececec;">
+					<cly-chart-bar xAxisLabelOverflow="unset" v-loading="isLoading" :legend="{show:false}" :showZoom="false" :showDownload="false" :showToggle="false" :height="320" :option="maximumOnlineUsers" ></cly-chart-bar>
+				</div>
+			</div>
+		</cly-section>
+	
+	</cly-main>
+</div>

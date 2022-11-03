@@ -1,0 +1,278 @@
+<script type="text/x-template" id="drill-main">
+    <div :class="[componentId]" class="drill-view drill-main">
+        <cly-header>
+            <template v-slot:header-left>
+                <h2>
+                    {{i18n('drill.drill')}}
+                </h2>
+            </template>
+            <template v-slot:header-right>
+                <div class="bu-level-item">
+                    <cly-report-manager-dialog v-if="canUserRead" :disabled="!isReady" @view-task="onLoadTask" class="bu-mr-2" origin="drill"></cly-report-manager-dialog>
+                    <el-button @click="newFilter" :disabled="!isReady" type="default" size="small" icon="ion-android-add-circle">{{i18n('drill.new-query')}}</el-button>
+                    <el-button @click="showLoadDialog" v-if="canUserRead" :disabled="!isReady" type="default" size="small" icon="cly-icon-btn cly-icon-load" class="bu-is-align-items-center">{{i18n('drill.open-query')}}</el-button>
+                </div>
+            </template>
+        </cly-header>
+        <cly-main>
+            <validation-observer tag="div" class="validator" v-slot="validation">
+                <div class="bu-is-flex bu-is-flex-direction-column bu-pb-4">
+                    <div class="bu-level">
+                        <!-- Left side -->
+                        <div class="bu-level-left drill-commons-title-left">
+                            <div class="bu-is-justify-content-left bu-level-item">
+                                <h2 class="has-ellipsis">
+                                    {{fullDocName}}
+                                </h2>
+                            </div>
+                        </div>
+                        <div class="bu-level-right">
+                            <div class="bu-level-item">
+                                <cly-more-options v-if="canUserUpdate || canUserCreate" :disabled="isAnonymous" @command="handleSaveCommand" placement="bottom-end">
+                                    <template v-slot:trigger>
+                                        <div @click="canUserCreate && isReady && !validation.invalid && isAnonymous && showSaveDialog()">
+                                            <cly-input-dropdown-trigger
+                                                size="small"
+                                                :prefix-icon="'cly-icon-save cly-icon-prefix-icon'"
+                                                :disabled="validation.invalid || !isReady"
+                                                :adaptive-length="true"
+                                                :arrow="!isAnonymous"
+                                                :selected-options="i18n('drill.save-query')">
+                                            </cly-input-dropdown-trigger>
+                                        </div>
+                                    </template>
+                                    <el-dropdown-item v-if="!isAnonymous && canUserUpdate" :disabled="validation.invalid || !isReady" command="save-changes">Save changes</el-dropdown-item>
+                                    <el-dropdown-item v-if="!isAnonymous && canUserCreate" :disabled="validation.invalid || !isReady" command="save-as">Save as...</el-dropdown-item>
+                                </cly-more-options>
+                                <cly-more-options :disabled="!isReady" v-if="userEvents.length>0" class="bu-ml-2" size="small" @command="handleUserEvents($event)">
+                                    <component v-for="userEvent in userEvents" :key="userEvent.id" v-bind:is="userEvent.component"> </component>
+                                </cly-more-options>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="bu-pt-4 text-medium">
+                        {{currentDoc.description || i18n('drill.description-placeholder')}}
+                    </span>
+                </div>
+
+                <cly-notification :closable="false" :text="taskDescription" :visible="executionResult.isTask" class="bu-mb-0"></cly-notification>
+                <cly-section skin="configurator" class="bu-py-4"  v-loading="!isReady">
+                    <cly-sub-section>
+                        <span class="text-medium font-weight-bold bu-pr-4 text-uppercase">
+                            {{i18n('drill.qb.query-based-on')}}
+                        </span>
+                        <cly-event-select v-model="currentDoc.event" prefixLabelWithTabId :disabled="!isReady"></cly-event-select>
+                    </cly-sub-section>
+                    <cly-qb-segmentation-collapsible
+                        ref="qb"
+                        class="cly-vue-section__sub"
+                        v-model="currentDoc.filter"
+                        :collapsed.sync="isSegmentationCollapsed"
+                        :event="currentDoc.event"
+                        :add-empty-row-on-empty-query="true"
+                        :disabled="!isReady"
+                        :or-groups-enabled="true"
+                        :allowBreakdown="currentDoc.useBreakdown">
+                        <template v-slot:segmentation-title-prefix>
+                            <el-switch :disabled="!isReady" @click.native.stop v-model="currentDoc.useQuery"></el-switch>
+                        </template>
+                        <template v-slot:breakdown-title-prefix>
+                            <el-switch :disabled="!isReady" v-slot:breakdown-title-prefix v-model="currentDoc.useBreakdown"></el-switch>
+                        </template>
+                    </cly-qb-segmentation-collapsible>
+                    <cly-sub-section>
+                        <span class="text-medium font-weight-bold bu-pr-4 text-uppercase">
+                            {{i18n('drill.qb.date-range')}}
+                        </span>
+                        <cly-date-picker v-if="usesCustomDatepicker" @change="onCustomDatepickerChange" key="task-picker" timestampFormat="ms" placement="right" :disabled="!isReady" :disabled-shortcuts="['0days']" modelMode="absolute" v-model="customDatepickerVal"></cly-date-picker>
+                        <cly-date-picker-g v-else  key="global-picker" placement="right" :disabled="!isReady"></cly-date-picker-g>
+                    </cly-sub-section>
+                    <div class="bu-px-5 bu-py-4 bu-is-justify-content-flex-end bu-is-flex">
+                        <el-button v-for="(button, idx) in externalActionButtons" :disabled="!isReady || validation.invalid" :icon="button.icon" size="small" @click="handleExternalAction(button)" v-tooltip="button.description">
+                            {{button.label}}
+                        </el-button>
+                        <el-button :disabled="!isReady || validation.invalid" size="small" type="success" @click="execute">{{i18n('drill.execute')}}</el-button>
+                    </div>
+                </cly-section>
+            </validation-observer>
+
+            <cly-notification :closable="false" :visible="isStale" :text="i18n('drill.stale-warning')"></cly-notification>
+            <div class="bu-level" v-if="executionResult.status === 'ready'">
+                <div class="bu-level-left">
+                    <div class="bu-level-item">
+                        <div class="bu-py-4 bu-is-flex bu-is-align-items-center">
+                            <h4>{{i18n('drill.results-based-on')}}</h4>
+                            <el-select class="bu-ml-2" v-model="selectedSingleMetric" size="mini" :adaptive-length="true" :arrow="false">
+                                <el-option 
+                                    v-for="item in executionResult.availableMetrics" 
+                                    :key="item.value"
+                                    :label="item.label" 
+                                    :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <cly-section v-if="executionResult.status === 'ready' && summaryNumbers && summaryNumbers.length" v-loading="!isReady">
+                <cly-metric-cards :multiline="false">
+                    <cly-metric-card
+                        :key="idx"
+                        v-for="(item, idx) in summaryNumbers"
+                        :label="item.label">
+                        <template v-slot:number>
+                            {{item.value}}
+                        </template>
+                    </cly-metric-card>
+                </cly-metric-cards>
+            </cly-section>
+
+            <cly-section v-show="executionResult.status === 'ready'" v-loading="!isReady" :hide-config="executionResult.status !== 'ready'">
+                <template v-slot:config>
+                    <div class="bu-mr-4">
+                        <span class="font-weight-bold text-uppercase text-small">{{i18n('drill.visualization')}}</span>
+                        <el-select class="bu-ml-1" v-model="selectedChartType" size="small">
+                            <el-option
+                                :value="type"
+                                :key="type"
+                                :label="i18n('drill.chart.' + type)"
+                                v-for="type in executionResult.availableChartTypes">
+                                {{i18n('drill.chart.' + type)}}
+                            </el-option>
+                        </el-select>
+                    </div>
+                    <div class="bu-ml-4" v-if="isBucketingAvailable">
+                        <span class="font-weight-bold text-uppercase text-small">{{i18n('drill.bucket')}}</span>
+                        <el-radio-group class="bu-ml-1" v-model="selectedBucket" size="small">
+                            <el-radio-button
+                                :label="bucketType"
+                                :key="bucketType"
+                                v-for="bucketType in executionResult.payload.buckets">
+                                {{i18n('drill.' + bucketType)}}
+                            </el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </template>
+                <template v-if="isChartAvailable">
+                    <cly-chart-pie :val-formatter="formatChartValue" v-if="selectedChartType === 'pie'" :option="pieOptions" :show-zoom="false" :show-toggle="false"></cly-chart-pie>
+                    <cly-chart-bar :val-formatter="formatChartValue" v-else-if="selectedChartType === 'bar'" :option="barOptions" :show-zoom="false" :show-toggle="false"></cly-chart-bar>
+                    <cly-chart-line    :val-formatter="formatChartValue" v-else-if="selectedChartType === 'timeSeries'"  xAxisLabelOverflow="unset" :option="timeSeriesOptions" :show-toggle="false" category="drill" :notation-selected-bucket="selectedBucket"></cly-chart-line>
+                    <cly-chart-bar     :val-formatter="formatChartValue" v-else-if="selectedChartType === 'stackedBar'"  xAxisLabelOverflow="unset" :option="stackedBarOptions" :show-zoom="false" :show-toggle="false"></cly-chart-bar>
+                    <cly-chart-generic :val-formatter="formatMatrixChartValue":height="600" v-else-if="selectedChartType === 'heatmap'" :option="heatmapOptions" :show-zoom="false" :show-toggle="false"></cly-chart-generic>
+                </template>
+                <cly-blank :height="264" v-else :title="i18n('common.graph.no-data')"></cly-blank>
+            </cly-section>
+            <cly-section v-show="executionResult.status !== 'ready'" v-loading="!isReady">
+                <cly-blank :height="264" :title="resultTitle" :sub-title="resultDescription"></cly-blank>
+            </cly-section>
+
+            <cly-section v-if="executionResult.status === 'ready'" v-loading="!isReady">
+                <cly-datatable-n 
+                    key="timeSeriesTable"
+                    :rows="timeSeriesRows" 
+                    v-if="currentTableType === 'timeSeries'">
+                    <template v-slot:header-left>
+                        <el-select v-if="isTableSegmentSelectEnabled" v-model="selectedTableSegment" size="small" @change="refreshTimeTableRows">
+                            <el-option
+                                :value="item.value"
+                                :key="item.value"
+                                :label="item.label"
+                                v-for="item in executionResult.availableSegments">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template v-slot="scope">
+                        <el-table-column 
+                            fixed
+                            minWidth="200px"
+                            sortable="custom" 
+                            prop="date"
+                            :formatter="formatDateCell"
+                            :label="i18n('common.date')">
+                        </el-table-column>
+                        <el-table-column 
+                            minWidth="200px"
+                            sortable="custom" 
+                            :key="metric.value"
+                            v-for="metric in executionResult.availableMetrics" 
+                            :formatter="formatTableCell(metric)"
+                            :prop="metric.value" 
+                            :label="metric.label">
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+                <cly-datatable-n 
+                    key="segmentsLocalTable"
+                    :rows="segmentsRows" 
+                    v-else-if="currentTableType === 'segmentsLocal'">
+                    <template v-slot="scope">
+                        <el-table-column 
+                            fixed
+                            minWidth="200px"
+                            sortable="custom" 
+                            prop="segment" 
+                            :label="i18n('events.table.segmentation')">
+                        </el-table-column>
+                        <el-table-column 
+                            minWidth="200px"
+                            sortable="custom" 
+                            :key="metric.value"
+                            v-for="metric in executionResult.availableMetrics" 
+                            :formatter="formatTableCell(metric)"
+                            :prop="metric.value" 
+                            :label="metric.label">
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+                <cly-datatable-n
+                    key="segmentsRemoteTable"
+                    ref="segmentsRemoteTable"
+                    :display-search="false"
+                    :export-api="getSegmentRemoteExportAPI" 
+                    :data-source="segmentsRemoteDataSource"
+                    :paused="!isReady"
+                    v-else-if="currentTableType === 'segmentsRemote'">
+                    <template v-slot="scope">
+                        <el-table-column 
+                            fixed
+                            minWidth="200px"
+                            sortable="custom" 
+                            prop="_id" 
+                            :label="i18n('events.table.segmentation')">
+                            <template v-slot="rowScope">
+                                {{rowScope.row.label}}
+                            </template>
+                        </el-table-column>
+                        <el-table-column 
+                            minWidth="200px"
+                            v-for="metric in executionResult.availableMetrics" 
+                            :sortable="metric.calculated ? false : 'custom'" 
+                            :key="metric.short"
+                            :formatter="formatTableCell(metric, 'short')"
+                            :prop="metric.short" 
+                            :label="metric.label">
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </cly-section>
+            <component v-for="externalDrawer in externalDrawers" 
+                :controls="drawers[externalDrawer.name]" 
+                :queryFilter="externalDrawerQueryFilter" 
+                from="drill" 
+                :key="externalDrawer.id" 
+                :is="externalDrawer.component" 
+                :type="externalDrawer.type || null">
+            </component>
+        </cly-main>
+        <cly-qb-query-manager
+            compact
+            ref="queryMan"
+            :disabled="!isReady" 
+            :event="currentDoc.event"
+            query-store="drill"
+            @filter-selected="onLoadFilter"
+            @save-filter="onSaveFilter"
+            @delete-filter="onDeleteFilter">
+        </cly-qb-query-manager>
+    </div>
+</script>

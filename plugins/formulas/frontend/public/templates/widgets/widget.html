@@ -1,0 +1,90 @@
+<div v-bind:class="[componentId, 'clyd-widget']">
+    <div class="bu-level" v-if="!showZoom">
+        <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0">
+            <clyd-widget-title class="bu-level-item" :title="title"></clyd-widget-title>
+        </div>
+        <div class="bu-level-right">
+            <clyd-bucket class="bu-mr-1" v-if="data.allowPeriodOverride" :widget-id="data._id" :value="data.bucket"></clyd-bucket>
+            <div class="bu-level-item" v-if="isAllowed">
+                <cly-more-options @command="onWidgetCommand">
+                    <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                    <el-dropdown-item command="zoom">{{i18nM('common.zoom-in')}}</el-dropdown-item>
+                    <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                </cly-more-options>
+            </div>
+        </div>
+    </div>
+
+    <cly-chart-zoom
+        ref="zoomRef"
+        v-if="showZoom"
+        @zoom-reset="onZoomReset"
+        :echartRef="$refs.echartRef && $refs.echartRef.$refs && $refs.echartRef.$refs.echarts"
+        class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external">
+    </cly-chart-zoom>
+
+    <div class="bu-level formulas-widget__legend-period">
+        <div class="bu-level-left">
+            <div class="bu-level-item">
+                <div class="text-small">{{ formattingSummary }}</div>
+                <i class="fas fa-circle color-cool-gray-50 bu-mx-2" style="font-size: 4px;" v-if="data.custom_period"></i>
+                <clyd-legend-period :custom-period="data.custom_period" v-if="data.custom_period"></clyd-legend-period>
+            </div>
+        </div>
+        <div class="bu-level-right"></div>
+    </div>
+
+    <div class="clyd-widget__content" v-loading="loading || isProcessing">
+        <template v-if="!(loading || isProcessing)">
+            <template v-if="data.visualization === 'number'">
+                <template v-if="summaryNumbers.length">
+                    <div
+                    style="display: flex; flex-direction: column; align-items: center;"
+                    :key="idx"
+                    v-for="(item, idx) in summaryNumbers">
+                        <div style="display: flex;align-items: baseline;">
+                            <h1 style="font-size: 40px">
+                                {{item.value}}
+                            </h1>
+                        </div>
+                        <div>
+                            <div v-if="data.bucket !== 'single'">{{item.label}}</div>
+                            <template v-if="item.hasComparison">
+                                <span v-if="item.trend=='d'" slot="description" class="cly-trend-down">
+                                    (<i class="bu-pr-1 fas fa-arrow-circle-down"></i>{{item.change}})
+                                </span>
+                                <span v-else slot="description" class="cly-trend-up">
+                                    (<i class="bu-pr-1 fas fa-arrow-circle-up"></i>{{item.change}})
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+                <cly-blank v-else :title="blankMessage" :classes="{'bu-p-0': true}"></cly-blank>
+            </template>
+            <template v-else>
+                <template v-if="isChartAvailable && selectedChartType === 'timeSeries'">
+                    <cly-chart-line
+                        :val-formatter="formatChartValue"
+                        :option="timeSeriesOptions"
+                        :show-download="false"
+                        :show-toggle="false"
+                        :show-zoom="false"
+                        @patchzoom="onPatchZoom"
+                        @datazoom="onDataZoom"
+                        ref="echartRef"
+                        height="auto"
+                        skin="full"
+                        xAxisLabelOverflow="unset"
+                        :legend="{show: false}"
+                        category="formulas"
+                        :notation-selected-bucket="data.bucket">
+                    </cly-chart-line>
+                </template>
+                <cly-blank v-else :title="blankMessage" :classes="{'bu-p-0': true}"></cly-blank>
+            </template>
+        </template>
+    </div>
+
+    <clyd-secondary-legend :apps="data.apps" :labels="legendLabels"></clyd-secondary-legend>
+</div>

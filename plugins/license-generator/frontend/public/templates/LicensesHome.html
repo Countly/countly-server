@@ -1,0 +1,75 @@
+<script type="text/x-template" id="licenses-home">
+    <div v-bind:class="[componentId]">
+        <cly-header v-if="isData">
+			<template v-slot:header-left>
+				<h2>{{i18n('license-generator.title')}}</h2>
+				<cly-tooltip-icon class="ion ion-help-circled bu-pl-2" :tooltip="i18n('license-generator.description')" placement="bottom-end"></cly-tooltip-icon>
+			</template>
+            <template v-slot:header-right>
+                <div class="bu-level-item">
+                    <el-button @click="onCreateClick" v-if="canUserCreate" type="success" size="small" icon="el-icon-circle-plus">{{i18n('license-generator.new-license')}}</el-button>
+                </div>
+            </template>
+        </cly-header>
+        <cly-main>
+            <cly-confirm-dialog @cancel="closeDeleteForm" @confirm="submitDeleteForm" :before-close="closeDeleteForm" ref="deleteConfirmDialog" :visible.sync="showDeleteDialog" dialogType="danger" :saveButtonLabel="deleteDialogConfirmText" :cancelButtonLabel="i18n('common.no-dont-delete')" :title="deleteDialogTitle" >
+                <template slot-scope="scope">
+                    {{deleteDialogText}}
+                </template>
+            </cly-confirm-dialog>
+			<cly-multi-select v-model="activeFilter" class="bu-mb-4" :fields="activeFilterFields"></cly-multi-select>
+            <cly-datatable-n id="license-list-table" :data-source="remoteTableListData" :persist-key="tablePersistKey">
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" :label="i18n('licenses-generator.name')" prop="name">
+                        <template v-slot="rowScope">
+                            <span v-tooltip="rowScope.row.name">{{rowScope.row.name}}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom"  :label="i18n('licenses-generator.active-tier')" prop="active_tier">
+                        <template v-slot="rowScope">
+                            <div>{{rowScope.row.rule === 'unlimited' ? '' : formatNumber(getTierValue(rowScope.row.tiers,rowScope.row.rule))}}</div>
+                            <span>{{ruleList.find(x=>x.value=== rowScope.row.rule).label}}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" min-width="115" :label="i18n('licenses-generator.start-date')" :formatter="dateFormatter" prop="start">
+                    </el-table-column>
+                    <el-table-column sortable="custom" min-width="105" :label="i18n('licenses-generator.end-date')" :formatter="dateFormatter" prop="end">
+                    </el-table-column>
+                    <el-table-column sortable="custom" min-width="110" :label="i18n('licenses-generator.activation-status')" prop="activation_status">
+                        <template v-slot="rowScope">
+                            <span v-if='rowScope.row.activation_status === "active"'>{{i18n('licenses-generator.active')}}</span>
+							<span v-else >-</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" min-width="105" :label="i18n('licenses-generator.activation-date')" prop="activation_date" :formatter="dateFormatter">
+                    </el-table-column>
+					<el-table-column sortable="custom" min-width="50" :label="i18n('licenses-generator.activated_cn')" prop="activated_cn" >
+                    </el-table-column>
+                    <el-table-column sortable="custom" min-width="100" :label="i18n('licenses-generator.license-status')" prop="license_status">
+                        <template v-slot="rowScope">
+                            <span v-if='rowScope.row.license_status'>{{i18n('licenses-generator.active')}}</span>
+							<span v-else >{{ i18n('licenses-generator.inactive') }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column type="options">
+                        <template v-slot="rowScope">
+                            <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, rowScope.row)">
+                                <el-dropdown-item v-if="canUserUpdate && !rowScope.row.activation_date" command="edit">{{ i18n('common.edit') }}</el-dropdown-item>
+                                <el-dropdown-item v-if="canUserCreate" command="new">{{ i18n('licenses-generator.duplicate-license') }}</el-dropdown-item>
+                                <el-dropdown-item v-if="canUserDelete && !rowScope.row.activation_date" command="delete">{{ i18n('common.delete') }}</el-dropdown-item>
+                                <el-dropdown-item command="download"><a :href="'/license-generator/download/'+rowScope.row._id">{{ i18n('common.download') }}</a></el-dropdown-item>
+                                </cly-more-options>
+                        </template>
+                      </el-table-column>
+                </template>
+            </cly-datatable-n>
+            <drawer :controls="drawers.main"></drawer>
+        </cly-main>
+		<main-drawer
+            name="license_generator"
+			@submit="onDrawerSubmit"
+            @filter-refresh="filterRefresh"
+			:controls="drawers.main">
+		</main-drawer>
+    </div>
+</script>

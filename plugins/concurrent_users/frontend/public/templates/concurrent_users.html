@@ -1,0 +1,132 @@
+<div class="widget">
+    <div id="concurrent-users">
+        <div id="tabs">
+            <ul>
+                <li><a href="#concurrent-users-metrics" data-localize="concurrent-users.metrics"></a></li>
+                <li><a href="#concurrent-users-alerts" data-localize="concurrent-users.alerts"></a></li>
+            </ul>
+            <div id="concurrent-users-metrics">
+                <div class="widget">
+                    <div class="widget-header">
+                        <div class="left">
+                            <div class="title" data-localize="concurrent-users.title"></div>
+                        </div>
+                        <div class="right btn-header">
+                            <div class="icon-button light" id="show-compare-view" data-localize="concurrent-users.compare"></div>
+                        </div>
+                    </div>
+                    <div class="widget-content help-zone-vb" data-help-localize="help." style="height:285px; padding-top:35px; padding-bottom:10px; border-radius:0 0 2px 2px">
+                        <div class="graph-wrapper">
+                            <div class="horizontal-parts" id="active-now">
+                                <div id="online-spark" class="spark" values="">
+                                    
+                                </div>
+                                <div class="big-number">{{online}}</div>
+                                <div class="right-now"><i class="fa fa-circle text-danger blink"></i><span data-localize="concurrent-users.users-right-now"></span></div>
+                            </div>
+                            <div class="horizontal-parts" id="app-graphs-wrapper">
+                            </div>
+                            <div id="top-separator"></div>
+                        </div>
+                        <div class="graph-no-data">
+                            <div class="inner">
+                                <div class="icon"></div>
+                                <div class="text" data-localize="common.graph.no-data">There is no data to show for this
+                                    period</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-summary" id="bar-summary">
+                    </div>
+                    <div class="widget-content help-zone-vb" data-help-localize="help." style="clear: both; height: 315px;padding: 16px 0; border-radius:2px">
+                        <div id="monthly-title" data-localize="concurrent-users.max-online"></div>
+                        <div class="graph-wrapper">
+                            <div class="horizontal-parts" id="monthly-rankings">
+                                
+                            </div>
+                            <div class="horizontal-parts" id="monthly-users-wrapper">
+                                <div id="monthly-users">
+
+                                </div>
+                            </div>
+                            <div id="monthly-separator"></div>
+                        </div>
+                        <div class="graph-no-data" >
+                            <div class="inner">
+                                <div class="icon"></div>
+                                <div class="text" data-localize="common.graph.no-data">There is no data to show for this
+                                    period</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="concurrent-users-alerts">
+                <div class="container">
+                    <div class="widget">
+                        <div class="widget-header">
+                            <div class="left">
+                                <div class="title" data-localize="concurrent-users.alerts"></div>
+                            </div>
+                            <div class="right btn-header">
+                                <div class="icon-button green" id="save-statuses" data-localize="common.save-changes"></div>
+                                <div class="icon-button green" id="add-concurrent-alert" data-localize="concurrent-users.alert.add"></div>
+                            </div>
+                        </div>
+                        <table id="concurrent-alerts-table" cellpadding="0" cellspacing="0" class="d-table"></table>
+                    </div>
+                </div>
+                <div class="save-button-wrapper">
+                    <div class="data-saver-bar data-saver-bar-hide">
+                        <div class="data-save-bar-remind">
+                
+                        </div>
+                        <div class="data-saver-button icon-button green" data-localize='concurrent-users.save-changes'></div>
+                        <div class="data-saver-cancel-button icon-button" data-localize='concurrent-users.discard-changes'></div>
+                    </div>
+                </div>                
+
+            </div>
+        </div>
+        <div id="compare-view">
+            <a id="back-to-metrics" class="back back-link" style="margin-bottom: 25px;">
+                <span data-localize="concurrent-users.back-to">BACK TO ONLINE USERS</span>
+            </a>
+            <div class="container">
+                <div class="widget">
+                    <div class="widget-header">
+                        <div class="left">
+                            <div class="title" data-localize="concurrent-users.compare-online-users"></div>
+                        </div>
+                    </div>
+                    <div class="widget-content" style="border-radius: 0 0 2px 2px">
+                        <div class="app-selector">
+                            <div id="multi-app-dropdown" class="cly-multi-select" data-max="3" style="width: calc(100% - 80px); box-sizing: border-box;">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text">
+                                            <div class="default-text" data-localize="concurrent-users.select-applications-multi"></div>
+                                        </div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square" style="width: 100%;"></div>
+                            </div>
+                            <div class="icon-button green disabled" id="do-compare" data-localize="concurrent-users.compare"></div>
+                        </div>
+                        <div class="graph-wrapper">
+                            <div id="compare-graphs-wrapper">
+                                
+                            </div>
+                            <div id="compare-no-graphs" style="height: 140px;margin-left: -100px;margin-top: 85px;text-align: center;font: 24px Ubuntu,Helvetica,sans-serif;color: #EEE;">
+                                <span data-localize="concurrent-users.select-apps"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <table id="compare-table" cellpadding="0" cellspacing="0" class="d-table"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{> concurrent-alerts-drawer }}
+</div>

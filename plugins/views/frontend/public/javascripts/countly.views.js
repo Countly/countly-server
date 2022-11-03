@@ -451,7 +451,15 @@
             },
             numberFormatter: function(row, col, value) {
                 return countlyCommon.formatNumber(value, 0);
+            },
+            formatChartValue: function(value) {
+                if (this.selectedProperty === "br") {
+                    return countlyCommon.getShortNumber(value) + '%';
+                }
+                return countlyCommon.getShortNumber(value);
             }
+
+
         },
         computed: {
             data: function() {

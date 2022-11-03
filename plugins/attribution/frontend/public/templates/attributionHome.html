@@ -1,0 +1,117 @@
+<div v-bind:class="[componentId]" class="attribution-home">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('attribution.title')}}</h2>
+            <cly-tooltip-icon :tooltip="i18n('attribution.description')" icon="ion-help-circled" class="bu-ml-2"></cly-tooltip-icon>
+        </template>
+        <template v-slot:header-right>
+            <div v-if="canUserCreate" class="bu-level-item">
+            <el-button @click="createCampaign" type="success" size="small" icon="el-icon-circle-plus">{{i18n('attribution.new-campaign')}}
+            </el-button>
+            </div>
+            <cly-more-options v-if="topDropdown" size="small">
+                <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+                    <a :href="item.value">{{item.label}}</a>
+                </el-dropdown-item>
+            </cly-more-options>
+        </template>
+    </cly-header>
+    <cly-main>
+        <div class="bu-level bu-mb-5">
+            <div class="bu-level-left">
+                <span class="text-big font-weight-bold bu-pr-2" >{{i18n('attribution.based-on')}}</span>
+                <el-select :arrow="false" :adaptiveLength="true" v-model="selectedBaseAtttribution" @change="selectedAttributionChange">
+                  <el-option v-for="item in attributionResultTypes" :key="item.value" :label="item.name" :value="item.value">
+                  </el-option>
+                </el-select>
+            </div>
+            <div class="bu-level-right">
+                <cly-date-picker-g></cly-date-picker-g>
+            </div>
+        </div>
+        <cly-section>
+            <cly-chart-time v-loading="chartLoading" :force-loading="chartLoading" :option="lineOptions" category="attribution"></cly-chart-time>
+        </cly-section>
+        <cly-section>
+            <cly-datatable-n :rows="homeTableData" :force-loading="isLoading">
+                <template v-slot:header-left>
+                    <el-select v-model="selectedTableFilter" @change="tableFilterChange">
+                        <el-option
+                            :key="item.value"
+                            :value="item.value"
+                            :label="item.name"
+                            v-for="item in tableFilterTypes">
+                        </el-option>
+                    </el-select>
+	            </template>
+                <template v-slot="scope">
+                    <el-table-column width="65"  fixed="left" prop="selected">
+                        <template v-slot="rowScope">
+                            <el-checkbox v-model="checks[selectedTableFilter][rowScope.row._id]" @change="handleSelectionChange(rowScope.row._id, rowScope.row.selected)"></el-checkbox>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="true" prop="name" type="clickable" :label="i18n('attribution.campaigns')">
+                        <template v-slot="rowScope">
+                            <span class="table-row-organic color-cool-gray-100" v-if="rowScope.row._id === '_organic'">{{rowScope.row.name}}</span>
+                            <a class="table-row-link" v-else :href="'#/attribution/'+ rowScope.row._id + '/' + (rowScope.row.is_hidden ? 'hidden' : 'all')" v-tooltip="rowScope.row.name">{{rowScope.row.name}}</a>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="true" prop="aclk" :label="i18n('attribution.total-clicks')">
+                        <template v-slot="rowScope">
+                            <div>
+                                {{ rowScope.row.aclk }}
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="true" prop="clk" :label="i18n('attribution.unique-clicks')">
+                        <template v-slot="rowScope">
+                            <div>
+                                {{ rowScope.row.clk }}
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="true" prop="ins" :label="i18n('attribution.installs')">
+                        <template v-slot="rowScope">
+                            <div>
+                                {{ rowScope.row.ins }}
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="true" prop="totalCost" :label="i18n('attribution.total-cost')">
+                        <template v-slot="rowScope">
+                            <div v-if="rowScope.row.costtype === 'click'">
+                                {{ (rowScope.row.aclk * rowScope.row.cost).toFixed(2)}}
+                            </div>
+                            <div v-else-if="rowScope.row.costtype === 'install'">
+                                {{ (rowScope.row.ins * rowScope.row.cost).toFixed(2) }}
+                            </div>
+                            <div v-else-if="rowScope.row.costtype === 'campaign'">
+                                {{ (rowScope.row.cost).toFixed(2) }}
+                            </div>
+                            <div v-else>
+                                <span>0.00</span>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="true" prop="rev" :label="i18n('attribution.total-revenue')">
+                        <template v-slot="rowScope">
+                            <div>
+                                {{ rowScope.row.rev }}
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="true" prop="ses" :width="120" :label="i18n('attribution.sessions')">
+                        <template v-slot="rowScope">
+                            <div>
+                                {{ rowScope.row.ses }}
+                            </div>
+                        </template>
+                    </el-table-column>
+                </template>
+              </cly-datatable-n>
+        </cly-section>
+    </cly-main>
+    <attribution-drawer :last="last" @closeHandler="dateChanged" :settings="drawerSettings" :controls="drawers.attribution"></attribution-drawer>
+</div>
+
+

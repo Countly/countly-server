@@ -109,7 +109,7 @@
                     </template>
                 </el-table-column>
 
-                <el-table-column v-else-if="col.value === 'description' " sortable="custom" min-width="250" prop="totalCount" :label="i18n('data-manager.description')">
+                <el-table-column v-else-if="col.value === 'description' " sortable="custom" min-width="250" prop="description" :label="i18n('data-manager.description')">
                     <template v-slot="rowScope">
                             <div v-html="rowScope.row.description || i18n('data-manager.empty-placeholder')"></div>
                     </template>

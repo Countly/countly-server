@@ -1,0 +1,109 @@
+<script type="text/x-template" id="licenses-drawer">
+	<cly-drawer 
+		@submit="onSubmit"
+		@close="onClose"
+		@copy="onCopy"
+		@open="onOpen"
+		:title="title"
+		ref="licenseDrawer"
+		name="license-drawer"
+		:saveButtonLabel="saveButtonLabel"
+		toggle-transition="stdt-fade"
+		v-bind="$props.controls">
+		<template v-slot:default="drawerScope">
+			<cly-form-step id="licensess-main" screen="full">
+				<cly-inline-form-field :name="i18n('licenses-generator.name')" class="licensesList" :label="i18n('licenses-generator.name')" rules="required">
+					<!--<el-input v-model="drawerScope.editedObject.name" :placeholder="i18n('licenses-generator.name')"></el-input>-->
+					<el-select
+					  style="width:480px"
+					  v-model="drawerScope.editedObject.name"
+					  filterable
+					  allow-create
+					  :placeholder="i18n('licenses-generator.new-or-existing')">
+					  <el-option
+						style="max-width:100%"
+						v-for="item in allNames"
+						:key="item.value"
+						:label="item.name"
+						:value="item.value">
+					  </el-option>
+					</el-select>
+				</cly-inline-form-field>
+					<cly-inline-form-field :name="i18n('licenses-generator.start-date')" :label="i18n('licenses-generator.start-date')" rules="required">
+						<cly-date-picker
+						modelMode="absolute"
+						:show-relative-modes="false"
+						:display-shortcuts="false"
+						type="date"
+						v-model="drawerScope.editedObject.start">
+					</cly-date-picker>
+				</cly-inline-form-field>
+				
+				<cly-inline-form-field :name="i18n('licenses-generator.end-date')" :label="i18n('licenses-generator.end-date')" rules="required">
+						<cly-date-picker
+						modelMode="absolute"
+						:show-relative-modes="false"
+						:display-shortcuts="false"
+						type="date"
+						:isFuture="true"
+						v-model="drawerScope.editedObject.end">
+					</cly-date-picker>
+				</cly-inline-form-field>
+				
+				<cly-inline-form-field rules="required" name="rules" :label="i18n('licenses-generator.metric-and-interval')" >
+					 <el-radio-group v-model="drawerScope.editedObject.rule" style="width: 100%;">
+						<el-radio
+							v-for="(item, idx) in rules"
+							border
+							class="is-autosized-vstack"
+							:label="item.value"
+							:key="idx">
+							{{item.label}}
+						</el-radio>
+					</el-radio-group>
+				</cly-inline-form-field>
+				    
+				<cly-inline-form-field rules="required" name="currency"  :label="i18n('licenses-generator.currency')" >
+					<el-select v-model="drawerScope.editedObject.currency" >
+						<el-option :key="item" :value="item" :label="item" v-for="item in currencies"></el-option>
+					</el-select>
+				</cly-inline-form-field>
+				<cly-inline-form-field rules="required" name="invoicing_interval"  :label="i18n('licenses-generator.invoicing-interval')" >
+					<el-select v-model="drawerScope.editedObject.invoicing_interval" >
+						<el-option :key="item" :value="item" :label="i18n('licenses-generator.'+item)" v-for="item in invoicing_intervals"></el-option>
+					</el-select>
+				</cly-inline-form-field>
+				{{tierValidation}}
+				<cly-form-field :rules="tierValidation ? 'required' : ''" class="bu-is-hidden">
+				</cly-form-field>
+				<cly-form-field  name="tiers" v-if="drawerScope.editedObject.rule!=='unlimited'">
+					<span class="bu-has-text-weight-medium">{{i18n('licenses-generator.tiers')}}</span>
+					<license-tiers-table @tier-add="handleTierAdd"
+						class="bu-mt-4"
+						@tier-update="handleTierUpdate"
+						@tier-delete="handleTierDelete"
+						:data-rows="drawerScope.editedObject.tiers"
+						:type ="drawerScope.editedObject.rule"
+						:billing-type="{'price':drawerScope.editedObject.currency,'period':drawerScope.editedObject.invoicing_interval}">
+					</license-tiers-table>
+				</cly-form-field>
+	
+				<cly-inline-form-field  name="lock_on_metric"  :label="i18n('licenses-generator.server-lock-metric-title')" >
+					<el-switch
+							:active-text="i18n('licenses-generator.server-lock-metric-desc')"
+							v-model="drawerScope.editedObject.lock_on_metric"
+							active-color="#2FA732">
+					</el-switch>
+				</cly-inline-form-field>
+				
+				<cly-inline-form-field  name="lock_on_expire"  :label="i18n('licenses-generator.server-lock-expire-title')" >
+					<el-switch
+							:active-text="i18n('licenses-generator.server-lock-expire-desc')"
+							v-model="drawerScope.editedObject.lock_on_expire"
+							active-color="#2FA732">
+					</el-switch>
+				</cly-inline-form-field>
+			</cly-form-step>
+		</template>
+	</cly-drawer>
+</script>

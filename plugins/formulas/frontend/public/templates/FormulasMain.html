@@ -1,0 +1,358 @@
+<script type="text/x-template" id="formulas-main">
+    <div :class="[componentId]" class="formulas-view formulas-main">
+        <cly-header>
+            <template v-slot:header-left>
+                <h2>
+                    {{i18n('calculated-metrics.formulas')}}
+                </h2>
+            </template>
+            <template v-slot:header-right>
+                <div class="bu-level-item">
+                    <cly-report-manager-dialog v-if="canUserRead" :disabled="!isReady" @view-task="onLoadTask" class="bu-mr-2" origin="formulas"></cly-report-manager-dialog>
+                    <el-button @click="newFormula" :disabled="!isReady" type="default" size="small" icon="ion-android-add-circle">{{i18n('calculated-metrics.new-formula')}}</el-button>
+                    <el-button @click="showLoadDialog" v-if="canUserRead" :disabled="!isReady" type="default" size="small" icon="cly-icon-btn cly-icon-load">{{i18n('calculated-metrics.open-formula')}}</el-button>
+                </div>
+            </template>
+        </cly-header>
+        <cly-main>
+            <validation-observer tag="div" class="validator" v-slot="validation">
+                <div class="bu-is-flex bu-is-flex-direction-column bu-pb-4">
+                    <div class="bu-level">
+                        <!-- Left side -->
+                        <div class="bu-level-left drill-commons-title-left">
+                            <div class="bu-is-justify-content-left bu-level-item">
+                                <h2 class="has-ellipsis">
+                                    {{fullDocName}}
+                                </h2>
+                            </div>
+                        </div>
+                        <div class="bu-level-right">
+                            <div class="bu-level-item">
+                                <cly-more-options v-if="canUserUpdate || canUserCreate" :disabled="isAnonymous" @command="handleSaveCommand" placement="bottom-end">
+                                    <template v-slot:trigger>
+                                        <div @click="canUserCreate && isReady && !validation.invalid && isAnonymous && showSaveDialog()">
+                                            <cly-input-dropdown-trigger
+                                                size="small"
+                                                :prefix-icon="'cly-icon-save cly-icon-prefix-icon'"
+                                                :disabled="validation.invalid || !isReady"
+                                                :adaptive-length="true"
+                                                :arrow="!isAnonymous"
+                                                :selected-options="i18n('calculated-metrics.save-formula')">
+                                            </cly-input-dropdown-trigger>
+                                        </div>
+                                    </template>
+                                    <el-dropdown-item v-if="!isAnonymous && canUserUpdate" :disabled="validation.invalid || !isReady" command="save-changes">Save changes</el-dropdown-item>
+                                    <el-dropdown-item v-if="!isAnonymous && canUserCreate" :disabled="validation.invalid || !isReady" command="save-as">Save as...</el-dropdown-item>
+                                </cly-more-options>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="bu-pt-4 text-medium">
+                        {{currentDoc.description || i18n('calculated-metrics.description-placeholder')}}
+                    </span>
+                </div>
+                <cly-notification :visible="executionResult.isTask" :closable="false" :text="taskDescription" class="bu-mb-0"></cly-notification>
+                <cly-section skin="configurator" class="bu-py-4">
+                    <cly-sub-section>
+                        <span class="text-medium font-weight-bold bu-pr-4 text-uppercase">
+                            {{i18n('calculated-metrics.configure-format')}}
+                        </span>
+                        <cly-dropdown :width="400" ref="formattingDropdown" @hide="resetFormattingValues">
+                            <template v-slot:trigger="dropdown">
+                                <cly-input-dropdown-trigger
+                                    :disabled="!isReady"
+                                    v-tooltip="formattingSummary"
+                                    :selected-options="formattingSummary"
+                                    :focused="dropdown.focused"
+                                    :opened="dropdown.visible"
+                                    :adaptive-length="true">
+                                </cly-input-dropdown-trigger>
+                            </template>
+                            <template>
+                                <cly-form
+                                    :initial-edited-object="currentFormatting"
+                                    ref="formattingForm"
+                                    @submit="onSubmitFormatting">
+                                    <template v-slot="formScope">
+                                        <cly-form-step id="period-form">
+                                            <div class="bu-m-4">
+                                                <h4>{{i18n('calculated-metrics.format.label')}}</h4>
+                                                <cly-form-field rules="required">
+                                                    <el-radio-group v-model="formScope.editedObject.format" size="small" class="is-full">
+                                                        <el-radio-button
+                                                            :label="item"
+                                                            :key="item"
+                                                            v-for="item in ['float', 'integer', 'percent', 'time']">
+                                                            {{i18n('calculated-metrics.format.' + item)}}
+                                                        </el-radio-button>
+                                                    </el-radio-group>
+                                                </cly-form-field>
+                                                <cly-form-field
+                                                    v-if="formScope.editedObject.format === 'float' || formScope.editedObject.format === 'percent'" 
+                                                    rules="required" :name="i18n('calculated-metrics.metric-dplaces')" :label="i18n('calculated-metrics.metric-dplaces')">
+                                                    <el-input-number v-model="formScope.editedObject.dplaces" :min="0" :max="9" style="width: 100%"></el-input-number>
+                                                </cly-form-field>
+                                                <cly-form-field optional
+                                                    v-if="formScope.editedObject.format !== 'percent'"
+                                                    :name="i18n('calculated-metrics.metric-unit')" :label="i18n('calculated-metrics.metric-unit')">
+                                                    <el-input maxlength="30" show-word-limit v-model="formScope.editedObject.unit"></el-input>
+                                                </cly-form-field>
+                                                <div class="bu-has-text-right bu-pt-3">
+                                                    <el-button type="secondary" @click="onAbortFormatting">{{i18n('common.cancel')}}</el-button>
+                                                    <el-button type="success" :disabled="!isReady || !formScope.isSubmissionAllowed" @click="formScope.submit()">{{i18n('common.apply')}}</el-button>
+                                                </div>
+                                            </div>
+                                        </cly-form-step>
+                                    </template>
+                                </cly-form>
+                            </template>
+                        </cly-dropdown>
+                    </cly-sub-section>
+                    <el-collapse v-model="selectedCollapsibleItem" :accordion="true">
+                        <el-collapse-item name="builder" :icon="{position: 'right', 'direction': 'down'}">
+                            <template v-slot:title>
+                                <div class="bu-px-4 text-medium font-weight-bold text-uppercase">
+                                    {{i18n('calculated-metrics.define-formula')}}
+                                </div>
+                            </template>
+                            <div class="bu-px-4 bu-pt-5">
+                                <cly-formula-builder-l :disabled="!isReady" v-model="currentDoc.formula"></cly-formula-builder-l>
+                            </div>
+                        </el-collapse-item>
+                    </el-collapse>
+                    <cly-sub-section>
+                        <span class="text-medium font-weight-bold bu-pr-4 text-uppercase">
+                            {{i18n('drill.qb.date-range')}}
+                        </span>
+                        <cly-date-picker v-if="usesCustomDatepicker" @change="onCustomDatepickerChange" key="task-picker" timestampFormat="ms" placement="right" :disabled="!isReady" :disabled-shortcuts="['0days']" modelMode="absolute" v-model="customDatepickerVal"></cly-date-picker>
+                        <cly-date-picker-g v-else  key="global-picker" placement="right" :disabled="!isReady"></cly-date-picker-g>
+                    </cly-sub-section>
+                    <div class="bu-px-5 bu-py-4 bu-is-justify-content-flex-end bu-is-flex">
+                        <el-button :disabled="!isReady || validation.invalid" size="small" type="success" @click="execute">{{i18n('calculated-metrics.execute-formula')}}</el-button>
+                    </div>
+                </cly-section>
+            </validation-observer>
+
+            <cly-notification :closable="false" :visible="isStale" :text="i18n('drill.stale-warning')"></cly-notification>
+            <div class="bu-level">
+                <div class="bu-level-left">
+                    <div class="bu-level-item">
+                        <div class="bu-py-4 bu-is-flex bu-is-align-items-center">
+                            <h4>{{i18n('drill.results-based-on')}}</h4>
+                            <el-select class="bu-ml-2" v-model="isBucketed" size="mini" :adaptive-length="true" :arrow="false">
+                                <el-option 
+                                    :key="1"
+                                    :label="i18n('calculated-metrics.buckets')" 
+                                    :value="true">
+                                </el-option>
+                                <el-option 
+                                    :key="0"
+                                    :label="i18n('calculated-metrics.no-buckets')" 
+                                    :value="false">
+                                </el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <cly-section v-if="executionResult.status === 'ready' && isBucketed" v-loading="!isReady">
+                <cly-metric-cards :multiline="false">
+                    <cly-metric-card
+                        :column-width="3"
+                        :key="idx"
+                        v-for="(item, idx) in summaryNumbers"
+                        :label="item.label">
+                        <template v-slot:number>
+                            {{item.value}}
+                        </template>
+                        <template v-if="item.hasComparison">
+                            <span v-if="item.trend=='d'" slot="description" class="cly-trend-down">
+                                <i class="bu-pr-1 fas fa-arrow-circle-down"></i>{{item.change}}
+                            </span>
+                            <span v-else slot="description" class="cly-trend-up">
+                                <i class="bu-pr-1 fas fa-arrow-circle-up"></i>{{item.change}}
+                            </span>
+                        </template>
+                    </cly-metric-card>
+                </cly-metric-cards>
+            </cly-section>
+
+            <cly-section v-if="executionResult.status === 'ready'" v-loading="!isReady" :hide-config="executionResult.status !== 'ready' || !isBucketed">
+                <template v-slot:config>
+                    <div class="bu-mr-4" v-if="isBucketed">
+                        <span class="font-weight-bold text-uppercase text-small">{{i18n('drill.bucket')}}</span>
+                        <el-radio-group class="bu-ml-1" v-model="selectedBucket" size="small">
+                            <el-radio-button
+                                :label="bucketType"
+                                :key="bucketType"
+                                v-for="bucketType in filteredBuckets">
+                                {{i18n('drill.' + bucketType)}}
+                            </el-radio-button>
+                        </el-radio-group>
+                    </div>
+                    <div class="bu-ml-4" v-if="hasMultipleChartTypes">
+                        <span class="font-weight-bold text-uppercase text-small">{{i18n('drill.visualization')}}</span>
+                        <el-select class="bu-ml-1" v-model="selectedChartType" size="small">
+                            <el-option
+                                :value="type"
+                                :key="type"
+                                v-for="type in executionResult.availableChartTypes">
+                                {{type}}
+                            </el-option>
+                        </el-select>
+                    </div>
+                </template>
+                <template v-if="isChartAvailable">
+                    <cly-chart-pie v-if="selectedChartType === 'pie'" :option="pieOptions" :show-zoom="false" :show-toggle="false"></cly-chart-pie>
+                    <cly-chart-bar :val-formatter="formatChartValue" v-else-if="selectedChartType === 'bar'" :option="barOptions" :show-zoom="false" :show-toggle="false"></cly-chart-bar>
+                    <cly-chart-line :val-formatter="formatChartValue" v-else-if="selectedChartType === 'timeSeries'"  xAxisLabelOverflow="unset" :option="timeSeriesOptions" :show-toggle="false" category="formulas"></cly-chart-line>
+                    <cly-chart-bar v-else-if="selectedChartType === 'stackedBar'" :option="stackedBarOptions"  xAxisLabelOverflow="unset" :show-zoom="false" :show-toggle="false"></cly-chart-bar>
+                    <cly-chart-generic :height="600" v-else-if="selectedChartType === 'heatmap'" :option="heatmapOptions" :show-zoom="false" :show-toggle="false"></cly-chart-generic>
+                </template>
+                <cly-blank :height="264" v-else :title="i18n('common.graph.no-data')"></cly-blank>
+            </cly-section>
+            <cly-section v-else v-loading="!isReady">
+                <cly-blank :height="264" :title="resultTitle" :sub-title="resultDescription"></cly-blank>
+            </cly-section>
+
+            <cly-section v-if="executionResult.status === 'ready'" v-loading="!isReady">
+                <cly-datatable-n 
+                    key="timeSeriesTable"
+                    :rows="timeSeriesRows">
+                    <template v-slot:header-left>
+                        <el-select v-if="isTableSegmentSelectEnabled" v-model="selectedTableSegment" size="small" @change="refreshTimeTableRows">
+                            <el-option
+                                :value="item.value"
+                                :key="item.value"
+                                :label="item.label"
+                                v-for="item in executionResult.availableSegments">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template v-slot="scope">
+                        <el-table-column 
+                            fixed
+                            width="300px"
+                            sortable="custom" 
+                            prop="date"
+                            :formatter="formatDateCell"
+                            :label="i18n('common.date')">
+                        </el-table-column>
+                        <el-table-column 
+                            sortable="custom" 
+                            :key="metric.value"
+                            v-for="metric in executionResult.availableMetrics" 
+                            :formatter="formatTableCell(metric)"
+                            :prop="metric.value" 
+                            :label="metric.label">
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </cly-section>
+        </cly-main>
+        <formula-manager 
+            ref="docMan"
+            :disabled="!isReady"
+            @document-selected="onLoadDocument"
+            @save-document="onSaveDocument"
+            @delete-document="onDeleteDocument">
+        </formula-manager>
+    </div>
+</script>
+
+
+<script type="text/x-template" id="formula-manager">
+    <div>
+        <cly-form-dialog title="Save Formula"
+            @submit="onSaveDocument"
+            saveButtonLabel="Save"
+            v-bind="formDialogs.saveDocument">
+            <template v-slot="formDialogScope">
+                <cly-form-step id="tag-step" title="Tag">
+                    <cly-form-field label="Name" name="Name" rules="required">
+                        <el-input
+                            autocomplete="off"
+                            v-model="formDialogScope.editedObject.name"
+                            placeholder="Name"
+                            @input="onNameChanged(formDialogScope.editedObject)">
+                        </el-input>
+                    </cly-form-field>
+                    <cly-form-field optional 
+                        :label="i18n('calculated-metrics.metric-description')" 
+                        :name="i18n('calculated-metrics.metric-description')">
+                        <el-input
+                            type="textarea"
+                            :rows="2"
+                            v-model="formDialogScope.editedObject.description"
+                            :placeholder="i18n('calculated-metrics.metric-description')">
+                        </el-input>
+                    </cly-form-field>
+                    <cly-form-field rules="required"
+                        :label="i18n('calculated-metrics.metric-key')" 
+                        :name="i18n('calculated-metrics.metric-key')">
+                        <el-input
+                            autocomplete="off"
+                            v-model="formDialogScope.editedObject.key"
+                            :placeholder="i18n('calculated-metrics.metric-key')"
+                            @change="onKeyTouched">
+                        </el-input>
+                    </cly-form-field>
+                    <cly-form-field rules="required"
+                        :label="i18n('calculated-metrics.metric-visibility')" 
+                        :name="i18n('calculated-metrics.metric-visibility')">
+                        <el-radio 
+                            class="is-autosized-vstack"
+                            v-model="formDialogScope.editedObject.visibility" 
+                            :label="item" 
+                            :key="idx"
+                            v-for="(item, idx) in ['global', 'private']"
+                            border>
+                            <div>
+                                {{i18n('calculated-metrics.metric-' + item + '-option')}}
+                            </div>
+                            <div class="text-small color-cool-gray-50">
+                                {{i18n('calculated-metrics.metric-' + item + '-option-desc')}}
+                            </div>
+                        </el-radio>
+                    </cly-form-field>
+                    <cly-form-field optional 
+                        :label="i18n('calculated-metrics.emails-title')" 
+                        :name="i18n('calculated-metrics.emails-title')" 
+                        v-if="formDialogScope.editedObject.visibility === 'private'">
+                        <cly-select-email :popper-append-to-body="false" v-model="formDialogScope.editedObject.sharedEmailEdit">
+                        </cly-select-email>
+                    </cly-form-field>
+                </cly-form-step>
+            </template>
+        </cly-form-dialog>
+        <cly-dialog
+            :title="i18n('calculated-metrics.open-formula')"
+            :visible.sync="simpleLoadDialogVisible">
+            <cly-paginate class="cly-vue-qb-query-manager" :items="filteredListFormulas" :per-page="7">
+                <template v-slot="paginateScope">
+                    <div class="bu-p-4 cly-vue-qb-query-manager__search-wrapper">
+                        <cly-form-field inline>
+                            <el-input
+                                size="medium"
+                                prefix-icon="el-icon-search"
+                                :placeholder="i18n('calculated-metrics.search-placeholder')"
+                                v-model="searchQuery"
+                                autocomplete="off">
+                            </el-input>
+                        </cly-form-field>
+                    </div>
+                    <div class="bu-px-4 cly-vue-qb-query-manager__listbox-wrapper">
+                        <cly-listbox
+                            @remove-option="onRemoveOption"
+                            :hasRemovableOptions="canUserDelete"
+                            @change="onSelectedDocumentChange"
+                            :bordered="false"
+                            :options="paginateScope.currentItems"
+                            v-model="selectedDocument">
+                        </cly-listbox>
+                    </div>
+                </template>
+            </cly-paginate>
+        </cly-dialog>
+    </div>
+</script>

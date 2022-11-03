@@ -1,0 +1,270 @@
+<div class="cly-vue-user-activity">
+    <cly-section v-if="userDetails.history" class="cly-vue-user-box-container bu-mt-5">
+        <div class="cly-vue-user-box-container--boxed">
+            <el-collapse class="is-bordered-box" v-model="activeCollapsedSections">
+                <el-collapse-item name="history">
+                    <template v-slot:title>
+                        <span class="bu-ml-1 text-medium text-uppercase bu-has-text-weight-medium">
+                            {{i18n('userdata.user-stats')}}
+                        </span>
+                        
+                    </template>
+                    <table class="cly-vue-user-box-container__table cly-vue-user-box-container__table--align-left cly-vue-user-box-container__table--line-height bu-mt-4  text-medium">
+                        <colgroup>
+                            <col width="50%" />
+                            <col width="50%" />
+                        </colgroup>
+                        <tbody>
+                            <tr v-if="userDetails.fs">
+                                <td class="bu-has-text-weight-medium"><span>{{i18n('userdata.first-session')}}</span>
+                                </td>
+                                <td class="text-medium" v-html="userDetails.fs">{{userDetails.fs}}</td>
+                            </tr>
+                            <tr v-if="userDetails.fac">
+                                <td  class="bu-has-text-weight-medium"><span>{{i18n('userdata.first-seen')}}</span>
+                                </td>
+                                <td class="text-medium" v-html="userDetails.fac">{{userDetails.fac}}</td>
+                            </tr>
+                            <tr v-if="userDetails.ls">
+                                <td  class="bu-has-text-weight-medium bu-mt-1"><span>{{i18n('userdata.last-session')}}</span>
+                                </td>
+                                <td class="text-medium" v-html="userDetails.ls">{{userDetails.ls}}</td>
+                            </tr>
+                            <tr v-if="userDetails.lac">
+                                <td  class="bu-has-text-weight-medium"><span>{{i18n('userdata.last-seen')}}</span>
+                                </td>
+                                <td class="text-medium" v-html="userDetails.lac">{{userDetails.lac}}</td>
+                            </tr>
+                            <tr v-if="userDetails.last_sync">
+                                <td  class="bu-has-text-weight-medium"><span>{{i18n('userdata.last-sync')}}</span>
+                                </td>
+                                <td class="text-medium" v-html="userDetails.last_sync">{{userDetails.last_sync}}</td>
+                            </tr>
+                            <tr v-if="userDetails.sc">
+                                <td  class="bu-has-text-weight-medium">
+                                    <span>{{i18n('userdata.total-sessions')}}</span>
+                                </td>
+                                <td class="text-medium">{{userDetails.sc}}</td>
+                            </tr>
+                            <tr v-if="userDetails.tsd">
+                                <td  class="bu-has-text-weight-medium">
+                                    <span>{{i18n('userdata.time-spent')}}</span>
+                                </td>
+                                <td class="text-medium">{{userDetails.tsd}}</td>
+                            </tr>
+                            <tr v-if="userDetails.lpa">
+                                <td  class="bu-has-text-weight-medium">
+                                    <span>{{i18n('userdata.last-purchase')}}</span>
+                                </td>
+                                <td class="text-medium">{{userDetails.lpa}}</td>
+                            </tr>
+                            <tr v-if="userDetails.lp">
+                                <td  class="bu-has-text-weight-medium">
+                                    <span>{{i18n('userdata.purchase-time')}}</span>
+                                </td>
+                                <td class="text-medium">{{userDetails.lp}}</td>
+                            </tr>
+                            <tr v-if="userDetails.tp">
+                                <td  class="bu-has-text-weight-medium">
+                                    <span>{{i18n('userdata.total-purchase')}}</span>
+                                </td>
+                                <td class="text-medium">{{userDetails.tp}}</td>
+                            </tr>
+                            <tr v-if="userDetails.tpc">
+                                <td  class="bu-has-text-weight-medium">
+                                    <span>{{i18n('userdata.purchase-count')}}</span>
+                                </td>
+                                <td class="text-medium">{{userDetails.tpc}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                </el-collapse-item>
+            </el-collapse>
+        </div>
+    </cly-section>
+
+    <div class="bu-my-5">
+        <cly-date-picker-g></cly-date-picker-g>
+    </div>
+
+    <cly-section class="bu-mt-5">
+        <template v-slot:header>
+            <h4>{{i18n('userdata.timeline')}}</h4>
+            <cly-tooltip-icon class="bu-pl-2" :tooltip="i18n('userdata.timeline.tooltip')"></cly-tooltip-icon>
+        </template>
+        <div>
+            <cly-chart-time v-loading="graphLoading" :force-loading="graphLoading" :showToggle=false :showZoom=false :showDownload=false :option="lineOptions" :legend="legendData" category="users"></cly-chart-time>
+        </div>
+    </cly-section>
+
+    <cly-section class="cly-vue-user-profile__session-table bu-mt-5">
+        <template v-slot:header>
+            <div>
+                <div class="bu-level">
+                    <div class="bu-level-left">
+                        <h4>{{i18n('userdata.session-history')}}</h4>
+                        <cly-tooltip-icon class="bu-pl-2" :tooltip="i18n('userdata.session-history.tooltip')"></cly-tooltip-icon>
+                    </div>
+                </div>
+                <div class="bu-mt-1 text-small color-cool-gray-50">
+                    Select a session to see it’s event timeline on the table.
+                </div>
+            </div>
+        </template>
+        <cly-datatable-n 
+        ref="sessionTable"
+        :hasDynamicCols="false" 
+        :tracked-fields="sessionTableTrackedFields" 
+        :resizable="false" 
+		:data-source="sessionTableDataSource"
+        :persist-key="sessionTablePersistKey"
+        highlight-current-row
+        @row-click="sessionRowClicked"
+        >
+
+        <template v-slot="scope">
+            <el-table-column width="50px">
+                <template v-slot="rowScope">
+                    <el-radio @click.native.stop="radioclick($event, rowScope)" @change="sessionRadioChange" v-model="currentSessionId" :label="rowScope.row._id"><span></span></el-radio>
+                </template>
+            </el-table-column>
+            <el-table-column sortable="custom" prop="ts" label="Session">
+                <template v-slot="rowScope">
+                    {{rowScope.row.sessionDate}}
+                </template>
+            </el-table-column>
+            <el-table-column sortable="custom" prop="ts" label="Time">
+                <template v-slot="rowScope">
+                    {{rowScope.row.sessionTime}}
+                </template>
+            </el-table-column>
+            <el-table-column sortable="custom" prop="duration" label="Duration">
+            </el-table-column>
+            <el-table-column sortable="custom" prop="te" label="Events">
+            </el-table-column>
+        </template>
+        </cly-datatable-n>
+    </cly-section>
+
+    <cly-section class="cly-vue-event-timeline bu-mt-5">
+        <template v-slot:header>
+            <h4>{{i18n('userdata.event-timeline')}}</h4>
+            <cly-tooltip-icon class="bu-pl-2" :tooltip="i18n('userdata.event-timeline.tooltip')"></cly-tooltip-icon>
+        </template>
+        <cly-datatable-n 
+        ref="eventsTable"
+        :hasDynamicCols="false" 
+        :tracked-fields="eventTableTrackedFields"
+		:data-source="eventsTableDataSource"
+        :resizable="false"
+        :persist-key="eventTablePersistKey"
+        @row-click="eventRowClicked"
+        :available-dynamic-cols="eventDynamicCols"
+        :row-class-name="eventRowClasses">
+        
+        <template v-slot:header-left>
+            <el-select v-model="eventTableFilter" >
+                <el-option
+                    :key="item.value"
+                    :value="item.value"
+                    :label="item.name"
+                    v-for="item in eventTableFilters">
+                </el-option>
+            </el-select>
+        </template>
+
+        <template v-slot="scope">
+            <el-table-column width="45px" type="expand">
+                <template v-slot="props">
+                        <table v-if="Object.keys(props.row.sg).length" class="cly-vue-event-timeline__segment-table">
+                            <colgroup>
+                                <col width="100px">
+                                <col width="calc(55% - 50px)">
+                                <col width="calc(45% - 50px)">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Segment</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(val,key) in props.row.sg">
+                                    <td></td>
+                                    <td style="padding-right: 10px">{{key}}</td>
+                                    <td v-tooltip="decode(val)" class="has-ellipsis" style="padding-right: 10px; word-wrap: break-word;" v-html="val"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table v-else class="cly-vue-event-timeline__segment-table">
+                            <colgroup>
+                                <col width="100%">
+                            </colgroup>
+                            <thead>
+                                <tr><th style="text-align: center">{{i18n('userdata.no-segments')}}</th></tr>
+                            </thead>
+                        </table>
+                </template>
+            </el-table-column>
+            <el-table-column width="78px" prop="sg" >
+                <template v-slot="rowScope">
+                    <span v-if="rowScope.row.key.startsWith('[CLY]_push')" class="bu-tag cly-vue-event-timeline--tag cly-vue-event-timeline--tag-blue" >
+                        Push
+                    </span>
+                    <span v-else-if="rowScope.row.key.startsWith('[CLY]_crash')" class="bu-tag cly-vue-event-timeline--tag cly-vue-event-timeline--tag-red">
+                        Crash
+                    </span>
+                    <span v-else-if="rowScope.row.key.startsWith('[CLY]_nps')" class="bu-tag cly-vue-event-timeline--tag  cly-vue-event-timeline--tag-yellow">
+                        NPS
+                    </span>
+                    <span v-else-if="rowScope.row.key.startsWith('[CLY]_survey')" class="bu-tag cly-vue-event-timeline--tag cly-vue-event-timeline--tag-yellow">
+                        Survey
+                    </span>
+                    <span v-else-if="rowScope.row.key === '[CLY]_star_rating' " class="bu-tag cly-vue-event-timeline--tag cly-vue-event-timeline--tag-yellow">
+                        Rating
+                    </span>
+                    <span v-else-if="rowScope.row.key.startsWith('[CLY]')" class="bu-tag cly-vue-event-timeline--tag cly-vue-event-timeline--tag-blue">
+                        {{rowScope.row.key.replace("[CLY]_","").replace("_"," ")}}
+                    </span>
+                    <span v-else class="bu-tag cly-vue-event-timeline--tag cly-vue-event-timeline--tag-blue">
+                        Event
+                    </span>
+                </template>
+            </el-table-column>
+            <el-table-column min-width="155px" sortable="custom" prop="key" label="Event">
+                <template v-slot="rowScope">
+                    <div v-if="rowScope.row.key === ('[CLY]_star_rating') || rowScope.row.key === ('[CLY]_nps') ">
+                        <span class="icon">
+                            Rated
+                            <span class="el-icon-star-on" style="color:#fed52d" v-for="index in rowScope.row.sg.rating"></span>
+                        </span>
+                    </div>
+                    <div v-else-if="rowScope.row.key === ('[CLY]_survey')">
+                        Survey
+                    </div>
+                    <div v-else-if="rowScope.row.key === ('[CLY]_crash')">
+                        Crash
+                    </div>
+                    <div class="has-ellipsis" v-tooltip="decode(rowScope.row.sg.name)" v-else-if="rowScope.row.key.startsWith('[CLY]') && rowScope.row.sg.name" 
+                        style="text-overflow:ellipsis; overflow:hidden; white-space:nowrap;" v-html="rowScope.row.sg.name">
+                    </div>
+                    <div v-tooltip="decode(rowScope.row.key)" class="has-ellipsis" v-else v-html="rowScope.row.key">
+                    </div>
+                </template>
+            </el-table-column>
+            <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
+                <el-table-column v-if="col.value === 'time'" min-width="230px" sortable="custom" prop="time" :label="col.label">
+                </el-table-column>
+                <el-table-column v-if="col.value === 'c'" min-width="120px" prop="c" :label="col.label">
+                </el-table-column>
+                <el-table-column v-if="col.value === 's'" min-width="120px" prop="s" :label="col.label">
+                </el-table-column>
+                <el-table-column v-if="col.value === 'dur'" min-width="130px" prop="dur" :label="col.label">
+                </el-table-column>
+            </template>
+        </template>
+
+        </cly-datatable-n>
+    </cly-section>
+</div>

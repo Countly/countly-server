@@ -1,0 +1,25 @@
+.formulas-main {
+    .el-collapse {
+        border-top: none;
+        &:not(.is-bordered-box) {
+            .el-collapse-item__arrow {
+                margin: 0 16px 0 auto;
+            }
+        }
+    }
+    .el-collapse-item__wrap {
+        background-color: #fcfcfc;
+        border-top: 2px solid #e2e4e8;
+        border-bottom: 2px solid #e2e4e8;
+    }
+    .el-collapse-item__content {
+        font-size: unset;
+    }
+}
+
+.formulas-widget {
+    &__legend-period {
+        position: absolute; 
+        top: 48px;
+    }
+}

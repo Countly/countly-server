@@ -1,0 +1,150 @@
+<div class="retention-wrapper" :class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2>{{tabNames[currentTab]}}</h2>
+            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="tabDescriptions[currentTab]"></span>
+        </template>
+        <template v-slot:header-right>
+            <cly-report-manager-dialog v-if="canUserRead" @view-task="onLoadTask" class="bu-mr-2" origin="retention"></cly-report-manager-dialog>
+        </template>
+    </cly-header>
+    <cly-main>
+        <cly-notification :closable="false" :text="i18n('retention.task_description')" :visible="taskMode !== false" class="bu-mb-5"></cly-notification>
+        <div class="bu-is-flex bu-is-align-items-center bu-mb-5">
+            <h4 class="color-cool-gray-100">{{ i18n('retention.results-for') }}</h4>
+            <cly-event-select class="bu-ml-3" :title="i18n('retention.retention-type')" v-model="selectedEvent" :width="332" :blacklistedEvents="['[CLY]_view', 'feedback', '[CLY]_crash']"></cly-event-select>
+        </div>
+        <el-select size="small" style="width:101px"  v-model="selectedDynamicType">
+            <el-option :label="i18n('retention.monthly')" :value="selectedMonthRange"></el-option>
+            <el-option :label="i18n('retention.weekly')" :value="selectedWeekRange"></el-option>
+            <el-option :label="i18n('retention.daily')" :value="selectedDayRange"></el-option>
+        </el-select>
+        <div v-if="limitDateRange" class="bu-is-inline">
+            <cly-date-picker v-if="usesCustomDatepicker" :range-limits="{'maxLength': [90, 'days']}" @change="onCustomDatepickerChange" modelMode="absolute" v-model="customRetentionDate" timestampFormat="ms" :displayShortcuts=false></cly-date-picker>
+            <cly-date-picker-g v-else key="global-picker" :range-limits="{'maxLength': [90, 'days']}" :displayShortcuts=false></cly-date-picker-g>    
+        </div>
+        <div v-else class="bu-is-inline">
+            <cly-date-picker v-if="usesCustomDatepicker" @change="onCustomDatepickerChange" modelMode="absolute" v-model="customRetentionDate" timestampFormat="ms" :displayShortcuts=false></cly-date-picker>
+            <cly-date-picker-g v-else key="global-picker" :displayShortcuts=false></cly-date-picker-g>    
+        </div>
+        <cly-qb-breakdown feature="retention_segments" :max-rows="1" :additional-rules="additionalBreakdownRules" class="bu-is-inline-block" :drill="true" v-model="queryModel" queryStore="retention"/>
+        <div class="bu-mt-6">
+            <div class="bu-level-left">
+                <h4> {{ i18n('retention.retained.users') }} </h4>
+                <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="i18n('retention.retained-users-tooltip')"></span>
+            </div>
+        </div>
+        <cly-section class="bu-mt-4 retention-wrapper__chart-container">
+          <cly-chart-line :option="retentionLineChartOptions" :showToggle=false v-loading="isLoading" :force-loading="isLoading" category="retention">
+            <template v-slot:chart-left="scope">
+                <div class="bu-level-item">
+                    <el-select v-model="selectedGraphType">
+                        <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in retentionGraphTypes"></el-option>
+                    </el-select>
+                </div>
+            </template>
+          </cly-chart-line>
+        </cly-section>
+        <div class="bu-level bu-mt-3">
+            <div class="bu-level-left">
+                <h4>{{i18n('retention.table')}}</h4>
+                <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="i18n('retention.retention-table-tooltip')"></span>
+            </div>
+        </div>    
+
+        <cly-section class="bu-mt-3" v-loading="isLoading">
+            <div>
+                <div v-if="parsedRetentionRows.length < 2 && !isLoading">
+                    <div class="bu-level bg-white bu-p-3 retention-wrapper__selected-filter-for-no-data">
+                        <div class="bu-level-left">
+                            <div v-if="hasFilter">
+                                <el-select v-model="selectedTableFilter">
+                                    <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in filterTypes"></el-option>
+                                </el-select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bu-is-flex bu-is-justify-content-center bu-is-align-items-center retention-wrapper__no-data">
+                        <span class="text medium color-cool-gray-50">{{i18n('retention.no-data')}}</span>
+                    </div>
+                </div>
+                <div v-else>
+                    <div class="bu-level bg-white bu-p-3">
+                        <div class="bu-level-left">
+                            <div v-if="hasFilter">
+                                <el-select v-model="selectedTableFilter">
+                                    <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in filterTypes"></el-option>
+                                </el-select>
+                            </div>
+                        </div>
+                        <div class="bu-level-right">
+                            <el-button @click="exportRetentionsTable" size="small" class="chart-download-button"><img src="images/icons/download-icon.svg"></el-button>
+                        </div>
+                    </div>
+
+                    <div class="retention-boxes">
+                        <div class="retention-boxes__content">
+                            <div class="retention-boxes__header-row">
+                                <div class="retention-boxes__col-date text-small">
+                                    <span>
+                                        {{ i18n('retention.date') }}
+                                    </span>
+                                    <span style="opacity: 0;">Placeholder</span>
+                                </div>
+                                <div class="retention-boxes__col-users text-small">
+                                    <span>
+                                        {{ i18n('retention.new-users') }}
+                                    </span>
+                                    <span style="opacity: 0;">Placeholder</span>
+                                </div>
+                                <div :class="[index === 0 && 'retention-boxes__first-col' ,'retention-boxes__col text-small']" v-for="(row, index) in (parsedRetentionRows[0] ? parsedRetentionRows[0].retention : [])" :keys="index">
+                                        <span v-if="selectedDynamicType === '30days'">{{ i18n('common.day.abrv2') }}</span>
+                                        <span v-if="selectedDynamicType === '1weeks'">{{ i18n('retention.table.week') }}</span>
+                                        <span v-if="selectedDynamicType === '1months'">{{ i18n('common.month') }}</span>
+                                        <span>{{' +' + (index + 1) }}</span></br> 
+                                        <span v-if="daysArray[index]">({{ daysArray[index] }})</span>
+                                        <span v-if="!daysArray[index]" style="opacity: 0;">(PH)</span>
+                                </div>
+                            </div>
+                            <div v-if="row.retention.length" class="retention-boxes__row" @mouseover="daysArray = JSON.parse(row.retColumns)" v-for="(row, index) in parsedRetentionRows">
+                                <div class="retention-boxes__col-date">{{ row.date }}</div>
+                                <div class="retention-boxes__col-users">{{ formatNumber(row.users) }}</div>
+                                <div :style="bgStyle(ret.percentFloat)" :class="[i === 0 && 'retention-boxes__first-col' ,'retention-boxes__col text-small']" v-for="(ret, i) in row.retention" @mouseleave="closePopup(i + '-' + index + '-' + row.bucket)">
+                                    <!-- <div class="red-circle"></div> -->
+                                    <div class="red-circle" @mouseover="openPopup(i + '-' + index + '-' + row.bucket)"></div>
+                                    <div class="information-popup" @mouseleave="closePopup(i + '-' + index + '-' + row.bucket)" v-bind:style= "[popupShow[i + '-' + index  + '-' + row.bucket] ? {'display': 'flex'} : {'display': 'none'}]">
+                                        <div class="information-popup__left">
+                                            <div class="information-popup__bar"></div>
+                                        </div>
+                                        <div class="information-popup__right">
+                                            <div class="information-popup__top">
+                                                <div class="information-popup__text">
+                                                    <span v-if="selectedEventState == '[CLY]_session'"> {{  i18n('retention.who-first-seen', row.date) }}</span>
+                                                    <span v-else> {{  i18n('retention.who-performed', selectedEventState, row.date) }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="information-popup__value text-small">
+                                                <span>{{ formatNumber(row.users) }}</span>
+                                            </div>
+                                            <div class="information-popup__percentage-badge-container">
+                                                <a v-if="currentTab=='full' && ret.users > 0" :href="userTooltipLink" target="_blank" class="information-popup__percentage-badge"> {{ret.users}} ({{ ret.percent }}%)</a>
+                                                <span v-else class="information-popup__percentage-badge">{{ret.users}} ({{ ret.percent }}%)</span>
+                                            </div>
+                                            <div class="information-popup__percentage-text">
+                                                {{ setTooltipStr(ret.date) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{ ret.percent }} %
+                                </div>
+                                <div class="retention-boxes__col text-small" style="opacity: 0;" v-for="n in (Math.max(0,Object.keys(parsedRetentionRows[0].retention).length - row.retention.length))">
+                                    {{ n }} %
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </cly-section>  
+    </cly-main>
+</div>

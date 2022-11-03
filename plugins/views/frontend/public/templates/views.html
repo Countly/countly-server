@@ -39,11 +39,11 @@
         </div>
 		<cly-section class="pageViews_chart">
 			<div v-if="lineOptions.series.length < 3">
-				<cly-chart-time :option="lineOptions" :legend="{position: 'bottom'}"  v-loading="isGraphLoading" ref="viewsGraph" category="views">
+				<cly-chart-time :option="lineOptions" :legend="{position: 'bottom'}"  v-loading="isGraphLoading" ref="viewsGraph" :val-formatter="formatChartValue" category="views">
 				</cly-chart-time>
 			</div>
             <div v-else>
-				<cly-chart-time :option="lineOptions" :legend="{position: 'right'}" v-loading="isGraphLoading" ref="viewsGraph" category="views">
+				<cly-chart-time :option="lineOptions" :legend="{position: 'right'}" v-loading="isGraphLoading" ref="viewsGraph" :val-formatter="formatChartValue" category="views">
 				</cly-chart-time>
 			</div>
         </cly-section>

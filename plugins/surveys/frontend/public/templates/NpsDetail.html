@@ -1,0 +1,67 @@
+<div v-bind:class="[componentId]" class="surveys nps-view nps-detail">
+	<cly-header>
+	  <cly-back-link slot="header-top" :title="i18n('surveys.nps.detail.back')" link="/nps"></cly-back-link>
+	  <template v-slot:header-left>
+		<h3 class="cly-vue-surveys-detail-header">{{overview.title}}</h3>
+	  </template>
+	  <template v-if="hasUpdateRight || hasDeleteRight" v-slot:header-right>
+		<div class="bu-level-item" v-if="hasUpdateRight">
+		  <el-button v-if="overview.status" @click="stopSurvey" size="small" icon="ion-android-cancel">{{i18n('surveys.detail.stop')}}
+		  </el-button>
+		  <el-button v-else @click="startSurvey" size="small" icon="ion-android-cancel">{{i18n('surveys.detail.start')}}
+		  </el-button>
+		</div>
+		<div class="bu-level-item" v-if="hasUpdateRight">
+		  <el-button @click="editSurvey" size="small" icon="ion-edit">{{i18n('surveys.detail.edit')}}
+		  </el-button>
+		</div>
+		<cly-more-options size="small" @command="handleCommand($event)">
+		  <el-dropdown-item v-if="hasUpdateRight" command="duplicate-record">
+			{{i18n('surveys.nps.detail.duplicate')}}
+		  </el-dropdown-item>
+		  <el-dropdown-item v-if="hasDeleteRight" command="delete-record">{{i18n('surveys.nps.detail.delete')}}
+		  </el-dropdown-item>
+		</cly-more-options>
+	  </template>
+	  <template v-slot:header-bottom>
+		<detail-overview :stats="overview.info" :headerClass="overview.class">
+		</detail-overview>
+	  </template>
+	</cly-header>
+	<cly-main>
+	  <el-collapse class="is-bordered-box bu-mb-5 cly-vue-surveys-detail-collapse">
+            <el-collapse-item name="1">
+                <template v-slot:title>
+                    <div class="text-heading text-uppercase">{{i18n('surveys.targeting')}}</div>
+                </template>
+                <cly-cohort-targeting :targeting="getTargeting"></cly-cohort-targeting>
+            </el-collapse-item>
+      </el-collapse>
+	  <div class="bu-is-flex bu-is-align-items-center bu-mb-4 bu-pt-2">
+		<div class="cly-vue-surveys-detail-summary__content">{{i18n('surveys.detail.results.for')}}
+		</div>
+		<cly-multi-select v-model="segmentationQuery" :fields="segmentationFields" :title="i18n('surveys.generic.nps.heading')">
+		</cly-multi-select>
+		<cly-date-picker-g class="cly-vue-surveys-detail-summary--position" placement="left"></cly-date-picker-g>
+	  </div>
+	  <cly-section>
+		<detail-stats></detail-stats>
+	  </cly-section>
+	  <cly-section>
+		<div class="cly-vue-nps-graph-section">
+		  <div class="cly-vue-nps-graph-section__dropdown">
+			<span class="cly-vue-nps-graph-section--text">{{i18n('surveys.nps.detail.metric')}}</span>
+			<el-select v-model="selectedGraph">
+			  <el-option v-for="item in availableGraphs" :key="item.name" :value="item.name">
+			  </el-option>
+			</el-select>
+		  </div>
+		  <cly-chart-bar v-if="showBarChart" :option="barData">			
+		  </cly-chart-bar>
+		  <cly-chart-time v-if="!showBarChart" :option="chartData" category="surveys"></cly-chart-time>
+		</div>
+	  </cly-section>
+	</cly-main>
+	<detail-tables class="detail-tables bu-m-5"></detail-tables>
+	<detail-drawer :controls="drawers.npsDrawer"></detail-drawer>
+  </div>
