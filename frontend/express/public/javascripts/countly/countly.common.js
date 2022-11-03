@@ -4399,7 +4399,7 @@
                 args.note_type = filter.noteType;
             }
             if (filter && filter.category) {
-                args.category = filter.category;
+                args.category = JSON.stringify(filter.category);
             }
             return window.$.ajax({
                 type: "GET",

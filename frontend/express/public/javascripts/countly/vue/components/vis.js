@@ -868,6 +868,13 @@
                 required: false,
                 default: ''
             },
+            subCategory: {
+                type: Array,
+                required: false,
+                default: function() {
+                    return [];
+                }
+            },
             notationSelectedBucket: {
                 type: String,
                 required: false,
@@ -1004,7 +1011,14 @@
             getGraphNotes: function() {
                 if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
                     var self = this;
-                    countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {category: this.category}).then(function(data) {
+                    // sub category parser
+                    var categories = [];
+                    if (this.subCategory.length) {
+                        this.subCategory.forEach(function(item) {
+                            categories.push("events " + item.split("***")[1]);
+                        });
+                    }
+                    countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {category: categories.length ? categories : [this.category]}).then(function(data) {
                         self.notes = data.aaData;
                     }).then(function() {
                         self.seriesOptions.markPoint.data = [];

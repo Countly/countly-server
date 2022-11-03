@@ -944,7 +944,7 @@ usersApi.fetchNotes = async function(params) {
         ],
     };
     if (params.qstring.category) {
-        query.category = params.qstring.category;
+        query.category = {$in: JSON.parse(params.qstring.category)};
     }
 
     if (params.qstring.note_type) {

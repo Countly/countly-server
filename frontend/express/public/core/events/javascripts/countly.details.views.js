@@ -159,7 +159,7 @@
             selectedEventName: function() {
                 var eventName = this.$store.getters["countlyAllEvents/selectedEventName"];
                 if (eventName) {
-                    this.graphNotesCategory = 'events_' + eventName;
+                    this.graphNotesCategory = 'events ' + eventName;
                 }
                 return this.$store.getters["countlyAllEvents/allEventsProcessed"].eventName;
             },
