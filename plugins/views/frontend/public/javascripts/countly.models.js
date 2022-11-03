@@ -364,9 +364,9 @@
                 for (var k = 0; k < takefrom.length; k++) {
                     var bounceRate = Math.floor(takefrom[k][1] * 100 / (calculated.chartDP[1].data[k][1] || 1));
                     //there may be cases where bounces are higher than landing. Cap br to 100 for these cases
-                    if (bounceRate > 100 ) {
+                    if (bounceRate > 100) {
                         bounceRate = 100;
-                    } 
+                    }
                     data.push(bounceRate);
                 }
             }
