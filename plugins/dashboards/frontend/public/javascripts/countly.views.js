@@ -259,12 +259,17 @@
                 else {
                     countlyDashboards.factory.log("No dimensions were found for the widget!");
                 }
-                //maintaining backward compatibilty of previous minHeight
+                //maintaining backward compatibilty of previous minHeight,minWidth
                 if (widget.size && widget.size.length === 2) {
+                    var prevWidth = widget.size[0];
                     var prevHeight = widget.size[1];
                     if (prevHeight < dimensions.minHeight) {
                         dimensions.height = prevHeight;
                         dimensions.minHeight = prevHeight;
+                    }
+                    if (prevWidth < dimensions.minWidth) {
+                        dimensions.width = prevWidth;
+                        dimensions.minWidth = prevWidth;
                     }
                 }
                 return dimensions;
