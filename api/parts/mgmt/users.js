@@ -915,8 +915,8 @@ usersApi.fetchUserAppIds = async function(params) {
 **/
 usersApi.fetchNotes = async function(params) {
     countlyCommon.getPeriodObj(params);
+    // const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
 
-    const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
     let appIds = [];
     let filtedAppIds = [];
     try {
@@ -936,14 +936,13 @@ usersApi.fetchNotes = async function(params) {
     }
     const query = {
         'app_id': {$in: filtedAppIds},
-        'ts': timestampRange,
+        'ts': {$gte: params.qstring.period[0], $lte: params.qstring.period[1]},
         $or: [
             {'owner': params.member._id + ""},
             {'noteType': 'public'},
             {'emails': {'$in': [params.member.email] }},
         ],
     };
-
     if (params.qstring.category) {
         query.category = params.qstring.category;
     }
@@ -951,6 +950,7 @@ usersApi.fetchNotes = async function(params) {
     if (params.qstring.note_type) {
         query.noteType = params.qstring.note_type;
     }
+
     let skip = params.qstring.iDisplayStart || 0;
     let limit = params.qstring.iDisplayLength || 5000;
     const sEcho = params.qstring.sEcho || 1;
@@ -973,6 +973,7 @@ usersApi.fetchNotes = async function(params) {
         log.e(' got error while paring query notes request', e);
     }
     let count = 0;
+
     common.db.collection('notes').count(query, function(error, noteCount) {
         if (!error && noteCount) {
             count = noteCount;

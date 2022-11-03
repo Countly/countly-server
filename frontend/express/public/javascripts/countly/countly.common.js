@@ -4391,7 +4391,7 @@
             var args = {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "notes_apps": JSON.stringify(appIds),
-                "period": countlyCommon.getPeriod(),
+                "period": JSON.stringify([countlyCommon.periodObj.start, countlyCommon.periodObj.end]),
                 "method": "notes",
                 "dt": Date.now()
             };
