@@ -35,7 +35,7 @@
         <el-table-column v-if="isColumnAllowed('dur')" sortable="true" prop="dur" :label="labels.dur">
           <template v-slot="rowScope">
             <div>
-              {{formatNumber(rowScope.row.dur)}}
+              {{formatDurNumber(rowScope.row.dur)}}
             </div>
           </template>
         </el-table-column>
@@ -49,7 +49,7 @@
         <el-table-column v-if="isColumnAllowed('AvgDur')" sortable="true" prop="avgDur" :label="i18n('events.table.avg-dur')">
           <template v-slot="rowScope">
             <div>
-              {{formatNumber(rowScope.row.avgDur)}}
+              {{formatDurNumber(rowScope.row.avgDur)}}
             </div>
           </template>
         </el-table-column>

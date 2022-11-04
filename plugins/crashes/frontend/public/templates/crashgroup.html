@@ -210,7 +210,7 @@
                             <div>
                                 <div class="bu-is-flex bu-is-align-items-baseline">
                                     <h2>{{(mobileDiagnostics[diagnosticKey].average ? mobileDiagnostics[diagnosticKey].average.toFixed(2) : 0) + ("unit" in
-                                        mobileDiagnostics[diagnosticKey] ? "" : " %")}}</h2>
+                                        mobileDiagnostics[diagnosticKey] ? "" : "%")}}</h2>
                                     <h4 class="bu-ml-2" v-if="'unit' in mobileDiagnostics[diagnosticKey]">
                                         {{mobileDiagnostics[diagnosticKey].unit}}</h4>
                                 </div>
@@ -236,23 +236,23 @@
                     <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-root')" showDonut
                         :donutPercentage="mobileMetrics.rootedPercent || 0">
                         <template v-slot:title>{{i18n('crashes.root')}}</template>
-                        <template v-slot:value>{{mobileMetrics.rootedPercent ? mobileMetrics.rootedPercent.toFixed(2) : 0}} %</template>
+                        <template v-slot:value>{{mobileMetrics.rootedPercent ? mobileMetrics.rootedPercent.toFixed(2) : 0}}%</template>
                     </cly-crashes-dashboard-tile>
                     <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-online')" showDonut
                         :donutPercentage="mobileMetrics.onlinePercent || 0">
                         <template v-slot:title>{{i18n('crashes.online')}}</template>
-                        <template v-slot:value>{{mobileMetrics.onlinePercent ? mobileMetrics.onlinePercent.toFixed(2) : 0}} %</template>
+                        <template v-slot:value>{{mobileMetrics.onlinePercent ? mobileMetrics.onlinePercent.toFixed(2) : 0}}%</template>
                     </cly-crashes-dashboard-tile>
                     <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-muted')" showDonut
                         :donutPercentage="mobileMetrics.mutedPercent || 0">
                         <template v-slot:title>{{i18n('crashes.muted')}}</template>
-                        <template v-slot:value>{{mobileMetrics.mutedPercent ? mobileMetrics.mutedPercent.toFixed(2) : 0}} %</template>
+                        <template v-slot:value>{{mobileMetrics.mutedPercent ? mobileMetrics.mutedPercent.toFixed(2) : 0}}%</template>
                     </cly-crashes-dashboard-tile>
                     <cly-crashes-dashboard-tile class="has-ellipsis" columnWidth="3"
                         :tooltip="i18n('crashes.help-background')" showDonut
                         :donutPercentage="mobileMetrics.backgroundPercent || 0">
                         <template v-slot:title>{{i18n('crashes.background')}}</template>
-                        <template v-slot:value>{{mobileMetrics.backgroundPercent ? mobileMetrics.backgroundPercent.toFixed(2) : 0}} %</template>
+                        <template v-slot:value>{{mobileMetrics.backgroundPercent ? mobileMetrics.backgroundPercent.toFixed(2) : 0}}%</template>
                     </cly-crashes-dashboard-tile>
                 </div>
             </cly-section>

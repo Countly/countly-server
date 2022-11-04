@@ -1,3 +1,47 @@
+## Version 22.09.1
+
+Fixes:
+- [2fa] fix permission call in two factor auth
+- [api] remove duplicate code and process device type correctly
+- [api] top events check fixes
+- [apps] app lock tooltip text fixed and localized
+- [apps] app management sidebar app icon margin alignment
+- [crashes] fixes new crash dispatch
+- [crashes] use common styles for the tab element
+- [dashboards] note in dashboards escaping fixed 
+- [device-list] add missing Apple devices
+- [events] check for existience of map key in overview
+- [hooks] fix app filter for new crashes
+- [hooks] fixes for data formatting
+- [members] update default profile image sprite
+- [push] fixing ampersand encoding in button URLs & on click URL
+- [scripts] fixes for expire scripts to do not drop indexes on ttl change, but rather modifly value
+- [server-stats] fixed issues with incorrectly calculated data points for periods: "month", "day"
+- [settings] country data tracking can be disabled
+- [ui] cly-vue-radio-block - use common trend styles
+- [ui] common styles for the tab element & trend up, down, neutral and negated states
+- [ui] fixes for datepickers, who uses second not milisecond format
+- [ui] prevent map zoom via scroll wheel
+- [ui] remove spaces before % throughout the dashboard
+- [ui] set drawer element z-index for it to be above the table loading mask
+- [ui] vertically center some no-data elements in Analytics > Technology
+- [upgrade] fix stopping on error
+- [upgrade] improvement for upgrade script to do parallel upgrade for collection
+
+Enterprise fixes:
+- [attribution] use common styles for the tab element & use correct trend values
+- [cohorts] in mongo update $pull And $push CANT be in same call!!
+- [cohorts] period selection fixes
+- [concurrent_users] online users home widget max numbers margin alignment
+- [data-manager] fix for status update not showing up
+- [data-manager] fix projections for data masking
+- [drill] fix time formatter
+- [drill] update duration on each session duration change
+- [formulas] pass [CLY]_session as default if none of events is set. To have duration in query builder after
+- [groups] check for empty group permission when creating permission set in drawer
+- [groups] fix groupID in group drawer
+- [retention] fix in case of undefined parameter
+- [revenue] use common styles for the tab element
 
 ## Version 22.09
 

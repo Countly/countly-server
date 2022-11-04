@@ -407,7 +407,24 @@ var pluginManager = function pluginManager() {
     * @param {function} callback - function to call when updating finished
     **/
     this.updateAllConfigs = function(db, changes, callback) {
-
+        if ("api" in changes) {
+            //country data tracking is changed
+            if ("country_data" in changes.api) {
+                //user disabled country data tracking while city data tracking is enabled
+                if (changes.api.country_data === false && configs.api.city_data === true) {
+                    //enable city data tracking
+                    changes.api.city_data = true;
+                }
+            }
+            //city data tracking is changed
+            if ("city_data" in changes.api) {
+                //user enabled city data tracking while country data tracking is disabled
+                if (changes.api.city_data === true && configs.api.country_data === false) {
+                    //disable country data tracking
+                    changes.api.country_data = false;
+                }
+            }
+        }
         for (let k in changes) {
             preventKillingNumberType(configs[k], changes[k]);
             _.extend(configs[k], changes[k]);

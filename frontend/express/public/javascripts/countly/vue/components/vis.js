@@ -2189,7 +2189,8 @@
             'l-geo-json': Vue2Leaflet.LGeoJson,
             'l-tile-layer': Vue2Leaflet.LTileLayer,
             'l-control': Vue2Leaflet.LControl,
-            'l-tooltip': Vue2Leaflet.LTooltip
+            'l-tooltip': Vue2Leaflet.LTooltip,
+            'l-control-zoom': Vue2Leaflet.LControlZoom
         },
         mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.i18n],
         props: {
@@ -2302,7 +2303,7 @@
             },
             minZoom: {
                 type: Number,
-                default: 0
+                default: 1
             },
             maxZoom: {
                 type: Number,
@@ -2354,9 +2355,7 @@
                 citiesToLatLng: {},
                 markerTooltipOptions: {
                     sticky: true,
-                    direction: "right",
-                    //permanent: true,
-                    //offset: L.point(5, 5)
+                    direction: "auto"
                 },
                 circleMarkerConfig: {
                     pane: "markerPane",
@@ -2366,9 +2365,11 @@
                 },
                 defaultMapOptions: {
                     attributionControl: false,
-                    zoomControl: false,
+                    zoom: 1,
                     zoomSnap: 0.1,
-                    zoom: 1.3
+                    zoomDelta: 0.5,
+                    zoomControl: false,
+                    scrollWheelZoom: false
                 }
             };
         },
@@ -2618,7 +2619,7 @@
                 if (boundingBox) {
                     this.maxBounds = this.boxToLatLng2d(boundingBox);
                     if (this.$refs.lmap && this.$refs.lmap.mapObject) {
-                        this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
+                        this.$refs.lmap.mapObject.fitBounds(this.maxBounds, {animate: false, padding: [20, 20]});
                     }
                 }
             },

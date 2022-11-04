@@ -176,7 +176,7 @@ var AppPlatformView = countlyVue.views.create({
                     "name": data[k].origos_,
                     "value": countlyCommon.getShortNumber(data[k][property] || 0),
                     "percent": percent,
-                    "percentText": percent + " % " + CV.i18n('common.of-total'),
+                    "percentText": percent + "% " + CV.i18n('common.of-total'),
                     "info": "some description",
                     "color": this.graphColors[k % this.graphColors.length]
                 });

@@ -1,8 +1,6 @@
 /* eslint-disable no-console */
-/*global countlyVue,CV,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers,countlyLoggerService*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
-
-    var serviceLogger = countlyLoggerService.createCategory("pushNotification");
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
     var actionsPerformedLabel = CV.i18n('push-notification.actions-performed-serie-name');
@@ -594,21 +592,41 @@
                 _id: id,
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
-            return CV.$.ajax({
-                type: "GET",
-                url: window.countlyCommon.API_URL + "/o/push/message/GET",
-                data: data,
-                contentType: "application/json",
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: window.countlyCommon.API_URL + "/o/push/message/GET",
+                    data: data,
+                    contentType: "application/json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         findAll: function(data) {
             data.app_id = countlyCommon.ACTIVE_APP_ID;
-            return CV.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r + "/push/message/all",
-                data: data,
-                dataType: "json",
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + "/push/message/all",
+                    data: data,
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         getDashboard: function(echo) {
             var data = {
@@ -617,21 +635,41 @@
             if (echo) {
                 data.echo = echo;
             }
-            return CV.$.ajax({
-                type: "GET",
-                url: window.countlyCommon.API_URL + '/o/push/dashboard',
-                data: data,
-                dataType: "json",
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: window.countlyCommon.API_URL + '/o/push/dashboard',
+                    data: data,
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         delete: function(data) {
             data.app_id = countlyCommon.ACTIVE_APP_ID;
-            return CV.$.ajax({
-                method: 'GET',
-                url: window.countlyCommon.API_URL + '/i/push/message/remove',
-                data: data,
-                dataType: "json",
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                return CV.$.ajax({
+                    method: 'GET',
+                    url: window.countlyCommon.API_URL + '/i/push/message/remove',
+                    data: data,
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         save: function(dto) {
             return new Promise(function(resolve, reject) {
@@ -648,19 +686,30 @@
                         resolve();
                     },
                     error: function(error) {
-                        reject(error);
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
                     }
                 }, {disableAutoCatch: true});
             });
         },
         sendToTestUsers: function(dto) {
-            return CV.$.ajax({
-                type: "POST",
-                url: window.countlyCommon.API_URL + '/i/push/message/test?app_id=' + countlyCommon.ACTIVE_APP_ID,
-                data: JSON.stringify(dto),
-                contentType: "application/json",
-
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: window.countlyCommon.API_URL + '/i/push/message/test?app_id=' + countlyCommon.ACTIVE_APP_ID,
+                    data: JSON.stringify(dto),
+                    contentType: "application/json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    }
+                }, {disableAutoCatch: true});
+            });
         },
         update: function(dto) {
             return new Promise(function(resolve, reject) {
@@ -677,29 +726,52 @@
                         resolve();
                     },
                     error: function(error) {
-                        reject(error);
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
                     }
                 }, {disableAutoCatch: true});
             });
         },
         estimate: function(data) {
-            return CV.$.ajax({
-                type: "POST",
-                url: window.countlyCommon.API_URL + '/o/push/message/estimate?app_id=' + countlyCommon.ACTIVE_APP_ID,
-                data: JSON.stringify(data),
-                contentType: "application/json",
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: window.countlyCommon.API_URL + '/o/push/message/estimate?app_id=' + countlyCommon.ACTIVE_APP_ID,
+                    data: JSON.stringify(data),
+                    contentType: "application/json",
+                    success: function(response) {
+
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    }
+                }, {disableAutoCatch: true});
+            });
         },
         getMime: function(url) {
             var data = {
                 url: url,
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
-            return CV.$.ajax({
-                method: 'GET',
-                url: window.countlyCommon.API_URL + '/o/push/mime',
-                data: data,
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    method: 'GET',
+                    url: window.countlyCommon.API_URL + '/o/push/mime',
+                    data: data,
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         findAllUserProperties: function() {
             if (typeof countlySegmentation === 'undefined') {
@@ -713,35 +785,65 @@
             var data = {
                 query: JSON.stringify(query)
             };
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.data.r + "?app_id=" + options.appId + "&method=user_details",
-                contentType: "application/json",
-                data: JSON.stringify(data),
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.data.r + "?app_id=" + options.appId + "&method=user_details",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         updateAppConfig: function(config, options) {
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.apps.w + '/update/plugins?app_id=' + options.app_id,
-                data: {
-                    args: JSON.stringify(config),
-                    app_id: options.app_id
-                },
-                dataType: "json",
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.apps.w + '/update/plugins?app_id=' + options.app_id,
+                    data: {
+                        args: JSON.stringify(config),
+                        app_id: options.app_id
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         },
         toggle: function(id, isActive) {
-            return CV.$.ajax({
-                type: "GET",
-                url: window.countlyCommon.API_URL + '/i/push/message/toggle',
-                data: {
-                    _id: id,
-                    active: isActive,
-                    app_id: countlyCommon.ACTIVE_APP_ID
-                },
-                dataType: "json",
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: window.countlyCommon.API_URL + '/i/push/message/toggle',
+                    data: {
+                        _id: id,
+                        active: isActive,
+                        app_id: countlyCommon.ACTIVE_APP_ID
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
         }
     };
 
@@ -1048,7 +1150,7 @@
                     badgeNumber: androidSettingsDto && androidSettingsDto.badge && androidSettingsDto.badge.toString(),
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
-                    onClickURL: androidSettingsDto && androidSettingsDto.url || '',
+                    onClickURL: androidSettingsDto && androidSettingsDto.url ? countlyCommon.decodeHtml(androidSettingsDto.url) : '',
                     mediaURL: androidSettingsDto && androidSettingsDto.media ? countlyCommon.decodeHtml(androidSettingsDto.media) : '',
                     mediaMime: androidSettingsDto && androidSettingsDto.mediaMime || '',
                 };
@@ -1061,7 +1163,7 @@
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
-                    onClickURL: iosSettingsDto && iosSettingsDto.url || '',
+                    onClickURL: iosSettingsDto && iosSettingsDto.url ? countlyCommon.decodeHtml(iosSettingsDto.url) : '',
                     mediaURL: iosSettingsDto && iosSettingsDto.media ? countlyCommon.decodeHtml(iosSettingsDto.media) : '',
                     mediaMime: iosSettingsDto && iosSettingsDto.mediaMime || '',
                 };
@@ -1153,7 +1255,7 @@
             mapMessageLocalizationButtons: function(buttonsDto) {
                 var buttons = [];
                 buttonsDto.map(function(buttonDtoItem) {
-                    buttons.push({label: buttonDtoItem.title, url: buttonDtoItem.url});
+                    buttons.push({label: buttonDtoItem.title, url: buttonDtoItem.url ? countlyCommon.decodeHtml(buttonDtoItem.url) : buttonDtoItem.url});
                 });
                 return buttons;
             },
@@ -2116,12 +2218,12 @@
                             resolve(result);
                         }
                         catch (error) {
-                            serviceLogger.error(error, "service", "fetchCohorts");
+                            console.error(error);
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
                     },
                     error: function(error) {
-                        serviceLogger.error(error, "service", "fetchCohorts");
+                        console.error(error);
                         reject(error);
                     }
                 }, {disableAutoCatch: true});
@@ -2157,14 +2259,13 @@
                             resolve(targetLocations);
                         }
                         catch (error) {
-                            serviceLogger.error(error, "service", "fetchLocations");
+                            console.error(error);
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
                     },
                     error: function(error) {
-                        serviceLogger.error(error, "service", "fetchLocations");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
+                        console.error(error);
+                        reject(error);
                     }
                 }, {disableAutoCatch: true});
             });
@@ -2177,13 +2278,12 @@
                             resolve(countlyPushNotification.mapper.incoming.mapEvents(events.list || []));
                         }
                         catch (error) {
-                            serviceLogger.error(error, "service", "fetchEvents");
+                            console.error(error);
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
                     }).catch(function(error) {
-                        serviceLogger.error(error, "service", "fetchEvents");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
+                        console.error(error);
+                        reject(error);
                     });
             });
         },
@@ -2192,12 +2292,17 @@
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.findAll(self.getFetchAllParameters(type, status))
                     .then(function(response) {
-                        resolve(countlyPushNotification.mapper.incoming.mapRows(response));
+                        try {
+                            resolve(countlyPushNotification.mapper.incoming.mapRows(response));
+                        }
+                        catch (error) {
+                            console.error(error);
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                     })
                     .catch(function(error) {
-                        serviceLogger.error(error, "service", "fetchAll");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
+                        console.error(error);
+                        reject(error);
                     });
             });
         },
@@ -2208,12 +2313,17 @@
                     countlyPushNotification.api.findById(id).then(function(response) {
                         response.userProperties = userProperties;
                         var model = null;
-                        model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
-                        resolve(model);
+                        try {
+                            model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
+                            resolve(model);
+                        }
+                        catch (error) {
+                            console.error(error);
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                     }).catch(function(error) {
-                        serviceLogger.error(error, "service", "fetchById");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
+                        console.error(error);
+                        reject(error);
                     });
                 });
             });
@@ -2222,23 +2332,32 @@
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.getDashboard(echo)
                     .then(function(response) {
-                        resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response));
-
+                        try {
+                            resolve(countlyPushNotification.mapper.incoming.mapMainDashboard(response));
+                        }
+                        catch (error) {
+                            console.error(error);
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                     }).catch(function(error) {
-                        serviceLogger.error(error, "service", "fetchDashboard");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
+                        console.error(error);
+                        reject(error);
                     });
             });
         },
         fetchMediaMetadata: function(url) {
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.getMime(url).then(function(response) {
-                    resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(response));
+                    try {
+                        resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(response));
+                    }
+                    catch (error) {
+                        console.error(error);
+                        reject(new Error(CV.i18n('push-notification.unknown-error')));
+                    }
                 }).catch(function(error) {
-                    serviceLogger.error(error, "service", "fetchMediaMetadata");
-                    var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                    reject(new Error(errorMessage));
+                    console.error(error);
+                    reject(error);
                 });
             });
         },
@@ -2247,7 +2366,7 @@
         }, DEBOUNCE_TIME_IN_MS),
         fetchUserProperties: function() {
             return countlyPushNotification.api.findAllUserProperties().catch(function(error) {
-                serviceLogger.error(error, "service", "fetchUserProperties");
+                console.error(error);
                 return Promise.resolve([]);
             });
         },
@@ -2268,18 +2387,23 @@
                 }
                 Promise.all([usersQuery ? countlyPushNotification.api.searchUsers(usersQuery, options) : Promise.resolve([]), self.fetchCohorts(testUsers.cohorts || [], false)])
                     .then(function(responses) {
-                        var usersList = responses[0];
-                        var cohortsList = responses[1];
+                        try {
+                            var usersList = responses[0];
+                            var cohortsList = responses[1];
 
-                        var users = usersList.aaData;
-                        var result = {};
-                        result[AddTestUserDefinitionTypeEnum.USER_ID] = users;
-                        result[AddTestUserDefinitionTypeEnum.COHORT] = cohortsList;
-                        resolve(result);
+                            var users = usersList.aaData;
+                            var result = {};
+                            result[AddTestUserDefinitionTypeEnum.USER_ID] = users;
+                            result[AddTestUserDefinitionTypeEnum.COHORT] = cohortsList;
+                            resolve(result);
+                        }
+                        catch (error) {
+                            console.error(error);
+                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        }
                     }).catch(function(error) {
-                        serviceLogger.error(error, "service", "fetchTestUsers");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
+                        console.error(error);
+                        reject(error);
                     });
             });
         },
@@ -2299,9 +2423,8 @@
                     .then(function(response) {
                         resolve(response.aaData);
                     }).catch(function(error) {
-                        serviceLogger.error(error, "service", "searchUsersbyId");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
+                        console.error(error);
+                        reject(error);
                     });
             });
         },
@@ -2318,20 +2441,24 @@
                 }
             }
             catch (error) {
-                serviceLogger.error(error, "estimate");
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.estimate(data).then(function(response) {
-                    var localesDto = response.locales;
-                    localesDto.count = response.count;
-                    var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
-                    resolve({localizations: localizations, total: response.count, _id: response._id});
+                    try {
+                        var localesDto = response.locales;
+                        localesDto.count = response.count;
+                        var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
+                        resolve({localizations: localizations, total: response.count, _id: response._id});
+                    }
+                    catch (error) {
+                        console.error(error);
+                        reject(new Error(CV.i18n('push-notification.unknown-error')));
+                    }
 
                 }).catch(function(error) {
-                    serviceLogger.error(error, "service", "estimate");
-                    var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                    reject(new Error(errorMessage));
+                    console.error(error);
+                    reject(error);
                 });
             });
         },
@@ -2340,16 +2467,7 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 _id: id
             };
-            return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.delete(data)
-                    .then(function(response) {
-                        resolve(response);
-                    }).catch(function(error) {
-                        serviceLogger.error(error, "service", "delete");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
-                    });
-            });
+            return countlyPushNotification.api.delete(data);
         },
         save: function(model, options) {
             var dto = null;
@@ -2357,19 +2475,10 @@
                 dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
-                serviceLogger.error(error, "service", "update");
+                console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
-            return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.save(dto)
-                    .then(resolve)
-                    .catch(function(error) {
-                        serviceLogger.error(error, "service", "save");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
-                    });
-
-            });
+            return countlyPushNotification.api.save(dto);
         },
         update: function(model, options) {
             var dto = null;
@@ -2377,19 +2486,10 @@
                 dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
-                serviceLogger.error(error, "service", "update");
+                console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
-            return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.update(dto)
-                    .then(resolve)
-                    .catch(function(error) {
-                        serviceLogger.error(error, "service", "update");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
-                    });
-
-            });
+            return countlyPushNotification.api.update(dto);
         },
         sendToTestUsers: function(model, options) {
             var dto = null;
@@ -2397,7 +2497,7 @@
                 dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
             }
             catch (error) {
-                serviceLogger.error(error, "service", "sendToTestUsers");
+                console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return new Promise(function(resolve, reject) {
@@ -2405,17 +2505,17 @@
                     .then(function(testDto) {
                         if (!testDto.result) {
                             reject(new Error(CV.i18n('push-notification.unknown-error')));
-                            serviceLogger.error(testDto);
+                            console.error(testDto);
                             return;
                         }
                         if (testDto.result.errors) {
                             reject(new Error('Error sending push notificaiton to test users:' + JSON.stringify(testDto.result.errors)));
-                            serviceLogger.error(testDto);
+                            console.error(testDto);
                             return;
                         }
                         if (testDto.result.errored) {
                             reject(new Error('Error sending push notification to test users. Number of errors:' + testDto.result.errored));
-                            serviceLogger.error(testDto);
+                            console.error(testDto);
                             return;
                         }
                         if (testDto.result.sent > 0) {
@@ -2423,11 +2523,10 @@
                             return;
                         }
                         reject(new Error(CV.i18n('push-notification.unknown-error')));
-                        serviceLogger.error(testDto);
+                        console.error(testDto);
                     }).catch(function(error) {
-                        serviceLogger.error(error, "service", "sendToTestUsers");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
+                        console.error(error);
+                        reject(error);
                     });
             });
         },
@@ -2457,19 +2556,10 @@
                 }
             }
             catch (error) {
-                serviceLogger.error(error, "service", "resend");
+                console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
-            return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.save(dto)
-                    .then(resolve)
-                    .catch(function(error) {
-                        serviceLogger.error(error, "service", "resend");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
-                    });
-
-            });
+            return countlyPushNotification.api.save(dto);
         },
         approve: function(messageId) {
             if (!this.isPushNotificationApproverPluginEnabled()) {
@@ -2481,7 +2571,7 @@
                         resolve(response);
                     })
                     .catch(function(error) {
-                        serviceLogger.error(error, "service", "approve");
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     });
@@ -2498,7 +2588,7 @@
                         resolve(response);
                     })
                     .catch(function(error) {
-                        serviceLogger.error(error, "service", "reject");
+                        console.error(error);
                         var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
                         reject(new Error(errorMessage));
                     });
@@ -2512,31 +2602,13 @@
                 appConfig.push.test = testDto;
             }
             catch (error) {
-                serviceLogger.error(error);
+                console.error(error);
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
-            return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.updateAppConfig(appConfig, options)
-                    .then(resolve)
-                    .catch(function(error) {
-                        serviceLogger.error(error, "service", "updateTestUsers");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
-                    });
-
-            });
+            return countlyPushNotification.api.updateAppConfig(appConfig, options);
         },
         toggle: function(id, isActive) {
-            return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.toggle(id, isActive)
-                    .then(resolve)
-                    .catch(function(error) {
-                        serviceLogger.error(error, "service", "toggle");
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
-                    });
-
-            });
+            return countlyPushNotification.api.toggle(id, isActive);
         }
     };
 
@@ -2569,7 +2641,7 @@
                     context.dispatch('onSetPlatformFilterOptions', model);
                     context.dispatch('onFetchSuccess', {useLoader: true});
                 }).catch(function(error) {
-                    serviceLogger.error(error, "detailsActions", "fetchById");
+                    console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                 });
         },
@@ -2586,7 +2658,7 @@
                 context.dispatch('fetchById', id);
                 CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-approved')});
             }).catch(function(error) {
-                serviceLogger.error(error, "detailsActions", "onApprove");
+                console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
                 CountlyHelpers.notify({message: error.message, type: "error"});
             });
@@ -2598,7 +2670,7 @@
                 context.dispatch('fetchById', id);
                 CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-rejected')});
             }).catch(function(error) {
-                serviceLogger.error(error, "detailsActions", "onReject");
+                console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
                 CountlyHelpers.notify({message: error.message, type: "error"});
             });
@@ -2612,7 +2684,7 @@
                         CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-deleted')});
                         resolve();
                     }).catch(function(error) {
-                        serviceLogger.error(error, "detailsActions", "onDelete");
+                        console.error(error);
                         context.dispatch('onFetchError', {error: error, useLoader: true});
                         reject(error);
                         CountlyHelpers.notify({message: error.message, type: "error"});
@@ -2626,7 +2698,7 @@
                 context.dispatch('fetchById', payload.id);
                 CountlyHelpers.notify({message: CV.i18n(payload.isActive ? 'push-notification.was-successfully-started' : 'push-notification.was-successfully-stopped')});
             }).catch(function(error) {
-                serviceLogger.error(error, "detailsActions", "onToggle");
+                console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
                 CountlyHelpers.notify({message: error.message, type: "error"});
             });
@@ -2729,7 +2801,7 @@
                     context.dispatch('onFetchSuccess', {useLoader: true});
                     CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-deleted')});
                 }).catch(function(error) {
-                    serviceLogger.error(error, "mainActions", "onDelete");
+                    console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                     CountlyHelpers.notify({message: error.message, type: "error"});
                 });
@@ -2741,7 +2813,7 @@
                 context.dispatch('onFetchSuccess', {useLoader: true});
                 CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-approved')});
             }).catch(function(error) {
-                serviceLogger.error(error, "mainActions", "onApprove");
+                console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: true});
                 CountlyHelpers.notify({message: error.message, type: "error"});
             });
@@ -2753,7 +2825,7 @@
                 context.dispatch('onFetchSuccess', {useLoader: true});
                 CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-rejected')});
             }).catch(function(error) {
-                serviceLogger.error(error, "mainActions", "onReject");
+                console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: true});
                 CountlyHelpers.notify({message: error.message, type: "error"});
             });
@@ -2765,7 +2837,7 @@
                 context.dispatch('onFetchSuccess', {useLoader: true});
                 CountlyHelpers.notify({message: CV.i18n(payload.isActive ? 'push-notification.was-successfully-started' : 'push-notification.was-successfully-stopped')});
             }).catch(function(error) {
-                serviceLogger.error(error, "mainActions", "onToggle");
+                console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
                 CountlyHelpers.notify({message: error.message, type: "error"});
             });
@@ -2918,7 +2990,7 @@
                     context.commit('setIsFetched', true);
                 }).catch(function(error) {
                     context.dispatch('onFetchError', {error: error, useLoader: true});
-                    serviceLogger.error(error, "dashboardActions", "fetchDashboard");
+                    console.error(error);
                 });
         },
     };

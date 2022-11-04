@@ -620,7 +620,6 @@ plugins.setConfigs("crashes", {
                                     if (Object.keys(groupMax).length > 0) {
                                         update.$max = groupMax;
                                     }
-                                    plugins.dispatch("/crashes/new", {data: {crash: groupInsert, user: dbAppUser}});
 
                                     update.$addToSet = {groups: hash};
 
@@ -666,7 +665,7 @@ plugins.setConfigs("crashes", {
                                         }
 
                                         if (isNew) {
-                                            plugins.dispatch("/crashes/new", {crash: crashGroup, user: dbAppUser});
+                                            plugins.dispatch("/crashes/new", {data: {crash: groupInsert, user: dbAppUser, app: params.app}});
                                         }
 
                                         //update meta document
