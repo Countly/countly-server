@@ -246,8 +246,10 @@
                 app.navigate("#/analytics/events/key/" + params.key, true);
             },
             durCheck: function(item) {
+                //to handle grouped events
+                var eventMapKey = item.groupId || item.name;
                 var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
-                return item.eventProperty === (eventMap[item.name]).dur.toUpperCase();
+                return item.eventProperty === (eventMap[eventMapKey]).dur.toUpperCase();
             },
             valFormatter: function(val) {
                 return countlyCommon.formatSecond(val);
@@ -306,7 +308,9 @@
                         var total = countlyCommon.formatNumber(currentData[j].total);
                         var yAxis = this.monitorEventsOptions.yAxis;
                         var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
-                        if (currentData[j].eventProperty === (eventMap[currentData[j].name]).dur.toUpperCase()) {
+                        //to handle grouped events
+                        var eventMapKey = currentData[j].groupId || currentData[j].name;
+                        if (currentData[j].eventProperty === (eventMap[eventMapKey]).dur.toUpperCase()) {
                             total = countlyCommon.formatSecond(currentData[j].total, 2);
                             yAxis.axisLabel = {
                                 formatter: function(value) {
@@ -315,7 +319,7 @@
                             };
 
                         }
-                        editedMonitorEventsData.push({
+                        var editedMonitorEventsDataObj = {
                             "barData": {
                                 "series": [{
                                     "data": currentData[j].barData.series[0].data,
@@ -330,7 +334,11 @@
                             "eventProperty": currentData[j].eventProperty,
                             "total": total,
                             "name": currentData[j].name
-                        });
+                        };
+                        if (currentData[j].groupId) {
+                            editedMonitorEventsDataObj.groupId = currentData[j].groupId;
+                        }
+                        editedMonitorEventsData.push(editedMonitorEventsDataObj);
                     }
                     return editedMonitorEventsData;
                 }
