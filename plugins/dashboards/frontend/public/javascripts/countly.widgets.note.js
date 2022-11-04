@@ -121,6 +121,26 @@
                     ]
                 }
             };
+        },
+        computed: {
+            textAreaVal: {
+                get: function() {
+                    var decode_html = function(string) {
+                        string = string.replace(/&#39;/g, "'");
+                        string = string.replace(/&quot;/g, '"');
+                        string = string.replace(/&lt;/g, '<');
+                        string = string.replace(/&gt;/g, '>');
+                        string = string.replace(/&amp;/g, '&');
+                        return string;
+                    };
+                    return decode_html(this.scope.editedObject.content);
+                },
+                set: function(newValue) {
+                    var val = this.scope;
+                    val.editedObject.content = newValue;
+                    this.$emit('input', val);
+                }
+            }
         }
     });
 
