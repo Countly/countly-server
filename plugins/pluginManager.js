@@ -407,21 +407,21 @@ var pluginManager = function pluginManager() {
     * @param {function} callback - function to call when updating finished
     **/
     this.updateAllConfigs = function(db, changes, callback) {
-        if ("api" in changes) {
+        if (changes.api) {
             //country data tracking is changed
-            if ("country_data" in changes.api) {
+            if (changes.api.country_data) {
                 //user disabled country data tracking while city data tracking is enabled
                 if (changes.api.country_data === false && configs.api.city_data === true) {
-                    //enable city data tracking
-                    changes.api.city_data = true;
+                    //disable city data tracking
+                    changes.api.city_data = false;
                 }
             }
             //city data tracking is changed
-            if ("city_data" in changes.api) {
+            if (changes.api.city_data) {
                 //user enabled city data tracking while country data tracking is disabled
                 if (changes.api.city_data === true && configs.api.country_data === false) {
-                    //disable country data tracking
-                    changes.api.country_data = false;
+                    //enable country data tracking
+                    changes.api.country_data = true;
                 }
             }
         }
