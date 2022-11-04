@@ -624,7 +624,7 @@
                                         formatter = countlyCommon.formatSecond;
                                     }
                                     else {
-                                        formatter = countlyCommon.getShortNumber;
+                                        formatter = self.valFormatter;
                                     }
                                     var valToFormat;
                                     if (typeof params[i].value === 'object') {
