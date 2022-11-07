@@ -13,15 +13,6 @@ var plugins = require('../../plugins/pluginManager.js');
 
 
 const log = require('./log.js')('core:taskmanager');
-try {
-    //try inculde for paths where not included. Can't do always because of circular reference requestProcessor
-    var {requestProcessor} = require('./requestProcessor');
-    taskmanager.requestProcessor = requestProcessor;
-}
-catch (e) {
-
-    log.d(e);
-}
 
 /**
 * Monitors DB query or some other potentially long task and switches to long task manager if it exceeds threshold
@@ -881,7 +872,7 @@ taskmanager.rerunTask = function(options, callback) {
                     }
                 }
             };
-            taskmanager.processRequest(params);
+            common.processRequest(params);
             callback1(null, "Success");
         });
     }

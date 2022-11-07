@@ -2577,7 +2577,6 @@ const processRequest = (params) => {
     function() {});
 };
 
-taskmanager.processRequest = processRequest;
 /**
  * Process Request Data
  * @param {params} params - params object
