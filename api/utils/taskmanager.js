@@ -865,7 +865,9 @@ taskmanager.rerunTask = function(options, callback) {
                             }, body);
                         }
                         else {
-                            body = body || body.result;
+                            if (body.result) {
+                                body = body.result;
+                            }
                             taskmanager.saveResult({
                                 db: options1.db,
                                 id: options1.id,
