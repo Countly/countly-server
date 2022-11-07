@@ -206,7 +206,7 @@
 
                 if (this.formatting === 'auto') {
                     if (this.isPercentage) {
-                        return this.number + " %";
+                        return this.number + "%";
                     }
                     else if (Math.abs(this.number) >= 10000) {
                         return this.getShortNumber(this.number);

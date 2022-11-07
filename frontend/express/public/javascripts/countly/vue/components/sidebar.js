@@ -676,11 +676,11 @@
                         userImage.found = true;
                     }
                     else {
-                        var defaultAvatarSelector = (member.created_at || Date.now()) % 16 * 60;
+                        var defaultAvatarSelector = (member.created_at || Date.now()) % 10 * -60;
                         var name = member.full_name.split(" ");
 
                         userImage.found = false;
-                        userImage.url = "images/avatar-sprite.png";
+                        userImage.url = "images/avatar-sprite.png?v2";
                         userImage.position = defaultAvatarSelector;
                         userImage.initials = name[0][0] + name[name.length - 1][0];
                     }

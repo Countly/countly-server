@@ -2743,6 +2743,17 @@
                             start.add(1, 'days');
                         }
                     }
+                    else if (_period === "prevMonth") {
+                        start = moment().subtract(1, "month").startOf("month");
+                        //start.add(1,"days");
+                        let current = new Date();
+                        let prevMonthCount = new Date(current.getFullYear(), current.getMonth(), 0).getDate();
+                        for (i = 0; i < prevMonthCount; i++) {
+                            ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                            tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            start.add(1, 'days');
+                        }
+                    }
                     else {
                         var startYear = start.year();
                         var endYear = moment().year();
@@ -3710,7 +3721,6 @@
             };
 
             endTimestamp = currentTimestamp.clone().endOf("day");
-
             if (period && period.indexOf(",") !== -1) {
                 try {
                     period = JSON.parse(period);
@@ -3796,6 +3806,18 @@
                     periodMin: 1,
                     activePeriod: currentTimestamp.format("YYYY.M"),
                     previousPeriod: currentTimestamp.clone().subtract(1, "month").format("YYYY.M")
+                });
+            }
+            else if (period === "prevMonth") {
+                startTimestamp = currentTimestamp.clone().subtract(1, "month").startOf("month");
+                endTimestamp = currentTimestamp.clone().subtract(1, "month").endOf("month");
+                cycleDuration = moment.duration(1, "month");
+                Object.assign(periodObject, {
+                    dateString: "D MMM",
+                    periodMax: currentTimestamp.clone().subtract(1, "month").endOf("month").date(),
+                    periodMin: 1,
+                    activePeriod: currentTimestamp.clone().subtract(1, "month").format("YYYY.M"),
+                    previousPeriod: currentTimestamp.clone().subtract(2, "month").format("YYYY.M")
                 });
             }
             else if (period === "hour") {
@@ -4069,9 +4091,11 @@
         * Parse second to standard time format
         * @memberof countlyCommon
         * @param {number} second  number
-        * @returns {string} return format "HH:MM:SS"
+        * @param {number} [trimTo=5]  number [1,5]
+        * @returns {string} return format "HH:MM:SS", if trimTo is specified the length of the result is trimmed
+        * @example trimTo = 2, HH:MM:SS result will be trimmed to HH:MM
         */
-        countlyCommon.formatSecond = function(second) {
+        countlyCommon.formatSecond = function(second, trimTo = 5) {
             var timeLeft = parseInt(second);
             var dict = [
                 {k: 'year', v: 31536000},
@@ -4099,7 +4123,10 @@
                 return "0";
             }
             else {
-                return resultStrings.join(" ");
+                if (trimTo > 5 || trimTo < 1) {
+                    trimTo = 5;
+                }
+                return (resultStrings.slice(0, Math.min(trimTo, resultStrings.length))).join(' ');
             }
         };
 
@@ -4219,6 +4246,10 @@
                 break;
             case 'day':
                 start = moment(baseTimeStamp).date(1).hour(0).minute(0).second(0);
+                break;
+            case 'prevMonth':
+                start = moment(baseTimeStamp).subtract(1, "month").date(1).hour(0).minute(0).second(0);
+                endTimeStamp = moment(baseTimeStamp).subtract(1, "month").endOf('month').hour(23).minute(59).second(59).toDate().getTime();
                 break;
             case 'month':
                 start = moment(baseTimeStamp).month(0).date(1).hour(0).minute(0).second(0);
@@ -4490,6 +4521,12 @@
                     valueAsString: "day"
                 };
             }
+            if (obj.type === "prevMonth") {
+                return {
+                    name: moment().subtract(1, "month").format("MMMM, YYYY"),
+                    valueAsString: "prevMonth"
+                };
+            }
             if (obj.type === "month") {
                 return {
                     name: moment().year(),
@@ -4580,6 +4617,10 @@
                 inferredType = "day";
                 inferredValue = "day";
             }
+            else if (period === "prevMonth") {
+                inferredType = "prevMonth";
+                inferredValue = "prevMonth";
+            }
             else if (period === "month") {
                 inferredType = "month";
                 inferredValue = "month";
@@ -4627,7 +4668,6 @@
 
             obj.valueAsString = descriptions.valueAsString;
             obj.name = obj.longName = descriptions.name;
-
             return obj;
         };
 

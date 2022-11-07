@@ -52,6 +52,7 @@ plugins.connectToAllDatabases().then(function() {
         domain: "",
         safe: false,
         session_duration_limit: 120,
+        country_data: true,
         city_data: true,
         event_limit: 500,
         event_segmentation_limit: 100,

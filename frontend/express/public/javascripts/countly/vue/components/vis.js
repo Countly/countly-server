@@ -591,13 +591,14 @@
                         },
                         formatter: function(params) {
                             var template = "";
+                            let formatter = self.valFormatter;
                             if (params.seriesType === 'pie') {
                                 template += '<div class="bu-is-flex">\
                                                         <div class="chart-tooltip__bar bu-mr-2 bu-mt-1" style="background-color: ' + params.color + ';"></div>\
                                                         <div>\
                                                             <div class="chart-tooltip__header text-smaller font-weight-bold bu-mb-3">' + params.seriesName + '</div>\
                                                             <div class="text-small"> ' + params.data.name + '</div>\
-                                                            <div class="text-big">' + self.valFormatter(params.data.value) + '</div>\
+                                                            <div class="text-big">' + formatter(params.data.value) + '</div>\
                                                         </div>\
                                                   </div>';
 
@@ -619,13 +620,26 @@
                                 });
 
                                 for (var i = 0; i < params.length; i++) {
+                                    if (params[i].seriesName.toLowerCase() === 'duration') {
+                                        formatter = countlyCommon.formatSecond;
+                                    }
+                                    else {
+                                        formatter = countlyCommon.getShortNumber;
+                                    }
+                                    var valToFormat;
+                                    if (typeof params[i].value === 'object') {
+                                        valToFormat = params[i].value[1] || 0;
+                                    }
+                                    else {
+                                        valToFormat = params[i].value || 0;
+                                    }
                                     template += '<div class="chart-tooltip__body' + ((params.length > 4) ? " chart-tooltip__single-row" : " ") + '">\
                                                     <div class="chart-tooltip__bar" style="background-color: ' + params[i].color + ';"></div>\
                                                     <div class="chart-tooltip__series">\
                                                             <span class="text-small">' + params[i].seriesName + '</span>\
                                                     </div>\
                                                     <div class="chart-tooltip__value">\
-                                                        <span class="text-big">' + (typeof params[i].value === 'object' ? self.valFormatter((isNaN(params[i].value[1]) ? 0 : params[i].value[1]), params[i].value, i) : self.valFormatter((isNaN(params[i].value) ? 0 : params[i].value), null, i)) + '</span>\
+                                                        <span class="text-big">' + formatter(valToFormat) + '</span>\
                                                     </div>\
                                                 </div>';
                                 }
@@ -2175,7 +2189,8 @@
             'l-geo-json': Vue2Leaflet.LGeoJson,
             'l-tile-layer': Vue2Leaflet.LTileLayer,
             'l-control': Vue2Leaflet.LControl,
-            'l-tooltip': Vue2Leaflet.LTooltip
+            'l-tooltip': Vue2Leaflet.LTooltip,
+            'l-control-zoom': Vue2Leaflet.LControlZoom
         },
         mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.i18n],
         props: {
@@ -2288,7 +2303,7 @@
             },
             minZoom: {
                 type: Number,
-                default: 0
+                default: 1
             },
             maxZoom: {
                 type: Number,
@@ -2340,9 +2355,7 @@
                 citiesToLatLng: {},
                 markerTooltipOptions: {
                     sticky: true,
-                    direction: "right",
-                    //permanent: true,
-                    //offset: L.point(5, 5)
+                    direction: "auto"
                 },
                 circleMarkerConfig: {
                     pane: "markerPane",
@@ -2352,9 +2365,11 @@
                 },
                 defaultMapOptions: {
                     attributionControl: false,
-                    zoomControl: false,
+                    zoom: 1,
                     zoomSnap: 0.1,
-                    zoom: 1.3
+                    zoomDelta: 0.5,
+                    zoomControl: false,
+                    scrollWheelZoom: false
                 }
             };
         },
@@ -2604,7 +2619,7 @@
                 if (boundingBox) {
                     this.maxBounds = this.boxToLatLng2d(boundingBox);
                     if (this.$refs.lmap && this.$refs.lmap.mapObject) {
-                        this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
+                        this.$refs.lmap.mapObject.fitBounds(this.maxBounds, {animate: false, padding: [20, 20]});
                     }
                 }
             },

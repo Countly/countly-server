@@ -18,17 +18,11 @@
                     return "neutral";
                 }
                 else {
-                    return (typeof this.$props.data !== "undefined" && (this.$props.negateTrend ^ this.$props.data.trend === "u") ? "up" : "down");
+                    return (typeof this.$props.data !== "undefined" && (this.$props.data.trend === "u") ? "up" : "down");
                 }
             },
-            iconClass: function() {
-                if (typeof this.$props.data !== "undefined" && this.$props.data.trend === "n") {
-                    return "minus-round";
-                }
-                else {
-                    return ((typeof this.$props.data !== "undefined" && this.$props.data.trend === "u") ? "arrow-up-c" : "arrow-down-c");
-                }
-
+            negatedClass: function() {
+                return (this.$props.negateTrend === true) ? "negated" : "";
             }
         },
         template: countlyVue.T("/crashes/templates/tab-label.html")
@@ -618,7 +612,8 @@
             countlyVue.mixins.auth(FEATURE_NAME),
             countlyVue.container.dataMixin({
                 externalActionDropdownItems: "crashes/external/actionDropdownItems",
-                externalDialogs: "crashes/external/dialogs"
+                externalDialogs: "crashes/external/dialogs",
+                externalActions: "crashes/external/actionDropdownItems/actions"
             })
         ],
         data: function() {
@@ -963,6 +958,15 @@
                                 });
                         }
                     });
+                }
+                else { //get commandhandler from container
+                    var action = this.externalActions.find(item => {
+                        return item.name === 'create-issue';
+                    });
+                    if (action) {
+                        action.handler(this);
+                    }
+
                 }
             },
             handleCrashgroupStacktraceCommand: function(command) {

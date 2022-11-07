@@ -41,6 +41,13 @@
                 return [moment().startOf("day").subtract(59, "d"), moment().endOf("day")];
             }
         },
+        "prevMonth": {
+            label: moment().subtract(1, "month").format("MMMM, YYYY"),
+            value: "prevMonth",
+            getRange: function() {
+                return [moment().subtract(1, "month").startOf("month"), moment().subtract(1, "month").endOf("month")];
+            }
+        },
         "day": {
             label: moment().format("MMMM, YYYY"),
             value: "day",
@@ -798,8 +805,10 @@
 
                 if (meta.type === "range") {
                     state.rangeMode = 'inBetween';
+
                     state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
                     state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input"));
+
                     state.inBetweenInput = {
                         raw: {
                             textStart: moment(state.minDate).format(this.formatter),
@@ -810,7 +819,10 @@
                 }
                 else if (meta.type === "since") {
                     state.rangeMode = 'since';
+
                     state.minDate = new Date(this.fixTimestamp(meta.value.since, "input"));
+
+
                     state.maxDate = now;
                     state.sinceInput = {
                         raw: {
@@ -821,7 +833,9 @@
                 }
                 else if (meta.type === "on") {
                     state.rangeMode = 'onm';
+
                     state.minDate = new Date(this.fixTimestamp(meta.value.on, "input"));
+
                     state.maxDate = state.minDate;
                     state.onmInput = {
                         raw: {
@@ -911,7 +925,12 @@
                         newValue = newValue - countlyCommon.getOffsetCorrectionForTimestamp(newValue);
                     }
                     else {
-                        return newValue;
+                        if (this.timestampFormat === "s") {
+                            return newValue * 1000;
+                        }
+                        else {
+                            return newValue;
+                        }
                     }
                 }
 
