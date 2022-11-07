@@ -865,7 +865,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     * @param {object} countlyGlobalAdminApps - all apps user has write access to, where key is app id and value is app document
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
-        var configs = plugins.getConfig("frontend", member.settings);
+        var configs = plugins.getConfig("frontend", member.settings),
+            notify, license;
         configs.export_limit = plugins.getConfig("api").export_limit;
         app.loadThemeFiles(configs.theme, function(theme) {
             if (configs._user.theme) {
@@ -880,6 +881,20 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Pragma', 'no-cache');
             if (member.upgrade) {
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
+            }
+
+            if (req.session.license) {
+                license = req.session.license;
+                delete req.session.license;
+            }
+            if (req.session.notify) {
+                try {
+                    notify = JSON.parse(req.session.notify);
+                    delete req.session.notify;
+                }
+                catch (e) {
+                    log.e('Failed to parse notify', e);
+                }
             }
 
             member._id += "";
@@ -916,6 +931,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 path: countlyConfig.path || "",
                 cdn: countlyConfig.cdn || "",
                 message: req.flash("message"),
+                notify,
+                license,
                 ssr: serverSideRendering,
                 timezones: timezones,
                 countlyTypeName: COUNTLY_NAMED_TYPE,
