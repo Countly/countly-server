@@ -80,7 +80,9 @@
         getMonitorEvents: function(ob, context, groupData) {
             var groupIds = [];
             if (groupData && groupData.length) {
-                groupIds = groupData.map(val => val._id);
+                groupIds = groupData.map(function(val) {
+                    return val._id;
+                });
             }
             var monitorEvents = context.state.monitorEvents;
             var monitorData = [];
