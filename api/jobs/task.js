@@ -7,6 +7,9 @@ const job = require('../parts/jobs/job.js'),
 const common = require('../utils/common.js');
 const taskmanager = require('../utils/taskmanager.js');
 
+const { processRequest } = require('../utils/requestProcessor');
+common.processRequest = processRequest;
+
 
 /**
  *  Task Monitor Job extend from Countly Job

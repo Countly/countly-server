@@ -843,7 +843,19 @@ taskmanager.rerunTask = function(options, callback) {
                 'APICallback': function(err, responseData, headers, returnCode) {
                     //sending response to client
                     responseData = responseData || {};
-                    if (!responseData.task_id) {
+                    log.d(JSON.stringify(responseData));
+                    log.d(err);
+                    if (err) {
+                        taskmanager.saveResult({
+                            db: options1.db,
+                            id: options1.id,
+                            subtask: options1.subtask,
+                            errormsg: err || responseData,
+                            errored: true,
+                            request: reqData
+                        }, responseData);
+                    }
+                    else if (!responseData.task_id) {
                         log.d("returned result for this");
                         log.d(JSON.stringify(responseData));
                         var body = responseData;
@@ -872,7 +884,9 @@ taskmanager.rerunTask = function(options, callback) {
                     }
                 }
             };
-            common.processRequest(params);
+            if (common.processRequest) {
+                common.processRequest(params);
+            }
             callback1(null, "Success");
         });
     }
