@@ -4,6 +4,15 @@
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/note/widget.html'),
         mixins: [countlyVue.mixins.customDashboards.global],
+        data: function() {
+            return {
+                scrollNote: {
+                    bar: {
+                        background: "#a6aeb8",
+                    }
+                },
+            };
+        },
         computed: {
             widgetHTML: function() {
                 return countlyCommon.unescapeHtml(this.data.contenthtml);

@@ -1,3 +1,86 @@
+## Version 22.09.2
+
+Fixes:
+- [applications] cleaning up checksum_salt on update, showing value on fetch
+- [crashes] fixed negated trend handling of the crashes home widget
+- [dashboards] fixed too small graph widgets
+- [dashboards] overflow of text in notes fixed
+- [dashboards] show latest update date for report manager widgets
+- [data-manager] fixed description column
+- [device_list] added latest Apple devices
+- [devices] app version series legend was missing
+- [docker] dependencies for puppeteer
+- [export] fixed using export file name
+- [logger] convertToCap only when needed
+- [logger] Incoming Data Logs datatable sorting change
+- [overview] fixed ordering of home widgets doesn't work in CE
+- [remote-config] removed programmatic audit report
+- [report-manager] taskmanager calling directly using processRequest on task rerun
+- [settings] disable city data tracking when country is disabled
+- [slipping-away-users] hide user button in CE
+- [slipping-away-users] table width arranged
+- [star-rating] fixes sorting on rating table
+- [two-factor-auth] fix permission call in two factor auth
+- [views] fixed bounce rate average in graph
+
+
+Enterprise fixes:
+- [cohorts] query transformation and operation limit fixed
+- [crashes-jira] create jira button bugfix
+- [drill] add 'recalculate' button for drill widgets
+- [drill] fixes for dashboard widgets
+- [drill] fixes for event timeline
+- [drill] showing last updated on drill widgets
+- [formulas] bucket fixes for formulas
+- [formulas] fixes for dashboard widgets
+- [funnels] did not do first step user list
+- [revenue] dashboard widget for revenue
+- [revenue] fixed sorting columns
+
+## Version 22.09.1
+
+Fixes:
+- [2fa] fix permission call in two factor auth
+- [api] remove duplicate code and process device type correctly
+- [api] top events check fixes
+- [apps] app lock tooltip text fixed and localized
+- [apps] app management sidebar app icon margin alignment
+- [crashes] fixes new crash dispatch
+- [crashes] use common styles for the tab element
+- [dashboards] note in dashboards escaping fixed 
+- [device-list] add missing Apple devices
+- [events] check for existience of map key in overview
+- [hooks] fix app filter for new crashes
+- [hooks] fixes for data formatting
+- [members] update default profile image sprite
+- [push] fixing ampersand encoding in button URLs & on click URL
+- [scripts] fixes for expire scripts to do not drop indexes on ttl change, but rather modifly value
+- [server-stats] fixed issues with incorrectly calculated data points for periods: "month", "day"
+- [settings] country data tracking can be disabled
+- [ui] cly-vue-radio-block - use common trend styles
+- [ui] common styles for the tab element & trend up, down, neutral and negated states
+- [ui] fixes for datepickers, who uses second not milisecond format
+- [ui] prevent map zoom via scroll wheel
+- [ui] remove spaces before % throughout the dashboard
+- [ui] set drawer element z-index for it to be above the table loading mask
+- [ui] vertically center some no-data elements in Analytics > Technology
+- [upgrade] fix stopping on error
+- [upgrade] improvement for upgrade script to do parallel upgrade for collection
+
+Enterprise fixes:
+- [attribution] use common styles for the tab element & use correct trend values
+- [cohorts] in mongo update $pull And $push CANT be in same call!!
+- [cohorts] period selection fixes
+- [concurrent_users] online users home widget max numbers margin alignment
+- [data-manager] fix for status update not showing up
+- [data-manager] fix projections for data masking
+- [drill] fix time formatter
+- [drill] update duration on each session duration change
+- [formulas] pass [CLY]_session as default if none of events is set. To have duration in query builder after
+- [groups] check for empty group permission when creating permission set in drawer
+- [groups] fix groupID in group drawer
+- [retention] fix in case of undefined parameter
+- [revenue] use common styles for the tab element
 
 ## Version 22.09
 
