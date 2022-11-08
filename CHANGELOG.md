@@ -1,3 +1,42 @@
+## Version 22.09.2
+
+Fixes:
+- [applications] cleaning up checksum_salt on update, showing value on fetch
+- [crashes] fixed negated trend handling of the crashes home widget
+- [dashboards] fixed too small graph widgets
+- [dashboards] overflow of text in notes fixed
+- [dashboards] show latest update date for report manager widgets
+- [data-manager] fixed description column
+- [device_list] added latest Apple devices
+- [devices] app version series legend was missing
+- [docker] dependencies for puppeteer
+- [export] fixed using export file name
+- [logger] convertToCap only when needed
+- [logger] Incoming Data Logs datatable sorting change
+- [overview] fixed ordering of home widgets doesn't work in CE
+- [remote-config] removed programmatic audit report
+- [report-manager] taskmanager calling directly using processRequest on task rerun
+- [settings] disable city data tracking when country is disabled
+- [slipping-away-users] hide user button in CE
+- [slipping-away-users] table width arranged
+- [star-rating] fixes sorting on rating table
+- [two-factor-auth] fix permission call in two factor auth
+- [views] fixed bounce rate average in graph
+
+
+Enterprise fixes:
+- [cohorts] query transformation and operation limit fixed
+- [crashes-jira] create jira button bugfix
+- [drill] add 'recalculate' button for drill widgets
+- [drill] fixes for dashboard widgets
+- [drill] fixes for event timeline
+- [drill] showing last updated on drill widgets
+- [formulas] bucket fixes for formulas
+- [formulas] fixes for dashboard widgets
+- [funnels] did not do first step user list
+- [revenue] dashboard widget for revenue
+- [revenue] fixed sorting columns
+
 ## Version 22.09.1
 
 Fixes:
