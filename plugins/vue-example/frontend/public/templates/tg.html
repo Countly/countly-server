@@ -1,6 +1,7 @@
 <div>
     <cly-header title="Chart components"></cly-header>
     <cly-main>
+        <div class="raw-Chart" ref="rawChart" style="height: 400px;"></div>
         <cly-section title="Line Chart">
             <cly-chart-line :option="lineOptions" :legend="lineLegend">
                 <template v-slot:chart-left>

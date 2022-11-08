@@ -1,6 +1,122 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, CV, moment */
+/*global app, countlyVue, countlyVueExample, countlyCommon, CV, echarts, moment */
 
 (function() {
+    var rawChartColors = ['#5470C6', '#91CC75', '#EE6666'];
+    var rawChartOptions = {
+        color: rawChartColors,
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross'
+            }
+        },
+        grid: {
+            right: '20%'
+        },
+        toolbox: {
+            feature: {
+                dataView: { show: true, readOnly: false },
+                restore: { show: true },
+                saveAsImage: { show: true }
+            }
+        },
+        legend: {
+            data: ['Evaporation', 'Precipitation', 'Temperature']
+        },
+        xAxis: [
+            {
+                type: 'category',
+                axisTick: {
+                    alignWithLabel: true
+                },
+                // prettier-ignore
+                data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value',
+                name: 'Evaporation',
+                position: 'right',
+                alignTicks: true,
+                axisLine: {
+                    show: true,
+                    lineStyle: {
+                        color: rawChartColors[0]
+                    }
+                },
+                axisLabel: {
+                    formatter: '{value} ml'
+                },
+                max: function(value) {
+                    // eslint-disable-next-line
+                    console.warn("evaporation", value);
+                }
+            },
+            {
+                type: 'value',
+                name: 'Precipitation',
+                position: 'right',
+                alignTicks: true,
+                offset: 80,
+                axisLine: {
+                    show: true,
+                    lineStyle: {
+                        color: rawChartColors[1]
+                    }
+                },
+                axisLabel: {
+                    formatter: '{value} ml'
+                },
+                max: function(value) {
+                    // eslint-disable-next-line
+                    console.warn("precipitation", value);
+                }
+            },
+            {
+                type: 'value',
+                name: 'Temperature',
+                position: 'left',
+                alignTicks: true,
+                axisLine: {
+                    show: true,
+                    lineStyle: {
+                        color: rawChartColors[2]
+                    }
+                },
+                axisLabel: {
+                    formatter: '{value} °C'
+                },
+                max: function(value) {
+                    // eslint-disable-next-line
+                    console.warn("temperature", value);
+                }
+            }
+        ],
+        series: [
+            {
+                name: 'Evaporation',
+                type: 'bar',
+                data: [
+                    2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3
+                ]
+            },
+            {
+                name: 'Precipitation',
+                type: 'bar',
+                yAxisIndex: 1,
+                data: [
+                    2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3
+                ]
+            },
+            {
+                name: 'Temperature',
+                type: 'line',
+                yAxisIndex: 2,
+                data: [2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2]
+            }
+        ]
+    };
     var TableView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/table.html'),
         computed: {
@@ -373,29 +489,44 @@
                     // xAxis: {
                     //     data: [10, 11, 13, 14, 15, 16, 17]
                     // },
+                    yAxis: [
+                        {
+                            type: "value",
+                            position: "left",
+                            alignTicks: true,
+                            name: "series-A",
+                            axisLabel: {
+                                formatter: "{value} a",
+                            },
+                            max: function(value) {
+                                // eslint-disable-next-line
+                                console.warn("series a", value);
+                            }
+                        },
+                        {
+                            type: "value",
+                            position: "right",
+                            alignTicks: false,
+                            name: "series-B",
+                            axisLabel: {
+                                formatter: "{value} b",
+                            },
+                            max: function(value) {
+                                // eslint-disable-next-line
+                                console.warn("series b", value);
+                            }
+                        },
+                    ],
                     series: [
                         {
                             name: 'series-A',
-                            data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]],
+                            data: [{value: [0, 120]}, [1, 130], [2, 100], [3, 130], [4, 90], [5, 230], [6, 210]],
                             color: 'pink'
                         },
                         {
-                            name: 'Series B',
+                            name: 'series-B',
                             data: [[0, 220], [1, 182], [2, 191], [3, 234], [4, 290], [5, 330], [6, 310]]
                         },
-                        {
-                            name: 'Series C',
-                            data: [[0, 150], [1, 232], [2, 201], [3, 154], [4, 190], [5, 330], [6, 410]],
-                            color: "black"
-                        },
-                        {
-                            name: 'Series D',
-                            data: [[0, 320], [1, 332], [2, 301], [3, 334], [4, 390], [5, 330], [6, 320]]
-                        },
-                        {
-                            name: 'Series E',
-                            data: [[0, 820], [1, 932], [2, 901], [3, 934], [4, 1290], [5, 1330], [6, 1320]]
-                        }
                     ]
                 },
                 lineLegend: {
@@ -413,25 +544,6 @@
                             name: "Series B",
                             value: "32,231",
                         },
-                        {
-                            name: "Series C",
-                            value: "123",
-                            trend: "down",
-                            percentage: "3.4%",
-                            tooltip: "Total no of series C.",
-                        },
-                        {
-                            name: "Series D",
-                            value: "123",
-                            trend: "up",
-                            percentage: "3.4%",
-                        },
-                        {
-                            name: "Series E",
-                            value: "123",
-                            trend: "down",
-                            percentage: "3.4%",
-                        }
                     ]
                 },
                 overflowOptions: {
@@ -614,7 +726,13 @@
                 var obj = JSON.parse(JSON.stringify(this.lineOpts));
                 this.lineOpts = obj;
             }
-        }
+        },
+        mounted: function() {
+            var el = this.$refs.rawChart;
+            var chart = echarts.init(el);
+
+            chart.setOption(rawChartOptions);
+        },
     });
 
     var ExampleDrawer = countlyVue.views.create({
