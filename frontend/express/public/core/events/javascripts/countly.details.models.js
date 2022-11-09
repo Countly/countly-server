@@ -34,6 +34,7 @@
                 series.push(countObj);
                 var countYAxisObj = {
                     type: 'value',
+                    alignTicks: true
                 };
                 yAxis.push(countYAxisObj);
             }
@@ -44,6 +45,11 @@
                     color: "#F96300"
                 };
                 series.push(sumObj);
+                var sumYAxisObj = {
+                    type: 'value',
+                    alignTicks: true
+                };
+                yAxis.push(sumYAxisObj);
             }
             if (dur > 0) {
                 var durObj = {
@@ -55,6 +61,7 @@
                 series.push(durObj);
                 var durYAxisObj = {
                     type: 'value',
+                    alignTicks: true,
                     axisLabel: {
                         formatter: function(value) {
                             return countlyCommon.formatSecond(value);
