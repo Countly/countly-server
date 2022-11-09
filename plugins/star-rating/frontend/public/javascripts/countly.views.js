@@ -181,6 +181,14 @@
         props: {
             ratings: Array
         },
+        computed: {
+            preparedRows: function() {
+                return this.ratings.map(function(rating) {
+                    rating.percentage = parseFloat(rating.percent) || 0;
+                    return rating;
+                });
+            }
+        },
         data: function() {
             return {
                 ratingsTablePersistKey: 'ratings_table_' + countlyCommon.ACTIVE_APP_ID

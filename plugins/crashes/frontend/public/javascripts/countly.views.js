@@ -612,7 +612,8 @@
             countlyVue.mixins.auth(FEATURE_NAME),
             countlyVue.container.dataMixin({
                 externalActionDropdownItems: "crashes/external/actionDropdownItems",
-                externalDialogs: "crashes/external/dialogs"
+                externalDialogs: "crashes/external/dialogs",
+                externalActions: "crashes/external/actionDropdownItems/actions"
             })
         ],
         data: function() {
@@ -957,6 +958,15 @@
                                 });
                         }
                     });
+                }
+                else { //get commandhandler from container
+                    var action = this.externalActions.find(item => {
+                        return item.name === 'create-issue';
+                    });
+                    if (action) {
+                        action.handler(this);
+                    }
+
                 }
             },
             handleCrashgroupStacktraceCommand: function(command) {
