@@ -897,16 +897,20 @@
                                 align: "center",
                             },
                         },
+                        emphasis: {
+                            itemStyle: {
+                            }
+                        },
                         animation: false
                     },
-                }
+                },
+                mergedNotes: [],
             };
         },
         computed: {
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
                 var series = opt.series || [];
-
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                 }
@@ -931,10 +935,10 @@
                 var graphNoteDate = new Date(ts);
                 if (this.category === "drill" || this.category === "formulas") {
                     if (this.notationSelectedBucket === "hourly") {
-                        return countlyCommon.formatDate(moment(graphNoteDate), "DD MMM YYYY hh:00") || 0;
+                        return countlyCommon.formatDate(moment(graphNoteDate), "D MMM YYYY hh:00") || 0;
                     }
                     else if (this.notationSelectedBucket === "daily") {
-                        return countlyCommon.formatDate(moment(graphNoteDate), "DD MMM YYYY") || 0;
+                        return countlyCommon.formatDate(moment(graphNoteDate), "D MMM YYYY") || 0;
                     }
                     else if (this.notationSelectedBucket === "weekly") {
                         return "W" + moment(graphNoteDate).isoWeek() + " " + moment(graphNoteDate).isoWeekYear();
@@ -950,13 +954,26 @@
                     else if (currentPeriod === "yesterday") {
                         return moment.utc(ts).format("D MMM, hh:00");
                     }
+                    else if (currentPeriod === "day") {
+                        return moment.utc(ts).format("D MMM");
+                    }
+                    else if (currentPeriod === "month") {
+                        if (this.category === "session" || this.category === "crashes") {
+                            return countlyCommon.formatDate(moment(ts), "MMM") || 0;
+                        }
+                        else {
+                            return countlyCommon.formatDate(moment(ts), "MMM YYYY") || 0;
+                        }
+                    }
                     else {
-                        return countlyCommon.formatDate(moment(ts), countlyCommon.periodObj.dateString) || 0;
+                        return countlyCommon.formatDate(moment(graphNoteDate), "D MMM") || 0;
                     }
                 }
             },
             mergeGraphNotesByDate: function(notes) {
                 var self = this;
+                const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+
                 notes.forEach(function(orderedItem) {
                     orderedItem.dateStr = self.graphNotesTimeConverter(orderedItem.ts);
                 });
@@ -964,6 +981,15 @@
                 notes.map(function(item) {
                     item.times = notes.filter(obj => obj.dateStr === item.dateStr).length;
                 });
+
+                notes = notes.sort(function(a, b) {
+                    return new Date(b.ts) - new Date(a.ts);
+                });
+                for (var i = 0; i < notes.length - 1; i++) {
+                    if ((i !== notes.length - 1) && Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) === 1) {
+                        notes[i].hasCloseDate = true;
+                    }
+                }
                 return notes;
             },
             graphNotesTooltipFormatter: function(arr, params) {
@@ -972,7 +998,7 @@
                 if (filteredNotes.length > 0) {
                     for (var i = 0; i < filteredNotes.length; i++) {
                         if (i === 0) {
-                            template = "<div style='max-height: 300px; overflow: auto; margin-top: 12px'>";
+                            template = "<div class='graph-tooltip-wrapper' style='max-height: 170px; overflow: auto; margin-top: 12px'>";
                         }
                         template += '<div class="graph-notes-tooltip bu-mb-4 bu-mx-2">\
                                         <div class="bu-mb-2"><span class="text-small color-cool-gray-50">#' + filteredNotes[i].indicator + '</span></div>\
@@ -981,7 +1007,7 @@
                                                 <div class="text-medium input-owner">' + filteredNotes[i].owner_name + '</div>\
                                                 <div class="text-small color-cool-gray-50">' + moment.utc(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                             </div>\
-                                            <div>\
+                                            <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                                 <span class="text-small color-cool-gray-50 bu-is-capitalized">' + filteredNotes[i].noteType + '</span>\
                                             </div>\
                                         </div>\
@@ -999,7 +1025,7 @@
                                             <div class="text-medium input-owner">' + params.data.note.owner_name + '</div>\
                                             <div class="text-small color-cool-gray-50">' + moment.utc(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                         </div>\
-                                        <div>\
+                                        <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                             <span class="text-small color-cool-gray-50 bu-is-capitalized">' + params.data.note.noteType + '</span>\
                                         </div>\
                                     </div>\
@@ -1018,36 +1044,113 @@
                             categories.push("events " + item.split("***")[1]);
                         });
                     }
-                    countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {category: categories.length ? categories : [this.category]}).then(function(data) {
+                    countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {/*category: categories.length ? categories : [this.category]*/}).then(function(data) {
                         self.notes = data.aaData;
                     }).then(function() {
                         self.seriesOptions.markPoint.data = [];
                         if (self.notes && self.notes.length) {
-                            var mergedNotes = self.mergeGraphNotesByDate(self.notes);
-                            mergedNotes.forEach(function(note, index) {
+                            self.mergedNotes = self.mergeGraphNotesByDate(self.notes);
+                            self.mergedNotes.forEach(function(note, index) {
                                 self.seriesOptions.markPoint.data.push({
                                     note: note,
-                                    value: note.times > 1 ? '' : note.indicator,
+                                    value: note.times > 1 ? ' ' : note.indicator,
                                     xAxis: note.dateStr,
-                                    y: '75%',
+                                    y: (note.hasCloseDate && note.times === 1) ? (80 + '%') : '75%',
                                     // coord: [note.dateStr, 28],
                                     symbolRotate: -20,
-                                    symbolSize: 40,
+                                    symbolSize: note.indicator.length === 1 ? 30 : 40,
                                 });
                                 self.seriesOptions.markPoint.data[index].itemStyle = {
                                     color: note.times > 1 ? countlyGraphNotesCommon.COLOR_TAGS[0].label : countlyGraphNotesCommon.COLOR_TAGS.find(x=>x.value === note.color).label
                                 };
+                                self.seriesOptions.markPoint.emphasis.itemStyle = {
+                                    borderColor: "#c5c5c5",
+                                    borderWidth: 4
+                                };
                             });
+
                             self.seriesOptions.markPoint.tooltip = {
+                                transitionDuration: 1,
+                                show: true,
                                 trigger: "item",
+                                confine: true,
+                                extraCssText: 'z-index: 1000',
+                                alwaysShowContent: true,
+                                position: function(canvasMousePos, params, tooltipDom, rect, sizes) {
+                                    if (params.value !== " ") {
+                                        return "top";
+                                        // return 'left';
+                                    }
+                                    else {
+                                        var margin = 10; // How far away from the mouse should the tooltip be
+                                        var overflowMargin = 5; // If no satisfactory position can be found, how far away from the edge of the window should the tooltip be kept
+
+                                        // The chart canvas position
+                                        var canvasRect = tooltipDom.parentElement.getElementsByTagName('canvas')[0].getBoundingClientRect();
+                                        // The mouse coordinates relative to the whole window
+                                        // The first parameter to the position function is the mouse position relative to the canvas
+                                        var mouseX = canvasMousePos[0] + canvasRect.x;
+                                        var mouseY = canvasMousePos[1] + canvasRect.y;
+                                        // The width and height of the tooltip dom element
+                                        var tooltipWidth = sizes.contentSize[0];
+                                        var tooltipHeight = sizes.contentSize[1];
+
+                                        // Start by placing the tooltip top and right relative to the mouse position
+                                        var xPos = mouseX + margin;
+                                        var yPos = mouseY - margin - tooltipHeight;
+
+                                        // The tooltip is overflowing past the right edge of the window
+                                        if (xPos + tooltipWidth >= document.documentElement.clientWidth) {
+
+                                            // Attempt to place the tooltip to the left of the mouse position
+                                            xPos = mouseX - margin - tooltipWidth;
+
+                                            // The tooltip is overflowing past the left edge of the window
+                                            if (xPos <= 0) {
+                                                // Place the tooltip a fixed distance from the left edge of the window
+                                                xPos = overflowMargin;
+                                            }
+                                        }
+
+                                        // The tooltip is overflowing past the top edge of the window
+                                        if (yPos <= 0) {
+
+                                            // Attempt to place the tooltip to the bottom of the mouse position
+                                            yPos = mouseY + margin;
+
+                                            // The tooltip is overflowing past the bottom edge of the window
+                                            if (yPos + tooltipHeight >= document.documentElement.clientHeight) {
+
+                                                // Place the tooltip a fixed distance from the top edge of the window
+                                                yPos = overflowMargin;
+                                            }
+                                        }
+                                        // Return the position (converted back to a relative position on the canvas)
+                                        return [xPos - canvasRect.x, yPos - canvasRect.y];
+                                    }
+                                },
                                 formatter: function(params) {
-                                    return self.graphNotesTooltipFormatter(mergedNotes, params);
+                                    return self.graphNotesTooltipFormatter(self.mergedNotes, params);
                                 }
                             };
                         }
                     });
                 }
             },
+            onClick() {
+                var showTooltip = setInterval(() => {
+                    if (document.querySelector('.graph-notes-tooltip')) {
+                        document.querySelector('.graph-notes-tooltip').parentNode.style.opacity = 1;
+                    }
+                    if (document.querySelector('.graph-tooltip-wrapper')) {
+                        document.querySelector('.graph-tooltip-wrapper').parentNode.style.opacity = 1;
+                    }
+                }, 10);
+
+                setTimeout(() => {
+                    clearInterval(showTooltip);
+                }, 1000);
+            }
         },
         watch: {
             notationSelectedBucket: function() {
@@ -1645,7 +1748,7 @@
                 this.selectedChartType = this.chartType;
             }
         },
-        template: '<div class="bu-level bu-pr-0">\
+        template: '<div class="bu-level">\
                         <div class="bu-level-left">\
                         <div class="bu-level-item" v-if="showToggle && !isZoom">\
                             <chart-toggle :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
@@ -1654,10 +1757,10 @@
 							<slot name="chart-header-left-input"></slot>\
                         </div>\
                         <div class="bu-level-right bu-mt-1">\
+                            <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
                             <div class="bu-level-item" v-if="selectedChartType === \'line\' && !isZoom && !hideNotation">\
                                 <add-note :category="this.category" @refresh="refresh" @notes-visibility-change="notesVisibility"></add-note>\
                             </div>\
-                            <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
                             <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
                                 <el-dropdown-item v-if="showDownload" command="download"><i class="cly-icon-btn cly-icon-download bu-mr-3"></i>Download</el-dropdown-item>\
                                 <el-dropdown-item v-if="showZoom" command="zoom"><i class="cly-icon-btn cly-icon-zoom bu-mr-3"></i>Zoom In</el-dropdown-item>\
@@ -2084,6 +2187,7 @@
                                 v-bind="$attrs"\
                                 v-on="$listeners"\
                                 :option="chartOptions"\
+                                @click="onClick"\
                                 :autoresize="autoresize"\
                                 @finished="onChartFinished"\
                                 @datazoom="onDataZoom">\
@@ -2207,7 +2311,7 @@
                 else {
                     this.seriesOptions.markPoint.data = [];
                 }
-            }
+            },
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
@@ -2224,9 +2328,10 @@
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
                                     :option="chartOptions"\
+                                    @click="onClick"\
+                                    @mouseOver="onHover"\
                                     :autoresize="autoresize"\
-                                    @datazoom="onDataZoom">\
-                                </echarts>\
+                                    @datazoom="onDataZoom"/>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
                                     <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
