@@ -556,6 +556,11 @@ module.exports = function(my_db) {
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'calculated_metrics', '-q', '{ "app": "' + appid + '" }', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'datamanager_transforms', '-q', '{ "app": "' + appid + '" }', '--out', my_folder]});
 
+
+                    //event Timeline data:
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'eventTimes' + appid, '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'timelineStatus', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder]});
+
                     //internal events
                     for (let j = 0; j < plugins.internalEvents.length; j++) {
                         let eventCollName = "events" + crypto.createHash('sha1').update(plugins.internalEvents[j] + appid).digest('hex');
