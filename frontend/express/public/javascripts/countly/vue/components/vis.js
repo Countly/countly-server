@@ -1514,6 +1514,12 @@
         },
         methods: {
             onLegendClick: function(item, index) {
+                // Only disable click if selectedMode options is set to false
+                // If selectedMode option is not set then it is true
+                if (Object.hasOwnProperty.call(this.options, "selectedMode") && this.options.selectedMode === false) {
+                    return;
+                }
+
                 var offs = this.legendData.filter(function(d) {
                     return d.status === "off";
                 });
