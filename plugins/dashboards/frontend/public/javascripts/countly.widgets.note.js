@@ -133,7 +133,7 @@
                         string = string.replace(/&amp;/g, '&');
                         return string;
                     };
-                    return decode_html(this.scope.editedObject.content);
+                    return decode_html(this.scope.editedObject.content || '');
                 },
                 set: function(newValue) {
                     var val = this.scope;
