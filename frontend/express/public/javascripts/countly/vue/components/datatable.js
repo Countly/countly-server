@@ -657,6 +657,9 @@
                     formData = this.exportApi();
                     formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/request");
+                    if (this.exportFileName) {
+                        formData.filename = this.exportFileName;
+                    }
                 }
                 else if (this.exportQuery) {
                     formData = this.exportQuery();
