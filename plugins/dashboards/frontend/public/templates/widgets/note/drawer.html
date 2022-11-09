@@ -53,13 +53,13 @@
 	<cly-form-field v-if="scope.editedObject.add_link"  name="link_text" rules="required" :label="i18nM('dashboards.link-text')">
         <el-input
             type="text"
-            v-model="scope.editedObject.link_text">
+            v-model="linkText">
         </el-input>
     </cly-form-field>
 	<cly-form-field v-if="scope.editedObject.add_link" name="link_path" rules="required" :label="i18nM('dashboards.link-to')">
         <el-input
             type="text"
-            v-model="scope.editedObject.link_path">
+            v-model="linkPath">
         </el-input>
     </cly-form-field>
 	
