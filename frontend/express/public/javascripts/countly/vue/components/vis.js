@@ -621,7 +621,7 @@
 
                                 for (var i = 0; i < params.length; i++) {
                                     if (params[i].seriesName.toLowerCase() === 'duration') {
-                                        formatter = self.valFormatter;
+                                        formatter = countlyCommon.formatSecond;
                                     }
                                     else {
                                         formatter = self.valFormatter;
