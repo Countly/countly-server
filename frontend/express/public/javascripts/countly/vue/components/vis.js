@@ -921,6 +921,11 @@
                 if (this.legendOptions.position !== "bottom") {
                     opt.grid.right = 0;
                 }
+
+                if (typeof window.hideGraphTooltip !== "undefined") {
+                    window.hideGraphTooltip();
+                }
+
                 return opt;
             },
         },
@@ -998,20 +1003,25 @@
                 if (filteredNotes.length > 0) {
                     for (var i = 0; i < filteredNotes.length; i++) {
                         if (i === 0) {
-                            template = "<div class='graph-tooltip-wrapper' style='max-height: 170px; overflow: auto; margin-top: 12px'>";
+                            template = '<div class="graph-tooltip-wrapper bu-is-flex bu-is-justify-content-end">\
+                                            <span onClick="window.hideGraphTooltip()">\
+                                                <i class="el-icon-close"></i>\
+                                            </span>\
+                                        </div>\
+                                        <div class="graph-tooltip-wrapper__container">';
                         }
                         template += '<div class="graph-notes-tooltip bu-mb-4 bu-mx-2">\
-                                        <div class="bu-mb-2"><span class="text-small color-cool-gray-50">#' + filteredNotes[i].indicator + '</span></div>\
+                                        <div class="bu-mb-1"><span class="text-small color-cool-gray-50">#' + filteredNotes[i].indicator + '</span></div>\
                                         <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
                                             <div class="bu-is-flex bu-is-flex-direction-column">\
-                                                <div class="text-medium input-owner">' + filteredNotes[i].owner_name + '</div>\
+                                                <div class="text-small input-owner">' + filteredNotes[i].owner_name + '</div>\
                                                 <div class="text-small color-cool-gray-50">' + moment.utc(filteredNotes[i].ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                             </div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                                 <span class="text-small color-cool-gray-50 bu-is-capitalized">' + filteredNotes[i].noteType + '</span>\
                                             </div>\
                                         </div>\
-                                        <div class="bu-mt-3 graph-notes-tooltip__body"><span class="text-medium input-notes">' + filteredNotes[i].note + '</span></div>\
+                                        <div class="bu-mt-2 graph-notes-tooltip__body"><span class="text-small input-notes">' + filteredNotes[i].note + '</span></div>\
                                     </div>';
                         if (i === filteredNotes.length) {
                             template = "</div>";
@@ -1021,12 +1031,15 @@
                 else {
                     template = '<div class="graph-notes-tooltip">\
                                     <div class="bu-is-flex bu-is-justify-content-space-between graph-notes-tooltip__header">\
-                                        <div class="bu-is-flex bu-is-flex-direction-column">\
+                                        <div class="bu-is-flex bu-is-flex-direction-column name-wrapper">\
                                             <div class="text-medium input-owner">' + params.data.note.owner_name + '</div>\
                                             <div class="text-small color-cool-gray-50">' + moment.utc(params.data.note.ts).format("MMM D, YYYY hh:mm A") + '</div>\
                                         </div>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
-                                            <span class="text-small color-cool-gray-50 bu-is-capitalized">' + params.data.note.noteType + '</span>\
+                                            <span onClick="window.hideGraphTooltip()">\
+                                                <i class="el-icon-close close-button"></i>\
+                                            </span>\
+                                            <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + params.data.note.noteType + '</span>\
                                         </div>\
                                     </div>\
                                     <div class="bu-mt-3 graph-notes-tooltip__body"><span class="text-medium input-notes">' + params.data.note.note + '</span></div>\
@@ -1138,18 +1151,22 @@
                 }
             },
             onClick() {
-                var showTooltip = setInterval(() => {
-                    if (document.querySelector('.graph-notes-tooltip')) {
-                        document.querySelector('.graph-notes-tooltip').parentNode.style.opacity = 1;
+                if (typeof document.querySelectorAll(".graph-overlay") !== 'undefined') {
+                    for (var j = 0; j < document.querySelectorAll(".graph-overlay").length; j++) {
+                        document.querySelectorAll(".graph-overlay")[j].style.display = "block";
                     }
-                    if (document.querySelector('.graph-tooltip-wrapper')) {
-                        document.querySelector('.graph-tooltip-wrapper').parentNode.style.opacity = 1;
+                }
+                if (typeof document.querySelectorAll(".graph-notes-tooltip") !== 'undefined') {
+                    for (var z = 0; z < document.querySelectorAll(".graph-notes-tooltip").length; z++) {
+                        document.querySelectorAll(".graph-notes-tooltip")[z].parentNode.style.opacity = 1;
                     }
-                }, 10);
+                }
 
-                setTimeout(() => {
-                    clearInterval(showTooltip);
-                }, 1000);
+                if (typeof document.querySelectorAll(".graph-tooltip-wrapper") !== 'undefined') {
+                    for (var k = 0; k < document.querySelectorAll(".graph-tooltip-wrapper").length; k++) {
+                        document.querySelectorAll(".graph-tooltip-wrapper")[k].parentNode.style.opacity = 1;
+                    }
+                }
             }
         },
         watch: {
@@ -1162,6 +1179,37 @@
         },
         created: function() {
             this.getGraphNotes();
+        },
+        mounted: function() {
+            var overlay = document.createElement("div");
+            overlay.setAttribute("class", "graph-overlay");
+            overlay.setAttribute("style", "width: 100%; height: 100%; top: 0px; background-color: black; position: absolute; z-index: 999; opacity: 0; display: none;");
+
+            var echarts = document.querySelectorAll('.echarts');
+            for (var i = 0; i < echarts.length; i++) {
+                if (typeof echarts[i] !== 'undefined') {
+                    echarts[i].appendChild(overlay.cloneNode(true));
+                }
+            }
+
+            window.hideGraphTooltip = function() {
+                if (typeof document.querySelectorAll(".graph-overlay") !== 'undefined') {
+                    for (var j = 0; j < document.querySelectorAll(".graph-overlay").length; j++) {
+                        document.querySelectorAll(".graph-overlay")[j].style.display = "none";
+                    }
+                }
+                if (typeof document.querySelectorAll(".graph-notes-tooltip") !== 'undefined') {
+                    for (var z = 0; z < document.querySelectorAll(".graph-notes-tooltip").length; z++) {
+                        document.querySelectorAll(".graph-notes-tooltip")[z].parentNode.style.opacity = 0;
+                    }
+                }
+
+                if (typeof document.querySelectorAll(".graph-tooltip-wrapper") !== 'undefined') {
+                    for (var k = 0; k < document.querySelectorAll(".graph-tooltip-wrapper").length; k++) {
+                        document.querySelectorAll(".graph-tooltip-wrapper")[k].parentNode.style.opacity = 0;
+                    }
+                }
+            };
         }
     });
 
@@ -2329,7 +2377,6 @@
                                     v-on="$listeners"\
                                     :option="chartOptions"\
                                     @click="onClick"\
-                                    @mouseOver="onHover"\
                                     :autoresize="autoresize"\
                                     @datazoom="onDataZoom"/>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
