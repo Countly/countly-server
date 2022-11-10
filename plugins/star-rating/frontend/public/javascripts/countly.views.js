@@ -179,7 +179,8 @@
     var RatingsTable = countlyVue.views.create({
         template: CV.T("/star-rating/templates/ratings-table.html"),
         props: {
-            ratings: Array
+            ratings: Array,
+            loadingState: Boolean
         },
         computed: {
             preparedRows: function() {
@@ -317,7 +318,8 @@
                 comments: [],
                 platformOptions: [{label: 'All Platforms', value: ''}],
                 widgetOptions: [{label: 'All Widgets', value: ''}],
-                versionOptions: [{label: 'All Versions', value: ''}]
+                versionOptions: [{label: 'All Versions', value: ''}],
+                isLoading: false
             };
         },
         methods: {
@@ -417,11 +419,15 @@
 
                 ratingArray.sort();
             },
-            fetch: function() {
+            fetch: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter), starRatingPlugin.requestFeedbackWidgetsData())
                     .then(function() {
-                    // set platform versions for filter
+                        self.isLoading = false;
+                        // set platform versions for filter
                         self.platform_version = starRatingPlugin.getPlatformVersion();
                         self.widgets = starRatingPlugin.getFeedbackWidgetsData();
                         // set rating data for charts
@@ -483,7 +489,7 @@
             }
         },
         created: function() {
-            this.fetch();
+            this.fetch(true);
         }
     });
 
@@ -703,7 +709,8 @@
                 },
                 platformOptions: [{label: 'All Platforms', value: ''}],
                 versionOptions: [{label: 'All Versions', value: ''}],
-                platform_version: {}
+                platform_version: {},
+                isLoading: false
             };
         },
         methods: {
@@ -885,7 +892,7 @@
             refresh: function() {
                 this.fetch();
             },
-            fetch: function() {
+            fetch: function(force) {
                 var self = this;
                 this.activeFilter.widget = this.$route.params.id;
 
@@ -899,9 +906,13 @@
                 });
                 // set widget filter as current one
                 this.activeFilter.widget = this.widget._id;
+                if (force) {
+                    this.isLoading = true;
+                }
                 $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter))
                     .then(function() {
-                    // set platform versions for filter
+                        self.isLoading = false;
+                        // set platform versions for filter
                         self.platform_version = starRatingPlugin.getPlatformVersion();
                         // set rating data for charts
                         // calculate cumulative data for chart
@@ -976,7 +987,7 @@
             }
         },
         mounted: function() {
-            this.fetch();
+            this.fetch(true);
         }
     });
 
