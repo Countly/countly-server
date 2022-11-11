@@ -5,7 +5,7 @@ var plugin = {},
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
-    { validateUser, validateGlobalAdmin } = require('../../../api/utils/rights.js');
+    { validateUser, validateGlobalAdmin, validateAppAdmin } = require('../../../api/utils/rights.js');
 
 (function() {
     plugins.register('/i/plugins', function(ob) {
@@ -238,7 +238,7 @@ var plugin = {},
 
     plugins.register("/o/configs", function(ob) {
         var params = ob.params;
-        validateGlobalAdmin(params, function() {
+        validateAppAdmin(params, function() {
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getAllConfigs();
                 delete confs.services;
