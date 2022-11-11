@@ -740,7 +740,7 @@ usersApi.checkNoteEditPermission = async function(params) {
                         return reject(false);
                     }
                     const globalAdmin = params.member.global_admin;
-                    const isAppAdmin = hasAdminAccess(params.member, params.qstring.args.app_id);
+                    const isAppAdmin = hasAdminAccess(params.member, params.qstring.app_id);
                     const noteOwner = (note.owner + '' === params.member._id + '');
                     return resolve(noteOwner || (isAppAdmin && note.noteType === 'public') || (globalAdmin && note.noteType === 'public'));
                 }
@@ -780,6 +780,10 @@ usersApi.saveNote = async function(params) {
         'category': {
             'required': false,
             'type': 'Boolean'
+        },
+        "indicator": {
+            'required': false,
+            'type': 'String'
         }
     };
     const args = params.qstring.args;
@@ -796,6 +800,7 @@ usersApi.saveNote = async function(params) {
             owner: params.member._id + "",
             created_at: new Date().getTime(),
             updated_at: new Date().getTime(),
+            indicator: args.indicator,
         };
 
         if (args._id) {
@@ -910,8 +915,8 @@ usersApi.fetchUserAppIds = async function(params) {
 **/
 usersApi.fetchNotes = async function(params) {
     countlyCommon.getPeriodObj(params);
+    // const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
 
-    const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
     let appIds = [];
     let filtedAppIds = [];
     try {
@@ -931,21 +936,21 @@ usersApi.fetchNotes = async function(params) {
     }
     const query = {
         'app_id': {$in: filtedAppIds},
-        'ts': timestampRange,
+        'ts': {$gte: params.qstring.period[0], $lte: params.qstring.period[1]},
         $or: [
             {'owner': params.member._id + ""},
             {'noteType': 'public'},
             {'emails': {'$in': [params.member.email] }},
         ],
     };
-
     if (params.qstring.category) {
-        query.category = params.qstring.category;
+        query.category = {$in: JSON.parse(params.qstring.category)};
     }
 
     if (params.qstring.note_type) {
         query.noteType = params.qstring.note_type;
     }
+
     let skip = params.qstring.iDisplayStart || 0;
     let limit = params.qstring.iDisplayLength || 5000;
     const sEcho = params.qstring.sEcho || 1;
@@ -968,6 +973,7 @@ usersApi.fetchNotes = async function(params) {
         log.e(' got error while paring query notes request', e);
     }
     let count = 0;
+
     common.db.collection('notes').count(query, function(error, noteCount) {
         if (!error && noteCount) {
             count = noteCount;

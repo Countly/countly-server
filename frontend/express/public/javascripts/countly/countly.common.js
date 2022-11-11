@@ -4384,20 +4384,27 @@
             window.app.localize();
         };
 
-        countlyCommon.getGraphNotes = function(appIds, callBack) {
+        countlyCommon.getGraphNotes = function(appIds, filter, callBack) {
             if (!appIds) {
                 appIds = [];
+            }
+            var args = {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "notes_apps": JSON.stringify(appIds),
+                "period": JSON.stringify([countlyCommon.periodObj.start, countlyCommon.periodObj.end]),
+                "method": "notes",
+                "dt": Date.now()
+            };
+            if (filter && filter.noteType) {
+                args.note_type = filter.noteType;
+            }
+            if (filter && filter.category) {
+                args.category = JSON.stringify(filter.category);
             }
             return window.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "category": "session",
-                    "notes_apps": JSON.stringify(appIds),
-                    "period": countlyCommon.getPeriod(),
-                    "method": "notes",
-                },
+                data: args,
                 success: function(json) {
                     var notes = json && json.aaData || [];
                     var noteSortByApp = {};
