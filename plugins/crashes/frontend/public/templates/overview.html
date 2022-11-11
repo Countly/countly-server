@@ -18,7 +18,11 @@
                         <el-table-column :label="errorColumnLabel" min-width="415" fixed="left">
                             <template slot-scope="col">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <div class="crash-group-title has-ellipsis" v-html="col.row.name"></div>
+                                    <a
+                                        class="crash-group-title has-ellipsis"
+                                        :href="'#/crashes/' + col.row._id"
+                                        v-html="col.row.name">
+                                    </a>
                                     <div class="bu-mt-2 bu-is-flex">
                                         <crash-badge :type="badge.type" v-html="badge.content" v-for="badge in badgesFor(col.row)"></crash-badge>
                                     </div>
