@@ -440,9 +440,15 @@
         computed: {
             crashgroupsFilter: {
                 set: function(newValue) {
+                    var query = {};
+
+                    if (newValue.query) {
+                        query = countlyCrashes.modifyExistsQueries(newValue.query);
+                    }
+
                     return Promise.all([
                         this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue),
-                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(newValue.query)})
+                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)})
                     ]);
                 },
                 get: function() {
