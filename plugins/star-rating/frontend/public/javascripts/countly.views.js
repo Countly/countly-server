@@ -983,7 +983,7 @@
             },
             ratingRate: function() {
                 var timesShown = this.widget.timesShown === 0 ? 1 : this.widget.timesShown;
-                return parseFloat(((this.widget.ratingsCount / timesShown) * 100).toFixed(2)) || 0;
+                return parseFloat(((this.count / timesShown) * 100).toFixed(2)) || 0;
             }
         },
         mounted: function() {
