@@ -5,13 +5,12 @@
             <slot name="action"></slot>
         </div>
     </div>
-	<div class="clyd-widget__content">
+	<div 
+		class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center clyd-widget__content__note" 
+		style="width: 100%; height: 100%" 
+	>
 		<vue-scroll :ops="scrollNote">
-			<div 
-				style="width: 100%; height: 100%" 
-				class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center"
-				v-html="widgetHTML"
-			></div>
+			<span v-html="widgetHTML"></span>
 		</vue-scroll>
 	</div>
 </div>
