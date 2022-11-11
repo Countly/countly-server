@@ -6,8 +6,12 @@
         </div>
     </div>
 	<div class="clyd-widget__content">
-		<div style="width: 100%; height: 100%" class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center">
-			<span v-html="widgetHTML"></span>
-		</div>
+		<vue-scroll :ops="scrollNote">
+			<div 
+				style="width: 100%; height: 100%" 
+				class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center"
+				v-html="widgetHTML"
+			></div>
+		</vue-scroll>
 	</div>
 </div>
