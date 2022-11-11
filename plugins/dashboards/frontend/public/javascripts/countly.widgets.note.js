@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon */
+/*global countlyVue, CV, countlyCommon, ElementTiptap */
 
 (function() {
     var WidgetComponent = countlyVue.views.create({
@@ -16,73 +16,10 @@
             };
         },
         computed: {
-            linkStyling: function() {
-                if (this.data.text_align) {
-                    return "text-align: " + this.data.text_align;
-                }
-                else {
-                    return "";
-                }
-            },
-            widgetStyling: function() {
-                var widgetData = this.data;
-                var style = "", fontSize, lineHeight;
-                if (widgetData.font_size && !Number.isNaN(parseFloat(widgetData.font_size))) {
-                    fontSize = parseFloat(widgetData.font_size);
-                    lineHeight = fontSize + 7;
-                }
-                else {
-                    fontSize = 15;
-                    lineHeight = 22;
-                }
-
-                if (this.data.text_align) {
-                    style += "text-align: " + this.data.text_align + ";";
-                }
-
-
-                style += 'font-size: ' + fontSize + 'px;';
-                style += 'line-height: ' + lineHeight + 'px;';
-
-                if (widgetData.bar_color) {
-                    style += 'color: ' + countlyCommon.GRAPH_COLORS[this.data.bar_color - 1] + ';';
-                }
-
-                if (widgetData.text_decoration) {
-                    for (var i = 0 ; i < widgetData.text_decoration.length; i++) {
-                        if (widgetData.text_decoration[i] === "b") {
-                            style += 'font-weight: bold;';
-                        }
-
-                        if (widgetData.text_decoration[i] === "i") {
-                            style += 'font-style: italic;';
-                        }
-
-                        if (widgetData.text_decoration[i] === "u") {
-                            style += 'text-decoration: underline;';
-                        }
-                    }
-                }
-
-                return style;
-            },
-            mylink: function() {
-                if (this.data.add_link) {
-                    return {"link": this.data.link_path, "text": this.data.link_text};
-                }
-                else {
-                    return false;
-                }
-            },
-            widgetText: function() {
-                return this.data.content;
+            widgetHTML: function() {
+                return countlyCommon.unescapeHtml(this.data.contenthtml);
             }
         },
-        methods: {
-            beforeCopy: function(data) {
-                return data;
-            }
-        }
     });
 
     var DrawerComponent = countlyVue.views.create({
@@ -97,41 +34,43 @@
         },
         data: function() {
             return {
-                constants: {
-                    textDecorations: [
-                        {
-                            name: CV.i18nM("dashboards.bold"),
-                            value: "b"
-                        },
-                        {
-                            name: CV.i18nM("dashboards.italic"),
-                            value: "i"
-                        },
-                        {
-                            name: CV.i18nM("dashboards.underline"),
-                            value: "u"
-                        }
-                    ],
-                    alignments: [
-                        {
-                            name: CV.i18nM("dashbords.align.left"),
-                            value: "left"
-                        },
-                        {
-                            name: CV.i18nM("dashbords.align.right"),
-                            value: "right"
-                        },
-                        {
-                            name: CV.i18nM("dashbords.align.center"),
-                            value: "center"
-                        },
-                        {
-                            name: CV.i18nM("dashbords.align.justify"),
-                            value: "justify"
-                        }
-                    ]
-                }
+                extensions: [
+                    new ElementTiptap.Doc(),
+                    new ElementTiptap.Text(),
+                    new ElementTiptap.Paragraph(),
+                    new ElementTiptap.Heading({ level: 5 }),
+                    new ElementTiptap.Bold({ bubble: true }), // render command-button in bubble menu.
+                    new ElementTiptap.Underline({ bubble: true, menubar: false }), // render command-button in bubble menu but not in menubar.
+                    new ElementTiptap.Italic(),
+                    new ElementTiptap.Strike(),
+                    new ElementTiptap.ListItem(),
+                    new ElementTiptap.BulletList(),
+                    new ElementTiptap.OrderedList(),
+                    new ElementTiptap.TodoItem(),
+                    new ElementTiptap.TodoList(),
+                    new ElementTiptap.TextAlign(),
+                    new ElementTiptap.TextColor({colors: countlyCommon.GRAPH_COLORS}),
+                    new ElementTiptap.FontSize({fontSizes: ['8', '10', '12', '14', '16', '18', '20', '24', '30', '36', '48', '60', '72', '96']}),
+                    new ElementTiptap.FontType(),
+                    new ElementTiptap.LineHeight({lineHeights: ['100%', '150%', '200%', '250%', '300%']}),
+                    new ElementTiptap.Link(),
+                    new ElementTiptap.HorizontalRule(),
+                    new ElementTiptap.History(),
+                ]
             };
+        },
+        computed: {
+            contentHtml: {
+                get() {
+                    if (this.scope.editedObject.contenthtml) {
+                        return countlyCommon.unescapeHtml(this.scope.editedObject.contenthtml);
+                    }
+                    return this.scope.editedObject.contenthtml;
+                },
+                set(val) {
+                    this.scope.editedObject.contenthtml = val;
+                }
+            }
         }
     });
 
@@ -157,24 +96,12 @@
                 return {
                     widget_type: "note",
                     feature: "core",
-                    content: "",
                     apps: "*",
-                    text_decoration: [],
-                    bar_color: 1,
-                    font_size: "15",
-                    link_text: "",
-                    link_path: "",
-                    add_link: false,
-                    text_align: ""
+                    contenthtml: "",
                 };
             },
-            beforeSaveFn: function(doc) {
-                if (!doc.add_link) {
-                    doc.link_text = "";
-                    doc.link_path = "";
-                }
-
-            }
+            // beforeSaveFn: function(doc) {
+            // }
         },
         grid: {
             component: WidgetComponent,

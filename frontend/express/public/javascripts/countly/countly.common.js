@@ -291,6 +291,15 @@
             return div.innerHTML;
         };
 
+        countlyCommon.unescapeHtml = function(htmlStr) {
+            htmlStr = htmlStr.replace(/&lt;/g, "<");
+            htmlStr = htmlStr.replace(/&gt;/g, ">");
+            htmlStr = htmlStr.replace(/&quot;/g, "\"");
+            htmlStr = htmlStr.replace(/&#39;/g, "\'");
+            htmlStr = htmlStr.replace(/&amp;/g, "&");
+            return htmlStr;
+        };
+
         /**
         * Encode some tags, leaving those set in whitelist as they are.
         * @memberof countlyCommon
