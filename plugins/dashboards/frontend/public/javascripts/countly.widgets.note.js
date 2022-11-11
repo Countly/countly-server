@@ -9,6 +9,8 @@
                 scrollNote: {
                     bar: {
                         background: "#a6aeb8",
+                        keepShow: true,
+                        size: "4px"
                     }
                 },
             };
