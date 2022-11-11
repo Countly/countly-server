@@ -69,7 +69,7 @@ taskmanager.longtask = function(options) {
     var saveOpId = async function(comment_id, retryCount) {
         common.db.admin().command({ currentOp: 1 }, async function(error, result) {
             if (error) {
-                log.e(error);
+                log.d(error);
                 return;
             }
             else {
