@@ -394,8 +394,10 @@
             margin-top: 10px;
         }
 
-        .close-button {
+        .el-icon-close {
             color: #898787;
+            z-index:9999;
+            cursor: pointer;
         }
 
         .note-type {
@@ -418,6 +420,7 @@
     .el-icon-close {
         color: #898787;
         z-index:9999;
+        cursor: pointer;
     }
 
     &__container {

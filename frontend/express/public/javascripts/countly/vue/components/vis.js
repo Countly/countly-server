@@ -1037,7 +1037,7 @@
                                         </div>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-flex-end">\
                                             <span onClick="window.hideGraphTooltip()">\
-                                                <i class="el-icon-close close-button"></i>\
+                                                <i class="el-icon-close"></i>\
                                             </span>\
                                             <span class="text-small color-cool-gray-50 bu-is-capitalized note-type">' + params.data.note.noteType + '</span>\
                                         </div>\
@@ -1151,22 +1151,31 @@
                 }
             },
             onClick() {
-                if (typeof document.querySelectorAll(".graph-overlay") !== 'undefined') {
+                if (document.querySelectorAll(".graph-overlay")) {
                     for (var j = 0; j < document.querySelectorAll(".graph-overlay").length; j++) {
                         document.querySelectorAll(".graph-overlay")[j].style.display = "block";
                     }
                 }
-                if (typeof document.querySelectorAll(".graph-notes-tooltip") !== 'undefined') {
+                if (document.querySelectorAll(".graph-notes-tooltip")) {
                     for (var z = 0; z < document.querySelectorAll(".graph-notes-tooltip").length; z++) {
                         document.querySelectorAll(".graph-notes-tooltip")[z].parentNode.style.opacity = 1;
                     }
                 }
 
-                if (typeof document.querySelectorAll(".graph-tooltip-wrapper") !== 'undefined') {
+                if (document.querySelectorAll(".graph-tooltip-wrapper")) {
                     for (var k = 0; k < document.querySelectorAll(".graph-tooltip-wrapper").length; k++) {
                         document.querySelectorAll(".graph-tooltip-wrapper")[k].parentNode.style.opacity = 1;
                     }
+                    document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)').addEventListener('mouseleave', function(event) {
+                        event.stopImmediatePropagation();
+                    }, true);
                 }
+                else {
+                    document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)').addEventListener('mouseleave', function(event) {
+                        event.stopImmediatePropagation();
+                    }, true);
+                }
+                countlyCommon.DISABLE_AUTO_REFRESH = true;
             }
         },
         watch: {
@@ -1209,6 +1218,7 @@
                         document.querySelectorAll(".graph-tooltip-wrapper")[k].parentNode.style.opacity = 0;
                     }
                 }
+                countlyCommon.DISABLE_AUTO_REFRESH = false;
             };
         }
     });
