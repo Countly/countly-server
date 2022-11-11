@@ -186,6 +186,7 @@ function processDrillCollections(db, drill_db, callback) {
         collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + APP_ID).digest('hex')});
         collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + APP_ID).digest('hex')});
         collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_apm_device" + APP_ID).digest('hex')});
+        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_apm_network" + APP_ID).digest('hex')});
         collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_nps" + APP_ID).digest('hex')});
         collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_survey" + APP_ID).digest('hex')});
         collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_push_action" + APP_ID).digest('hex')});
@@ -199,9 +200,8 @@ function processDrillCollections(db, drill_db, callback) {
 
             async.eachSeries(collections, eventIterator, function() {
                 console.log('Drill collections processed');
-				callback();
+                callback();
             });
-
         });
     }
     else {
@@ -210,23 +210,36 @@ function processDrillCollections(db, drill_db, callback) {
 
 }
 Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(db, db_drill) {
+    if (!APP_ID) {
+        console.log("APP ID is missing");
+        console.log('exited');
+        db.close();
+        db_drill.close();
+    }
+    else {
+        processDrillCollections(db, db_drill, function() {
 
-    processDrillCollections(db, db_drill, function() {
+            var processCols = [];
+            for (var key in process) {
+                if (key !== 'drill_events') {
+                    if (key === 'symbolication_jobs' || key === 'systemlogs') {
+                        processCols.push({'collection': key, db: db, seconds: true});
+                    }
+                    else {
+                        processCols.push({'collection': key + APP_ID, db: db, seconds: true});
+                    }
 
-        var processCols = [];
-        for (var key in process) {
-            if (key !== 'drill_events') {
-                processCols.push({'collection': key + APP_ID, db: db, seconds: true});
+                }
             }
-        }
 
-        async.eachSeries(processCols, eventIterator, function() {
-            if (errorCn > 0) {
-                console.log("There were errors. Please recheck logs for those.");
-            }
-            console.log('finished');
-            db.close();
-            db_drill.close();
+            async.eachSeries(processCols, eventIterator, function() {
+                if (errorCn > 0) {
+                    console.log("There were errors. Please recheck logs for those.");
+                }
+                console.log('finished');
+                db.close();
+                db_drill.close();
+            });
         });
-    });
+    }
 });
