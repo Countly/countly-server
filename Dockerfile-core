@@ -7,6 +7,9 @@ ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,vi
 ARG COUNTLY_CONFIG_API_MONGODB_HOST=localhost
 ARG COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=localhost
 
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TZ=Etc/UTC
+
 CMD ["/sbin/my_init"]
 
 ## Setup Countly
