@@ -1,0 +1,52 @@
+<cly-drawer
+    :title="$props.settings.isEditMode ? $props.settings.editTitle : $props.settings.createTitle"
+    :saveButtonLabel="$props.settings.isEditMode ? $props.settings.saveButtonLabel : $props.settings.createButtonLabel"
+    @submit="onSubmit"
+    @open="onOpen"
+    v-bind="$props.controls"
+    ref="annotation"
+    name="annotationDrawer">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="annotation-main">
+            <cly-form-field rules="required" name="detail">
+                <div class="text-big text-heading">
+                    {{i18n('notes.note-details')}}
+                </div>
+                <div>
+                    <span class="text-medium bu-has-text-weight-medium">{{i18n('notes.note')}}</span>
+                    <el-input type="textarea" :rows="3" :placeholder="i18n('notes.enter-note')" v-model="drawerScope.editedObject.note" class="bu-mt-2"></el-input>
+                </div>
+            </cly-form-field>
+            <cly-form-field name="noteType" :label="i18n('notes.visibility')">
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-1">
+                    <el-radio 
+                        class="is-autosized"
+                        v-model="drawerScope.editedObject.noteType" 
+                        :label="item.value" 
+                        :key="idx" 
+                        v-for="(item, idx) in noteTypes"
+                        border>
+                        {{item.label}}
+                    </el-radio>
+                </div>
+            </cly-form-field>
+            <cly-form-field rules="required" :label="i18n('notes.share-with')" v-if="drawerScope.editedObject.noteType === 'shared'">
+                <cly-select-email v-model="drawerScope.editedObject.emails"></cly-select-email>
+            </cly-form-field>
+            <cly-form-field name="date" :label="i18n('notes.date-and-time')">
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-1">
+                    <cly-date-picker timestampFormat="ms" type="date" :select-time="true" v-model="drawerScope.editedObject.ts"></cly-date-picker>
+                </div>
+            </cly-form-field>
+            <cly-form-field name="color">
+                <div class="text-big text-heading bu-mb-1">
+                    {{i18n('notes.color')}}
+                </div>
+                <div>
+                    <span class="text-small color-cool-gray-50">{{i18n('notes.color-note-description')}}</span>
+                    <cly-color-tag :tags="colorTag" :defaultTag="drawerScope.editedObject.color" v-model="drawerScope.editedObject.color" class="bu-mt-3"></cly-color-tag>
+                </div>
+            </cly-form-field>
+        </cly-form-step>
+    </template>
+</cly-drawer>

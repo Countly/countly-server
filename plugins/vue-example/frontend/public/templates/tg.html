@@ -2,13 +2,13 @@
     <cly-header title="Chart components"></cly-header>
     <cly-main>
         <cly-section title="Line Chart">
-            <cly-chart-line :option="lineOptions" :legend="lineLegend">
+            <cly-chart-line :option="lineOptions" :legend="lineLegend" category="vue-example">
                 <template v-slot:chart-left>
                 </template>
             </cly-chart-line>
         </cly-section>
         <cly-section title="Time Graph">
-            <cly-chart-time :option="largeScaleOptions" :bucket="selBucket" :dummy="true">
+            <cly-chart-time :option="largeScaleOptions" :bucket="selBucket" :dummy="true" category="vue-example">
                 <template v-slot:chart-left="scope">
                     <div class="bu-level-item">
                         <el-button @click="onTimeSeriesButtonClick" size="small">Change series</el-button>

@@ -22,7 +22,7 @@
         </div>
         <cly-section>
             <cly-chart-time
-                 :showDownload=false :showToggle=false :showZoom=false :option="consentDpChart" :legend="consentDpChartlegend"> </cly-chart-time>
+                :showDownload=false :showToggle=false :showZoom=false :option="consentDpChart" :legend="consentDpChartlegend" category="compliance-hub"> </cly-chart-time>
 
         </cly-section>
             <div class="bu-is-flex">
@@ -41,8 +41,8 @@
                             </div>
                         </div>
                     </div>
-                    <cly-chart-time :height="277" :showDownload=false :showToggle=false :showZoom=false :legend={show:false} :option.sync="exportDpChart">
-                     </cly-chart-time>
+                    <cly-chart-time :height="277" :showDownload=false :showToggle=false :showZoom=false :legend={show:false} :option.sync="exportDpChart" category="compliance-hub">
+                    </cly-chart-time>
                 </div>
                 <div class="white-bg cly-vue-compliance__user_chart bu-px-5 bu-is-flex bu-is-flex-direction-column">
                         <div class="bu-is-flex bu-is-flex-direction-column bu-mt-3" style="width:85%; height: 50px;">
@@ -59,7 +59,7 @@
                                 </div>
                             </div>
                         </div>
-                    <cly-chart-time :showDownload="false" :showToggle="false" :showZoom="false" :legend={show:false} :height="277" :option.sync="purgeDpChart">
+                    <cly-chart-time :showDownload="false" :showToggle="false" :showZoom="false" :legend={show:false} :height="277" :option.sync="purgeDpChart" category="compliance-hub">
                     </cly-chart-time>
                 </div>
             </div>

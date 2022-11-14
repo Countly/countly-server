@@ -908,7 +908,7 @@ var AppRouter = Backbone.Router.extend({
     },
     performRefresh: function(self) {
         //refresh only if we are on current period
-        if (countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded) {
+        if (countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded && !countlyCommon.DISABLE_AUTO_REFRESH) {
             self.activeView.isLoaded = false;
             $.when(self.activeView.refresh()).always(function() {
                 self.activeView.isLoaded = true;

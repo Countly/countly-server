@@ -157,6 +157,10 @@
                 return this.$store.getters["countlyAllEvents/availableSegments"];
             },
             selectedEventName: function() {
+                var eventName = this.$store.getters["countlyAllEvents/selectedEventName"];
+                if (eventName) {
+                    this.graphNotesCategory = 'events ' + eventName;
+                }
                 return this.$store.getters["countlyAllEvents/allEventsProcessed"].eventName;
             },
             groupData: function() {
@@ -205,7 +209,10 @@
 
         },
         data: function() {
-            return {description: CV.i18n('events.all.title.new') };
+            return {
+                description: CV.i18n('events.all.title.new'),
+                graphNotesCategory: ''
+            };
         },
         beforeCreate: function() {
             var self = this;
