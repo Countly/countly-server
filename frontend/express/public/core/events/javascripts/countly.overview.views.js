@@ -16,6 +16,9 @@
             },
             formatNumber: function(val) {
                 return countlyCommon.formatNumber(val);
+            },
+            formatDurNumber: function(val) {
+                return countlyCommon.formatSecond(val);
             }
         },
         computed: {
@@ -242,6 +245,15 @@
             onMetricClick: function(params) {
                 app.navigate("#/analytics/events/key/" + params.key, true);
             },
+            durCheck: function(item) {
+                //to handle grouped events
+                var eventMapKey = item.groupId || item.name;
+                var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
+                return item.eventProperty === (eventMap[eventMapKey]).dur.toUpperCase();
+            },
+            valFormatter: function(val) {
+                return countlyCommon.formatSecond(val);
+            }
         },
         computed: {
             selectedEvents: function() {
@@ -293,7 +305,21 @@
                                 }
                             }
                         }
-                        editedMonitorEventsData.push({
+                        var total = countlyCommon.formatNumber(currentData[j].total);
+                        var yAxis = this.monitorEventsOptions.yAxis;
+                        var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
+                        //to handle grouped events
+                        var eventMapKey = currentData[j].groupId || currentData[j].name;
+                        if (currentData[j].eventProperty === (eventMap[eventMapKey]).dur.toUpperCase()) {
+                            total = countlyCommon.formatSecond(currentData[j].total, 2);
+                            yAxis.axisLabel = {
+                                formatter: function(value) {
+                                    return countlyCommon.formatSecond(value, 2);
+                                },
+                            };
+
+                        }
+                        var editedMonitorEventsDataObj = {
                             "barData": {
                                 "series": [{
                                     "data": currentData[j].barData.series[0].data,
@@ -302,13 +328,17 @@
                                 }],
                                 "legend": this.monitorEventsOptions.legend,
                                 "xAxis": this.monitorEventsOptions.xAxis,
-                                "yAxis": this.monitorEventsOptions.yAxis
+                                "yAxis": yAxis
                             },
                             "change": currentData[j].change,
                             "eventProperty": currentData[j].eventProperty,
-                            "total": currentData[j].total,
+                            "total": total,
                             "name": currentData[j].name
-                        });
+                        };
+                        if (currentData[j].groupId) {
+                            editedMonitorEventsDataObj.groupId = currentData[j].groupId;
+                        }
+                        editedMonitorEventsData.push(editedMonitorEventsDataObj);
                     }
                     return editedMonitorEventsData;
                 }

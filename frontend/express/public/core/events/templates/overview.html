@@ -111,7 +111,7 @@
 				  <div slot="countValue" class="cly-monitor-events-breakdown-horizontal-tile__overviewvalue">{{item.total}}</div>
 				  <div slot="propertyName" class="cly-monitor-events-breakdown-horizontal-tile__eventproperty">{{item.eventProperty}}</div>
 				  <div slot="barGraph">
-					<cly-chart-bar xAxisLabelOverflow="unset" class="cly-vue-events-overview-monitor-events__charts" :noEmpty="true" :legend="monitorEventsLegend" :height=130 :option="item.barData" :autoresize=true :showZoom=false :showToggle=false :showDownload=false>
+					<cly-chart-bar :valFormatter="durCheck(item) ? valFormatter : undefined" xAxisLabelOverflow="unset" class="cly-vue-events-overview-monitor-events__charts" :noEmpty="true" :legend="monitorEventsLegend" :height=130 :option="item.barData" :autoresize=true :showZoom=false :showToggle=false :showDownload=false>
 					</cly-chart-bar>
 				  </div>
 				</monitor-events-breakdown-horizontal-tile>
@@ -152,7 +152,7 @@
 			<el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')" min-width="177px">
 			  <template v-slot="rowScope">
 				<div>
-				  {{rowScope.row.duration>0?formatNumber(rowScope.row.duration):"-"}}
+				  {{rowScope.row.duration>0?formatDurNumber(rowScope.row.duration):"-"}}
 				</div>
 			  </template>
 			</el-table-column>
