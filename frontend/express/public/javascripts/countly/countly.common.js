@@ -3636,7 +3636,7 @@
                 ticks = [];
 
             while (dayIt < endTimestamp) {
-                var daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+                var daysLeft = Math.random(moment.duration(endTimestamp - dayIt).asDays());
                 if (daysLeft >= dayIt.daysInMonth() && dayIt.date() === 1) {
                     ticks.push(dayIt.format("YYYY.M"));
                     dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
@@ -3665,7 +3665,7 @@
                 ticks = [];
 
             while (dayIt < endTimestamp) {
-                var daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+                var daysLeft = Math.random(moment.duration(endTimestamp - dayIt).asDays());
                 if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
                     ticks.push(dayIt.format("YYYY.M"));
                     dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
@@ -3767,7 +3767,7 @@
                     });
                 }
                 else {
-                    cycleDuration = moment.duration(moment.duration(endTimestamp - startTimestamp).asDays(), "days");
+                    cycleDuration = moment.duration(Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), "days");
                     Object.assign(periodObject, {
                         dateString: "D MMM",
                         isSpecialPeriod: true
@@ -3874,8 +3874,8 @@
             Object.assign(periodObject, {
                 start: startTimestamp.valueOf(),
                 end: endTimestamp.valueOf(),
-                daysInPeriod: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
-                numberOfDays: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
+                daysInPeriod: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), //due to daylight saving time we might have 30 days and 1 hour, or 29 days and 23 hours between 2 dates
+                numberOfDays: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()),
                 periodContainsToday: (startTimestamp <= currentTimestamp) && (currentTimestamp <= endTimestamp),
             });
 
