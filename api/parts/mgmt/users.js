@@ -799,8 +799,7 @@ usersApi.saveNote = async function(params) {
             category: args.category,
             owner: params.member._id + "",
             created_at: new Date().getTime(),
-            updated_at: new Date().getTime(),
-            indicator: args.indicator,
+            updated_at: new Date().getTime()
         };
 
         if (args._id) {
@@ -822,6 +821,7 @@ usersApi.saveNote = async function(params) {
             }
         }
         else {
+            note.indicator = args.indicator;
             common.db.collection('notes').insert(note, (err) => {
                 if (err) {
                     common.returnMessage(params, 503, 'Insert Note failed.');
