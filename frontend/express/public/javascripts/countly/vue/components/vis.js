@@ -1048,7 +1048,7 @@
                 return template;
             },
             getGraphNotes: function() {
-                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] && !this.hideNotation) {
                     var self = this;
                     // sub category parser
                     var categories = [];
@@ -1151,6 +1151,18 @@
                 }
             },
             onClick() {
+                if (!document.querySelectorAll(".graph-overlay").length) {
+                    var overlay = document.createElement("div");
+                    overlay.setAttribute("class", "graph-overlay");
+                    overlay.setAttribute("style", "width: 100%; height: 100%; top: 0px; background-color: black; position: absolute; z-index: 999; opacity: 0; display: none;");
+
+                    var echarts = document.querySelectorAll('.echarts');
+                    for (var i = 0; i < echarts.length; i++) {
+                        if (typeof echarts[i] !== 'undefined') {
+                            echarts[i].appendChild(overlay.cloneNode(true));
+                        }
+                    }
+                }
                 if (document.querySelectorAll(".graph-overlay")) {
                     for (var j = 0; j < document.querySelectorAll(".graph-overlay").length; j++) {
                         document.querySelectorAll(".graph-overlay")[j].style.display = "block";
@@ -1194,17 +1206,6 @@
             this.getGraphNotes();
         },
         mounted: function() {
-            var overlay = document.createElement("div");
-            overlay.setAttribute("class", "graph-overlay");
-            overlay.setAttribute("style", "width: 100%; height: 100%; top: 0px; background-color: black; position: absolute; z-index: 999; opacity: 0; display: none;");
-
-            var echarts = document.querySelectorAll('.echarts');
-            for (var i = 0; i < echarts.length; i++) {
-                if (typeof echarts[i] !== 'undefined') {
-                    echarts[i].appendChild(overlay.cloneNode(true));
-                }
-            }
-
             window.hideGraphTooltip = function() {
                 if (typeof document.querySelectorAll(".graph-overlay") !== 'undefined') {
                     for (var j = 0; j < document.querySelectorAll(".graph-overlay").length; j++) {
