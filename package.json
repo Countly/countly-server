@@ -64,7 +64,7 @@
     "grunt-contrib-uglify": "5.2.2",
     "html-pdf": "3.0.1",
     "jimp": "0.16.2",
-    "jsdoc": "3.6.11",
+    "jsdoc": "4.0.0",
     "json2csv": "5.0.7",
     "jsonwebtoken": "8.5.1",
     "later": "1.2.0",
