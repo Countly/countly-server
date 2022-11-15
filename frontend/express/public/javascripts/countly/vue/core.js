@@ -372,7 +372,12 @@
                         return state.dialogs.filter(function(item) {
                             return item.intent === "message";
                         });
-                    }
+                    },
+                    blockerDialogs: function(state) {
+                        return state.dialogs.filter(function(item) {
+                            return item.intent === "blocker";
+                        });
+                    },
                 },
                 mutations: {
                     setPeriod: function(state, period) {
@@ -668,6 +673,18 @@
                                     <div v-html="dialog.message"></div>\
                                 </template>\
                         </cly-message-dialog>\
+                        <el-dialog\
+                            v-for="dialog in blockerDialogs"\
+                            visible\
+                            :center="dialog.center"\
+                            :width="dialog.width"\
+                            :close-on-click-modal="false"\
+                            :close-on-press-escape="false"\
+                            :show-close="false"\
+                            :key="dialog.id"\
+                            :title="dialog.title">\
+                            <div v-html="dialog.message"></div>\
+                        </el-dialog>\
                 </div>',
         store: _vuex.getGlobalStore(),
         computed: {
@@ -676,6 +693,9 @@
             },
             confirmDialogs: function() {
                 return this.$store.getters['countlyCommon/confirmDialogs'];
+            },
+            blockerDialogs: function() {
+                return this.$store.getters['countlyCommon/blockerDialogs'];
             }
         },
         methods: {
