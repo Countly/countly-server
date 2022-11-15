@@ -521,9 +521,6 @@
                     this.$store.dispatch("countlyCrashes/overview/refresh")
                 ]);
             },
-            handleRowClick: function(row) {
-                window.location.href = window.location.href + "/" + row._id;
-            },
             handleSelectionChange: function(selectedRows) {
                 this.$data.selectedCrashgroups = selectedRows.map(function(row) {
                     return row._id;
