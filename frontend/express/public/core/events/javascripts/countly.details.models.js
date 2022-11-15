@@ -24,7 +24,17 @@
                 }
             }
             var series = [];
-            var yAxis = [{}];
+            var yAxis = [];
+            var graphPointsLen = 0;
+            if (sum > 0) {
+                graphPointsLen++;
+            }
+            if (count > 0) {
+                graphPointsLen++;
+            }
+            if (dur > 0) {
+                graphPointsLen++;
+            }
             if (count > 0) {
                 var countObj = {
                     name: labels.count,
@@ -55,9 +65,11 @@
                 var durObj = {
                     name: labels.dur,
                     data: graphData[2],
-                    color: "#FF9382",
-                    yAxisIndex: 2
+                    color: "#FF9382"
                 };
+                if (graphPointsLen > 1) {
+                    durObj.yAxisIndex = graphPointsLen - 1;
+                }
                 series.push(durObj);
                 var durYAxisObj = {
                     type: 'value',
