@@ -531,6 +531,7 @@
             },
             setSelectedAs: function(state) {
                 var promise;
+                var self = this;
 
                 if (state === "resolved") {
                     promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolved", this.$data.selectedCrashgroups);
@@ -553,6 +554,11 @@
 
                 if (typeof promise !== "undefined") {
                     promise.finally(function() {
+                        // Reset selection if command is delete or hide
+                        if (["delete", "hide"].includes(state)) {
+                            self.selectedCrashgroups = [];
+                            self.$refs.dataTable.$refs.elTable.clearSelection();
+                        }
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.changed"],
                             message: jQuery.i18n.map["configs.saved"]

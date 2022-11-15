@@ -12,7 +12,7 @@
             </cly-header>
             <cly-main>
                 <cly-qb-bar v-if="hasDrillPermission" feature="crashes" class="bu-mb-5" v-model="crashgroupsFilter" :property-source-config="{drill: false}" queryStore="crashgroups" :additionalProperties="crashgroupsFilterProperties" :additionalRules="crashgroupsFilterRules" format="crashgroups"></cly-qb-bar>
-                <cly-datatable-n :data-source="remoteTableDataSource" @selection-change="handleSelectionChange" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey">
+                <cly-datatable-n :data-source="remoteTableDataSource" @selection-change="handleSelectionChange" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" ref="dataTable">
                     <template v-slot="scope">
                         <el-table-column type="selection" reserve-selection width="65" fixed="left"></el-table-column>
                         <el-table-column :label="errorColumnLabel" min-width="415" fixed="left">
