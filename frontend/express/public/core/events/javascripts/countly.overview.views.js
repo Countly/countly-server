@@ -246,8 +246,7 @@
                 app.navigate("#/analytics/events/key/" + params.key, true);
             },
             durCheck: function(item) {
-                //to handle grouped events
-                var eventMapKey = item.groupId || item.name;
+                var eventMapKey = item.eventKey;
                 var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
                 return item.eventProperty === (eventMap[eventMapKey]).dur.toUpperCase();
             },
@@ -308,8 +307,7 @@
                         var total = countlyCommon.formatNumber(currentData[j].total);
                         var yAxis = this.monitorEventsOptions.yAxis;
                         var eventMap = this.$store.getters["countlyEventsOverview/eventMapping"];
-                        //to handle grouped events
-                        var eventMapKey = currentData[j].groupId || currentData[j].name;
+                        var eventMapKey = currentData[j].eventKey;
                         if (currentData[j].eventProperty === (eventMap[eventMapKey]).dur.toUpperCase()) {
                             total = countlyCommon.formatSecond(currentData[j].total, 2);
                             yAxis.axisLabel = {
@@ -317,7 +315,6 @@
                                     return countlyCommon.formatSecond(value, 2);
                                 },
                             };
-
                         }
                         var editedMonitorEventsDataObj = {
                             "barData": {
@@ -333,11 +330,9 @@
                             "change": currentData[j].change,
                             "eventProperty": currentData[j].eventProperty,
                             "total": total,
-                            "name": currentData[j].name
+                            "name": currentData[j].name,
+                            "eventKey": currentData[j].eventKey
                         };
-                        if (currentData[j].groupId) {
-                            editedMonitorEventsDataObj.groupId = currentData[j].groupId;
-                        }
                         editedMonitorEventsData.push(editedMonitorEventsDataObj);
                     }
                     return editedMonitorEventsData;

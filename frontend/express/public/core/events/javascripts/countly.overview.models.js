@@ -77,13 +77,7 @@
         formatPercentage: function(value) {
             return parseFloat((Math.round(value * 100)).toFixed(this.DECIMAL_PLACES));
         },
-        getMonitorEvents: function(ob, context, groupData) {
-            var groupIds = [];
-            if (groupData && groupData.length) {
-                groupIds = groupData.map(function(val) {
-                    return val._id;
-                });
-            }
+        getMonitorEvents: function(ob, context) {
             var monitorEvents = context.state.monitorEvents;
             var monitorData = [];
             if (monitorEvents && monitorEvents.overview) {
@@ -103,9 +97,7 @@
                         obj.trend = values.trend;
                         obj.eventProperty = mapping[eventProperty].toUpperCase();
                         obj.name = mapping.eventName;
-                        if (groupIds.length && groupIds.indexOf(key) !== -1) {
-                            obj.groupId = key;
-                        }
+                        obj.eventKey = key;
                         monitorEvents.overview[i].propertyName = mapping[eventProperty];
                         monitorEvents.overview[i].eventName = mapping.eventName;
                         monitorData.push(obj);
@@ -418,7 +410,7 @@
                                             .then(function(response) {
                                                 context.dispatch("setMonitorEventsLoading", false);
                                                 if (response) {
-                                                    return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context, result) || []);
+                                                    return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context) || []);
                                                 }
                                             });
                                     }
@@ -491,7 +483,7 @@
                                                 context.dispatch("setMonitorEventsLoading", false);
 
                                                 if (response) {
-                                                    return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context, result) || []);
+                                                    return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context) || []);
                                                 }
                                             });
                                     }
