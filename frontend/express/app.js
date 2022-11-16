@@ -866,7 +866,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings),
-            notify, license;
+            notify, licenseError;
         configs.export_limit = plugins.getConfig("api").export_limit;
         app.loadThemeFiles(configs.theme, function(theme) {
             if (configs._user.theme) {
@@ -884,8 +884,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             }
 
             if (req.session.license) {
-                license = req.session.license;
-                delete req.session.license;
+                licenseError = req.session.license;
             }
             if (req.session.notify) {
                 try {
@@ -932,7 +931,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 cdn: countlyConfig.cdn || "",
                 message: req.flash("message"),
                 notify,
-                license,
+                licenseError,
                 ssr: serverSideRendering,
                 timezones: timezones,
                 countlyTypeName: COUNTLY_NAMED_TYPE,
