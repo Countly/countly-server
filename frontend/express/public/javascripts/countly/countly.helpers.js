@@ -727,6 +727,34 @@
     };
 
     /**
+    * Display modal popup that blocks the screen and cannot be closed
+    * @param {string} msg - message to display in popup
+    * @param {object} moreData - more data to display
+    * @param {string} moreData.title - alert title
+    * @example
+    * CountlyHelpers.showBlockerDialog("Some message");
+    */
+    CountlyHelpers.showBlockerDialog = function(msg, moreData) {
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
+        if (window.countlyVue && window.countlyVue.vuex) {
+            var payload = {
+                intent: "blocker",
+                message: msg,
+                title: (moreData && moreData.title) || "",
+                width: (moreData && moreData.width) || "400px",
+            };
+
+            var currentStore = window.countlyVue.vuex.getGlobalStore();
+            if (currentStore) {
+                currentStore.dispatch('countlyCommon/onAddDialog', payload);
+            }
+        }
+    };
+
+    /**
     * Check the value which passing as parameter
     * isJSON or not
     * return result as boolean
