@@ -1053,6 +1053,8 @@
                 if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] && !this.hideNotation) {
                     var self = this;
                     var chartHeight = 300;
+                    var yAxisHeight = '';
+
                     // sub category parser
                     var categories = [];
                     if (this.subCategory.length) {
@@ -1070,7 +1072,6 @@
                             }
                             self.mergedNotes = self.mergeGraphNotesByDate(self.notes);
                             self.mergedNotes.forEach(function(note, index) {
-                                var yAxisHeight = '75%';
                                 if (chartHeight < 250) {
                                     if (note.hasCloseDate && note.times === 1) {
                                         yAxisHeight = '65%';

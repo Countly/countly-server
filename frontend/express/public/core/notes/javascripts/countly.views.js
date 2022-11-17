@@ -59,18 +59,7 @@
                 }
             },
             decodeHtml: function(str) {
-                var map =
-                {
-                    '&amp;': '&',
-                    '&lt;': '<',
-                    '&gt;': '>',
-                    '&quot;': '"',
-                    '&#039;': "'",
-                    '&#39;': "'"
-                };
-                return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;|&#39;/g, function(m) {
-                    return map[m];
-                });
+                return countlyCommon.unescapeHtml(str);
             },
             handleCommand: function(command, data) {
                 switch (command) {
@@ -82,7 +71,7 @@
                 case 'edit':
                     data.color = {value: data.color};
                     this.drawerSettings.isEditMode = true;
-                    data.note = this.decodeHtml(data.note);
+                    data.note = countlyCommon.unescapeHtml(data.note);
                     this.openDrawer("annotation", data);
                     break;
                 default:
