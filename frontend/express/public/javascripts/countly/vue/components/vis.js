@@ -297,6 +297,7 @@
         }
     };
 
+
     var UpdateOptionsMixin = {
         data: function() {
             return {
@@ -895,6 +896,7 @@
                                 color: "rgba(255, 251, 251, 1)",
                                 fontWeight: "500",
                                 align: "center",
+                                padding: [1, 1, 1, 2],
                             },
                         },
                         emphasis: {
@@ -1050,6 +1052,9 @@
             getGraphNotes: function() {
                 if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] && !this.hideNotation) {
                     var self = this;
+                    var chartHeight = 300;
+                    var yAxisHeight = '';
+
                     // sub category parser
                     var categories = [];
                     if (this.subCategory.length) {
@@ -1062,13 +1067,33 @@
                     }).then(function() {
                         self.seriesOptions.markPoint.data = [];
                         if (self.notes && self.notes.length) {
+                            if (self.$refs.echarts) {
+                                chartHeight = self.$refs.echarts.getHeight();
+                            }
                             self.mergedNotes = self.mergeGraphNotesByDate(self.notes);
                             self.mergedNotes.forEach(function(note, index) {
+                                if (chartHeight < 250) {
+                                    if (note.hasCloseDate && note.times === 1) {
+                                        yAxisHeight = '65%';
+                                    }
+                                    else {
+                                        yAxisHeight = '60%';
+                                    }
+                                }
+                                else {
+                                    if (note.hasCloseDate && note.times === 1) {
+                                        yAxisHeight = '80%';
+                                    }
+                                    else {
+                                        yAxisHeight = '75%';
+                                    }
+                                }
+
                                 self.seriesOptions.markPoint.data.push({
                                     note: note,
                                     value: note.times > 1 ? ' ' : note.indicator,
                                     xAxis: note.dateStr,
-                                    y: (note.hasCloseDate && note.times === 1) ? (80 + '%') : '75%',
+                                    y: yAxisHeight,
                                     // coord: [note.dateStr, 28],
                                     symbolRotate: -20,
                                     symbolSize: note.indicator.length === 1 ? 30 : 40,
@@ -1190,6 +1215,17 @@
                     document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)').addEventListener('mouseleave', function(event) {
                         event.stopImmediatePropagation();
                     }, true);
+
+                }
+
+                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
+                    localStorage.setItem('showTooltipFlag', true);
+                    document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)').addEventListener('mouseleave', window.hideTooltip, true);
+                }
+
+                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
+                    localStorage.setItem('showTooltipFlag', true);
+                    document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)').addEventListener('mouseleave', window.hideTooltip, true);
                 }
                 countlyCommon.DISABLE_AUTO_REFRESH = true;
             }
@@ -1223,7 +1259,23 @@
                         document.querySelectorAll(".graph-tooltip-wrapper")[k].parentNode.style.opacity = 0;
                     }
                 }
+
+
+                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
+                    localStorage.removeItem('showTooltipFlag');
+                }
+
+                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
+                    localStorage.removeItem('showTooltipFlag');
+                }
                 countlyCommon.DISABLE_AUTO_REFRESH = false;
+            };
+
+            window.hideTooltip = function(event) {
+                if (localStorage.getItem('showTooltipFlag')) {
+                    event.stopImmediatePropagation();
+                }
+                return;
             };
         }
     });
@@ -1630,21 +1682,11 @@
                         </el-select>\
                     </div>'
     });
-
-    var AnnotationManagement = countlyBaseComponent.extend({
-        props: {
-            category: {
-                type: String,
-                default: '',
-                required: false
-            }
-        },
-        mixins: [countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.i18n],
+    var AnnotationHandleCommand = {
         data: function() {
             return {
-                selectedItem: '',
-                persistValue: false,
-                drawerSettings: {
+                notesVisibilityLabel: true,
+                drawerSettingsForWidgets: {
                     createTitle: CV.i18n('notes.add-new-note'),
                     editTitle: CV.i18n('notes.edit-note'),
                     saveButtonLabel: CV.i18n('common.save'),
@@ -1654,6 +1696,41 @@
             };
         },
         methods: {
+            refreshNotes: function() {
+                this.$refs.echartRef.getGraphNotes();
+            },
+            onWidgetCommand: function(event) {
+                if (event === "add") {
+                    this.openDrawer("annotation", {
+                        noteType: "private",
+                        ts: Date.now(),
+                        color: {value: 1, label: '#39C0C8'},
+                        emails: [],
+                        category: this.category
+                    });
+                }
+                else if (event === "zoom") {
+                    if (event === 'zoom') {
+                        this.triggerZoom();
+                        return;
+                    }
+                }
+                else if (event === "manage") {
+                    window.location.href = '#/analytics/graph-notes';
+                }
+                else if (event === "show") {
+                    this.notesVisibility();
+                    if (!countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
+                        this.$refs.echartRef.seriesOptions.markPoint.data = [];
+                    }
+                    else {
+                        this.$refs.echartRef.getGraphNotes();
+                    }
+                }
+                else {
+                    return this.$emit('command', event);
+                }
+            },
             handleCommand(command) {
                 switch (command) {
                 case "add":
@@ -1677,17 +1754,47 @@
             },
             notesVisibility: function() {
                 var persistData = {};
-                this.persistValue = !this.persistValue;
-                persistData["graphNotes_" + countlyCommon.ACTIVE_APP_ID] = this.persistValue;
+                this.notesVisibilityLabel = !this.notesVisibilityLabel;
+                persistData["graphNotes_" + countlyCommon.ACTIVE_APP_ID] = this.notesVisibilityLabel;
                 countlyCommon.setPersistentSettings(persistData);
                 this.$emit('notes-visibility-change');
             },
+        },
+        created: function() {
+            if (typeof countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] === "undefined") {
+                countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] = true;
+            }
+            this.notesVisibilityLabel = countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID];
+        },
+    };
+
+    countlyVue.mixins.graphNotesCommand = AnnotationHandleCommand;
+
+    var AnnotationManagement = countlyBaseComponent.extend({
+        props: {
+            category: {
+                type: String,
+                default: '',
+                required: false
+            }
+        },
+        mixins: [countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.i18n, countlyVue.mixins.graphNotesCommand],
+        data: function() {
+            return {
+                selectedItem: '',
+                drawerSettings: {
+                    createTitle: CV.i18n('notes.add-new-note'),
+                    editTitle: CV.i18n('notes.edit-note'),
+                    saveButtonLabel: CV.i18n('common.save'),
+                    createButtonLabel: CV.i18n('common.create'),
+                    isEditMode: false
+                },
+            };
+        },
+        methods: {
             refresh: function() {
                 this.$emit('refresh');
             }
-        },
-        created: function() {
-            this.persistValue = countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] || false;
         },
         components: {
             "drawer": countlyGraphNotesCommon.drawer
@@ -1695,19 +1802,18 @@
         template:
             '<div class="chart-type-annotation-wrapper">\
                 <el-dropdown trigger="click" @command="handleCommand($event)">\
-                <el-button size="small">\
-                    <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
-                </el-button>\
-                <el-dropdown-menu slot="dropdown">\
-                    <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
-                    <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
-                    <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{persistValue ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
-                </el-dropdown-menu>\
-            </el-dropdown>\
-            <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\
+                    <el-button size="small">\
+                        <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
+                    </el-button>\
+                    <el-dropdown-menu slot="dropdown">\
+                        <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
+                        <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{notesVisibilityLabel ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
+                    </el-dropdown-menu>\
+                </el-dropdown>\
+                <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\
             </div>'
     });
-
 
     var ChartHeader = countlyBaseComponent.extend({
         mixins: [EchartRefMixin],
@@ -1810,18 +1916,21 @@
             if (!this.selectedChartType) {
                 this.selectedChartType = this.chartType;
             }
+            if (window.location.href.split('/').indexOf('custom') > -1) {
+                this.selectedChartType = "dashboard";
+            }
         },
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
-                        <div class="bu-level-item" v-if="showToggle && !isZoom">\
-                            <chart-toggle :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
-                        </div>\
+                            <div class="bu-level-item" v-if="showToggle && !isZoom">\
+                                <chart-toggle :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
+                            </div>\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
 							<slot name="chart-header-left-input"></slot>\
                         </div>\
                         <div class="bu-level-right bu-mt-1">\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
-                            <div class="bu-level-item" v-if="selectedChartType === \'line\' && !isZoom && !hideNotation">\
+                            <div class="bu-level-item" v-if="(selectedChartType === \'line\') && (!hideNotation && !isZoom)">\
                                 <add-note :category="this.category" @refresh="refresh" @notes-visibility-change="notesVisibility"></add-note>\
                             </div>\
                             <cly-more-options v-if="!isZoom && (showDownload || showZoom)" class="bu-level-item" size="small" @command="handleCommand($event)">\
@@ -1832,7 +1941,6 @@
                         </div>\
                     </div>'
     });
-
 
     var SecondaryLegend = countlyBaseComponent.extend({
         props: {
