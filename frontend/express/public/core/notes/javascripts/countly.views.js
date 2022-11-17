@@ -58,6 +58,20 @@
                     });
                 }
             },
+            decodeHtml: function(str) {
+                var map =
+                {
+                    '&amp;': '&',
+                    '&lt;': '<',
+                    '&gt;': '>',
+                    '&quot;': '"',
+                    '&#039;': "'",
+                    '&#39;': "'"
+                };
+                return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;|&#39;/g, function(m) {
+                    return map[m];
+                });
+            },
             handleCommand: function(command, data) {
                 switch (command) {
                 case "delete":
@@ -68,11 +82,21 @@
                 case 'edit':
                     data.color = {value: data.color};
                     this.drawerSettings.isEditMode = true;
+                    data.note = this.decodeHtml(data.note);
                     this.openDrawer("annotation", data);
                     break;
                 default:
                     break;
                 }
+            },
+            createNote: function() {
+                this.openDrawer("annotation", {
+                    noteType: "private",
+                    ts: Date.now(),
+                    color: {value: 1, label: '#39C0C8'},
+                    emails: [],
+                    category: this.category
+                });
             },
             submitDeleteForm: function() {
                 this.showDeleteDialog = false;

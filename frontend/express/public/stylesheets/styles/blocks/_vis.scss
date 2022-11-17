@@ -398,6 +398,14 @@
             color: #898787;
             z-index:9999;
             cursor: pointer;
+
+            &:hover {
+                font-size: 14px;
+                color: #898787;
+                font-weight: 600;
+                opacity: 0.5;
+                background-color: #F6F6F6;
+            }
         }
 
         .note-type {
@@ -421,7 +429,14 @@
         color: #898787;
         z-index:9999;
         cursor: pointer;
+        &:hover {
+            font-size: 14px;
+            color: #898787;
+            font-weight: 600;
+            opacity: 0.5;
+        }
     }
+
 
     &__container {
         max-height: 180px;

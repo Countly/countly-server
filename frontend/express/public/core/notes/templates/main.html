@@ -7,6 +7,12 @@
             <h2 class="bu-mr-3"> {{i18n('notes.manage-notes')}}</h2>
             <cly-tooltip-icon :tooltip="i18n('notes.manage-notes')" icon="ion ion-help-circled"></cly-tooltip-icon>
         </template>
+        <template v-slot:header-right>
+            <div class="bu-level-item">
+              <el-button type="success" @click="createNote" size="small" icon="el-icon-circle-plus">{{i18n('notes.add-new-note')}}
+              </el-button>
+            </div>
+          </template>
     </cly-header>
     <cly-main>
         <cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
@@ -25,6 +31,9 @@
                 <el-table-column min-width="25" :sortable="false" prop="indicator">
                 </el-table-column>
                 <el-table-column min-width="250" :sortable="false" prop="note" :label="i18n('notes.note')">
+                    <template slot-scope="rowScope">
+                        {{decodeHtml(rowScope.row.note)}}
+                    </template>
                 </el-table-column>
                 <el-table-column sortable="custom" prop="noteType"  :label="i18n('notes.type')">
                 </el-table-column>
@@ -45,7 +54,6 @@
                     </cly-more-options>
                     </template>
                 </el-table-column>
-    
             </template>
 		</cly-datatable-n>
         <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>
