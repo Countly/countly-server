@@ -34,6 +34,7 @@ var pluginManager = function pluginManager() {
     var events = {};
     var plugs = [];
     var methodCache = {};
+    var methodPromiseCache = {};
     var configs = {};
     var defaultConfigs = {};
     var configsOnchanges = {};
@@ -685,6 +686,59 @@ var pluginManager = function pluginManager() {
             }
         }
         return res;
+    };
+
+    /**
+    * Call specific predefined methods of plugin's frontend app.js modules which are expected to return a promise which resolves to an object
+    * All results will then be merged into one object, ensure objects returned by promises have unique keys
+    * 
+    * @param {string} method - method name
+    * @param {object} params - object with arguments
+    * @returns {boolean} if any of plugins had that method
+    **/
+    this.callPromisedAppMethod = async function(method, params) {
+        var promises = [];
+        if (methodPromiseCache[method]) {
+            if (methodPromiseCache[method].length > 0) {
+                for (let i = 0; i < methodPromiseCache[method].length; i++) {
+                    try {
+                        let ret = methodPromiseCache[method][i][method](params);
+                        if (ret) {
+                            promises.push(ret);
+                        }
+                    }
+                    catch (ex) {
+                        console.error(ex.stack);
+                    }
+                }
+            }
+        }
+        else {
+            methodPromiseCache[method] = [];
+            for (let i = 0; i < plugs.length; i++) {
+                try {
+                    if (plugs[i][method]) {
+                        methodPromiseCache[method].push(plugs[i]);
+                        let ret = plugs[i][method](params);
+                        if (ret) {
+                            promises.push(ret);
+                        }
+                    }
+                }
+                catch (ex) {
+                    console.error(ex.stack);
+                }
+            }
+        }
+        let results = await Promise.all(promises);
+        return results.reduce((acc, v) => {
+            if (v) {
+                for (let k in v) {
+                    acc[k] = acc[k] || v[k];
+                }
+            }
+            return acc;
+        }, {});
     };
 
     /**
