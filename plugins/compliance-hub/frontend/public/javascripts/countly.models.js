@@ -168,8 +168,9 @@
 
             var actionQuery;
             if (action === "all") {
-                actionQuery = {"$in":["export_app_user","app_user_deleted","export_app_user_deleted"]};
-            } else {
+                actionQuery = {"$in": ["export_app_user", "app_user_deleted", "export_app_user_deleted"]};
+            }
+            else {
                 actionQuery = action;
             }
 
@@ -332,7 +333,7 @@
         };
         _consentManagerDbModule.getters.exportHistoryFilter = function(state) {
             return state.exportHistoryFilter;
-        }
+        };
         _consentManagerDbModule.mutations._ePData = function(state, payload) {
             state._ePData = payload;
             state._ePData = Object.assign({}, state._ePData, {});
