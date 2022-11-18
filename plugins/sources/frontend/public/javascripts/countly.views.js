@@ -1,4 +1,4 @@
-/*global app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $ */
+/*global app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $, countlyGraphNotesCommon */
 (function() {
     var FEATURE_NAME = "sources";
 
@@ -316,7 +316,16 @@
 
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.global,
+            countlyVue.mixins.customDashboards.widget,
+            countlyVue.mixins.customDashboards.apps,
+            countlyVue.mixins.zoom,
+            countlyVue.mixins.hasDrawers("annotation"),
+            countlyVue.mixins.graphNotesCommand
+        ],
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
         data: function() {
             return {
                 map: {
@@ -355,6 +364,11 @@
             },
             pieGraph: function() {
                 return this.calculatePieGraphFromWidget(this.data, this.tableMap);
+            }
+        },
+        methods: {
+            refresh: function() {
+                this.refreshNotes();
             }
         }
     });
