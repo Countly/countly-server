@@ -1760,11 +1760,8 @@
                     this.$refs.echartRef.getGraphNotes();
                 }
             },
-            onWidgetCommand: function(event) {
-                if (event === 'clear') {
-                    this.clearCache();
-                }
-                else if (event === "add") {
+            graphNotesHandleCommand: function(event) {
+                if (event === "add") {
                     this.openDrawer("annotation", {
                         noteType: "private",
                         ts: Date.now(),
@@ -1772,10 +1769,6 @@
                         emails: [],
                         category: this.category
                     });
-                }
-                else if (event === "zoom") {
-                    this.triggerZoom();
-                    return;
                 }
                 else if (event === "manage") {
                     window.location.href = '#/analytics/graph-notes';
@@ -1790,12 +1783,6 @@
                             this.$refs.echartRef.getGraphNotes();
                         }
                     }
-                }
-                else if (event === 'rerun') {
-                    this.recalculateReport(this.report_id, this);
-                }
-                else {
-                    return this.$emit('command', event);
                 }
             },
             handleCommand(command) {
