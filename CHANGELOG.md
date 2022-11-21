@@ -1,3 +1,40 @@
+## Version 22.09.3
+
+Fixes:
+- [applications] admin of app should be able to change settings to app in app managament view
+- [dbviewer] allow filtering collections by apps
+- [compliance-hub] fixed compliance hub ecport/purge issue
+- [core] activate selectedMode option for custom legend component
+- [crashes] modify exists queries to get correct result from db
+- [crashes] set crashgroup name as proper link
+- [crashes] store javascript property too
+- [dashboards] fixed legend issue
+- [dashboards] increases z-index and always showing scrollbar
+- [data-manager] fixes event sort by category
+- [data-migration] exporting also eventTimeline collection in data migration
+- [export] fixed export custom filename issue
+- [longtasks] do not record failure to create operation id as error in taskmanager
+- [period] DST fix, where we might have 30 days and 1 hour, or 29 days and 23 hours between 2 dates
+- [render] revert puppeteer dependency as new one installs chromium in user folder, which is not always accessible
+- [scripts] script for deleting members, which have not logged in for some time
+- [star-rating] fixed data is loaded when rating widget selected
+- [star-rating] fixed undefined numbers
+- [upgrade] update batch size for merge apm query
+
+Enterprise fixes:
+- [attribution] attribution save default URL issue
+- [cohorts] bugfixes for realtime cohorts
+- [concurrent_users] upsert command fixed
+- [data-manager] fixes data manager->Segmentation sorting
+- [data-manager] transformations sorting
+- [drill] null checks for loading drill widget data
+- [formulas] added recalculation button + showing last time data was recalculated
+- [formulas] fixed issue with cases when more than one report created for single bucket
+- [formulas] some old widgets have dplaces stored as string. Workaround for it.
+- [formulas] some widget have invalid value for buckets. Catching those and calling correct report creation
+- [revenue] fixes in the dashboard widget
+- [revenue] sorting bugs field in revenue table
+
 ## Version 22.09.2
 
 Fixes:
