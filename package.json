@@ -62,7 +62,6 @@
     "grunt-contrib-cssmin": "4.0.0",
     "grunt-contrib-sass": "2.0.0",
     "grunt-contrib-uglify": "5.2.2",
-    "html-pdf": "3.0.1",
     "jimp": "0.16.2",
     "jsdoc": "4.0.0",
     "json2csv": "5.0.7",
