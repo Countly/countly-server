@@ -7,10 +7,10 @@
 
 var ip = {},
     net = require('net'),
-    extIP = require('external-ip'),
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.js'),
+    exec = require('child_process').exec;
 
-
+const log = require('../../utils/log.js')('core:api');
 /**
  * Function to get the hostname/ip address/url to access dashboard
  * @param  {function} callback - callback function that returns the hostname
@@ -27,17 +27,22 @@ ip.getHost = function(callback) {
     }
     else {
         if (!offlineMode) {
-            getIP(function(err, ipres) {
+            //command needs bash 
+            exec('dig @resolver1.opendns.com A myip.opendns.com +short -4', function(err, stdout1) {
                 if (err) {
-                    console.log(err);
+                    log.e(err);
                     getNetworkIP(function(err2, ipaddress) {
                         callback(err2, "http://" + ipaddress);
                     });
                 }
                 else {
-                    callback(err, "http://" + ipres);
+                    if (stdout1) {
+                        callback(err, "http://" + stdout1.replace(/^\s+|\s+$/g, ''));
+                    }
                 }
+
             });
+
         }
         else {
             callback("Offline Mode");
@@ -57,10 +62,6 @@ function stripTrailingSlash(str) {
     return str;
 }
 
-var getIP = extIP({
-    timeout: 600,
-    getIP: 'parallel'
-});
 
 
 /**
