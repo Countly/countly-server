@@ -5,7 +5,7 @@ var Promise = require("bluebird");
 
 var app_list = [];//add app ids, if none added will run on all apps
 
-var dry_run = false;
+var dry_run = true;
 
 console.log("Script clears push tokens if same token is for mutiple users. Keeping only for user with highest value for lac or ls");
 console.log("Can be called multiple times. On each run checks current state in database");
@@ -87,6 +87,12 @@ Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) 
                                                                 });
                                                             });
                                                         }
+                                                    }
+                                                    else {
+                                                        console.log("skipping as only");
+                                                        console.log("expected to get:" + JSON.stringify(data.uid));
+                                                        console.log("got just: " + JSON.stringify(res2));
+                                                        resolve1();
                                                     }
                                                 }
                                                 else {
