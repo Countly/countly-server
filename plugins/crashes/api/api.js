@@ -342,6 +342,7 @@ plugins.setConfigs("crashes", {
                 "executable_name",
                 "load_address",
                 "native_cpp",
+                "javascript",
                 "plcrash",
                 "binary_crash_dump",
                 "unprocessed",
@@ -510,6 +511,10 @@ plugins.setConfigs("crashes", {
 
                                     if (report.not_os_specific) {
                                         groupSet.not_os_specific = true;
+                                    }
+
+                                    if (report.javascript) {
+                                        groupSet.javascript = true;
                                     }
 
                                     if (report.native_cpp) {
@@ -997,6 +1002,7 @@ plugins.setConfigs("crashes", {
                             session: 1,
                             is_resolving: 1,
                             native_cpp: 1,
+                            javascript: 1,
                             plcrash: 1
                         });
                         cursor.count(function(errCursor, count) {

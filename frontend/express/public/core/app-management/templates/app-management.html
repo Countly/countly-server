@@ -226,8 +226,8 @@
                         </el-collapse-item>
                     </el-collapse>
                 </cly-section>
-                <h3 class="bu-mb-2" v-if="!newApp && hasGlobalAdminRights">{{i18n('management-applications.plugins')}}</h3>
-                <cly-section v-if="!newApp && hasGlobalAdminRights" >
+                <h3 class="bu-mb-2" v-if="!newApp && hasAppAdminRights">{{i18n('management-applications.plugins')}}</h3>
+                <cly-section v-if="!newApp && hasAppAdminRights" >
                     <validation-observer ref="configObserver" v-slot="v">
                         <el-collapse class="app-management-details">
                             <el-collapse-item :title="value.title" :name="id" :key="id" v-for="(value, id) in appSettings">

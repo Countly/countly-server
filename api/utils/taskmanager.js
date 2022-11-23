@@ -9,8 +9,9 @@ var common = require("./common.js");
 var countlyConfig = require("../../frontend/express/config.js");
 var countlyFs = require("./countlyFs.js");
 var crypto = require("crypto");
-var request = require("request");
 var plugins = require('../../plugins/pluginManager.js');
+
+
 const log = require('./log.js')('core:taskmanager');
 
 /**
@@ -68,7 +69,7 @@ taskmanager.longtask = function(options) {
     var saveOpId = async function(comment_id, retryCount) {
         common.db.admin().command({ currentOp: 1 }, async function(error, result) {
             if (error) {
-                log.e(error);
+                log.d(error);
                 return;
             }
             else {
@@ -381,7 +382,6 @@ taskmanager.saveResult = function(options, data, callback) {
         }
         options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
     }
-
     options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
         if (options.gridfs || (task && task.gridfs)) {
             //let's store it in gridfs
@@ -826,93 +826,67 @@ taskmanager.rerunTask = function(options, callback) {
                 status: "rerunning",
                 start: new Date().getTime()
             }
-        }, function(err, res) {
+        }, function(err1) {
+            if (err1) {
+                log.e(err1);
+            }
+            reqData = reqData || {};
             log.d("calling request");
             log.d(JSON.stringify(reqData));
+            reqData.url = reqData.uri;
+            reqData.body = reqData.json;
 
-            request(reqData, function(error, response, body) {
-                //we got a redirect, we need to follow it
-                log.d("got response");
-                log.d(JSON.stringify(response));
-
-                if (response && response.statusCode) {
-                    log.d(" with status code: " + response.statusCode);
-                }
-                if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-                    log.d("Redirecting to:" + response.headers.location);
-                    reqData.uri = response.headers.location;
-                    runTask(options1, reqData, function() {});
-                }
-
-                //we got response, if it contains task_id, then task is rerunning
-                //if it does not, then possibly task completed faster this time and we can get new result
-                else if (body) {
-                    if (!body.task_id) {
-                        var code = "";
-                        var msg = "";
-                        if (response && response.statusCode) {
-                            code = response.statusCode;
-                            msg = response.statusMessage || "";
-                            if (response.body && response.body !== '') {
-                                if (typeof response.body === 'string') {
-                                    try {
-                                        msg = JSON.parse(response.body);
-                                        if (msg.result) {
-                                            msg = msg.result;
-                                        }
-                                    }
-                                    catch (exp) {
-                                        log.e('Parse ' + response.body + ' JSON failed');
-                                        msg = response.body;
-                                    }
-                                }
-                                else {
-                                    if (response.body.result) {
-                                        msg = response.body.result;
-                                    }
-                                    else {
-                                        msg = JSON.stringify(response.body);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (code === 200) {
+            var params = {
+                no_checksum: true,
+                //providing data in request object
+                'req': reqData,
+                'APICallback': function(err, responseData, headers, returnCode) {
+                    //sending response to client
+                    responseData = responseData || {};
+                    log.d(JSON.stringify(responseData));
+                    log.d(err);
+                    if (err) {
+                        taskmanager.saveResult({
+                            db: options1.db,
+                            id: options1.id,
+                            subtask: options1.subtask,
+                            errormsg: err || responseData,
+                            errored: true,
+                            request: reqData
+                        }, responseData);
+                    }
+                    else if (!responseData.task_id) {
+                        log.d("returned result for this");
+                        log.d(JSON.stringify(responseData));
+                        var body = responseData;
+                        if (returnCode === 200) {
                             taskmanager.saveResult({
                                 db: options1.db,
                                 id: options1.id,
                                 subtask: options1.subtask,
-                                request: res.request
+                                request: reqData
                             }, body);
                         }
                         else {
+                            if (body.result) {
+                                body = body.result;
+                            }
                             taskmanager.saveResult({
                                 db: options1.db,
                                 id: options1.id,
                                 subtask: options1.subtask,
-                                errormsg: msg,
+                                errormsg: err || body,
                                 errored: true,
-                                request: res.request
+                                request: reqData
                             }, body);
 
                         }
                     }
-                    else {
-                        //we have task id. so it is running and will update itself
-                    }
                 }
-                else {
-                    //We don't have body. Something is definetly wrong. Try logging error
-                    taskmanager.saveResult({
-                        db: options1.db,
-                        id: options1.id,
-                        subtask: options1.subtask,
-                        errormsg: "Missing body. " + JSON.stringify(error || {}),
-                        errored: true,
-                        request: res.request
-                    }, body);
-                }
-            });
+            };
+            if (common.processRequest) {
+                common.processRequest(params);
+            }
             callback1(null, "Success");
         });
     }

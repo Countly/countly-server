@@ -1,66 +1,9 @@
 <div>
-    <cly-form-field name="content" rules="required" :label="i18nM('dashboards.add-note')">
-        <el-input
-            type="textarea"
-            v-model="scope.editedObject.content"
-            :rows="6">
-        </el-input>
-    </cly-form-field>
-	<cly-form-field name="font_size" rules="required" :label="i18nM('dashboards.font-size')">
-        <el-input
-            type="text"
-            v-model="scope.editedObject.font_size">
-        </el-input>
-    </cly-form-field>
-	<cly-form-field
-		:label="i18nM('dashboards.text-style')">
-		<el-select
-			style="width: 100%;"
-			v-model="scope.editedObject.text_decoration"
-			:collapse-tags="false"
-			:multiple="true"
-			:placeholder="i18nM('dashboards.text-style')">
-			<el-option
-				v-for="metric in constants.textDecorations"
-				:key="metric.value"
-				:label="metric.name"
-				:value="metric.value">
-			</el-option>
-		</el-select>
+	<cly-form-field name="content" rules="required" :label="i18nM('dashboards.add-note')">
+		<el-tiptap 
+			v-model="contentHtml" 
+			:extensions="extensions"
+			placeholder="Write something ..."
+		/>
 	</cly-form-field>
-	
-	<cly-form-field
-		:label="i18nM('dashboards.text-alignment')">
-		<el-select
-			style="width: 100%;"
-			v-model="scope.editedObject.text_align"
-			:collapse-tags="false"
-			:multiple="false"
-			:placeholder="i18nM('dashboards.text-alignment')">
-			<el-option
-				v-for="metric in constants.alignments"
-				:key="metric.value"
-				:label="metric.name"
-				:value="metric.value">
-			</el-option>
-		</el-select>
-	</cly-form-field>
-	
-	<clyd-colors  v-model="scope.editedObject.bar_color" :label="i18nM('dashboards.font-color')"></clyd-colors>
-	
-	
-	<el-checkbox v-model="scope.editedObject.add_link">{{i18nM("dashboards.add-hyperlink")}}</el-checkbox>
-	<cly-form-field v-if="scope.editedObject.add_link"  name="link_text" rules="required" :label="i18nM('dashboards.link-text')">
-        <el-input
-            type="text"
-            v-model="scope.editedObject.link_text">
-        </el-input>
-    </cly-form-field>
-	<cly-form-field v-if="scope.editedObject.add_link" name="link_path" rules="required" :label="i18nM('dashboards.link-to')">
-        <el-input
-            type="text"
-            v-model="scope.editedObject.link_path">
-        </el-input>
-    </cly-form-field>
-	
 </div>

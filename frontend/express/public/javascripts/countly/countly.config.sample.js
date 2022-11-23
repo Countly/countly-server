@@ -48,6 +48,11 @@
     */
     countlyCommon.DASHBOARD_IDLE_MS = 3000000;
     /**
+    * It is a flag used to disable auto refresh.
+    * @type {boolean} 
+    */
+    countlyCommon.DISABLE_AUTO_REFRESH = false;
+    /**
     * Amount of miliseconds how often check if session is not ended. (if user changes its password and logged in in multiple windows - it gets logged out in other). Default is 30000 or each 30 seconds. This value is configured in countly.config.js or over written through theme. 
     * @type {number} 
     */

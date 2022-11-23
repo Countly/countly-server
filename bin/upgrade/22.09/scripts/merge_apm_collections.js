@@ -1,5 +1,5 @@
 const pluginManager = require('../../../../plugins/pluginManager.js');
-const OPERATION_BATCH_SIZE = 500;
+const OPERATION_BATCH_SIZE = 200;
 
 pluginManager.dbConnection("countly").then(async(countlyDb) => {
     try {

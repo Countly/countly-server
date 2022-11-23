@@ -59,6 +59,7 @@
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/drop/drop-theme-countly.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/bulma/bulma-custom.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/styles/manifest.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/vue/element-tiptap.css?<%= countlyVersion %>" />
         <% if (stylesheets) { %>
 			<% for(var i=0, l=stylesheets.length; i<l; i++) {%>
         <link rel="stylesheet" href="<%- cdn %><%= stylesheets[i] %>?<%= countlyVersion %>" />
@@ -133,6 +134,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuedraggable.umd.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/countly.checkbox.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.auth.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/element-tiptap.umd.min.js?<%= countlyVersion %>"></script>
     <% } %>
 
     <% if (themeFiles && themeFiles.css) { %>
@@ -1826,6 +1828,8 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/datatable.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/dialog.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/drawer.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/notes/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/notes/javascripts/countly.common.notes.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/vis.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/helpers.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/progress.js?<%= countlyVersion %>"></script>
@@ -1867,7 +1871,8 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/user-management/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/home/javascripts/countly.models.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/home/javascripts/countly.views.js?<%= countlyVersion %>"></script>
-		
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/notes/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+
         <% if (javascripts) { %>
 			<% for(var i=0, l=javascripts.length; i<l; i++) {%>
 				<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>

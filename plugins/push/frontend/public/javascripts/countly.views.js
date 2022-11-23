@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth,countlyGraphNotesCommon*/
 
 (function() {
 
@@ -2636,7 +2636,10 @@
 
     var PushNotificationWidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom, countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.graphNotesCommand],
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
         data: function() {
             return {
                 selectedBucket: "daily",
@@ -2735,6 +2738,24 @@
 
                 return labels;
             }
+        },
+        methods: {
+            refresh: function() {
+                this.refreshNotes();
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                else if (event === 'add' || event === 'manage' || event === 'show') {
+                    this.graphNotesHandleCommand(event);
+                    return;
+                }
+                else {
+                    return this.$emit('command', event);
+                }
+            },
         },
     });
 

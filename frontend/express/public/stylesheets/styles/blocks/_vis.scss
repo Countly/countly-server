@@ -261,6 +261,16 @@
     }
 }
 
+.chart-type-annotation-wrapper {
+    &__icon {
+        margin-top: 1px;
+    }
+
+    &__img {
+        margin-bottom: -2px;
+    }
+}
+
 .chart-zoom-button {
     margin-right: 12px;
 }
@@ -366,5 +376,71 @@
     &__value {
         margin-top: 2px;
         margin-left: 24px;
+    }
+}
+
+.graph-notes-tooltip {
+    width:286px; 
+    max-height:118px;
+    overflow: auto;
+
+    &__header {
+        width: 100%;
+        .input-owner {
+            font-weight: 500;
+        }
+        
+        .name-wrapper {
+            margin-top: 10px;
+        }
+
+        .el-icon-close {
+            color: #898787;
+            z-index:9999;
+            cursor: pointer;
+
+            &:hover {
+                font-size: 14px;
+                color: #898787;
+                font-weight: 600;
+                opacity: 0.5;
+                background-color: #F6F6F6;
+            }
+        }
+
+        .note-type {
+            margin-top: 12px;
+        }
+    }
+    &__body {
+        .input-notes {
+            word-break: break-word; 
+            display: inline-block; 
+            white-space: normal;
+        }
+    }
+}
+
+.graph-tooltip-wrapper {
+    margin-right: 2px;
+    margin-bottom: 4px;
+
+    .el-icon-close {
+        color: #898787;
+        z-index:9999;
+        cursor: pointer;
+        &:hover {
+            font-size: 14px;
+            color: #898787;
+            font-weight: 600;
+            opacity: 0.5;
+        }
+    }
+
+
+    &__container {
+        max-height: 180px;
+        overflow: hidden;
+        overflow: auto;
     }
 }

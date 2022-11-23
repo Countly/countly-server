@@ -637,7 +637,7 @@ const processRequest = (params) => {
                     break;
                 case 'update':
                     if (paths[4] === 'plugins') {
-                        validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.updateAppPlugins);
+                        validateAppAdmin(params, countlyApi.mgmt.apps.updateAppPlugins);
                     }
                     else {
                         validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.updateApp);
