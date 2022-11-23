@@ -905,7 +905,7 @@
                     }
                 });
                 // set widget filter as current one
-                this.activeFilter.widget = this.widget._id;
+                this.activeFilter.widget = this.widget._id || this.$route.params.id;
                 if (force) {
                     this.isLoading = true;
                 }
