@@ -572,6 +572,9 @@ function uploadFile(myfile, id, callback) {
                             }
                         }
                         else {
+                            if (!changes.targeting) {
+                                changes.targeting = {};
+                            }
                             changes.targeting.app_id = params.app_id + "";//has to be string
                             // eslint-disable-next-line
                             createCohort(params, type, widgetId, changes.targeting, function(cohortId) { //create cohort using this 
