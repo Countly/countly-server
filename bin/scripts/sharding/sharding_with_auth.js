@@ -14,6 +14,7 @@ var COUNTLY_EXCEPTIONS = [
     "app_viewsmeta",
     "auth_tokens",
     "calculated_metrics",
+    "groups",
     "jobs",
     "logs",
     "members",
