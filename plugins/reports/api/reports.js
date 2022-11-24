@@ -14,8 +14,9 @@ var reportsInstance = {},
     common = require('../../../api/utils/common.js'),
     log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info'),
-    countlyConfig = require('../../../frontend/express/config.js');
-var pdf = require('html-pdf');
+    countlyConfig = require('../../../frontend/express/config.js'),
+    convertHTMLToPDF = require("pdf-puppeteer");
+
 countlyConfig.passwordSecret || "";
 
 plugins.setConfigs("reports", {
@@ -656,8 +657,8 @@ var metricProps = {
                     html: html,
                 };
 
-                const options = { "directory": "/tmp", "width": "1028px", height: "1000px", phantomArgs: ["--ignore-ssl-errors=yes"] };
                 const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
+                const options = { "path": filePath, "width": "1028px", height: "1000px" };
                 if (report.messages && report.messages[i]) {
                     msg.list = {
                         unsubscribe: {
@@ -668,11 +669,8 @@ var metricProps = {
                 }
 
                 if (report.sendPdf === true) {
-                    pdf.create(msg.html, options).toFile(filePath, function(err, res) {
-                        if (err) {
-                            return log.d(err);
-                        }
-                        msg.attachments = [{filename: "Countly_Report.pdf", path: res.filename}];
+                    convertHTMLToPDF(html, function() {
+                        msg.attachments = [{filename: "Countly_Report.pdf", path: filePath}];
 
                         /**
                          * callback function after sending email to delete pdf file
@@ -692,7 +690,12 @@ var metricProps = {
                         else {
                             mail.sendMail(msg, deletePDFCallback);
                         }
+                    }, options, {
+                        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                    }, true).catch(err => {
+                        log.d(err);
                     });
+
                 }
                 else {
                     if (mail.sendPoolMail) {
