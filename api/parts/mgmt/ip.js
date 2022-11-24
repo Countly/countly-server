@@ -7,10 +7,10 @@
 
 var ip = {},
     net = require('net'),
-    extIP = require('external-ip'),
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.js'),
+    icanhazip = require("icanhazip");
 
-
+const log = require('../../utils/log.js')('core:api');
 /**
  * Function to get the hostname/ip address/url to access dashboard
  * @param  {function} callback - callback function that returns the hostname
@@ -27,15 +27,14 @@ ip.getHost = function(callback) {
     }
     else {
         if (!offlineMode) {
-            getIP(function(err, ipres) {
+            icanhazip.IPv4().then(function(externalIp) {
+                callback(null, "http://" + externalIp);
+            }).catch(function(err) {
                 if (err) {
-                    console.log(err);
+                    log.e(err);
                     getNetworkIP(function(err2, ipaddress) {
                         callback(err2, "http://" + ipaddress);
                     });
-                }
-                else {
-                    callback(err, "http://" + ipres);
                 }
             });
         }
@@ -57,10 +56,6 @@ function stripTrailingSlash(str) {
     return str;
 }
 
-var getIP = extIP({
-    timeout: 600,
-    getIP: 'parallel'
-});
 
 
 /**
