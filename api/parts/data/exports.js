@@ -358,13 +358,15 @@ exports.stream = function(params, stream, options) {
         });
 
         stream.once('close', function() {
-            if (listAtEnd) {
-                for (var p = 0; p < paramList.length; p++) {
-                    head.push(processCSVvalue(paramList[p]));
+            setTimeout(function() {
+                if (listAtEnd) {
+                    for (var p = 0; p < paramList.length; p++) {
+                        head.push(processCSVvalue(paramList[p]));
+                    }
+                    params.res.write(head.join(',') + '\r\n');
                 }
-                params.res.write(head.join(',') + '\r\n');
-            }
-            params.res.end();
+                params.res.end();
+            }, 100);
         });
     }
     else if (type === 'xlsx' || type === 'xls') {
@@ -382,11 +384,13 @@ exports.stream = function(params, stream, options) {
         });
 
         stream.once('close', function() {
-            if (listAtEnd) {
-                sheet.write(paramList);
-            }
-            sheet.end();
-            xc.finalize();
+            setTimeout(function() {
+                if (listAtEnd) {
+                    sheet.write(paramList);
+                }
+                sheet.end();
+                xc.finalize();
+            }, 100);
         });
     }
     else {
@@ -403,8 +407,10 @@ exports.stream = function(params, stream, options) {
         });
 
         stream.once('close', function() {
-            params.res.write("]");
-            params.res.end();
+            setTimeout(function() {
+                params.res.write("]");
+                params.res.end();
+            }, 100);
         });
     }
 };
