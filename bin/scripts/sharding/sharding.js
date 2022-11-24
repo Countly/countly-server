@@ -1,3 +1,11 @@
+/*
+*  Sharding Countly collections
+*  Server: mongodb
+*  Path: any
+*  Command: mongo < sharding.js
+*/
+
+/* global Mongo, print, printjson */
 var COUNTLY_DRILL = 'countly_drill',
     COUNTLY = 'countly',
     COUNT_TO_SHARD = 100000;
@@ -23,24 +31,30 @@ var COUNTLY_EXCEPTIONS = [
 ];
 
 var conn = new Mongo(),
-	cly = conn.getDB(COUNTLY),
+    cly = conn.getDB(COUNTLY),
     drill = conn.getDB(COUNTLY_DRILL);
 
 var clyCollections = cly.getCollectionNames(), collections = clyCollections.concat(drill.getCollectionNames()), check = [];
 
-collections.forEach(function (c) {
+collections.forEach(function(c) {
     var system = false;
-    EXCEPTIONS.forEach(function (r) {
-        if (typeof r === 'string' && r === c) { system = true; }
-        else if (typeof r === 'object' && r.test(c)) { system = true; }
+    EXCEPTIONS.forEach(function(r) {
+        if (typeof r === 'string' && r === c) {
+            system = true;
+        }
+        else if (typeof r === 'object' && r.test(c)) {
+            system = true;
+        }
     });
-    if (!system) { check.push(c); }
+    if (!system) {
+        check.push(c);
+    }
 });
 
 print('Checking following collections:');
 printjson(check);
 
-check.forEach(function (c) {
+check.forEach(function(c) {
     var exceptional = false;
     var db = clyCollections.indexOf(c) === -1 ? drill : cly,
         dbName = clyCollections.indexOf(c) === -1 ? COUNTLY_DRILL : COUNTLY,
@@ -62,7 +76,8 @@ check.forEach(function (c) {
         var ok = db.adminCommand({ shardCollection: dbName + '.' + c, key: { _id: 'hashed' } });
         if (ok.ok) {
             print('OK');
-        } else {
+        }
+        else {
             printjson(ok);
         }
     }
