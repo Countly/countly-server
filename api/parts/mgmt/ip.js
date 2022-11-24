@@ -32,7 +32,7 @@ ip.getHost = function(callback) {
             }).catch(function(err) {
                 if (err) {
                     log.e(err);
-                    getNetworkIP(function (err2, ipaddress) {
+                    getNetworkIP(function(err2, ipaddress) {
                         callback(err2, "http://" + ipaddress);
                     });
                 }
