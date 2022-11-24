@@ -11,7 +11,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 bash "$DIR/scripts/logo.sh";
 
 # prerequisite per release
-yum -y install wget openssl-devel make git sqlite unzip bzip2 bind-utils
+yum -y install wget openssl-devel make git sqlite unzip bzip2
 
 yum install -y python3-pip
 pip3 install pip --upgrade

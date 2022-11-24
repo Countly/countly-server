@@ -69,7 +69,7 @@ function stripTrailingSlash(str) {
  * @param  {function} callback - callback function that returns the ip address
  */
 function getNetworkIP(callback) {
-    var socket = net.createConnection(80, 'icanhazip.com');
+    var socket = net.createConnection(80, 'www.google.com');
     socket.setTimeout(1000);
     socket.on('connect', function() {
         callback(undefined, socket.address().address);
