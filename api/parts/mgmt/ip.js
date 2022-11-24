@@ -7,8 +7,8 @@
 
 var ip = {},
     net = require('net'),
-    plugins = require('../../../plugins/pluginManager.js'),
-    exec = require('child_process').exec;
+    plugins = require('../../../plugins/pluginManager.js'), 
+    icanhazip = require("icanhazip");
 
 const log = require('../../utils/log.js')('core:api');
 /**
@@ -27,22 +27,16 @@ ip.getHost = function(callback) {
     }
     else {
         if (!offlineMode) {
-            //command needs bash 
-            exec('dig @resolver1.opendns.com A myip.opendns.com +short -4', function(err, stdout1) {
+            icanhazip.IPv4().then(function(externalIp) {
+                callback(null, "http://" + externalIp);
+            }).catch(function(err) {
                 if (err) {
                     log.e(err);
-                    getNetworkIP(function(err2, ipaddress) {
+                    getNetworkIP(function (err2, ipaddress) {
                         callback(err2, "http://" + ipaddress);
                     });
                 }
-                else {
-                    if (stdout1) {
-                        callback(err, "http://" + stdout1.replace(/^\s+|\s+$/g, ''));
-                    }
-                }
-
             });
-
         }
         else {
             callback("Offline Mode");
