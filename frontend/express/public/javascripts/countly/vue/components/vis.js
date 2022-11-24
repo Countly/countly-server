@@ -955,7 +955,15 @@
                     }
                 }
                 else {
-                    if (currentPeriod === "hour") {
+                    if (this.$parent && this.$parent.data && this.$parent.data.custom_period && this.$parent.data.custom_period.length) {
+                        if (this.category !== "active-users") {
+                            return countlyCommon.formatDate(moment(ts), "YYYY-MM-D") || 0;
+                        }
+                        else {
+                            return countlyCommon.formatDate(moment(ts), "DD/MM/YY") || 0;
+                        }
+                    }
+                    else if (currentPeriod === "hour") {
                         return graphNoteDate.getUTCHours();
                     }
                     else if (currentPeriod === "yesterday") {
@@ -1049,6 +1057,51 @@
                 }
                 return template;
             },
+            weekCountToDate: function(year, week, day) {
+                const firstDayOfYear = new Date(year, 0, 1);
+                const days = 2 + day + (week - 1) * 7 - firstDayOfYear.getDay();
+                return new Date(year, 0, days);
+            },
+            graphNotesFilterChecks: function() {
+                var returnedObj = {};
+                var filter = {};
+                var appIds = [countlyCommon.ACTIVE_APP_ID];
+                if (this.$parent && this.$parent.data) {
+                    if (this.$parent.data.apps) {
+                        appIds = this.$parent.data.apps;
+                    }
+                    if (this.$parent.data.custom_period && this.$parent.data.custom_period.length) {
+                        if (typeof this.$parent.data.custom_period === "string") {
+                            var convertedTimeObj = countlyCommon.getPeriodObj(this.$parent.data.custom_period);
+                            filter.customPeriod = [convertedTimeObj.start, convertedTimeObj.end];
+                        }
+                        else if (Array.isArray(this.$parent.data.custom_period)) {
+                            filter.customPeriod = [this.$parent.data.custom_period[0], this.$parent.data.custom_period[1]];
+                        }
+                    }
+                }
+                if ((this.category === "formulas" || this.category === "drill") && (this.$parent && this.$parent.data)) {
+                    var xAxisLabels = this.option.xAxis.data;
+                    var customPeriodStartDate;
+                    var customPeriodEndDate;
+                    if (this.$parent.data.bucket === "daily") {
+                        customPeriodStartDate = new Date(xAxisLabels[0]).getTime();
+                        customPeriodEndDate = new Date(xAxisLabels[xAxisLabels.length - 1]).getTime();
+                        filter.customPeriod = [customPeriodStartDate, customPeriodEndDate];
+                    }
+                    else if (this.$parent.data.bucket === "weekly") {
+                        customPeriodStartDate = this.weekCountToDate(xAxisLabels[0].split(' ')[1], xAxisLabels[0].split(' ')[0].split('W')[1], 7);
+                        customPeriodEndDate = this.weekCountToDate(xAxisLabels[xAxisLabels.length - 1].split(' ')[1], xAxisLabels[xAxisLabels.length - 1].split(' ')[0].split('W')[1], 7);
+                        filter.customPeriod = [customPeriodStartDate.getTime(), customPeriodEndDate.getTime()];
+                    }
+                    else if (this.$parent.data.bucket === "monthly") {
+                        return;
+                    }
+                }
+                returnedObj.appIds = appIds;
+                returnedObj.customPeriod = filter;
+                return returnedObj;
+            },
             getGraphNotes: function() {
                 if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID] && !this.hideNotation) {
                     var self = this;
@@ -1062,7 +1115,10 @@
                             categories.push("events " + item.split("***")[1]);
                         });
                     }
-                    countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], {/*category: categories.length ? categories : [this.category]*/}).then(function(data) {
+
+                    var filter = {};
+                    filter = this.graphNotesFilterChecks();
+                    countlyCommon.getGraphNotes(filter.appIds, filter.customPeriod /*{category: categories.length ? categories : [this.category]}*/).then(function(data) {
                         self.notes = data.aaData;
                     }).then(function() {
                         self.seriesOptions.markPoint.data = [];
@@ -1094,7 +1150,6 @@
                                     value: note.times > 1 ? ' ' : note.indicator,
                                     xAxis: note.dateStr,
                                     y: yAxisHeight,
-                                    // coord: [note.dateStr, 28],
                                     symbolRotate: -20,
                                     symbolSize: note.indicator.length === 1 ? 30 : 40,
                                 });
@@ -1207,13 +1262,17 @@
 
                 if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
                     document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)').addEventListener('mouseleave', function(event) {
-                        event.stopImmediatePropagation();
+                        if (localStorage.getItem('showTooltipFlag')) {
+                            event.stopImmediatePropagation();
+                        }
                     }, true);
                 }
 
                 if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
                     document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)').addEventListener('mouseleave', function(event) {
-                        event.stopImmediatePropagation();
+                        if (localStorage.getItem('showTooltipFlag')) {
+                            event.stopImmediatePropagation();
+                        }
                     }, true);
 
                 }
@@ -1697,9 +1756,11 @@
         },
         methods: {
             refreshNotes: function() {
-                this.$refs.echartRef.getGraphNotes();
+                if (this.$refs.echartRef && this.$refs.echartRef.seriesOptions === "line") {
+                    this.$refs.echartRef.getGraphNotes();
+                }
             },
-            onWidgetCommand: function(event) {
+            graphNotesHandleCommand: function(event) {
                 if (event === "add") {
                     this.openDrawer("annotation", {
                         noteType: "private",
@@ -1708,12 +1769,6 @@
                         emails: [],
                         category: this.category
                     });
-                }
-                else if (event === "zoom") {
-                    if (event === 'zoom') {
-                        this.triggerZoom();
-                        return;
-                    }
                 }
                 else if (event === "manage") {
                     window.location.href = '#/analytics/graph-notes';
@@ -1724,11 +1779,10 @@
                         this.$refs.echartRef.seriesOptions.markPoint.data = [];
                     }
                     else {
-                        this.$refs.echartRef.getGraphNotes();
+                        if (this.$refs.echartRef && this.$refs.echartRef.seriesOptions === "line") {
+                            this.$refs.echartRef.getGraphNotes();
+                        }
                     }
-                }
-                else {
-                    return this.$emit('command', event);
                 }
             },
             handleCommand(command) {
