@@ -790,7 +790,7 @@ usersApi.saveNote = async function(params) {
     const noteValidation = common.validateArgs(args, argProps, true);
     if (noteValidation) {
         const note = {
-            app_id: params.qstring.app_id,
+            app_id: args.app_id,
             note: args.note,
             ts: args.ts,
             noteType: args.noteType,

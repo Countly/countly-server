@@ -950,7 +950,10 @@
                     else if (this.notationSelectedBucket === "weekly") {
                         return "W" + moment(graphNoteDate).isoWeek() + " " + moment(graphNoteDate).isoWeekYear();
                     }
-                    else if (this.notationSelectedBucket === "monthly") {
+                    else if (this.$parent && this.$parent.data && this.category === "drill" && this.notationSelectedBucket === "monthly") {
+                        return null;
+                    }
+                    else if (this.notationSelectedBucket === "monthly" && this.category !== "formulas") {
                         return countlyCommon.formatDate(moment(graphNoteDate), "MMM YYYY");
                     }
                 }
@@ -1080,6 +1083,7 @@
                         }
                     }
                 }
+
                 if ((this.category === "formulas" || this.category === "drill") && (this.$parent && this.$parent.data)) {
                     var xAxisLabels = this.option.xAxis.data;
                     var customPeriodStartDate;
@@ -1095,7 +1099,8 @@
                         filter.customPeriod = [customPeriodStartDate.getTime(), customPeriodEndDate.getTime()];
                     }
                     else if (this.$parent.data.bucket === "monthly") {
-                        return;
+                        returnedObj.appIds = appIds;
+                        return returnedObj;
                     }
                 }
                 returnedObj.appIds = appIds;
@@ -1128,20 +1133,22 @@
                             }
                             self.mergedNotes = self.mergeGraphNotesByDate(self.notes);
                             self.mergedNotes.forEach(function(note, index) {
-                                if (chartHeight < 250) {
-                                    if (note.hasCloseDate && note.times === 1) {
-                                        yAxisHeight = '65%';
+                                if (note.dateStr) {
+                                    if (chartHeight < 250) {
+                                        if (note.hasCloseDate && note.times === 1) {
+                                            yAxisHeight = '65%';
+                                        }
+                                        else {
+                                            yAxisHeight = '60%';
+                                        }
                                     }
                                     else {
-                                        yAxisHeight = '60%';
-                                    }
-                                }
-                                else {
-                                    if (note.hasCloseDate && note.times === 1) {
-                                        yAxisHeight = '80%';
-                                    }
-                                    else {
-                                        yAxisHeight = '75%';
+                                        if (note.hasCloseDate && note.times === 1) {
+                                            yAxisHeight = '80%';
+                                        }
+                                        else {
+                                            yAxisHeight = '75%';
+                                        }
                                     }
                                 }
 
@@ -1169,59 +1176,6 @@
                                 confine: true,
                                 extraCssText: 'z-index: 1000',
                                 alwaysShowContent: true,
-                                position: function(canvasMousePos, params, tooltipDom, rect, sizes) {
-                                    if (params.value !== " ") {
-                                        return "top";
-                                        // return 'left';
-                                    }
-                                    else {
-                                        var margin = 10; // How far away from the mouse should the tooltip be
-                                        var overflowMargin = 5; // If no satisfactory position can be found, how far away from the edge of the window should the tooltip be kept
-
-                                        // The chart canvas position
-                                        var canvasRect = tooltipDom.parentElement.getElementsByTagName('canvas')[0].getBoundingClientRect();
-                                        // The mouse coordinates relative to the whole window
-                                        // The first parameter to the position function is the mouse position relative to the canvas
-                                        var mouseX = canvasMousePos[0] + canvasRect.x;
-                                        var mouseY = canvasMousePos[1] + canvasRect.y;
-                                        // The width and height of the tooltip dom element
-                                        var tooltipWidth = sizes.contentSize[0];
-                                        var tooltipHeight = sizes.contentSize[1];
-
-                                        // Start by placing the tooltip top and right relative to the mouse position
-                                        var xPos = mouseX + margin;
-                                        var yPos = mouseY - margin - tooltipHeight;
-
-                                        // The tooltip is overflowing past the right edge of the window
-                                        if (xPos + tooltipWidth >= document.documentElement.clientWidth) {
-
-                                            // Attempt to place the tooltip to the left of the mouse position
-                                            xPos = mouseX - margin - tooltipWidth;
-
-                                            // The tooltip is overflowing past the left edge of the window
-                                            if (xPos <= 0) {
-                                                // Place the tooltip a fixed distance from the left edge of the window
-                                                xPos = overflowMargin;
-                                            }
-                                        }
-
-                                        // The tooltip is overflowing past the top edge of the window
-                                        if (yPos <= 0) {
-
-                                            // Attempt to place the tooltip to the bottom of the mouse position
-                                            yPos = mouseY + margin;
-
-                                            // The tooltip is overflowing past the bottom edge of the window
-                                            if (yPos + tooltipHeight >= document.documentElement.clientHeight) {
-
-                                                // Place the tooltip a fixed distance from the top edge of the window
-                                                yPos = overflowMargin;
-                                            }
-                                        }
-                                        // Return the position (converted back to a relative position on the canvas)
-                                        return [xPos - canvasRect.x, yPos - canvasRect.y];
-                                    }
-                                },
                                 formatter: function(params) {
                                     return self.graphNotesTooltipFormatter(self.mergedNotes, params);
                                 }
@@ -1260,31 +1214,15 @@
                     }
                 }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
-                    document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)').addEventListener('mouseleave', function(event) {
-                        if (localStorage.getItem('showTooltipFlag')) {
-                            event.stopImmediatePropagation();
-                        }
-                    }, true);
-                }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
-                    document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)').addEventListener('mouseleave', function(event) {
-                        if (localStorage.getItem('showTooltipFlag')) {
-                            event.stopImmediatePropagation();
-                        }
-                    }, true);
-
-                }
-
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
+                if (document.querySelector('x-vue-echarts div .graph-notes-tooltip')) {
                     localStorage.setItem('showTooltipFlag', true);
-                    document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)').addEventListener('mouseleave', window.hideTooltip, true);
+                    document.querySelector('x-vue-echarts div .graph-notes-tooltip').parentNode.addEventListener('mouseleave', window.hideTooltip, true);
                 }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
+                if (document.querySelector('x-vue-echarts div .graph-tooltip-wrapper')) {
                     localStorage.setItem('showTooltipFlag', true);
-                    document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)').addEventListener('mouseleave', window.hideTooltip, true);
+                    document.querySelector('x-vue-echarts div .graph-tooltip-wrapper').parentNode.addEventListener('mouseleave', window.hideTooltip, true);
                 }
                 countlyCommon.DISABLE_AUTO_REFRESH = true;
             }
@@ -1320,11 +1258,11 @@
                 }
 
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
+                if (document.querySelector('x-vue-echarts div .graph-notes-tooltip')) {
                     localStorage.removeItem('showTooltipFlag');
                 }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
+                if (document.querySelector('x-vue-echarts div .graph-tooltip-wrapper')) {
                     localStorage.removeItem('showTooltipFlag');
                 }
                 countlyCommon.DISABLE_AUTO_REFRESH = false;
@@ -1767,7 +1705,8 @@
                         ts: Date.now(),
                         color: {value: 1, label: '#39C0C8'},
                         emails: [],
-                        category: this.category
+                        category: this.category,
+                        appIds: this.data ? this.data.apps : null
                     });
                 }
                 else if (event === "manage") {
