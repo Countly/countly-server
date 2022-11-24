@@ -17,7 +17,9 @@
         },
         computed: {
             widgetHTML: function() {
-                return countlyCommon.unescapeHtml(this.data.contenthtml);
+                var unescapedHTML = countlyCommon.unescapeHtml(this.data.contenthtml);
+                unescapedHTML = unescapedHTML.replace(/<p[^>]*><\/p>/g, '<br>');
+                return unescapedHTML;
             }
         },
     });
@@ -43,19 +45,19 @@
                     new ElementTiptap.Underline({ bubble: true, menubar: false }), // render command-button in bubble menu but not in menubar.
                     new ElementTiptap.Italic(),
                     new ElementTiptap.Strike(),
+                    new ElementTiptap.TextAlign(),
+                    new ElementTiptap.FontSize({fontSizes: ['8', '10', '12', '14', '16', '18', '20', '24', '30', '36', '48', '60', '72', '96']}),
+                    new ElementTiptap.FontType(),
+                    new ElementTiptap.LineHeight({lineHeights: ['100%', '150%', '200%', '250%', '300%']}),
+                    new ElementTiptap.TextColor({colors: countlyCommon.GRAPH_COLORS}),
+                    new ElementTiptap.TextHighlight(),
+                    new ElementTiptap.HorizontalRule(),
+                    new ElementTiptap.Link(),
                     new ElementTiptap.ListItem(),
                     new ElementTiptap.BulletList(),
                     new ElementTiptap.OrderedList(),
                     new ElementTiptap.TodoItem(),
                     new ElementTiptap.TodoList(),
-                    new ElementTiptap.TextAlign(),
-                    new ElementTiptap.TextColor({colors: countlyCommon.GRAPH_COLORS}),
-                    new ElementTiptap.TextHighlight(),
-                    new ElementTiptap.FontSize({fontSizes: ['8', '10', '12', '14', '16', '18', '20', '24', '30', '36', '48', '60', '72', '96']}),
-                    new ElementTiptap.FontType(),
-                    new ElementTiptap.LineHeight({lineHeights: ['100%', '150%', '200%', '250%', '300%']}),
-                    new ElementTiptap.Link(),
-                    new ElementTiptap.HorizontalRule(),
                     new ElementTiptap.Blockquote(),
                     new ElementTiptap.CodeBlock(),
                     new ElementTiptap.FormatClear(),
