@@ -212,7 +212,7 @@ dashboard.mapWidget = function(widget) {
                 if (widget.text_align) {
                     linkStyling = 'text-align: ' + widget.text_align + ';';
                 }
-                text += `<p style="${linkStyling}" class="bu-p-2">
+                text += `<p style="${linkStyling}">
                             <a class="bu-pt-4 bu-is-clickable color-dark-blue-100" target="_blank" href="${widget.link_path}">${widget.link_text}</a>
                         </p>`;
             }
