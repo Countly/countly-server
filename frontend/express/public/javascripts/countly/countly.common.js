@@ -4410,6 +4410,9 @@
             if (filter && filter.category) {
                 args.category = JSON.stringify(filter.category);
             }
+            if (filter && filter.customPeriod) {
+                args.period = JSON.stringify(filter.customPeriod);
+            }
             return window.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,

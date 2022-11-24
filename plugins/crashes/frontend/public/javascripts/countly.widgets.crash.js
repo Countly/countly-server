@@ -111,7 +111,20 @@
         methods: {
             refresh: function() {
                 this.refreshNotes();
-            }
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                else if (event === 'add' || event === 'manage' || event === 'show') {
+                    this.graphNotesHandleCommand(event);
+                    return;
+                }
+                else {
+                    return this.$emit('command', event);
+                }
+            },
         }
     });
 
