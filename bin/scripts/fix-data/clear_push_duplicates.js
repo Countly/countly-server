@@ -14,6 +14,25 @@ if (dry_run) {
     console.log("Nothing will be cleared");
 }
 
+function clearing_out(options, callback) {
+    if (options.data.length > 0) {
+        if (dry_run) {
+            console.log("not needed docs in push: " + JSON.stringify(options.data));
+            callback();
+        }
+        else {
+            options.db.collection("push_" + options.appId).remove({"_id": {"$in": options.data}}, {"multi": true}, function(err6) {
+                if (err6) {
+                    console.log(err6);
+                }
+                callback();
+            });
+        }
+    }
+    else {
+        callback();
+    }
+}
 
 Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) {
     getAppList({db: countlyDb}, function(err, apps) {
@@ -45,59 +64,72 @@ Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) 
                                                 reject1();
                                             }
                                             else {
-                                                if (res2.length > 0) {
-                                                    var uid = res2[0].uid;
-                                                    var bestValue = res2[0].lac || res2[0].ls;
-                                                    for (var k = 1; k < res2.length; k++) {
-                                                        var vv = res2[k].lac || res2[k].ls;
-                                                        if (vv > bestValue) {
-                                                            bestValue = vv;
-                                                            uid = res2[k].uid;
+                                                if (res2.length !== data.uid.length) {
+                                                    console.log("there are some uids not having docs in app_users");
+                                                    var delete_us = [];
+                                                    for (var k = 0; k < data.uid.length; k++) {
+                                                        var not_found = true;
+                                                        for (var j = 0; j < res2.length; j++) {
+                                                            if (res2[j].uid === data.uid[k]) {
+                                                                not_found = false;
+                                                            }
+                                                        }
+                                                        if (not_found) {
+                                                            delete_us.push(data.uid[k]);
                                                         }
                                                     }
-
-                                                    var copy = [];
-                                                    var copyUid = [];
-                                                    for (var k2 = 0; k2 < res2.length; k2++) {
-                                                        if (res2[k2].uid !== uid) {
-                                                            copy.push(res2[k2]._id);
-                                                            copyUid.push(res2[k2].uid);
+                                                }
+                                                clearing_out({db: countlyDb, appId: appId, data: delete_us}, function() {
+                                                    if (res2.length > 0) {
+                                                        var uid = res2[0].uid;
+                                                        var bestValue = res2[0].lac || res2[0].ls;
+                                                        for (var k = 1; k < res2.length; k++) {
+                                                            var vv = res2[k].lac || res2[k].ls;
+                                                            if (vv > bestValue) {
+                                                                bestValue = vv;
+                                                                uid = res2[k].uid;
+                                                            }
                                                         }
-                                                    }
-                                                    if (copy.length > 0) {
-                                                        if (dry_run) {
-                                                            console.log("Should remove token " + data["_id"]["k"] + " for users: " + JSON.stringify(copyUid));
-                                                            console.log("Should keep for : " + uid);
-                                                            resolve1();
+                                                        var copy = [];
+                                                        var copyUid = [];
+                                                        for (var k2 = 0; k2 < res2.length; k2++) {
+                                                            if (res2[k2].uid !== uid) {
+                                                                copy.push(res2[k2]._id);
+                                                                copyUid.push(res2[k2].uid);
+                                                            }
+                                                        }
+                                                        if (copy.length > 0) {
+                                                            if (dry_run) {
+                                                                console.log("Should remove token " + data["_id"]["k"] + " for users: " + JSON.stringify(copyUid));
+                                                                console.log("Should keep for : " + uid);
+                                                                resolve1();
+                                                            }
+                                                            else {
+                                                                var uu = {};
+                                                                uu["tk" + data["_id"]["k"]] = "";
+                                                                countlyDb.collection("app_users" + appId).update({"_id": {"$in": copy}}, {"$unset": uu}, {"multi": true}, function(err4) {
+                                                                    if (err4) {
+                                                                        console.log(err4);
+                                                                    }
+                                                                    var uu2 = {};
+                                                                    uu2["tk." + data["_id"]["k"]] = "";
+                                                                    countlyDb.collection("push_" + appId).update({"_id": {"$in": copyUid}}, {"$unset": uu2}, {"multi": true}, function(err5) {
+                                                                        if (err5) {
+                                                                            console.log(err5);
+                                                                        }
+                                                                        resolve1();
+                                                                    });
+                                                                });
+                                                            }
                                                         }
                                                         else {
-                                                            var uu = {};
-                                                            uu["tk" + data["_id"]["k"]] = "";
-                                                            countlyDb.collection("app_users" + appId).update({"_id": {"$in": copy}}, {"$unset": uu}, {"multi": true}, function(err4) {
-                                                                if (err4) {
-                                                                    console.log(err4);
-                                                                }
-                                                                var uu2 = {};
-                                                                uu2["tk." + data["_id"]["k"]] = "";
-                                                                countlyDb.collection("push_" + appId).update({"_id": {"$in": copyUid}}, {"$unset": uu2}, {"multi": true}, function(err5) {
-                                                                    if (err5) {
-                                                                        console.log(err5);
-                                                                    }
-                                                                    resolve1();
-                                                                });
-                                                            });
+                                                            resolve1();
                                                         }
                                                     }
                                                     else {
-                                                        console.log("skipping as only");
-                                                        console.log("expected to get:" + JSON.stringify(data.uid));
-                                                        console.log("got just: " + JSON.stringify(res2));
                                                         resolve1();
                                                     }
-                                                }
-                                                else {
-                                                    resolve1();
-                                                }
+                                                });
                                             }
                                         });
                                     });
