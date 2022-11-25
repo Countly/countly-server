@@ -937,9 +937,35 @@
                     this.getGraphNotes();
                 }
             },
+            getDateFormat: function(date) {
+                var dateFormats = {
+                    "yyyy-mm-d-hh-mm": "YYYY-MM-D HH:00",
+                    "yyyy-mm-d-h-mm": "YYYY-MM-D H:00",
+                    "d-mmm": "D MMM",
+                    "dd-mmm": "DD MMM",
+                    "d-mmm-yyyy": "D MMM YYYY",
+                    "yyyy-mm-d": "YYYY-MM-D",
+                    "yyyy-m-d": "YYYY-M-D",
+                    "yyyy-mm-dd": "YYYY-MM-DD",
+                    "yyyy-mm": "YYYY-MM",
+                    "yyyy-m": "YYYY-M",
+                    "mmm-yyyy": "MMM YYYY",
+                    "h-00": "H:00",
+                    "hh-00": "HH:00",
+                    "dd/mm/yyyy": "DD/MM/YY"
+                    //define other well known formats
+                };
+
+                for (var prop in dateFormats) {
+                    if (moment(date, dateFormats[prop], true).isValid()) {
+                        return dateFormats[prop];
+                    }
+                }
+                return null;
+            },
             graphNotesTimeConverter: function(ts) {
-                var currentPeriod = countlyCommon.periodObj._period;
                 var graphNoteDate = new Date(ts);
+
                 if (this.category === "drill" || this.category === "formulas") {
                     if (this.notationSelectedBucket === "hourly") {
                         return countlyCommon.formatDate(moment(graphNoteDate), "D MMM YYYY hh:00") || 0;
@@ -950,42 +976,28 @@
                     else if (this.notationSelectedBucket === "weekly") {
                         return "W" + moment(graphNoteDate).isoWeek() + " " + moment(graphNoteDate).isoWeekYear();
                     }
-                    else if (this.$parent && this.$parent.data && this.category === "drill" && this.notationSelectedBucket === "monthly") {
-                        return null;
-                    }
-                    else if (this.notationSelectedBucket === "monthly" && this.category !== "formulas") {
+                    else if (this.notationSelectedBucket === "monthly") {
                         return countlyCommon.formatDate(moment(graphNoteDate), "MMM YYYY");
                     }
                 }
+                else if (this.category === "push-notification") {
+                    if (this.notationSelectedBucket === "weekly") {
+                        return "W" + moment(graphNoteDate).isoWeek();
+                    }
+                    else if (this.notationSelectedBucket === "monthly") {
+                        return countlyCommon.formatDate(moment(graphNoteDate), "YYYY MMM");
+                    }
+                }
                 else {
-                    if (this.$parent && this.$parent.data && this.$parent.data.custom_period && this.$parent.data.custom_period.length) {
-                        if (this.category !== "active-users") {
-                            return countlyCommon.formatDate(moment(ts), "YYYY-MM-D") || 0;
-                        }
-                        else {
-                            return countlyCommon.formatDate(moment(ts), "DD/MM/YY") || 0;
-                        }
-                    }
-                    else if (currentPeriod === "hour") {
-                        return graphNoteDate.getUTCHours();
-                    }
-                    else if (currentPeriod === "yesterday") {
-                        return moment.utc(ts).format("D MMM, hh:00");
-                    }
-                    else if (currentPeriod === "day") {
-                        return moment.utc(ts).format("D MMM");
-                    }
-                    else if (currentPeriod === "month") {
-                        if (this.category === "session" || this.category === "crashes") {
-                            return countlyCommon.formatDate(moment(ts), "MMM") || 0;
-                        }
-                        else {
-                            return countlyCommon.formatDate(moment(ts), "MMM YYYY") || 0;
-                        }
+                    var xAxisLabel = null;
+                    if (this.$refs.echarts && this.$refs.echarts.option && this.$refs.echarts.option.xAxis.data) {
+                        xAxisLabel = this.$refs.echarts.option.xAxis.data[0];
                     }
                     else {
-                        return countlyCommon.formatDate(moment(graphNoteDate), "D MMM") || 0;
+                        return null;
                     }
+                    var formatType = this.getDateFormat(xAxisLabel);
+                    return countlyCommon.formatDate(moment(ts), formatType) || 0;
                 }
             },
             mergeGraphNotesByDate: function(notes) {
@@ -1098,10 +1110,6 @@
                         customPeriodEndDate = this.weekCountToDate(xAxisLabels[xAxisLabels.length - 1].split(' ')[1], xAxisLabels[xAxisLabels.length - 1].split(' ')[0].split('W')[1], 7);
                         filter.customPeriod = [customPeriodStartDate.getTime(), customPeriodEndDate.getTime()];
                     }
-                    else if (this.$parent.data.bucket === "monthly") {
-                        returnedObj.appIds = appIds;
-                        return returnedObj;
-                    }
                 }
                 returnedObj.appIds = appIds;
                 returnedObj.customPeriod = filter;
@@ -1134,7 +1142,7 @@
                             self.mergedNotes = self.mergeGraphNotesByDate(self.notes);
                             self.mergedNotes.forEach(function(note, index) {
                                 if (note.dateStr) {
-                                    if (chartHeight < 250) {
+                                    if (chartHeight < 250 && chartHeight !== 100) {
                                         if (note.hasCloseDate && note.times === 1) {
                                             yAxisHeight = '65%';
                                         }
