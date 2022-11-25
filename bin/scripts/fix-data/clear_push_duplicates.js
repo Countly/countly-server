@@ -64,7 +64,7 @@ Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) 
                                                 reject1();
                                             }
                                             else {
-												var delete_us = [];
+                                                var delete_us = [];
                                                 if (res2.length !== data.uid.length) {
                                                     console.log("there are some uids not having docs in app_users");
                                                     for (var k = 0; k < data.uid.length; k++) {
