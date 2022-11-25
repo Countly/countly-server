@@ -694,7 +694,7 @@ class APN extends Base {
                     }
                     else if (status === 410) {
                         stream.destroy();
-                        error(ERROR.DATA_TOKEN_EXPIRED).addAffected(p._id, one);
+                        error(ERROR.DATA_TOKEN_EXPIRED, 'ExpiredToken').addAffected(p._id, one);
                         streamDone();
                     }
                     else if (status === 500 || status === 503 || status === 404 || status === 405 || status === 413) {

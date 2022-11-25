@@ -103,7 +103,7 @@ async function removeUsers(appId, uids, error = "consent") {
 
     await common.db.collection('push').deleteMany({_id: {$in: ids}});
 
-    await common.db.collection(`push_${appId}`).deleteMany({_id: {$in: uids}});
+    await common.db.collection(`push_${appId}`).updateMany({_id: {$in: uids}}, {$set: {tk: {}}});
 }
 
 module.exports = { reset, clear, removeUsers };
