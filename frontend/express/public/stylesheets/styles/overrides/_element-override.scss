@@ -377,12 +377,17 @@
     }
 }
 
-.el-tiptap-editor__content > pre > code {
-    font-family : "Courier New" !important;
-}
-
-.el-tiptap-editor__content span > span {
-    background-color: inherit;
+.el-tiptap-editor__content {
+    overflow-x: unset;
+    > pre > code {
+        font-family : "Courier New" !important;
+    }
+    span > span {
+        background-color: inherit;
+    }
+    hr {
+        width: 100%
+    }
 }
 
 .el-dialog {
