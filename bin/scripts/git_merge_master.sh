@@ -5,20 +5,22 @@ git config --global user.email "next@count.ly"
 git config --global user.name "next"
 
 #get all git data
-git fetch --all
+git fetch origin
 
 #get latest from master
 git checkout master
-git pull
+git pull origin master
 
 #get latest from next
 git checkout next
-git pull
+git pull origin next
 BRANCH="$(git symbolic-ref --short HEAD)";
+
+echo "Checking branch $BRANCH"
 
 if [ "$BRANCH" == "next" ]; then
     #merge master into next
-    git merge master
+    git merge master --allow-unrelated-histories
 
     #push changes to next
     git push
