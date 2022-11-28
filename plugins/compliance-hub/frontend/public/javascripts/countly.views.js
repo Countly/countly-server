@@ -214,15 +214,15 @@
                     },
                     {
                         value: 'export_app_user',
-                        label: this.i18n("compliance_hub.export_app_user")
+                        label: this.i18n("compliance_hub.Export-finished")
                     },
                     {
                         value: 'app_user_deleted',
-                        label: this.i18n("compliance_hub.app_user_deleted")
+                        label: this.i18n("compliance_hub.App-user-deleted")
                     },
                     {
                         value: 'export_app_user_deleted',
-                        label: this.i18n("compliance_hub.export_app_user_deleted")
+                        label: this.i18n("compliance_hub.Export-file-deleted")
                     }
                 ],
                 filter1: [
