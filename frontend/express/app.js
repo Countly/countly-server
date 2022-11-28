@@ -818,6 +818,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.post('*', checkRequestForSession);
 
     app.get(countlyConfig.path + '/logout', function(req, res) {
+        membersUtility.logout(req, res);
         if (req.query.message) {
             res.redirect(countlyConfig.path + '/login?message=' + req.query.message);
         }
