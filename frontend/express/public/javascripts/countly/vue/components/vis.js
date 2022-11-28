@@ -979,8 +979,10 @@
             },
             graphNotesTimeConverter: function(ts) {
                 var graphNoteDate = new Date(ts);
-
-                if (this.category === "drill" || this.category === "formulas") {
+                if (this.seriesType === "bar") {
+                    return null;
+                }
+                else if (this.category === "drill" || this.category === "formulas") {
                     if (this.notationSelectedBucket === "hourly") {
                         return countlyCommon.formatDate(moment(graphNoteDate), "D MMM YYYY hh:00") || 0;
                     }
