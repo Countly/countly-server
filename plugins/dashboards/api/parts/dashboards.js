@@ -172,7 +172,6 @@ dashboard.mapWidget = function(widget) {
                 textStyling = "",
                 text = "",
                 fontSize = 15,
-                lineHeight = 100,
                 colors = ["#52A3EF", "#FF8700", "#0EC1B9", "#ed6262", "#edb762", "#ede262", "#62edb0", "#62beed", "#6279ed", "#c162ed", "#ed62c7", "#9A1B2F", "#E2E4E8"];
 
             if (widget.font_size && !Number.isNaN(parseFloat(widget.font_size))) {
@@ -180,7 +179,6 @@ dashboard.mapWidget = function(widget) {
             }
 
             textStyling += 'font-size: ' + fontSize + 'px;';
-            textStyling += 'line-height: ' + lineHeight + '%;';
 
             if (widget.text_align) {
                 textStyling += "text-align: " + widget.text_align + ";";
@@ -210,9 +208,10 @@ dashboard.mapWidget = function(widget) {
 
             if (widget.add_link) {
                 if (widget.text_align) {
-                    linkStyling = 'text-align: ' + widget.text_align + ';';
+                    linkStyling += 'text-align: ' + widget.text_align + '; ';
                 }
-                text += `<p style="${linkStyling}">
+                linkStyling += 'white-space: normal !important;';
+                text += `<p style="${linkStyling}" class="bu-p-2">
                             <a class="bu-pt-4 bu-is-clickable color-dark-blue-100" target="_blank" href="${widget.link_path}">${widget.link_text}</a>
                         </p>`;
             }
