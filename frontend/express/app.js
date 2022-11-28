@@ -1709,6 +1709,35 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
     });
 
+    app.post(countlyConfig.path + '/user/settings/column-order', function(req, res) {
+        if (!req.session.uid) {
+            res.end();
+            return false;
+        }
+
+        var updatedColumnOrder = {
+            columnOrder: {}
+        };
+
+        if (req.body.ColumnOrderKey && req.body.sortMap) {
+            updatedColumnOrder.columnOrder[req.body.ColumnOrderKey] = req.body.sortMap;
+
+            countlyDb.collection('members').update({ "_id": countlyDb.ObjectID(req.session.uid + "") }, { '$set': updatedColumnOrder }, { safe: true, upsert: true }, function(err, member) {
+                if (member && !err) {
+                    res.send(true);
+                }
+                else {
+                    res.send(false);
+                }
+            });
+        }
+        else {
+            res.send(false);
+            return false;
+        }
+
+    });
+
     app.post(countlyConfig.path + '/users/check/email', function(req, res) {
         if (!req.session.uid || !isGlobalAdmin(req) || !req.body.email) {
             res.send(false);

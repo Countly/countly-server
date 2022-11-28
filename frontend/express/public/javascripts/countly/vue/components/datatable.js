@@ -11,6 +11,10 @@
                 type: String,
                 default: null
             },
+            persistColumnOrderKey: {
+                type: String,
+                default: 'null'
+            },
             dataSource: {
                 type: Object,
                 default: function() {

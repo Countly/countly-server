@@ -1,4 +1,4 @@
-/* global Vue, CV, _ */
+/* global Vue, CV, countlyGlobal, $, _ */
 
 (function(countlyVue) {
 
@@ -347,7 +347,11 @@
                 if (!this.sortable || !this.sortMap) {
                     return this.options;
                 }
-                var sortMap = this.sortMap,
+                var savedSortMap;
+                if (this.persistColumnOrderKey && countlyGlobal.member.ColumnOrder) {
+                    savedSortMap = countlyGlobal.member.ColumnOrder[this.persistColumnOrderKey];
+                }
+                var sortMap = savedSortMap || this.sortMap,
                     wrapped = this.options.map(function(opt, idx) {
                         return { opt: opt, idx: idx, ord: sortMap[opt.value] || 0 };
                     });
@@ -363,6 +367,25 @@
             commitValue: function(val) {
                 this.$emit("input", val);
                 this.$emit("change", val);
+            },
+            saveColumnOrder() {
+                if (!this.persistColumnOrderKey) {
+                    return;
+                }
+                var sortMap = {};
+                this.sortedOptions.forEach(function(val, idx) {
+                    sortMap[val.value] = idx;
+                });
+                $.ajax({
+                    type: "POST",
+                    url: countlyGlobal.path + "/user/settings/column-order",
+                    data: {
+                        "sortMap": sortMap,
+                        "ColumnOrderKey": this.persistColumnOrderKey,
+                        _csrf: countlyGlobal.csrf_token
+                    },
+                    success: function() { }
+                });
             }
         },
         computed: {
@@ -761,7 +784,8 @@
             remote: {type: Boolean, default: false},
             remoteMethod: {type: Function, required: false},
             showSearch: {type: Boolean, default: false},
-            popperAppendToBody: {type: Boolean, default: true}
+            popperAppendToBody: {type: Boolean, default: true},
+            persistColumnOrderKey: { type: String, default: null}
         },
         data: function() {
             return {
@@ -898,6 +922,8 @@
                     return;
                 }
                 if (this.uncommittedValue) {
+                    //since we are using v-for
+                    this.$refs.checkListBox[0].saveColumnOrder();
                     this.commitValue(this.uncommittedValue);
                     this.uncommittedValue = null;
                 }

@@ -109,6 +109,8 @@
                     :disable-non-selected="disableNonSelected"
                     :sortable="true"
                     :bordered="false"
+                    :persistColumnOrderKey="persistColumnOrderKey"
+                    ref="checkListBox"
                     :options="getMatching(tab.options)"
                     @change="handleValueChange"
                     v-model="innerValue">
