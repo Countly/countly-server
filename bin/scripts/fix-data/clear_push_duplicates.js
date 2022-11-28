@@ -15,7 +15,7 @@ if (dry_run) {
 }
 
 function clearing_out(options, callback) {
-    if (options.data.length > 0) {
+    if (options.data && options.data.length > 0) {
         if (dry_run) {
             console.log("not needed docs in push: " + JSON.stringify(options.data));
             callback();
@@ -64,9 +64,9 @@ Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) 
                                                 reject1();
                                             }
                                             else {
+                                                var delete_us = [];
                                                 if (res2.length !== data.uid.length) {
                                                     console.log("there are some uids not having docs in app_users");
-                                                    var delete_us = [];
                                                     for (var k = 0; k < data.uid.length; k++) {
                                                         var not_found = true;
                                                         for (var j = 0; j < res2.length; j++) {
