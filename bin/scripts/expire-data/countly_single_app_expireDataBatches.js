@@ -106,18 +106,18 @@ function eventIterator(fr, done) {
     var collection = fr.collection;
     var db_target = fr.db;
 
-    console.log('Processing range: ' + JSON.stringify({"ts": {"$gte": fr.start, "$lt": fr.end}})+' for '+fr.collection);
+    console.log('Processing range: ' + JSON.stringify({"ts": {"$gte": fr.start, "$lt": fr.end}}) + ' for ' + fr.collection);
     var query = {};
     query["ts"] = {"$gte": fr.start, "$lt": fr.end};
     if (fr.query) {
-         for (var key in fr.query) {
-             query[key] = fr.query.key;
-         }
+        for (var key in fr.query) {
+            query[key] = fr.query.key;
+        }
     }
     if (batchSize) {
-         removeInBatches(db_target, collection, query, function() {
-             done();
-         });
+        removeInBatches(db_target, collection, query, function() {
+            done();
+        });
     }
     else { //removing all matching timestamps in one go
         console.log(JSON.stringify(query));
@@ -150,26 +150,26 @@ function eventIterator(fr, done) {
     }
 }
 
-function prepareIterationList(collections,seconds){
-	var listed = [];
-	var z = start;
+function prepareIterationList(collections, seconds) {
+    var listed = [];
+    var z = start;
     if (seconds) {
         z = Math.floor(start / 1000);
         for (; z <= Math.floor(end / 1000); z += timeSpan) {
-			for(var k=0; k<collections.length; k++) {
-				listed.push({"collection":collections[k].collection, "db":collections[k].db, "start": z, "end": Math.min(z + timeSpan, end),"seconds":true});
-			}
+            for (var k = 0; k < collections.length; k++) {
+                listed.push({"collection": collections[k].collection, "db": collections[k].db, "start": z, "end": Math.min(z + timeSpan, end), "seconds": true});
+            }
         }
     }
     else {
         for (; z <= end; z += timeSpan * 1000) {
-			for(var k1=0; k1<collections.length; k1++) {
-				listed.push({"collection":collections[k1].collection, "db":collections[k1].db, "start": z, "end": Math.min(z + timeSpan * 1000, end)});
-			}
+            for (var k1 = 0; k1 < collections.length; k1++) {
+                listed.push({"collection": collections[k1].collection, "db": collections[k1].db, "start": z, "end": Math.min(z + timeSpan * 1000, end)});
+            }
         }
     }
-	return listed;
-	
+    return listed;
+
 }
 function processDrillCollections(db, drill_db, callback) {
     if (process && process.drill_events) {
@@ -190,8 +190,8 @@ function processDrillCollections(db, drill_db, callback) {
                     collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update(eventData.list[i] + APP_ID).digest('hex')});
                 }
             }
-			var iteratorList = prepareIterationList(collections);
-            async.eachLimit(iteratorList,paralelCn, eventIterator, function() {
+            var iteratorList = prepareIterationList(collections);
+            async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
                 console.log('Drill collections processed');
                 callback();
             });
@@ -222,8 +222,8 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                     }
                 }
             }
-			var iteratorList = prepareIterationList(processCols,true);
-            async.eachLimit(iteratorList,paralelCn, eventIterator, function() {
+            var iteratorList = prepareIterationList(processCols, true);
+            async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
                 if (errorCn > 0) {
                     console.log("There were errors. Please recheck logs for those.");
                 }
