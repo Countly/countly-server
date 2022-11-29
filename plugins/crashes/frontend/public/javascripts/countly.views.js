@@ -553,16 +553,26 @@
                 }
 
                 if (typeof promise !== "undefined") {
-                    promise.finally(function() {
+                    promise.then(function(response) {
+                        if (Array.isArray(response.result)) {
+                            var itemList = response.result.reduce(function(acc, curr) {
+                                acc += "<li>" + curr + "</li>";
+                                return acc;
+                            }, "");
+                            CountlyHelpers.alert("<ul>" + itemList + "</ul>", "red", { title: CV.i18n("crashes.alert-fails") });
+                        }
+                        else {
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.changed"],
+                                message: jQuery.i18n.map["configs.saved"]
+                            });
+                        }
+                    }).finally(function() {
                         // Reset selection if command is delete or hide
                         if (["delete", "hide"].includes(state)) {
                             self.selectedCrashgroups = [];
                             self.$refs.dataTable.$refs.elTable.clearSelection();
                         }
-                        CountlyHelpers.notify({
-                            title: jQuery.i18n.map["configs.changed"],
-                            message: jQuery.i18n.map["configs.saved"]
-                        });
                     });
                 }
             }
