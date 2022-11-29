@@ -378,7 +378,7 @@
 }
 
 .el-tiptap-editor__content {
-    overflow-x: unset;
+    overflow-x: unset !important;
     > pre > code {
         font-family : "Courier New" !important;
     }
