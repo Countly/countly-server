@@ -141,17 +141,6 @@ class StatsJob extends job.Job {
                                 });
 
                                 Countly.userData.save();
-
-                                Countly.fetch_remote_config(null, null, (e, conf) => {
-                                    if (err) {
-                                        log.e('Failed to fetch remote config', e);
-                                    }
-                                    else {
-                                        db.collection('plugins').updateOne({_id: 'plugins'}, {$set: {remoteConfig: conf || {}}}).catch(dbe => {
-                                            log.e('Failed to set remote config', dbe);
-                                        });
-                                    }
-                                });
                             }
                         }
                         else {
