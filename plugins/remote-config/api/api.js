@@ -851,6 +851,13 @@ plugins.setConfigs("remote-config", {
         common.outDb.collection(collectionName).findOne({"_id": common.outDb.ObjectID(parameterId)}, function(err, beforeData) {
             if (!err) {
                 common.outDb.collection(collectionName).update({_id: common.outDb.ObjectID(parameterId)}, update, function(updateErr) {
+                    delete beforeData.valuesList;
+                    if (!beforeData.expiry_dttm) {
+                        beforeData.expiry_dttm = "-";
+                    }
+                    if (!parameter.expiry_dttm) {
+                        parameter.expiry_dttm = "-";
+                    }
                     plugins.dispatch("/systemlogs", {params: params, action: "rc_parameter_edited", data: { before: beforeData, after: parameter }});
                     return callback(updateErr);
                 });
