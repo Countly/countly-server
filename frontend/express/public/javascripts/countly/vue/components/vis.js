@@ -948,7 +948,11 @@
         methods: {
             dateChanged: function() {
                 if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
-                    this.getGraphNotes();
+                    this.seriesOptions.markPoint.data = [];
+                    var self = this;
+                    setTimeout(() => {
+                        self.getGraphNotes();
+                    }, 500);
                 }
             },
             getDateFormat: function(date) {
@@ -966,7 +970,8 @@
                     "mmm-yyyy": "MMM YYYY",
                     "h-00": "H:00",
                     "hh-00": "HH:00",
-                    "dd/mm/yyyy": "DD/MM/YY"
+                    "dd/mm/yyyy": "DD/MM/YY",
+                    "mmm": "MMM"
                     //define other well known formats
                 };
 
@@ -1016,13 +1021,27 @@
                     return countlyCommon.formatDate(moment(ts), formatType) || 0;
                 }
             },
-            mergeGraphNotesByDate: function(notes) {
+            mergeGraphNotesByDate: function(notes, mergeByWeek) {
                 var self = this;
                 const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
-
+                var multiplierCount = 2;
+                if (this.$refs.echarts && (this.$refs.echarts.getWidth() < 500 && this.$refs.echarts.getWidth() !== 100)) {
+                    multiplierCount = 8;
+                }
                 notes.forEach(function(orderedItem) {
                     orderedItem.dateStr = self.graphNotesTimeConverter(orderedItem.ts);
+                    orderedItem.weekCount = moment(orderedItem.ts).year() - moment(orderedItem.ts).week();
                 });
+
+                if (mergeByWeek) {
+                    for (var k = 1; k < notes.length; k++) {
+                        for (var m = 0; m < k; m++) {
+                            if (notes[k].weekCount === notes[m].weekCount) {
+                                notes[k].dateStr = notes[m].dateStr;
+                            }
+                        }
+                    }
+                }
 
                 notes.map(function(item) {
                     item.times = notes.filter(obj => obj.dateStr === item.dateStr).length;
@@ -1032,7 +1051,7 @@
                     return new Date(b.ts) - new Date(a.ts);
                 });
                 for (var i = 0; i < notes.length - 1; i++) {
-                    if ((i !== notes.length - 1) && Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) === 1) {
+                    if ((i !== notes.length - 1) && (Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) > 0 && Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) < multiplierCount)) {
                         notes[i].hasCloseDate = true;
                     }
                 }
@@ -1136,7 +1155,8 @@
                     var self = this;
                     var chartHeight = 300;
                     var yAxisHeight = '';
-
+                    var filter = {};
+                    var mergeByDate = false;
                     // sub category parser
                     var categories = [];
                     if (this.subCategory.length) {
@@ -1145,7 +1165,6 @@
                         });
                     }
 
-                    var filter = {};
                     filter = this.graphNotesFilterChecks();
                     countlyCommon.getGraphNotes(filter.appIds, filter.customPeriod /*{category: categories.length ? categories : [this.category]}*/).then(function(data) {
                         self.notes = data.aaData;
@@ -1155,7 +1174,11 @@
                             if (self.$refs.echarts) {
                                 chartHeight = self.$refs.echarts.getHeight();
                             }
-                            self.mergedNotes = self.mergeGraphNotesByDate(self.notes);
+                            // if custom range date is bigger than 30days, then group notes by week
+                            if ((Array.isArray(countlyCommon.periodObj._period) && countlyCommon.periodObj.currentPeriodArr.length > 30)) {
+                                mergeByDate = true;
+                            }
+                            self.mergedNotes = self.mergeGraphNotesByDate(self.notes, mergeByDate);
                             self.mergedNotes.forEach(function(note, index) {
                                 if (note.dateStr) {
                                     if (chartHeight < 250 && chartHeight !== 100) {
