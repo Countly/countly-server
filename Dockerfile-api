@@ -23,7 +23,7 @@ COPY . .
 
 # install required dependencies which slim image doesn't have
 RUN apt-get update && \
-	apt-get install -y apt-transport-https curl wget git python3 python2 make gcc g++ unzip && \
+	apt-get install -y apt-transport-https curl wget git python2 make gcc g++ unzip && \
 	ln -s /usr/bin/python2.7 /usr/bin/python
 
 RUN apt-get update && \
@@ -36,7 +36,8 @@ RUN apt-get update && \
 	./configure --enable-optimizations --enable-shared && \
 	make && \
 	make altinstall && \
-	ldconfig /usr/src/Python-3.8.12
+	ldconfig /usr/src/Python-3.8.12 && \
+  ln -s /usr/local/bin/python3.8 /usr/bin/python3
 
 RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
 	dpkg -i /tmp/tini.deb && \
@@ -56,7 +57,7 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	# cleanup & chown
 	npm remove -y --no-save mocha nyc should supertest && \
 	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
-	apt-get -y install libgbm-dev libgbm1 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils && \
+	apt-get -y install gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
 	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \
 	\

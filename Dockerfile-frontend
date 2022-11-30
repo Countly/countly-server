@@ -21,7 +21,7 @@ COPY . .
 
 # install required dependencies which slim image doesn't have
 RUN apt-get update && \
-	apt-get install -y apt-transport-https procps curl wget git python3 python2 make gcc g++ unzip && \
+	apt-get install -y apt-transport-https procps curl wget git python2 make gcc g++ unzip && \
 	ln -s /usr/bin/python2.7 /usr/bin/python
 
 RUN apt-get update && \
@@ -34,7 +34,8 @@ RUN apt-get update && \
 	./configure --enable-optimizations --enable-shared && \
 	make && \
 	make altinstall && \
-	ldconfig /usr/src/Python-3.8.12
+	ldconfig /usr/src/Python-3.8.12 && \
+        ln -s /usr/local/bin/python3.8 /usr/bin/python3
 
 RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
 	dpkg -i /tmp/tini.deb && \
