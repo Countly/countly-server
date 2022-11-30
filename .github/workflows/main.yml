@@ -29,7 +29,7 @@ jobs:
         
       - name: NodeJS version
         shell: bash
-        run: nodejs --version
+        run: node --version
         
       - name: NPM version
         shell: bash

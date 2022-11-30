@@ -934,13 +934,46 @@
         methods: {
             dateChanged: function() {
                 if (countlyCommon.getPersistentSettings()["graphNotes_" + countlyCommon.ACTIVE_APP_ID]) {
-                    this.getGraphNotes();
+                    this.seriesOptions.markPoint.data = [];
+                    var self = this;
+                    setTimeout(() => {
+                        self.getGraphNotes();
+                    }, 500);
                 }
             },
+            getDateFormat: function(date) {
+                var dateFormats = {
+                    "yyyy-mm-d-hh-mm": "YYYY-MM-D HH:00",
+                    "yyyy-mm-d-h-mm": "YYYY-MM-D H:00",
+                    "d-mmm": "D MMM",
+                    "dd-mmm": "DD MMM",
+                    "d-mmm-yyyy": "D MMM YYYY",
+                    "yyyy-mm-d": "YYYY-MM-D",
+                    "yyyy-m-d": "YYYY-M-D",
+                    "yyyy-mm-dd": "YYYY-MM-DD",
+                    "yyyy-mm": "YYYY-MM",
+                    "yyyy-m": "YYYY-M",
+                    "mmm-yyyy": "MMM YYYY",
+                    "h-00": "H:00",
+                    "hh-00": "HH:00",
+                    "dd/mm/yyyy": "DD/MM/YY",
+                    "mmm": "MMM"
+                    //define other well known formats
+                };
+
+                for (var prop in dateFormats) {
+                    if (moment(date, dateFormats[prop], true).isValid()) {
+                        return dateFormats[prop];
+                    }
+                }
+                return null;
+            },
             graphNotesTimeConverter: function(ts) {
-                var currentPeriod = countlyCommon.periodObj._period;
                 var graphNoteDate = new Date(ts);
-                if (this.category === "drill" || this.category === "formulas") {
+                if (this.seriesType === "bar") {
+                    return null;
+                }
+                else if (this.category === "drill" || this.category === "formulas") {
                     if (this.notationSelectedBucket === "hourly") {
                         return countlyCommon.formatDate(moment(graphNoteDate), "D MMM YYYY hh:00") || 0;
                     }
@@ -954,44 +987,47 @@
                         return countlyCommon.formatDate(moment(graphNoteDate), "MMM YYYY");
                     }
                 }
-                else {
-                    if (this.$parent && this.$parent.data && this.$parent.data.custom_period && this.$parent.data.custom_period.length) {
-                        if (this.category !== "active-users") {
-                            return countlyCommon.formatDate(moment(ts), "YYYY-MM-D") || 0;
-                        }
-                        else {
-                            return countlyCommon.formatDate(moment(ts), "DD/MM/YY") || 0;
-                        }
+                else if (this.category === "push-notification") {
+                    if (this.notationSelectedBucket === "weekly") {
+                        return "W" + moment(graphNoteDate).isoWeek();
                     }
-                    else if (currentPeriod === "hour") {
-                        return graphNoteDate.getUTCHours();
-                    }
-                    else if (currentPeriod === "yesterday") {
-                        return moment.utc(ts).format("D MMM, hh:00");
-                    }
-                    else if (currentPeriod === "day") {
-                        return moment.utc(ts).format("D MMM");
-                    }
-                    else if (currentPeriod === "month") {
-                        if (this.category === "session" || this.category === "crashes") {
-                            return countlyCommon.formatDate(moment(ts), "MMM") || 0;
-                        }
-                        else {
-                            return countlyCommon.formatDate(moment(ts), "MMM YYYY") || 0;
-                        }
-                    }
-                    else {
-                        return countlyCommon.formatDate(moment(graphNoteDate), "D MMM") || 0;
+                    else if (this.notationSelectedBucket === "monthly") {
+                        return countlyCommon.formatDate(moment(graphNoteDate), "YYYY MMM");
                     }
                 }
+                else {
+                    var xAxisLabel = null;
+                    if (this.$refs.echarts && this.$refs.echarts.option && this.$refs.echarts.option.xAxis.data) {
+                        xAxisLabel = this.$refs.echarts.option.xAxis.data[0];
+                    }
+                    else {
+                        return null;
+                    }
+                    var formatType = this.getDateFormat(xAxisLabel);
+                    return countlyCommon.formatDate(moment(ts), formatType) || 0;
+                }
             },
-            mergeGraphNotesByDate: function(notes) {
+            mergeGraphNotesByDate: function(notes, mergeByWeek) {
                 var self = this;
                 const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
-
+                var multiplierCount = 2;
+                if (this.$refs.echarts && (this.$refs.echarts.getWidth() < 500 && this.$refs.echarts.getWidth() !== 100)) {
+                    multiplierCount = 8;
+                }
                 notes.forEach(function(orderedItem) {
                     orderedItem.dateStr = self.graphNotesTimeConverter(orderedItem.ts);
+                    orderedItem.weekCount = moment(orderedItem.ts).year() - moment(orderedItem.ts).week();
                 });
+
+                if (mergeByWeek) {
+                    for (var k = 1; k < notes.length; k++) {
+                        for (var m = 0; m < k; m++) {
+                            if (notes[k].weekCount === notes[m].weekCount) {
+                                notes[k].dateStr = notes[m].dateStr;
+                            }
+                        }
+                    }
+                }
 
                 notes.map(function(item) {
                     item.times = notes.filter(obj => obj.dateStr === item.dateStr).length;
@@ -1001,7 +1037,7 @@
                     return new Date(b.ts) - new Date(a.ts);
                 });
                 for (var i = 0; i < notes.length - 1; i++) {
-                    if ((i !== notes.length - 1) && Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) === 1) {
+                    if ((i !== notes.length - 1) && (Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) > 0 && Math.round(Math.abs((notes[i].ts - notes[i + 1].ts) / oneDay)) < multiplierCount)) {
                         notes[i].hasCloseDate = true;
                     }
                 }
@@ -1080,6 +1116,7 @@
                         }
                     }
                 }
+
                 if ((this.category === "formulas" || this.category === "drill") && (this.$parent && this.$parent.data)) {
                     var xAxisLabels = this.option.xAxis.data;
                     var customPeriodStartDate;
@@ -1094,9 +1131,6 @@
                         customPeriodEndDate = this.weekCountToDate(xAxisLabels[xAxisLabels.length - 1].split(' ')[1], xAxisLabels[xAxisLabels.length - 1].split(' ')[0].split('W')[1], 7);
                         filter.customPeriod = [customPeriodStartDate.getTime(), customPeriodEndDate.getTime()];
                     }
-                    else if (this.$parent.data.bucket === "monthly") {
-                        return;
-                    }
                 }
                 returnedObj.appIds = appIds;
                 returnedObj.customPeriod = filter;
@@ -1107,7 +1141,8 @@
                     var self = this;
                     var chartHeight = 300;
                     var yAxisHeight = '';
-
+                    var filter = {};
+                    var mergeByDate = false;
                     // sub category parser
                     var categories = [];
                     if (this.subCategory.length) {
@@ -1116,7 +1151,6 @@
                         });
                     }
 
-                    var filter = {};
                     filter = this.graphNotesFilterChecks();
                     countlyCommon.getGraphNotes(filter.appIds, filter.customPeriod /*{category: categories.length ? categories : [this.category]}*/).then(function(data) {
                         self.notes = data.aaData;
@@ -1126,22 +1160,28 @@
                             if (self.$refs.echarts) {
                                 chartHeight = self.$refs.echarts.getHeight();
                             }
-                            self.mergedNotes = self.mergeGraphNotesByDate(self.notes);
+                            // if custom range date is bigger than 30days, then group notes by week
+                            if ((Array.isArray(countlyCommon.periodObj._period) && countlyCommon.periodObj.currentPeriodArr.length > 30)) {
+                                mergeByDate = true;
+                            }
+                            self.mergedNotes = self.mergeGraphNotesByDate(self.notes, mergeByDate);
                             self.mergedNotes.forEach(function(note, index) {
-                                if (chartHeight < 250) {
-                                    if (note.hasCloseDate && note.times === 1) {
-                                        yAxisHeight = '65%';
+                                if (note.dateStr) {
+                                    if (chartHeight < 250 && chartHeight !== 100) {
+                                        if (note.hasCloseDate && note.times === 1) {
+                                            yAxisHeight = '65%';
+                                        }
+                                        else {
+                                            yAxisHeight = '60%';
+                                        }
                                     }
                                     else {
-                                        yAxisHeight = '60%';
-                                    }
-                                }
-                                else {
-                                    if (note.hasCloseDate && note.times === 1) {
-                                        yAxisHeight = '80%';
-                                    }
-                                    else {
-                                        yAxisHeight = '75%';
+                                        if (note.hasCloseDate && note.times === 1) {
+                                            yAxisHeight = '80%';
+                                        }
+                                        else {
+                                            yAxisHeight = '75%';
+                                        }
                                     }
                                 }
 
@@ -1169,59 +1209,6 @@
                                 confine: true,
                                 extraCssText: 'z-index: 1000',
                                 alwaysShowContent: true,
-                                position: function(canvasMousePos, params, tooltipDom, rect, sizes) {
-                                    if (params.value !== " ") {
-                                        return "top";
-                                        // return 'left';
-                                    }
-                                    else {
-                                        var margin = 10; // How far away from the mouse should the tooltip be
-                                        var overflowMargin = 5; // If no satisfactory position can be found, how far away from the edge of the window should the tooltip be kept
-
-                                        // The chart canvas position
-                                        var canvasRect = tooltipDom.parentElement.getElementsByTagName('canvas')[0].getBoundingClientRect();
-                                        // The mouse coordinates relative to the whole window
-                                        // The first parameter to the position function is the mouse position relative to the canvas
-                                        var mouseX = canvasMousePos[0] + canvasRect.x;
-                                        var mouseY = canvasMousePos[1] + canvasRect.y;
-                                        // The width and height of the tooltip dom element
-                                        var tooltipWidth = sizes.contentSize[0];
-                                        var tooltipHeight = sizes.contentSize[1];
-
-                                        // Start by placing the tooltip top and right relative to the mouse position
-                                        var xPos = mouseX + margin;
-                                        var yPos = mouseY - margin - tooltipHeight;
-
-                                        // The tooltip is overflowing past the right edge of the window
-                                        if (xPos + tooltipWidth >= document.documentElement.clientWidth) {
-
-                                            // Attempt to place the tooltip to the left of the mouse position
-                                            xPos = mouseX - margin - tooltipWidth;
-
-                                            // The tooltip is overflowing past the left edge of the window
-                                            if (xPos <= 0) {
-                                                // Place the tooltip a fixed distance from the left edge of the window
-                                                xPos = overflowMargin;
-                                            }
-                                        }
-
-                                        // The tooltip is overflowing past the top edge of the window
-                                        if (yPos <= 0) {
-
-                                            // Attempt to place the tooltip to the bottom of the mouse position
-                                            yPos = mouseY + margin;
-
-                                            // The tooltip is overflowing past the bottom edge of the window
-                                            if (yPos + tooltipHeight >= document.documentElement.clientHeight) {
-
-                                                // Place the tooltip a fixed distance from the top edge of the window
-                                                yPos = overflowMargin;
-                                            }
-                                        }
-                                        // Return the position (converted back to a relative position on the canvas)
-                                        return [xPos - canvasRect.x, yPos - canvasRect.y];
-                                    }
-                                },
                                 formatter: function(params) {
                                     return self.graphNotesTooltipFormatter(self.mergedNotes, params);
                                 }
@@ -1260,31 +1247,15 @@
                     }
                 }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
-                    document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)').addEventListener('mouseleave', function(event) {
-                        if (localStorage.getItem('showTooltipFlag')) {
-                            event.stopImmediatePropagation();
-                        }
-                    }, true);
-                }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
-                    document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)').addEventListener('mouseleave', function(event) {
-                        if (localStorage.getItem('showTooltipFlag')) {
-                            event.stopImmediatePropagation();
-                        }
-                    }, true);
-
-                }
-
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
+                if (document.querySelector('x-vue-echarts div .graph-notes-tooltip')) {
                     localStorage.setItem('showTooltipFlag', true);
-                    document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)').addEventListener('mouseleave', window.hideTooltip, true);
+                    document.querySelector('x-vue-echarts div .graph-notes-tooltip').parentNode.addEventListener('mouseleave', window.hideTooltip, true);
                 }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
+                if (document.querySelector('x-vue-echarts div .graph-tooltip-wrapper')) {
                     localStorage.setItem('showTooltipFlag', true);
-                    document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)').addEventListener('mouseleave', window.hideTooltip, true);
+                    document.querySelector('x-vue-echarts div .graph-tooltip-wrapper').parentNode.addEventListener('mouseleave', window.hideTooltip, true);
                 }
                 countlyCommon.DISABLE_AUTO_REFRESH = true;
             }
@@ -1320,11 +1291,11 @@
                 }
 
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-notes-tooltip)')) {
+                if (document.querySelector('x-vue-echarts div .graph-notes-tooltip')) {
                     localStorage.removeItem('showTooltipFlag');
                 }
 
-                if (document.querySelector('x-vue-echarts > div:has(> .graph-tooltip-wrapper)')) {
+                if (document.querySelector('x-vue-echarts div .graph-tooltip-wrapper')) {
                     localStorage.removeItem('showTooltipFlag');
                 }
                 countlyCommon.DISABLE_AUTO_REFRESH = false;
@@ -1767,7 +1738,8 @@
                         ts: Date.now(),
                         color: {value: 1, label: '#39C0C8'},
                         emails: [],
-                        category: this.category
+                        category: this.category,
+                        appIds: this.data ? this.data.apps : null
                     });
                 }
                 else if (event === "manage") {

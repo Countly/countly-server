@@ -1,7 +1,7 @@
 /**
  *  Setup TTL indexes to delete older data for one specific app. This script should be run periodically, to create TTL indexes on new collections too, like new events, etc for specific app
  *  Server: countly
- *  Path: countly dir
+ *  Path: countly dir/bin/scripts/expire-data
  *  Command: node countly_single_app_expireData.js
  */
 

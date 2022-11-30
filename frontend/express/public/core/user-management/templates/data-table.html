@@ -86,7 +86,15 @@
           </el-table-column>
           <el-table-column
             v-if="col.value === 'group'"
-            sortable="true" prop="groupNames" :label="i18n('management-users.group')">
+            sortable="true" prop="groupNames" type="clickable" :label="i18n('management-users.group')">
+            <template v-slot="rowScope">
+              <div>
+                <a :href="'#/manage/users/group/' + rowScope.row.group_id + '?from=userlist'"
+                  :title="rowScope.row.groupNames">
+                  {{rowScope.row.groupNames}}
+                </a>
+            </div>
+            </template>
           </el-table-column>
           <el-table-column
             v-if="col.value === 'created_at'"

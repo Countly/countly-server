@@ -10,7 +10,7 @@ var exports = {},
     plugin = require('./../../../plugins/pluginManager.js'),
     json2csv = require('json2csv');
 
-//const log = require('./../../utils/log.js')('core:export');
+const log = require('./../../utils/log.js')('core:export');
 
 //npm install node-xlsx-stream !!!!!
 var xlsx = require("node-xlsx-stream");
@@ -236,7 +236,11 @@ function transformValue(value, key, mapper) {
                 }
                 value = moment(new Date(value)).tz(mapper.tz);
                 if (value) {
-                    value = value.format("ddd, D MMM YYYY HH:mm:ss");
+                    var format = "ddd, D MMM YYYY HH:mm:ss";
+                    if (mapper.fields[key].format) {
+                        format = mapper.fields[key].format;
+                    }
+                    value = value.format(format);
                 }
                 else {
                     value /= 1000;
@@ -535,6 +539,10 @@ exports.fromRequest = function(options) {
         },
         //adding custom processing for API responses
         'APICallback': function(err, body) {
+            if (err) {
+                log.e(err);
+                log.e(JSON.stringify(body));
+            }
             var data = [];
             try {
                 if (options.prop) {
@@ -576,6 +584,9 @@ exports.fromRequestQuery = function(options) {
         },
         //adding custom processing for API responses
         'APICallback': function(err, body) {
+            if (err) {
+                log.e(err);
+            }
             if (body) {
                 var cursor = common.db.collection(body.collection).aggregate(body.pipeline);
                 options.projection = body.projection;

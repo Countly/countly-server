@@ -3,7 +3,7 @@
         <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0">
             <clyd-widget-title class="bu-level-item" :title="title" :labels="metricLabels"></clyd-widget-title>
         </div>
-        <div class="bu-level-right" style="padding-right: 20px" v-if="isAllowed">
+        <div class="bu-level-right" v-if="isAllowed">
             <div class="bu-level-item">
                 <clyd-bucket v-if="showBuckets" :widget-id="data._id" v-model="selectedBucket"></clyd-bucket>
             </div>

@@ -355,8 +355,8 @@
         border: 1px solid #cfd6e4 !important;
         border-top: 0 !important;
         border-bottom: 0 !important;
-        > pre {
-            > code {
+        pre {
+            code {
                 font-family : "Courier New"
             }
         }
@@ -377,12 +377,17 @@
     }
 }
 
-.el-tiptap-editor__content > pre > code {
-    font-family : "Courier New" !important;
-}
-
-.el-tiptap-editor__content span > span {
-    background-color: inherit;
+.el-tiptap-editor__content {
+    overflow-x: unset !important;
+    > pre > code {
+        font-family : "Courier New" !important;
+    }
+    span > span {
+        background-color: inherit;
+    }
+    hr {
+        width: 100%
+    }
 }
 
 .el-dialog {

@@ -1,3 +1,28 @@
+## Version 22.09.4
+Fixes:
+- [api] respond 200 on ignore of device_id
+- [dashboards] change width for dashboard report
+- [dependencies] html-pdf replaced with pdf-puppeteer
+- [dependencies] replaced external ip module with icanhazip
+- [export] adding timeout in export to prevent stream closed, cannot push to
+- [menu] update Applications and Settings menu item position
+- [push] empty error message for expired iOS tokens
+- [push] leaving push history on push api-consent removal
+- [star-rating] added null check
+- [star-rating] changes for star-rating refresh issue
+- [star-rating] percentage fix
+- [ui] ui fixes not using :has operator
+
+Enterprise Fixes:
+- [cohorts] fixes for realtime cohort in case of multiple ORs
+- [cohorts] null check and validation on unexpected data from db
+- [dashboards] removed info about decimal points for fotmula widget
+- [dashboards] showing correct period for buckets week and month for drill and formula
+- [dashboards] showing values on widgets even if range is smaller than bucket for drill and formula
+- [data-manager] null check fix
+- [data-manager] reduces i18n call
+- [formulas] visual fix for formulas dashboard widget
+
 ## Version 22.09.3
 
 Fixes:
