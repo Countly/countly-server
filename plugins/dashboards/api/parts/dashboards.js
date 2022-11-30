@@ -166,6 +166,59 @@ dashboard.mapWidget = function(widget) {
         widget.client_fetch = true;
 
         break;
+    case "note":
+        if (!widget.contenthtml && widget.content) {
+            var linkStyling = "",
+                textStyling = "",
+                text = "",
+                fontSize = 15,
+                colors = ["#52A3EF", "#FF8700", "#0EC1B9", "#ed6262", "#edb762", "#ede262", "#62edb0", "#62beed", "#6279ed", "#c162ed", "#ed62c7", "#9A1B2F", "#E2E4E8"];
+
+            if (widget.font_size && !Number.isNaN(parseFloat(widget.font_size))) {
+                fontSize = parseFloat(widget.font_size);
+            }
+
+            textStyling += 'font-size: ' + fontSize + 'px;';
+
+            if (widget.text_align) {
+                textStyling += "text-align: " + widget.text_align + ";";
+            }
+
+            if (widget.bar_color) {
+                textStyling += 'color: ' + colors[widget.bar_color - 1] + ';';
+            }
+
+            if (widget.text_decoration) {
+                for (var i = 0 ; i < widget.text_decoration.length; i++) {
+                    if (widget.text_decoration[i] === "b") {
+                        textStyling += 'font-weight: bold;';
+                    }
+
+                    if (widget.text_decoration[i] === "i") {
+                        textStyling += 'font-style: italic;';
+                    }
+
+                    if (widget.text_decoration[i] === "u") {
+                        textStyling += 'text-decoration: underline;';
+                    }
+                }
+            }
+
+            text = `<p class="bu-pl-2 bu-pr-2" style="${textStyling}">${widget.content}</p>`;
+
+            if (widget.add_link) {
+                if (widget.text_align) {
+                    linkStyling += 'text-align: ' + widget.text_align + '; ';
+                }
+                linkStyling += 'white-space: normal !important;';
+                text += `<p style="${linkStyling}" class="bu-p-2">
+                            <a class="bu-pt-4 bu-is-clickable color-dark-blue-100" target="_blank" href="${widget.link_path}">${widget.link_text}</a>
+                        </p>`;
+            }
+
+            widget.contenthtml = text;
+        }
+        break;
     default:
         break;
     }

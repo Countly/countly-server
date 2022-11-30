@@ -384,8 +384,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 for (let f = 1; f <= 12; f++) {
                     summed.push("$d." + f + "." + segment + settings.levels.monthly[i]);
                 }
-                if (settings.levels.daily[i] !== 'u') {
-                    groupBy1[settings.levels.daily[i]] = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, {$sum: summed}, 0]}};
+                if (settings.levels.monthly[i] !== 'u') {
+                    groupBy1[settings.levels.monthly[i]] = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, {$sum: summed}, 0]}};
                 }
                 else {
                     groupBy1.uvalue = {$sum: {$cond: [{ $eq: [ "$m", curmonth + ":0" ]}, "$d." + segment + "u", 0]}};
@@ -410,6 +410,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 else {
                     groupBy0.uvalue = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
+                    groupBy0.u = {$sum: '$d.' + monthNumber[1] + '.' + segment + settings.levels.daily[i]};
                 }
             }
             pipeline.push({$group: groupBy0});
@@ -1047,7 +1048,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                 }
                 else if (params.qstring.action === "getTotals") {
-                    var settings = {app_id: params.qstring.app_id, startPos: 0, dataLength: 0, sortby: {}, sortcol: 0, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["s", "u", "t", "b", "uvc"], monthly: ["u", "t", "s", "b", "s", "uvc"]}};
+                    var settings = {app_id: params.qstring.app_id, startPos: 0, dataLength: 0, sortby: {}, sortcol: 0, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["s", "u", "t", "b", "uvc"], monthly: ["u", "t", "s", "b", "uvc"] }};
                     var pipe = createAggregatePipeline(params, settings);
                     pipe.push({"$group": {"_id": null, "s": {"$sum": "$s"}, "t": {"$sum": "$t"}, "b": {"$sum": "$b"}, "uvc": {"$sum": "$uvc"}}});
                     var collectionName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');

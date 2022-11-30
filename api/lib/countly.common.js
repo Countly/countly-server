@@ -26,7 +26,7 @@ function getTicksBetween(startTimestamp, endTimestamp) {
         ticks = [];
 
     while (dayIt < endTimestamp) {
-        let daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+        let daysLeft = Math.round(moment.duration(endTimestamp - dayIt).asDays());
         if (daysLeft >= dayIt.daysInMonth() && dayIt.date() === 1) {
             ticks.push(dayIt.format("YYYY.M"));
             dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
@@ -55,7 +55,7 @@ function getTicksCheckBetween(startTimestamp, endTimestamp) {
         ticks = [];
 
     while (dayIt < endTimestamp) {
-        let daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+        let daysLeft = Math.round(moment.duration(endTimestamp - dayIt).asDays());
         if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
             ticks.push(dayIt.format("YYYY.M"));
             dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
@@ -160,7 +160,7 @@ function getPeriodObject() {
             });
         }
         else {
-            cycleDuration = moment.duration(moment.duration(endTimestamp - startTimestamp).asDays(), "days");
+            cycleDuration = moment.duration(Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), "days");
             Object.assign(periodObject, {
                 dateString: "D MMM",
                 isSpecialPeriod: true
@@ -267,7 +267,7 @@ function getPeriodObject() {
     Object.assign(periodObject, {
         start: startTimestamp.valueOf(),
         end: endTimestamp.valueOf(),
-        daysInPeriod: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
+        daysInPeriod: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()),
         periodContainsToday: (startTimestamp <= _currMoment) && (_currMoment <= endTimestamp),
     });
 

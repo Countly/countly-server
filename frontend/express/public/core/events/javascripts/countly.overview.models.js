@@ -219,11 +219,24 @@
             var tableRows = [];
             if (data && data.length > 0) {
                 data.forEach(function(item) {
-                    if (!map[item.name] || (map[item.name] && (map[item.name].is_visible || map[item.name].is_visible === undefined))) {
-                        var eventKey = countlyEventsOverview.helpers.decode(item.name);
-                        if (map[item] && map[item].name && typeof map[item].name === 'string') {
-                            eventKey = countlyEventsOverview.helpers.decode(map[item].name);
+                    var eventKey;
+                    if (map) {
+                        if (!map[item.name] || (map[item.name] && (map[item.name].is_visible || map[item.name].is_visible === undefined))) {
+                            eventKey = countlyEventsOverview.helpers.decode(item.name);
+                            if (map[item] && map[item].name && typeof map[item].name === 'string') {
+                                eventKey = countlyEventsOverview.helpers.decode(map[item].name);
+                            }
+                            tableRows.push({
+                                "count": item.count,
+                                "sum": item.sum,
+                                "duration": item.duration,
+                                "key": eventKey,
+                                "name": countlyEventsOverview.helpers.getEventLongName(eventKey, map)
+                            });
                         }
+                    }
+                    else {
+                        eventKey = countlyEventsOverview.helpers.decode(item.name);
                         tableRows.push({
                             "count": item.count,
                             "sum": item.sum,

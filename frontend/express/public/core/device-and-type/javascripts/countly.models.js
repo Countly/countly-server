@@ -1,4 +1,4 @@
-/* global CountlyHelpers, countlyAuth, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser, countlyGlobal, countlyDensity*/
+/* global CountlyHelpers, countlyAuth, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser, countlyGlobal, countlyDensity, CV*/
 (function(countlyDevicesAndTypes) {
 
     CountlyHelpers.createMetricModel(window.countlyDevicesAndTypes, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
@@ -403,11 +403,11 @@
                 xAxis: {data: []},
                 series: [
                     {
-                        name: "newUsers",
+                        name: CV.i18n('common.table.new-users'),
                         data: [],
                     },
                     {
-                        name: "totalSessions",
+                        name: CV.i18n('common.table.total-sessions'),
                         data: [],
                     }
                 ]

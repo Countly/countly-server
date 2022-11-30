@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery*/
+/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery, countlyGraphNotesCommon*/
 var UserAnalyticsOverview = countlyVue.views.create({
     template: CV.T("/core/user-analytics-overview/templates/overview.html"),
     data: function() {
@@ -180,7 +180,10 @@ app.route("/analytics/users/*tab", "user-analytics-tab", function(tab) {
 //Analytics->User analytics - overview widget
 var GridComponent = countlyVue.views.create({
     template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
-    mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom],
+    mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom, countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.graphNotesCommand],
+    components: {
+        "drawer": countlyGraphNotesCommon.drawer
+    },
     data: function() {
         return {
             showBuckets: false,
@@ -320,6 +323,24 @@ var GridComponent = countlyVue.views.create({
 
             return labels;
         }
+    },
+    methods: {
+        refresh: function() {
+            this.refreshNotes();
+        },
+        onWidgetCommand: function(event) {
+            if (event === 'add' || event === 'manage' || event === 'show') {
+                this.graphNotesHandleCommand(event);
+                return;
+            }
+            else if (event === 'zoom') {
+                this.triggerZoom();
+                return;
+            }
+            else {
+                return this.$emit('command', event);
+            }
+        },
     }
 });
 

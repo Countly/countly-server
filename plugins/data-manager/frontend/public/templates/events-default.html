@@ -73,9 +73,9 @@
             <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
 
                 <el-table-column v-if="col.value === 'category'"
-                    min-width="250" sortable="custom" prop="category" :label="i18n('data-manager.category')">
+                    min-width="250" sortable="custom" prop="categoryName" :label="i18n('data-manager.category')">
                     <template v-slot="rowScope">
-                        {{rowScope.row.categoryName || i18n('data-manager.uncategorized') }}
+                        {{rowScope.row.categoryName}}
                     </template>
                 </el-table-column>
 
@@ -109,7 +109,7 @@
                     </template>
                 </el-table-column>
 
-                <el-table-column v-else-if="col.value === 'description' " sortable="custom" min-width="250" prop="totalCount" :label="i18n('data-manager.description')">
+                <el-table-column v-else-if="col.value === 'description' " sortable="custom" min-width="250" prop="description" :label="i18n('data-manager.description')">
                     <template v-slot="rowScope">
                             <div v-html="rowScope.row.description || i18n('data-manager.empty-placeholder')"></div>
                     </template>

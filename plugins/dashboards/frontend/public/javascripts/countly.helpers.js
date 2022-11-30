@@ -966,6 +966,9 @@
             customPeriod: {
                 type: [Array, String],
             },
+            reportInfo: {
+                type: Object
+            },
             showPeriod: {
                 type: Boolean,
                 default: true

@@ -86,7 +86,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/jsoneditor/jsoneditor.js',
                     'frontend/express/public/javascripts/utils/Sortable.min.js',
                     'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js',
-                    'frontend/express/public/javascripts/utils/countly.checkbox.js'
+                    'frontend/express/public/javascripts/utils/countly.checkbox.js',
+                    'frontend/express/public/javascripts/utils/element-tiptap.umd.min.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
             },
@@ -145,6 +146,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/datatable.js',
                     'frontend/express/public/javascripts/countly/vue/components/dialog.js',
                     'frontend/express/public/javascripts/countly/vue/components/drawer.js',
+                    'frontend/express/public/core/notes/javascripts/countly.models.js',
+                    'frontend/express/public/core/notes/javascripts/countly.common.notes.js',
                     'frontend/express/public/javascripts/countly/vue/components/vis.js',
                     'frontend/express/public/javascripts/countly/vue/components/helpers.js',
                     'frontend/express/public/javascripts/countly/vue/components/sidebar.js',
@@ -189,7 +192,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/geo-countries/javascripts/countly.views.js',
                     'frontend/express/public/core/geo-countries/javascripts/countly.widgets.geo.js',
                     'frontend/express/public/core/home/javascripts/countly.models.js',
-                    'frontend/express/public/core/home/javascripts/countly.views.js'
+                    'frontend/express/public/core/home/javascripts/countly.views.js',
+                    'frontend/express/public/core/notes/javascripts/countly.views.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }
@@ -231,6 +235,7 @@ module.exports = function(grunt) {
                         'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.css',
                         'frontend/express/public/stylesheets/bulma/bulma-custom.css',
                         'frontend/express/public/stylesheets/styles/manifest.css',
+                        'frontend/express/public/stylesheets/vue/element-tiptap.css',
                     ]
                 }
             }

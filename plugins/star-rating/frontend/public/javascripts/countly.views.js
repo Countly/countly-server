@@ -179,7 +179,16 @@
     var RatingsTable = countlyVue.views.create({
         template: CV.T("/star-rating/templates/ratings-table.html"),
         props: {
-            ratings: Array
+            ratings: Array,
+            loadingState: Boolean
+        },
+        computed: {
+            preparedRows: function() {
+                return this.ratings.map(function(rating) {
+                    rating.percentage = parseFloat(rating.percent) || 0;
+                    return rating;
+                });
+            }
         },
         data: function() {
             return {
@@ -309,7 +318,8 @@
                 comments: [],
                 platformOptions: [{label: 'All Platforms', value: ''}],
                 widgetOptions: [{label: 'All Widgets', value: ''}],
-                versionOptions: [{label: 'All Versions', value: ''}]
+                versionOptions: [{label: 'All Versions', value: ''}],
+                isLoading: false
             };
         },
         methods: {
@@ -409,11 +419,15 @@
 
                 ratingArray.sort();
             },
-            fetch: function() {
+            fetch: function(force) {
                 var self = this;
+                if (force) {
+                    self.isLoading = true;
+                }
                 $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter), starRatingPlugin.requestFeedbackWidgetsData())
                     .then(function() {
-                    // set platform versions for filter
+                        self.isLoading = false;
+                        // set platform versions for filter
                         self.platform_version = starRatingPlugin.getPlatformVersion();
                         self.widgets = starRatingPlugin.getFeedbackWidgetsData();
                         // set rating data for charts
@@ -475,7 +489,7 @@
             }
         },
         created: function() {
-            this.fetch();
+            this.fetch(true);
         }
     });
 
@@ -695,7 +709,8 @@
                 },
                 platformOptions: [{label: 'All Platforms', value: ''}],
                 versionOptions: [{label: 'All Versions', value: ''}],
-                platform_version: {}
+                platform_version: {},
+                isLoading: false
             };
         },
         methods: {
@@ -877,7 +892,7 @@
             refresh: function() {
                 this.fetch();
             },
-            fetch: function() {
+            fetch: function(force) {
                 var self = this;
                 this.activeFilter.widget = this.$route.params.id;
 
@@ -890,10 +905,14 @@
                     }
                 });
                 // set widget filter as current one
-                this.activeFilter.widget = this.widget._id;
+                this.activeFilter.widget = this.widget._id || this.$route.params.id;
+                if (force) {
+                    this.isLoading = true;
+                }
                 $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter))
                     .then(function() {
-                    // set platform versions for filter
+                        self.isLoading = false;
+                        // set platform versions for filter
                         self.platform_version = starRatingPlugin.getPlatformVersion();
                         // set rating data for charts
                         // calculate cumulative data for chart
@@ -963,12 +982,15 @@
                 ];
             },
             ratingRate: function() {
-                var timesShown = this.widget.timesShown === 0 ? 1 : this.widget.timesShown;
-                return parseFloat(((this.widget.ratingsCount / timesShown) * 100).toFixed(2)) || 0;
+                var timesShown = this.widget.timesShown === 0 || !this.widget.timesShown ? 1 : this.widget.timesShown;
+                if (timesShown < this.count) {
+                    timesShown = this.count;
+                }
+                return parseFloat(((this.count / timesShown) * 100).toFixed(2)) || 0;
             }
         },
         mounted: function() {
-            this.fetch();
+            this.fetch(true);
         }
     });
 

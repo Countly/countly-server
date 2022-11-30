@@ -1100,4 +1100,37 @@
         return id;
     };
 
+    countlyCrashes.modifyExistsQueries = function(inpQuery) {
+        var resultQuery = {};
+        var existsGroups = {};
+
+        Object.keys(inpQuery).forEach(function(key) {
+            if (inpQuery[key].$exists) {
+                var prefix = key.split(".")[0];
+                var obj = {};
+                obj[key] = inpQuery[key];
+
+                if (existsGroups[prefix]) {
+                    existsGroups[prefix] = existsGroups[prefix].concat(obj);
+                }
+                else {
+                    existsGroups[prefix] = [obj];
+                }
+            }
+            else {
+                resultQuery[key] = inpQuery[key];
+            }
+        });
+
+        Object.values(existsGroups).forEach(function(group, idx) {
+            if (idx === 0) {
+                resultQuery.$and = [];
+            }
+
+            resultQuery.$and.push({$or: group});
+        });
+
+        return resultQuery;
+    };
+
 }(window.countlyCrashes = window.countlyCrashes || {}));

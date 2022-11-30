@@ -908,7 +908,7 @@ var AppRouter = Backbone.Router.extend({
     },
     performRefresh: function(self) {
         //refresh only if we are on current period
-        if (countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded) {
+        if (countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded && !countlyCommon.DISABLE_AUTO_REFRESH) {
             self.activeView.isLoaded = false;
             $.when(self.activeView.refresh()).always(function() {
                 self.activeView.isLoaded = true;
@@ -1142,7 +1142,7 @@ var AppRouter = Backbone.Router.extend({
 
         var jobsIconSvg = '<svg width="20px" height="16px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><title>list-24px 2</title><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="list-24px-2" fill="#9f9f9f" fill-rule="nonzero"><g id="list-24px"><path d="M0,6 L2,6 L2,4 L0,4 L0,6 Z M0,10 L2,10 L2,8 L0,8 L0,10 Z M0,2 L2,2 L2,0 L0,0 L0,2 Z M3,6 L12,6 L12,4 L3,4 L3,6 Z M3,10 L12,10 L12,8 L3,8 L3,10 Z M3,0 L3,2 L12,2 L12,0 L3,0 Z" id="Shape"></path></g></g></g></svg>';
         if (countlyAuth.validateAnyAppAdmin()) {
-            self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 30});
+            self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 20});
         }
         if (countlyAuth.validateGlobalAdmin()) {
             self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 10});

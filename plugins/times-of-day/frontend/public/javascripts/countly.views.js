@@ -163,7 +163,7 @@
             dimensions: function() {
                 return {
                     minWidth: 4,
-                    minHeight: 3,
+                    minHeight: 4,
                     width: 4,
                     height: 4
                 };

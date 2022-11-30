@@ -56,7 +56,7 @@
 		  <cly-section class="bu-mt-5 bu-mr-5">
 			<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading">	
 			</cly-chart-bar>
-			<cly-chart-time v-else  :option="chartData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading"></cly-chart-time>
+			<cly-chart-time v-else  :option="chartData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading" :category="graphNotesCategory"></cly-chart-time>
 		  </cly-section>
 		  <cly-section class="bu-mt-5 bu-mr-5">
 			<detail-tables></detail-tables>

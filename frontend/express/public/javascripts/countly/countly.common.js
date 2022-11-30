@@ -291,6 +291,15 @@
             return div.innerHTML;
         };
 
+        countlyCommon.unescapeHtml = function(htmlStr) {
+            htmlStr = htmlStr.replace(/&lt;/g, "<");
+            htmlStr = htmlStr.replace(/&gt;/g, ">");
+            htmlStr = htmlStr.replace(/&quot;/g, "\"");
+            htmlStr = htmlStr.replace(/&#39;/g, "\'");
+            htmlStr = htmlStr.replace(/&amp;/g, "&");
+            return htmlStr;
+        };
+
         /**
         * Encode some tags, leaving those set in whitelist as they are.
         * @memberof countlyCommon
@@ -3636,7 +3645,7 @@
                 ticks = [];
 
             while (dayIt < endTimestamp) {
-                var daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+                var daysLeft = Math.random(moment.duration(endTimestamp - dayIt).asDays());
                 if (daysLeft >= dayIt.daysInMonth() && dayIt.date() === 1) {
                     ticks.push(dayIt.format("YYYY.M"));
                     dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
@@ -3665,7 +3674,7 @@
                 ticks = [];
 
             while (dayIt < endTimestamp) {
-                var daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+                var daysLeft = Math.random(moment.duration(endTimestamp - dayIt).asDays());
                 if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
                     ticks.push(dayIt.format("YYYY.M"));
                     dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
@@ -3767,7 +3776,7 @@
                     });
                 }
                 else {
-                    cycleDuration = moment.duration(moment.duration(endTimestamp - startTimestamp).asDays(), "days");
+                    cycleDuration = moment.duration(Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), "days");
                     Object.assign(periodObject, {
                         dateString: "D MMM",
                         isSpecialPeriod: true
@@ -3874,8 +3883,8 @@
             Object.assign(periodObject, {
                 start: startTimestamp.valueOf(),
                 end: endTimestamp.valueOf(),
-                daysInPeriod: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
-                numberOfDays: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
+                daysInPeriod: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()), //due to daylight saving time we might have 30 days and 1 hour, or 29 days and 23 hours between 2 dates
+                numberOfDays: Math.round(moment.duration(endTimestamp - startTimestamp).asDays()),
                 periodContainsToday: (startTimestamp <= currentTimestamp) && (currentTimestamp <= endTimestamp),
             });
 
@@ -4384,20 +4393,30 @@
             window.app.localize();
         };
 
-        countlyCommon.getGraphNotes = function(appIds, callBack) {
+        countlyCommon.getGraphNotes = function(appIds, filter, callBack) {
             if (!appIds) {
                 appIds = [];
+            }
+            var args = {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "notes_apps": JSON.stringify(appIds),
+                "period": JSON.stringify([countlyCommon.periodObj.start, countlyCommon.periodObj.end]),
+                "method": "notes",
+                "dt": Date.now()
+            };
+            if (filter && filter.noteType) {
+                args.note_type = filter.noteType;
+            }
+            if (filter && filter.category) {
+                args.category = JSON.stringify(filter.category);
+            }
+            if (filter && filter.customPeriod) {
+                args.period = JSON.stringify(filter.customPeriod);
             }
             return window.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "category": "session",
-                    "notes_apps": JSON.stringify(appIds),
-                    "period": countlyCommon.getPeriod(),
-                    "method": "notes",
-                },
+                data: args,
                 success: function(json) {
                     var notes = json && json.aaData || [];
                     var noteSortByApp = {};

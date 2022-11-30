@@ -440,9 +440,15 @@
         computed: {
             crashgroupsFilter: {
                 set: function(newValue) {
+                    var query = {};
+
+                    if (newValue.query) {
+                        query = countlyCrashes.modifyExistsQueries(newValue.query);
+                    }
+
                     return Promise.all([
                         this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue),
-                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(newValue.query)})
+                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)})
                     ]);
                 },
                 get: function() {
@@ -612,7 +618,8 @@
             countlyVue.mixins.auth(FEATURE_NAME),
             countlyVue.container.dataMixin({
                 externalActionDropdownItems: "crashes/external/actionDropdownItems",
-                externalDialogs: "crashes/external/dialogs"
+                externalDialogs: "crashes/external/dialogs",
+                externalActions: "crashes/external/actionDropdownItems/actions"
             })
         ],
         data: function() {
@@ -957,6 +964,15 @@
                                 });
                         }
                     });
+                }
+                else { //get commandhandler from container
+                    var action = this.externalActions.find(item => {
+                        return item.name === 'create-issue';
+                    });
+                    if (action) {
+                        action.handler(this);
+                    }
+
                 }
             },
             handleCrashgroupStacktraceCommand: function(command) {

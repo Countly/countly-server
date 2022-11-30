@@ -20,6 +20,7 @@ frontend/express/public/sdk/
 bin/scripts/nghttp2
 frontend/express/public/images/*/
 !frontend/express/public/images/leaflet/
+!frontend/express/public/images/annotation/
 !frontend/express/public/images/dashboard/
 !frontend/express/public/images/flags/
 !frontend/express/public/images/management/

@@ -1,3 +1,148 @@
+## Version 22.09.4
+Fixes:
+- [api] respond 200 on ignore of device_id
+- [dashboards] change width for dashboard report
+- [dependencies] html-pdf replaced with pdf-puppeteer
+- [dependencies] replaced external ip module with icanhazip
+- [export] adding timeout in export to prevent stream closed, cannot push to
+- [menu] update Applications and Settings menu item position
+- [push] empty error message for expired iOS tokens
+- [push] leaving push history on push api-consent removal
+- [star-rating] added null check
+- [star-rating] changes for star-rating refresh issue
+- [star-rating] percentage fix
+- [ui] ui fixes not using :has operator
+
+Enterprise Fixes:
+- [cohorts] fixes for realtime cohort in case of multiple ORs
+- [cohorts] null check and validation on unexpected data from db
+- [dashboards] removed info about decimal points for fotmula widget
+- [dashboards] showing correct period for buckets week and month for drill and formula
+- [dashboards] showing values on widgets even if range is smaller than bucket for drill and formula
+- [data-manager] null check fix
+- [data-manager] reduces i18n call
+- [formulas] visual fix for formulas dashboard widget
+
+## Version 22.09.3
+
+Fixes:
+- [applications] admin of app should be able to change settings to app in app managament view
+- [dbviewer] allow filtering collections by apps
+- [compliance-hub] fixed compliance hub ecport/purge issue
+- [core] activate selectedMode option for custom legend component
+- [crashes] modify exists queries to get correct result from db
+- [crashes] set crashgroup name as proper link
+- [crashes] store javascript property too
+- [dashboards] fixed legend issue
+- [dashboards] increases z-index and always showing scrollbar
+- [data-manager] fixes event sort by category
+- [data-migration] exporting also eventTimeline collection in data migration
+- [export] fixed export custom filename issue
+- [longtasks] do not record failure to create operation id as error in taskmanager
+- [period] DST fix, where we might have 30 days and 1 hour, or 29 days and 23 hours between 2 dates
+- [render] revert puppeteer dependency as new one installs chromium in user folder, which is not always accessible
+- [scripts] script for deleting members, which have not logged in for some time
+- [star-rating] fixed data is loaded when rating widget selected
+- [star-rating] fixed undefined numbers
+- [upgrade] update batch size for merge apm query
+
+Enterprise fixes:
+- [attribution] attribution save default URL issue
+- [cohorts] bugfixes for realtime cohorts
+- [concurrent_users] upsert command fixed
+- [data-manager] fixes data manager->Segmentation sorting
+- [data-manager] transformations sorting
+- [drill] null checks for loading drill widget data
+- [formulas] added recalculation button + showing last time data was recalculated
+- [formulas] fixed issue with cases when more than one report created for single bucket
+- [formulas] some old widgets have dplaces stored as string. Workaround for it.
+- [formulas] some widget have invalid value for buckets. Catching those and calling correct report creation
+- [revenue] fixes in the dashboard widget
+- [revenue] sorting bugs field in revenue table
+
+## Version 22.09.2
+
+Fixes:
+- [applications] cleaning up checksum_salt on update, showing value on fetch
+- [crashes] fixed negated trend handling of the crashes home widget
+- [dashboards] fixed too small graph widgets
+- [dashboards] overflow of text in notes fixed
+- [dashboards] show latest update date for report manager widgets
+- [data-manager] fixed description column
+- [device_list] added latest Apple devices
+- [devices] app version series legend was missing
+- [docker] dependencies for puppeteer
+- [export] fixed using export file name
+- [logger] convertToCap only when needed
+- [logger] Incoming Data Logs datatable sorting change
+- [overview] fixed ordering of home widgets doesn't work in CE
+- [remote-config] removed programmatic audit report
+- [report-manager] taskmanager calling directly using processRequest on task rerun
+- [settings] disable city data tracking when country is disabled
+- [slipping-away-users] hide user button in CE
+- [slipping-away-users] table width arranged
+- [star-rating] fixes sorting on rating table
+- [two-factor-auth] fix permission call in two factor auth
+- [views] fixed bounce rate average in graph
+
+
+Enterprise fixes:
+- [cohorts] query transformation and operation limit fixed
+- [crashes-jira] create jira button bugfix
+- [drill] add 'recalculate' button for drill widgets
+- [drill] fixes for dashboard widgets
+- [drill] fixes for event timeline
+- [drill] showing last updated on drill widgets
+- [formulas] bucket fixes for formulas
+- [formulas] fixes for dashboard widgets
+- [funnels] did not do first step user list
+- [revenue] dashboard widget for revenue
+- [revenue] fixed sorting columns
+
+## Version 22.09.1
+
+Fixes:
+- [2fa] fix permission call in two factor auth
+- [api] remove duplicate code and process device type correctly
+- [api] top events check fixes
+- [apps] app lock tooltip text fixed and localized
+- [apps] app management sidebar app icon margin alignment
+- [crashes] fixes new crash dispatch
+- [crashes] use common styles for the tab element
+- [dashboards] note in dashboards escaping fixed 
+- [device-list] add missing Apple devices
+- [events] check for existience of map key in overview
+- [hooks] fix app filter for new crashes
+- [hooks] fixes for data formatting
+- [members] update default profile image sprite
+- [push] fixing ampersand encoding in button URLs & on click URL
+- [scripts] fixes for expire scripts to do not drop indexes on ttl change, but rather modifly value
+- [server-stats] fixed issues with incorrectly calculated data points for periods: "month", "day"
+- [settings] country data tracking can be disabled
+- [ui] cly-vue-radio-block - use common trend styles
+- [ui] common styles for the tab element & trend up, down, neutral and negated states
+- [ui] fixes for datepickers, who uses second not milisecond format
+- [ui] prevent map zoom via scroll wheel
+- [ui] remove spaces before % throughout the dashboard
+- [ui] set drawer element z-index for it to be above the table loading mask
+- [ui] vertically center some no-data elements in Analytics > Technology
+- [upgrade] fix stopping on error
+- [upgrade] improvement for upgrade script to do parallel upgrade for collection
+
+Enterprise fixes:
+- [attribution] use common styles for the tab element & use correct trend values
+- [cohorts] in mongo update $pull And $push CANT be in same call!!
+- [cohorts] period selection fixes
+- [concurrent_users] online users home widget max numbers margin alignment
+- [data-manager] fix for status update not showing up
+- [data-manager] fix projections for data masking
+- [drill] fix time formatter
+- [drill] update duration on each session duration change
+- [formulas] pass [CLY]_session as default if none of events is set. To have duration in query builder after
+- [groups] check for empty group permission when creating permission set in drawer
+- [groups] fix groupID in group drawer
+- [retention] fix in case of undefined parameter
+- [revenue] use common styles for the tab element
 
 ## Version 22.09
 

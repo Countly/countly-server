@@ -4981,3 +4981,7 @@ transform: rotate(45deg);
 .routename-manageUsers .manage-users-table .own-row {
     opacity: 0;
 }
+
+x-vue-echarts > div:has(> .graph-tooltip-wrapper), x-vue-echarts > div:has(> .graph-notes-tooltip) {
+    opacity: 0;
+}

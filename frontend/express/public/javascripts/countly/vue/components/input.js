@@ -435,7 +435,7 @@
                                     class="text-medium cly-vue-listbox__item"\
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
-                                    <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
+                                    <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
                                     <el-checkbox :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="disableNonSelected && !innerValue.includes(option.value)">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\

@@ -657,10 +657,16 @@
                     formData = this.exportApi();
                     formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/request");
+                    if (this.exportFileName) {
+                        formData.filename = this.exportFileName;
+                    }
                 }
                 else if (this.exportQuery) {
                     formData = this.exportQuery();
                     formData.type = params.type;
+                    if (this.exportFileName) {
+                        formData.filename = this.exportFileName;
+                    }
                     url = countlyCommon.API_URL + (formData.url || "/o/export/db");
                 }
                 else if (this.dataSource) { // default export logic for server tables

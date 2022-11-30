@@ -86,6 +86,9 @@ appsApi.getAppsDetails = function(params) {
             return false;
         }
         params.app = app;
+        if (app.checksum_salt) {
+            app.salt = app.salt || app.checksum_salt;
+        }
         if (params.app.owner) {
             params.app.owner_id = params.app.owner;
             params.app.owner = common.db.ObjectID(params.app.owner + "");
@@ -330,7 +333,7 @@ appsApi.updateApp = function(params) {
                 'required': false,
                 'type': 'String'
             },
-            'checksum_salt': {
+            'salt': {
                 'required': false,
                 'type': 'String'
             },
@@ -370,6 +373,7 @@ appsApi.updateApp = function(params) {
     }
 
     updatedApp.edited_at = Math.floor(((new Date()).getTime()) / 1000);
+    delete updatedApp.checksum_salt;
 
     common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.args.app_id), function(err, appBefore) {
         if (err || !appBefore) {
@@ -377,7 +381,7 @@ appsApi.updateApp = function(params) {
         }
         else {
             if (params.member && params.member.global_admin) {
-                common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function() {
+                common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
                     plugins.dispatch("/i/apps/update", {
                         params: params,
                         appId: params.qstring.args.app_id,
@@ -392,7 +396,7 @@ appsApi.updateApp = function(params) {
             }
             else {
                 if (hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
-                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function() {
+                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
                         plugins.dispatch("/i/apps/update", {
                             params: params,
                             appId: params.qstring.args.app_id,

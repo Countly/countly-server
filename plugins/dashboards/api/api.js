@@ -1338,7 +1338,7 @@ plugins.setConfigs("dashboards", {
                                 options.report = report;
                                 options.view = "/dashboard?ssr=true#" + "/custom/" + report.dashboards; //Set ssr=true (server side rendering)
                                 options.savePath = path.resolve(__dirname, savePath);
-                                options.dimensions = {width: 750, padding: 100};
+                                options.dimensions = {width: 800, padding: 100};
                                 options.token = token;
                                 options.source = "dashboards/" + imageName;
                                 options.timeout = 120000;

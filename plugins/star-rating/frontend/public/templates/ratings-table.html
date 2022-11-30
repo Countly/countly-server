@@ -1,4 +1,5 @@
-<cly-datatable-n :rows="ratings" :persist-key="ratingsTablePersistKey">
+
+<cly-datatable-n :rows="preparedRows" v-loading="loadingState" :force-loading="loadingState" :persist-key="ratingsTablePersistKey">
     <template v-slot="scope">
         <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')">
             <template v-slot="rowScope">
@@ -7,7 +8,7 @@
                 </span>
             </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="numberOfRatings" :label="i18n('feedback.number-of-ratings')">
+        <el-table-column sortable="true" prop="count" :label="i18n('feedback.number-of-ratings')">
           <template v-slot="rowScope">
               <span class="text-medium">
                 {{ rowScope.row.count }}

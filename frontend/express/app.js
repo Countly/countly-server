@@ -1024,6 +1024,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                             userOfApps = apps;
 
                             for (let i = 0; i < apps.length; i++) {
+                                if (apps[i].checksum_salt) {
+                                    apps[i].salt = apps[i].salt || apps[i].checksum_salt;
+                                }
                                 apps[i].type = apps[i].type || "mobile";
                                 countlyGlobalApps[apps[i]._id] = apps[i];
                                 countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;

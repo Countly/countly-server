@@ -1,10 +1,10 @@
 <div v-bind:class="[componentId]">
-  	<cly-header>
-	  <cly-back-link slot="header-top" :title="i18n('compare.back')"></cly-back-link>
-    	  <template v-slot:header-bottom>  
+    <cly-header>
+    <cly-back-link slot="header-top" :title="i18n('compare.back')"></cly-back-link>
+        <template v-slot:header-bottom>  
     <h2> {{i18n('compare.apps.title')}} 
     </h2>
-	</template> 
+  </template> 
   </cly-header>
   <cly-main>
     <div class="bu-mb-4 cly-vue-compare-apps">
@@ -39,11 +39,11 @@
     </div>
     <cly-section>
     <div>
-      <cly-chart-time :option="lineChartData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading"></cly-chart-time>
+      <cly-chart-time :option="lineChartData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading" category="applications"></cly-chart-time>
     </div>
     </cly-section>
     <cly-section>
     <detail-tables></detail-tables>
     </cly-section>
   </cly-main>
-  </div>
+</div>

@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyAuth, countlySegmentation, countlyCommon, countlyGlobal, countlyViews, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
+/*global CountlyHelpers, countlyAuth, countlySegmentation, countlyCommon, countlyGlobal, countlyViews, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager, countlyGraphNotesCommon*/
 
 (function() {
     var FEATURE_NAME = "views";
@@ -451,7 +451,15 @@
             },
             numberFormatter: function(row, col, value) {
                 return countlyCommon.formatNumber(value, 0);
+            },
+            formatChartValue: function(value) {
+                if (this.selectedProperty === "br") {
+                    return countlyCommon.getShortNumber(value) + '%';
+                }
+                return countlyCommon.getShortNumber(value);
             }
+
+
         },
         computed: {
             data: function() {
@@ -796,7 +804,15 @@
 
     var GridComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/analytics/widget.html'),
-        mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.commonFormatters, countlyVue.mixins.zoom],
+        mixins: [countlyVue.mixins.customDashboards.global,
+            countlyVue.mixins.commonFormatters,
+            countlyVue.mixins.zoom,
+            countlyVue.mixins.hasDrawers("annotation"),
+            countlyVue.mixins.graphNotesCommand
+        ],
+        components: {
+            "drawer": countlyGraphNotesCommon.drawer
+        },
         computed: {
             title: function() {
                 if (this.data.title) {
@@ -869,8 +885,25 @@
                 }
                 return tableData;
             }
+        },
+        methods: {
+            refresh: function() {
+                this.refreshNotes();
+            },
+            onWidgetCommand: function(event) {
+                if (event === 'zoom') {
+                    this.triggerZoom();
+                    return;
+                }
+                else if (event === 'add' || event === 'manage' || event === 'show') {
+                    this.graphNotesHandleCommand(event);
+                    return;
+                }
+                else {
+                    return this.$emit('command', event);
+                }
+            },
         }
-
     });
 
     var DrawerComponent = countlyVue.views.create({
