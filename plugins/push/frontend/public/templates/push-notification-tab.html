@@ -27,25 +27,48 @@
                 </div>
             </div>
             <cly-section>
-                <cly-chart-time :bucket="selectedPeriodFilter" :notation-selected-bucket="selectedPeriodFilter" :option="pushNotificationOptions" :hideNotation="selectedPushNotificationType === 'automatic' ? true : false" :height="400" v-loading="isDashboardLoading" :force-loading="isDashboardLoading" :legend="legend" class="cly-vue-push-notification-chart" category="push-notification">
-                    <template v-slot:chart-left="scope">
-                        <span class="cly-vue-push-notification-chart__left-text bu-mr-2">{{i18n('push-notification.time-period')}}</span>
-                        <div style="width:100px;">
-                            <el-select v-if="selectedPushNotificationType === TypeEnum.ONE_TIME" v-model="selectedOneTimePeriodFilter">
-                                <el-option :key="item.value" :value="item.value" :label="item.label"
-                                    v-for="item in oneTimePeriodFilters"></el-option>
-                            </el-select>
-                            <el-select v-else-if="selectedPushNotificationType === TypeEnum.AUTOMATIC" v-model="selectedAutomaticPeriodFilter">
-                                <el-option :key="item.value" :value="item.value" :label="item.label"
-                                    v-for="item in automaticPeriodFilters"></el-option>
-                            </el-select>
-                            <el-select v-else v-model="selectedTransactionalPeriodFilter">
-                                <el-option :key="item.value" :value="item.value" :label="item.label"
-                                    v-for="item in transactionalPeriodFilters"></el-option>
-                            </el-select>
-                        </div>
-                    </template>
-                </cly-chart-time>
+                <div v-if="selectedPushNotificationType === 'automatic'">
+                    <cly-chart-time :bucket="selectedPeriodFilter" :notation-selected-bucket="selectedPeriodFilter" :option="pushNotificationOptions" :hideNotation="true" :height="400" v-loading="isDashboardLoading" :force-loading="isDashboardLoading" :legend="legend" class="cly-vue-push-notification-chart" category="push-notification">
+                        <template v-slot:chart-left="scope">
+                            <span class="cly-vue-push-notification-chart__left-text bu-mr-2">{{i18n('push-notification.time-period')}}</span>
+                            <div style="width:100px;">
+                                <el-select v-if="selectedPushNotificationType === TypeEnum.ONE_TIME" v-model="selectedOneTimePeriodFilter">
+                                    <el-option :key="item.value" :value="item.value" :label="item.label"
+                                        v-for="item in oneTimePeriodFilters"></el-option>
+                                </el-select>
+                                <el-select v-else-if="selectedPushNotificationType === TypeEnum.AUTOMATIC" v-model="selectedAutomaticPeriodFilter">
+                                    <el-option :key="item.value" :value="item.value" :label="item.label"
+                                        v-for="item in automaticPeriodFilters"></el-option>
+                                </el-select>
+                                <el-select v-else v-model="selectedTransactionalPeriodFilter">
+                                    <el-option :key="item.value" :value="item.value" :label="item.label"
+                                        v-for="item in transactionalPeriodFilters"></el-option>
+                                </el-select>
+                            </div>
+                        </template>
+                    </cly-chart-time>
+                </div>
+                <div v-else>
+                    <cly-chart-time :bucket="selectedPeriodFilter" :notation-selected-bucket="selectedPeriodFilter" :option="pushNotificationOptions" :force-loading="isDashboardLoading" :legend="legend" class="cly-vue-push-notification-chart" category="push-notification">
+                        <template v-slot:chart-left="scope">
+                            <span class="cly-vue-push-notification-chart__left-text bu-mr-2">{{i18n('push-notification.time-period')}}</span>
+                            <div style="width:100px;">
+                                <el-select v-if="selectedPushNotificationType === TypeEnum.ONE_TIME" v-model="selectedOneTimePeriodFilter">
+                                    <el-option :key="item.value" :value="item.value" :label="item.label"
+                                        v-for="item in oneTimePeriodFilters"></el-option>
+                                </el-select>
+                                <el-select v-else-if="selectedPushNotificationType === TypeEnum.AUTOMATIC" v-model="selectedAutomaticPeriodFilter">
+                                    <el-option :key="item.value" :value="item.value" :label="item.label"
+                                        v-for="item in automaticPeriodFilters"></el-option>
+                                </el-select>
+                                <el-select v-else v-model="selectedTransactionalPeriodFilter">
+                                    <el-option :key="item.value" :value="item.value" :label="item.label"
+                                        v-for="item in transactionalPeriodFilters"></el-option>
+                                </el-select>
+                            </div>
+                        </template>
+                    </cly-chart-time>
+                </div>
             </cly-section>
             <cly-section>
                 <cly-datatable-n :data-source="remoteTableDataSource" v-loading="areRowsLoading || isUserCommandLoading" :force-loading="isLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true" class="is-clickable cly-vue-push-notification-table">
