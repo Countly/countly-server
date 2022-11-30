@@ -495,6 +495,10 @@
                     if (doc.conditions) {
                         var allConditions = this.$store.getters["countlyRemoteConfig/conditions/all"];
                         doc.conditions.forEach(function(item) {
+                            item.open = false;
+                            if (typeof (item.value) === 'object') {
+                                item.value = JSON.stringify(item.value);
+                            }
                             var conditionsArr = allConditions.filter(function(ob) {
                                 return ob._id === item.condition_id;
                             });
