@@ -13,4 +13,4 @@ jobs:
           type: now
           from_branch: master
           target_branch: next
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.BRANCH_SYNC }}
