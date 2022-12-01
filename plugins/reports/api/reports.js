@@ -15,7 +15,7 @@ var reportsInstance = {},
     log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info'),
     countlyConfig = require('../../../frontend/express/config.js'),
-    convertHTMLToPDF = require("pdf-puppeteer");
+    pdf = require('../../../api/utils/pdf');
 
 countlyConfig.passwordSecret || "";
 
@@ -669,7 +669,7 @@ var metricProps = {
                 }
 
                 if (report.sendPdf === true) {
-                    convertHTMLToPDF(html, function() {
+                    pdf.renderPDF(html, function() {
                         msg.attachments = [{filename: "Countly_Report.pdf", path: filePath}];
 
                         /**
