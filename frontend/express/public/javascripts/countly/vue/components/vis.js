@@ -1196,11 +1196,11 @@
                                 self.seriesOptions.markPoint.data[index].itemStyle = {
                                     color: note.times > 1 ? countlyGraphNotesCommon.COLOR_TAGS[0].label : countlyGraphNotesCommon.COLOR_TAGS.find(x=>x.value === note.color).label
                                 };
-                                self.seriesOptions.markPoint.emphasis.itemStyle = {
-                                    borderColor: "#c5c5c5",
-                                    borderWidth: 4
-                                };
                             });
+                            self.seriesOptions.markPoint.emphasis.itemStyle = {
+                                borderColor: "#c5c5c5",
+                                borderWidth: 4
+                            };
 
                             self.seriesOptions.markPoint.tooltip = {
                                 transitionDuration: 1,
@@ -1215,6 +1215,9 @@
                             };
                         }
                     });
+                }
+                else {
+                    this.seriesOptions.markPoint.data = [];
                 }
             },
             onClick() {
@@ -2340,10 +2343,16 @@
         },
         computed: {
             chartOptions: function() {
+                if (this.mergedOptions && this.mergedOptions.series && this.mergedOptions.series.length > 1) {
+                    for (var index = 1; index < this.mergedOptions.series.length; index++) {
+                        delete this.mergedOptions.series[index].markPoint;
+                    }
+                }
                 var opt = _merge({}, this.mergedOptions);
 
                 opt = this.patchChart(opt);
                 opt = this.patchOptionsForXAxis(opt);
+
                 return opt;
             }
         },
@@ -2438,6 +2447,11 @@
         },
         computed: {
             chartOptions: function() {
+                if (this.mergedOptions && this.mergedOptions.series && this.mergedOptions.series.length > 1) {
+                    for (var index = 1; index < this.mergedOptions.series.length; index++) {
+                        delete this.mergedOptions.series[index].markPoint;
+                    }
+                }
                 var opt = _merge({}, this.mergedOptions);
 
                 var xAxisData = [];
