@@ -1,5 +1,19 @@
 .manage-users-table {
   margin: 0px 25px;
+
+  &__groups {
+    display: inline-block;
+    color: #32659D;
+
+    a:hover {
+      color: #1A75DA;
+      text-decoration: underline;
+    }
+  }
+
+  &__groups-label {
+    margin: 0px 2px;
+  }
 }
 
 .user-management-filter-form {
