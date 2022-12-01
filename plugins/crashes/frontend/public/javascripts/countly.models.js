@@ -975,14 +975,19 @@
             args.app_id = countlyCommon.ACTIVE_APP_ID;
         }
 
-        return countlyVue.$.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/crashes/" + path,
-            data: {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                args: JSON.stringify(args)
-            },
-            dataType: "json"
+        return new Promise(function(resolve) {
+            countlyVue.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.w + "/crashes/" + path,
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    args: JSON.stringify(args)
+                },
+                dataType: "json",
+                success: function(response) {
+                    resolve(response);
+                }
+            });
         });
     };
 

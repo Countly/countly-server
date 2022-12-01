@@ -1479,99 +1479,101 @@ plugins.setConfigs("crashes", {
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(err, groups) {
                     if (groups) {
                         var inc = {};
+                        var failedCrashNames = [];
                         async.each(groups, function(group, done) {
                             group.app_id = params.qstring.app_id;
                             plugins.dispatch("/systemlogs", {params: params, action: "crash_deleted", data: group});
                             common.db.collection('app_crashes' + params.qstring.app_id).remove({'group': {$in: group.groups} }, function() {});
-                            common.db.collection('app_crashgroups' + params.qstring.app_id).remove({'_id': group._id }, function() {});
-                            if (common.drillDb) {
-                                common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + params.qstring.app_id).digest('hex')).remove({"sg.crash": group._id}, function() {});
-                                plugins.dispatch("/crash/delete", {appId: params.qstring.app_id, crash: group._id + ""});
-                            }
-                            var id = common.crypto.createHash('sha1').update(params.qstring.app_id + group._id + "").digest('hex');
-                            common.db.collection('crash_share').remove({'_id': id }, function() {});
-                            common.db.collection('app_crashusers' + params.qstring.app_id).find({"group": {$in: group.groups}}, {reports: 1, uid: 1, _id: 0}).toArray(function(crashUsersErr, users) {
-                                var uids = [];
-                                for (let i = 0; i < users.length; i++) {
-                                    if (users[i].reports > 0) {
-                                        uids.push(users[i].uid);
-                                    }
+                            common.db.collection('app_crashgroups' + params.qstring.app_id).remove({'_id': group._id }, function() {
+                                if (common.drillDb) {
+                                    common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + params.qstring.app_id).digest('hex')).remove({"sg.crash": group._id}, function() {});
+                                    plugins.dispatch("/crash/delete", {appId: params.qstring.app_id, crash: group._id + ""});
                                 }
-                                common.db.collection('app_crashusers' + params.qstring.app_id).remove({"group": {$in: group.groups}}, function() {});
-                                var mod = {crashes: -1};
-                                if (!group.nonfatal) {
-                                    mod.fatal = -1;
-                                }
-                                common.db.collection('app_crashusers' + params.qstring.app_id).update({"group": 0, uid: {$in: uids}}, {$inc: mod}, {multi: true}, function() {
-                                    if (!inc.crashes) {
-                                        inc.crashes = 0;
-                                    }
-                                    inc.crashes--;
-
-                                    if (group.nonfatal) {
-                                        if (!inc.nonfatal) {
-                                            inc.nonfatal = 0;
+                                var id = common.crypto.createHash('sha1').update(params.qstring.app_id + group._id + "").digest('hex');
+                                common.db.collection('crash_share').remove({'_id': id }, function() {});
+                                common.db.collection('app_crashusers' + params.qstring.app_id).find({"group": {$in: group.groups}}, {reports: 1, uid: 1, _id: 0}).toArray(function(crashUsersErr, users) {
+                                    var uids = [];
+                                    for (let i = 0; i < users.length; i++) {
+                                        if (users[i].reports > 0) {
+                                            uids.push(users[i].uid);
                                         }
-                                        inc.nonfatal -= group.reports;
                                     }
-                                    else {
-                                        if (!inc.fatal) {
-                                            inc.fatal = 0;
+                                    common.db.collection('app_crashusers' + params.qstring.app_id).remove({"group": {$in: group.groups}}, function() {});
+                                    var mod = {crashes: -1};
+                                    if (!group.nonfatal) {
+                                        mod.fatal = -1;
+                                    }
+                                    common.db.collection('app_crashusers' + params.qstring.app_id).update({"group": 0, uid: {$in: uids}}, {$inc: mod}, {multi: true}, function() {
+                                        if (!inc.crashes) {
+                                            inc.crashes = 0;
                                         }
-                                        inc.fatal -= group.reports;
-                                    }
+                                        inc.crashes--;
 
-                                    if (group.is_new) {
-                                        if (!inc.isnew) {
-                                            inc.isnew = 0;
-                                        }
-                                        inc.isnew--;
-                                    }
-
-                                    if (group.is_resolved) {
-                                        if (!inc.resolved) {
-                                            inc.resolved = 0;
-                                        }
-                                        inc.resolved--;
-                                    }
-
-                                    if (group.loss) {
-                                        if (!inc.loss) {
-                                            inc.loss = 0;
-                                        }
-                                        inc.loss -= group.loss;
-                                    }
-
-                                    if (group.reports) {
-                                        if (!inc.reports) {
-                                            inc.reports = 0;
-                                        }
-                                        inc.reports -= group.reports;
-                                    }
-
-                                    if (group.is_renewed) {
-                                        if (!inc.reoccurred) {
-                                            inc.reoccurred = 0;
-                                        }
-                                        inc.reoccurred--;
-                                    }
-
-                                    if (group.os) {
-                                        if (!inc["os." + group.os.replace(/^\$/, "").replace(/\./g, ":")]) {
-                                            inc["os." + group.os.replace(/^\$/, "").replace(/\./g, ":")] = 0;
-                                        }
-                                        inc["os." + group.os.replace(/^\$/, "").replace(/\./g, ":")] -= group.reports;
-                                    }
-
-                                    if (group.app_version) {
-                                        for (let i in group.app_version) {
-                                            if (!inc["app_version." + i]) {
-                                                inc["app_version." + i] = 0;
+                                        if (group.nonfatal) {
+                                            if (!inc.nonfatal) {
+                                                inc.nonfatal = 0;
                                             }
-                                            inc["app_version." + i] -= group.app_version[i];
+                                            inc.nonfatal -= group.reports;
                                         }
-                                    }
-                                    done();
+                                        else {
+                                            if (!inc.fatal) {
+                                                inc.fatal = 0;
+                                            }
+                                            inc.fatal -= group.reports;
+                                        }
+
+                                        if (group.is_new) {
+                                            if (!inc.isnew) {
+                                                inc.isnew = 0;
+                                            }
+                                            inc.isnew--;
+                                        }
+
+                                        if (group.is_resolved) {
+                                            if (!inc.resolved) {
+                                                inc.resolved = 0;
+                                            }
+                                            inc.resolved--;
+                                        }
+
+                                        if (group.loss) {
+                                            if (!inc.loss) {
+                                                inc.loss = 0;
+                                            }
+                                            inc.loss -= group.loss;
+                                        }
+
+                                        if (group.reports) {
+                                            if (!inc.reports) {
+                                                inc.reports = 0;
+                                            }
+                                            inc.reports -= group.reports;
+                                        }
+
+                                        if (group.is_renewed) {
+                                            if (!inc.reoccurred) {
+                                                inc.reoccurred = 0;
+                                            }
+                                            inc.reoccurred--;
+                                        }
+
+                                        if (group.os) {
+                                            if (!inc["os." + group.os.replace(/^\$/, "").replace(/\./g, ":")]) {
+                                                inc["os." + group.os.replace(/^\$/, "").replace(/\./g, ":")] = 0;
+                                            }
+                                            inc["os." + group.os.replace(/^\$/, "").replace(/\./g, ":")] -= group.reports;
+                                        }
+
+                                        if (group.app_version) {
+                                            for (let i in group.app_version) {
+                                                if (!inc["app_version." + i]) {
+                                                    inc["app_version." + i] = 0;
+                                                }
+                                                inc["app_version." + i] -= group.app_version[i];
+                                            }
+                                        }
+                                        done();
+                                    });
                                 });
                             });
                         }, function() {
@@ -1586,7 +1588,12 @@ plugins.setConfigs("crashes", {
                                         update.$inc = inc;
                                     }
                                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({_id: "meta"}, update, function() {});
-                                    common.returnMessage(params, 200, 'Success');
+                                    if (failedCrashNames.length > 0) {
+                                        common.returnMessage(params, 200, failedCrashNames);
+                                    }
+                                    else {
+                                        common.returnMessage(params, 200, 'Success');
+                                    }
                                 });
                             });
                         });

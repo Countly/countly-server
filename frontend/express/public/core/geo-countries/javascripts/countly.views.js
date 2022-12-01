@@ -319,7 +319,8 @@ var CountriesHomeWidget = countlyVue.views.create({
             this.$refs.toCityViewLink.click();
         },
         calculateProperties: function() {
-            var totals = this.$store.state.countlyCountry.data || {};
+            var countlyCountry = this.$store.state.countlyCountry || {};
+            var totals = countlyCountry.data || {};
             totals = totals.totals || {};
             totals.t = totals.t || {};
             totals.u = totals.u || {};
@@ -332,7 +333,8 @@ var CountriesHomeWidget = countlyVue.views.create({
         },
         calculateCountriesData: function() {
             var geoChart = {};
-            var data = this.$store.state.countlyCountry.data || {};
+            var countlyCountry = this.$store.state.countlyCountry || {};
+            var data = countlyCountry.data || {};
             var table = data.table || [];
             var selectedProperty = this.selectedProperty || "t";
             for (var k = 0; k < table.length; k++) {
