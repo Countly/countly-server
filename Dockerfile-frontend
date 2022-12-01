@@ -35,7 +35,7 @@ RUN apt-get update && \
 	make && \
 	make altinstall && \
 	ldconfig /usr/src/Python-3.8.12 && \
-  ln -s /usr/local/bin/python3.8 /usr/bin/python3
+	ln -s /usr/local/bin/python3.8 /usr/bin/python3
 
 RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
 	dpkg -i /tmp/tini.deb && \
