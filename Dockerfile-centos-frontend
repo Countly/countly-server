@@ -26,23 +26,27 @@ RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
 RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
 RUN dnf update -y libmodulemd
 
+RUN yum update -y
+
 RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
-	rpm -i /tmp/tini.rpm && \
-	\
-	curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
-	yum -y install nodejs && \
-	ln -s /usr/bin/node /usr/bin/nodejs && \
-	\
-	yum -y install python3-policycoreutils && \
-	yum -y group install "Development Tools" && \
-	yum -y install epel-release && \
-	if [ ! -x "$(command -v python)" ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
-	yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
-	yum -y install wget openssl-devel make git sqlite unzip bzip2 && \
-	\
-	# modify standard distribution
-	./bin/docker/modify.sh && \
-	\
+        rpm -i /tmp/tini.rpm && \
+        \
+        curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
+        yum -y install nodejs python3.8 python2 python38-libs python38-devel python38-pip cyrus-sasl* && \
+        ln -s /usr/bin/node /usr/bin/nodejs && \
+        unlink /usr/bin/python3 && \
+        ln -s /usr/bin/python3.8 /usr/bin/python3 && \
+        ln -s /usr/bin/python2.7 /usr/bin/python && \
+        \
+        yum -y install python3-policycoreutils && \
+        yum -y group install "Development Tools" && \
+        yum -y install epel-release && \
+        yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \ 
+	      yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
+        yum -y install wget openssl-devel make git sqlite libsqlite* unzip bzip2 && \
+        # modify standard distribution
+        ./bin/docker/modify.sh && \
+        \
 	# preinstall
 	cp -n ./frontend/express/public/javascripts/countly/countly.config.sample.js ./frontend/express/public/javascripts/countly/countly.config.js && \
 	cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
