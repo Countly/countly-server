@@ -1,3 +1,5 @@
+const { URL } = require('url'),
+    log = require('../../../api/utils/log')('push:proxy');
 let protos = {
     http: require('http'),
     https: require('https'),
@@ -142,7 +144,26 @@ function proxyAgent(url, proxy, agentConfig = {}) {
  * @returns {Request} request
  */
 function request(url, method, conf) {
-    let opts = {method};
+    let opts = {}, proto;
+    try {
+        let u = new URL(url);
+        opts.host = u.hostname;
+        opts.port = u.port;
+        opts.path = u.pathname;
+        opts.protocol = u.protocol;
+        proto = u.protocol.substring(0, u.protocol.length - 1);
+        if (!protos[proto]) {
+            return new Error('Invalid protocol in url ' + url);
+        }
+        if (u.username) {
+            opts.auth = `${u.username}:${u.password || ''}`;
+        }
+    }
+    catch (e) {
+        log.e('Failed to parse media URL', e);
+        opts = {method, url};
+        proto = url.substr(0, url.indexOf(':'));
+    }
 
     if (conf && conf.proxyhost && conf.proxyport) {
         let Agent = proxyAgent(url, {
@@ -150,16 +171,13 @@ function request(url, method, conf) {
             port: conf.proxyport,
             user: conf.proxyuser || undefined,
             pass: conf.proxyuser && conf.proxypass || undefined,
-            auth: !(conf.proxyunauthorized || false)
+            auth: !(conf.proxyunauthorized || false),
         });
         opts.agent = new Agent();
     }
 
-    let proto = url.substr(0, url.indexOf(':'));
-    if (!protos[proto]) {
-        return new Error('Invalid protocol in url ' + url);
-    }
-    return protos[proto].request(url, opts);
+    opts.url = url;
+    return protos[proto].request(opts);
 }
 
 
