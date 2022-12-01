@@ -30,7 +30,7 @@
     "all-the-cities": "3.1.0",
     "apidoc": "0.53.1",
     "apidoc-template": "github:kanwarujjaval/dash-apidoc-template",
-    "argon2": "0.29.1",
+    "argon2": "0.30.2",
     "async": "3.2.4",
     "basic-auth": "2.0.1",
     "bluebird": "3.7.2",
