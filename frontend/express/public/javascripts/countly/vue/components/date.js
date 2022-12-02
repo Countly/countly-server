@@ -736,6 +736,9 @@
                     return {};
                 },
                 required: false
+            },
+            popClass: {
+                type: String
             }
         },
         data: function() {
