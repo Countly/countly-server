@@ -84,17 +84,15 @@
             v-if="col.value === 'email'"
             sortable="true" prop="email" :label="i18n('management-users.email')">
           </el-table-column>
-          <el-table-column
-            v-if="col.value === 'group'"
-            sortable="true" prop="groupNames" type="clickable" :label="i18n('management-users.group')">
+          <el-table-column v-if="col.value === 'group'" sortable="true" prop="groupNames" :label="i18n('management-users.group')">
             <template v-slot="rowScope">
-              <div>
-                <a :href="'#/manage/users/group/' + rowScope.row.group_id + '?from=userlist'"
-                  :title="rowScope.row.groupNames">
-                  {{rowScope.row.groupNames}}
-                </a>
-            </div>
-            </template>
+              <div class="manage-users-table__groups" :key="index" v-for="(groupId, index) in rowScope.row.group_id">
+                  <a :href="'#/manage/users/group/' + groupId + '?from=userlist'" :title="rowScope.row.groupNames.trim().split(',')[index]">
+                    {{ rowScope.row.groupNames.trim().split(',')[index] }}
+                  </a>
+                  <span class="manage-users-table__groups-label" v-if="index !== rowScope.row.group_id.length - 1">,</span>
+              </div>
+          </template>
           </el-table-column>
           <el-table-column
             v-if="col.value === 'created_at'"
