@@ -1432,6 +1432,10 @@
                     endDate: null,
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
+                // overwrite date with now() for send-now drafts
+                if (model.status === 'draft' && model.delivery.type === SendEnum.NOW) {
+                    model.delivery.startDate = moment().valueOf();
+                }
                 model[TypeEnum.ONE_TIME].audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
                 model.timezone = triggerDto.tz ? TimezoneEnum.DEVICE : TimezoneEnum.SAME;
                 return model;
