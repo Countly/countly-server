@@ -1833,6 +1833,7 @@ var pluginManager = function pluginManager() {
             overwriteDefaultWrite(ob, "deleteMany");
             overwriteDefaultWrite(ob, "insertOne");
             overwriteDefaultWrite(ob, "insertMany");
+            overwriteDefaultWrite(ob, "bulkWrite");
             overwriteDefaultWrite(ob, "save");
 
             //overwrite with read logging
